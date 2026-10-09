@@ -1,0 +1,2483 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sid'note</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="sid'note">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f2f4f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{
+  --bg:#f2f4f7; --surface:#ffffff; --ink:#111827; --muted:#6b7280; --line:#e3e6eb;
+  --accent:#1f5fbf; --accent-soft:#e3ecfa; --on-accent:#ffffff;
+  --c-event:#c2410c; --c-cours:#1f5fbf; --c-stage:#0f7a5a; --c-memoire:#7c3aed; --c-perso:#64748b; --x1:#0e7490; --x2:#be185d; --x3:#a16207; --x4:#4338ca; --x5:#15803d; --x6:#9f1239;
+  --ok:#0f8a5f; --warn:#b45309; --late:#c62828;
+  --bar:rgba(248,249,251,.92);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0d1117; --surface:#161b22; --ink:#e6edf3; --muted:#8b949e; --line:#262d36;
+  --accent:#58a6ff; --accent-soft:#16263d; --on-accent:#0d1117;
+  --c-event:#f0885a; --c-cours:#58a6ff; --c-stage:#3fc590; --c-memoire:#b392f0; --c-perso:#94a3b8; --x1:#22b8cf; --x2:#f472b6; --x3:#facc15; --x4:#818cf8; --x5:#4ade80; --x6:#fb7185;
+  --ok:#3fc590; --warn:#e3b341; --late:#f47067;
+  --bar:rgba(22,27,34,.92); color-scheme:dark}}
+[hidden]{display:none!important}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 var(--font)}
+body{padding-top:env(safe-area-inset-top,0px)}
+main{max-width:640px;margin:0 auto;padding:12px 16px calc(96px + env(safe-area-inset-bottom,0px))}
+.view[hidden]{display:none}
+h1{font-size:32px;font-weight:700;letter-spacing:-.02em;margin:8px 0 4px}
+h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:22px 4px 8px}
+.sub{color:var(--muted);font-size:15px;margin:0 0 14px}
+.card{background:var(--surface);border-radius:14px;overflow:hidden}
+.row{display:flex;gap:12px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);min-height:52px}
+.row:last-child{border-bottom:0}
+.grow{flex:1;min-width:0;overflow-wrap:anywhere}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+button{font:inherit;color:inherit}
+.btn{border:0;border-radius:10px;padding:10px 16px;font-weight:600;background:var(--accent);color:var(--on-accent);cursor:pointer}
+.btn.ghost{background:var(--accent-soft);color:var(--accent)}
+.btn:focus-visible,.check:focus-visible,.tab:focus-visible,.pill:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input,select{font:16px var(--font);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0;width:100%;max-width:100%}
+/* champs date/heure : corrige l'affichage iPhone (largeur et hauteur) */
+input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;display:block;height:44px;line-height:22px;text-align:left}
+input::-webkit-date-and-time-value{text-align:left;min-height:22px}
+input[type=search]{-webkit-appearance:none;appearance:none}
+.two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+.two>*{min-width:0}
+/* marque */
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;color:var(--accent);margin:2px 0 0}
+.brand img{width:22px;height:22px;border-radius:6px}
+.search{margin:0 0 12px;padding-left:38px;background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%238b949e' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E") no-repeat 12px center}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;display:inline-block}
+
+/* progress */
+.prog{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.prog .track{flex:1;height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.prog .fill{height:100%;background:var(--ok);border-radius:99px;transition:width .3s}
+
+/* todos */
+.addbar{display:flex;gap:8px;margin-bottom:12px}
+.check{width:26px;height:26px;border-radius:50%;border:2px solid var(--muted);background:transparent;flex:none;display:grid;place-items:center;padding:0;cursor:pointer;color:var(--on-accent)}
+.done .check{background:var(--ok);border-color:var(--ok)}
+.done .ttl{text-decoration:line-through;color:var(--muted)}
+.realise{border:1.5px solid var(--ok);color:var(--ok);background:transparent;border-radius:99px;padding:6px 12px;font-size:14px;font-weight:600;cursor:pointer;flex:none}
+.realise:active{background:var(--ok);color:var(--on-accent)}
+.x{border:0;background:none;color:var(--muted);font-size:22px;line-height:1;padding:4px 6px;cursor:pointer;flex:none}
+.x.armed{color:var(--late);font-size:13px;font-weight:600}
+.empty{padding:18px 14px;color:var(--muted);text-align:center}
+.foldbtn{display:flex;justify-content:space-between;width:100%;border:0;background:none;padding:0 4px;margin:22px 0 8px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+@keyframes pop{from{transform:scale(.97);opacity:.4}to{transform:none;opacity:1}}
+.fresh{animation:pop .25s ease-out}
+@media (prefers-reduced-motion:reduce){.fresh{animation:none}.prog .fill{transition:none}}
+
+/* planning */
+.next{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.next .n{background:var(--surface);border-radius:14px;padding:12px;border-left:4px solid var(--c);min-width:0}
+.next .d{font:500 12px var(--mono);color:var(--muted)}
+.next .t{font-weight:600;font-size:14px;margin-top:2px;overflow-wrap:anywhere}
+/* types + ajout rapide */
+.swatch{width:26px;height:26px;border-radius:50%;border:0;flex:none;cursor:pointer;box-shadow:inset 0 0 0 2px rgba(0,0,0,.08)}
+.qbtn{border:1.5px dashed var(--line);background:none;color:var(--accent);border-radius:10px;padding:9px;width:100%;font-weight:600;cursor:pointer;margin-top:6px}
+.qform{display:grid;gap:8px;margin-top:8px}
+.qform .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.qform label{display:grid;gap:4px;font-size:12px;color:var(--muted)}
+/* calendrier */
+.cal{padding:10px 10px 4px}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.cal-title{border:0;background:none;font-size:17px;font-weight:700;cursor:pointer;padding:6px 10px;border-radius:8px}
+.cal-nav{border:0;background:var(--accent-soft);color:var(--accent);width:34px;height:34px;border-radius:50%;font-size:22px;line-height:1;cursor:pointer}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px}
+.cal-dow span{text-align:center;font-size:11px;font-weight:600;color:var(--muted);padding:4px 0}
+.day{border:0;background:none;border-radius:10px;min-height:48px;padding:4px 0 5px;display:grid;grid-template-rows:auto 1fr;justify-items:center;gap:3px;cursor:pointer;font:500 15px var(--font);font-variant-numeric:tabular-nums}
+.day.out{visibility:hidden}
+.day.past{color:var(--muted)}
+.day.today .num{background:var(--accent);color:var(--on-accent);border-radius:50%;width:26px;height:26px;display:grid;place-items:center}
+.day.sel{background:var(--accent-soft)}
+.day .num{width:26px;height:26px;display:grid;place-items:center}
+.marks{display:grid;gap:2px;width:100%;align-content:start;justify-items:center}
+.marks .bars{display:grid;gap:2px;width:100%}
+.marks .bars i{display:block;height:4px;background:var(--c)}
+.marks .bars i.s{border-radius:99px 0 0 99px;margin-left:4px}
+.marks .bars i.e{border-radius:0 99px 99px 0;margin-right:4px}
+.marks .bars i.s.e{border-radius:99px}
+.marks .dots{display:flex;gap:3px}
+.marks .dots i{width:6px;height:6px;border-radius:50%;background:var(--c)}
+.cal-sel{border-top:1px solid var(--line);margin-top:8px;padding:8px 4px 6px}
+.cal-sel .lbl{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:4px}
+.cal-sel .lbl::first-letter{text-transform:uppercase}
+.cal-sel .it{display:flex;gap:8px;align-items:center;padding:4px 0;font-size:15px}
+.cal-sel .it .dot{transform:translateY(-1px)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin:0 -16px;padding-inline:16px;scrollbar-width:none}
+.pill{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 12px;font-size:14px;white-space:nowrap;display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+.pill[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.task{border-left:4px solid var(--c)}
+.task .date{font:500 13px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.tbc{font-size:11px;color:var(--warn);border:1px solid currentColor;border-radius:4px;padding:0 4px;margin-left:4px;white-space:nowrap}
+.late{color:var(--late);font-weight:600}
+.status{border:1.5px solid var(--line);background:transparent;border-radius:99px;padding:5px 10px;font-size:13px;font-weight:600;flex:none;cursor:pointer}
+.status[data-s="en cours"]{color:var(--warn);border-color:var(--warn)}
+.status[data-s="fait"]{color:var(--ok);border-color:var(--ok)}
+.task.isfait .ttl{text-decoration:line-through;color:var(--muted)}
+.form{display:grid;gap:8px;padding:14px}
+.form .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.form label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+
+/* cours */
+.code{font:12px var(--mono);color:var(--muted)}
+.q{font:600 12px var(--mono);padding:2px 7px;border-radius:5px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.ects{font:600 15px var(--mono);font-variant-numeric:tabular-nums;width:28px;text-align:right}
+.alert{background:var(--surface);border-radius:14px;padding:12px 14px;font-size:15px;border-left:4px solid var(--warn)}
+
+/* pomodoro */
+.pomo-stage{background:var(--surface);border-radius:20px;padding:22px 16px;display:grid;justify-items:center;gap:14px;text-align:center}
+.phase{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--pc,var(--accent))}
+.ringwrap{position:relative;width:min(72vw,270px);aspect-ratio:1;max-width:100%}
+.ringwrap svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ringwrap .bgc{stroke:var(--line)}
+.ringwrap .fgc{stroke:var(--pc,var(--accent));transition:stroke-dashoffset .5s linear}
+.ringtxt{position:absolute;inset:0;display:grid;place-content:center;gap:4px}
+.big{font:600 clamp(44px,15vw,60px)/1 var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.ringtxt .small{color:var(--muted)}
+.pomo-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}
+.pomo-meta div{background:var(--bg);border-radius:12px;padding:8px 4px}
+.pomo-meta b{display:block;font:600 16px var(--mono);font-variant-numeric:tabular-nums}
+.pomo-meta span{font-size:12px;color:var(--muted)}
+.ctrls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;width:100%}
+.ctrls .btn{flex:1 1 0;min-width:90px}
+.btn.stop{background:transparent;color:var(--late);border:1.5px solid var(--late)}
+.presets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.preset{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 4px;font-weight:600;cursor:pointer}
+.preset[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper button{width:34px;height:34px;border-radius:50%;border:0;background:var(--accent-soft);color:var(--accent);font-size:20px;font-weight:600;cursor:pointer;line-height:1}
+.stepper output{min-width:58px;text-align:center;font:600 16px var(--mono);font-variant-numeric:tabular-nums}
+.plan{display:flex;height:12px;border-radius:99px;overflow:hidden;gap:2px;margin:4px 0 2px}
+.plan i{display:block;height:100%}
+.plan i.w{background:var(--accent)}
+.plan i.b{background:var(--ok)}
+.plan i.past{opacity:.3}
+.flash{animation:flash 1s ease-out 2}
+@keyframes flash{50%{background:var(--pc,var(--accent));}}
+@media (prefers-reduced-motion:reduce){.flash{animation:none}.ringwrap .fgc{transition:none}}
+
+/* connexion */
+body.locked main,body.locked nav{display:none}
+.auth{min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:24px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+.auth[hidden]{display:none}
+.auth-box{width:100%;max-width:400px;display:grid;gap:14px;text-align:center}
+.auth-logo{width:76px;height:76px;border-radius:18px;margin:0 auto;box-shadow:0 6px 20px rgba(31,95,191,.25)}
+.auth h1{margin:0}
+.auth .sub{margin:0}
+.auth .form{text-align:left}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--line);border-radius:12px;padding:3px;gap:3px}
+.seg button{border:0;background:none;border-radius:9px;padding:9px;font-weight:600;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.check-row:not([hidden]){display:flex!important}
+.check-row{gap:10px;align-items:center;font-size:14px!important;color:var(--ink)!important}
+.check-row input{width:20px;height:20px;flex:none;accent-color:var(--accent)}
+.err{color:var(--late);font-size:14px;font-weight:600;margin:0;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--late) 12%,transparent);border:1px solid color-mix(in srgb,var(--late) 40%,transparent)}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.err.shake{animation:shake .35s}
+.btn[disabled]{opacity:.6}
+.syncdot{display:inline-block;flex:none;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--ok)}
+.syncdot.wait{background:var(--warn)}
+
+/* modification */
+.pen{border:0;background:none;color:var(--muted);padding:6px;cursor:pointer;flex:none;display:grid;place-items:center;border-radius:8px}
+.pen:hover{color:var(--accent)}
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:30;display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:640px;border-radius:20px 20px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom,0px));display:grid;gap:10px;max-height:90vh;overflow:auto}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;font-size:17px}
+.sheet label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.sheet .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.time{font:600 13px var(--mono);color:var(--ink);font-variant-numeric:tabular-nums}
+/* appli */
+.steps{list-style:none;margin:0;padding:0;counter-reset:st}
+.steps li{counter-increment:st;display:flex;gap:12px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)}
+.steps li:last-child{border-bottom:0}
+.steps li::before{content:counter(st);flex:none;width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-weight:700;display:grid;place-items:center;font-size:14px}
+.install{text-align:left}
+.install summary{cursor:pointer;color:var(--accent);font-weight:600;font-size:15px;padding:6px 0;list-style:none;text-align:center}
+.install summary::-webkit-details-marker{display:none}
+.install .steps{margin-top:8px}
+.okline{display:flex;gap:10px;align-items:center}
+
+/* à faire : en suspens + réalisées */
+#v-todo .row{gap:6px;padding-inline:12px}
+#v-todo .pen{padding:5px}
+#v-todo .x{padding:4px}
+#v-todo .realise,#v-todo .resume{padding:6px 10px}
+.paused .ttl{color:var(--muted)}
+.resume{border:1.5px solid var(--accent);color:var(--accent);background:transparent;border-radius:99px;padding:6px 12px;font-size:14px;font-weight:600;cursor:pointer;flex:none}
+.grp-y{font-size:22px;font-weight:700;margin:18px 4px 4px;letter-spacing:-.01em}
+.grp-m{font-size:16px;font-weight:700;margin:12px 4px 6px}
+.grp-w{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:10px 4px 6px}
+.grp-d{font-size:13px;font-weight:600;color:var(--muted);padding:10px 14px 4px;border-bottom:1px solid var(--line)}
+.grp-d::first-letter{text-transform:uppercase}
+.donetime{font:600 12px var(--mono);color:var(--muted);flex:none;font-variant-numeric:tabular-nums;width:40px}
+/* vue jour */
+.dayv-head{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.back{border:0;background:none;color:var(--accent);font-weight:600;font-size:15px;cursor:pointer;padding:6px 2px;white-space:nowrap}
+.dayv-title{flex:1;text-align:center;font-weight:700;font-size:16px;min-width:0}
+.dayv-title::first-letter{text-transform:uppercase}
+.allday{display:grid;gap:6px;margin-bottom:10px}
+.chip-ev{display:flex;align-items:center;gap:6px;background:var(--bg);border-left:4px solid var(--c);border-radius:8px;padding:4px 4px 4px 10px;font-size:14px}
+.tline{position:relative;margin:18px 4px 10px 46px}
+.hr{position:absolute;left:0;right:0;border-top:1px solid var(--line)}
+.hr span{position:absolute;left:-46px;top:-8px;width:40px;text-align:right;font:500 11px var(--mono);color:var(--muted)}
+.blk{position:absolute;border:0;border-left:3px solid var(--c);border-radius:8px;padding:3px 6px;background:color-mix(in srgb,var(--c) 18%,var(--surface));font-size:13px;overflow:hidden;cursor:pointer;text-align:left;color:var(--ink);line-height:1.25}
+.blk b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.blk .t{font:500 11px var(--mono);color:var(--muted)}
+.blk.fait{opacity:.5}
+.nowline{position:absolute;left:-6px;right:0;height:2px;background:var(--late);z-index:2}
+.nowline::before{content:"";position:absolute;left:-4px;top:-4px;width:10px;height:10px;border-radius:50%;background:var(--late)}
+@keyframes zoomin{from{transform:scale(.9);opacity:0}to{transform:none;opacity:1}}
+.zoom{animation:zoomin .22s ease-out;transform-origin:var(--zo,50% 30%)}
+@media (prefers-reduced-motion:reduce){.zoom{animation:none}}
+/* interrupteurs */
+.switch{-webkit-appearance:none;appearance:none;width:50px!important;min-width:50px;height:30px;border-radius:99px;background:var(--line);position:relative;cursor:pointer;flex:none;border:0;padding:0;transition:background .2s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.switch:checked{background:var(--ok)}
+.switch:checked::after{transform:translateX(20px)}
+.switch:disabled{opacity:.5}
+/* spotify */
+.spot iframe{width:100%;height:152px;border:0;border-radius:12px;display:block}
+.linkbtn{color:var(--accent);font-weight:600;text-decoration:none}
+
+/* musculation */
+.rest{position:sticky;top:calc(env(safe-area-inset-top,0px) + 6px);z-index:6;background:var(--surface);border-radius:20px;padding:10px 0 12px;margin-bottom:12px;box-shadow:0 4px 16px rgba(0,0,0,.12)}
+.rest-tabs{display:flex;gap:4px;margin:0 14px 8px;background:var(--bg);border-radius:99px;padding:3px}
+.rest-tabs button{flex:1;border:0;background:none;border-radius:99px;padding:6px 8px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
+.rest-tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.rest-tabs span{font:600 12px var(--mono);color:var(--accent);margin-left:6px}
+.rest-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
+.rest-track::-webkit-scrollbar{display:none}
+.rest-slide{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;gap:14px;align-items:center;padding:0 14px;box-sizing:border-box;--pc:var(--muted)}
+.tm-adj{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.tm-presets{display:flex;gap:4px;flex-wrap:wrap}
+.tm-presets .mini{padding:4px 9px;font-size:12px}
+.tm-presets .mini[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.rest-slide.done{--pc:var(--ok)}
+.rest-slide.run{--pc:var(--accent)}
+.rest-slide.paused{--pc:var(--warn)}
+.sw-ring{position:relative;width:112px;height:112px;flex:none}
+.sw-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.sw-ring .bgc{stroke:var(--line)}
+.sw-ring .fgc{stroke:var(--pc);transition:stroke-dashoffset .25s linear,stroke .2s}
+.sw-txt{position:absolute;inset:0;display:grid;place-items:center}
+.rest-clock{font:600 26px/1 var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--ink)}
+.sw-side{flex:1;min-width:0;display:grid;gap:6px}
+.sw-side .phase{color:var(--pc)}
+.rest-btns{display:flex;gap:8px;flex-wrap:wrap}
+.rest-btns .btn{flex:1 1 auto;padding:10px 12px}
+@media (prefers-reduced-motion:reduce){.sw-ring .fgc{transition:none}}
+.rest.run .ms{background:var(--surface);border-radius:14px;margin-bottom:12px;overflow:hidden}
+.ms>summary{list-style:none;display:flex;align-items:center;gap:10px;padding:14px;cursor:pointer}
+.ms>summary::-webkit-details-marker{display:none}
+.ms>summary .chev{transition:transform .2s;color:var(--muted)}
+.ms[open]>summary .chev{transform:rotate(90deg)}
+.ms-name{font-weight:700;font-size:17px}
+.ms-body{border-top:1px solid var(--line);padding:12px;display:grid;gap:12px}
+.ex{background:var(--bg);border-radius:12px;padding:10px;display:grid;gap:8px}
+.ex-head{display:flex;gap:6px;align-items:center}
+.ex-head .num{font:700 13px var(--mono);color:var(--muted);width:20px;flex:none}
+.ex-head input{font-weight:600;background:var(--surface)}
+.set{display:grid;grid-template-columns:62px minmax(0,1fr) minmax(0,1fr);gap:6px;align-items:center}
+.set .lbl{font-size:13px;color:var(--muted);font-weight:600}
+.unit{position:relative}
+.unit input{background:var(--surface);padding-right:40px;text-align:right;font-variant-numeric:tabular-nums}
+.unit span{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted);pointer-events:none}
+.ex-actions{display:flex;gap:6px;flex-wrap:wrap}
+.mini{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:5px 11px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink)}
+.ms-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ms-actions .wide{grid-column:1/-1}
+textarea{font:15px var(--font);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;min-height:120px;resize:vertical}
+/* horaire iCal */
+.more-opts{margin-top:22px}
+.more-opts>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:14px;font-weight:600;padding:6px 4px}
+.more-opts>summary::-webkit-details-marker{display:none}
+.more-opts .plus{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:16px;line-height:1;transition:transform .2s}
+.more-opts[open] .plus{transform:rotate(45deg)}
+.bar-h2{display:flex;justify-content:space-between;align-items:flex-end;gap:8px}
+.bar-h2 .mini{margin-bottom:8px}
+.blk.canc,.chip-ev.canc .ttl{text-decoration:line-through;opacity:.55}
+.canc-pill{font:600 11px var(--font);color:var(--late);border:1px solid currentColor;border-radius:4px;padding:0 4px;margin-left:4px;text-decoration:none;display:inline-block}
+.blk .loc{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* v18 : minuteur fractionné, tours */
+.tm-mode{display:flex;gap:2px;background:var(--bg);border-radius:99px;padding:2px;align-self:start}
+.tm-mode button{border:0;background:none;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer}
+.tm-mode button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.tm-cfg{display:grid;gap:6px}
+.tm-custom{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted)}
+.tm-custom input{width:52px;padding:5px 6px;text-align:center;font-size:16px}
+.tm-frac{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.tm-frac label{display:grid;gap:2px;font-size:11px;font-weight:600;color:var(--muted)}
+.tm-frac span{position:relative;display:block}
+.tm-frac input{padding:5px 16px 5px 6px;font-size:16px;text-align:center;font-variant-numeric:tabular-nums}
+.tm-frac i{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-style:normal;font-size:11px;color:var(--muted)}
+.rest-slide.rest-ph{--pc:var(--ok)}
+.laps{max-height:66px;overflow:auto;display:grid;gap:2px;font:500 12px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.laps div{display:flex;justify-content:space-between;gap:6px}
+.laps div:first-child{color:var(--ink);font-weight:600}
+/* à faire : catégories + ordre */
+.catbar{background:var(--surface);border-radius:14px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.catbar .grow b{font-size:16px}
+.cat-h{display:flex;align-items:center;gap:8px;margin:18px 4px 8px}
+.cat-h h2{margin:0;flex:1}
+.cat-h .small{font-variant-numeric:tabular-nums}
+.cat-prog{width:56px;height:5px;border-radius:99px;background:var(--line);overflow:hidden}
+.cat-prog i{display:block;height:100%;background:var(--ok)}
+.grip{border:0;background:none;color:var(--muted);padding:6px 2px;cursor:grab;flex:none;touch-action:none;display:grid;place-items:center;opacity:.7}
+.row.dragging{position:relative;z-index:5;box-shadow:0 8px 24px rgba(0,0,0,.18);background:var(--surface);opacity:.95}
+.row.drop-anim{transition:transform .15s}
+.pill.add{border-style:dashed;color:var(--accent)}
+.pill .cnt{font:600 11px var(--mono);color:var(--muted)}
+.sel{-webkit-appearance:none;appearance:none;width:auto;max-width:55%;padding:8px 28px 8px 12px;background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b949e' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center}
+.sheet .sel{max-width:100%;width:100%}
+/* documents */
+.doc-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.doc-actions .btn{text-align:center;cursor:pointer;padding:12px}
+.doc{display:flex;gap:12px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);min-height:60px}
+.doc:last-child{border-bottom:0}
+.doc-ic{width:38px;height:46px;border-radius:6px;background:color-mix(in srgb,var(--late) 14%,var(--surface));color:var(--late);font:700 10px var(--font);display:grid;place-items:end center;padding-bottom:6px;flex:none;position:relative;border:0;cursor:pointer}
+.doc-ic::before{content:"";position:absolute;top:0;right:0;border-style:solid;border-width:0 10px 10px 0;border-color:transparent var(--bg) transparent transparent}
+.doc-open{flex:1;min-width:0;border:0;background:none;text-align:left;cursor:pointer;padding:0;color:var(--ink)}
+.doc-open b{display:block;font-weight:600;overflow-wrap:anywhere}
+.doc-open mark{background:color-mix(in srgb,var(--accent) 22%,transparent);color:inherit;border-radius:3px}
+.viewer{position:fixed;inset:0;z-index:40;background:var(--bg);display:flex;flex-direction:column}
+.viewer-head{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top,0px) + 8px) 12px 8px;background:var(--bar);border-bottom:1px solid var(--line)}
+.viewer-head b{text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.viewer-body{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:12px 8px calc(24px + env(safe-area-inset-bottom,0px));display:grid;gap:10px;justify-items:center;align-content:start}
+.viewer-body canvas,.viewer-body img{max-width:100%;height:auto;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.15);border-radius:2px}
+.viewer-body iframe{width:100%;height:80vh;border:0;background:#fff}
+.scan-pages{display:flex;gap:8px;overflow-x:auto;min-height:20px}
+.scan-pages .pg{position:relative;flex:none}
+.scan-pages img{height:120px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,.2);display:block;background:#fff}
+.scan-pages .pg button{position:absolute;top:4px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:14px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
+.scan-pages .pg .rm{right:4px}
+.scan-pages .pg .rot{left:4px}
+.scan-pages .pg span{position:absolute;bottom:4px;left:6px;font:600 11px var(--font);color:#fff;text-shadow:0 1px 2px #000}
+/* présentation */
+.onb{position:fixed;inset:0;z-index:50;background:var(--bg);overflow:auto;padding:calc(env(safe-area-inset-top,0px) + 20px) 16px calc(24px + env(safe-area-inset-bottom,0px))}
+.onb-box{max-width:520px;margin:0 auto;display:grid;gap:14px;text-align:center}
+.onb-list{display:grid;gap:10px;text-align:left}
+.onb-it{background:var(--surface);border-radius:14px;padding:12px 14px;display:flex;gap:12px;align-items:center;cursor:pointer}
+.onb-it .ic{width:40px;height:40px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:none}
+.onb-it .ic svg{width:22px;height:22px}
+.onb-it b{display:block;font-size:16px}
+.onb-it.off{opacity:.55}
+.auth-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.testpill{font:700 11px var(--font);text-transform:uppercase;letter-spacing:.05em;color:var(--on-accent);background:var(--warn);border-radius:6px;padding:2px 6px}
+nav.many .tab{font-size:10px}
+nav.many .tab svg{width:22px;height:22px}
+
+/* tab bar */
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--bar);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom,0px);z-index:10}
+nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:640px}
+.tab{border:0;background:none;padding:8px 0 6px;display:grid;justify-items:center;gap:2px;font-size:11px;font-weight:500;color:var(--muted);cursor:pointer}
+.tab[aria-selected="true"]{color:var(--accent)}
+.tab svg{width:24px;height:24px}
+.badge{position:absolute;margin-left:18px;margin-top:-2px;background:var(--late);color:#fff;font-size:11px;font-weight:700;border-radius:99px;padding:0 5px;line-height:16px}
+.tabicon{position:relative;display:grid;place-items:center}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:12px;font-size:14px;z-index:20;max-width:calc(100% - 32px)}
+</style>
+</head>
+<body>
+<div id="auth" class="auth" hidden>
+  <div class="auth-box">
+    <img src="icon-192.png" alt="" class="auth-logo">
+    <h1>Sid'note</h1>
+    <p class="sub" id="authSub">Connecte-toi pour retrouver tes tâches sur tous tes appareils.</p>
+    <div class="seg" role="group" aria-label="Choix">
+      <button type="button" id="mLogin" aria-pressed="true">Se connecter</button>
+      <button type="button" id="mSignup" aria-pressed="false">Créer un compte</button>
+    </div>
+    <form id="authForm" class="card form" novalidate>
+      <label id="aNameWrap" hidden>Pseudo<input id="aName" autocomplete="nickname" autocorrect="off" spellcheck="false"></label>
+      <label><span id="aEmailLbl">E-mail</span><input id="aEmail" type="email" inputmode="email" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required></label>
+      <label>Mot de passe<input id="aPw" type="password" autocomplete="current-password" required></label>
+      <label id="aPw2Wrap" hidden>Confirme le mot de passe<input id="aPw2" type="password" autocomplete="new-password"></label>
+      <label class="check-row" id="aStayWrap"><input type="checkbox" id="aStay" checked> Rester connecté</label>
+      <label class="check-row" id="aMigWrap" hidden><input type="checkbox" id="aMig" checked> Récupérer les données déjà présentes sur ce téléphone</label>
+      <p class="err" id="aErr" role="alert" hidden></p>
+      <button class="btn" id="aBtn" type="submit">Se connecter</button>
+    </form>
+    <details class="install" id="authInstall"><summary>Comment installer Sid'note sur iPhone ?</summary>
+      <ol class="steps card">
+        <li><span>Dans Safari, appuie sur les <b>3 petits points</b> en bas à droite.</span></li>
+        <li><span>Appuie sur <b>Partager</b>.</span></li>
+        <li><span>Appuie sur <b>En savoir plus</b>.</span></li>
+        <li><span>Appuie sur <b>Sur l'écran d'accueil</b>, puis sur <b>Ajouter</b>.</span></li>
+        <li><span>L'icône <b>Sid'note</b> apparaît sur ton écran d'accueil : ouvre l'app depuis cette icône.</span></li>
+      </ol>
+    </details>
+    <p class="small muted" id="authHint">Tu as créé ton compte avec un pseudo, avant l'arrivée de l'e-mail ? Tape ton pseudo à la place de l'e-mail pour te connecter.</p>
+    <div class="auth-foot"><button type="button" class="linkbtn" id="authLang" style="background:none;border:0;cursor:pointer;font-size:14px">English</button><span class="small muted">Sid'note · une app <b>SidCorp</b></span></div>
+  </div>
+</div>
+<main>
+  <!-- À FAIRE -->
+  <section class="view" id="v-todo" hidden>
+    <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
+    <h1>À faire</h1>
+    <p class="sub" id="hello" style="margin-top:-2px"></p>
+    <input type="search" class="search" id="todoSearch" placeholder="Rechercher une tâche" aria-label="Rechercher une tâche" autocomplete="off">
+    <div class="prog"><div class="track"><div class="fill" id="pfill" style="width:0"></div></div><span class="small muted" id="ptext"></span></div>
+    <div class="chips" id="todoCats" style="margin-bottom:10px"></div>
+    <form class="addbar" id="catForm" hidden>
+      <input id="catIn" placeholder="Nom de la catégorie, ex. Déménagement" aria-label="Nom de la catégorie" autocomplete="off" enterkeyhint="done">
+      <button class="btn" type="submit">Créer</button>
+    </form>
+    <div class="catbar" id="catBar" hidden></div>
+    <form class="addbar" id="todoForm">
+      <input id="todoIn" placeholder="Nouvelle tâche…" aria-label="Nouvelle tâche" autocomplete="off" enterkeyhint="done">
+      <button class="btn" type="submit">Ajouter</button>
+    </form>
+    <div id="todoOpen"></div>
+    <button class="foldbtn" id="foldPaused" hidden><span id="pausedTitle">En suspens</span><span id="pausedArrow">Masquer</span></button>
+    <div class="card" id="todoPaused"></div>
+    <button class="foldbtn" id="foldDone" hidden><span id="doneTitle">Réalisées</span><span id="doneArrow">Afficher</span></button>
+    <div id="todoDone"></div>
+  </section>
+
+  <!-- PLANNING -->
+  <section class="view" id="v-plan" hidden>
+    <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
+    <h1>Planning</h1>
+    <input type="search" class="search" id="planSearch" placeholder="Rechercher une activité" aria-label="Rechercher une activité" autocomplete="off" style="margin-top:6px">
+    <div id="planTop">
+    <form class="card form" id="taskForm">
+      <input id="fTitle" placeholder="Qu'as-tu de prévu ?" aria-label="Titre" required autocomplete="off">
+      <div class="two">
+        <label>Début<input id="fDate" type="date" required></label>
+        <label>Fin (optionnel)<input id="fEnd" type="date"></label>
+      </div>
+      <div class="small muted" style="margin:2px 0 -4px">Heures (optionnel)</div>
+      <div class="two">
+        <label>Heure de début<input id="fTime" type="time"></label>
+        <label>Heure de fin<input id="fTimeEnd" type="time"></label>
+      </div>
+      <label>Type<input id="fCat" list="typeList" placeholder="Ex. Sport" autocomplete="off"></label>
+      <button class="btn" type="submit">Ajouter au planning</button>
+    </form>
+    <datalist id="typeList"></datalist>
+    <h2>Prochaines échéances</h2>
+    <div class="next" id="next"></div>
+    <div class="bar-h2"><h2 id="calH2">Ce mois-ci</h2><button type="button" class="mini" id="icalRefresh" hidden>↻ Actualiser</button></div>
+    <div class="card cal">
+      <div id="calMonth">
+        <div class="cal-head">
+          <button class="cal-nav" id="calPrev" aria-label="Mois précédent">‹</button>
+          <button class="cal-title" id="calTitle"></button>
+          <button class="cal-nav" id="calNext" aria-label="Mois suivant">›</button>
+        </div>
+        <div class="cal-grid cal-dow"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+        <div class="cal-grid" id="calDays"></div>
+        <p class="small muted" style="text-align:center;margin:6px 0 4px">Touche un jour pour voir sa journée en détail.</p>
+      </div>
+      <div id="calDayView" hidden></div>
+    </div>
+    <details class="more-opts" id="moreOpts" style="margin-top:10px">
+      <summary><span class="plus">+</span> Plus d'options</summary>
+      <div class="card form" id="icalCard" style="margin-top:8px">
+        <b style="font-size:15px">Horaire de cours (iCal)</b>
+        <div class="small muted">Pour les étudiants : colle le lien iCal de ton horaire (par exemple celui de l'UMons). Tes cours s'affichent dans le calendrier et se mettent à jour tout seuls.</div>
+        <input id="icalUrl" placeholder="https://ical.umons.ac.be/….ics" inputmode="url" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off">
+        <div class="two"><button class="btn ghost" id="icalDel" type="button">Retirer</button><button class="btn" id="icalSave" type="button">Enregistrer</button></div>
+        <div class="small muted" id="icalState"></div>
+      </div>
+    </details>
+    </div>
+    <h2 id="listH2">Toutes les dates</h2>
+    <div class="chips" id="chips"></div>
+    <div id="tasks"></div>
+  </section>
+
+  <!-- POMODORO -->
+  <section class="view" id="v-pomo" hidden>
+    <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
+    <h1>Pomodoro</h1>
+    <!-- réglage -->
+    <div id="pomoSetup">
+      <p class="sub">Choisis combien de temps tu veux travailler. Les sessions et les pauses s'enchaînent toutes seules.</p>
+      <h2>Durée totale</h2>
+      <div class="presets" id="presets"></div>
+      <h2>Rythme</h2>
+      <div class="card">
+        <div class="row"><div class="grow">Travail</div><div class="stepper"><button data-step="work,-5" aria-label="Moins de travail">−</button><output id="oWork"></output><button data-step="work,5" aria-label="Plus de travail">+</button></div></div>
+        <div class="row"><div class="grow">Pause</div><div class="stepper"><button data-step="brk,-1" aria-label="Moins de pause">−</button><output id="oBrk"></output><button data-step="brk,1" aria-label="Plus de pause">+</button></div></div>
+        <div class="row"><div class="grow">Durée totale</div><div class="stepper"><button data-step="total,-15" aria-label="Moins de temps">−</button><output id="oTotal"></output><button data-step="total,15" aria-label="Plus de temps">+</button></div></div>
+      </div>
+      <h2>Programme</h2>
+      <div class="card"><div class="row" style="display:block">
+        <div class="plan" id="planBar"></div>
+        <div class="small muted" id="planTxt" style="margin-top:6px"></div>
+      </div></div>
+      <button class="btn" id="pomoStart" style="width:100%;margin-top:16px;padding:14px;font-size:17px">Démarrer</button>
+    </div>
+    <!-- en cours -->
+    <div id="pomoRun" hidden>
+      <div class="pomo-stage" id="stage">
+        <div class="phase" id="phase">Travail</div>
+        <div class="ringwrap">
+          <svg viewBox="0 0 120 120"><circle class="bgc" cx="60" cy="60" r="54" fill="none" stroke-width="8"/><circle class="fgc" id="ring" cx="60" cy="60" r="54" fill="none" stroke-width="8" stroke-linecap="round" stroke-dasharray="339.29" stroke-dashoffset="0"/></svg>
+          <div class="ringtxt"><div class="big" id="clock">25:00</div><div class="small" id="segInfo"></div></div>
+        </div>
+        <div class="plan" id="runBar" style="width:100%"></div>
+        <div class="pomo-meta">
+          <div><b id="mDone">0</b><span>travail fait</span></div>
+          <div><b id="mLeft">0</b><span>restant</span></div>
+          <div><b id="mEnd">--:--</b><span>fin prévue</span></div>
+        </div>
+        <div class="ctrls">
+          <button class="btn ghost" id="pomoPause">Pause</button>
+          <button class="btn ghost" id="pomoSkip">Passer</button>
+          <button class="btn stop" id="pomoStop">Arrêter</button>
+        </div>
+      </div>
+      <p class="small muted" style="margin:12px 4px">Garde l'app ouverte à l'écran pour entendre le signal entre deux sessions. Si tu la quittes, le chrono continue et se remet à jour à ton retour.</p>
+    </div>
+    <h2>Musique</h2>
+    <div class="card spot">
+      <div id="spotEmbed" style="padding:10px 10px 0"></div>
+      <div class="row small" style="gap:8px;flex-wrap:wrap"><a class="linkbtn" id="spotOpen" href="https://open.spotify.com" target="_blank" rel="noopener">Ouvrir dans Spotify ↗</a><span class="muted grow" id="spotName"></span></div>
+      <form class="row" id="spotForm"><input id="spotIn" placeholder="Colle un lien Spotify (playlist, album…)" aria-label="Lien Spotify" autocomplete="off"><button class="btn" type="submit">OK</button></form>
+      <div class="row small muted" style="display:block">Connecté à Spotify dans ce navigateur, tu écoutes les titres en entier. Sinon, Spotify ne joue que des extraits de 30 secondes : tu peux alors lancer ta musique dans l'app Spotify, le chrono continue ici.</div>
+    </div>
+    <h2>Aujourd'hui</h2>
+    <div class="card" id="pomoStats"></div>
+  </section>
+
+  <!-- MUSCULATION -->
+  <section class="view" id="v-muscu" hidden>
+    <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
+    <h1>Musculation</h1>
+    <p class="sub">Crée tes séances, note tes charges et tes répétitions série par série.</p>
+    <div class="rest" id="rest">
+      <div class="rest-tabs" role="tablist" aria-label="Chrono ou minuteur">
+        <button type="button" data-go="0" aria-selected="true">Chrono<span id="swMini"></span></button>
+        <button type="button" data-go="1" aria-selected="false">Minuteur<span id="tmMini"></span></button>
+      </div>
+      <div class="rest-track" id="restTrack">
+        <div class="rest-slide" id="swSlide">
+          <div class="sw-ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="bgc" cx="60" cy="60" r="52" fill="none" stroke-width="9"/><circle class="fgc" id="swRing" cx="60" cy="60" r="52" fill="none" stroke-width="9" stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="326.73"/></svg><div class="sw-txt"><div class="rest-clock" id="restClock">0:00</div></div></div>
+          <div class="sw-side">
+            <div class="phase" id="swPhase">Chrono</div>
+            <div class="small muted" id="swSub">Compte jusqu'à ce que tu l'arrêtes.</div>
+            <div class="rest-btns"><button type="button" class="btn ghost" id="restReset" hidden>Remettre à 0</button><button type="button" class="btn ghost" id="restLap" hidden>Tour</button><button type="button" class="btn" id="restGo">Démarrer</button></div>
+            <div class="laps" id="swLaps" hidden></div>
+          </div>
+        </div>
+        <div class="rest-slide" id="tmSlide">
+          <div class="sw-ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="bgc" cx="60" cy="60" r="52" fill="none" stroke-width="9"/><circle class="fgc" id="tmRing" cx="60" cy="60" r="52" fill="none" stroke-width="9" stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="326.73"/></svg><div class="sw-txt"><div class="rest-clock" id="tmClock">1:30</div></div></div>
+          <div class="sw-side">
+            <div class="tm-mode" id="tmMode" role="group" aria-label="Type de minuteur"><button type="button" data-tmmode="simple" aria-pressed="true">Simple</button><button type="button" data-tmmode="frac" aria-pressed="false">Fractionné</button></div>
+            <div id="tmSimple" class="tm-cfg">
+              <div class="tm-adj"><button type="button" class="mini" data-tm="-15" aria-label="Moins 15 secondes">−15 s</button><span class="phase" id="tmPhase">Minuteur</span><button type="button" class="mini" data-tm="15" aria-label="Plus 15 secondes">+15 s</button></div>
+              <div class="tm-presets" id="tmPresets"></div>
+              <div class="tm-custom" id="tmCustom" hidden><input id="tmMin" type="number" inputmode="numeric" min="0" max="99" aria-label="Minutes"><span>min</span><input id="tmSec" type="number" inputmode="numeric" min="0" max="59" aria-label="Secondes"><span>s</span><button type="button" class="mini" id="tmCustomOk">OK</button></div>
+            </div>
+            <div id="tmFrac" class="tm-cfg" hidden>
+              <div class="phase" id="tmFPhase">Fractionné</div>
+              <div class="tm-frac">
+                <label>Effort<span><input id="tfWork" type="number" inputmode="numeric" min="5" max="3600"><i>s</i></span></label>
+                <label>Repos<span><input id="tfRest" type="number" inputmode="numeric" min="0" max="3600"><i>s</i></span></label>
+                <label>Séries<span><input id="tfRounds" type="number" inputmode="numeric" min="1" max="99"><i>×</i></span></label>
+              </div>
+              <div class="small muted" id="tfInfo"></div>
+            </div>
+            <div class="rest-btns"><button type="button" class="btn ghost" id="tmReset" hidden>Remettre à 0</button><button type="button" class="btn" id="tmGo">Démarrer</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <form class="addbar" id="msForm">
+      <input id="msName" placeholder="Nom de la séance, ex. Push" aria-label="Nom de la séance" autocomplete="off">
+      <button class="btn" type="submit">Créer</button>
+    </form>
+    <div id="msList"></div>
+    <button type="button" class="qbtn" id="msImportOpen" style="margin-top:4px">⇩ Importer une séance reçue</button>
+    <div class="card form" id="msImport" hidden style="margin-top:10px">
+      <div class="small muted">Colle ici une séance copiée depuis Sid'note par un proche.</div>
+      <textarea id="msPaste" placeholder="Séance « Push » (Sid'note)&#10;1. Développé couché : 4 séries&#10;2. Dips : 3 séries"></textarea>
+      <div class="two"><button class="btn ghost" type="button" id="msImportCancel">Annuler</button><button class="btn" type="button" id="msImportBtn">Importer</button></div>
+    </div>
+  </section>
+
+  <!-- DOCUMENTS -->
+  <section class="view" id="v-docs" hidden>
+    <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
+    <h1>Documents</h1>
+    <p class="sub">Range tes PDF et scanne tes documents. Ils te suivent sur tous tes appareils.</p>
+    <input type="search" class="search" id="docSearch" placeholder="Rechercher un document" aria-label="Rechercher un document" autocomplete="off">
+    <div class="doc-actions">
+      <label class="btn"><input type="file" id="docImport" accept="application/pdf,.pdf,image/*" multiple hidden>⇪ Importer</label>
+      <button type="button" class="btn ghost" id="docScanBtn">◎ Scanner</button>
+    </div>
+    <div class="small muted" id="docInfo" style="margin:2px 4px 10px"></div>
+    <div class="card" id="docList"></div>
+  </section>
+
+  <!-- APPLI -->
+  <section class="view" id="v-app" hidden>
+    <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
+    <h1>Application</h1>
+    <p class="sub">Installe Sid'note sur ton iPhone pour l'ouvrir comme une vraie app, en plein écran.</p>
+    <div class="card"><div class="row okline" id="appStatus"></div></div>
+    <h2>Installer sur iPhone</h2>
+    <ol class="steps card">
+        <li><span>Dans Safari, appuie sur les <b>3 petits points</b> en bas à droite.</span></li>
+        <li><span>Appuie sur <b>Partager</b>.</span></li>
+        <li><span>Appuie sur <b>En savoir plus</b>.</span></li>
+        <li><span>Appuie sur <b>Sur l'écran d'accueil</b>, puis sur <b>Ajouter</b>.</span></li>
+        <li><span>L'icône <b>Sid'note</b> apparaît sur ton écran d'accueil : ouvre l'app depuis cette icône.</span></li>
+      </ol>
+    <p class="small muted" style="margin:10px 4px 0">Utilise Safari : les autres navigateurs ne permettent pas toujours l'installation. Sur Android, ouvre le site dans Chrome, touche ⋮ puis « Ajouter à l'écran d'accueil ».</p>
+  </section>
+
+  <!-- RÉGLAGES -->
+  <section class="view" id="v-more" hidden>
+    <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
+    <h1>Réglages</h1>
+    <h2>Compte</h2>
+    <div class="card">
+      <div class="row" id="testBanner" hidden><div class="grow"><span class="testpill">Compte test</span> <span class="small muted">Tout est remis à zéro à chaque connexion.</span></div></div>
+      <div class="row"><div class="grow">Connecté en tant que <b id="accName"></b><div class="small muted" id="accEmail"></div><div class="small muted" id="syncState"></div></div></div>
+      <form class="row" id="nameForm"><input id="newName" placeholder="Nouveau pseudo" aria-label="Nouveau pseudo" autocomplete="off"><button class="btn" type="submit">Modifier</button></form>
+      <div class="row"><button class="btn stop" id="logoutBtn" style="width:100%">Se déconnecter</button></div>
+    </div>
+    <p class="small muted" style="margin:6px 4px 0">Ton pseudo s'affiche dans l'app. Pour te connecter, tu utilises ton e-mail.</p>
+    <div id="migrateSec" hidden>
+      <h2>Passer à la connexion par e-mail</h2>
+      <form class="card form" id="migrateForm">
+        <div class="small muted">Ton compte a été créé avec un pseudo. Ajoute ton e-mail : tes données sont transférées et tu te connecteras désormais avec cet e-mail.</div>
+        <label>E-mail<input id="mEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="none" required></label>
+        <label>Mot de passe (6 caractères minimum)<input id="mPw" type="password" autocomplete="new-password" required></label>
+        <button class="btn" type="submit" id="mBtn">Passer à l'e-mail</button>
+      </form>
+    </div>
+    <h2>Préférences</h2>
+    <div class="card">
+      <label class="row"><span class="grow">Langue</span><select id="langSel" class="sel"><option value="fr">Français</option><option value="en">English</option></select></label>
+      <label class="row"><span class="grow">Page d'accueil</span><select id="homeSel" class="sel"></select></label>
+    </div>
+    <p class="small muted" style="margin:6px 4px 0">La page d'accueil est celle qui s'ouvre quand tu lances Sid'note.</p>
+    <h2>Onglets affichés</h2>
+    <div class="card" id="tabsCard"></div>
+    <button type="button" class="qbtn" id="replayOnb" style="margin-top:8px">Revoir la présentation</button>
+    <div id="rappelsSec" hidden>
+    <h2>Rappels</h2>
+    <div class="card">
+      <div class="row"><div class="grow">Une notification la veille de chaque date du planning.<div class="small muted" id="notifState"></div></div></div>
+      <div class="row" id="notifRow" style="gap:8px"><button class="btn" id="notifBtn" style="flex:1">Activer les rappels</button><button class="btn ghost" id="notifTest" hidden>Tester</button></div>
+    </div>
+    </div>
+    <h2>Sauvegarde</h2>
+    <div class="card">
+      <div class="row"><div class="grow">Tes données sont enregistrées dans ton compte. Tu peux aussi garder une copie dans un fichier.</div></div>
+      <div class="row"><button class="btn" id="backupBtn" style="width:100%">Exporter une sauvegarde</button></div>
+      <div class="row"><label class="btn ghost" style="width:100%;text-align:center;cursor:pointer">Restaurer une sauvegarde<input type="file" id="restoreIn" accept="application/json,.json" hidden></label></div>
+    </div>
+    <h2>Types d'événement</h2>
+    <div class="card" id="typesCard"></div>
+    <p class="small muted" style="margin:6px 4px 0">Touche la pastille pour changer la couleur.</p>
+    <h2>Statistiques</h2>
+    <div class="card" id="stats"></div>
+    <p class="small muted" style="margin:18px 4px">Sid'note · version 18 · une app <b>SidCorp</b></p>
+  </section>
+</main>
+
+<nav><div class="in" role="tablist">
+  <button class="tab" role="tab" data-v="plan" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>Planning</button>
+  <button class="tab" role="tab" data-v="todo" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/></svg><span class="badge" id="badge" hidden></span></span>À faire</button>
+  <button class="tab" role="tab" data-v="pomo" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5V9.5M9.5 2.5h5M18.5 6.5l1.5-1.5"/></svg><span class="badge" id="pomoDot" hidden style="background:var(--accent);width:9px;height:9px;padding:0;margin-left:16px"></span></span>Pomodoro</button>
+  <button class="tab" role="tab" data-v="muscu" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg></span>Muscu</button>
+  <button class="tab" role="tab" data-v="docs" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2.5H7a2.5 2.5 0 0 0-2.5 2.5v14A2.5 2.5 0 0 0 7 21.5h10a2.5 2.5 0 0 0 2.5-2.5V8z"/><path d="M14 2.5V8h5.5M8.5 13h7M8.5 17h5"/></svg></span>Docs</button>
+  <button class="tab" role="tab" data-v="app" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></span>Appli</button>
+  <button class="tab" role="tab" data-v="more" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></span>Réglages</button>
+</div></nav>
+<div class="sheet-bg" id="sheet" hidden>
+  <form class="sheet card" id="editForm">
+    <div class="sheet-head"><b id="sheetTitle">Modifier</b><button type="button" class="x" id="sheetClose" aria-label="Fermer">×</button></div>
+    <label>Titre<input id="eTitle" required autocomplete="off"></label>
+    <label id="eTodoWrap">Catégorie<select id="eTodoCat" class="sel"></select></label>
+    <div id="eTask" style="display:grid;gap:10px">
+      <div class="two"><label>Date<input id="eDate" type="date"></label><label>Fin (optionnel)<input id="eEnd" type="date"></label></div>
+      <div class="small muted" style="margin:2px 0 -6px">Heures (optionnel)</div><div class="two"><label>Heure de début<input id="eTime" type="time"></label><label>Heure de fin<input id="eTimeEnd" type="time"></label></div>
+      <label>Type<input id="eCat" list="typeList" autocomplete="off"></label>
+    </div>
+    <div class="two"><button type="button" class="btn stop" id="eDelete">Supprimer</button><button class="btn" type="submit">Enregistrer</button></div>
+  </form>
+</div>
+<div class="onb" id="onb" hidden>
+  <div class="onb-box">
+    <img src="icon-192.png" alt="" class="auth-logo" style="width:64px;height:64px">
+    <h1 id="onbTitle">Bienvenue sur Sid'note</h1>
+    <p class="sub">Voici ce que Sid'note sait faire. Garde seulement ce qui te sert : tu pourras tout réafficher plus tard dans Réglages.</p>
+    <div class="seg" id="onbLang" role="group" aria-label="Langue"><button type="button" data-lang="fr" aria-pressed="true">Français</button><button type="button" data-lang="en" aria-pressed="false">English</button></div>
+    <div class="onb-list" id="onbList"></div>
+    <button class="btn" id="onbGo" style="padding:14px;font-size:17px">C'est parti</button>
+  </div>
+</div>
+<div class="viewer" id="viewer" hidden>
+  <div class="viewer-head"><button type="button" class="back" id="vwBack">‹ Documents</button><b class="grow" id="vwTitle"></b><button type="button" class="mini" id="vwShare">Partager</button></div>
+  <div class="viewer-body" id="vwBody"></div>
+</div>
+<div class="sheet-bg" id="scan" hidden>
+  <div class="sheet card">
+    <div class="sheet-head"><b>Scanner un document</b><button type="button" class="x" id="scanClose" aria-label="Fermer">×</button></div>
+    <div class="scan-pages" id="scanPages"></div>
+    <div class="seg" id="scanFilter" role="group" aria-label="Rendu"><button type="button" data-flt="doc" aria-pressed="true">Document</button><button type="button" data-flt="color" aria-pressed="false">Couleur</button></div>
+    <div class="two"><label class="btn ghost" style="text-align:center;cursor:pointer"><input type="file" id="scanCam" accept="image/*" capture="environment" hidden><span id="scanAddTxt">◎ Prendre une photo</span></label><label class="btn ghost" style="text-align:center;cursor:pointer"><input type="file" id="scanLib" accept="image/*" multiple hidden>Choisir des photos</label></div>
+    <label>Nom du document<input id="scanName" autocomplete="off"></label>
+    <button type="button" class="btn" id="scanSave" disabled>Enregistrer le PDF</button>
+    <div class="small muted">Astuce : pose la feuille à plat, bien éclairée, et cadre-la au plus près.</div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ---------- données de départ ---------- */
+const LEGACY_COURSES=[
+ ["UW-M2-IGGESS-084-M","Strategic Management","Quad 1",6],
+ ["UW-M2-IGGEST-104-M","Economic and Business in Current Affairs","Quad 1",6],
+ ["UW-M2-IGGESS-089-M","Immersive Experience in International Trade","Quad 1",6],
+ ["UW-M2-IGGEST-103-M","Seminar in Corporate Finance","Quad 1",3],
+ ["UW-M2-IGGEST-106-M","Internet Information Management – Part 2","Quad 1",3],
+ ["UW-M2-IGGEST-107-M","Séminaires NTIC","Quad 1",3],
+ ["UW-M2-IGGEST-003-M","Comunicación comercial 2","Quad 1",3],
+ ["UW-M2-IGGESS-090-M","International Dynamics of Finance and Trade","Quad 1",3],
+ ["UW-M1-IGGEST-010-M","Comunicación comercial 1","Quad 2",3],
+ ["UW-M2-IGGESS-085-M","Stage","Quad 2",9],
+ ["UW-M2-IGGEST-108-M","English for International Communication","Année",3],
+ ["UW-M2-IGGEST-014-M","Mémoire","Année",18]
+];
+const CATS={"Événement":"--c-event","Cours":"--c-cours","Stage":"--c-stage","Mémoire":"--c-memoire","Perso":"--c-perso"};
+const PALETTE=["--c-event","--c-cours","--c-stage","--c-memoire","--c-perso","--x1","--x2","--x3","--x4","--x5","--x6"];
+const STATUSES=["à faire","en cours","fait"];
+const MO=["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+const MOL=["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+
+/* ---------- compte & synchronisation ---------- */
+const SUPABASE_URL="https://eloeoaidgbkygazwjwiu.supabase.co";
+const SUPABASE_KEY="sb_publishable_IpzPmZmRdVxkOjSBOLNtGw_40TsVfSg";
+const CONFIGURED=!SUPABASE_URL.startsWith("__");
+const SESSION_KEY="sidnote-session",LAST_KEY="sidnote-last-user",LEGACY_KEY="mon-m2-data-v1",EMAIL_DOMAIN="sidnote.netlify.app";
+const cacheKey=uid=>"sidnote-u-"+uid;
+const ls={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},
+          set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},
+          del(k){try{localStorage.removeItem(k)}catch(e){}}};
+/* ---------- traductions (anglais) ---------- */
+const DICT={
+"+ Ajouter un exercice":"+ Add an exercise","+ Série":"+ Set","− Série":"− Set",", puis sur":", then",", puis sur ":", then ","3 petits points":"3 little dots",
+"Accès au stockage refusé : vérifie la configuration Supabase.":"Storage access denied: check the Supabase setup.",
+"Activer les rappels":"Turn on reminders","Activité":"Activity","Activité supprimée":"Activity deleted","Activés sur cet appareil":"On for this device",
+"Afficher":"Show","Ajouter":"Add","Ajouter au planning":"Add to planner","Ajouté au calendrier":"Added to calendar","Ajouté au planning":"Added to planner",
+"Annuler":"Cancel","Annulé":"Cancelled","Appli":"App","Application":"App","Appuie sur":"Tap","Arrêter":"Stop","Arrêté":"Stopped",
+"Astuce : pose la feuille à plat, bien éclairée, et cadre-la au plus près.":"Tip: lay the sheet flat in good light and frame it closely.",
+"Aucun horaire relié.":"No timetable linked.","Aucune séance pour l'instant. Crée ta première séance ci-dessus.":"No workouts yet. Create your first one above.",
+"Aujourd'hui":"Today","Bienvenue sur Sid'note":"Welcome to Sid'note","Bienvenue sur Sid'note !":"Welcome to Sid'note!",
+"C'est déjà ton pseudo":"That's already your username","C'est parti":"Let's go","Catégorie":"Category","Catégorie créée":"Category created",
+"Catégorie supprimée, ses tâches sont gardées":"Category deleted, its tasks were kept",
+"Ce document n'a pas encore été envoyé en ligne : ouvre-le sur l'appareil où tu l'as ajouté.":"This document hasn't been uploaded yet: open it on the device where you added it.",
+"Ce fichier n'est pas une sauvegarde Sid'note":"This file isn't a Sid'note backup",
+"Ce lien Spotify n'est pas reconnu. Copie le lien depuis Spotify > Partager.":"This Spotify link isn't recognized. Copy the link from Spotify > Share.",
+"Ce mois-ci":"This month","Ce navigateur ne gère pas les notifications.":"This browser doesn't support notifications.","Ce type existe déjà":"This type already exists",
+"Cette adresse e-mail n'est pas valide.":"This e-mail address isn't valid.","Cette catégorie existe déjà":"This category already exists",
+"Choisir des photos":"Choose photos","Choisis combien de temps tu veux travailler. Les sessions et les pauses s'enchaînent toutes seules.":"Choose how long you want to work. Sessions and breaks follow each other automatically.",
+"Choisis un pseudo.":"Choose a username.","Choisis une date":"Pick a date","Choisis au moins 5 secondes":"Choose at least 5 seconds","Choix":"Choice","Chrono":"Stopwatch","Chrono ou minuteur":"Stopwatch or timer",
+"Colle ici une séance copiée depuis Sid'note par un proche.":"Paste a workout copied from Sid'note by someone close to you.",
+"Colle un lien Spotify (playlist, album…)":"Paste a Spotify link (playlist, album…)","Colle un lien qui commence par https://":"Paste a link starting with https://",
+"Comment installer Sid'note sur iPhone ?":"How to install Sid'note on iPhone?","Compte":"Account","Compte jusqu'à ce que tu l'arrêtes.":"Counts up until you stop it.",
+"Compte sans e-mail (ancien système)":"Account without e-mail (old system)","Compte test":"Test account","Confirme le mot de passe":"Confirm password",
+"Confirmer la suppression":"Confirm deletion","Confirmer ?":"Confirm?","Connecte-toi pour retrouver tes tâches sur tous tes appareils.":"Sign in to find your tasks on all your devices.",
+"Connecté en tant que":"Signed in as","Connexion…":"Signing in…",
+"Connecté à Spotify dans ce navigateur, tu écoutes les titres en entier. Sinon, Spotify ne joue que des extraits de 30 secondes : tu peux alors lancer ta musique dans l'app Spotify, le chrono continue ici.":"Signed in to Spotify in this browser, you hear full tracks. Otherwise Spotify only plays 30-second previews: you can play your music in the Spotify app and the timer keeps running here.",
+"Copier la séance":"Copy workout","Couleur":"Color","Création…":"Creating…","Crée tes séances, note tes charges et tes répétitions série par série.":"Create your workouts, log weights and reps set by set.",
+"Créer":"Create","Créer mon compte":"Create my account","Créer un compte":"Create an account","Dans Safari, appuie sur les":"In Safari, tap the",
+"Date":"Date","Date confirmée":"Date confirmed","Date supprimée":"Date deleted","Dates du planning terminées":"Planner dates done","Dates encore à confirmer":"Dates still to confirm",
+"Docs":"Docs","Document":"Document","Document ajouté":"Document added","Document supprimé":"Document deleted","Document trop lourd pour le stockage en ligne.":"Document too large for online storage.",
+"Document trop lourd (50 Mo maximum)":"Document too large (50 MB max)","Documents":"Documents","Durée totale":"Total duration","Début":"Start","Démarrer":"Start","Déplacer":"Move",
+"Désactiver":"Turn off","Désactivés sur cet appareil.":"Off on this device.","E-mail":"E-mail","E-mail ou mot de passe incorrect.":"Wrong e-mail or password.",
+"Effort":"Work","En cours":"Running","En pause":"Paused","En savoir plus":"More","En suspens":"On hold","Enregistrement impossible sur cet appareil":"Can't save on this device",
+"Enregistrer":"Save","Enregistrer le PDF":"Save PDF","Espace insuffisant sur cet appareil":"Not enough space on this device","Ex. Sport":"E.g. Sport",
+"Exporter une sauvegarde":"Export a backup","Fermer":"Close","Fin (optionnel)":"End (optional)","Fractionné":"Intervals","Fractionné terminé, bravo !":"Intervals done, well done!",
+"Garde au moins un onglet":"Keep at least one tab",
+"Garde l'app ouverte à l'écran pour entendre le signal entre deux sessions. Si tu la quittes, le chrono continue et se remet à jour à ton retour.":"Keep the app on screen to hear the signal between sessions. If you leave, the timer keeps going and catches up when you're back.",
+"Heure de début":"Start time","Heure de fin":"End time","Heures (optionnel)":"Times (optional)","Horaire de cours (iCal)":"Class timetable (iCal)","Horaire retiré":"Timetable removed",
+"Hors connexion · tes modifications seront envoyées plus tard":"Offline · your changes will be sent later","Image":"Image","Importer":"Import",
+"Installe Sid'note sur ton iPhone pour l'ouvrir comme une vraie app, en plein écran.":"Install Sid'note on your iPhone to open it like a real app, full screen.",
+"Installer sur iPhone":"Install on iPhone","Journée":"Day","L'app n'est pas encore reliée à son serveur.":"The app isn't connected to its server yet.",
+"L'heure de fin doit être après l'heure de début":"The end time must be after the start time","L'icône":"The","La confirmation par e-mail est activée sur le serveur.":"E-mail confirmation is turned on on the server.",
+"La création de comptes est désactivée pour le moment.":"Account creation is disabled for now.","La fonction « horaire » n'est pas encore installée sur Supabase.":"The “horaire” function isn't installed on Supabase yet.",
+"La page d'accueil est celle qui s'ouvre quand tu lances Sid'note.":"The home page is the one that opens when you launch Sid'note.","Langue":"Language",
+"Le mot de passe doit faire au moins 6 caractères":"The password must be at least 6 characters","Le mot de passe doit faire au moins 6 caractères.":"The password must be at least 6 characters.",
+"Le stockage en ligne n'est pas encore activé : tes documents restent sur cet appareil.":"Online storage isn't set up yet: your documents stay on this device.",
+"Le titre ne peut pas être vide":"The title can't be empty","Les deux mots de passe ne sont pas identiques.":"The two passwords don't match.",
+"Les étapes pour installer Sid'note sur ton écran d'accueil.":"The steps to install Sid'note on your home screen.","Lien Spotify":"Spotify link",
+"Maintenir et glisser pour déplacer":"Hold and drag to move","Masquer":"Hide","Minutes":"Minutes","Minuteur":"Timer","Mise à jour de l'horaire…":"Updating timetable…",
+"Mise à jour impossible":"Update failed","Modifier":"Edit","Modifier l'activité":"Edit activity","Modifier la tâche":"Edit task","Modifié":"Saved",
+"Modifs non envoyées : déconnecter quand même ?":"Unsent changes: sign out anyway?","Moins 15 secondes":"Minus 15 seconds","Moins de pause":"Shorter break","Moins de temps":"Less time",
+"Moins de travail":"Less work","Mois précédent":"Previous month","Mois suivant":"Next month","Mot de passe":"Password","Mot de passe (6 caractères minimum)":"Password (6 characters minimum)",
+"Muscu":"Gym","Musculation":"Workout","Musique":"Music","Musique mise à jour":"Music updated","Mémoire":"Thesis","Nom de la catégorie":"Category name",
+"Nom de la catégorie, ex. Déménagement":"Category name, e.g. Moving house","Nom de la séance":"Workout name","Nom de la séance, ex. Push":"Workout name, e.g. Push",
+"Nom de l'exercice":"Exercise name","Nom du document":"Document name","Notification de test envoyée":"Test notification sent",
+"Notifications bloquées. Autorise-les dans Réglages > Notifications > Sid'note.":"Notifications blocked. Allow them in Settings > Notifications > Sid'note.",
+"Notifications refusées":"Notifications denied","Nouveau pseudo":"New username","Nouvelle tâche":"New task","Nouvelle tâche…":"New task…","Nouvelle tâche dans":"New task in",
+"Nouveau type, ex. Examen":"New type, e.g. Exam","Nouveau nom":"New name",
+"OK":"OK","Onglet affiché":"Tab shown","Onglet masqué":"Tab hidden","Onglets affichés":"Visible tabs","Ouvrir dans Spotify ↗":"Open in Spotify ↗",
+"Page d'accueil":"Home page","Page d'accueil enregistrée":"Home page saved","Partager":"Share","Partager ou enregistrer":"Share or save","Renommer":"Rename",
+"Pas de connexion : l'horaire sera mis à jour plus tard.":"No connection: the timetable will update later.","Pas de connexion : le document sera envoyé plus tard.":"No connection: the document will be uploaded later.",
+"Pas de connexion internet":"No internet connection","Pas de connexion internet. Réessaie quand tu es connecté.":"No internet connection. Try again when you're online.",
+"Pas encore mis à jour.":"Not updated yet.","Passer":"Skip","Passer à l'e-mail":"Switch to e-mail","Passer à la connexion par e-mail":"Switch to e-mail sign-in",
+"Pause":"Break","Planning":"Planner","Playlist par défaut : Deep Focus":"Default playlist: Deep Focus","Plus 15 secondes":"Plus 15 seconds","Plus d'options":"More options",
+"Plus de pause":"Longer break","Plus de temps":"More time","Plus de travail":"More work","Pomodoro":"Pomodoro",
+"Pour activer les rappels, ouvre Sid'note depuis l'icône de ton écran d'accueil.":"To turn on reminders, open Sid'note from its home-screen icon.",
+"Pour les étudiants : colle le lien iCal de ton horaire (par exemple celui de l'UMons). Tes cours s'affichent dans le calendrier et se mettent à jour tout seuls.":"For students: paste your timetable's iCal link (for example the UMons one). Your classes show up in the calendar and update by themselves.",
+"Prochaines échéances":"Coming up","Programme":"Schedule","Préférences":"Preferences","Pseudo":"Username","Pseudo modifié":"Username changed",
+"Qu'as-tu de prévu ?":"What's planned?","Que fais-tu ce jour-là ?":"What are you doing that day?",
+"Range tes PDF et scanne tes documents. Ils te suivent sur tous tes appareils.":"Store your PDFs and scan documents. They follow you on all your devices.",
+"Range tes PDF, scanne des feuilles avec l'appareil photo et retrouve-les en un instant.":"Store your PDFs, scan sheets with the camera and find them in an instant.",
+"Rappels":"Reminders","Rappels activés":"Reminders on","Rappels désactivés":"Reminders off","Rechercher un document":"Search documents","Rechercher une activité":"Search activities",
+"Rechercher une tâche":"Search tasks","Remettre à 0":"Reset","Rendu":"Look","Renommer le document":"Rename document","Repos":"Rest","Repos terminé, à toi de jouer !":"Rest over, your turn!",
+"Repos en cours…":"Resting…","Reprends ou remets à zéro.":"Resume or reset.","Reprendre":"Resume","Restaurer une sauvegarde":"Restore a backup","Rester connecté":"Stay signed in","Retirer":"Remove",
+"Revoir la présentation":"Replay the introduction","Rien à venir":"Nothing coming up","Rythme":"Rhythm","Réaliser":"Done","Réalisées":"Completed","réalisées":"done",
+"Récupérer les données déjà présentes sur ce téléphone":"Bring over the data already on this phone","Réglages":"Settings","Résultats":"Results","Sauvegarde":"Backup",
+"Sauvegarde restaurée":"Backup restored","Scan enregistré dans Documents":"Scan saved to Documents","Scanner un document":"Scan a document","◎ Scanner":"◎ Scan",
+"Se connecter":"Sign in","Se déconnecter":"Sign out","Secondes":"Seconds","Session arrêtée":"Session stopped","Sid'note · une app":"Sid'note · an app by",
+"Sid'note · version 18 · une app":"Sid'note · version 18 · an app by","Simple":"Simple","Statistiques":"Statistics","Supprimer":"Delete","Supprimer ?":"Delete?","Supprimer la séance":"Delete workout",
+"Supprimer l'exercice":"Delete exercise","Supprimer la catégorie":"Delete category","Supprimé":"Deleted","Sur cet appareil seulement":"On this device only","Sur l'écran d'accueil":"Add to Home Screen",
+"Sur les 7 derniers jours":"Over the last 7 days","Synchronisé":"Synced","Synchronisation…":"Syncing…","Séance copiée":"Workout copied","Séance copiée : colle-la dans un message":"Workout copied: paste it in a message",
+"Séance créée":"Workout created","Séance remise à zéro":"Workout cleared","Séance supprimée":"Workout deleted","Séries":"Sets","Ta musique":"Your music",
+"Ta session a expiré, reconnecte-toi.":"Your session expired, sign in again.","Terminé":"Done",
+"Tes données sont enregistrées dans ton compte. Tu peux aussi garder une copie dans un fichier.":"Your data is saved in your account. You can also keep a copy in a file.",
+"Tes séances, tes charges et tes répétitions, avec chrono, tours et minuteur fractionné.":"Your workouts, weights and reps, with stopwatch, laps and interval timer.",
+"Tes tâches, rangées par catégories pour regrouper tout ce qu'il faut faire pour un projet.":"Your tasks, sorted into categories to group everything a project needs.",
+"Tester":"Test","Texte non reconnu. Colle une séance copiée depuis Sid'note.":"Text not recognized. Paste a workout copied from Sid'note.","Titre":"Title",
+"Ton calendrier : examens, rendez-vous, événements. Tu peux aussi y relier ton horaire de cours.":"Your calendar: exams, appointments, events. You can also link your class timetable.",
+"Ton compte a été créé avec un pseudo. Ajoute ton e-mail : tes données sont transférées et tu te connecteras désormais avec cet e-mail.":"Your account was created with a username. Add your e-mail: your data is transferred and you'll sign in with this e-mail from now on.",
+"Ton pseudo s'affiche dans l'app. Pour te connecter, tu utilises ton e-mail.":"Your username is shown in the app. To sign in, you use your e-mail.",
+"Touche la pastille pour changer la couleur.":"Tap the dot to change the color.","Touche un jour pour voir sa journée en détail.":"Tap a day to see it in detail.",
+"Toucher encore pour confirmer":"Tap again to confirm","Toucher pour confirmer la date":"Tap to confirm the date","Tour":"Lap","Tout est remis à zéro à chaque connexion.":"Everything resets at each sign-in.",
+"Tout est réalisé. Bravo !":"Everything's done. Well done!","Toutes":"All","Toutes les dates":"All dates","Travail":"Work","Travail concentré aujourd'hui":"Focused work today",
+"Travaille concentré : sessions et pauses s'enchaînent toutes seules, avec ta musique.":"Stay focused: sessions and breaks follow each other, with your music.",
+"Trop d'essais. Attends une minute et réessaie.":"Too many attempts. Wait a minute and try again.",
+"Tu as créé ton compte avec un pseudo, avant l'arrivée de l'e-mail ? Tape ton pseudo à la place de l'e-mail pour te connecter.":"Created your account with a username, before e-mail sign-in existed? Type your username instead of the e-mail to sign in.",
+"Tu es dans le navigateur. Suis les étapes ci-dessous pour installer l'app.":"You're in the browser. Follow the steps below to install the app.",
+"Tu utilises déjà Sid'note comme application.":"You're already using Sid'note as an app.","Type":"Type","Type ajouté":"Type added","Type de minuteur":"Timer type",
+"Types d'événement":"Event types","Tâche mise en suspens":"Task put on hold","Tâche reprise":"Task resumed","Tâche réalisée":"Task done","Tâche supprimée":"Task deleted",
+"Tâches réalisées":"Tasks done","Un compte existe déjà avec cet e-mail. Connecte-toi.":"An account already exists with this e-mail. Sign in.",
+"Une notification la veille de chaque date du planning.":"A notification the day before each planner date.",
+"Utilise Safari : les autres navigateurs ne permettent pas toujours l'installation. Sur Android, ouvre le site dans Chrome, touche ⋮ puis « Ajouter à l'écran d'accueil ».":"Use Safari: other browsers don't always allow installing. On Android, open the site in Chrome, tap ⋮ then “Add to Home screen”.",
+"Vider reps et kg":"Clear reps and kg","Voici ce que Sid'note sait faire. Garde seulement ce qui te sert : tu pourras tout réafficher plus tard dans Réglages.":"Here's what Sid'note can do. Keep only what you need: you can show everything again later in Settings.",
+"apparaît sur ton écran d'accueil : ouvre l'app depuis cette icône.":"icon appears on your home screen: open the app from it.","en bas à droite.":"at the bottom right.",
+"fin prévue":"ends at","restant":"left","toujours affiché":"always shown","travail fait":"work done","À faire":"To do","Écris ton e-mail.":"Enter your e-mail.",
+"Écris une adresse e-mail valide":"Enter a valid e-mail address","Écris une adresse e-mail valide.":"Enter a valid e-mail address.","Événement":"Event","Perso":"Personal","Cours":"Classes","Stage":"Internship",
+"à confirmer":"to confirm","à faire":"to do","en cours":"in progress","fait":"done","En retard":"Late","‹ Documents":"‹ Documents","↻ Actualiser":"↻ Refresh","⇩ Importer une séance reçue":"⇩ Import a received workout",
+"⇪ Importer":"⇪ Import","◎ Prendre une photo":"◎ Take a photo","◎ Page suivante":"◎ Next page","Sans catégorie":"No category","Aucune tâche pour l'instant":"No tasks yet",
+"Semaine du":"Week of","au":"to","Dernière page ouverte":"Last page opened","pages":"pages","page":"page","documents":"documents","document":"document","Envoi…":"Uploading…",
+"Aucun document ne correspond.":"No document matches.","Aucun document pour l'instant. Importe un PDF ou scanne une feuille.":"No documents yet. Import a PDF or scan a sheet.",
+"Ouverture…":"Opening…","Si le document ne s'affiche pas, touche « Partager » pour l'ouvrir avec une autre app.":"If the document doesn't show, tap “Share” to open it with another app.",
+"format non pris en charge":"format not supported","import impossible":"import failed","documents ajoutés":"documents added","Photo illisible":"Unreadable photo",
+"Aucune tâche à faire ne correspond.":"No task matches.","Aucune tâche dans cette catégorie. Ajoute-en une ci-dessus.":"No tasks in this category. Add one above.","Aucune tâche. Ajoute-en une ci-dessus.":"No tasks. Add one above.",
+"Rien de prévu ce jour-là.":"Nothing planned that day.","+ Ajouter une activité ce jour":"+ Add an activity on this day","Jusqu'au (optionnel)":"Until (optional)",
+"Aucune activité ne correspond.":"No activity matches.","Rien dans cette catégorie.":"Nothing in this category.","Cours UMons":"UMons classes","Remettre à faire":"Mark as to do",
+"Mettre en suspens":"Put on hold","Jour précédent":"Previous day","Jour suivant":"Next day","Au travail !":"Back to work!","Lecteur Spotify":"Spotify player",
+"Passer à l'e-mail":"Switch to e-mail","Transfert…":"Transferring…","Pas de connexion internet ":"No internet connection","Charge":"Weight","Pivoter":"Rotate","Retirer ":"Remove",
+"Nouvelle tâche ":"New task","Kg":"Kg","Ouvrir":"Open","Remettre":"Reset","Tâches":"Tasks","Supprimer ":"Delete","Le document":"The document","Horaire":"Timetable",
+"Effort ":"Work","Repos ":"Rest","Séries ":"Sets","Garder":"Keep","Langue ":"Language","Mot de passe ":"Password","Activés":"On","Désactivés":"Off","Prochaine":"Next",
+"Une app":"An app","Séance":"Workout","Séances":"Workouts","Exercice":"Exercise","Chargement…":"Loading…","Mode test":"Test mode",
+"Choisis au moins 5 secondes ":"Choose at least 5 seconds"
+};
+const PATS=[
+ [/^Salut (.+) !$/,"Hi $1!"],
+ [/^Tour (\d+)$/,"Lap $1"],
+ [/^Ce tour : (.+)$/,"This lap: $1"],
+ [/^(\d+) min écoulées?$/,"$1 min elapsed"],
+ [/^Effort (\d+)\/(\d+)$/,"Work $1/$2"],
+ [/^Repos · puis série (\d+)$/,"Rest · then set $1"],
+ [/^Repos (\d+:\d+)$/,"Rest $1"],
+ [/^Série (\d+) : go !$/,"Set $1: go!"],
+ [/^(\d+) séries? · durée totale (.+)$/,(n,d)=>`${n} set${n>1?"s":""} · total ${d}`],
+ [/^Reste (.+) au total$/,"$1 left in total"],
+ [/^En suspens \((\d+)\)$/,"On hold ($1)"],
+ [/^Réalisées \((\d+)\)$/,"Completed ($1)"],
+ [/^Série (\d+)$/,"Set $1"],
+ [/^Charge série (\d+)$/,"Weight set $1"],
+ [/^Répétitions série (\d+)$/,"Reps set $1"],
+ [/^(\d+) exercices? · (\d+) séries$/,(a,b)=>`${a} exercise${a>1?"s":""} · ${b} sets`],
+ [/^Séance « (.+) » importée$/,"Workout “$1” imported"],
+ [/^Type « (.+) » supprimé$/,"Type “$1” deleted"],
+ [/^Changer la couleur de (.+)$/,"Change the color of $1"],
+ [/^Supprimer (.+)$/,"Delete $1"],
+ [/^Garder (.+)$/,"Keep $1"],
+ [/^(\d+) sessions? de travail et (\d+) pauses? · (.+) de travail · si tu démarres maintenant, fin à (.+)$/,(a,b,c,d)=>`${a} work session${a>1?"s":""} and ${b} break${b>1?"s":""} · ${c} of work · if you start now, ends at ${d}`],
+ [/^Session (\d+) sur (\d+)$/,"Session $1 of $2"],
+ [/^Prochaine : session (\d+) sur (\d+)$/,"Next: session $1 of $2"],
+ [/^Pause de (.+)$/,"$1 break"],
+ [/^Bravo ! (.+) de travail terminées$/,"Well done! $1 of work completed"],
+ [/^(\d+) cours(?: · (\d+) annulés?)? · mis à jour à (.+)$/,(n,c,h)=>`${n} class${n>1?"es":""}${c?` · ${c} cancelled`:""} · updated at ${h}`],
+ [/^Horaire à jour : (\d+) cours$/,"Timetable updated: $1 classes"],
+ [/^Annulé · /,"Cancelled · "],
+ [/^Impossible de continuer : (.*)$/,"Can't continue: $1"],
+ [/^Modification impossible : (.*)$/,"Couldn't save: $1"],
+ [/^Activation impossible : (.*)$/,"Couldn't turn on: $1"],
+ [/^Test impossible : (.*)$/,"Test failed: $1"],
+ [/^Envoi impossible : (.*)$/,"Upload failed: $1"],
+ [/ · dans (\d+) j$/," · in $1 d"],[/ · demain$/," · tomorrow"],[/ · aujourd'hui$/," · today"],[/ · en cours$/," · ongoing"],
+ [/élément\(s\)/,"item(s)"],
+ [/^(\d+)\/(\d+) réalisées$/,"$1/$2 done"],
+ [/^Nouvelle tâche dans « (.+) »…$/,"New task in “$1”…"],
+ [/^(\d+) documents? · (.+)$/,(n,s)=>`${n} document${n>1?"s":""} · ${s}`],
+ [/^(\d+) documents ajoutés$/,"$1 documents added"],
+ [/^Enregistrer le PDF \((\d+) pages?\)$/,(n)=>`Save PDF (${n} page${n>1?"s":""})`],
+ [/^Erreur (\d+)$/,"Error $1"],
+ [/^Le serveur de l'horaire a répondu (\d+)$/,"The timetable server answered $1"],
+ [/^Semaine du (.+) au (.+)$/,"Week of $1 to $2"],
+];
+let LANG=null; // fixé plus bas, une fois les données chargées
+const L=x=>LANG==="en"&&DICT[x]!==undefined?DICT[x]:x;
+const defaultUI=()=>({view:"plan",filter:"Toutes",doneOpen:false,pausedOpen:true});
+const blank=()=>({todos:[],tasks:[],courses:[],types:[{name:"Événement",c:"--c-event"},{name:"Perso",c:"--c-perso"}],ui:defaultUI()});
+let session=ls.get(SESSION_KEY);
+let cache=session?ls.get(cacheKey(session.user.id)):null;
+if(session&&!cache){session=null;ls.del(SESSION_KEY)}
+const TEST_EMAILS=["test@sidcorp.app"]; // compte test : remis à zéro à chaque connexion
+const ssGet=k=>{try{return sessionStorage.getItem(k)}catch(e){return null}},ssSet=(k,v)=>{try{sessionStorage.setItem(k,v)}catch(e){}};
+// « Rester connecté » décoché : la session s'arrête quand l'app est fermée
+const ephExpired=!!(session&&session.eph&&!ssGet("sidnote-alive"));
+if(session&&!ephExpired)ssSet("sidnote-alive","1");
+let data=cache?cache.data:blank();
+if(cache&&!("base" in cache)){cache.base="";cache.dirty=true;ls.set(cacheKey(session.user.id),cache)}
+data.ui=data.ui||defaultUI();
+if(!Array.isArray(data.types))data.types=Object.entries(CATS).map(([name,c])=>({name,c}));
+if(!Array.isArray(data.courses))data.courses=[];
+if(!Array.isArray(data.todos))data.todos=[];
+if(!Array.isArray(data.tasks))data.tasks=[];
+if(!Array.isArray(data.todoCats))data.todoCats=[];
+if(!Array.isArray(data.docs))data.docs=[];
+LANG=(data.prefs&&data.prefs.lang)||ls.get("sidnote-lang")||"fr";if(session)ls.set("sidnote-lang",LANG);
+const TABS=[["plan","Planning"],["todo","À faire"],["pomo","Pomodoro"],["muscu","Musculation"],["docs","Documents"],["app","Appli"]];
+data.prefs=data.prefs||{};data.prefs.tabs=data.prefs.tabs||{plan:true,todo:true,pomo:true,app:true};
+
+function save(){
+  if(!session)return;
+  cache={data,rev:new Date().toISOString(),base:cache&&cache.base,dirty:true};if(pushing)pendingEdit=true;
+  if(!ls.set(cacheKey(session.user.id),cache))toast("Enregistrement impossible sur cet appareil");
+  schedulePush();
+}
+function saveUI(){if(session&&cache){cache.data=data;ls.set(cacheKey(session.user.id),cache)}} // préférences d'affichage : pas de synchro
+const forServer=d=>{const c={...d};delete c.ui;return c};
+async function api(path,{method="GET",body,token,headers={}}={}){
+  const r=await fetch(SUPABASE_URL+path,{method,headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{}),...headers},body:body?JSON.stringify(body):undefined});
+  const txt=await r.text();let j=null;try{j=txt?JSON.parse(txt):null}catch(e){}
+  if(!r.ok){const err=new Error((j&&(j.msg||j.message||j.error_description||j.error))||("Erreur "+r.status));err.status=r.status;err.code=j&&(j.error_code||j.code);throw err}
+  return j;
+}
+function storeSession(j,name){
+  session={access_token:j.access_token,refresh_token:j.refresh_token,
+    expires_at:j.expires_at||Math.floor(Date.now()/1000)+(j.expires_in||3600),user:{id:j.user.id},name,
+    email:(j.user&&j.user.email)||(session&&session.email)||"",eph:!!(session&&session.eph)};
+  ls.set(SESSION_KEY,session);
+}
+async function token(){
+  if(session.expires_at-60>Date.now()/1000)return session.access_token;
+  try{const j=await api("/auth/v1/token?grant_type=refresh_token",{method:"POST",body:{refresh_token:session.refresh_token}});
+    storeSession(j,session.name);return session.access_token}
+  catch(e){if(e.status===400||e.status===401)endSession("Ta session a expiré, reconnecte-toi.",true);throw e}
+}
+let pushTimer=null,pushing=false;
+function tomb(id){if(!id)return;data.del=data.del||{};data.del[id]=Date.now()}
+// fusionne les données d'un autre appareil avec celles de cet appareil, sans rien perdre
+function mergeData(loc,rem){
+  loc=loc||{};rem=rem||{};
+  const now=Date.now(),del={};
+  for(const src of [rem.del||{},loc.del||{}])for(const k in src)if(now-src[k]<90*864e5)del[k]=Math.max(del[k]||0,src[k]);
+  const arr=(a,b)=>{a=Array.isArray(a)?a:[];b=Array.isArray(b)?b:[];const ids=new Set(a.map(x=>x&&x.id));
+    return [...a.filter(x=>x&&!del[x.id]),...b.filter(x=>x&&!ids.has(x.id)&&!del[x.id])]};
+  const out={...rem,...loc,del};
+  out.todos=arr(loc.todos,rem.todos);out.tasks=arr(loc.tasks,rem.tasks);
+  out.todoCats=arr(loc.todoCats,rem.todoCats);out.docs=arr(loc.docs,rem.docs);
+  // un document envoyé sur le serveur depuis un autre appareil reste marqué « en ligne »
+  const remDocs=new Map((rem.docs||[]).map(d=>[d&&d.id,d]));out.docs=out.docs.map(d=>{const r=remDocs.get(d.id);return r&&r.up&&!d.up?{...d,up:true,path:r.path}:d});
+  const tn=new Set((loc.types||[]).map(t=>norm(t.name)));
+  out.types=[...(loc.types||[]),...(rem.types||[]).filter(t=>!tn.has(norm(t.name)))];
+  out.muscu={...(rem.muscu||{}),...(loc.muscu||{}),sessions:arr(loc.muscu&&loc.muscu.sessions,rem.muscu&&rem.muscu.sessions)};
+  out.prefs={...(rem.prefs||{}),...(loc.prefs||{})};
+  return out;
+}
+function schedulePush(){clearTimeout(pushTimer);pushTimer=setTimeout(push,1200);setSync()}
+async function push(){
+  if(!session||!CONFIGURED||!cache||!cache.dirty||pushing)return;
+  pushing=true;
+  try{
+    const t=await token();
+    // si un autre appareil a enregistré entre-temps, on fusionne d'abord
+    const row=await fetchRow(session.user.id,t);
+    if(row&&row.updated_at!==(cache.base||"")){const m=mergeData(data,row.data);
+      if(JSON.stringify(forServer(m))!==JSON.stringify(forServer(data)))applyRemote(m);else data.del=m.del}
+    const rev=new Date().toISOString();
+    await api("/rest/v1/user_data?on_conflict=user_id",{method:"POST",token:t,
+      headers:{Prefer:"resolution=merge-duplicates,return=minimal"},
+      body:{user_id:session.user.id,data:forServer(data),updated_at:rev}});
+    cache={data,rev,base:rev,dirty:pendingEdit};pendingEdit=false;ls.set(cacheKey(session.user.id),cache);
+  }catch(e){}
+  finally{pushing=false;setSync();if(cache&&cache.dirty)schedulePush()}
+}
+let pendingEdit=false;
+async function fetchRow(uid,t){
+  const rows=await api(`/rest/v1/user_data?select=data,updated_at&user_id=eq.${uid}`,{token:t});
+  return rows&&rows[0]||null;
+}
+async function pull(){
+  if(!session||!CONFIGURED||pushing)return;
+  try{
+    if(cache.dirty){push();return}
+    const row=await fetchRow(session.user.id,await token());
+    if(!row){cache.dirty=true;push();return}
+    if(row.updated_at!==cache.base){applyRemote(row.data);cache={data,rev:row.updated_at,base:row.updated_at,dirty:false};ls.set(cacheKey(session.user.id),cache)}
+  }catch(e){}
+  setSync();
+}
+const isTyping=()=>{const a=document.activeElement;return !!(a&&(a.tagName==="INPUT"||a.tagName==="TEXTAREA")&&a.closest("main"))};
+let renderWaiting=false;
+function renderAllSafe(){
+  if(!isTyping()){renderAll();applyTabs();return}
+  if(renderWaiting)return;renderWaiting=true;
+  const h=()=>setTimeout(()=>{if(isTyping())return;document.removeEventListener("focusout",h);renderWaiting=false;renderAll();applyTabs()},120);
+  document.addEventListener("focusout",h);
+}
+function applyRemote(d){
+  const prevIcal=data.prefs&&data.prefs.ical;
+  for(const k of Object.keys(data))if(k!=="ui"&&k!=="pomo")delete data[k];
+  for(const k of Object.keys(d))if(k!=="ui"&&k!=="pomo")data[k]=d[k];
+  if(d.pomo&&data.pomo&&d.pomo!==data.pomo){const np=JSON.parse(JSON.stringify(d.pomo));for(const k of Object.keys(data.pomo))delete data.pomo[k];Object.assign(data.pomo,np)}
+  ["todos","tasks","courses","types","todoCats","docs"].forEach(k=>{if(!Array.isArray(data[k]))data[k]=[]});
+  data.prefs=data.prefs||{};data.prefs.tabs=data.prefs.tabs||{plan:true,todo:true,pomo:true,app:true};
+  data.muscu=data.muscu||{sessions:[]};if(!Array.isArray(data.muscu.sessions))data.muscu.sessions=[];
+  if((data.prefs.ical||null)!==(prevIcal||null)&&typeof icalFetch==="function"){icalEvents=[];icalAt=0;const u=$("icalUrl");if(u)u.value=data.prefs.ical||"";icalFetch(true)}
+  renderAllSafe();
+}
+function setSync(){
+  const el=document.getElementById("syncState");if(!el||!session)return;
+  const wait=cache&&cache.dirty;
+  el.innerHTML=`<span class="syncdot ${wait?"wait":""}"></span>`+(!navigator.onLine?"Hors connexion · tes modifications seront envoyées plus tard":wait?"Synchronisation…":"Synchronisé");
+}
+function endSession(msg,keepCache){
+  if(session&&!keepCache){ls.del(cacheKey(session.user.id));ls.del("sidnote-ical-"+session.user.id);try{idbClearUser(session.user.id)}catch(e){}}
+  ls.del(SESSION_KEY);
+  try{if(msg)sessionStorage.setItem("sidnote-msg",msg)}catch(e){}
+  location.reload();
+}
+const norm=x=>String(x||"").trim().toLowerCase();
+const typeOf=n=>data.types.find(t=>norm(t.name)===norm(n));
+const tc=n=>(typeOf(n)||{}).c||"--muted";
+function ensureType(n){n=String(n||"").trim().replace(/\s+/g," ");if(!n)return "";let t=typeOf(n);
+  if(!t){const used=data.types.map(x=>x.c);t={name:n.charAt(0).toUpperCase()+n.slice(1),c:PALETTE.find(c=>!used.includes(c))||PALETTE[data.types.length%PALETTE.length]};data.types.push(t)}
+  return t.name}
+function fillTypeList(){$("typeList").innerHTML=data.types.map(t=>`<option value="${esc(t.name)}"></option>`).join("")}
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+
+/* ---------- utilitaires ---------- */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const parse=d=>{const[y,m,x]=d.split("-").map(Number);return new Date(y,m-1,x)};
+const today=()=>{const t=new Date();return new Date(t.getFullYear(),t.getMonth(),t.getDate())};
+const fmt=d=>{const x=parse(d);return x.getDate()+" "+MO[x.getMonth()]};
+const daysTo=d=>Math.round((parse(d)-today())/864e5);
+function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2200)}
+const CHECK='<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function armDelete(btn,fn){
+  if(btn.classList.contains("armed")){fn();return}
+  btn.classList.add("armed");btn.textContent="Supprimer ?";
+  setTimeout(()=>{btn.classList.remove("armed");btn.textContent="×"},3000);
+}
+
+/* ---------- onglets ---------- */
+const visibleTabs=()=>[...TABS.filter(([k])=>data.prefs.tabs[k]!==false).map(([k])=>k),"more"];
+function show(v){
+  if(!visibleTabs().includes(v))v=visibleTabs()[0];
+  data.ui.view=v;saveUI();
+  document.querySelectorAll(".view").forEach(s=>s.hidden=s.id!=="v-"+v);
+  document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.v===v));
+  if(v==="more"){renderStats();renderTabsCard();renderHomeSel();if(session)renderNotif()}
+  if(v==="docs")renderDocs();
+  if(v==="pomo")renderSpotify();
+  window.scrollTo(0,0);
+}
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>show(t.dataset.v)));
+function applyTabs(){
+  const vis=visibleTabs();
+  document.querySelectorAll(".tab").forEach(t=>t.hidden=!vis.includes(t.dataset.v));
+  document.querySelector("nav .in").style.gridTemplateColumns=`repeat(${vis.length},1fr)`;
+  document.querySelector("nav").classList.toggle("many",vis.length>6);
+  if(!vis.includes(data.ui.view))show(vis[0]);
+}
+function renderTabsCard(){
+  $("tabsCard").innerHTML=TABS.map(([k,l])=>`<label class="row" style="cursor:pointer"><span class="grow">${l}</span><input type="checkbox" class="switch" data-tabpref="${k}" ${data.prefs.tabs[k]!==false?"checked":""}></label>`).join("")+
+    `<div class="row"><span class="grow">Réglages</span><span class="small muted">toujours affiché</span></div>`;
+}
+$("tabsCard").addEventListener("change",e=>{const c=e.target.closest("[data-tabpref]");if(!c)return;
+  data.prefs.tabs[c.dataset.tabpref]=c.checked;save();applyTabs();renderHomeSel();toast(c.checked?"Onglet affiché":"Onglet masqué")});
+
+/* ---------- À faire ---------- */
+let freshId=null,todoQ="";
+const PEN=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>`,PAUSE=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6v12M15 6v12"/></svg>`;
+const DOWL=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+const mlow=i=>LANG==="en"?MOL[i]:MOL[i].toLowerCase();
+const two=n=>String(n).padStart(2,"0");
+const GRIP=`<svg width="14" height="18" viewBox="0 0 14 18" aria-hidden="true" fill="currentColor"><circle cx="4" cy="4" r="1.6"/><circle cx="10" cy="4" r="1.6"/><circle cx="4" cy="9" r="1.6"/><circle cx="10" cy="9" r="1.6"/><circle cx="4" cy="14" r="1.6"/><circle cx="10" cy="14" r="1.6"/></svg>`;
+const TC=()=>data.todoCats||(data.todoCats=[]);
+const catOf=id=>TC().find(c=>c.id===id);
+function todoRow(t){
+  if(t.done){const d=new Date(t.doneAt||t.createdAt);
+    return `<div class="row done ${t.id===freshId?"fresh":""}"><span class="donetime">${two(d.getHours())}:${two(d.getMinutes())}</span>
+    <button class="check" data-tg="${t.id}" aria-label="Remettre à faire">${CHECK}</button>
+    <div class="grow ttl">${esc(t.title)}${catLbl(t)}</div>
+    <button class="pen" data-edit="todo:${t.id}" aria-label="Modifier">${PEN}</button>
+    <button class="x" data-del="${t.id}" aria-label="Supprimer">×</button></div>`}
+  if(t.paused)return `<div class="row paused ${t.id===freshId?"fresh":""}">
+    <div class="grow ttl">${esc(t.title)}${catLbl(t)}</div>
+    <button class="resume" data-resume="${t.id}">Reprendre</button>
+    <button class="pen" data-edit="todo:${t.id}" aria-label="Modifier">${PEN}</button>
+    <button class="x" data-del="${t.id}" aria-label="Supprimer">×</button></div>`;
+  return `<div class="row ${t.id===freshId?"fresh":""}" data-tid="${t.id}">
+    ${todoQ?"":`<button class="grip" data-grip="1" aria-label="Déplacer" title="Maintenir et glisser pour déplacer">${GRIP}</button>`}
+    <button class="check" data-tg="${t.id}" aria-label="Réaliser">${""}</button>
+    <div class="grow ttl">${esc(t.title)}</div>
+    <button class="realise" data-tg="${t.id}">Réaliser</button>
+    <button class="pen" data-pause="${t.id}" aria-label="Mettre en suspens" title="Mettre en suspens">${PAUSE}</button>
+    <button class="pen" data-edit="todo:${t.id}" aria-label="Modifier">${PEN}</button>
+    <button class="x" data-del="${t.id}" aria-label="Supprimer">×</button></div>`;
+}
+// petite étiquette de catégorie (dans « Toutes » seulement)
+function catLbl(t){const c=t.cat&&catOf(t.cat);return c&&curCat()==="all"?` <span class="small muted">· ${esc(c.name)}</span>`:""}
+const mondayOf=d=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-((x.getDay()+6)%7));return x};
+function doneGroups(list){
+  // année > mois > semaine > jour, du plus récent au plus ancien
+  let h="",Y=null,M=null,W=null,D=null,open=false;
+  const close=()=>{if(open){h+="</div>";open=false}};
+  for(const t of list){
+    const d=new Date(t.doneAt||t.createdAt),y=d.getFullYear(),m=d.getMonth(),mon=mondayOf(d),w=iso(mon),dk=iso(d);
+    if(y!==Y){close();h+=`<div class="grp-y">${y}</div>`;Y=y;M=null}
+    if(m!==M){close();h+=`<div class="grp-m">${MOL[m]}</div>`;M=m;W=null}
+    if(w!==W){close();const sun=new Date(mon);sun.setDate(sun.getDate()+6);
+      h+=`<div class="grp-w">${L("Semaine du")} ${mon.getDate()}${mon.getMonth()!==sun.getMonth()?" "+MO[mon.getMonth()]:""} ${L("au")} ${sun.getDate()} ${MO[sun.getMonth()]}</div>`;W=w;D=null}
+    if(dk!==D){if(!open){h+='<div class="card" style="margin-bottom:8px">';open=true}h+=`<div class="grp-d">${DOWL[d.getDay()]} ${d.getDate()} ${mlow(m)}</div>`;D=dk}
+    h+=todoRow(t);
+  }
+  close();return h;
+}
+const curCat=()=>{const c=data.ui.todoCat||"all";return c==="all"||c==="none"||catOf(c)?c:"all"};
+const ordSort=(a,b)=>((typeof a.ord==="number"?a.ord:1e9)-(typeof b.ord==="number"?b.ord:1e9))||a.createdAt.localeCompare(b.createdAt);
+let catEditing=false,todoDragging=false,todoRenderPending=false;
+function renderTodos(){
+  if(todoDragging){todoRenderPending=true;return}
+  const q=norm(todoQ),match=t=>!q||fold(t.title).includes(fold(todoQ.trim()));
+  const cc=curCat(),inCat=t=>cc==="all"||(cc==="none"?!(t.cat&&catOf(t.cat)):t.cat===cc);
+  const all=data.todos.filter(inCat),cats=TC();
+  const open=all.filter(t=>!t.done&&!t.paused&&match(t)).sort(ordSort);
+  const paused=all.filter(t=>!t.done&&t.paused&&match(t)).sort((a,b)=>(a.pausedAt||"").localeCompare(b.pausedAt||""));
+  const done=all.filter(t=>t.done&&match(t)).sort((a,b)=>(b.doneAt||"").localeCompare(a.doneAt||""));
+  const doneOpen=q?true:!!data.ui.doneOpen,pausedOpen=q?true:data.ui.pausedOpen!==false;
+  // catégories
+  const openN=id=>data.todos.filter(t=>!t.done&&!t.paused&&(id==="none"?!(t.cat&&catOf(t.cat)):t.cat===id)).length;
+  $("todoCats").innerHTML=`<button class="pill" data-tcat="all" aria-pressed="${cc==="all"}">${L("Toutes")}</button>`+
+    cats.map(c=>`<button class="pill" data-tcat="${c.id}" aria-pressed="${cc===c.id}">${esc(c.name)} <span class="cnt">${openN(c.id)||""}</span></button>`).join("")+
+    `<button class="pill add" data-tcatnew="1">+ ${L("Catégorie")}</button>`;
+  const cat=catOf(cc);
+  $("catBar").hidden=!cat;
+  if(cat){const tot=data.todos.filter(t=>t.cat===cat.id&&!t.paused).length,dn=data.todos.filter(t=>t.cat===cat.id&&t.done).length;
+    $("catBar").innerHTML=catEditing?`<form id="catRename" style="display:flex;gap:8px;width:100%"><input id="catRenIn" value="${esc(cat.name)}" aria-label="Nouveau nom" autocomplete="off"><button class="btn" type="submit">OK</button></form>`
+      :`<div class="grow"><b>${esc(cat.name)}</b><div class="small muted">${tot?`${dn}/${tot} ${L("réalisées")}`:L("Aucune tâche pour l'instant")}</div></div>
+        <div class="cat-prog" style="width:70px"><i style="width:${tot?dn/tot*100:0}%"></i></div>
+        <button class="mini" data-catren="1">${L("Renommer")}</button><button class="x" data-catdel="1" aria-label="Supprimer la catégorie">×</button>`}
+  $("todoIn").placeholder=cat?`${L("Nouvelle tâche dans")} « ${cat.name} »…`:L("Nouvelle tâche…");
+  // liste à faire
+  const emptyMsg=`<div class="card"><div class="empty">${q?"Aucune tâche à faire ne correspond.":all.some(t=>t.done)?"Tout est réalisé. Bravo !":cat?"Aucune tâche dans cette catégorie. Ajoute-en une ci-dessus.":"Aucune tâche. Ajoute-en une ci-dessus."}</div></div>`;
+  if(cc==="all"&&cats.length&&open.length){
+    const groups=[...cats.map(c=>({c,items:open.filter(t=>t.cat===c.id)})),{c:null,items:open.filter(t=>!(t.cat&&catOf(t.cat)))}].filter(g=>g.items.length);
+    $("todoOpen").innerHTML=groups.map(g=>{
+      if(!g.c)return `<div class="cat-h"><h2>${L("Sans catégorie")}</h2></div><div class="card" data-group="none">${g.items.map(todoRow).join("")}</div>`;
+      const tot=data.todos.filter(t=>t.cat===g.c.id&&!t.paused).length,dn=data.todos.filter(t=>t.cat===g.c.id&&t.done).length;
+      return `<div class="cat-h"><h2><button class="back" data-tcat="${g.c.id}" style="padding:0;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit">${esc(g.c.name)} ›</button></h2><span class="small muted">${dn}/${tot}</span><div class="cat-prog"><i style="width:${tot?dn/tot*100:0}%"></i></div></div><div class="card" data-group="${g.c.id}">${g.items.map(todoRow).join("")}</div>`}).join("");
+  }else $("todoOpen").innerHTML=open.length?`<div class="card" data-group="${cc}">${open.map(todoRow).join("")}</div>`:emptyMsg;
+  $("foldPaused").hidden=!paused.length;
+  $("pausedTitle").textContent=`${L("En suspens")} (${paused.length})`;$("pausedArrow").textContent=L(pausedOpen?"Masquer":"Afficher");
+  $("todoPaused").innerHTML=pausedOpen?paused.map(todoRow).join(""):"";$("todoPaused").hidden=!pausedOpen||!paused.length;
+  $("foldDone").hidden=!done.length;
+  $("doneTitle").textContent=`${L("Réalisées")} (${done.length})`;$("doneArrow").textContent=L(doneOpen?"Masquer":"Afficher");
+  $("todoDone").innerHTML=doneOpen?doneGroups(done):"";$("todoDone").hidden=!doneOpen||!done.length;
+  const n=all.length,nd=all.filter(t=>t.done).length,no=data.todos.filter(t=>!t.done&&!t.paused).length;
+  $("pfill").style.width=n?(nd/n*100)+"%":"0";
+  $("ptext").textContent=n?`${nd}/${n}`:"";
+  $("badge").hidden=!no;$("badge").textContent=no;
+  freshId=null;
+}
+$("todoSearch").addEventListener("input",e=>{todoQ=e.target.value;renderTodos()});
+$("todoForm").addEventListener("submit",e=>{
+  e.preventDefault();const v=$("todoIn").value.trim();if(!v)return;
+  const t={id:uid(),title:v,createdAt:new Date().toISOString(),done:false};
+  const cc=curCat();if(catOf(cc))t.cat=cc;
+  data.todos.push(t);freshId=t.id;save();renderTodos();$("todoIn").value="";
+});
+$("catForm").addEventListener("submit",e=>{
+  e.preventDefault();const v=$("catIn").value.trim().replace(/\s+/g," ");if(!v)return;
+  if(TC().some(c=>norm(c.name)===norm(v))){toast("Cette catégorie existe déjà");return}
+  const c={id:uid(),name:v};TC().push(c);data.ui.todoCat=c.id;saveUI();save();$("catIn").value="";$("catForm").hidden=true;renderTodos();toast("Catégorie créée");$("todoIn").focus();
+});
+$("foldDone").addEventListener("click",()=>{data.ui.doneOpen=!data.ui.doneOpen;saveUI();renderTodos()});
+$("foldPaused").addEventListener("click",()=>{data.ui.pausedOpen=data.ui.pausedOpen===false;saveUI();renderTodos()});
+$("v-todo").addEventListener("submit",e=>{if(e.target.id!=="catRename")return;e.preventDefault();
+  const c=catOf(curCat()),v=$("catRenIn").value.trim().replace(/\s+/g," ");if(c&&v){c.name=v;save()}catEditing=false;renderTodos()});
+document.getElementById("v-todo").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  const find=id=>data.todos.find(x=>x.id===id);
+  if(b.dataset.tcat){data.ui.todoCat=b.dataset.tcat;catEditing=false;saveUI();$("catForm").hidden=true;renderTodos();return}
+  if(b.dataset.tcatnew){const f=$("catForm");f.hidden=!f.hidden;if(!f.hidden)$("catIn").focus();return}
+  if(b.dataset.catren){catEditing=true;renderTodos();const i=$("catRenIn");i.focus();i.select();return}
+  if(b.dataset.catdel){armDelete(b,()=>{const c=catOf(curCat());if(!c)return;tomb(c.id);
+    data.todos.forEach(t=>{if(t.cat===c.id)delete t.cat});data.todoCats=TC().filter(x=>x!==c);data.ui.todoCat="all";saveUI();save();renderTodos();toast("Catégorie supprimée, ses tâches sont gardées")});return}
+  if(b.dataset.tg){const t=find(b.dataset.tg);if(!t)return;
+    t.done=!t.done;delete t.paused;if(t.done){t.doneAt=new Date().toISOString();toast("Tâche réalisée")}else{delete t.doneAt}
+    freshId=t.id;save();renderTodos();if(navigator.vibrate)navigator.vibrate(10)}
+  else if(b.dataset.pause){const t=find(b.dataset.pause);t.paused=true;t.pausedAt=new Date().toISOString();freshId=t.id;save();renderTodos();toast("Tâche mise en suspens")}
+  else if(b.dataset.resume){const t=find(b.dataset.resume);delete t.paused;delete t.pausedAt;freshId=t.id;save();renderTodos();toast("Tâche reprise")}
+  else if(b.dataset.del){armDelete(b,()=>{tomb(b.dataset.del);data.todos=data.todos.filter(x=>x.id!==b.dataset.del);save();renderTodos();toast("Tâche supprimée")})}
+});
+// glisser-déposer pour changer l'ordre (poignée ⠿)
+$("todoOpen").addEventListener("pointerdown",e=>{
+  const g=e.target.closest("[data-grip]");if(!g)return;
+  const row=g.closest(".row"),box=row.parentElement;if(!box||!box.dataset.group)return;
+  e.preventDefault();
+  const rows=[...box.querySelectorAll(":scope > .row[data-tid]")],from=rows.indexOf(row);
+  const tops=rows.map(r=>r.offsetTop),hts=rows.map(r=>r.offsetHeight),y0=e.clientY,sy0=window.scrollY;
+  let to=from,raf=null,lastY=e.clientY;todoDragging=true;
+  row.classList.add("dragging");rows.forEach(r=>{if(r!==row)r.classList.add("drop-anim")});
+  try{g.setPointerCapture(e.pointerId)}catch(x){}
+  if(navigator.vibrate)navigator.vibrate(10);
+  const place=()=>{
+    const dy=lastY-y0+(window.scrollY-sy0);row.style.transform=`translateY(${dy}px)`;
+    const mid=tops[from]+hts[from]/2+dy;
+    // nouvelle position = nombre de lignes dont le centre est au-dessus
+    let k=0;for(let i=0;i<rows.length;i++){if(i!==from&&mid>tops[i]+hts[i]/2)k++}to=k;
+    rows.forEach((r,i)=>{if(i===from)return;let s=0;if(from<to&&i>from&&i<=to)s=-hts[from];if(from>to&&i>=to&&i<from)s=hts[from];r.style.transform=s?`translateY(${s}px)`:""});
+  };
+  const scroller=()=>{if(!todoDragging)return;if(lastY<90)window.scrollBy(0,-8);else if(lastY>innerHeight-130)window.scrollBy(0,8);place();raf=requestAnimationFrame(scroller)};
+  raf=requestAnimationFrame(scroller);
+  const mv=ev=>{lastY=ev.clientY;place()};
+  const up=()=>{
+    g.removeEventListener("pointermove",mv);g.removeEventListener("pointerup",up);g.removeEventListener("pointercancel",up);
+    cancelAnimationFrame(raf);todoDragging=false;
+    const ids=rows.map(r=>r.dataset.tid),[m]=ids.splice(from,1);ids.splice(to,0,m);
+    if(to!==from){ids.forEach((id,i)=>{const t=data.todos.find(x=>x.id===id);if(t)t.ord=i});save()}
+    todoRenderPending=false;renderTodos();
+  };
+  g.addEventListener("pointermove",mv);g.addEventListener("pointerup",up);g.addEventListener("pointercancel",up);
+});
+
+/* ---------- Planning ---------- */
+let calY=new Date().getFullYear(),calM=new Date().getMonth(),selDay=null,calMode="month",planQ="",qOpen=false,zoomFrom=null;
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const DOW=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+const toMin=h=>{if(!h)return null;const[a,b]=h.split(":").map(Number);return a*60+b};
+const hrs=t=>t.time?(t.timeEnd?`${t.time}–${t.timeEnd}`:t.time):"";
+const sk=t=>t.date+(t.time||"99:99");
+const onDay=(t,k)=>t.date===k||(t.end&&t.date<=k&&t.end>=k);
+function renderMonth(){
+  const T=allT(),tIso=iso(today());
+  $("calTitle").textContent=`${MOL[calM]} ${calY}`;
+  const first=new Date(calY,calM,1),lead=(first.getDay()+6)%7,n=new Date(calY,calM+1,0).getDate();
+  let h="";for(let i=0;i<lead;i++)h+=`<span class="day out"></span>`;
+  for(let d=1;d<=n;d++){
+    const k=iso(new Date(calY,calM,d));
+    const per=T.filter(t=>t.end&&t.date<=k&&t.end>=k).slice(0,2);
+    const pts=T.filter(t=>!t.end&&t.date===k);
+    const bars=per.map(t=>`<i class="${t.date===k?"s":""} ${t.end===k?"e":""}" style="--c:var(${colorOf(t)})"></i>`).join("");
+    const dots=pts.slice(0,3).map(t=>`<i style="--c:var(${colorOf(t)});opacity:${t.status==="fait"||t.canc?.35:1}"></i>`).join("");
+    h+=`<button class="day ${k===tIso?"today":""} ${k<tIso?"past":""}" data-day="${k}" aria-label="${d} ${MOL[calM]}${per.length+pts.length?", "+(per.length+pts.length)+" élément(s)":""}"><span class="num">${d}</span><span class="marks">${bars?`<span class="bars">${bars}</span>`:""}${dots?`<span class="dots">${dots}</span>`:""}</span></button>`;
+  }
+  $("calDays").innerHTML=h;
+}
+function renderDayView(){
+  const T=allT(),k=selDay,tIso=iso(today()),sd=parse(k);
+  const items=T.filter(t=>onDay(t,k)).sort((a,b)=>sk(a).localeCompare(sk(b)));
+  const timed=items.filter(t=>t.time&&t.date===k),allday=items.filter(t=>!(t.time&&t.date===k));
+  // plage horaire affichée
+  let H0=7,H1=22;
+  timed.forEach(t=>{const s=toMin(t.time),e=Math.max(toMin(t.timeEnd)||0,s+60);H0=Math.min(H0,Math.floor(s/60));H1=Math.max(H1,Math.min(24,Math.ceil(e/60)))});
+  const PX=48;
+  // colonnes pour les activités qui se chevauchent
+  const ev=timed.map(t=>{const s=toMin(t.time);let e=toMin(t.timeEnd);if(e===null||e<=s)e=s+60;return{t,s,e,col:0}}).sort((a,b)=>a.s-b.s);
+  const ends=[];ev.forEach(x=>{let c=ends.findIndex(e=>e<=x.s);if(c<0){c=ends.length;ends.push(0)}ends[c]=x.e;x.col=c});
+  const ncol=Math.max(1,ends.length);
+  let hours="";for(let hh=H0;hh<=H1;hh++)hours+=`<div class="hr" style="top:${(hh-H0)*PX}px"><span>${two(hh%24)}:00</span></div>`;
+  const blocks=ev.map(x=>`<button class="blk ${x.t.status==="fait"?"fait":""} ${x.t.canc?"canc":""}" ${x.t.src==="ical"?`data-icalinfo="${esc(x.t.id)}"`:`data-edit="task:${x.t.id}"`} style="--c:var(${colorOf(x.t)});top:${(x.s/60-H0)*PX+1}px;height:${Math.max((x.e-x.s)/60*PX-2,26)}px;left:calc(${x.col*100/ncol}% + 2px);width:calc(${100/ncol}% - 4px)"><span class="t">${hrs(x.t)}${x.t.canc?'<span class="canc-pill">Annulé</span>':""}</span><b>${esc(x.t.title)}</b>${x.t.loc?`<span class="loc">${esc(x.t.loc)}</span>`:""}</button>`).join("");
+  let now="";if(k===tIso){const n=new Date(),m=n.getHours()*60+n.getMinutes();if(m>=H0*60&&m<=H1*60)now=`<div class="nowline" style="top:${(m/60-H0)*PX}px"></div>`}
+  const prev=new Date(sd);prev.setDate(prev.getDate()-1);const nxt=new Date(sd);nxt.setDate(nxt.getDate()+1);
+  $("calDayView").innerHTML=`<div class="dayv-head">
+      <button class="back" id="dayBack">‹ ${MOL[sd.getMonth()]}</button>
+      <div class="dayv-title">${DOW[sd.getDay()]} ${sd.getDate()} ${mlow(sd.getMonth())}${k===tIso?" · aujourd'hui":""}</div>
+      <button class="cal-nav" data-dayjump="${iso(prev)}" aria-label="Jour précédent">‹</button><button class="cal-nav" data-dayjump="${iso(nxt)}" aria-label="Jour suivant">›</button>
+    </div>
+    ${allday.length?`<div class="allday">${allday.map(t=>`<div class="chip-ev ${t.canc?"canc":""}" style="--c:var(${colorOf(t)})"><span class="grow ttl" style="${t.status==="fait"?"text-decoration:line-through;color:var(--muted)":""}">${t.time?`<span class="time">${hrs(t)}</span> `:""}${esc(t.title)}${t.end?` <span class="small muted">· ${fmt(t.date)} → ${fmt(t.end)}</span>`:""}</span>${t.src==="ical"?(t.canc?'<span class="canc-pill">Annulé</span>':""):`<button class="pen" data-edit="task:${t.id}" aria-label="Modifier">${PEN}</button><button class="x" data-caldel="${t.id}" aria-label="Supprimer">×</button>`}</div>`).join("")}</div>`:""}
+    ${!items.length?`<p class="small muted" style="margin:0 4px 8px">Rien de prévu ce jour-là.</p>`:""}
+    <div class="tline" style="height:${(H1-H0)*PX}px">${hours}${blocks}${now}</div>
+    ${qOpen?`<form class="qform" id="qForm">
+      <input id="qTitle" placeholder="Que fais-tu ce jour-là ?" aria-label="Activité" required autocomplete="off">
+      <div class="small muted" style="margin:2px 0 -4px">Heures (optionnel)</div><div class="two"><label>Heure de début<input id="qTime" type="time"></label><label>Heure de fin<input id="qTimeEnd" type="time"></label></div>
+      <div class="two"><label>Type<input id="qCat" list="typeList" placeholder="Ex. Sport" autocomplete="off"></label><label>Jusqu'au (optionnel)<input id="qEnd" type="date" min="${k}"></label></div>
+      <div class="two"><button type="button" class="btn ghost" id="qCancel">Annuler</button><button class="btn" type="submit">Ajouter</button></div>
+    </form>`:`<button class="qbtn" id="qOpen">+ Ajouter une activité ce jour</button>`}`;
+}
+function renderCal(){
+  if(!selDay)selDay=iso(today());
+  const day=calMode==="day";
+  $("calMonth").hidden=day;$("calDayView").hidden=!day;
+  $("calH2").textContent=day?"Journée":"Ce mois-ci";
+  if(day)renderDayView();else renderMonth();
+}
+function zoom(el){el.classList.remove("zoom");void el.offsetWidth;el.classList.add("zoom")}
+$("calDays").addEventListener("click",e=>{const b=e.target.closest(".day[data-day]");if(!b)return;
+  const r=b.getBoundingClientRect(),c=$("calMonth").getBoundingClientRect();
+  $("calDayView").style.setProperty("--zo",`${((r.left+r.width/2-c.left)/c.width*100).toFixed(0)}% ${((r.top-c.top)/c.height*100).toFixed(0)}%`);
+  selDay=b.dataset.day;calMode="day";qOpen=false;renderCal();zoom($("calDayView"))});
+$("calDayView").addEventListener("click",e=>{
+  const ii=e.target.closest("[data-icalinfo]");if(ii){icalInfo(ii.dataset.icalinfo);return}
+  const d=e.target.closest("[data-caldel]");
+  if(d){armDelete(d,()=>{tomb(d.dataset.caldel);data.tasks=data.tasks.filter(x=>x.id!==d.dataset.caldel);save();renderPlan();renderTypes();toast("Activité supprimée")});return}
+  const j=e.target.closest("[data-dayjump]");if(j){selDay=j.dataset.dayjump;qOpen=false;renderCal();return}
+  if(e.target.closest("#dayBack")){const sd=parse(selDay);calY=sd.getFullYear();calM=sd.getMonth();calMode="month";renderCal();zoom($("calMonth"));return}
+  if(e.target.closest("#qOpen")){qOpen=true;renderCal();$("qTitle").focus()}
+  else if(e.target.closest("#qCancel")){qOpen=false;renderCal()}
+});
+$("calDayView").addEventListener("submit",e=>{
+  e.preventDefault();const title=$("qTitle").value.trim();if(!title)return;
+  const t={id:uid(),title,date:selDay,status:"à faire",tbc:false,cat:ensureType($("qCat").value)};
+  if($("qEnd").value&&$("qEnd").value>selDay)t.end=$("qEnd").value;
+  if($("qTime").value)t.time=$("qTime").value;
+  if(t.time&&$("qTimeEnd").value&&$("qTimeEnd").value>t.time)t.timeEnd=$("qTimeEnd").value;
+  data.tasks.push(t);qOpen=false;save();renderPlan();renderTypes();toast("Ajouté au calendrier");
+});
+$("calPrev").addEventListener("click",()=>{calM--;if(calM<0){calM=11;calY--}renderCal()});
+$("calNext").addEventListener("click",()=>{calM++;if(calM>11){calM=0;calY++}renderCal()});
+$("calTitle").addEventListener("click",()=>{const t=today();calY=t.getFullYear();calM=t.getMonth();renderCal()});
+$("planSearch").addEventListener("input",e=>{planQ=e.target.value;renderPlan()});
+function renderPlan(){
+  const T=data.tasks,q=norm(planQ);
+  $("planTop").hidden=!!q;
+  const up=T.filter(t=>t.status!=="fait"&&daysTo(t.end||t.date)>=0).sort((a,b)=>sk(a).localeCompare(sk(b))).slice(0,4);
+  $("next").innerHTML=up.length?up.map(t=>{const d=daysTo(t.date);const w=d>1?`dans ${d} j`:d===1?"demain":d===0?"aujourd'hui":"en cours";
+    return `<div class="n" style="--c:var(${colorOf(t)})"><div class="d">${fmt(t.date)}${t.time?" · "+hrs(t):""} · ${w}</div><div class="t">${esc(t.title)}</div></div>`}).join("")
+    :`<div class="n" style="--c:var(--line)"><div class="t muted">${L("Rien à venir")}</div></div>`;
+  renderCal();
+  // filtres
+  let f=data.ui.filter||"Toutes";if(f!=="Toutes"&&f!==ICAL_CAT&&!typeOf(f))f="Toutes";if(f===ICAL_CAT&&!icalEvents.length)f="Toutes";
+  const used=data.types.filter(ty=>T.some(t=>norm(t.cat)===norm(ty.name)));
+  if(icalEvents.length)used.push({name:ICAL_CAT,c:"--x4"});
+  $("chips").innerHTML=[{name:"Toutes"},...used].map(c=>`<button class="pill" data-f="${esc(c.name)}" aria-pressed="${c.name===f}">${c.c?`<span class="dot" style="background:var(${c.c})"></span>`:""}${esc(c.name)}</button>`).join("");
+  fillTypeList();
+  $("listH2").textContent=q?"Résultats":"Toutes les dates";
+  // liste
+  const src=f===ICAL_CAT?icalEvents:q?T.concat(icalEvents):T;
+  const list=src.filter(t=>(f==="Toutes"||f===ICAL_CAT||norm(t.cat)===norm(f))&&(!q||norm(t.title+" "+(t.cat||"")+" "+(t.note||"")+" "+(t.loc||"")).includes(q))).sort((a,b)=>sk(a).localeCompare(sk(b)));
+  if(!list.length){$("tasks").innerHTML=`<div class="card" style="margin-top:10px"><div class="empty">${q?"Aucune activité ne correspond.":"Rien dans cette catégorie."}</div></div>`;return}
+  const g={};list.forEach(t=>{const d=parse(t.date);const k=d.getFullYear()*100+d.getMonth();(g[k]=g[k]||[]).push(t)});
+  $("tasks").innerHTML=Object.keys(g).sort().map(k=>`<h2>${MOL[k%100]} ${Math.floor(k/100)}</h2><div class="card">${g[k].map(t=>{
+    if(t.src==="ical")return `<div class="row task ${t.canc?"isfait":""}" style="--c:var(--x4)" data-icalinfo="${esc(t.id)}">
+      <div class="grow"><div class="date">${fmt(t.date)}${t.time?" · "+hrs(t):""}${t.canc?'<span class="canc-pill">Annulé</span>':""}</div>
+      <div class="ttl">${esc(t.title)}</div>${t.loc?`<div class="small muted">${esc(t.loc)}</div>`:""}</div></div>`;
+    const late=t.status!=="fait"&&daysTo(t.end||t.date)<0;
+    return `<div class="row task ${t.status==="fait"?"isfait":""}" style="--c:var(${colorOf(t)})">
+      <div class="grow"><div class="date">${fmt(t.date)}${t.end?" → "+fmt(t.end):""}${t.time?" · "+hrs(t):""}${t.tbc?`<button class="tbc" data-cf="${t.id}" title="Toucher pour confirmer la date" style="background:none;cursor:pointer">à confirmer</button>`:""}</div>
+      <div class="ttl">${esc(t.title)}</div>${t.note||late?`<div class="small muted">${late?'<span class="late">En retard</span> ':""}${esc(t.note||"")}</div>`:""}</div>
+      <button class="status" data-st="${t.id}" data-s="${t.status}">${t.status}</button>
+      <button class="pen" data-edit="task:${t.id}" aria-label="Modifier">${PEN}</button>
+      <button class="x" data-tdel="${t.id}" aria-label="Supprimer">×</button></div>`}).join("")}</div>`).join("");
+}
+$("v-plan").addEventListener("click",e=>{
+  const ii=e.target.closest(".row[data-icalinfo]");if(ii){icalInfo(ii.dataset.icalinfo);return}
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.f){data.ui.filter=b.dataset.f;saveUI();renderPlan();return}
+  const T=data.tasks;
+  if(b.dataset.st){const t=T.find(x=>x.id===b.dataset.st);t.status=STATUSES[(STATUSES.indexOf(t.status)+1)%3];save();renderPlan()}
+  else if(b.dataset.cf){const t=T.find(x=>x.id===b.dataset.cf);t.tbc=false;save();renderPlan();toast("Date confirmée")}
+  else if(b.dataset.tdel){armDelete(b,()=>{tomb(b.dataset.tdel);data.tasks=T.filter(x=>x.id!==b.dataset.tdel);save();renderPlan();toast("Date supprimée")})}
+});
+$("taskForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const t={id:uid(),title:$("fTitle").value.trim(),date:$("fDate").value,status:"à faire",tbc:false};
+  if(!t.title||!t.date)return;
+  t.cat=ensureType($("fCat").value);
+  if($("fTime").value)t.time=$("fTime").value;
+  if(t.time&&$("fTimeEnd").value){if($("fTimeEnd").value<=t.time){toast("L'heure de fin doit être après l'heure de début");return}t.timeEnd=$("fTimeEnd").value}
+  if($("fEnd").value&&$("fEnd").value>=t.date)t.end=$("fEnd").value;
+  data.tasks.push(t);save();renderPlan();renderTypes();e.target.reset();toast("Ajouté au planning");
+});
+
+/* ---------- horaire de cours (iCal) ---------- */
+const ICAL_CAT="Cours UMons";
+let icalEvents=[],icalAt=0,icalBusy=false;
+const icalKey=()=>"sidnote-ical-"+(session?session.user.id:"x");
+const allT=()=>data.tasks.concat(icalEvents);
+const colorOf=t=>t&&t.src==="ical"?"--x4":tc(t&&t.cat);
+function icalLoadCache(){const c=ls.get(icalKey());if(c&&Array.isArray(c.events)&&c.url===(data.prefs&&data.prefs.ical)){icalEvents=c.events;icalAt=c.at||0}}
+// lecture d'un fichier iCal (.ics)
+function parseICS(text,now=new Date()){
+  const lines=String(text).replace(/\r?\n[ \t]/g,"").split(/\r?\n/);
+  const out=[];let ev=null;
+  const unesc=v=>v.replace(/\\n/gi,"\n").replace(/\\,/g,",").replace(/\;/g,";").replace(/\\\\/g,"\\");
+  const toLocal=(v,params)=>{
+    const m=v.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})?(Z)?)?$/);if(!m)return null;
+    if(!m[4])return{date:`${m[1]}-${m[2]}-${m[3]}`,allday:true};
+    let d;if(m[7])d=new Date(Date.UTC(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0)));
+    else d=new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0)); // heure locale (Europe/Bruxelles)
+    return{date:iso(d),time:`${two(d.getHours())}:${two(d.getMinutes())}`,allday:false};
+  };
+  const from=new Date(now);from.setDate(from.getDate()-31);const to=new Date(now);to.setDate(to.getDate()+200);
+  for(const line of lines){
+    if(line==="BEGIN:VEVENT"){ev={};continue}
+    if(line==="END:VEVENT"){
+      if(ev&&ev.DTSTART){
+        const s=toLocal(ev.DTSTART.v,ev.DTSTART.p),e=ev.DTEND?toLocal(ev.DTEND.v,ev.DTEND.p):null;
+        if(s){
+          const title=unesc((ev.SUMMARY&&ev.SUMMARY.v)||"Cours").trim();
+          const canc=/CANCELLED/i.test((ev.STATUS&&ev.STATUS.v)||"")||/annul/i.test(title);
+          const t={id:"ical:"+((ev.UID&&ev.UID.v)||title)+":"+ev.DTSTART.v,src:"ical",title:title.replace(/^\s*annul[ée]e?s?\s*[:\-–]\s*/i,""),date:s.date,cat:ICAL_CAT,status:"à faire",canc};
+          if(!s.allday){t.time=s.time;if(e&&!e.allday&&e.date===s.date&&e.time>s.time)t.timeEnd=e.time}
+          else if(e&&e.allday){const d=parse(e.date);d.setDate(d.getDate()-1);const last=iso(d);if(last>s.date)t.end=last}
+          if(ev.LOCATION)t.loc=unesc(ev.LOCATION.v).trim();
+          if(ev.DESCRIPTION)t.note=unesc(ev.DESCRIPTION.v).trim().slice(0,400);
+          const dd=parse(t.date);if(dd>=from&&dd<=to)out.push(t);
+        }
+      }
+      ev=null;continue}
+    if(!ev)continue;
+    const i=line.indexOf(":");if(i<0)continue;
+    const head=line.slice(0,i),v=line.slice(i+1),[name,...params]=head.split(";");
+    ev[name.toUpperCase()]={v,p:params};
+  }
+  const seen=new Set();return out.filter(t=>!seen.has(t.id)&&seen.add(t.id));
+}
+async function icalFetch(force){
+  const url=data.prefs&&data.prefs.ical;
+  if(!url||!session||icalBusy)return;
+  if(!force&&Date.now()-icalAt<15*60e3)return;
+  icalBusy=true;icalState("Mise à jour de l'horaire…");
+  try{
+    const r=await fetch(SUPABASE_URL+"/functions/v1/horaire",{method:"POST",headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",Authorization:"Bearer "+await token()},body:JSON.stringify({url})});
+    const txt=await r.text();
+    if(!r.ok){let m="";try{m=JSON.parse(txt).error||""}catch(e){}
+      throw new Error(r.status===404?"La fonction « horaire » n'est pas encore installée sur Supabase.":m||("Erreur "+r.status))}
+    icalEvents=parseICS(txt);icalAt=Date.now();
+    ls.set(icalKey(),{url,at:icalAt,events:icalEvents});
+    renderAllSafe();if(force)toast(`Horaire à jour : ${icalEvents.filter(t=>!t.canc).length} cours`);
+  }catch(ex){icalState(ex instanceof TypeError?"Pas de connexion : l'horaire sera mis à jour plus tard.":ex.message);if(force)toast("Mise à jour impossible");icalBusy=false;return}
+  icalBusy=false;icalState();
+}
+function icalState(msg){
+  const el=$("icalState");if(!el)return;const url=data.prefs&&data.prefs.ical;
+  $("icalRefresh").hidden=!url;
+  if(msg){el.textContent=msg;return}
+  if(!url){el.textContent="Aucun horaire relié.";return}
+  const n=icalEvents.filter(t=>!t.canc).length,c=icalEvents.filter(t=>t.canc).length;
+  el.textContent=icalAt?`${n} cours${c?` · ${c} annulé${c>1?"s":""}`:""} · mis à jour à ${new Date(icalAt).toLocaleTimeString("fr-BE",{hour:"2-digit",minute:"2-digit"})}`:"Pas encore mis à jour.";
+}
+function icalInfo(id){
+  const t=icalEvents.find(x=>x.id===id);if(!t)return;
+  toast(`${t.canc?"Annulé · ":""}${t.title}${t.time?" · "+hrs(t):""}${t.loc?" · "+t.loc:""}`);
+}
+$("icalSave").addEventListener("click",()=>{
+  const v=$("icalUrl").value.trim().replace(/^webcal:/i,"https:");
+  if(!/^https:\/\/\S+$/i.test(v)){toast("Colle un lien qui commence par https://");return}
+  data.prefs.ical=v;save();icalEvents=[];icalAt=0;icalFetch(true);
+});
+$("icalDel").addEventListener("click",()=>{data.prefs.ical=null;save();icalEvents=[];icalAt=0;ls.del(icalKey());$("icalUrl").value="";renderAllSafe();icalState();toast("Horaire retiré")});
+$("icalRefresh").addEventListener("click",()=>icalFetch(true));
+
+/* ---------- Types d'événement ---------- */
+function renderTypes(){
+  const cnt=n=>data.tasks.filter(t=>norm(t.cat)===norm(n)).length;
+  $("typesCard").innerHTML=data.types.map((t,i)=>`<div class="row">
+      <button class="swatch" data-tcol="${i}" style="background:var(${t.c})" aria-label="Changer la couleur de ${esc(t.name)}"></button>
+      <div class="grow">${esc(t.name)} <span class="small muted">· ${cnt(t.name)}</span></div>
+      <button class="x" data-tydel="${i}" aria-label="Supprimer ${esc(t.name)}">×</button></div>`).join("")+
+    `<form class="row" id="typeForm"><input id="typeIn" placeholder="Nouveau type, ex. Examen" aria-label="Nouveau type" autocomplete="off"><button class="btn" type="submit">Ajouter</button></form>`;
+}
+$("typesCard").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.tcol){const t=data.types[+b.dataset.tcol];t.c=PALETTE[(PALETTE.indexOf(t.c)+1)%PALETTE.length];save();renderTypes();renderPlan()}
+  else if(b.dataset.tydel){armDelete(b,()=>{const t=data.types[+b.dataset.tydel];
+    data.tasks.forEach(x=>{if(norm(x.cat)===norm(t.name))x.cat=""});
+    data.types.splice(+b.dataset.tydel,1);save();renderTypes();renderPlan();toast(`Type « ${t.name} » supprimé`)})}
+});
+$("typesCard").addEventListener("submit",e=>{e.preventDefault();const v=$("typeIn").value.trim();if(!v)return;
+  if(typeOf(v)){toast("Ce type existe déjà");return}
+  ensureType(v);save();renderTypes();renderPlan();toast("Type ajouté")});
+
+/* ---------- Réglages ---------- */
+function renderStats(){
+  const td=data.todos,tk=data.tasks;
+  $("stats").innerHTML=[
+    ["Tâches réalisées",`${td.filter(t=>t.done).length} / ${td.length}`],
+    ["Dates du planning terminées",`${tk.filter(t=>t.status==="fait").length} / ${tk.length}`],
+    ["Dates encore à confirmer",tk.filter(t=>t.tbc).length]
+  ].map(([a,b])=>`<div class="row"><div class="grow">${a}</div><b style="font-variant-numeric:tabular-nums">${b}</b></div>`).join("");
+}
+$("backupBtn").addEventListener("click",async()=>{
+  const json=JSON.stringify({todos:data.todos,tasks:data.tasks,types:data.types,courses:data.courses,todoCats:data.todoCats},null,1);
+  const name=`sidnote-sauvegarde-${new Date().toISOString().slice(0,10)}.json`;
+  const file=new File([json],name,{type:"application/json"});
+  try{
+    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:"Sauvegarde Sid'note"});return}
+  }catch(e){if(e.name==="AbortError")return}
+  const a=document.createElement("a");a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+});
+$("restoreIn").addEventListener("change",async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{const d=JSON.parse(await f.text());
+    if(!Array.isArray(d.todos)||!Array.isArray(d.tasks))throw 0;
+    data.todos=d.todos;data.tasks=d.tasks;if(Array.isArray(d.types))data.types=d.types;if(Array.isArray(d.courses))data.courses=d.courses;if(Array.isArray(d.todoCats))data.todoCats=d.todoCats;save();renderAll();toast("Sauvegarde restaurée");
+  }catch(err){toast("Ce fichier n'est pas une sauvegarde Sid'note")}
+  e.target.value="";
+});
+
+/* ---------- Pomodoro ---------- */
+const MIN=window.POMO_TEST_MIN||60000;
+data.pomo=data.pomo||{cfg:{work:25,brk:5,total:120},run:null,log:{}};
+const P=data.pomo;
+const PRESETS=[60,90,120,180];
+const hm=m=>{m=Math.round(m);const h=Math.floor(m/60),r=m%60;return h?`${h} h${r?" "+String(r).padStart(2,"0"):""}`:`${r} min`};
+const clockTxt=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")};
+const hhmm=d=>String(d.getHours()).padStart(2,"0")+"h"+String(d.getMinutes()).padStart(2,"0");
+const dayKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+
+function buildSegs({work,brk,total}){
+  const segs=[];let t=0;
+  while(t<total){
+    const w=Math.min(work,total-t);segs.push({t:"w",d:w});t+=w;
+    if(total-t<=brk){segs[segs.length-1].d+=total-t;break} // pas de pause finale : le reste s'ajoute au dernier travail
+    segs.push({t:"b",d:brk});t+=brk;
+  }
+  return segs;
+}
+function planBar(segs,el,doneIdx=-1){
+  const tot=segs.reduce((a,s)=>a+s.d,0);
+  el.innerHTML=segs.map((s,i)=>`<i class="${s.t==="w"?"w":"b"} ${i<doneIdx?"past":""}" style="flex:${s.d/tot}"></i>`).join("");
+}
+function renderSetup(){
+  const c=P.cfg;
+  $("presets").innerHTML=PRESETS.map(m=>`<button class="preset" data-total="${m}" aria-pressed="${c.total===m}">${hm(m)}</button>`).join("");
+  $("oWork").textContent=c.work+" min";$("oBrk").textContent=c.brk+" min";$("oTotal").textContent=hm(c.total);
+  const segs=buildSegs(c),n=segs.filter(s=>s.t==="w").length,
+        work=segs.filter(s=>s.t==="w").reduce((a,s)=>a+s.d,0),real=segs.reduce((a,s)=>a+s.d,0);
+  planBar(segs,$("planBar"));
+  $("planTxt").textContent=`${n} session${n>1?"s":""} de travail et ${n-1} pause${n-1>1?"s":""} · ${hm(work)} de travail · si tu démarres maintenant, fin à ${hhmm(new Date(Date.now()+real*60000))}`;
+}
+$("pomoSetup").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.total){P.cfg.total=+b.dataset.total}
+  else if(b.dataset.step){const[k,v]=b.dataset.step.split(",");const lim={work:[5,90],brk:[1,30],total:[15,480]}[k];
+    P.cfg[k]=Math.min(lim[1],Math.max(lim[0],P.cfg[k]+ +v))}
+  else return;
+  save();renderSetup();
+});
+
+/* son : débloqué au clic sur Démarrer (obligatoire sur iPhone) */
+let actx=null;
+function unlockAudio(){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();if(actx.state==="suspended")actx.resume()}catch(e){}}
+function chime(kind){
+  if(!actx)return;try{
+  const notes=kind==="w"?[523,659,784]:kind==="b"?[784,659,523]:[523,659,784,1047];
+  notes.forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain(),t=actx.currentTime+i*.22;
+    o.type="sine";o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.35,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+.5);
+    o.connect(g).connect(actx.destination);o.start(t);o.stop(t+.55)});
+  }catch(e){}
+}
+let wake=null;
+async function keepAwake(on){
+  try{if(on&&"wakeLock" in navigator&&!wake){wake=await navigator.wakeLock.request("screen");wake.addEventListener("release",()=>wake=null)}
+      else if(!on&&wake){await wake.release();wake=null}}catch(e){}
+}
+
+function elapsed(r,now=Date.now()){return (r.pausedAt||now)-r.startAt-r.pausedTotal}
+function locate(r,el){
+  let t=0;for(let i=0;i<r.segs.length;i++){const d=r.segs[i].d*MIN;if(el<t+d)return{i,into:el-t,d};t+=d}
+  return{i:r.segs.length,into:0,d:0};
+}
+function workDone(r,el){let t=0,w=0;for(const s of r.segs){const d=s.d*MIN;if(s.t==="w")w+=Math.max(0,Math.min(d,el-t));t+=d}return w}
+let lastIdx=null;
+function startPomo(){
+  unlockAudio();
+  const segs=buildSegs(P.cfg);
+  P.run={segs,startAt:Date.now(),pausedAt:null,pausedTotal:0};lastIdx=0;
+  save();chime("w");keepAwake(true);renderPomo();
+}
+function finishPomo(completed){
+  const r=P.run;if(!r)return;
+  const w=workDone(r,elapsed(r)),k=dayKey(new Date(r.startAt));
+  P.log[k]=(P.log[k]||0)+w;P.run=null;lastIdx=null;save();keepAwake(false);
+  if(completed){chime("end");toast(`Bravo ! ${hm(w/MIN)} de travail terminées`)}
+  renderPomo();
+}
+$("pomoStart").addEventListener("click",startPomo);
+$("pomoPause").addEventListener("click",()=>{const r=P.run;if(!r)return;unlockAudio();
+  if(r.pausedAt){r.pausedTotal+=Date.now()-r.pausedAt;r.pausedAt=null;keepAwake(true)}else{r.pausedAt=Date.now();keepAwake(false)}
+  save();renderPomo()});
+$("pomoSkip").addEventListener("click",()=>{const r=P.run;if(!r)return;unlockAudio();
+  const L=locate(r,elapsed(r));r.pausedTotal-=(L.d-L.into);save();tickPomo()});
+$("pomoStop").addEventListener("click",e=>{const b=e.currentTarget;
+  if(b.dataset.armed){finishPomo(false);toast("Session arrêtée")}
+  else{b.dataset.armed="1";b.textContent="Confirmer ?";setTimeout(()=>{delete b.dataset.armed;b.textContent="Arrêter"},3000)}});
+
+function tickPomo(){
+  const r=P.run;if(!r)return;
+  const el=elapsed(r),L=locate(r,el);
+  if(L.i>=r.segs.length){finishPomo(true);return}
+  if(lastIdx!==null&&L.i!==lastIdx){
+    const s=r.segs[L.i];chime(s.t);toast(s.t==="w"?"Au travail !":`Pause de ${s.d} min`);
+    $("stage").classList.remove("flash");void $("stage").offsetWidth;$("stage").classList.add("flash");
+  }
+  lastIdx=L.i;
+  const s=r.segs[L.i],isW=s.t==="w";
+  const nW=r.segs.filter(x=>x.t==="w").length,curW=r.segs.slice(0,L.i+1).filter(x=>x.t==="w").length;
+  $("stage").style.setProperty("--pc",`var(${isW?"--accent":"--ok"})`);
+  $("phase").textContent=r.pausedAt?"En pause":isW?"Travail":"Pause";
+  $("clock").textContent=clockTxt(L.d-L.into);
+  $("segInfo").textContent=isW?`Session ${curW} sur ${nW}`:`Prochaine : session ${curW+1} sur ${nW}`;
+  $("ring").style.strokeDashoffset=(339.29*(L.into/L.d)).toFixed(2);
+  planBar(r.segs,$("runBar"),L.i);
+  const totalMs=r.segs.reduce((a,x)=>a+x.d*MIN,0);
+  $("mDone").textContent=hm(workDone(r,el)/MIN);
+  $("mLeft").textContent=hm((totalMs-el)/MIN);
+  $("mEnd").textContent=hhmm(new Date(Date.now()+(totalMs-el)));
+  $("pomoPause").textContent=r.pausedAt?"Reprendre":"Pause";
+  document.title=r.pausedAt?"Sid'note":`${clockTxt(L.d-L.into)} · ${isW?"Travail":"Pause"}`;
+}
+function renderPomo(){
+  const run=!!P.run;
+  $("pomoSetup").hidden=run;$("pomoRun").hidden=!run;$("pomoDot").hidden=!run;
+  if(run)tickPomo();else{renderSetup();document.title="Sid'note"}
+  renderPomoStats();
+}
+function renderPomoStats(){
+  const today=P.log[dayKey(new Date())]||0;
+  let week=0;for(let i=0;i<7;i++){const d=new Date();d.setDate(d.getDate()-i);week+=P.log[dayKey(d)]||0}
+  const live=P.run?workDone(P.run,elapsed(P.run)):0;
+  $("pomoStats").innerHTML=`<div class="row"><div class="grow">Travail concentré aujourd'hui</div><b>${hm((today+live)/MIN)}</b></div>
+    <div class="row"><div class="grow">Sur les 7 derniers jours</div><b>${hm((week+live)/MIN)}</b></div>`;
+}
+setInterval(()=>{if(P.run){tickPomo();if(!$("v-pomo").hidden)renderPomoStats()}},500);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&P.run){unlockAudio();if(!P.run.pausedAt)keepAwake(true);tickPomo()}});
+
+function renderAll(){renderTodos();renderPlan();renderStats();renderPomo();renderTypes();renderMuscu();renderDocs()}
+
+/* ---------- écran de connexion ---------- */
+let authMode="login";
+const LEGACY=ls.get(LEGACY_KEY);
+const isEmail=v=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+function setMode(m){
+  authMode=m;
+  $("mLogin").setAttribute("aria-pressed",m==="login");$("mSignup").setAttribute("aria-pressed",m==="signup");
+  $("aNameWrap").hidden=m!=="signup";$("aPw2Wrap").hidden=m!=="signup";
+  $("aEmailLbl").textContent=m==="signup"?"E-mail":"E-mail";
+  $("aEmail").type=m==="signup"?"email":"text";
+  $("aBtn").textContent=m==="signup"?"Créer mon compte":"Se connecter";
+  $("aPw").autocomplete=m==="signup"?"new-password":"current-password";
+  $("authHint").hidden=m==="signup";
+  $("aMigWrap").hidden=!LEGACY;$("aErr").hidden=true;
+}
+$("mLogin").addEventListener("click",()=>setMode("login"));
+$("mSignup").addEventListener("click",()=>setMode("signup"));
+const slug=n=>n.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,".").replace(/^\.+|\.+$/g,"");
+function authError(e){
+  const m=String(e&&e.message||"").toLowerCase();
+  if(e instanceof TypeError||m.includes("failed to fetch")||m.includes("load failed"))return "Pas de connexion internet. Réessaie quand tu es connecté.";
+  if(m.includes("already")||e.code==="user_already_exists"||e.code==="email_exists")return "Un compte existe déjà avec cet e-mail. Connecte-toi.";
+  if(m.includes("invalid login")||e.code==="invalid_credentials")return "E-mail ou mot de passe incorrect.";
+  if(m.includes("password")&&(m.includes("least")||m.includes("weak")||m.includes("short")))return "Le mot de passe doit faire au moins 6 caractères.";
+  if(m.includes("email")&&(m.includes("invalid")||m.includes("valid")))return "Cette adresse e-mail n'est pas valide.";
+  if(m.includes("signups not allowed")||m.includes("signup is disabled"))return "La création de comptes est désactivée pour le moment.";
+  if(e.status===429)return "Trop d'essais. Attends une minute et réessaie.";
+  return "Impossible de continuer : "+(e&&e.message||"erreur inconnue");
+}
+// après connexion : récupère (ou crée) les données du compte puis recharge l'app
+async function finishLogin(j,name,{migrate=false,carry=null,stay=true}={}){
+  const display=(j.user&&j.user.user_metadata&&j.user.user_metadata.name)||name||(j.user.email||"").split("@")[0];
+  const uidv=j.user.id;
+  const row=await fetchRow(uidv,j.access_token);
+  const existing=ls.get(cacheKey(uidv));
+  let c;
+  const isTest=TEST_EMAILS.includes(String(j.user.email||"").toLowerCase());
+  if(isTest)c={data:blank(),rev:new Date().toISOString(),base:row?row.updated_at:"",dirty:true}; // repart de zéro
+  else if(carry)c={data:carry,rev:new Date().toISOString(),dirty:true};
+  else if(row&&!migrate){c={data:row.data,rev:row.updated_at,base:row.updated_at,dirty:false};
+    if(existing&&existing.dirty)c={data:mergeData(existing.data,row.data),rev:new Date().toISOString(),base:row.updated_at,dirty:true}}
+  else{
+    let d=existing?existing.data:blank();
+    if(migrate)d={...LEGACY,courses:LEGACY_COURSES.map(([code,n,quad,ects])=>({id:uid(),code,name:n,quad,ects})),
+                  types:LEGACY.types||Object.entries(CATS).map(([nm,cc])=>({name:nm,c:cc}))};
+    c={data:d,rev:new Date().toISOString(),dirty:true};
+  }
+  if(migrate)ls.del(LEGACY_KEY);
+  session=null;storeSession(j,display);session.eph=isTest||!stay;ls.set(SESSION_KEY,session);ssSet("sidnote-alive","1");
+  if(isTest)idbClearUser(uidv);
+  ls.set(cacheKey(uidv),c);
+  if(isTest||!stay)ls.del(LAST_KEY);else ls.set(LAST_KEY,j.user.email&&!j.user.email.endsWith("@"+EMAIL_DOMAIN)?j.user.email:(name||""));
+  location.reload();
+}
+$("authForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const err=$("aErr"),btn=$("aBtn"),ident=$("aEmail").value.trim(),pw=$("aPw").value,name=$("aName").value.trim().replace(/\s+/g," ");
+  const fail=m=>{err.textContent=m;err.hidden=false;err.classList.remove("shake");void err.offsetWidth;err.classList.add("shake");if(navigator.vibrate)navigator.vibrate(60)};
+  err.hidden=true;
+  if(!CONFIGURED)return fail("L'app n'est pas encore reliée à son serveur.");
+  if(authMode==="signup"){
+    if(!name)return fail("Choisis un pseudo.");
+    if(!isEmail(ident))return fail("Écris une adresse e-mail valide.");
+  }else if(!ident)return fail("Écris ton e-mail.");
+  if(pw.length<6)return fail("Le mot de passe doit faire au moins 6 caractères.");
+  if(authMode==="signup"&&pw!==$("aPw2").value)return fail("Les deux mots de passe ne sont pas identiques.");
+  // ancien compte : pseudo à la place de l'e-mail
+  const email=ident.includes("@")?ident.toLowerCase():`${slug(ident)}@${EMAIL_DOMAIN}`;
+  if(!ident.includes("@")&&!slug(ident))return fail("Écris ton e-mail.");
+  btn.disabled=true;btn.textContent=authMode==="signup"?"Création…":"Connexion…";
+  try{
+    let j;
+    if(authMode==="signup"){
+      j=await api("/auth/v1/signup",{method:"POST",body:{email,password:pw,data:{name}}});
+      if(!j||!j.access_token)throw new Error("La confirmation par e-mail est activée sur le serveur.");
+    }else j=await api("/auth/v1/token?grant_type=password",{method:"POST",body:{email,password:pw}});
+    await finishLogin(j,authMode==="signup"?name:"",{migrate:!!(LEGACY&&$("aMig").checked),stay:$("aStay").checked});
+  }catch(ex){btn.disabled=false;setMode(authMode);fail(authError(ex));$("aPw").value="";$("aPw").focus()}
+});
+
+/* ---------- compte dans Réglages ---------- */
+$("logoutBtn").addEventListener("click",async e=>{
+  const b=e.currentTarget;
+  if(!b.dataset.armed){b.dataset.armed="1";b.textContent="Toucher encore pour confirmer";setTimeout(()=>{delete b.dataset.armed;b.textContent="Se déconnecter"},3500);return}
+  if(cache&&cache.dirty){await push();
+    if(cache.dirty&&b.dataset.armed!=="2"){b.dataset.armed="2";b.textContent="Modifs non envoyées : déconnecter quand même ?";return}}
+  await dropSub().catch(()=>{});
+  try{api("/auth/v1/logout",{method:"POST",token:session.access_token}).catch(()=>{})}catch(x){}
+  endSession("",false);
+});
+
+/* ---------- changer de pseudo ---------- */
+$("nameForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const name=$("newName").value.trim().replace(/\s+/g," "),btn=e.target.querySelector("button");
+  if(!name)return;
+  if(name===session.name){toast("C'est déjà ton pseudo");return}
+  btn.disabled=true;btn.textContent="…";
+  try{
+    await api("/auth/v1/user",{method:"PUT",token:await token(),body:{data:{name}}});
+    session.name=name;ls.set(SESSION_KEY,session);
+    renderAccount();$("newName").value="";toast("Pseudo modifié");
+  }catch(ex){toast(ex instanceof TypeError?"Pas de connexion internet":"Modification impossible : "+ex.message)}
+  btn.disabled=false;btn.textContent="Modifier";
+});
+const isTestAcc=()=>!!session&&TEST_EMAILS.includes(String(session.email||"").toLowerCase());
+const isLegacyAcc=()=>!session.email||session.email.endsWith("@"+EMAIL_DOMAIN);
+function renderAccount(){
+  $("accName").textContent=session.name;$("hello").textContent=`Salut ${session.name.split(" ")[0]} !`;
+  $("accEmail").textContent=isLegacyAcc()?"Compte sans e-mail (ancien système)":session.email;
+  $("migrateSec").hidden=!isLegacyAcc();
+  $("testBanner").hidden=!isTestAcc();
+}
+// ancien compte (pseudo) -> nouveau compte avec e-mail, données transférées
+$("migrateForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const email=$("mEmail").value.trim().toLowerCase(),pw=$("mPw").value,btn=$("mBtn");
+  if(!isEmail(email)){toast("Écris une adresse e-mail valide");return}
+  if(pw.length<6){toast("Le mot de passe doit faire au moins 6 caractères");return}
+  btn.disabled=true;btn.textContent="Transfert…";
+  try{
+    await push();
+    const j=await api("/auth/v1/signup",{method:"POST",body:{email,password:pw,data:{name:session.name}}});
+    if(!j||!j.access_token)throw new Error("La confirmation par e-mail est activée sur le serveur.");
+    const carry=JSON.parse(JSON.stringify(data));
+    const old=session.user.id;
+    await dropSub().catch(()=>{});
+    ls.del(cacheKey(old));
+    await finishLogin(j,session.name,{carry,stay:!session.eph});
+  }catch(ex){toast(authError(ex));btn.disabled=false;btn.textContent="Passer à l'e-mail"}
+});
+
+/* ---------- rappels (notifications) ---------- */
+const VAPID_PUBLIC="BIWx3Uk7vX6yeb6rht0Rpz4eW25rwCzuQWIfNWxdxUePx7XkmISBvtbY47jthl51PVJaY9QkrG5LRl8Whx1TjK4";
+const pushOK=()=>"serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window;
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+const standalone=()=>window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+function b64u(s){const p="=".repeat((4-s.length%4)%4),b=atob((s+p).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from(b,c=>c.charCodeAt(0))}
+async function currentSub(){if(!pushOK())return null;const r=await navigator.serviceWorker.ready;return r.pushManager.getSubscription()}
+async function renderNotif(){
+  const st=$("notifState"),btn=$("notifBtn"),test=$("notifTest");if(!st)return;
+  test.hidden=true;btn.hidden=false;btn.disabled=false;$("notifRow").hidden=false;
+  if(!pushOK()){
+    st.textContent=isIOS&&!standalone()?"Pour activer les rappels, ouvre Sid'note depuis l'icône de ton écran d'accueil.":"Ce navigateur ne gère pas les notifications.";
+    btn.hidden=true;$("notifRow").hidden=true;return}
+  if(Notification.permission==="denied"){st.textContent="Notifications bloquées. Autorise-les dans Réglages > Notifications > Sid'note.";btn.hidden=true;$("notifRow").hidden=true;return}
+  const sub=await currentSub().catch(()=>null);
+  if(sub&&Notification.permission==="granted"){st.innerHTML='<span class="syncdot"></span>Activés sur cet appareil';btn.textContent="Désactiver";btn.className="btn ghost";test.hidden=false}
+  else{st.textContent="Désactivés sur cet appareil.";btn.textContent="Activer les rappels";btn.className="btn"}
+}
+async function saveSub(sub){
+  await api("/rest/v1/push_subscriptions?on_conflict=endpoint",{method:"POST",token:await token(),
+    headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:{endpoint:sub.endpoint,user_id:session.user.id,subscription:sub.toJSON()}});
+}
+async function dropSub(){
+  const sub=await currentSub().catch(()=>null);if(!sub)return;
+  try{await api(`/rest/v1/push_subscriptions?endpoint=eq.${encodeURIComponent(sub.endpoint)}`,{method:"DELETE",token:await token()})}catch(e){}
+  try{await sub.unsubscribe()}catch(e){}
+}
+$("notifBtn").addEventListener("click",async()=>{
+  const btn=$("notifBtn");btn.disabled=true;
+  try{
+    const sub=await currentSub();
+    if(sub&&Notification.permission==="granted"){await dropSub();toast("Rappels désactivés")}
+    else{
+      const perm=await Notification.requestPermission();
+      if(perm!=="granted"){toast("Notifications refusées");renderNotif();return}
+      const r=await navigator.serviceWorker.ready;
+      const s=sub||await r.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(VAPID_PUBLIC)});
+      await saveSub(s);toast("Rappels activés");
+    }
+  }catch(ex){toast(ex instanceof TypeError?"Pas de connexion internet":"Activation impossible : "+(ex.message||"erreur"))}
+  renderNotif();
+});
+$("notifTest").addEventListener("click",async()=>{
+  try{await api("/functions/v1/rappels",{method:"POST",token:await token(),body:{test:true}});toast("Notification de test envoyée")}
+  catch(ex){toast("Test impossible : "+(ex.message||"erreur"))}
+});
+// garder l'abonnement à jour côté serveur (il peut changer)
+async function refreshSub(){try{const s=await currentSub();if(s&&Notification.permission==="granted")await saveSub(s)}catch(e){}}
+
+/* ---------- modifier une tâche ou une date ---------- */
+let editing=null;
+function openEdit(ref){
+  const [kind,id]=ref.split(":");
+  const item=(kind==="todo"?data.todos:kind==="doc"?docsArr():data.tasks).find(x=>x.id===id);if(!item)return;
+  editing={kind,item};
+  $("sheetTitle").textContent=L(kind==="todo"?"Modifier la tâche":kind==="doc"?"Renommer le document":"Modifier l'activité");
+  $("eTitle").value=item.title;$("eTask").hidden=kind!=="task";$("eTodoWrap").hidden=kind!=="todo";
+  if(kind==="todo")$("eTodoCat").innerHTML=`<option value="">${L("Sans catégorie")}</option>`+TC().map(c=>`<option value="${c.id}" ${item.cat===c.id?"selected":""}>${esc(c.name)}</option>`).join("");
+  if(kind==="task"){$("eDate").value=item.date;$("eEnd").value=item.end||"";$("eTime").value=item.time||"";$("eTimeEnd").value=item.timeEnd||"";$("eCat").value=item.cat||""}
+  const d=$("eDelete");d.classList.remove("armed");d.textContent="Supprimer";
+  $("sheet").hidden=false;setTimeout(()=>$("eTitle").focus(),50);
+}
+function closeEdit(){$("sheet").hidden=true;editing=null}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-edit]");if(b){e.stopPropagation();openEdit(b.dataset.edit)}},true);
+$("sheetClose").addEventListener("click",closeEdit);
+$("sheet").addEventListener("click",e=>{if(e.target.id==="sheet")closeEdit()});
+$("editForm").addEventListener("submit",e=>{
+  e.preventDefault();if(!editing)return;
+  const title=$("eTitle").value.trim();if(!title){toast("Le titre ne peut pas être vide");return}
+  const it=editing.item;it.title=title;
+  if(editing.kind==="todo"){const c=$("eTodoCat").value;if(c&&catOf(c)){if(it.cat!==c)delete it.ord;it.cat=c}else delete it.cat}
+  if(editing.kind==="doc")it.mod=Date.now();
+  if(editing.kind==="task"){
+    if(!$("eDate").value){toast("Choisis une date");return}
+    it.date=$("eDate").value;
+    if($("eEnd").value&&$("eEnd").value>it.date)it.end=$("eEnd").value;else delete it.end;
+    if($("eTime").value)it.time=$("eTime").value;else delete it.time;
+    if(it.time&&$("eTimeEnd").value){if($("eTimeEnd").value<=it.time){toast("L'heure de fin doit être après l'heure de début");return}it.timeEnd=$("eTimeEnd").value}else delete it.timeEnd;
+    it.cat=ensureType($("eCat").value);
+  }
+  save();closeEdit();renderTodos();renderPlan();renderTypes();renderDocs();toast("Modifié");
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("sheet").hidden)closeEdit()});
+$("eDelete").addEventListener("click",e=>{
+  const b=e.currentTarget;if(!editing)return;
+  if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent="Confirmer la suppression";return}
+  const {kind,item}=editing;
+  if(kind==="doc"){closeEdit();docDelete(item);return}
+  tomb(item.id);if(kind==="todo")data.todos=data.todos.filter(x=>x!==item);else data.tasks=data.tasks.filter(x=>x!==item);
+  save();closeEdit();renderTodos();renderPlan();renderTypes();toast("Supprimé");
+});
+
+/* ---------- musculation ---------- */
+data.muscu=data.muscu||{sessions:[]};
+let msOpenId=null,msTimer=null;
+const M=()=>data.muscu||(data.muscu={sessions:[]});
+const msFind=id=>M().sessions.find(x=>x.id===id);
+const newSet=()=>({reps:"",kg:""});
+const newEx=(name="",n=3)=>({id:uid(),name,sets:Array.from({length:n},newSet)});
+function exBlock(se,ex,i){
+  return `<div class="ex" data-ex="${ex.id}">
+    <div class="ex-head"><span class="num">${i+1}</span><input data-f="exname" value="${esc(ex.name)}" placeholder="Nom de l'exercice" aria-label="Nom de l'exercice" autocomplete="off">
+      <button class="x" data-msdelex="${ex.id}" aria-label="Supprimer l'exercice">×</button></div>
+    ${ex.sets.map((st,j)=>`<div class="set" data-set="${j}"><span class="lbl">Série ${j+1}</span>
+      <div class="unit"><input type="text" data-f="kg" inputmode="decimal" enterkeyhint="next" autocomplete="off" value="${esc(st.kg)}" aria-label="Charge série ${j+1}"><span>kg</span></div>
+      <div class="unit"><input type="text" data-f="reps" inputmode="numeric" enterkeyhint="next" autocomplete="off" value="${esc(st.reps)}" aria-label="Répétitions série ${j+1}"><span>reps</span></div></div>`).join("")}
+    <div class="ex-actions"><button class="mini" data-msset="-1">− Série</button><button class="mini" data-msset="1">+ Série</button></div>
+  </div>`;
+}
+function renderMuscu(){
+  const S=M().sessions;
+  $("msList").innerHTML=S.length?S.map(se=>`<details class="ms" data-ms="${se.id}" ${se.id===msOpenId?"open":""}>
+    <summary><span class="chev">›</span><span class="grow"><span class="ms-name">${esc(se.name)}</span><br><span class="small muted">${se.exercises.length} exercice${se.exercises.length>1?"s":""} · ${se.exercises.reduce((a,e)=>a+e.sets.length,0)} séries</span></span></summary>
+    <div class="ms-body">
+      <label class="small muted" style="display:grid;gap:4px">Nom de la séance<input data-f="msname" value="${esc(se.name)}" autocomplete="off"></label>
+      ${se.exercises.map((ex,i)=>exBlock(se,ex,i)).join("")}
+      <button class="qbtn" data-msaddex="1">+ Ajouter un exercice</button>
+      <div class="ms-actions">
+        <button class="btn ghost" data-mscopy="1">Copier la séance</button>
+        <button class="btn ghost" data-msclear="1">Vider reps et kg</button>
+        <button class="btn stop wide" data-msdel="1">Supprimer la séance</button>
+      </div>
+    </div></details>`).join(""):`<div class="card"><div class="empty">Aucune séance pour l'instant. Crée ta première séance ci-dessus.</div></div>`;
+}
+function msSaveSoon(){clearTimeout(msTimer);msTimer=setTimeout(save,500)}
+$("msForm").addEventListener("submit",e=>{e.preventDefault();const n=$("msName").value.trim();if(!n)return;
+  const se={id:uid(),name:n,exercises:[newEx()]};M().sessions.push(se);msOpenId=se.id;save();renderMuscu();$("msName").value="";toast("Séance créée")});
+$("msList").addEventListener("toggle",e=>{const d=e.target.closest("[data-ms]");if(d&&d.open)msOpenId=d.dataset.ms},true);
+$("msList").addEventListener("input",e=>{
+  const inp=e.target,f=inp.dataset.f;if(!f)return;
+  const se=msFind(inp.closest("[data-ms]").dataset.ms);if(!se)return;
+  if(f==="msname"){se.name=inp.value;const n=inp.closest("[data-ms]").querySelector(".ms-name");if(n)n.textContent=inp.value||"Séance"}
+  else{const ex=se.exercises.find(x=>x.id===inp.closest("[data-ex]").dataset.ex);
+    if(f==="exname")ex.name=inp.value;
+    else{const st=ex.sets[+inp.closest("[data-set]").dataset.set];st[f]=inp.value.replace(",",".").replace(/[^0-9.]/g,"")}}
+  msSaveSoon();
+});
+async function copyText(txt){
+  try{await navigator.clipboard.writeText(txt);toast("Séance copiée : colle-la dans un message");return}catch(e){}
+  try{if(navigator.share){await navigator.share({text:txt});return}}catch(e){if(e.name==="AbortError")return}
+  const t=document.createElement("textarea");t.value=txt;document.body.appendChild(t);t.select();
+  try{document.execCommand("copy");toast("Séance copiée")}catch(e){toast("Copie impossible")}t.remove();
+}
+$("msList").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  const box=b.closest("[data-ms]");if(!box)return;const se=msFind(box.dataset.ms);if(!se)return;msOpenId=se.id;
+  if(b.dataset.msaddex){se.exercises.push(newEx());save();renderMuscu();const ins=$("msList").querySelectorAll(`[data-ms="${se.id}"] [data-f=exname]`);ins[ins.length-1]?.focus()}
+  else if(b.dataset.msdelex){armDelete(b,()=>{se.exercises=se.exercises.filter(x=>x.id!==b.dataset.msdelex);save();renderMuscu()})}
+  else if(b.dataset.msset){const ex=se.exercises.find(x=>x.id===b.closest("[data-ex]").dataset.ex);
+    if(+b.dataset.msset>0){if(ex.sets.length<20)ex.sets.push(newSet())}else if(ex.sets.length>1)ex.sets.pop();save();renderMuscu()}
+  else if(b.dataset.mscopy){
+    const lines=se.exercises.map((ex,i)=>`${i+1}. ${ex.name||"Exercice"} : ${ex.sets.length} série${ex.sets.length>1?"s":""}`);
+    copyText(`Séance « ${se.name} » (Sid'note)\n${lines.join("\n")}`)}
+  else if(b.dataset.msclear){if(!b.dataset.armed){b.dataset.armed="1";b.textContent="Confirmer ?";setTimeout(()=>{delete b.dataset.armed;b.textContent="Vider reps et kg"},3000);return}
+    se.exercises.forEach(ex=>ex.sets.forEach(st=>{st.reps="";st.kg=""}));save();renderMuscu();toast("Séance remise à zéro")}
+  else if(b.dataset.msdel){if(!b.dataset.armed){b.dataset.armed="1";b.textContent="Confirmer la suppression";return}
+    tomb(se.id);M().sessions=M().sessions.filter(x=>x!==se);save();renderMuscu();toast("Séance supprimée")}
+});
+// importer une séance copiée par un proche
+function parseSession(txt){
+  const lines=String(txt||"").split(/\r?\n/).map(l=>l.trim()).filter(Boolean);if(!lines.length)return null;
+  let name="Séance importée";const m=lines[0].match(/s[ée]ance\s*[«"“]\s*(.+?)\s*[»"”]/i);if(m)name=m[1];
+  const ex=[];for(const l of lines){const r=l.match(/^\d+\s*[.)-]\s*(.+?)\s*[:—–-]\s*(\d+)\s*s[ée]ries?/i);if(r)ex.push(newEx(r[1],Math.min(20,Math.max(1,+r[2]))))}
+  return ex.length?{id:uid(),name,exercises:ex}:null;
+}
+$("msImportOpen").addEventListener("click",()=>{$("msImport").hidden=false;$("msImportOpen").hidden=true;$("msPaste").focus()});
+$("msImportCancel").addEventListener("click",()=>{$("msImport").hidden=true;$("msImportOpen").hidden=false});
+$("msImportBtn").addEventListener("click",()=>{
+  const se=parseSession($("msPaste").value);
+  if(!se){toast("Texte non reconnu. Colle une séance copiée depuis Sid'note.");return}
+  M().sessions.push(se);msOpenId=se.id;save();$("msPaste").value="";$("msImport").hidden=true;$("msImportOpen").hidden=false;renderMuscu();toast(`Séance « ${se.name} » importée`);
+});
+
+/* ---------- chrono (musculation) ---------- */
+let swStart=null,swAcc=0,swTimer=null,swLaps=[];
+const swFmt=ms=>{const t=Math.floor(ms/1000),h=Math.floor(t/3600),m=Math.floor(t%3600/60),sec=t%60;
+  return h?`${h}:${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`:`${m}:${String(sec).padStart(2,"0")}`};
+const swNow=()=>swAcc+(swStart!==null?Date.now()-swStart:0);
+function swRender(){
+  const run=swStart!==null,t=swNow();
+  $("restClock").textContent=swFmt(t);
+  $("swSlide").classList.toggle("run",run);$("swSlide").classList.toggle("paused",!run&&t>0);
+  $("swMini").textContent=run?swFmt(t):"";
+  // l'anneau fait un tour par minute
+  $("swRing").style.strokeDashoffset=(326.73*(1-(t%60000)/60000)).toFixed(2);
+  $("swPhase").textContent=run?(swLaps.length?`Tour ${swLaps.length+1}`:"En cours"):t>0?"Arrêté":"Chrono";
+  const lastLap=swLaps.length?swLaps[swLaps.length-1]:0;
+  $("swSub").textContent=run?(swLaps.length?`Ce tour : ${swFmt(t-lastLap)}`:t>=60000?`${Math.floor(t/60000)} min écoulée${t>=120000?"s":""}`:"Repos en cours…"):t>0?"Reprends ou remets à zéro.":"Compte jusqu'à ce que tu l'arrêtes.";
+  $("restGo").textContent=run?"Arrêter":t>0?"Reprendre":"Démarrer";
+  $("restReset").hidden=run||t===0;$("restLap").hidden=!run;
+}
+function swRenderLaps(){
+  const el=$("swLaps");el.hidden=!swLaps.length;
+  el.innerHTML=swLaps.map((v,i)=>`<div><span>Tour ${i+1}</span><span>+${swFmt(v-(i?swLaps[i-1]:0))}</span><span>${swFmt(v)}</span></div>`).reverse().join("");
+}
+$("restGo").addEventListener("click",()=>{
+  if(swStart!==null){swAcc+=Date.now()-swStart;swStart=null;clearInterval(swTimer)}
+  else{swStart=Date.now();clearInterval(swTimer);swTimer=setInterval(swRender,250)}
+  swRender();
+});
+$("restLap").addEventListener("click",()=>{if(swStart===null)return;swLaps.push(swNow());if(navigator.vibrate)navigator.vibrate(15);swRenderLaps();swRender()});
+$("restReset").addEventListener("click",()=>{swStart=null;swAcc=0;swLaps=[];clearInterval(swTimer);swRenderLaps();swRender()});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){swRender();tmTick()}});
+swRender();
+
+/* ---------- minuteur (musculation) : simple ou fractionné ---------- */
+const TM_PRESETS=[60,90,120,180];
+const TMC=Object.assign({mode:"simple",dur:(data.ui&&data.ui.tmDur)||90,work:40,rest:20,rounds:8},(data.ui&&data.ui.tmCfg)||{});
+let tmRun=null,tmTimer=null,tmLastSeg=null,tmCustomOpen=false;
+const tmSaveCfg=()=>{data.ui.tmCfg=TMC;saveUI()};
+// séquence : simple = 1 bloc ; fractionné = effort / repos × séries (pas de repos après la dernière série)
+function tmSegs(){
+  if(TMC.mode!=="frac")return[{t:"s",d:TMC.dur}];
+  const out=[];for(let i=0;i<TMC.rounds;i++){out.push({t:"e",d:TMC.work,n:i+1});if(TMC.rest>0&&i<TMC.rounds-1)out.push({t:"r",d:TMC.rest,n:i+1})}
+  return out;
+}
+const tmTotal=segs=>segs.reduce((a,x)=>a+x.d,0);
+const tmEl=()=>tmRun?((tmRun.pausedAt||Date.now())-tmRun.startAt-tmRun.pausedTotal)/1000:0;
+function tmLocate(){const el=tmEl();let t=0;for(let i=0;i<tmRun.segs.length;i++){const d=tmRun.segs[i].d;if(el<t+d)return{i,into:el-t,d};t+=d}return{i:tmRun.segs.length,into:0,d:0}}
+function tmRender(){
+  const run=!!tmRun&&!tmRun.pausedAt,paused=!!tmRun&&!!tmRun.pausedAt,frac=TMC.mode==="frac";
+  const sl=$("tmSlide");sl.classList.toggle("run",run);sl.classList.toggle("paused",paused);
+  document.querySelectorAll("#tmMode button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.tmmode===TMC.mode));
+  $("tmMode").hidden=!!tmRun;$("tmSimple").hidden=frac;$("tmFrac").hidden=!frac;
+  let left,frac01=0,label;
+  if(tmRun){const L=tmLocate();if(L.i>=tmRun.segs.length){left=0;frac01=1}else{const sg=tmRun.segs[L.i];left=sg.d-L.into;frac01=L.into/sg.d;
+      sl.classList.toggle("rest-ph",sg.t==="r");
+      label=sg.t==="e"?`Effort ${sg.n}/${TMC.rounds}`:sg.t==="r"?`Repos · puis série ${sg.n+1}`:null}}
+  else{sl.classList.remove("rest-ph");left=frac?TMC.work:TMC.dur}
+  $("tmClock").textContent=swFmt(Math.ceil(Math.max(0,left))*1000);
+  $("tmRing").style.strokeDashoffset=(326.73*(tmRun?frac01:0)).toFixed(2);
+  $("tmPhase").textContent=paused?"En pause":run?"En cours":"Minuteur";
+  $("tmFPhase").textContent=paused?"En pause":label||"Fractionné";
+  $("tmGo").textContent=run?"Pause":paused?"Reprendre":"Démarrer";
+  $("tmReset").hidden=!paused;
+  $("tmMini").textContent=run?swFmt(Math.ceil(Math.max(0,left))*1000):"";
+  const custom=!TM_PRESETS.includes(TMC.dur);
+  $("tmPresets").innerHTML=TM_PRESETS.map(p=>`<button type="button" class="mini" data-tmp="${p}" aria-pressed="${p===TMC.dur}">${swFmt(p*1000)}</button>`).join("")+
+    `<button type="button" class="mini" data-tmcustom="1" aria-pressed="${custom||tmCustomOpen}">${custom?"✎ "+swFmt(TMC.dur*1000):"✎ Perso"}</button>`;
+  $("tmCustom").hidden=!tmCustomOpen||!!tmRun;
+  document.querySelectorAll("#tmFrac input").forEach(i=>{i.disabled=!!tmRun});
+  if(document.activeElement!==$("tfWork"))$("tfWork").value=TMC.work;
+  if(document.activeElement!==$("tfRest"))$("tfRest").value=TMC.rest;
+  if(document.activeElement!==$("tfRounds"))$("tfRounds").value=TMC.rounds;
+  const tot=tmTotal(tmSegs());
+  $("tfInfo").textContent=`${TMC.rounds} série${TMC.rounds>1?"s":""} · durée totale ${swFmt(tot*1000)}`;
+  if(tmRun&&frac){const L=tmLocate();const done=tmRun.segs.slice(0,L.i).reduce((a,x)=>a+x.d,0)+L.into;$("tfInfo").textContent=`Reste ${swFmt(Math.ceil(tot-done)*1000)} au total`}
+}
+function tmTick(){
+  if(!tmRun||tmRun.pausedAt)return;
+  const L=tmLocate();
+  if(L.i>=tmRun.segs.length){tmRun=null;tmLastSeg=null;clearInterval(tmTimer);keepAwake(false);
+    const sl=$("tmSlide");sl.classList.remove("run","rest-ph");sl.classList.add("done");$("tmClock").textContent="0:00";$("tmPhase").textContent="Terminé";$("tmFPhase").textContent="Terminé";$("tmRing").style.strokeDashoffset="326.73";
+    chime("end");if(navigator.vibrate)navigator.vibrate([200,100,200]);toast(TMC.mode==="frac"?"Fractionné terminé, bravo !":"Repos terminé, à toi de jouer !");
+    setTimeout(()=>{$("tmSlide").classList.remove("done");tmRender()},4000);return}
+  if(tmLastSeg!==null&&L.i!==tmLastSeg){const sg=tmRun.segs[L.i];
+    chime(sg.t==="r"?"b":"w");if(navigator.vibrate)navigator.vibrate(sg.t==="r"?[120]:[120,80,120]);
+    toast(sg.t==="r"?`Repos ${swFmt(sg.d*1000)}`:`Série ${sg.n} : go !`)}
+  tmLastSeg=L.i;
+  tmRender();
+}
+$("tmGo").addEventListener("click",()=>{
+  unlockAudio();$("tmSlide").classList.remove("done");
+  if(tmRun&&!tmRun.pausedAt){tmRun.pausedAt=Date.now();clearInterval(tmTimer);keepAwake(false)}
+  else if(tmRun){tmRun.pausedTotal+=Date.now()-tmRun.pausedAt;tmRun.pausedAt=null;tmTimer=setInterval(tmTick,250);keepAwake(true)}
+  else{tmRun={segs:tmSegs(),startAt:Date.now(),pausedAt:null,pausedTotal:0};tmLastSeg=0;tmCustomOpen=false;clearInterval(tmTimer);tmTimer=setInterval(tmTick,250);keepAwake(true);if(TMC.mode==="frac")chime("w")}
+  tmRender();
+});
+$("tmReset").addEventListener("click",()=>{tmRun=null;tmLastSeg=null;clearInterval(tmTimer);keepAwake(false);tmRender()});
+$("tmSlide").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.tmmode){if(tmRun)return;TMC.mode=b.dataset.tmmode;tmSaveCfg();tmRender()}
+  else if(b.dataset.tmp){TMC.dur=+b.dataset.tmp;tmCustomOpen=false;tmSaveCfg();tmRender()}
+  else if(b.dataset.tmcustom){tmCustomOpen=!tmCustomOpen;$("tmMin").value=Math.floor(TMC.dur/60);$("tmSec").value=TMC.dur%60;tmRender();if(tmCustomOpen)$("tmMin").focus()}
+  else if(b.id==="tmCustomOk"){const v=Math.max(0,+$("tmMin").value||0)*60+Math.max(0,Math.min(59,+$("tmSec").value||0));
+    if(v<5){toast("Choisis au moins 5 secondes");return}TMC.dur=Math.min(5999,v);tmCustomOpen=false;tmSaveCfg();$("tmMin").blur();$("tmSec").blur();tmRender()}
+  else if(b.dataset.tm){const d=+b.dataset.tm;
+    if(tmRun&&TMC.mode==="simple"){const P0=tmLocate();tmRun.segs[0].d=Math.max(P0.into+1,tmRun.segs[0].d+d)}
+    else if(!tmRun){TMC.dur=Math.min(5999,Math.max(5,TMC.dur+d));tmSaveCfg()}
+    tmRender()}
+});
+$("tmCustom").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("tmCustomOk").click()}});
+$("tmFrac").addEventListener("change",e=>{
+  const lim={tfWork:["work",5,3600],tfRest:["rest",0,3600],tfRounds:["rounds",1,99]}[e.target.id];if(!lim)return;
+  TMC[lim[0]]=Math.min(lim[2],Math.max(lim[1],Math.round(+e.target.value||0)));tmSaveCfg();tmRender();
+});
+tmRender();
+
+/* défilement chrono <-> minuteur */
+function restGo(i,smooth=true){const tr=$("restTrack");tr.scrollTo({left:i*tr.clientWidth,behavior:smooth?"smooth":"auto"})}
+function restMark(i){document.querySelectorAll(".rest-tabs button").forEach(b=>b.setAttribute("aria-selected",+b.dataset.go===i))}
+document.querySelector(".rest-tabs").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(!b)return;restGo(+b.dataset.go);restMark(+b.dataset.go)});
+let restScrollT=null;
+$("restTrack").addEventListener("scroll",()=>{clearTimeout(restScrollT);restScrollT=setTimeout(()=>{
+  const tr=$("restTrack"),i=Math.round(tr.scrollLeft/Math.max(1,tr.clientWidth));restMark(i);data.ui.restSlide=i;saveUI()},80)});
+// revenir sur le dernier choisi
+requestAnimationFrame(()=>{const i=(data.ui&&data.ui.restSlide)||0;restMark(i);if(i)restGo(i,false)});
+
+/* ---------- musique (Spotify) ---------- */
+const SPOT_DEFAULT="playlist/37i9dQZF1DWZeKCadgRdKQ"; // Deep Focus
+let spotShown=null;
+function parseSpot(v){
+  v=String(v||"").trim();
+  let m=v.match(/open\.spotify\.com\/(?:intl-[a-z-]+\/)?(?:embed\/)?(playlist|album|track|artist|show|episode)\/([A-Za-z0-9]+)/);
+  if(!m)m=v.match(/^spotify:(playlist|album|track|artist|show|episode):([A-Za-z0-9]+)$/);
+  return m?`${m[1]}/${m[2]}`:null;
+}
+function renderSpotify(){
+  const ref=(data.prefs&&data.prefs.spotify)||SPOT_DEFAULT;
+  if(spotShown===ref)return;spotShown=ref;
+  $("spotEmbed").innerHTML=`<iframe title="Lecteur Spotify" src="https://open.spotify.com/embed/${ref}?utm_source=generator" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
+  $("spotOpen").href=`https://open.spotify.com/${ref}`;
+  $("spotName").textContent=ref===SPOT_DEFAULT?"Playlist par défaut : Deep Focus":"Ta musique";
+}
+$("spotForm").addEventListener("submit",e=>{
+  e.preventDefault();const v=$("spotIn").value.trim();
+  if(!v){data.prefs.spotify=null;save();spotShown=null;renderSpotify();toast("Playlist par défaut");return}
+  const ref=parseSpot(v);
+  if(!ref){toast("Ce lien Spotify n'est pas reconnu. Copie le lien depuis Spotify > Partager.");return}
+  data.prefs.spotify=ref;save();$("spotIn").value="";renderSpotify();toast("Musique mise à jour");
+});
+
+/* ---------- documents (PDF) ---------- */
+const PDFJS="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+const DOC_MAX=50*1024*1024;
+const docsArr=()=>data.docs||(data.docs=[]);
+let docQ="",docStoreMsg="",docBusy=new Set();
+// petit coffre local (IndexedDB) : les PDF restent lisibles hors connexion
+const idb={db:null,
+  open(){return this.db||(this.db=new Promise((res,rej)=>{const r=indexedDB.open("sidnote-docs",1);r.onupgradeneeded=()=>r.result.createObjectStore("files");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}))},
+  async run(mode,fn){const db=await this.open();return new Promise((res,rej)=>{const tx=db.transaction("files",mode),st=tx.objectStore("files"),q=fn(st);tx.oncomplete=()=>res(q&&q.result);tx.onerror=()=>rej(tx.error)})},
+  get(k){return this.run("readonly",s=>s.get(k)).catch(()=>null)},
+  put(k,v){return this.run("readwrite",s=>s.put(v,k))},
+  del(k){return this.run("readwrite",s=>s.delete(k)).catch(()=>{})}};
+async function idbClearUser(u){try{const db=await idb.open();const tx=db.transaction("files","readwrite"),st=tx.objectStore("files");
+  st.openCursor().onsuccess=e=>{const c=e.target.result;if(!c)return;if(String(c.key).startsWith(u+":"))c.delete();c.continue()}}catch(e){}}
+const docKey=d=>session.user.id+":"+d.id;
+const docPath=d=>`${session.user.id}/${d.id}.pdf`;
+async function stor(method,path,body){
+  const r=await fetch(SUPABASE_URL+"/storage/v1/object/"+path,{method,body,
+    headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+await token(),...(body?{"Content-Type":"application/pdf","x-upsert":"true"}:{})}});
+  if(!r.ok){let m="";try{const j=await r.json();m=j.message||j.error||""}catch(e){}const er=new Error(m||"Erreur "+r.status);er.status=r.status;throw er}
+  return r;
+}
+function storErr(ex){
+  if(ex instanceof TypeError)return "Pas de connexion : le document sera envoyé plus tard.";
+  if(/bucket/i.test(ex.message)||ex.status===404)return "Le stockage en ligne n'est pas encore activé : tes documents restent sur cet appareil.";
+  if(ex.status===413||/size|large/i.test(ex.message))return "Document trop lourd pour le stockage en ligne.";
+  if(ex.status===401||ex.status===403)return "Accès au stockage refusé : vérifie la configuration Supabase.";
+  return "Envoi impossible : "+ex.message;
+}
+async function docUpload(d){
+  if(d.up||docBusy.has(d.id))return;
+  const b=await idb.get(docKey(d));if(!b)return;
+  docBusy.add(d.id);renderDocs();
+  try{await stor("POST","documents/"+docPath(d),b);d.up=true;d.path=docPath(d);docStoreMsg="";save()}
+  catch(ex){docStoreMsg=storErr(ex)}
+  docBusy.delete(d.id);renderDocs();
+}
+function docsSyncPending(){if(!session)return;docsArr().filter(d=>!d.up).forEach(d=>docUpload(d))}
+async function docBlob(d){
+  let b=await idb.get(docKey(d));if(b)return b;
+  if(!d.up)throw new Error("Ce document n'a pas encore été envoyé en ligne : ouvre-le sur l'appareil où tu l'as ajouté.");
+  const r=await stor("GET","authenticated/documents/"+(d.path||docPath(d)));
+  b=new Blob([await r.arrayBuffer()],{type:"application/pdf"});
+  idb.put(docKey(d),b).catch(()=>{});return b;
+}
+const countPages=bytes=>{try{const t=new TextDecoder("latin1").decode(bytes);const m=t.match(/\/Type\s*\/Page(?![a-zA-Z])/g);return m?m.length:0}catch(e){return 0}};
+async function addDoc(blob,title,pages){
+  if(blob.size>DOC_MAX){toast("Document trop lourd (50 Mo maximum)");return null}
+  const d={id:uid(),title:(title||"Document").slice(0,120),size:blob.size,pages:pages||countPages(new Uint8Array(await blob.arrayBuffer())),createdAt:new Date().toISOString(),up:false};
+  try{await idb.put(docKey(d),blob)}catch(e){toast("Espace insuffisant sur cet appareil");return null}
+  docsArr().push(d);save();renderDocs();docUpload(d);return d;
+}
+async function docDelete(d){
+  tomb(d.id);data.docs=docsArr().filter(x=>x.id!==d.id);save();renderDocs();idb.del(docKey(d));
+  if(d.up)stor("DELETE","documents/"+(d.path||docPath(d))).catch(()=>{});
+  toast("Document supprimé");
+}
+async function docShare(d){
+  try{const b=await docBlob(d);const name=(d.title.replace(/[\\/:*?"<>|]+/g," ").trim()||"document")+".pdf";
+    const f=new File([b],name,{type:"application/pdf"});
+    try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:d.title});return}}catch(e){if(e.name==="AbortError")return}
+    const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+  }catch(ex){toast(ex instanceof TypeError?"Pas de connexion internet":ex.message)}
+}
+// recherche tolérante : sans accents, un seul mot suffit, fautes de frappe acceptées
+const fold=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+const words=s=>fold(s).split(/[^a-z0-9]+/).filter(Boolean);
+function lev(a,b){if(Math.abs(a.length-b.length)>2)return 9;let p=Array.from({length:b.length+1},(_,i)=>i);
+  for(let i=1;i<=a.length;i++){const c=[i];for(let j=1;j<=b.length;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[b.length]}
+function tokScore(t,ws){let best=0;
+  for(const w of ws){let s=0;
+    if(w===t)s=3;else if(w.startsWith(t))s=2.5;else if(t.length>=3&&w.includes(t))s=2;
+    else if(t.length>=4){const al=t.length>=7?2:1,d=Math.min(lev(t,w),lev(t,w.slice(0,t.length)));if(d<=al)s=1.5-d*.3}
+    best=Math.max(best,s)}
+  return best}
+function fuzzyScore(title,q){
+  const ts=words(q);if(!ts.length)return 1;const ws=words(title);
+  const sc=ts.map(t=>tokScore(t,ws)),hit=sc.filter(x=>x>0).length;if(!hit)return 0;
+  return sc.reduce((a,b)=>a+b,0)+(hit===ts.length?10:0)+(fold(title).includes(fold(q).trim())?5:0);
+}
+const fmtSize=n=>LANG==="en"?(n<1048576?Math.max(1,Math.round(n/1024))+" KB":(n/1048576).toFixed(1)+" MB"):(n<1048576?Math.max(1,Math.round(n/1024))+" Ko":(n/1048576).toFixed(1).replace(".",",")+" Mo");
+const fmtDay=s=>{const d=new Date(s);return `${d.getDate()} ${MO[d.getMonth()]} ${d.getFullYear()}`};
+function renderDocs(){
+  if(!$("docList"))return;
+  const all=docsArr(),q=docQ.trim();
+  let list=all.slice().sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
+  if(q)list=list.map(d=>({d,s:fuzzyScore(d.title,q)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).map(x=>x.d);
+  const SHARE=`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7.5 7.5L12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>`;
+  $("docList").innerHTML=list.length?list.map(d=>{
+    const st=docBusy.has(d.id)?L("Envoi…"):d.up?"":L("Sur cet appareil seulement");
+    return `<div class="doc" data-doc="${d.id}"><button class="doc-ic" data-docopen="${d.id}" aria-label="Ouvrir">PDF</button>
+      <button class="doc-open" data-docopen="${d.id}"><b>${esc(d.title)}</b><span class="small muted">${d.pages?`${d.pages} ${L(d.pages>1?"pages":"page")} · `:""}${fmtSize(d.size||0)} · ${fmtDay(d.createdAt)}${st?` · <span style="color:var(--warn)">${st}</span>`:""}</span></button>
+      <button class="pen" data-docshare="${d.id}" aria-label="Partager ou enregistrer">${SHARE}</button>
+      <button class="pen" data-edit="doc:${d.id}" aria-label="Renommer">${PEN}</button></div>`}).join("")
+    :`<div class="empty">${q?L("Aucun document ne correspond."):L("Aucun document pour l'instant. Importe un PDF ou scanne une feuille.")}</div>`;
+  const tot=all.reduce((a,d)=>a+(d.size||0),0);
+  $("docInfo").textContent=docStoreMsg||(all.length?`${all.length} ${L(all.length>1?"documents":"document")} · ${fmtSize(tot)}`:"");
+  $("docInfo").style.color=docStoreMsg?"var(--warn)":"";
+}
+$("docSearch").addEventListener("input",e=>{docQ=e.target.value;renderDocs()});
+$("docList").addEventListener("click",e=>{
+  const o=e.target.closest("[data-docopen]"),sh=e.target.closest("[data-docshare]");
+  const d=docsArr().find(x=>x.id===(o?o.dataset.docopen:sh?sh.dataset.docshare:""));if(!d)return;
+  if(o)openViewer(d);else docShare(d);
+});
+$("docImport").addEventListener("change",async e=>{
+  const files=[...e.target.files];e.target.value="";let n=0;
+  for(const f of files){
+    try{
+      const base=f.name.replace(/\.[a-z0-9]{2,5}$/i,"").replace(/[_]+/g," ").trim();
+      if(/pdf$/i.test(f.type)||/\.pdf$/i.test(f.name)){if(await addDoc(new Blob([await f.arrayBuffer()],{type:"application/pdf"}),base))n++}
+      else if(/^image\//.test(f.type)){const src=await loadImg(f);const pg=renderPage(src,"color",0);if(await addDoc(makePDF([pg]),base||L("Image"),1))n++}
+      else toast(`${f.name} : ${L("format non pris en charge")}`);
+    }catch(ex){toast(`${f.name} : ${L("import impossible")}`)}
+  }
+  if(n)toast(n>1?`${n} ${L("documents ajoutés")}`:L("Document ajouté"));
+});
+/* lecteur de PDF */
+let pdfjsP=null,viewTok=0,viewDoc=null;
+function loadPdfJs(){
+  if(window.pdfjsLib)return Promise.resolve(window.pdfjsLib);
+  return pdfjsP||(pdfjsP=new Promise((res,rej)=>{const sc=document.createElement("script");sc.src=PDFJS+"pdf.min.js";
+    sc.onload=()=>{window.pdfjsLib.GlobalWorkerOptions.workerSrc=PDFJS+"pdf.worker.min.js";res(window.pdfjsLib)};
+    sc.onerror=()=>{pdfjsP=null;sc.remove();rej(new Error("pdfjs"))};document.head.appendChild(sc)}));
+}
+async function openViewer(d){
+  const tok=++viewTok;viewDoc=d;
+  $("vwTitle").textContent=d.title;$("viewer").hidden=false;document.body.style.overflow="hidden";
+  const body=$("vwBody");body.innerHTML=`<p class="muted">${L("Ouverture…")}</p>`;
+  let blob;try{blob=await docBlob(d)}catch(ex){if(tok===viewTok)body.innerHTML=`<p class="muted" style="text-align:center;padding:20px">${esc(ex instanceof TypeError?L("Pas de connexion internet"):ex.message)}</p>`;return}
+  try{
+    const lib=await loadPdfJs();
+    const pdf=await lib.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise;
+    if(tok!==viewTok)return;body.innerHTML="";
+    const W=Math.min(body.clientWidth-16,900),dpr=Math.min(2,window.devicePixelRatio||1);
+    for(let i=1;i<=pdf.numPages;i++){
+      if(tok!==viewTok)return;
+      const page=await pdf.getPage(i),v0=page.getViewport({scale:1}),sc=W/v0.width,vp=page.getViewport({scale:sc*dpr});
+      const c=document.createElement("canvas");c.width=vp.width;c.height=vp.height;c.style.width=W+"px";body.appendChild(c);
+      await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;
+    }
+    if(!d.pages&&pdf.numPages){d.pages=pdf.numPages;save();renderDocs()}
+  }catch(ex){
+    if(tok!==viewTok)return;
+    // secours : lecteur intégré du navigateur
+    const u=URL.createObjectURL(blob);body.innerHTML=`<iframe src="${u}" title="${esc(d.title)}"></iframe><p class="small muted" style="text-align:center">${L("Si le document ne s'affiche pas, touche « Partager » pour l'ouvrir avec une autre app.")}</p>`;
+  }
+}
+function closeViewer(){viewTok++;viewDoc=null;$("viewer").hidden=true;$("vwBody").innerHTML="";document.body.style.overflow=""}
+$("vwBack").addEventListener("click",closeViewer);
+$("vwShare").addEventListener("click",()=>{if(viewDoc)docShare(viewDoc)});
+/* scanner : photo -> rendu « document » -> PDF */
+let scanPages=[],scanFlt="doc";
+function loadImg(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();
+  im.onload=()=>{const MAX=1800,k=Math.min(1,MAX/Math.max(im.naturalWidth,im.naturalHeight));
+    const c=document.createElement("canvas");c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);
+    c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c)};
+  im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error("image"))};im.src=u})}
+function renderPage(src,flt,rot){
+  const r=((rot%4)+4)%4,c=document.createElement("canvas");c.width=r%2?src.height:src.width;c.height=r%2?src.width:src.height;
+  const x=c.getContext("2d");x.translate(c.width/2,c.height/2);x.rotate(r*Math.PI/2);x.drawImage(src,-src.width/2,-src.height/2);x.setTransform(1,0,0,1,0,0);
+  if(flt==="doc"){
+    const im=x.getImageData(0,0,c.width,c.height),p=im.data,h=new Uint32Array(256),n=p.length/4;
+    for(let i=0;i<p.length;i+=4){const v=(p[i]*299+p[i+1]*587+p[i+2]*114)/1000|0;p[i]=v;h[v]++}
+    const pct=f=>{let a=0;for(let v=0;v<256;v++){a+=h[v];if(a>=n*f)return v}return 255};
+    const lo=pct(.02),hi=Math.max(lo+30,pct(.80)),lut=new Uint8ClampedArray(256);
+    for(let v=0;v<256;v++){const t=Math.min(1,Math.max(0,(v-lo)/(hi-lo)));lut[v]=255*Math.pow(t,1.6)}
+    for(let i=0;i<p.length;i+=4){const v=lut[p[i]];p[i]=p[i+1]=p[i+2]=v}
+    x.putImageData(im,0,0);
+  }
+  const url=c.toDataURL("image/jpeg",flt==="doc"?.72:.8),b=atob(url.split(",")[1]),bytes=new Uint8Array(b.length);
+  for(let i=0;i<b.length;i++)bytes[i]=b.charCodeAt(i);
+  return{bytes,w:c.width,h:c.height,url};
+}
+// PDF minimal : une image JPEG par page
+function makePDF(pages){
+  const enc=new TextEncoder(),parts=[],offs=[];let pos=0;
+  const add=x=>{const b=typeof x==="string"?enc.encode(x):x;parts.push(b);pos+=b.length};
+  const N=pages.length,ids=pages.map((_,i)=>({pg:3+i*3,im:4+i*3,ct:5+i*3}));
+  add("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n");
+  const obj=(id,...body)=>{offs[id]=pos;add(`${id} 0 obj\n`);body.forEach(add);add("\nendobj\n")};
+  obj(1,"<< /Type /Catalog /Pages 2 0 R >>");
+  obj(2,`<< /Type /Pages /Kids [${ids.map(o=>o.pg+" 0 R").join(" ")}] /Count ${N} >>`);
+  pages.forEach((p,i)=>{
+    const W=595.28,H=+(W*p.h/p.w).toFixed(2),cs=`q ${W} 0 0 ${H} 0 0 cm /Im${i} Do Q`;
+    obj(ids[i].pg,`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /XObject << /Im${i} ${ids[i].im} 0 R >> >> /Contents ${ids[i].ct} 0 R >>`);
+    obj(ids[i].im,`<< /Type /XObject /Subtype /Image /Width ${p.w} /Height ${p.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${p.bytes.length} >>\nstream\n`,p.bytes,"\nendstream");
+    obj(ids[i].ct,`<< /Length ${cs.length} >>\nstream\n${cs}\nendstream`);
+  });
+  const xref=pos,size=3+N*3;
+  add(`xref\n0 ${size}\n0000000000 65535 f \n`+Array.from({length:size-1},(_,k)=>String(offs[k+1]).padStart(10,"0")+" 00000 n \n").join(""));
+  add(`trailer\n<< /Size ${size} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+  return new Blob(parts,{type:"application/pdf"});
+}
+function renderScan(){
+  $("scanPages").innerHTML=scanPages.map((p,i)=>`<div class="pg"><img src="${p.out.url}" alt="Page ${i+1}"><button class="rot" data-scrot="${i}" aria-label="Pivoter">↻</button><button class="rm" data-scrm="${i}" aria-label="Retirer">×</button><span>${i+1}</span></div>`).join("");
+  document.querySelectorAll("#scanFilter button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.flt===scanFlt));
+  $("scanSave").disabled=!scanPages.length;
+  $("scanAddTxt").textContent=L(scanPages.length?"◎ Page suivante":"◎ Prendre une photo");
+  $("scanSave").textContent=scanPages.length?`${L("Enregistrer le PDF")} (${scanPages.length} ${L(scanPages.length>1?"pages":"page")})`:L("Enregistrer le PDF");
+}
+function openScan(){
+  scanPages=[];const n=new Date();
+  $("scanName").value=`Scan ${n.getDate()} ${MO[n.getMonth()]} ${n.getFullYear()} ${two(n.getHours())}h${two(n.getMinutes())}`;
+  $("scan").hidden=false;renderScan();
+}
+$("docScanBtn").addEventListener("click",()=>{openScan();$("scanCam").click()});
+$("scanClose").addEventListener("click",()=>{$("scan").hidden=true;scanPages=[]});
+async function scanAdd(files){
+  for(const f of files){try{const src=await loadImg(f);scanPages.push({src,rot:0,out:renderPage(src,scanFlt,0)})}catch(e){toast("Photo illisible")}}
+  renderScan();
+}
+$("scanCam").addEventListener("change",e=>{scanAdd([...e.target.files]);e.target.value=""});
+$("scanLib").addEventListener("change",e=>{scanAdd([...e.target.files]);e.target.value=""});
+$("scan").addEventListener("click",e=>{
+  if(e.target.id==="scan"){$("scan").hidden=true;scanPages=[];return}
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.flt){scanFlt=b.dataset.flt;scanPages.forEach(p=>p.out=renderPage(p.src,scanFlt,p.rot));renderScan()}
+  else if(b.dataset.scrot){const p=scanPages[+b.dataset.scrot];p.rot++;p.out=renderPage(p.src,scanFlt,p.rot);renderScan()}
+  else if(b.dataset.scrm){scanPages.splice(+b.dataset.scrm,1);renderScan()}
+});
+$("scanSave").addEventListener("click",async()=>{
+  if(!scanPages.length)return;const btn=$("scanSave");btn.disabled=true;
+  const d=await addDoc(makePDF(scanPages.map(p=>p.out)),$("scanName").value.trim()||"Scan",scanPages.length);
+  btn.disabled=false;if(d){$("scan").hidden=true;scanPages=[];toast("Scan enregistré dans Documents")}
+});
+
+/* ---------- onglet Appli ---------- */
+function renderApp(){
+  const ok=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+  $("appStatus").innerHTML=ok?'<span class="syncdot"></span><span>Tu utilises déjà Sid\'note comme application.</span>'
+    :'<span class="syncdot wait"></span><span>Tu es dans le navigateur. Suis les étapes ci-dessous pour installer l\'app.</span>';
+  const ai=$("authInstall");if(ai)ai.hidden=ok;
+}
+renderApp();
+
+/* ---------- langue, présentation, page d'accueil ---------- */
+function setLang(v){LANG=v;ls.set("sidnote-lang",v);if(session){data.prefs.lang=v;save()}location.reload()}
+// traduction de l'interface : on remplace les textes français affichés par leur version anglaise
+const NOTR=".ttl,.ms-name,.doc-open b,#vwTitle,.blk b,.next .t,.notr,#accName,textarea,input,select option[data-user]";
+function trStr(raw){
+  const t=raw.trim();if(!t||!/[A-Za-zÀ-ÿ]/.test(t))return raw;
+  let r=DICT[t];
+  if(r===undefined){for(const[re,f]of PATS){const m=t.match(re);if(m){r=typeof f==="function"?f(...m.slice(1)):t.replace(re,f);break}}}
+  if(r===undefined||r===t)return raw;
+  return raw.replace(t,r);
+}
+function trNode(n){
+  if(n.nodeType===3){const p=n.parentElement;if(!p||p.closest(NOTR)||p.closest("script,style"))return;const v=trStr(n.nodeValue);if(v!==n.nodeValue)n.nodeValue=v;return}
+  if(n.nodeType!==1||n.matches("script,style"))return;
+  for(const a of ["placeholder","aria-label","title"]){const v=n.getAttribute(a);if(v){const w=trStr(v);if(w!==v)n.setAttribute(a,w)}}
+  if(n.closest(NOTR)&&!n.matches("input,select,textarea"))return;
+  const w=document.createTreeWalker(n,NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT);let x;
+  while((x=w.nextNode()))if(x.nodeType===3)trNode(x);else for(const a of ["placeholder","aria-label","title"]){const v=x.getAttribute(a);if(v){const u=trStr(v);if(u!==v)x.setAttribute(a,u)}}
+}
+function startTranslate(){
+  document.documentElement.lang="en";document.title="Sid'note";
+  MO.splice(0,12,"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec");
+  MOL.splice(0,12,"January","February","March","April","May","June","July","August","September","October","November","December");
+  DOW.splice(0,7,"Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday");
+  DOWL.splice(0,7,"Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday");
+  const dw=document.querySelector(".cal-dow");if(dw)dw.innerHTML="<span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>";
+  trNode(document.body);
+  new MutationObserver(ms=>{for(const m of ms){
+    if(m.type==="characterData")trNode(m.target);
+    else if(m.type==="attributes")trNode(m.target);
+    else m.addedNodes.forEach(trNode)}}).observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:["placeholder","aria-label","title"]});
+}
+$("authLang").textContent=LANG==="en"?"Français":"English";
+$("authLang").addEventListener("click",()=>setLang(LANG==="en"?"fr":"en"));
+$("langSel").value=LANG;
+$("langSel").addEventListener("change",e=>setLang(e.target.value));
+// page d'accueil
+function renderHomeSel(){
+  const cur=(data.prefs&&data.prefs.home)||"last";
+  $("homeSel").innerHTML=`<option value="last">${L("Dernière page ouverte")}</option>`+
+    [...TABS.filter(([k])=>data.prefs.tabs[k]!==false),["more","Réglages"]].map(([k,l])=>`<option value="${k}">${L(l)}</option>`).join("");
+  $("homeSel").value=[...$("homeSel").options].some(o=>o.value===cur)?cur:"last";
+}
+$("homeSel").addEventListener("change",e=>{data.prefs.home=e.target.value;save();toast("Page d'accueil enregistrée")});
+// présentation au premier lancement
+const ONB_DESC={
+  plan:"Ton calendrier : examens, rendez-vous, événements. Tu peux aussi y relier ton horaire de cours.",
+  todo:"Tes tâches, rangées par catégories pour regrouper tout ce qu'il faut faire pour un projet.",
+  pomo:"Travaille concentré : sessions et pauses s'enchaînent toutes seules, avec ta musique.",
+  muscu:"Tes séances, tes charges et tes répétitions, avec chrono, tours et minuteur fractionné.",
+  docs:"Range tes PDF, scanne des feuilles avec l'appareil photo et retrouve-les en un instant.",
+  app:"Les étapes pour installer Sid'note sur ton écran d'accueil."};
+let onbSel={};
+function openOnb(){
+  onbSel={};TABS.forEach(([k])=>onbSel[k]=data.prefs.tabs[k]!==false);
+  document.querySelectorAll("#onbLang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG));
+  $("onbList").innerHTML=TABS.map(([k,l])=>{const ic=document.querySelector(`.tab[data-v="${k}"] svg`);
+    return `<label class="onb-it ${onbSel[k]?"":"off"}" data-onb="${k}"><span class="ic">${ic?ic.outerHTML:""}</span><span class="grow"><b>${l}</b><span class="small muted">${ONB_DESC[k]}</span></span><input type="checkbox" class="switch" data-onbk="${k}" ${onbSel[k]?"checked":""} aria-label="Garder ${l}"></label>`}).join("");
+  $("onb").hidden=false;document.body.style.overflow="hidden";
+}
+$("onbList").addEventListener("change",e=>{const c=e.target.closest("[data-onbk]");if(!c)return;onbSel[c.dataset.onbk]=c.checked;c.closest(".onb-it").classList.toggle("off",!c.checked)});
+$("onbLang").addEventListener("click",e=>{const b=e.target.closest("[data-lang]");if(!b||b.dataset.lang===LANG)return;data.prefs.onbPending=true;setLang(b.dataset.lang)});
+$("onbGo").addEventListener("click",()=>{
+  if(!Object.values(onbSel).some(Boolean)){toast("Garde au moins un onglet");return}
+  Object.assign(data.prefs.tabs,onbSel);data.prefs.onboarded=true;delete data.prefs.onbPending;save();
+  $("onb").hidden=true;document.body.style.overflow="";applyTabs();renderHomeSel();
+  const first=visibleTabs()[0];show(first);toast("Bienvenue sur Sid'note !");
+});
+$("replayOnb").addEventListener("click",openOnb);
+
+/* ---------- démarrage ---------- */
+if(LANG==="en")startTranslate();
+if(ephExpired){
+  // l'app a été fermée sans « Rester connecté » : on envoie les dernières modifs puis on déconnecte
+  document.body.classList.add("locked");
+  Promise.race([push(),new Promise(r=>setTimeout(r,4000))]).catch(()=>{}).finally(()=>endSession("",false));
+}else if(!session){
+  document.body.classList.add("locked");$("auth").hidden=false;
+  $("aEmail").value=ls.get(LAST_KEY)||"";
+  setMode(LEGACY?"signup":"login");
+  if(!CONFIGURED){$("authSub").textContent="L'app n'est pas encore reliée à son serveur.";}
+  try{const m=sessionStorage.getItem("sidnote-msg");if(m){$("aErr").textContent=m;$("aErr").hidden=false;sessionStorage.removeItem("sidnote-msg")}}catch(e){}
+}else{
+  // anciens utilisateurs : pas de présentation, ils connaissent déjà l'app
+  if(!data.prefs.onboarded&&(data.todos.length||data.tasks.length||(data.muscu&&data.muscu.sessions.length)||(data.pomo&&Object.keys(data.pomo.log||{}).length))){data.prefs.onboarded=true;save()}
+  renderAccount();
+  icalLoadCache();$("icalUrl").value=(data.prefs&&data.prefs.ical)||"";
+  renderAll();applyTabs();icalState();icalFetch(false);renderHomeSel();
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)icalFetch(false)});
+  const home=data.prefs.home&&data.prefs.home!=="last"?data.prefs.home:data.ui.view;
+  show(home||"plan");
+  if(!data.prefs.onboarded)openOnb();
+  if(!session.email)token().then(t=>api("/auth/v1/user",{token:t})).then(u=>{if(u&&u.email){session.email=u.email;ls.set(SESSION_KEY,session);renderAccount()}}).catch(()=>{});
+  setSync();pull();renderNotif();refreshSub();docsSyncPending();
+  window.addEventListener("online",()=>{setSync();push();pull();docsSyncPending()});
+  window.addEventListener("offline",setSync);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)pull();else if(session&&session.eph&&cache&&cache.dirty){clearTimeout(pushTimer);push()}});
+}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPlan();renderStats()}});
+
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>

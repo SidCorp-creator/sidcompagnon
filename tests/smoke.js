@@ -29,6 +29,20 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await go("notes");await pg.click("#noteNew");await pg.fill("#noteTitle","Idées");await pg.fill("#noteBody","Première ligne\nDeuxième ligne");
     await shot(pg,scheme+"-fr-note-edition");await pg.click("#noteBack");await pg.waitForTimeout(200);
     if(!(await pg.textContent("#noteList")).includes("Idées"))errs.push(scheme+": note non enregistrée");
+    // notes secrètes : cadenas, code choisi deux fois, contenu chiffré, réouverture avec le code
+    const ps=async c=>{for(const d of c)await pg.click(`[data-ps="${d}"]`)};
+    await pg.click("#noteList [data-note]");await pg.click("#noteLock");await pg.waitForSelector("#pinSheet:not([hidden])");
+    await ps("24680");await pg.waitForTimeout(300);await ps("24680");await pg.waitForSelector("#pinSheet",{state:"hidden",timeout:8000});await pg.waitForTimeout(300);
+    if((await pg.textContent("#noteList")).includes("Idées"))errs.push(scheme+": note secrète visible sans code");
+    if((await pg.evaluate(()=>JSON.stringify(data.notes))).includes("Première"))errs.push(scheme+": note secrète stockée en clair");
+    await shot(pg,scheme+"-fr-notes-secrete");
+    await pg.click("#noteList [data-note]");await pg.waitForSelector("#pinSheet:not([hidden])");await shot(pg,scheme+"-fr-notes-code");
+    await ps("11111");await pg.waitForTimeout(1500);if(!(await pg.isVisible("#pinSheet")))errs.push(scheme+": mauvais code accepté (notes)");
+    await ps("24680");await pg.waitForSelector("#noteEdit:not([hidden])",{timeout:8000});
+    if(await pg.inputValue("#noteTitle")!=="Idées")errs.push(scheme+": note secrète mal relue");
+    await pg.fill("#noteBody","Texte modifié en secret");await pg.click("#noteBack");await pg.waitForTimeout(300);
+    if((await pg.evaluate(()=>JSON.stringify(data.notes))).includes("modifié"))errs.push(scheme+": modification d'une note secrète stockée en clair");
+    await pg.click("[data-nslock]");if((await pg.textContent("#noteList")).includes("Idées"))errs.push(scheme+": verrouillage des notes secrètes inopérant");
     await go("pwd");await shot(pg,scheme+"-fr-pwd-code");
     const pin=async c=>{for(const d of c)await pg.click(`[data-pin="${d}"]`)};
     await pin("12345");await pg.waitForTimeout(300);await pin("54321");await pg.waitForTimeout(400);

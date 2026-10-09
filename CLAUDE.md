@@ -62,6 +62,8 @@ assets/               ← logo
   - La lecture passe par pdf.js 3.11.174 depuis cdnjs (secours : iframe ou Partager).
   - La recherche est tolérante (`fuzzyScore` : sans accents, un mot suffit, fautes acceptées).
 - Notes (v19) : `data.notes = [{id,title,body,createdAt,upd}]`, enregistrement automatique pendant la saisie ; une note vide est supprimée en revenant à la liste.
+- Notes secrètes (v20) : cadenas dans l'éditeur → la note est chiffrée avec un code à 5 chiffres propre aux notes (`data.noteVault`, même méthode que le coffre). Note secrète = `{id, secret:true, vid, iv, ct, upd}` (plus de titre ni de texte en clair) ; texte clair seulement en mémoire (`nsPlain`). Reverrouillage en quittant Notes ou l'app. Fenêtre de code réutilisable : `askPin({mode:"new"|"unlock", verify, forgot})`.
+- Pas de zoom au double appui : `touch-action:manipulation` sur les boutons (demande de Sid, clavier du code).
 - Mots de passe (v19) : coffre chiffré dans le navigateur.
   - Code à 5 chiffres → clé PBKDF2-SHA256 (600 000 itérations, sel aléatoire) → AES-GCM. Le code et la clé ne quittent jamais l'appareil, la clé reste en mémoire seulement.
   - `data.vault = {id, salt, iter, chk}` (`chk` = petit texte chiffré pour vérifier le code), `data.pwds = [{id, vid, iv, ct, upd}]` : uniquement du chiffré sur le serveur.

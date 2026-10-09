@@ -52,6 +52,8 @@ h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;
 .muted{color:var(--muted)}
 .small{font-size:13px}
 button{font:inherit;color:inherit}
+/* pas de zoom quand on appuie deux fois vite (clavier du code, boutons) */
+button,a,label,input,select,textarea,summary,.pad,.pin{touch-action:manipulation}
 .btn{border:0;border-radius:10px;padding:10px 16px;font-weight:600;background:var(--accent);color:var(--on-accent);cursor:pointer}
 .btn.ghost{background:var(--accent-soft);color:var(--accent)}
 .btn:focus-visible,.check:focus-visible,.tab:focus-visible,.pill:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -424,10 +426,13 @@ nav.lots .tab svg{width:21px;height:21px}
 .pin-dots.shake{animation:shake .35s}
 .pad{display:grid;grid-template-columns:repeat(3,64px);gap:10px 26px;justify-content:center}
 .pad button{width:64px;height:64px;border-radius:50%;border:0;background:var(--surface);font:500 30px var(--font);color:var(--ink);cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.06);font-variant-numeric:tabular-nums}
+.sheet .pad button{background:var(--bg)}
 .pad button:active{background:var(--accent-soft)}
 .pad button.blank{visibility:hidden}
 .pad button.del{background:none;box-shadow:none;font-size:16px;font-weight:600;color:var(--accent)}
 .pin-err{min-height:18px;color:var(--late);font-size:14px;font-weight:600;margin:0}
+.ns-bar{display:flex;align-items:center;gap:8px;background:var(--surface);border-radius:12px;padding:8px 12px;margin:0 0 10px;font-size:14px}
+.note-lock b{color:var(--muted)}
 .pw-row{display:flex;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);min-height:62px}
 .pw-row:last-child{border-bottom:0}
 .pw-av{width:38px;height:38px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:16px;flex:none;text-transform:uppercase}
@@ -849,10 +854,12 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
       <h1>Notes</h1>
       <p class="sub">Écris librement : idées, listes, brouillons. Tout est enregistré au fur et à mesure.</p>
       <div class="pw-top"><input type="search" class="search" id="noteSearch" placeholder="Rechercher une note" aria-label="Rechercher une note" autocomplete="off"><button type="button" class="btn" id="noteNew">+ Note</button></div>
+      <div class="ns-bar" id="nsBar" hidden></div>
       <div class="card" id="noteList"></div>
     </div>
     <div id="noteEdit" hidden>
-      <div class="dayv-head"><button type="button" class="back" id="noteBack">‹ Notes</button><span class="grow small muted" id="noteWhen" style="text-align:center"></span><button type="button" class="mini nu-mic" id="noteMic" aria-label="Dicter la note">🎤 Dicter</button><button type="button" class="x" id="noteDel" aria-label="Supprimer la note">×</button></div>
+      <div class="dayv-head"><button type="button" class="back" id="noteBack">‹ Notes</button><span class="grow small muted" id="noteWhen" style="text-align:center"></span><button type="button" class="mini nu-mic" id="noteMic" aria-label="Dicter la note">🎤</button><button type="button" class="mini" id="noteLock" aria-label="Rendre la note secrète">🔒</button><button type="button" class="x" id="noteDel" aria-label="Supprimer la note">×</button></div>
+      <div class="ns-bar" id="noteSecBar" hidden><span class="grow">🔒 <b>Note secrète</b> · <span class="muted">visible seulement avec ton code</span></span><button type="button" class="mini" id="noteUnsecret">Rendre visible</button></div>
       <div class="note-ed">
         <input id="noteTitle" placeholder="Titre" aria-label="Titre de la note" autocomplete="off">
         <textarea id="noteBody" placeholder="Écris ta note…" aria-label="Texte de la note"></textarea>
@@ -993,6 +1000,19 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
     <div class="two"><label>Glucides (g)<input id="nuEC" type="number" inputmode="decimal" min="0" step="0.1"></label><label>Lipides (g)<input id="nuEF" type="number" inputmode="decimal" min="0" step="0.1"></label></div>
     <div class="two"><button type="button" class="btn stop" id="nuEDel">Supprimer</button><button class="btn" type="submit">Enregistrer</button></div>
   </form>
+</div>
+<div class="sheet-bg" id="pinSheet" hidden>
+  <div class="sheet card">
+    <div class="sheet-head"><b id="psHead">Notes secrètes</b><button type="button" class="x" id="psClose" aria-label="Fermer">×</button></div>
+    <div class="pin" style="padding-top:0">
+      <p class="pin-t" id="psTitle"></p>
+      <p class="small muted" id="psSub" style="margin:-8px 0 0;max-width:320px"></p>
+      <div class="pin-dots" id="psDots" aria-live="polite"><i></i><i></i><i></i><i></i><i></i></div>
+      <p class="pin-err" id="psErr" role="alert"></p>
+      <div class="pad" id="psPad"></div>
+      <button type="button" class="linkbtn" id="psForgot" style="background:none;border:0;cursor:pointer;font-size:14px" hidden>Code oublié ?</button>
+    </div>
+  </div>
 </div>
 <div class="sheet-bg" id="pwSheet" hidden>
   <form class="sheet card" id="pwForm" novalidate>
@@ -1185,6 +1205,13 @@ const DICT={
 "Une app":"An app","Séance":"Workout","Séances":"Workouts","Exercice":"Exercise","Chargement…":"Loading…","Mode test":"Test mode",
 "Choisis au moins 5 secondes ":"Choose at least 5 seconds",
 // v20
+"Rendre la note secrète":"Make the note secret","Verrouiller la note":"Lock the note","Note secrète":"Secret note","visible seulement avec ton code":"visible only with your code",
+"Rendre visible":"Make visible","Notes secrètes":"Secret notes","Notes secrètes déverrouillées":"Secret notes unlocked","Verrouiller":"Lock",
+"Touche pour l'ouvrir avec ton code":"Tap to open it with your code","Notes secrètes verrouillées":"Secret notes locked","Note verrouillée":"Note locked",
+"Écris d'abord quelque chose":"Write something first","Note secrète verrouillée":"Secret note locked","La note n'est plus secrète":"The note is no longer secret",
+"Choisis le code de tes notes secrètes. Retiens-le bien : sans lui, elles ne peuvent pas être récupérées.":"Choose the code for your secret notes. Remember it well: without it, they can't be recovered.",
+"Entre le code de tes notes secrètes.":"Enter the code for your secret notes.","Notes secrètes effacées":"Secret notes erased","Code":"Code",
+"Effacer toutes les notes secrètes et choisir un nouveau code ? Touche encore pour confirmer.":"Erase all secret notes and choose a new code? Tap again to confirm.",
 "Poids visé (optionnel)":"Target weight (optional)","En combien de temps":"How long","Durée":"Duration","Unité":"Unit","semaines":"weeks","semaine":"week","mois":"months",
 "Indique un poids visé en kg.":"Enter a target weight in kg.","Indique en combien de temps tu veux atteindre ce poids.":"Enter how long you want to take to reach this weight.",
 "par semaine":"per week","en":"in","Ton délai est réaliste.":"Your timeframe is realistic.","Ce délai n'est pas réaliste, ni bon pour ta santé.":"This timeframe isn't realistic, nor good for your health.",
@@ -1492,6 +1519,7 @@ function show(v){
   if(v==="docs")renderDocs();
   if(v!=="pwd")pwdLock();else renderPwd();
   if(v==="notes"&&!noteOpenId)renderNotes();
+  if(v!=="notes"&&nsKey)nsLock();
   if(v!=="notes"&&v!=="nutri")dictStop();
   if(v==="nutri")renderNutri();
   if(v==="pomo")renderSpotify();
@@ -2761,47 +2789,160 @@ $("scanSave").addEventListener("click",async()=>{
   btn.disabled=false;if(d){$("scan").hidden=true;scanPages=[];toast("Scan enregistré dans Documents")}
 });
 
-/* ---------- notes libres ---------- */
+/* ---------- notes libres (+ notes secrètes) ---------- */
 const NT=()=>data.notes||(data.notes=[]);
-let noteOpenId=null,noteQ="",noteSaveT=null;
+let noteOpenId=null,noteQ="",noteSaveT=null,notePend=null;
 const noteFind=id=>NT().find(n=>n.id===id);
 const fmtWhen=t=>{const d=new Date(t),n=new Date();
   if(d.toDateString()===n.toDateString())return `${two(d.getHours())}:${two(d.getMinutes())}`;
   return `${d.getDate()} ${MO[d.getMonth()]}${d.getFullYear()!==n.getFullYear()?" "+d.getFullYear():""}`};
+// notes secrètes : titre et texte chiffrés avec un code à 5 chiffres propre aux notes (même méthode que le coffre)
+// note secrète = {id, secret:true, vid, iv, ct, createdAt, upd} ; le texte clair ne vit qu'en mémoire (nsPlain)
+let nsKey=null,nsVid=null,nsPlain=new Map(),nsLoading=false;
+const nsOn=()=>!!(data.noteVault&&data.noteVault.salt&&data.noteVault.chk);
+const noteView=n=>!n?null:n.secret?(nsKey&&n.vid===nsVid&&nsPlain.get(n.id))||null:n; // null = verrouillée
+// enregistrement différé (le chiffrement d'une note secrète est asynchrone)
+function noteQueue(fn){clearTimeout(noteSaveT);notePend=fn;noteSaveT=setTimeout(noteFlush,600)}
+async function noteFlush(){clearTimeout(noteSaveT);noteSaveT=null;const f=notePend;notePend=null;if(f)await f()}
 function renderNotes(){
   if(!$("noteList"))return;
-  const n=noteOpenId&&noteFind(noteOpenId);
-  if(noteOpenId&&!n)noteOpenId=null; // supprimée depuis un autre appareil
+  // coffre des notes remis à zéro ou recréé ailleurs : on reverrouille
+  if(nsKey&&(!nsOn()||data.noteVault.id!==nsVid)){nsKey=null;nsVid=null;nsPlain=new Map()}
+  // notes secrètes arrivées d'un autre appareil : on les déchiffre puis on réaffiche
+  if(nsKey&&!nsLoading&&NT().some(n=>n.secret&&n.vid===nsVid&&(nsPlain.get(n.id)||{})._iv!==n.iv)){nsLoading=true;nsLoad().finally(()=>{nsLoading=false;renderNotes()})}
+  const n=noteOpenId&&noteFind(noteOpenId),v=noteView(n);
+  if(noteOpenId&&!v)noteOpenId=null; // supprimée ailleurs, ou verrouillée
   $("notesList").hidden=!!noteOpenId;$("noteEdit").hidden=!noteOpenId;
-  if(n){
-    if(document.activeElement!==$("noteTitle"))$("noteTitle").value=n.title||"";
-    if(document.activeElement!==$("noteBody"))$("noteBody").value=n.body||"";
-    $("noteWhen").textContent=fmtWhen(n.upd||Date.parse(n.createdAt));return}
-  const q=noteQ.trim();
+  if(noteOpenId){
+    if(document.activeElement!==$("noteTitle"))$("noteTitle").value=v.title||"";
+    if(document.activeElement!==$("noteBody"))$("noteBody").value=v.body||"";
+    $("noteWhen").textContent=fmtWhen(n.upd||Date.parse(n.createdAt));
+    $("noteSecBar").hidden=!n.secret;
+    $("noteLock").setAttribute("aria-label",L(n.secret?"Verrouiller la note":"Rendre la note secrète"));$("noteLock").title=$("noteLock").getAttribute("aria-label");
+    return}
+  const q=noteQ.trim(),secN=NT().filter(x=>x.secret).length;
+  $("nsBar").hidden=!(nsKey&&secN);
+  $("nsBar").innerHTML=`<span class="grow">🔓 ${L("Notes secrètes déverrouillées")}</span><button type="button" class="mini" data-nslock="1">🔒 ${L("Verrouiller")}</button>`;
   let list=NT().slice().sort((a,b)=>(b.upd||0)-(a.upd||0));
-  if(q)list=list.map(x=>({x,s:Math.max(fuzzyScore(x.title||"",q),fold(x.body).includes(fold(q))?11:0)})).filter(o=>o.s>0).sort((a,b)=>b.s-a.s).map(o=>o.x);
-  $("noteList").innerHTML=list.length?list.map(x=>{const lines=String(x.body||"").trim().split("\n").filter(Boolean);
-    const t=x.title&&x.title.trim()?x.title:(lines.shift()||L("Nouvelle note"));
-    return `<button class="note" data-note="${x.id}"><b class="notr">${esc(t)}</b><span class="prev notr">${esc(lines.join(" · ")||"")}</span><span class="when">${fmtWhen(x.upd||Date.parse(x.createdAt))}</span></button>`}).join("")
+  if(q)list=list.filter(x=>noteView(x)).map(x=>{const w=noteView(x);return{x,s:Math.max(fuzzyScore(w.title||"",q),fold(w.body).includes(fold(q))?11:0)}}).filter(o=>o.s>0).sort((a,b)=>b.s-a.s).map(o=>o.x);
+  $("noteList").innerHTML=list.length?list.map(x=>{const w=noteView(x),when=`<span class="when">${fmtWhen(x.upd||Date.parse(x.createdAt))}</span>`;
+    if(!w)return `<button class="note note-lock" data-note="${x.id}"><b>🔒 ${L("Note secrète")}</b><span class="prev">${L("Touche pour l'ouvrir avec ton code")}</span>${when}</button>`;
+    const lines=String(w.body||"").trim().split("\n").filter(Boolean);
+    const t=w.title&&w.title.trim()?w.title:(lines.shift()||L("Nouvelle note"));
+    return `<button class="note" data-note="${x.id}"><b class="notr">${x.secret?"🔒 ":""}${esc(t)}</b><span class="prev notr">${esc(lines.join(" · ")||"")}</span>${when}</button>`}).join("")
     :`<div class="empty">${L(q?"Aucune note ne correspond.":"Aucune note pour l'instant. Touche « + Note » pour écrire.")}</div>`;
 }
 function openNote(id){noteOpenId=id;renderNotes();window.scrollTo(0,0)}
-function closeNote(){
-  clearTimeout(noteSaveT);const n=noteOpenId&&noteFind(noteOpenId);
+async function closeNote(){
+  await noteFlush();const n=noteOpenId&&noteFind(noteOpenId),v=noteView(n);
   // une note laissée vide n'est pas gardée
-  if(n&&!String(n.title||"").trim()&&!String(n.body||"").trim()){tomb(n.id);data.notes=NT().filter(x=>x!==n)}
+  if(n&&v&&!String(v.title||"").trim()&&!String(v.body||"").trim()){tomb(n.id);data.notes=NT().filter(x=>x!==n);nsPlain.delete(n.id)}
   save();noteOpenId=null;renderNotes();
 }
 $("noteNew").addEventListener("click",()=>{const n={id:uid(),title:"",body:"",createdAt:new Date().toISOString(),upd:Date.now()};NT().push(n);openNote(n.id);$("noteBody").focus()});
-$("noteList").addEventListener("click",e=>{const b=e.target.closest("[data-note]");if(b)openNote(b.dataset.note)});
+$("noteList").addEventListener("click",async e=>{const b=e.target.closest("[data-note]");if(!b)return;const n=noteFind(b.dataset.note);if(!n)return;
+  if(n.secret&&!noteView(n)){if(!(await nsUnlock()))return;await nsLoad();if(!noteView(n))return}
+  openNote(n.id)});
+$("nsBar").addEventListener("click",e=>{if(e.target.closest("[data-nslock]")){nsLock();toast("Notes secrètes verrouillées")}});
 $("noteBack").addEventListener("click",closeNote);
 $("noteSearch").addEventListener("input",e=>{noteQ=e.target.value;renderNotes()});
-function noteInput(){const n=noteFind(noteOpenId);if(!n)return;n.title=$("noteTitle").value;n.body=$("noteBody").value;n.upd=Date.now();
-  $("noteWhen").textContent=fmtWhen(n.upd);clearTimeout(noteSaveT);noteSaveT=setTimeout(save,600)}
+function noteInput(){
+  const n=noteFind(noteOpenId),v=noteView(n);if(!v)return;
+  v.title=$("noteTitle").value;v.body=$("noteBody").value;n.upd=Date.now();$("noteWhen").textContent=fmtWhen(n.upd);
+  if(!n.secret){noteQueue(async()=>save());return}
+  const k=nsKey;noteQueue(async()=>{const e=await encJ(k,{title:v.title,body:v.body});n.iv=e.iv;n.ct=e.ct;v._iv=e.iv;save()});
+}
 $("noteTitle").addEventListener("input",noteInput);$("noteBody").addEventListener("input",noteInput);
 $("noteTitle").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("noteBody").focus()}});
-$("noteDel").addEventListener("click",e=>armDelete(e.currentTarget,()=>{const n=noteFind(noteOpenId);if(n){tomb(n.id);data.notes=NT().filter(x=>x!==n)}
+$("noteDel").addEventListener("click",e=>armDelete(e.currentTarget,()=>{clearTimeout(noteSaveT);notePend=null;const n=noteFind(noteOpenId);if(n){tomb(n.id);data.notes=NT().filter(x=>x!==n);nsPlain.delete(n.id)}
   noteOpenId=null;save();renderNotes();toast("Note supprimée")}));
+// cadenas : rend la note secrète (ou la verrouille si elle l'est déjà), puis la ferme
+$("noteLock").addEventListener("click",async()=>{
+  const n=noteFind(noteOpenId);if(!n)return;dictStop();
+  if(n.secret){await noteFlush();nsLock();toast("Note verrouillée");return}
+  const plain={title:$("noteTitle").value,body:$("noteBody").value};
+  if(!plain.title.trim()&&!plain.body.trim()){toast("Écris d'abord quelque chose");return}
+  if(!(await nsUnlock()))return;
+  await noteFlush();
+  const e=await encJ(nsKey,plain);
+  Object.assign(n,{secret:true,vid:nsVid,iv:e.iv,ct:e.ct,upd:Date.now()});delete n.title;delete n.body;
+  save();nsLock();toast("Note secrète verrouillée");
+});
+$("noteUnsecret").addEventListener("click",async()=>{
+  const n=noteFind(noteOpenId),v=noteView(n);if(!n||!v)return;await noteFlush();
+  n.title=v.title||"";n.body=v.body||"";["secret","vid","iv","ct"].forEach(k=>delete n[k]);n.upd=Date.now();nsPlain.delete(n.id);
+  save();renderNotes();toast("La note n'est plus secrète");
+});
+async function nsLoad(){
+  if(!nsKey)return;const k=nsKey,m=new Map();
+  for(const n of NT()){if(!n.secret||n.vid!==nsVid)continue;const o=nsPlain.get(n.id);
+    if(o&&o._iv===n.iv){m.set(n.id,o);continue}
+    try{m.set(n.id,{...await decJ(k,n),_iv:n.iv})}catch(e){}}
+  if(k===nsKey)nsPlain=m;
+}
+async function nsTry(code){
+  try{const v=data.noteVault,key=await pinKey(code,v.salt,v.iter||PIN_ITER);await decJ(key,v.chk);nsKey=key;nsVid=v.id;await nsLoad();return true}
+  catch(e){return false}
+}
+// ouvre les notes secrètes : crée le code la première fois, sinon le demande
+async function nsUnlock(){
+  if(nsKey)return true;
+  if(!nsOn()){
+    const code=await askPin({mode:"new",head:"Notes secrètes",sub:"Choisis le code de tes notes secrètes. Retiens-le bien : sans lui, elles ne peuvent pas être récupérées."});
+    if(!code)return false;
+    const salt=b64e(crypto.getRandomValues(new Uint8Array(16))),key=await pinKey(code,salt,PIN_ITER);
+    data.noteVault={id:uid(),salt,iter:PIN_ITER,chk:await encJ(key,{ok:"sidnote-notes"}),createdAt:new Date().toISOString()};
+    nsKey=key;nsVid=data.noteVault.id;nsPlain=new Map();save();toast("Code enregistré");return true}
+  return !!(await askPin({mode:"unlock",head:"Notes secrètes",sub:"Entre le code de tes notes secrètes.",verify:nsTry,forgot:nsReset}))&&!!nsKey;
+}
+function nsLock(){
+  if(notePend&&noteOpenId){const n=noteFind(noteOpenId);if(n&&n.secret)noteFlush()} // la dernière frappe est enregistrée (clé déjà capturée)
+  nsKey=null;nsVid=null;nsPlain=new Map();renderNotes();
+}
+function nsReset(){
+  NT().filter(n=>n.secret).forEach(n=>tomb(n.id));data.notes=NT().filter(n=>!n.secret);data.noteVault=null;
+  nsKey=null;nsVid=null;nsPlain=new Map();save();renderNotes();toast("Notes secrètes effacées");
+}
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&nsKey)nsLock()});
+
+/* ---------- fenêtre de code à 5 chiffres (réutilisable) ---------- */
+// askPin({mode:"new"}) → code choisi et confirmé ; askPin({mode:"unlock", verify}) → code vérifié ; null si annulé
+let ps=null;
+function askPin(o){return new Promise(res=>{
+  ps={...o,step:o.mode,buf:"",first:"",fails:0,wait:0,busy:false,resolve:res};
+  if(!$("psPad").children.length)$("psPad").innerHTML=[1,2,3,4,5,6,7,8,9].map(d=>`<button type="button" data-ps="${d}">${d}</button>`).join("")+
+    `<button type="button" class="blank" tabindex="-1" aria-hidden="true"></button><button type="button" data-ps="0">0</button><button type="button" class="del" data-ps="del">${L("Effacer")}</button>`;
+  $("psErr").textContent="";psRender();$("pinSheet").hidden=false})}
+function psRender(){
+  if(!ps)return;
+  const T={new:["Choisis ton code",ps.sub],confirm:["Confirme ton code","Tape à nouveau les 5 chiffres."],unlock:["Entre ton code",ps.sub]}[ps.step];
+  $("psHead").textContent=L(ps.head||"Code");$("psTitle").textContent=L(T[0]);$("psSub").textContent=L(T[1]||"");
+  $("psForgot").hidden=!(ps.step==="unlock"&&ps.forgot);
+  [...$("psDots").children].forEach((d,i)=>d.classList.toggle("on",i<ps.buf.length));
+}
+function psFail(msg){const d=$("psDots");$("psErr").textContent=L(msg);d.classList.remove("shake");void d.offsetWidth;d.classList.add("shake");if(navigator.vibrate)navigator.vibrate(60);ps.buf="";psRender()}
+function psEnd(v){if(!ps)return;const r=ps.resolve;ps=null;$("pinSheet").hidden=true;const f=$("psForgot");delete f.dataset.armed;f.textContent=L("Code oublié ?");r(v)}
+async function psDone(){
+  const code=ps.buf;
+  if(ps.step==="new"){ps.first=code;ps.buf="";ps.step="confirm";$("psErr").textContent="";psRender();return}
+  if(ps.step==="confirm"){if(code!==ps.first){ps.first="";ps.step="new";psFail("Les deux codes ne sont pas identiques. Recommence.");return}psEnd(code);return}
+  if(Date.now()<ps.wait){psFail("Trop d'essais. Attends 30 secondes.");return}
+  ps.busy=true;$("psErr").textContent="";const ok=await ps.verify(code);if(!ps)return;ps.busy=false;
+  if(ok){psEnd(code);return}
+  ps.fails++;if(ps.fails>=5){ps.fails=0;ps.wait=Date.now()+30000;psFail("Trop d'essais. Attends 30 secondes.")}else psFail("Code incorrect.");
+}
+function psPress(k){
+  if(!ps||ps.busy)return;
+  if(k==="del"){ps.buf=ps.buf.slice(0,-1);psRender();return}
+  if(ps.buf.length>=PIN_LEN)return;ps.buf+=k;psRender();if(ps.buf.length===PIN_LEN)setTimeout(psDone,120);
+}
+$("psPad").addEventListener("click",e=>{const b=e.target.closest("[data-ps]");if(b)psPress(b.dataset.ps)});
+$("psClose").addEventListener("click",()=>psEnd(null));
+$("pinSheet").addEventListener("click",e=>{if(e.target.id==="pinSheet")psEnd(null)});
+document.addEventListener("keydown",e=>{if($("pinSheet").hidden)return;if(/^[0-9]$/.test(e.key))psPress(e.key);else if(e.key==="Backspace")psPress("del");else if(e.key==="Escape")psEnd(null)});
+$("psForgot").addEventListener("click",e=>{const b=e.currentTarget;if(!ps)return;
+  if(!b.dataset.armed){b.dataset.armed="1";b.textContent=L("Effacer toutes les notes secrètes et choisir un nouveau code ? Touche encore pour confirmer.");return}
+  const f=ps.forgot;psEnd(null);f()});
 
 /* ---------- mots de passe (coffre chiffré par un code à 5 chiffres) ---------- */
 // Le code ne quitte jamais l'appareil : il sert à fabriquer une clé (PBKDF2) qui chiffre chaque entrée (AES-GCM).
@@ -2870,7 +3011,7 @@ function pinPress(k){
   pinBuf+=k;pinDots();if(pinBuf.length===PIN_LEN)setTimeout(pinDone,120);
 }
 $("pinPad").addEventListener("click",e=>{const b=e.target.closest("[data-pin]");if(b)pinPress(b.dataset.pin)});
-document.addEventListener("keydown",e=>{if(data.ui.view!=="pwd"||vaultKey||!$("pwSheet").hidden||document.body.classList.contains("locked"))return;
+document.addEventListener("keydown",e=>{if(data.ui.view!=="pwd"||vaultKey||!$("pwSheet").hidden||!$("pinSheet").hidden||document.body.classList.contains("locked"))return;
   if(/^[0-9]$/.test(e.key))pinPress(e.key);else if(e.key==="Backspace")pinPress("del")});
 $("pinForgot").addEventListener("click",e=>{const b=e.currentTarget;
   if(!b.dataset.armed){b.dataset.armed="1";b.textContent=L("Effacer tous les mots de passe et choisir un nouveau code ? Touche encore pour confirmer.");

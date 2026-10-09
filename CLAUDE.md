@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 18.**
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 19.**
 
 ## Comment travailler avec Sid
 - Réponds **en français**, simplement et brièvement. Sid n'est pas développeur : explique en mots simples, avec des étapes cliquables.
@@ -37,13 +37,13 @@ assets/               ← logo
 - **Données locales d'abord** : cache `localStorage["sidnote-u-<uid>"] = {data, rev, base, dirty}`.
   - `save()` envoie au serveur (push différé de 1,2 s). `saveUI()` enregistre les préférences d'affichage propres à l'appareil (`data.ui`, jamais synchronisées).
   - `push()` relit la ligne serveur et fusionne avec `mergeData()` si un autre appareil a écrit entre-temps.
-  - `mergeData` fait l'union par `id` pour todos, tasks, todoCats, docs et muscu.sessions, avec des pierres tombales (`data.del`, via `tomb(id)`, gardées 90 jours). Les types sont fusionnés par nom, les prefs par clé.
+  - `mergeData` fait l'union par `id` pour todos, tasks, todoCats, docs, notes, pwds et muscu.sessions (pour notes et pwds, en cas de conflit, l'élément avec le plus grand `upd` gagne), avec des pierres tombales (`data.del`, via `tomb(id)`, gardées 90 jours). Les types sont fusionnés par nom, les prefs par clé.
   - **Toute nouvelle liste d'objets doit être ajoutée dans `mergeData` et `applyRemote`, sinon elle sera écrasée entre appareils.**
   - `renderAllSafe()` diffère le rendu tant qu'un champ est en cours de saisie (sinon le clavier iPhone se ferme).
 - Session : `localStorage["sidnote-session"]`.
   - Avec « Rester connecté » décoché, `session.eph = true` et un marqueur dans `sessionStorage` (`sidnote-alive`). Au relancement sans ce marqueur, l'app envoie les modifications puis déconnecte.
   - Compte test : `TEST_EMAILS = ["test@sidcorp.app"]`. Il est remis à zéro à chaque connexion, ne reste jamais connecté et affiche la présentation à chaque fois.
-- Onglets : constante `TABS` (plan, todo, pomo, muscu, docs, app) ; Réglages est toujours affiché.
+- Onglets : constante `TABS` (plan, todo, notes, pomo, muscu, docs, pwd, app) ; Réglages est toujours affiché.
   - Visibilité dans `data.prefs.tabs`, page d'accueil dans `data.prefs.home` (`"last"` = dernière page ouverte), présentation déjà vue dans `data.prefs.onboarded`.
 - **Langue** : le français est la source.
   - L'anglais passe par le dictionnaire `DICT` (FR → EN), les motifs `PATS` (textes avec chiffres) et un MutationObserver qui traduit le DOM. Le contenu utilisateur est protégé par la liste `NOTR` (`.ttl`, `.ms-name`…).
@@ -59,6 +59,14 @@ assets/               ← logo
   - Le scanner : photo → filtre « Document » → PDF fabriqué maison (`makePDF`).
   - La lecture passe par pdf.js 3.11.174 depuis cdnjs (secours : iframe ou Partager).
   - La recherche est tolérante (`fuzzyScore` : sans accents, un mot suffit, fautes acceptées).
+- Notes (v19) : `data.notes = [{id,title,body,createdAt,upd}]`, enregistrement automatique pendant la saisie ; une note vide est supprimée en revenant à la liste.
+- Mots de passe (v19) : coffre chiffré dans le navigateur.
+  - Code à 5 chiffres → clé PBKDF2-SHA256 (600 000 itérations, sel aléatoire) → AES-GCM. Le code et la clé ne quittent jamais l'appareil, la clé reste en mémoire seulement.
+  - `data.vault = {id, salt, iter, chk}` (`chk` = petit texte chiffré pour vérifier le code), `data.pwds = [{id, vid, iv, ct, upd}]` : uniquement du chiffré sur le serveur.
+  - Reverrouillage dès qu'on quitte l'onglet ou l'app. 5 erreurs → 30 s d'attente. « Code oublié ? » efface tout le coffre (`data.vault = null`, pas `delete`, pour que la remise à zéro gagne à la fusion).
+  - Limite à connaître : 5 chiffres = 100 000 codes possibles. Quelqu'un qui volerait le JSON chiffré pourrait les essayer tous (lent mais faisable). La vraie protection reste le compte Supabase (règles RLS).
+- À faire : en vue « Toutes », chaque catégorie se replie (`data.ui.todoFold`, propre à l'appareil) + bouton « Tout replier ».
+- Documents : tri « Récents » / « A → Z » (`data.prefs.docSort`). Le scanner interne est passé en meilleure définition (2600 px, JPEG 0,85). Le vrai scanner d'iPhone (VisionKit) n'est pas accessible depuis une app web : l'app explique comment scanner avec l'app Fichiers puis importer le PDF.
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés
@@ -79,6 +87,7 @@ assets/               ← logo
 
 ## État et prochaines étapes
 - La v18 a été livrée le 9 oct. 2026 et le SQL Storage a été exécuté avec succès.
+- v19 préparée (pas encore mise en ligne) : phrase d'accueil, onglets Notes et Mots de passe, tri des documents, catégories repliables, scanner plus net.
 - À vérifier sur l'iPhone de Sid :
   - l'ouverture d'un PDF dans le lecteur (pdf.js n'a pas pu être testé dans Cowork) ;
   - la synchronisation d'un document entre deux appareils.
@@ -87,6 +96,7 @@ assets/               ← logo
   - v1–v10 : planning, à faire, pomodoro, comptes Supabase, réglages ;
   - v11–v14 : e-mail, heures, Spotify, recherche, vue jour ;
   - v15–v17 : musculation, chrono et minuteur, horaire iCal UMons ;
+  - v19 : notes, mots de passe chiffrés, tri des documents, catégories repliables, nouvelle phrase d'accueil ;
   - v18 : documents et scanner, catégories et ordre des tâches, fractionné, tours, langue EN, page d'accueil, présentation, rester connecté, compte test, SidCorp.
 
 ## Sécurité

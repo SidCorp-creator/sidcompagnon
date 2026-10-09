@@ -383,6 +383,56 @@ textarea{font:15px var(--font);color:var(--ink);background:var(--bg);border:1px 
 .testpill{font:700 11px var(--font);text-transform:uppercase;letter-spacing:.05em;color:var(--on-accent);background:var(--warn);border-radius:6px;padding:2px 6px}
 nav.many .tab{font-size:10px}
 nav.many .tab svg{width:22px;height:22px}
+nav.lots .tab{font-size:9px;letter-spacing:-.01em;line-height:1.1;padding-inline:1px;text-align:center}
+nav.lots .tab svg{width:21px;height:21px}
+.onb-tag{text-wrap:balance;font-size:19px;font-weight:700;line-height:1.3;letter-spacing:-.01em;margin:0;color:var(--accent)}
+/* v19 : catégories repliables */
+.foldc{border:0;background:none;color:var(--muted);padding:2px 4px;cursor:pointer;display:grid;place-items:center;flex:none}
+.foldc svg{transition:transform .2s}
+.foldc[aria-expanded="false"] svg{transform:rotate(-90deg)}
+.cat-h .fold-n{font-size:12px;color:var(--muted);font-weight:600}
+/* v19 : tri des documents */
+.docbar{display:flex;align-items:center;gap:8px;margin:0 0 10px}
+.docbar .seg{flex:none;width:auto;grid-template-columns:auto auto;padding:2px;border-radius:10px}
+.docbar .seg button{padding:5px 12px;font-size:13px}
+.howto{margin:0 0 10px}
+.howto>summary{list-style:none;cursor:pointer;color:var(--accent);font-weight:600;font-size:14px;padding:4px}
+.howto>summary::-webkit-details-marker{display:none}
+.howto .steps{margin-top:6px}
+/* v19 : notes */
+.note{display:block;width:100%;border:0;background:none;text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);cursor:pointer;color:var(--ink)}
+.note:last-child{border-bottom:0}
+.note b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.note .prev{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:14px;color:var(--muted);margin-top:2px;overflow-wrap:anywhere}
+.note .when{font:500 12px var(--mono);color:var(--muted);margin-top:4px;display:block}
+.note-ed{background:var(--surface);border-radius:14px;padding:6px 14px 14px}
+.note-ed input{border:0;background:none;padding:8px 0;font-size:22px;font-weight:700;border-radius:0}
+.note-ed textarea{border:0;background:none;padding:4px 0;min-height:55vh;font-size:16px;line-height:1.5;resize:none;border-radius:0}
+.note-ed input:focus,.note-ed textarea:focus{outline:none}
+/* v19 : mots de passe */
+.pin{display:grid;justify-items:center;gap:10px;padding:0 0 8px;text-align:center}
+.pin-t{font-size:19px;font-weight:700;margin:0}
+.pin-dots{display:flex;gap:16px;margin:4px 0}
+.pin-dots i{width:15px;height:15px;border-radius:50%;border:2px solid var(--muted);display:block;transition:background .15s,border-color .15s}
+.pin-dots i.on{background:var(--accent);border-color:var(--accent)}
+.pin-dots.shake{animation:shake .35s}
+.pad{display:grid;grid-template-columns:repeat(3,64px);gap:10px 26px;justify-content:center}
+.pad button{width:64px;height:64px;border-radius:50%;border:0;background:var(--surface);font:500 30px var(--font);color:var(--ink);cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.06);font-variant-numeric:tabular-nums}
+.pad button:active{background:var(--accent-soft)}
+.pad button.blank{visibility:hidden}
+.pad button.del{background:none;box-shadow:none;font-size:16px;font-weight:600;color:var(--accent)}
+.pin-err{min-height:18px;color:var(--late);font-size:14px;font-weight:600;margin:0}
+.pw-row{display:flex;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);min-height:62px}
+.pw-row:last-child{border-bottom:0}
+.pw-av{width:38px;height:38px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:16px;flex:none;text-transform:uppercase}
+.pw-main{flex:1;min-width:0}
+.pw-main b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pw-main .small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pw-sec{font:500 14px var(--mono);letter-spacing:.02em;overflow-wrap:anywhere}
+.pw-field{display:flex;gap:6px}
+.pw-field input{flex:1}
+.pw-top{display:flex;align-items:center;gap:8px;margin:0 0 10px}
+.pw-top .search{margin:0;flex:1}
 
 /* tab bar */
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--bar);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom,0px);z-index:10}
@@ -627,8 +677,57 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
       <label class="btn"><input type="file" id="docImport" accept="application/pdf,.pdf,image/*" multiple hidden>⇪ Importer</label>
       <button type="button" class="btn ghost" id="docScanBtn">◎ Scanner</button>
     </div>
-    <div class="small muted" id="docInfo" style="margin:2px 4px 10px"></div>
+    <details class="howto" id="iosScan">
+      <summary>Scanner avec le scanner de l'iPhone (plus précis)</summary>
+      <ol class="steps card">
+        <li><span>Ouvre l'app <b>Fichiers</b> de l'iPhone.</span></li>
+        <li><span>Appuie sur les <b>3 petits points</b> en haut à droite, puis sur <b>Scanner des documents</b>.</span></li>
+        <li><span>Scanne tes pages, puis appuie sur <b>Enregistrer</b>.</span></li>
+        <li><span>Reviens ici, appuie sur <b>Importer</b>, puis sur <b>Choisir un fichier</b> et sélectionne ton scan.</span></li>
+      </ol>
+      <p class="small muted" style="margin:8px 4px 0">Le PDF garde toute la qualité du scanner d'Apple (bords détectés, page redressée).</p>
+    </details>
+    <div class="docbar"><div class="small muted grow" id="docInfo" style="margin:0 4px"></div>
+      <div class="seg" id="docSort" role="group" aria-label="Classer les documents"><button type="button" data-dsort="date" aria-pressed="true">Récents</button><button type="button" data-dsort="alpha" aria-pressed="false">A → Z</button></div></div>
     <div class="card" id="docList"></div>
+  </section>
+
+  <!-- NOTES -->
+  <section class="view" id="v-notes" hidden>
+    <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
+    <div id="notesList">
+      <h1>Notes</h1>
+      <p class="sub">Écris librement : idées, listes, brouillons. Tout est enregistré au fur et à mesure.</p>
+      <div class="pw-top"><input type="search" class="search" id="noteSearch" placeholder="Rechercher une note" aria-label="Rechercher une note" autocomplete="off"><button type="button" class="btn" id="noteNew">+ Note</button></div>
+      <div class="card" id="noteList"></div>
+    </div>
+    <div id="noteEdit" hidden>
+      <div class="dayv-head"><button type="button" class="back" id="noteBack">‹ Notes</button><span class="grow small muted" id="noteWhen" style="text-align:center"></span><button type="button" class="x" id="noteDel" aria-label="Supprimer la note">×</button></div>
+      <div class="note-ed">
+        <input id="noteTitle" placeholder="Titre" aria-label="Titre de la note" autocomplete="off">
+        <textarea id="noteBody" placeholder="Écris ta note…" aria-label="Texte de la note"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- MOTS DE PASSE -->
+  <section class="view" id="v-pwd" hidden>
+    <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
+    <h1>Mots de passe</h1>
+    <div id="pinBox" class="pin">
+      <p class="pin-t" id="pinTitle"></p>
+      <p class="small muted" id="pinSub" style="margin:-8px 0 0;max-width:320px"></p>
+      <div class="pin-dots" id="pinDots" aria-live="polite"><i></i><i></i><i></i><i></i><i></i></div>
+      <p class="pin-err" id="pinErr" role="alert"></p>
+      <div class="pad" id="pinPad"></div>
+      <button type="button" class="linkbtn" id="pinForgot" style="background:none;border:0;cursor:pointer;font-size:14px" hidden>Code oublié ?</button>
+    </div>
+    <div id="vault" hidden>
+      <p class="sub">Tes mots de passe, chiffrés avec ton code. Personne d'autre ne peut les lire, même pas le serveur.</p>
+      <div class="pw-top"><input type="search" class="search" id="pwSearch" placeholder="Rechercher un site" aria-label="Rechercher un site" autocomplete="off"><button type="button" class="btn" id="pwNew">+ Ajouter</button></div>
+      <div class="card" id="pwList"></div>
+      <button type="button" class="qbtn" id="pwLock" style="margin-top:12px">🔒 Verrouiller</button>
+    </div>
   </section>
 
   <!-- APPLI -->
@@ -696,16 +795,18 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
     <p class="small muted" style="margin:6px 4px 0">Touche la pastille pour changer la couleur.</p>
     <h2>Statistiques</h2>
     <div class="card" id="stats"></div>
-    <p class="small muted" style="margin:18px 4px">Sid'note · version 18 · une app <b>SidCorp</b></p>
+    <p class="small muted" style="margin:18px 4px">Sid'note · version 19 · une app <b>SidCorp</b></p>
   </section>
 </main>
 
 <nav><div class="in" role="tablist">
   <button class="tab" role="tab" data-v="plan" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>Planning</button>
   <button class="tab" role="tab" data-v="todo" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/></svg><span class="badge" id="badge" hidden></span></span>À faire</button>
+  <button class="tab" role="tab" data-v="notes" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5"/><path d="M8.5 9h7M8.5 12.5h7M8.5 16h4"/></svg></span>Notes</button>
   <button class="tab" role="tab" data-v="pomo" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5V9.5M9.5 2.5h5M18.5 6.5l1.5-1.5"/></svg><span class="badge" id="pomoDot" hidden style="background:var(--accent);width:9px;height:9px;padding:0;margin-left:16px"></span></span>Pomodoro</button>
   <button class="tab" role="tab" data-v="muscu" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg></span>Muscu</button>
   <button class="tab" role="tab" data-v="docs" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2.5H7a2.5 2.5 0 0 0-2.5 2.5v14A2.5 2.5 0 0 0 7 21.5h10a2.5 2.5 0 0 0 2.5-2.5V8z"/><path d="M14 2.5V8h5.5M8.5 13h7M8.5 17h5"/></svg></span>Docs</button>
+  <button class="tab" role="tab" data-v="pwd" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg></span>Mots de passe</button>
   <button class="tab" role="tab" data-v="app" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></span>Appli</button>
   <button class="tab" role="tab" data-v="more" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></span>Réglages</button>
 </div></nav>
@@ -722,11 +823,22 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
     <div class="two"><button type="button" class="btn stop" id="eDelete">Supprimer</button><button class="btn" type="submit">Enregistrer</button></div>
   </form>
 </div>
+<div class="sheet-bg" id="pwSheet" hidden>
+  <form class="sheet card" id="pwForm" novalidate>
+    <div class="sheet-head"><b id="pwSheetTitle">Nouveau mot de passe</b><button type="button" class="x" id="pwClose" aria-label="Fermer">×</button></div>
+    <label>Site ou application<input id="pwSite" placeholder="Ex. Netflix, netflix.com" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
+    <label>Identifiant ou e-mail<input id="pwUser" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
+    <label>Mot de passe<span class="pw-field"><input id="pwPass" type="password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"><button type="button" class="mini" id="pwEye">Voir</button><button type="button" class="mini" id="pwGen">Générer</button></span></label>
+    <label>Note (optionnel)<input id="pwNote" autocomplete="off"></label>
+    <div class="two"><button type="button" class="btn stop" id="pwDel">Supprimer</button><button class="btn" type="submit">Enregistrer</button></div>
+  </form>
+</div>
 <div class="onb" id="onb" hidden>
   <div class="onb-box">
     <img src="icon-192.png" alt="" class="auth-logo" style="width:64px;height:64px">
     <h1 id="onbTitle">Bienvenue sur Sid'note</h1>
-    <p class="sub">Voici ce que Sid'note sait faire. Garde seulement ce qui te sert : tu pourras tout réafficher plus tard dans Réglages.</p>
+    <p class="onb-tag">Chacun sa vie, chacun sa personnalité&nbsp;: à chacun son Sid'note.</p>
+    <p class="sub">Garde ce qui te ressemble. Tu pourras tout changer plus tard dans Réglages.</p>
     <div class="seg" id="onbLang" role="group" aria-label="Langue"><button type="button" data-lang="fr" aria-pressed="true">Français</button><button type="button" data-lang="en" aria-pressed="false">English</button></div>
     <div class="onb-list" id="onbList"></div>
     <button class="btn" id="onbGo" style="padding:14px;font-size:17px">C'est parti</button>
@@ -858,7 +970,7 @@ const DICT={
 "Récupérer les données déjà présentes sur ce téléphone":"Bring over the data already on this phone","Réglages":"Settings","Résultats":"Results","Sauvegarde":"Backup",
 "Sauvegarde restaurée":"Backup restored","Scan enregistré dans Documents":"Scan saved to Documents","Scanner un document":"Scan a document","◎ Scanner":"◎ Scan",
 "Se connecter":"Sign in","Se déconnecter":"Sign out","Secondes":"Seconds","Session arrêtée":"Session stopped","Sid'note · une app":"Sid'note · an app by",
-"Sid'note · version 18 · une app":"Sid'note · version 18 · an app by","Simple":"Simple","Statistiques":"Statistics","Supprimer":"Delete","Supprimer ?":"Delete?","Supprimer la séance":"Delete workout",
+"Sid'note · version 19 · une app":"Sid'note · version 19 · an app by","Simple":"Simple","Statistiques":"Statistics","Supprimer":"Delete","Supprimer ?":"Delete?","Supprimer la séance":"Delete workout",
 "Supprimer l'exercice":"Delete exercise","Supprimer la catégorie":"Delete category","Supprimé":"Deleted","Sur cet appareil seulement":"On this device only","Sur l'écran d'accueil":"Add to Home Screen",
 "Sur les 7 derniers jours":"Over the last 7 days","Synchronisé":"Synced","Synchronisation…":"Syncing…","Séance copiée":"Workout copied","Séance copiée : colle-la dans un message":"Workout copied: paste it in a message",
 "Séance créée":"Workout created","Séance remise à zéro":"Workout cleared","Séance supprimée":"Workout deleted","Séries":"Sets","Ta musique":"Your music",
@@ -900,7 +1012,35 @@ const DICT={
 "Nouvelle tâche ":"New task","Kg":"Kg","Ouvrir":"Open","Remettre":"Reset","Tâches":"Tasks","Supprimer ":"Delete","Le document":"The document","Horaire":"Timetable",
 "Effort ":"Work","Repos ":"Rest","Séries ":"Sets","Garder":"Keep","Langue ":"Language","Mot de passe ":"Password","Activés":"On","Désactivés":"Off","Prochaine":"Next",
 "Une app":"An app","Séance":"Workout","Séances":"Workouts","Exercice":"Exercise","Chargement…":"Loading…","Mode test":"Test mode",
-"Choisis au moins 5 secondes ":"Choose at least 5 seconds"
+"Choisis au moins 5 secondes ":"Choose at least 5 seconds",
+// v19
+"Chacun sa vie, chacun sa personnalité\u00a0: à chacun son Sid'note.":"Everyone has their own life, their own personality: to each their own Sid'note.",
+"Garde ce qui te ressemble. Tu pourras tout changer plus tard dans Réglages.":"Keep what feels like you. You can change everything later in Settings.",
+"Tes notes libres : idées, listes, brouillons, à écrire comme tu veux.":"Your free notes: ideas, lists, drafts, written however you like.",
+"Tes mots de passe et les sites qui vont avec, protégés par un code à 5 chiffres.":"Your passwords and the sites they go with, protected by a 5-digit code.",
+"Notes":"Notes","Mots de passe":"Passwords","Note":"Note","+ Note":"+ Note","Nouvelle note":"New note","Note supprimée":"Note deleted","‹ Notes":"‹ Notes",
+"Écris librement : idées, listes, brouillons. Tout est enregistré au fur et à mesure.":"Write freely: ideas, lists, drafts. Everything is saved as you type.",
+"Rechercher une note":"Search notes","Titre de la note":"Note title","Texte de la note":"Note text","Écris ta note…":"Write your note…","Supprimer la note":"Delete note",
+"Aucune note ne correspond.":"No note matches.","Aucune note pour l'instant. Touche « + Note » pour écrire.":"No notes yet. Tap “+ Note” to write one.",
+"Choisis ton code":"Choose your code","Confirme ton code":"Confirm your code","Entre ton code":"Enter your code",
+"5 chiffres pour protéger tes mots de passe. Retiens-le bien : sans lui, ils ne peuvent pas être récupérés.":"5 digits to protect your passwords. Remember it well: without it, they can't be recovered.",
+"Tape à nouveau les 5 chiffres.":"Type the 5 digits again.","Tes mots de passe sont verrouillés.":"Your passwords are locked.","Création du coffre…":"Creating your vault…",
+"Les deux codes ne sont pas identiques. Recommence.":"The two codes don't match. Start again.","Code incorrect.":"Wrong code.","Trop d'essais. Attends 30 secondes.":"Too many attempts. Wait 30 seconds.",
+"Ce navigateur ne permet pas de chiffrer les données.":"This browser can't encrypt data.","Code enregistré":"Code saved","Code oublié ?":"Forgot your code?","Effacer":"Delete",
+"Effacer tous les mots de passe et choisir un nouveau code ? Touche encore pour confirmer.":"Erase all passwords and choose a new code? Tap again to confirm.",
+"Coffre remis à zéro":"Vault reset","Mots de passe verrouillés":"Passwords locked","🔒 Verrouiller":"🔒 Lock",
+"Tes mots de passe, chiffrés avec ton code. Personne d'autre ne peut les lire, même pas le serveur.":"Your passwords, encrypted with your code. No one else can read them, not even the server.",
+"Rechercher un site":"Search sites","+ Ajouter":"+ Add","Nouveau mot de passe":"New password","Modifier le mot de passe":"Edit password",
+"Site ou application":"Site or app","Ex. Netflix, netflix.com":"E.g. Netflix, netflix.com","Identifiant ou e-mail":"Username or e-mail","Note (optionnel)":"Note (optional)",
+"Voir":"Show","Cacher":"Hide","Générer":"Generate","Mot de passe généré":"Password generated","Mot de passe copié":"Password copied","Copie impossible":"Couldn't copy",
+"Copier le mot de passe":"Copy password","Indique le site ou l'application":"Enter the site or app","Indique le mot de passe":"Enter the password","Mot de passe enregistré":"Password saved",
+"Aucun site ne correspond.":"No site matches.","Aucun mot de passe pour l'instant. Touche « + Ajouter ».":"No passwords yet. Tap “+ Add”.",
+"Replier":"Collapse","Déplier":"Expand","Tout replier":"Collapse all","Tout déplier":"Expand all",
+"Récents":"Recent","A → Z":"A → Z","Classer les documents":"Sort documents",
+"Scanner avec le scanner de l'iPhone (plus précis)":"Use the iPhone's own scanner (sharper)","Ouvre l'app":"Open the","de l'iPhone.":"app on your iPhone.","Fichiers":"Files",
+"en haut à droite, puis sur":"at the top right, then","Scanner des documents":"Scan Documents","Scanne tes pages, puis appuie sur":"Scan your pages, then tap",
+"Reviens ici, appuie sur":"Come back here, tap","Appuie sur les":"Tap the","Choisir un fichier":"Choose File","et sélectionne ton scan.":"and pick your scan.",
+"Le PDF garde toute la qualité du scanner d'Apple (bords détectés, page redressée).":"The PDF keeps the full quality of Apple's scanner (edges detected, page straightened)."
 };
 const PATS=[
  [/^Salut (.+) !$/,"Hi $1!"],
@@ -969,8 +1109,10 @@ if(!Array.isArray(data.todos))data.todos=[];
 if(!Array.isArray(data.tasks))data.tasks=[];
 if(!Array.isArray(data.todoCats))data.todoCats=[];
 if(!Array.isArray(data.docs))data.docs=[];
+if(!Array.isArray(data.notes))data.notes=[];
+if(!Array.isArray(data.pwds))data.pwds=[];
 LANG=(data.prefs&&data.prefs.lang)||ls.get("sidnote-lang")||"fr";if(session)ls.set("sidnote-lang",LANG);
-const TABS=[["plan","Planning"],["todo","À faire"],["pomo","Pomodoro"],["muscu","Musculation"],["docs","Documents"],["app","Appli"]];
+const TABS=[["plan","Planning"],["todo","À faire"],["notes","Notes"],["pomo","Pomodoro"],["muscu","Musculation"],["docs","Documents"],["pwd","Mots de passe"],["app","Appli"]];
 data.prefs=data.prefs||{};data.prefs.tabs=data.prefs.tabs||{plan:true,todo:true,pomo:true,app:true};
 
 function save(){
@@ -1008,9 +1150,13 @@ function mergeData(loc,rem){
   for(const src of [rem.del||{},loc.del||{}])for(const k in src)if(now-src[k]<90*864e5)del[k]=Math.max(del[k]||0,src[k]);
   const arr=(a,b)=>{a=Array.isArray(a)?a:[];b=Array.isArray(b)?b:[];const ids=new Set(a.map(x=>x&&x.id));
     return [...a.filter(x=>x&&!del[x.id]),...b.filter(x=>x&&!ids.has(x.id)&&!del[x.id])]};
+  // notes et mots de passe : si les deux appareils ont modifié le même élément, on garde le plus récent
+  const arrU=(a,b)=>{const rb=new Map((Array.isArray(b)?b:[]).map(x=>[x&&x.id,x]));
+    return arr(a,b).map(x=>{const r=rb.get(x.id);return r&&(r.upd||0)>(x.upd||0)?r:x})};
   const out={...rem,...loc,del};
   out.todos=arr(loc.todos,rem.todos);out.tasks=arr(loc.tasks,rem.tasks);
   out.todoCats=arr(loc.todoCats,rem.todoCats);out.docs=arr(loc.docs,rem.docs);
+  out.notes=arrU(loc.notes,rem.notes);out.pwds=arrU(loc.pwds,rem.pwds);
   // un document envoyé sur le serveur depuis un autre appareil reste marqué « en ligne »
   const remDocs=new Map((rem.docs||[]).map(d=>[d&&d.id,d]));out.docs=out.docs.map(d=>{const r=remDocs.get(d.id);return r&&r.up&&!d.up?{...d,up:true,path:r.path}:d});
   const tn=new Set((loc.types||[]).map(t=>norm(t.name)));
@@ -1065,7 +1211,7 @@ function applyRemote(d){
   for(const k of Object.keys(data))if(k!=="ui"&&k!=="pomo")delete data[k];
   for(const k of Object.keys(d))if(k!=="ui"&&k!=="pomo")data[k]=d[k];
   if(d.pomo&&data.pomo&&d.pomo!==data.pomo){const np=JSON.parse(JSON.stringify(d.pomo));for(const k of Object.keys(data.pomo))delete data.pomo[k];Object.assign(data.pomo,np)}
-  ["todos","tasks","courses","types","todoCats","docs"].forEach(k=>{if(!Array.isArray(data[k]))data[k]=[]});
+  ["todos","tasks","courses","types","todoCats","docs","notes","pwds"].forEach(k=>{if(!Array.isArray(data[k]))data[k]=[]});
   data.prefs=data.prefs||{};data.prefs.tabs=data.prefs.tabs||{plan:true,todo:true,pomo:true,app:true};
   data.muscu=data.muscu||{sessions:[]};if(!Array.isArray(data.muscu.sessions))data.muscu.sessions=[];
   if((data.prefs.ical||null)!==(prevIcal||null)&&typeof icalFetch==="function"){icalEvents=[];icalAt=0;const u=$("icalUrl");if(u)u.value=data.prefs.ical||"";icalFetch(true)}
@@ -1116,6 +1262,8 @@ function show(v){
   document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.v===v));
   if(v==="more"){renderStats();renderTabsCard();renderHomeSel();if(session)renderNotif()}
   if(v==="docs")renderDocs();
+  if(v!=="pwd")pwdLock();else renderPwd();
+  if(v==="notes"&&!noteOpenId)renderNotes();
   if(v==="pomo")renderSpotify();
   window.scrollTo(0,0);
 }
@@ -1125,6 +1273,7 @@ function applyTabs(){
   document.querySelectorAll(".tab").forEach(t=>t.hidden=!vis.includes(t.dataset.v));
   document.querySelector("nav .in").style.gridTemplateColumns=`repeat(${vis.length},1fr)`;
   document.querySelector("nav").classList.toggle("many",vis.length>6);
+  document.querySelector("nav").classList.toggle("lots",vis.length>7);
   if(!vis.includes(data.ui.view))show(vis[0]);
 }
 function renderTabsCard(){
@@ -1140,6 +1289,7 @@ const PEN=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="c
 const DOWL=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
 const mlow=i=>LANG==="en"?MOL[i]:MOL[i].toLowerCase();
 const two=n=>String(n).padStart(2,"0");
+const CHEV=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>`;
 const GRIP=`<svg width="14" height="18" viewBox="0 0 14 18" aria-hidden="true" fill="currentColor"><circle cx="4" cy="4" r="1.6"/><circle cx="10" cy="4" r="1.6"/><circle cx="4" cy="9" r="1.6"/><circle cx="10" cy="9" r="1.6"/><circle cx="4" cy="14" r="1.6"/><circle cx="10" cy="14" r="1.6"/></svg>`;
 const TC=()=>data.todoCats||(data.todoCats=[]);
 const catOf=id=>TC().find(c=>c.id===id);
@@ -1211,10 +1361,15 @@ function renderTodos(){
   const emptyMsg=`<div class="card"><div class="empty">${q?"Aucune tâche à faire ne correspond.":all.some(t=>t.done)?"Tout est réalisé. Bravo !":cat?"Aucune tâche dans cette catégorie. Ajoute-en une ci-dessus.":"Aucune tâche. Ajoute-en une ci-dessus."}</div></div>`;
   if(cc==="all"&&cats.length&&open.length){
     const groups=[...cats.map(c=>({c,items:open.filter(t=>t.cat===c.id)})),{c:null,items:open.filter(t=>!(t.cat&&catOf(t.cat)))}].filter(g=>g.items.length);
-    $("todoOpen").innerHTML=groups.map(g=>{
-      if(!g.c)return `<div class="cat-h"><h2>${L("Sans catégorie")}</h2></div><div class="card" data-group="none">${g.items.map(todoRow).join("")}</div>`;
+    // chaque catégorie peut être repliée (réglage propre à cet appareil)
+    const fold=data.ui.todoFold||{},allFolded=groups.every(g=>fold[g.c?g.c.id:"none"]);
+    const fbtn=(k,n)=>`<button class="foldc" data-tfold="${k}" aria-expanded="${!fold[k]}" aria-label="${L(fold[k]?"Déplier":"Replier")}">${CHEV}</button>`;
+    const body=(k,items)=>fold[k]?"":`<div class="card" data-group="${k}">${items.map(todoRow).join("")}</div>`;
+    const cnt=(k,n)=>fold[k]?`<span class="fold-n">${n}</span>`:"";
+    $("todoOpen").innerHTML=(groups.length>1?`<div style="display:flex;justify-content:flex-end;margin:-4px 0 -10px"><button type="button" class="mini" data-tfoldall="1">${L(allFolded?"Tout déplier":"Tout replier")}</button></div>`:"")+groups.map(g=>{
+      if(!g.c)return `<div class="cat-h">${fbtn("none")}<h2>${L("Sans catégorie")}</h2>${cnt("none",g.items.length)}</div>${body("none",g.items)}`;
       const tot=data.todos.filter(t=>t.cat===g.c.id&&!t.paused).length,dn=data.todos.filter(t=>t.cat===g.c.id&&t.done).length;
-      return `<div class="cat-h"><h2><button class="back" data-tcat="${g.c.id}" style="padding:0;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit">${esc(g.c.name)} ›</button></h2><span class="small muted">${dn}/${tot}</span><div class="cat-prog"><i style="width:${tot?dn/tot*100:0}%"></i></div></div><div class="card" data-group="${g.c.id}">${g.items.map(todoRow).join("")}</div>`}).join("");
+      return `<div class="cat-h">${fbtn(g.c.id)}<h2><button class="back" data-tcat="${g.c.id}" style="padding:0;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit">${esc(g.c.name)} ›</button></h2>${cnt(g.c.id,g.items.length)}<span class="small muted">${dn}/${tot}</span><div class="cat-prog"><i style="width:${tot?dn/tot*100:0}%"></i></div></div>${body(g.c.id,g.items)}`}).join("");
   }else $("todoOpen").innerHTML=open.length?`<div class="card" data-group="${cc}">${open.map(todoRow).join("")}</div>`:emptyMsg;
   $("foldPaused").hidden=!paused.length;
   $("pausedTitle").textContent=`${L("En suspens")} (${paused.length})`;$("pausedArrow").textContent=L(pausedOpen?"Masquer":"Afficher");
@@ -1248,6 +1403,9 @@ document.getElementById("v-todo").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   const find=id=>data.todos.find(x=>x.id===id);
   if(b.dataset.tcat){data.ui.todoCat=b.dataset.tcat;catEditing=false;saveUI();$("catForm").hidden=true;renderTodos();return}
+  if(b.dataset.tfold){const f=data.ui.todoFold=data.ui.todoFold||{},k=b.dataset.tfold;if(f[k])delete f[k];else f[k]=1;saveUI();renderTodos();return}
+  if(b.dataset.tfoldall){const ks=[...document.querySelectorAll("#todoOpen [data-tfold]")].map(x=>x.dataset.tfold),f=data.ui.todoFold=data.ui.todoFold||{};
+    const close=ks.some(k=>!f[k]);ks.forEach(k=>{if(close)f[k]=1;else delete f[k]});saveUI();renderTodos();return}
   if(b.dataset.tcatnew){const f=$("catForm");f.hidden=!f.hidden;if(!f.hidden)$("catIn").focus();return}
   if(b.dataset.catren){catEditing=true;renderTodos();const i=$("catRenIn");i.focus();i.select();return}
   if(b.dataset.catdel){armDelete(b,()=>{const c=catOf(curCat());if(!c)return;tomb(c.id);
@@ -1685,7 +1843,7 @@ function renderPomoStats(){
 setInterval(()=>{if(P.run){tickPomo();if(!$("v-pomo").hidden)renderPomoStats()}},500);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&P.run){unlockAudio();if(!P.run.pausedAt)keepAwake(true);tickPomo()}});
 
-function renderAll(){renderTodos();renderPlan();renderStats();renderPomo();renderTypes();renderMuscu();renderDocs()}
+function renderAll(){renderTodos();renderPlan();renderStats();renderPomo();renderTypes();renderMuscu();renderDocs();renderNotes();renderPwd()}
 
 /* ---------- écran de connexion ---------- */
 let authMode="login";
@@ -2226,7 +2384,9 @@ const fmtDay=s=>{const d=new Date(s);return `${d.getDate()} ${MO[d.getMonth()]} 
 function renderDocs(){
   if(!$("docList"))return;
   const all=docsArr(),q=docQ.trim();
-  let list=all.slice().sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
+  const alpha=data.prefs.docSort==="alpha";
+  let list=all.slice().sort(alpha?(a,b)=>a.title.localeCompare(b.title,LANG,{sensitivity:"base",numeric:true}):(a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
+  document.querySelectorAll("#docSort button").forEach(b=>b.setAttribute("aria-pressed",(b.dataset.dsort==="alpha")===alpha));
   if(q)list=list.map(d=>({d,s:fuzzyScore(d.title,q)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).map(x=>x.d);
   const SHARE=`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7.5 7.5L12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>`;
   $("docList").innerHTML=list.length?list.map(d=>{
@@ -2241,6 +2401,7 @@ function renderDocs(){
   $("docInfo").style.color=docStoreMsg?"var(--warn)":"";
 }
 $("docSearch").addEventListener("input",e=>{docQ=e.target.value;renderDocs()});
+$("docSort").addEventListener("click",e=>{const b=e.target.closest("[data-dsort]");if(!b)return;data.prefs.docSort=b.dataset.dsort;save();renderDocs()});
 $("docList").addEventListener("click",e=>{
   const o=e.target.closest("[data-docopen]"),sh=e.target.closest("[data-docshare]");
   const d=docsArr().find(x=>x.id===(o?o.dataset.docopen:sh?sh.dataset.docshare:""));if(!d)return;
@@ -2295,9 +2456,9 @@ $("vwShare").addEventListener("click",()=>{if(viewDoc)docShare(viewDoc)});
 /* scanner : photo -> rendu « document » -> PDF */
 let scanPages=[],scanFlt="doc";
 function loadImg(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();
-  im.onload=()=>{const MAX=1800,k=Math.min(1,MAX/Math.max(im.naturalWidth,im.naturalHeight));
+  im.onload=()=>{const MAX=2600,k=Math.min(1,MAX/Math.max(im.naturalWidth,im.naturalHeight));
     const c=document.createElement("canvas");c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);
-    c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c)};
+    const g=c.getContext("2d");g.imageSmoothingQuality="high";g.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c)};
   im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error("image"))};im.src=u})}
 function renderPage(src,flt,rot){
   const r=((rot%4)+4)%4,c=document.createElement("canvas");c.width=r%2?src.height:src.width;c.height=r%2?src.width:src.height;
@@ -2311,7 +2472,7 @@ function renderPage(src,flt,rot){
     for(let i=0;i<p.length;i+=4){const v=lut[p[i]];p[i]=p[i+1]=p[i+2]=v}
     x.putImageData(im,0,0);
   }
-  const url=c.toDataURL("image/jpeg",flt==="doc"?.72:.8),b=atob(url.split(",")[1]),bytes=new Uint8Array(b.length);
+  const url=c.toDataURL("image/jpeg",flt==="doc"?.85:.88),b=atob(url.split(",")[1]),bytes=new Uint8Array(b.length);
   for(let i=0;i<b.length;i++)bytes[i]=b.charCodeAt(i);
   return{bytes,w:c.width,h:c.height,url};
 }
@@ -2366,6 +2527,182 @@ $("scanSave").addEventListener("click",async()=>{
   if(!scanPages.length)return;const btn=$("scanSave");btn.disabled=true;
   const d=await addDoc(makePDF(scanPages.map(p=>p.out)),$("scanName").value.trim()||"Scan",scanPages.length);
   btn.disabled=false;if(d){$("scan").hidden=true;scanPages=[];toast("Scan enregistré dans Documents")}
+});
+
+/* ---------- notes libres ---------- */
+const NT=()=>data.notes||(data.notes=[]);
+let noteOpenId=null,noteQ="",noteSaveT=null;
+const noteFind=id=>NT().find(n=>n.id===id);
+const fmtWhen=t=>{const d=new Date(t),n=new Date();
+  if(d.toDateString()===n.toDateString())return `${two(d.getHours())}:${two(d.getMinutes())}`;
+  return `${d.getDate()} ${MO[d.getMonth()]}${d.getFullYear()!==n.getFullYear()?" "+d.getFullYear():""}`};
+function renderNotes(){
+  if(!$("noteList"))return;
+  const n=noteOpenId&&noteFind(noteOpenId);
+  if(noteOpenId&&!n)noteOpenId=null; // supprimée depuis un autre appareil
+  $("notesList").hidden=!!noteOpenId;$("noteEdit").hidden=!noteOpenId;
+  if(n){
+    if(document.activeElement!==$("noteTitle"))$("noteTitle").value=n.title||"";
+    if(document.activeElement!==$("noteBody"))$("noteBody").value=n.body||"";
+    $("noteWhen").textContent=fmtWhen(n.upd||Date.parse(n.createdAt));return}
+  const q=noteQ.trim();
+  let list=NT().slice().sort((a,b)=>(b.upd||0)-(a.upd||0));
+  if(q)list=list.map(x=>({x,s:Math.max(fuzzyScore(x.title||"",q),fold(x.body).includes(fold(q))?11:0)})).filter(o=>o.s>0).sort((a,b)=>b.s-a.s).map(o=>o.x);
+  $("noteList").innerHTML=list.length?list.map(x=>{const lines=String(x.body||"").trim().split("\n").filter(Boolean);
+    const t=x.title&&x.title.trim()?x.title:(lines.shift()||L("Nouvelle note"));
+    return `<button class="note" data-note="${x.id}"><b class="notr">${esc(t)}</b><span class="prev notr">${esc(lines.join(" · ")||"")}</span><span class="when">${fmtWhen(x.upd||Date.parse(x.createdAt))}</span></button>`}).join("")
+    :`<div class="empty">${L(q?"Aucune note ne correspond.":"Aucune note pour l'instant. Touche « + Note » pour écrire.")}</div>`;
+}
+function openNote(id){noteOpenId=id;renderNotes();window.scrollTo(0,0)}
+function closeNote(){
+  clearTimeout(noteSaveT);const n=noteOpenId&&noteFind(noteOpenId);
+  // une note laissée vide n'est pas gardée
+  if(n&&!String(n.title||"").trim()&&!String(n.body||"").trim()){tomb(n.id);data.notes=NT().filter(x=>x!==n)}
+  save();noteOpenId=null;renderNotes();
+}
+$("noteNew").addEventListener("click",()=>{const n={id:uid(),title:"",body:"",createdAt:new Date().toISOString(),upd:Date.now()};NT().push(n);openNote(n.id);$("noteBody").focus()});
+$("noteList").addEventListener("click",e=>{const b=e.target.closest("[data-note]");if(b)openNote(b.dataset.note)});
+$("noteBack").addEventListener("click",closeNote);
+$("noteSearch").addEventListener("input",e=>{noteQ=e.target.value;renderNotes()});
+function noteInput(){const n=noteFind(noteOpenId);if(!n)return;n.title=$("noteTitle").value;n.body=$("noteBody").value;n.upd=Date.now();
+  $("noteWhen").textContent=fmtWhen(n.upd);clearTimeout(noteSaveT);noteSaveT=setTimeout(save,600)}
+$("noteTitle").addEventListener("input",noteInput);$("noteBody").addEventListener("input",noteInput);
+$("noteTitle").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("noteBody").focus()}});
+$("noteDel").addEventListener("click",e=>armDelete(e.currentTarget,()=>{const n=noteFind(noteOpenId);if(n){tomb(n.id);data.notes=NT().filter(x=>x!==n)}
+  noteOpenId=null;save();renderNotes();toast("Note supprimée")}));
+
+/* ---------- mots de passe (coffre chiffré par un code à 5 chiffres) ---------- */
+// Le code ne quitte jamais l'appareil : il sert à fabriquer une clé (PBKDF2) qui chiffre chaque entrée (AES-GCM).
+// Le serveur ne reçoit que du texte chiffré. Sans le code, impossible de relire les mots de passe.
+const PIN_LEN=5,PIN_ITER=600000;
+const PW=()=>data.pwds||(data.pwds=[]);
+let vaultVid=null,vaultKey=null,vaultItems=new Map(),pinStep="",pinBuf="",pinFirst="",pinBusy=false,pwQ="",pwShown=new Set(),pwEditId=null,pinFails=0,pinWait=0;
+const b64e=u=>{let s="";const a=new Uint8Array(u);for(let i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s)};
+const b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function pinKey(pin,salt,iter){
+  const base=await crypto.subtle.importKey("raw",new TextEncoder().encode(pin),"PBKDF2",false,["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2",salt:b64d(salt),iterations:iter,hash:"SHA-256"},base,{name:"AES-GCM",length:256},false,["encrypt","decrypt"]);
+}
+async function encJ(key,obj){const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,new TextEncoder().encode(JSON.stringify(obj)));return{iv:b64e(iv),ct:b64e(ct)}}
+async function decJ(key,e){const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:b64d(e.iv)},key,b64d(e.ct));return JSON.parse(new TextDecoder().decode(pt))}
+const vaultOn=()=>!!(data.vault&&data.vault.salt&&data.vault.chk);
+function pwdLock(){if(!vaultKey&&!pinBuf)return;vaultKey=null;vaultItems=new Map();pwShown.clear();pinBuf="";pinStep="";closePwSheet();if(data.ui.view==="pwd")renderPwd()}
+// déchiffre les entrées (après déverrouillage ou après une synchro)
+async function vaultLoad(){
+  if(!vaultKey)return;const k=vaultKey,vid=data.vault.id,m=new Map();
+  for(const e of PW()){if(e.vid!==vid)continue;const old=vaultItems.get(e.id);
+    if(old&&old._iv===e.iv){m.set(e.id,old);continue}
+    try{m.set(e.id,{...await decJ(k,e),_iv:e.iv})}catch(x){}}
+  if(k===vaultKey){vaultItems=m;renderPwList()}
+}
+function renderPwd(){
+  if(!$("pinBox"))return;
+  // coffre remis à zéro ou recréé sur un autre appareil : on reverrouille
+  if(vaultKey&&(!vaultOn()||data.vault.id!==vaultVid)){vaultKey=null;vaultItems=new Map();pinStep=""}
+  const open=!!vaultKey;$("pinBox").hidden=open;$("vault").hidden=!open;
+  if(open){renderPwList();vaultLoad();return}
+  if(!pinStep)pinStep=vaultOn()?"unlock":"new";
+  const T={new:["Choisis ton code","5 chiffres pour protéger tes mots de passe. Retiens-le bien : sans lui, ils ne peuvent pas être récupérés."],
+    confirm:["Confirme ton code","Tape à nouveau les 5 chiffres."],unlock:["Entre ton code","Tes mots de passe sont verrouillés."]}[pinStep];
+  $("pinTitle").textContent=L(T[0]);$("pinSub").textContent=L(T[1]);$("pinForgot").hidden=pinStep!=="unlock";
+  if(!$("pinPad").children.length)$("pinPad").innerHTML=[1,2,3,4,5,6,7,8,9].map(d=>`<button type="button" data-pin="${d}">${d}</button>`).join("")+
+    `<button type="button" class="blank" tabindex="-1" aria-hidden="true"></button><button type="button" data-pin="0">0</button><button type="button" class="del" data-pin="del">Effacer</button>`;
+  pinDots();
+}
+function pinDots(){[...$("pinDots").children].forEach((d,i)=>d.classList.toggle("on",i<pinBuf.length))}
+function pinFail(msg){const d=$("pinDots");$("pinErr").textContent=L(msg);d.classList.remove("shake");void d.offsetWidth;d.classList.add("shake");if(navigator.vibrate)navigator.vibrate(60);pinBuf="";pinDots()}
+async function pinDone(){
+  const code=pinBuf;
+  if(pinStep==="new"){pinFirst=code;pinBuf="";pinStep="confirm";$("pinErr").textContent="";renderPwd();return}
+  if(pinStep==="confirm"){
+    if(code!==pinFirst){pinFirst="";pinStep="new";renderPwd();pinFail("Les deux codes ne sont pas identiques. Recommence.");return}
+    pinBusy=true;$("pinErr").textContent="";$("pinSub").textContent=L("Création du coffre…");
+    try{const salt=b64e(crypto.getRandomValues(new Uint8Array(16))),key=await pinKey(code,salt,PIN_ITER);
+      data.vault={id:uid(),salt,iter:PIN_ITER,chk:await encJ(key,{ok:"sidnote"}),createdAt:new Date().toISOString()};
+      save();vaultKey=key;vaultVid=data.vault.id;vaultItems=new Map();pinFirst="";pinBuf="";pinStep="";toast("Code enregistré");renderPwd()}
+    catch(ex){pinStep="new";renderPwd();pinFail("Ce navigateur ne permet pas de chiffrer les données.")}
+    pinBusy=false;return}
+  // déverrouillage
+  if(Date.now()<pinWait){pinFail("Trop d'essais. Attends 30 secondes.");return}
+  pinBusy=true;$("pinErr").textContent="";
+  try{const v=data.vault,key=await pinKey(code,v.salt,v.iter||PIN_ITER);await decJ(key,v.chk);
+    pinFails=0;vaultKey=key;vaultVid=v.id;pinBuf="";pinStep="";renderPwd();vaultLoad()}
+  catch(ex){pinFails++;if(pinFails>=5){pinFails=0;pinWait=Date.now()+30000;pinFail("Trop d'essais. Attends 30 secondes.")}else pinFail("Code incorrect.")}
+  pinBusy=false;
+}
+function pinPress(k){
+  if(pinBusy)return;
+  if(k==="del"){pinBuf=pinBuf.slice(0,-1);pinDots();return}
+  if(pinBuf.length>=PIN_LEN)return;
+  pinBuf+=k;pinDots();if(pinBuf.length===PIN_LEN)setTimeout(pinDone,120);
+}
+$("pinPad").addEventListener("click",e=>{const b=e.target.closest("[data-pin]");if(b)pinPress(b.dataset.pin)});
+document.addEventListener("keydown",e=>{if(data.ui.view!=="pwd"||vaultKey||!$("pwSheet").hidden||document.body.classList.contains("locked"))return;
+  if(/^[0-9]$/.test(e.key))pinPress(e.key);else if(e.key==="Backspace")pinPress("del")});
+$("pinForgot").addEventListener("click",e=>{const b=e.currentTarget;
+  if(!b.dataset.armed){b.dataset.armed="1";b.textContent=L("Effacer tous les mots de passe et choisir un nouveau code ? Touche encore pour confirmer.");
+    setTimeout(()=>{delete b.dataset.armed;b.textContent=L("Code oublié ?")},5000);return}
+  delete b.dataset.armed;b.textContent=L("Code oublié ?");
+  PW().forEach(x=>tomb(x.id));data.pwds=[];data.vault=null;save();pinStep="new";pinBuf="";renderPwd();toast("Coffre remis à zéro");
+});
+document.addEventListener("visibilitychange",()=>{if(document.hidden)pwdLock()});
+$("pwLock").addEventListener("click",()=>{pwdLock();toast("Mots de passe verrouillés")});
+const EYE=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const COPY=`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2.5"/><path d="M15.5 8.5V6a2.5 2.5 0 0 0-2.5-2.5H6A2.5 2.5 0 0 0 3.5 6v7A2.5 2.5 0 0 0 6 15.5h2.5"/></svg>`;
+function renderPwList(){
+  if(!vaultKey)return;
+  const q=pwQ.trim();let list=[...vaultItems.entries()].map(([id,v])=>({id,...v}));
+  list.sort((a,b)=>String(a.site).localeCompare(String(b.site),LANG,{sensitivity:"base",numeric:true}));
+  if(q)list=list.map(x=>({x,s:fuzzyScore(`${x.site} ${x.user||""}`,q)})).filter(o=>o.s>0).sort((a,b)=>b.s-a.s).map(o=>o.x);
+  $("pwList").innerHTML=list.length?list.map(x=>{const show=pwShown.has(x.id);
+    return `<div class="pw-row"><div class="pw-av notr">${esc((String(x.site).trim()[0]||"?"))}</div>
+      <div class="pw-main notr"><b>${esc(x.site)}</b>${x.user?`<span class="small muted">${esc(x.user)}</span>`:""}<span class="pw-sec">${show?esc(x.pw):"••••••••"}</span>${x.note&&show?`<span class="small muted">${esc(x.note)}</span>`:""}</div>
+      <button class="pen" data-pweye="${x.id}" aria-label="${L(show?"Masquer":"Afficher")}">${EYE}</button>
+      <button class="pen" data-pwcopy="${x.id}" aria-label="Copier le mot de passe">${COPY}</button>
+      <button class="pen" data-pwedit="${x.id}" aria-label="Modifier">${PEN}</button></div>`}).join("")
+    :`<div class="empty">${L(q?"Aucun site ne correspond.":"Aucun mot de passe pour l'instant. Touche « + Ajouter ».")}</div>`;
+}
+$("pwSearch").addEventListener("input",e=>{pwQ=e.target.value;renderPwList()});
+async function copyTxt(t){try{await navigator.clipboard.writeText(t);return true}catch(e){
+  const a=document.createElement("textarea");a.value=t;a.setAttribute("readonly","");a.style.position="fixed";a.style.opacity="0";document.body.appendChild(a);a.select();
+  let ok=false;try{ok=document.execCommand("copy")}catch(x){}a.remove();return ok}}
+$("pwList").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.pweye){const id=b.dataset.pweye;pwShown.has(id)?pwShown.delete(id):pwShown.add(id);renderPwList()}
+  else if(b.dataset.pwcopy){const v=vaultItems.get(b.dataset.pwcopy);if(v)toast(await copyTxt(v.pw||"")?"Mot de passe copié":"Copie impossible")}
+  else if(b.dataset.pwedit)openPwSheet(b.dataset.pwedit);
+});
+function openPwSheet(id){
+  if(!vaultKey)return;pwEditId=id||null;const v=id?vaultItems.get(id)||{}:{};
+  $("pwSheetTitle").textContent=L(id?"Modifier le mot de passe":"Nouveau mot de passe");
+  $("pwSite").value=v.site||"";$("pwUser").value=v.user||"";$("pwPass").value=v.pw||"";$("pwNote").value=v.note||"";
+  $("pwPass").type="password";$("pwEye").textContent=L("Voir");
+  const d=$("pwDel");d.hidden=!id;d.classList.remove("armed");d.textContent=L("Supprimer");
+  $("pwSheet").hidden=false;if(!id)setTimeout(()=>$("pwSite").focus(),50);
+}
+function closePwSheet(){$("pwSheet").hidden=true;pwEditId=null;["pwSite","pwUser","pwPass","pwNote"].forEach(k=>$(k).value="")}
+$("pwNew").addEventListener("click",()=>openPwSheet(null));
+$("pwClose").addEventListener("click",closePwSheet);
+$("pwSheet").addEventListener("click",e=>{if(e.target.id==="pwSheet")closePwSheet()});
+$("pwEye").addEventListener("click",()=>{const i=$("pwPass"),s=i.type==="password";i.type=s?"text":"password";$("pwEye").textContent=L(s?"Cacher":"Voir")});
+$("pwGen").addEventListener("click",()=>{
+  const A="abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789",S="-_!?.@#",r=crypto.getRandomValues(new Uint32Array(16));
+  let p=[...r].map(n=>A[n%A.length]);p[3]=S[r[3]%S.length];p[10]=String(r[10]%10);
+  $("pwPass").value=p.join("");$("pwPass").type="text";$("pwEye").textContent=L("Cacher");toast("Mot de passe généré");
+});
+$("pwForm").addEventListener("submit",async e=>{
+  e.preventDefault();if(!vaultKey)return;
+  const v={site:$("pwSite").value.trim(),user:$("pwUser").value.trim(),pw:$("pwPass").value,note:$("pwNote").value.trim()};
+  if(!v.site){toast("Indique le site ou l'application");return}
+  if(!v.pw){toast("Indique le mot de passe");return}
+  const id=pwEditId||uid(),enc=await encJ(vaultKey,v),old=PW().find(x=>x.id===id);
+  const rec={id,vid:data.vault.id,iv:enc.iv,ct:enc.ct,upd:Date.now(),createdAt:old?old.createdAt:new Date().toISOString()};
+  data.pwds=[...PW().filter(x=>x.id!==id),rec];vaultItems.set(id,{...v,_iv:rec.iv});
+  save();closePwSheet();renderPwList();toast(old?"Modifié":"Mot de passe enregistré");
+});
+$("pwDel").addEventListener("click",e=>{const b=e.currentTarget;if(!pwEditId)return;
+  if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent=L("Confirmer la suppression");return}
+  const id=pwEditId;tomb(id);data.pwds=PW().filter(x=>x.id!==id);vaultItems.delete(id);pwShown.delete(id);save();closePwSheet();renderPwList();toast("Supprimé");
 });
 
 /* ---------- onglet Appli ---------- */
@@ -2425,6 +2762,8 @@ $("homeSel").addEventListener("change",e=>{data.prefs.home=e.target.value;save()
 const ONB_DESC={
   plan:"Ton calendrier : examens, rendez-vous, événements. Tu peux aussi y relier ton horaire de cours.",
   todo:"Tes tâches, rangées par catégories pour regrouper tout ce qu'il faut faire pour un projet.",
+  notes:"Tes notes libres : idées, listes, brouillons, à écrire comme tu veux.",
+  pwd:"Tes mots de passe et les sites qui vont avec, protégés par un code à 5 chiffres.",
   pomo:"Travaille concentré : sessions et pauses s'enchaînent toutes seules, avec ta musique.",
   muscu:"Tes séances, tes charges et tes répétitions, avec chrono, tours et minuteur fractionné.",
   docs:"Range tes PDF, scanne des feuilles avec l'appareil photo et retrouve-les en un instant.",

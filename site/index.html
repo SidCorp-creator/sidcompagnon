@@ -24,12 +24,18 @@
   --mono:ui-monospace,"SF Mono",Menlo,monospace;
   color-scheme:light;
 }
-@media (prefers-color-scheme:dark){:root{
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0d1117; --surface:#161b22; --ink:#e6edf3; --muted:#8b949e; --line:#262d36;
   --accent:#58a6ff; --accent-soft:#16263d; --on-accent:#0d1117;
   --c-event:#f0885a; --c-cours:#58a6ff; --c-stage:#3fc590; --c-memoire:#b392f0; --c-perso:#94a3b8; --x1:#22b8cf; --x2:#f472b6; --x3:#facc15; --x4:#818cf8; --x5:#4ade80; --x6:#fb7185;
   --ok:#3fc590; --warn:#e3b341; --late:#f47067;
   --bar:rgba(22,27,34,.92); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1117; --surface:#161b22; --ink:#e6edf3; --muted:#8b949e; --line:#262d36;
+  --accent:#58a6ff; --accent-soft:#16263d; --on-accent:#0d1117;
+  --c-event:#f0885a; --c-cours:#58a6ff; --c-stage:#3fc590; --c-memoire:#b392f0; --c-perso:#94a3b8; --x1:#22b8cf; --x2:#f472b6; --x3:#facc15; --x4:#818cf8; --x5:#4ade80; --x6:#fb7185;
+  --ok:#3fc590; --warn:#e3b341; --late:#f47067;
+  --bar:rgba(22,27,34,.92); color-scheme:dark}
 [hidden]{display:none!important}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 var(--font)}
@@ -434,6 +440,71 @@ nav.lots .tab svg{width:21px;height:21px}
 .pw-top{display:flex;align-items:center;gap:8px;margin:0 0 10px}
 .pw-top .search{margin:0;flex:1}
 
+/* v20 : catégories d'onglets */
+.subnav{position:sticky;top:calc(env(safe-area-inset-top,0px) + 4px);z-index:8;display:flex;gap:2px;background:color-mix(in srgb,var(--line) 85%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-radius:12px;padding:3px;margin:0 0 10px}
+.subnav button{flex:1 1 0;min-width:0;border:0;background:none;border-radius:9px;padding:8px 4px;font-weight:600;font-size:14px;color:var(--muted);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.subnav button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.tabgrp{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:14px 4px 6px;display:flex;align-items:center;gap:8px}
+.tabgrp svg{width:16px;height:16px}
+.onb-grp{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin:8px 4px -2px;text-align:left}
+/* v20 : réglages repliables */
+.setsec{background:var(--surface);border-radius:14px;margin:10px 0 0}
+.setsec>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px;cursor:pointer;font-weight:600;font-size:16px}
+.setsec>summary::-webkit-details-marker{display:none}
+.setsec>summary .chev{color:var(--muted);transition:transform .2s;flex:none}
+.setsec[open]>summary .chev{transform:rotate(90deg)}
+.setsec-in{padding:0 12px 14px}
+.setsec-in .card{background:var(--bg)}
+.setsec-in .card .card{background:var(--surface)}
+.accents{display:flex;flex-wrap:wrap;gap:12px}
+.accents button{width:34px;height:34px;border-radius:50%;border:0;cursor:pointer;background:var(--a);box-shadow:inset 0 0 0 2px rgba(0,0,0,.08);display:grid;place-items:center;color:#fff;padding:0}
+.accents button[aria-pressed="true"]{outline:3px solid var(--a);outline-offset:3px}
+#themeSel button{padding:6px 12px;font-size:13px}
+/* v20 : dictée */
+.nu-mic.on{background:var(--late);border-color:var(--late);color:#fff;animation:micpulse 1.2s ease-in-out infinite}
+@keyframes micpulse{50%{opacity:.6}}
+@media (prefers-reduced-motion:reduce){.nu-mic.on{animation:none}}
+/* v20 : nutrition */
+.nu-lbl{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.nu-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.nu-3 label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.nu-3 .unit input{background:var(--bg);padding-right:34px}
+.nu-sports{display:grid;gap:6px}
+.nu-sport{display:grid;grid-template-columns:minmax(0,1fr) 92px 92px 30px;gap:6px;align-items:center}
+.nu-sport .unit input{padding-right:30px;text-align:right}
+.nu-sport .unit span{right:8px;font-size:11px}
+.nu-goals{display:grid;gap:8px}
+.nu-goals button{border:1.5px solid var(--line);background:var(--bg);border-radius:12px;padding:10px 12px;text-align:left;cursor:pointer;display:grid;gap:2px;color:var(--ink)}
+.nu-goals button b{font-size:15px}
+.nu-goals button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.nu-daylbl{position:relative;cursor:pointer}
+.nu-daylbl input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.nu-sum{display:flex;gap:16px;align-items:center;padding:14px}
+.nu-ring{width:124px;height:124px;--pc:var(--accent)}
+.nu-ring.over{--pc:var(--late)}
+.nu-big{font:700 26px/1 var(--mono);font-variant-numeric:tabular-nums;text-align:center}
+.nu-ring .small{text-align:center;font-size:11px}
+.nu-macros{flex:1;min-width:0;display:grid;gap:10px}
+.nu-m{display:grid;gap:4px}
+.nu-m .top{display:flex;justify-content:space-between;font-size:13px;gap:6px}
+.nu-m .top span{font:500 12px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.nu-m .bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.nu-m .bar i{display:block;height:100%;border-radius:99px;background:var(--c)}
+.nu-res{border-top:1px solid var(--line);padding-top:8px;display:grid;gap:4px}
+.nu-it{display:flex;gap:8px;align-items:center;padding:6px 0}
+.nu-it .grow b{display:block;font-weight:600}
+.nu-num{font:600 14px var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.nu-mac{font:500 12px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.nu-plan{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.nu-plan div{background:var(--bg);border-radius:12px;padding:10px 6px;text-align:center}
+.nu-plan b{display:block;font:700 18px var(--mono);font-variant-numeric:tabular-nums}
+.nu-plan span{font-size:12px;color:var(--muted)}
+.nu-warn{border-left:4px solid var(--warn);background:var(--bg);border-radius:8px;padding:8px 10px;font-size:14px;margin-top:8px}
+.nu-meal{margin-top:12px}
+.nu-meal-h{display:flex;align-items:center;gap:8px;margin:0 4px 6px}
+.nu-meal-h b{flex:1}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-3px;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
 /* tab bar */
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--bar);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom,0px);z-index:10}
 nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:640px}
@@ -479,6 +550,7 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
   </div>
 </div>
 <main>
+  <div class="subnav" id="subnav" role="tablist" hidden></div>
   <!-- À FAIRE -->
   <section class="view" id="v-todo" hidden>
     <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
@@ -667,6 +739,70 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
     </div>
   </section>
 
+  <!-- NUTRITION -->
+  <section class="view" id="v-nutri" hidden>
+    <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
+    <h1>Nutrition</h1>
+    <!-- profil -->
+    <div id="nuProfile" hidden>
+      <p class="sub" id="nuProfSub">Présente-toi en quelques infos : Claude calcule ton métabolisme, tes besoins du jour et tes macros.</p>
+      <form class="card form" id="nuForm" novalidate>
+        <div class="nu-lbl">Sexe<div class="seg" id="nuSex" role="group" aria-label="Sexe"><button type="button" data-sex="h">Homme</button><button type="button" data-sex="f">Femme</button></div></div>
+        <div class="nu-3">
+          <label>Âge<span class="unit"><input id="nuAge" type="number" inputmode="numeric" min="10" max="100"><span>ans</span></span></label>
+          <label>Taille<span class="unit"><input id="nuHeight" type="number" inputmode="numeric" min="100" max="250"><span>cm</span></span></label>
+          <label>Poids<span class="unit"><input id="nuWeight" type="number" inputmode="decimal" min="25" max="300" step="0.1"><span>kg</span></span></label>
+        </div>
+        <div class="small muted" style="margin-top:4px">Tes sports</div>
+        <div id="nuSports" class="nu-sports"></div>
+        <button type="button" class="qbtn" id="nuSportAdd" style="margin-top:0">+ Ajouter un sport</button>
+        <div class="small muted" style="margin-top:4px">Ton objectif</div>
+        <div class="nu-goals" id="nuGoal" role="group" aria-label="Objectif">
+          <button type="button" data-goal="gain"><b>Prendre du poids</b><span class="small muted">Plus de calories que tu n'en dépenses</span></button>
+          <button type="button" data-goal="maintain"><b>Me maintenir</b><span class="small muted">Autant que tu dépenses</span></button>
+          <button type="button" data-goal="lose"><b>Perdre du poids</b><span class="small muted">Un peu moins que tu dépenses</span></button>
+        </div>
+        <label>Tes spécificités (optionnel)<textarea id="nuNotes" placeholder="Ex. végétarien, allergie aux noix, travail debout, je mange peu le matin…" style="min-height:80px"></textarea></label>
+        <p class="err" id="nuErr" role="alert" hidden></p>
+        <button class="btn" type="submit" id="nuCalc" style="padding:14px">Calculer mes besoins avec Claude</button>
+        <button type="button" class="btn ghost" id="nuCancel" hidden>Annuler</button>
+      </form>
+      <p class="small muted" style="margin:8px 4px 0">Ces informations sont envoyées à Claude (Anthropic) pour le calcul. Ce n'est pas un avis médical.</p>
+    </div>
+    <!-- journée -->
+    <div id="nuMain" hidden>
+      <div class="dayv-head" style="margin-top:4px"><button type="button" class="cal-nav" id="nuPrev" aria-label="Jour précédent">‹</button><label class="dayv-title nu-daylbl"><span id="nuDayTxt"></span><input type="date" id="nuDate" aria-label="Choisir le jour"></label><button type="button" class="cal-nav" id="nuNext" aria-label="Jour suivant">›</button></div>
+      <div class="card nu-sum">
+        <div class="sw-ring nu-ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="bgc" cx="60" cy="60" r="52" fill="none" stroke-width="10"/><circle class="fgc" id="nuRing" cx="60" cy="60" r="52" fill="none" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="326.73"/></svg><div class="sw-txt"><div><div class="nu-big" id="nuKcal">0</div><div class="small muted" id="nuKcalOf"></div></div></div></div>
+        <div class="nu-macros" id="nuMacros"></div>
+      </div>
+      <h2>Ajouter ce que tu manges</h2>
+      <form class="card form" id="nuAskForm">
+        <div class="pw-field"><input id="nuAsk" placeholder="Ex. 1 kinder bueno, 150 g de riz cuit" aria-label="Ce que tu manges" autocomplete="off" enterkeyhint="send"><button type="button" class="mini nu-mic" id="nuMic" aria-label="Dicter">🎤</button></div>
+        <button class="btn" type="submit" id="nuAskBtn">Calculer avec Claude</button>
+        <div id="nuResult"></div>
+        <button type="button" class="linkbtn" id="nuManual" style="background:none;border:0;cursor:pointer;font-size:14px;justify-self:center">Saisir les valeurs à la main</button>
+      </form>
+      <h2 id="nuLogH">Ma journée</h2>
+      <div class="card" id="nuLog"></div>
+      <details class="setsec" id="nuMenuSec" style="margin-top:22px"><summary><span>Menus sur mesure</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+        <div class="setsec-in">
+          <div class="card form">
+            <div class="small muted">Claude compose une journée de repas qui respecte tes calories et tes macros.</div>
+            <div class="row" style="padding:0;border:0;min-height:0"><span class="grow">Repas par jour</span><div class="stepper"><button type="button" data-meals="-1" aria-label="Un repas de moins">−</button><output id="nuMeals">3</output><button type="button" data-meals="1" aria-label="Un repas de plus">+</button></div></div>
+            <label>Ingrédients à inclure absolument<input id="nuInclude" placeholder="Ex. poulet, riz, avocat" autocomplete="off"></label>
+            <label>À éviter (optionnel)<input id="nuExclude" placeholder="Ex. poisson, lactose" autocomplete="off"></label>
+            <button type="button" class="btn" id="nuMenuBtn">Générer mon menu</button>
+          </div>
+          <div id="nuMenu"></div>
+        </div>
+      </details>
+      <details class="setsec" id="nuPlanSec"><summary><span>Mon profil et mes besoins</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+        <div class="setsec-in"><div id="nuPlan"></div><button type="button" class="qbtn" id="nuEditProfile">Modifier mon profil</button></div>
+      </details>
+    </div>
+  </section>
+
   <!-- DOCUMENTS -->
   <section class="view" id="v-docs" hidden>
     <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
@@ -702,7 +838,7 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
       <div class="card" id="noteList"></div>
     </div>
     <div id="noteEdit" hidden>
-      <div class="dayv-head"><button type="button" class="back" id="noteBack">‹ Notes</button><span class="grow small muted" id="noteWhen" style="text-align:center"></span><button type="button" class="x" id="noteDel" aria-label="Supprimer la note">×</button></div>
+      <div class="dayv-head"><button type="button" class="back" id="noteBack">‹ Notes</button><span class="grow small muted" id="noteWhen" style="text-align:center"></span><button type="button" class="mini nu-mic" id="noteMic" aria-label="Dicter la note">🎤 Dicter</button><button type="button" class="x" id="noteDel" aria-label="Supprimer la note">×</button></div>
       <div class="note-ed">
         <input id="noteTitle" placeholder="Titre" aria-label="Titre de la note" autocomplete="off">
         <textarea id="noteBody" placeholder="Écris ta note…" aria-label="Texte de la note"></textarea>
@@ -751,7 +887,8 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
   <section class="view" id="v-more" hidden>
     <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
     <h1>Réglages</h1>
-    <h2>Compte</h2>
+    <details class="setsec" data-sec="compte" open><summary><span>Compte</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+      <div class="setsec-in">
     <div class="card">
       <div class="row" id="testBanner" hidden><div class="grow"><span class="testpill">Compte test</span> <span class="small muted">Tout est remis à zéro à chaque connexion.</span></div></div>
       <div class="row"><div class="grow">Connecté en tant que <b id="accName"></b><div class="small muted" id="accEmail"></div><div class="small muted" id="syncState"></div></div></div>
@@ -760,7 +897,7 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
     </div>
     <p class="small muted" style="margin:6px 4px 0">Ton pseudo s'affiche dans l'app. Pour te connecter, tu utilises ton e-mail.</p>
     <div id="migrateSec" hidden>
-      <h2>Passer à la connexion par e-mail</h2>
+      <h2 style="margin-top:16px">Passer à la connexion par e-mail</h2>
       <form class="card form" id="migrateForm">
         <div class="small muted">Ton compte a été créé avec un pseudo. Ajoute ton e-mail : tes données sont transférées et tu te connecteras désormais avec cet e-mail.</div>
         <label>E-mail<input id="mEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="none" required></label>
@@ -768,15 +905,25 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
         <button class="btn" type="submit" id="mBtn">Passer à l'e-mail</button>
       </form>
     </div>
-    <h2>Préférences</h2>
+      </div>
+    </details>
+    <details class="setsec" data-sec="look"><summary><span>Apparence</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+      <div class="setsec-in">
     <div class="card">
+      <div class="row" style="display:block"><div style="margin-bottom:10px">Couleur de Sid'note</div><div class="accents" id="accentSel" role="group" aria-label="Couleur de Sid'note"></div></div>
+      <div class="row"><span class="grow">Thème</span><div class="seg" id="themeSel" role="group" aria-label="Thème" style="grid-template-columns:repeat(3,auto);padding:2px"><button type="button" data-theme="auto">Auto</button><button type="button" data-theme="light">Clair</button><button type="button" data-theme="dark">Sombre</button></div></div>
       <label class="row"><span class="grow">Langue</span><select id="langSel" class="sel"><option value="fr">Français</option><option value="en">English</option></select></label>
       <label class="row"><span class="grow">Page d'accueil</span><select id="homeSel" class="sel"></select></label>
     </div>
     <p class="small muted" style="margin:6px 4px 0">La page d'accueil est celle qui s'ouvre quand tu lances Sid'note.</p>
-    <h2>Onglets affichés</h2>
-    <div class="card" id="tabsCard"></div>
+      </div>
+    </details>
+    <details class="setsec" data-sec="tabs"><summary><span>Onglets et catégories</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+      <div class="setsec-in">
+    <div id="tabsCard"></div>
     <button type="button" class="qbtn" id="replayOnb" style="margin-top:8px">Revoir la présentation</button>
+      </div>
+    </details>
     <div id="rappelsSec" hidden>
     <h2>Rappels</h2>
     <div class="card">
@@ -784,32 +931,32 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
       <div class="row" id="notifRow" style="gap:8px"><button class="btn" id="notifBtn" style="flex:1">Activer les rappels</button><button class="btn ghost" id="notifTest" hidden>Tester</button></div>
     </div>
     </div>
-    <h2>Sauvegarde</h2>
+    <details class="setsec" data-sec="backup"><summary><span>Sauvegarde</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+      <div class="setsec-in">
     <div class="card">
       <div class="row"><div class="grow">Tes données sont enregistrées dans ton compte. Tu peux aussi garder une copie dans un fichier.</div></div>
       <div class="row"><button class="btn" id="backupBtn" style="width:100%">Exporter une sauvegarde</button></div>
       <div class="row"><label class="btn ghost" style="width:100%;text-align:center;cursor:pointer">Restaurer une sauvegarde<input type="file" id="restoreIn" accept="application/json,.json" hidden></label></div>
     </div>
-    <h2>Types d'événement</h2>
+      </div>
+    </details>
+    <details class="setsec" data-sec="types"><summary><span>Types d'événement</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+      <div class="setsec-in">
     <div class="card" id="typesCard"></div>
     <p class="small muted" style="margin:6px 4px 0">Touche la pastille pour changer la couleur.</p>
-    <h2>Statistiques</h2>
+      </div>
+    </details>
+    <details class="setsec" data-sec="stats"><summary><span>Statistiques</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+      <div class="setsec-in">
     <div class="card" id="stats"></div>
-    <p class="small muted" style="margin:18px 4px">Sid'note · version 19 · une app <b>SidCorp</b></p>
+      </div>
+    </details>
+    <p class="small muted" style="margin:18px 4px">Sid'note · version 20 · une app <b>SidCorp</b></p>
   </section>
 </main>
 
-<nav><div class="in" role="tablist">
-  <button class="tab" role="tab" data-v="plan" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>Planning</button>
-  <button class="tab" role="tab" data-v="todo" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/></svg><span class="badge" id="badge" hidden></span></span>À faire</button>
-  <button class="tab" role="tab" data-v="notes" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5"/><path d="M8.5 9h7M8.5 12.5h7M8.5 16h4"/></svg></span>Notes</button>
-  <button class="tab" role="tab" data-v="pomo" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5V9.5M9.5 2.5h5M18.5 6.5l1.5-1.5"/></svg><span class="badge" id="pomoDot" hidden style="background:var(--accent);width:9px;height:9px;padding:0;margin-left:16px"></span></span>Pomodoro</button>
-  <button class="tab" role="tab" data-v="muscu" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg></span>Muscu</button>
-  <button class="tab" role="tab" data-v="docs" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2.5H7a2.5 2.5 0 0 0-2.5 2.5v14A2.5 2.5 0 0 0 7 21.5h10a2.5 2.5 0 0 0 2.5-2.5V8z"/><path d="M14 2.5V8h5.5M8.5 13h7M8.5 17h5"/></svg></span>Docs</button>
-  <button class="tab" role="tab" data-v="pwd" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg></span>Mots de passe</button>
-  <button class="tab" role="tab" data-v="app" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></span>Appli</button>
-  <button class="tab" role="tab" data-v="more" aria-selected="false"><span class="tabicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></span>Réglages</button>
-</div></nav>
+<nav><div class="in" role="tablist" id="navIn"></div></nav>
+<div id="fnIcons" hidden><span data-ic="plan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span><span data-ic="todo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/></svg></span><span data-ic="notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5"/><path d="M8.5 9h7M8.5 12.5h7M8.5 16h4"/></svg></span><span data-ic="pomo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5V9.5M9.5 2.5h5M18.5 6.5l1.5-1.5"/></svg></span><span data-ic="muscu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg></span><span data-ic="docs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2.5H7a2.5 2.5 0 0 0-2.5 2.5v14A2.5 2.5 0 0 0 7 21.5h10a2.5 2.5 0 0 0 2.5-2.5V8z"/><path d="M14 2.5V8h5.5M8.5 13h7M8.5 17h5"/></svg></span><span data-ic="pwd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg></span><span data-ic="app"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></span><span data-ic="more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></span><span data-ic="nutri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7.5c-1.6-1.5-5.6-1.6-6.6 2.2-1 3.8 1.6 9.4 4.1 10.4 1 .4 1.6-.3 2.5-.3s1.5.7 2.5.3c2.5-1 5.1-6.6 4.1-10.4-1-3.8-5-3.7-6.6-2.2z"/><path d="M12 7.5c0-2 1-3.6 3.2-4.3"/></svg></span><span data-ic="g-orga"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M8.5 13.5l2.3 2.3 4.7-4.6"/></svg></span><span data-ic="g-sport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg></span><span data-ic="g-perso"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2.5h7a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><path d="M3.5 11h17"/></svg></span><span data-ic="g-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></span></div>
 <div class="sheet-bg" id="sheet" hidden>
   <form class="sheet card" id="editForm">
     <div class="sheet-head"><b id="sheetTitle">Modifier</b><button type="button" class="x" id="sheetClose" aria-label="Fermer">×</button></div>
@@ -821,6 +968,16 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
       <label>Type<input id="eCat" list="typeList" autocomplete="off"></label>
     </div>
     <div class="two"><button type="button" class="btn stop" id="eDelete">Supprimer</button><button class="btn" type="submit">Enregistrer</button></div>
+  </form>
+</div>
+<div class="sheet-bg" id="nuSheet" hidden>
+  <form class="sheet card" id="nuEntryForm" novalidate>
+    <div class="sheet-head"><b id="nuSheetTitle">Ajouter à la main</b><button type="button" class="x" id="nuSheetClose" aria-label="Fermer">×</button></div>
+    <label>Aliment<input id="nuEName" autocomplete="off"></label>
+    <div class="two"><label>Quantité<input id="nuEQty" placeholder="Ex. 150 g, 1 barre" autocomplete="off"></label><label>Heure<input id="nuETime" type="time"></label></div>
+    <div class="two"><label>Calories (kcal)<input id="nuEKcal" type="number" inputmode="decimal" min="0"></label><label>Protéines (g)<input id="nuEP" type="number" inputmode="decimal" min="0" step="0.1"></label></div>
+    <div class="two"><label>Glucides (g)<input id="nuEC" type="number" inputmode="decimal" min="0" step="0.1"></label><label>Lipides (g)<input id="nuEF" type="number" inputmode="decimal" min="0" step="0.1"></label></div>
+    <div class="two"><button type="button" class="btn stop" id="nuEDel">Supprimer</button><button class="btn" type="submit">Enregistrer</button></div>
   </form>
 </div>
 <div class="sheet-bg" id="pwSheet" hidden>
@@ -970,7 +1127,7 @@ const DICT={
 "Récupérer les données déjà présentes sur ce téléphone":"Bring over the data already on this phone","Réglages":"Settings","Résultats":"Results","Sauvegarde":"Backup",
 "Sauvegarde restaurée":"Backup restored","Scan enregistré dans Documents":"Scan saved to Documents","Scanner un document":"Scan a document","◎ Scanner":"◎ Scan",
 "Se connecter":"Sign in","Se déconnecter":"Sign out","Secondes":"Seconds","Session arrêtée":"Session stopped","Sid'note · une app":"Sid'note · an app by",
-"Sid'note · version 19 · une app":"Sid'note · version 19 · an app by","Simple":"Simple","Statistiques":"Statistics","Supprimer":"Delete","Supprimer ?":"Delete?","Supprimer la séance":"Delete workout",
+"Sid'note · version 20 · une app":"Sid'note · version 19 · an app by","Simple":"Simple","Statistiques":"Statistics","Supprimer":"Delete","Supprimer ?":"Delete?","Supprimer la séance":"Delete workout",
 "Supprimer l'exercice":"Delete exercise","Supprimer la catégorie":"Delete category","Supprimé":"Deleted","Sur cet appareil seulement":"On this device only","Sur l'écran d'accueil":"Add to Home Screen",
 "Sur les 7 derniers jours":"Over the last 7 days","Synchronisé":"Synced","Synchronisation…":"Syncing…","Séance copiée":"Workout copied","Séance copiée : colle-la dans un message":"Workout copied: paste it in a message",
 "Séance créée":"Workout created","Séance remise à zéro":"Workout cleared","Séance supprimée":"Workout deleted","Séries":"Sets","Ta musique":"Your music",
@@ -1013,6 +1170,37 @@ const DICT={
 "Effort ":"Work","Repos ":"Rest","Séries ":"Sets","Garder":"Keep","Langue ":"Language","Mot de passe ":"Password","Activés":"On","Désactivés":"Off","Prochaine":"Next",
 "Une app":"An app","Séance":"Workout","Séances":"Workouts","Exercice":"Exercise","Chargement…":"Loading…","Mode test":"Test mode",
 "Choisis au moins 5 secondes ":"Choose at least 5 seconds",
+// v20
+"Organisation":"Organizer","Sport":"Sport","Classeur":"Binder","Nutrition":"Nutrition","Onglets et catégories":"Tabs and categories","Apparence":"Appearance",
+"Couleur de Sid'note":"Sid'note color","Thème":"Theme","Auto":"Auto","Clair":"Light","Sombre":"Dark",
+"Bleu":"Blue","Vert":"Green","Violet":"Purple","Rose":"Pink","Orange":"Orange","Rouge":"Red","Turquoise":"Teal","Graphite":"Graphite",
+"🎤 Dicter":"🎤 Dictate","Dicter":"Dictate","Dicter la note":"Dictate the note","Parle, je t'écoute…":"Go ahead, I'm listening…","Dictée interrompue":"Dictation stopped",
+"Dictée indisponible ici : touche le micro 🎤 du clavier de l'iPhone.":"Dictation isn't available here: tap the 🎤 mic on the iPhone keyboard.",
+"Micro refusé : autorise-le dans les réglages de l'iPhone.":"Microphone denied: allow it in the iPhone settings.",
+"Tes calories et tes macros du jour, calculées par Claude, et des menus faits pour toi.":"Your daily calories and macros, worked out by Claude, plus menus made for you.",
+"Présente-toi en quelques infos : Claude calcule ton métabolisme, tes besoins du jour et tes macros.":"Tell us a little about yourself: Claude works out your metabolism, daily needs and macros.",
+"Modifie tes infos : Claude recalcule tes besoins.":"Edit your info: Claude recalculates your needs.",
+"Sexe":"Sex","Homme":"Male","Femme":"Female","Âge":"Age","Taille":"Height","Poids":"Weight","ans":"yrs","Tes sports":"Your sports","Ex. Foot":"E.g. Football",
+"Fois par semaine":"Times per week","×/sem":"×/wk","Minutes par séance":"Minutes per session","Retirer ce sport":"Remove this sport","+ Ajouter un sport":"+ Add a sport",
+"Ton objectif":"Your goal","Prendre du poids":"Gain weight","Me maintenir":"Stay the same","Perdre du poids":"Lose weight",
+"Plus de calories que tu n'en dépenses":"More calories than you burn","Autant que tu dépenses":"As much as you burn","Un peu moins que tu dépenses":"A little less than you burn",
+"Tes spécificités (optionnel)":"Anything specific (optional)","Ex. végétarien, allergie aux noix, travail debout, je mange peu le matin…":"E.g. vegetarian, nut allergy, standing job, small breakfast…",
+"Calculer mes besoins avec Claude":"Work out my needs with Claude","Claude calcule…":"Claude is calculating…","Tes besoins sont calculés":"Your needs are calculated",
+"Ces informations sont envoyées à Claude (Anthropic) pour le calcul. Ce n'est pas un avis médical.":"This information is sent to Claude (Anthropic) for the calculation. It isn't medical advice.",
+"Indique ton sexe.":"Choose your sex.","Indique ton âge.":"Enter your age.","Indique ta taille en cm.":"Enter your height in cm.","Indique ton poids en kg.":"Enter your weight in kg.","Choisis ton objectif.":"Choose your goal.",
+"Hier":"Yesterday","sur":"of","reste":"left","Protéines":"Protein","Glucides":"Carbs","Lipides":"Fat","Choisir le jour":"Pick the day",
+"Ajouter ce que tu manges":"Add what you eat","Ex. 1 kinder bueno, 150 g de riz cuit":"E.g. 1 kinder bueno, 150 g cooked rice","Ce que tu manges":"What you eat",
+"Calculer avec Claude":"Calculate with Claude","Saisir les valeurs à la main":"Enter values by hand","Ma journée":"My day","Ce jour-là":"That day",
+"Rien pour l'instant. Écris ce que tu manges ci-dessus.":"Nothing yet. Write what you eat above.","Rien d'enregistré ce jour-là. Tu peux encore le compléter.":"Nothing logged that day. You can still fill it in.",
+"Ajouté à ta journée":"Added to your day","Ajouté à ce jour":"Added to that day","Aliment non reconnu, précise un peu":"Food not recognized, add a bit more detail",
+"Ajouter à la main":"Add by hand","Aliment":"Food","Quantité":"Amount","Ex. 150 g, 1 barre":"E.g. 150 g, 1 bar","Heure":"Time","Calories (kcal)":"Calories (kcal)",
+"Protéines (g)":"Protein (g)","Glucides (g)":"Carbs (g)","Lipides (g)":"Fat (g)","Indique l'aliment":"Enter the food","Enregistré":"Saved",
+"Menus sur mesure":"Custom menus","Claude compose une journée de repas qui respecte tes calories et tes macros.":"Claude puts together a day of meals that fits your calories and macros.",
+"Repas par jour":"Meals per day","Un repas de moins":"One meal less","Un repas de plus":"One meal more","Ingrédients à inclure absolument":"Must-have ingredients",
+"Ex. poulet, riz, avocat":"E.g. chicken, rice, avocado","À éviter (optionnel)":"To avoid (optional)","Ex. poisson, lactose":"E.g. fish, lactose",
+"Générer mon menu":"Generate my menu","Claude prépare ton menu…":"Claude is preparing your menu…","Menu prêt":"Menu ready","Glucides · Lipides":"Carbs · Fat",
+"Mon profil et mes besoins":"My profile and needs","Modifier mon profil":"Edit my profile","Métabolisme de base":"Basal metabolism","Dépense du jour":"Daily burn","Objectif (kcal)":"Target (kcal)",
+"La fonction « nutrition » n'est pas encore installée sur Supabase.":"The “nutrition” function isn't installed on Supabase yet.",
 // v19
 "Chacun sa vie, chacun sa personnalité\u00a0: à chacun son Sid'note.":"Everyone has their own life, their own personality: to each their own Sid'note.",
 "Garde ce qui te ressemble. Tu pourras tout changer plus tard dans Réglages.":"Keep what feels like you. You can change everything later in Settings.",
@@ -1112,7 +1300,7 @@ if(!Array.isArray(data.docs))data.docs=[];
 if(!Array.isArray(data.notes))data.notes=[];
 if(!Array.isArray(data.pwds))data.pwds=[];
 LANG=(data.prefs&&data.prefs.lang)||ls.get("sidnote-lang")||"fr";if(session)ls.set("sidnote-lang",LANG);
-const TABS=[["plan","Planning"],["todo","À faire"],["notes","Notes"],["pomo","Pomodoro"],["muscu","Musculation"],["docs","Documents"],["pwd","Mots de passe"],["app","Appli"]];
+const TABS=[["plan","Planning"],["todo","À faire"],["notes","Notes"],["pomo","Pomodoro"],["muscu","Musculation"],["nutri","Nutrition"],["docs","Documents"],["pwd","Mots de passe"],["app","Appli"]];
 data.prefs=data.prefs||{};data.prefs.tabs=data.prefs.tabs||{plan:true,todo:true,pomo:true,app:true};
 
 function save(){
@@ -1157,6 +1345,9 @@ function mergeData(loc,rem){
   out.todos=arr(loc.todos,rem.todos);out.tasks=arr(loc.tasks,rem.tasks);
   out.todoCats=arr(loc.todoCats,rem.todoCats);out.docs=arr(loc.docs,rem.docs);
   out.notes=arrU(loc.notes,rem.notes);out.pwds=arrU(loc.pwds,rem.pwds);
+  // nutrition : profil, besoins et menu = version la plus récente ; journal = union des entrées
+  const ln=loc.nutri||{},rn=rem.nutri||{};
+  out.nutri={...((ln.upd||0)>=(rn.upd||0)?{...rn,...ln}:{...ln,...rn}),log:arrU(ln.log,rn.log)};
   // un document envoyé sur le serveur depuis un autre appareil reste marqué « en ligne »
   const remDocs=new Map((rem.docs||[]).map(d=>[d&&d.id,d]));out.docs=out.docs.map(d=>{const r=remDocs.get(d.id);return r&&r.up&&!d.up?{...d,up:true,path:r.path}:d});
   const tn=new Set((loc.types||[]).map(t=>norm(t.name)));
@@ -1214,6 +1405,8 @@ function applyRemote(d){
   ["todos","tasks","courses","types","todoCats","docs","notes","pwds"].forEach(k=>{if(!Array.isArray(data[k]))data[k]=[]});
   data.prefs=data.prefs||{};data.prefs.tabs=data.prefs.tabs||{plan:true,todo:true,pomo:true,app:true};
   data.muscu=data.muscu||{sessions:[]};if(!Array.isArray(data.muscu.sessions))data.muscu.sessions=[];
+  data.nutri=data.nutri||{};if(!Array.isArray(data.nutri.log))data.nutri.log=[];
+  if(typeof applyLook==="function")applyLook();
   if((data.prefs.ical||null)!==(prevIcal||null)&&typeof icalFetch==="function"){icalEvents=[];icalAt=0;const u=$("icalUrl");if(u)u.value=data.prefs.ical||"";icalFetch(true)}
   renderAllSafe();
 }
@@ -1253,32 +1446,53 @@ function armDelete(btn,fn){
   setTimeout(()=>{btn.classList.remove("armed");btn.textContent="×"},3000);
 }
 
-/* ---------- onglets ---------- */
+/* ---------- onglets, rangés par catégories ---------- */
+// La barre du bas montre des catégories ; dans une catégorie, une barre en haut permet de choisir la fonction.
+const GROUPS=[
+  {k:"orga",label:"Organisation",tabs:["plan","todo","pomo"]},
+  {k:"sport",label:"Sport",tabs:["muscu","nutri"]},
+  {k:"perso",label:"Classeur",tabs:["notes","docs","pwd"]},
+  {k:"more",label:"Réglages",tabs:["more","app"]}];
+const SHORT={plan:"Planning",todo:"À faire",pomo:"Pomodoro",muscu:"Muscu",nutri:"Nutrition",notes:"Notes",docs:"Docs",pwd:"Mots de passe",more:"Réglages",app:"Appli"};
+const ICON=k=>{const e=$("fnIcons").querySelector(`[data-ic="${k}"]`);return e?e.innerHTML:""};
+const groupOf=v=>GROUPS.find(g=>g.tabs.includes(v))||GROUPS[0];
 const visibleTabs=()=>[...TABS.filter(([k])=>data.prefs.tabs[k]!==false).map(([k])=>k),"more"];
+const groupTabs=g=>g.tabs.filter(k=>visibleTabs().includes(k));
+$("navIn").innerHTML=GROUPS.map(g=>`<button class="tab" role="tab" data-g="${g.k}" aria-selected="false"><span class="tabicon">${ICON("g-"+g.k)}${g.k==="orga"?`<span class="badge" id="badge" hidden></span><span class="badge" id="pomoDot" hidden style="background:var(--accent);width:9px;height:9px;padding:0;margin-left:16px;margin-top:20px"></span>`:""}</span>${g.label}</button>`).join("");
+function renderSubnav(g,v){
+  const ts=groupTabs(g),sn=$("subnav");sn.hidden=ts.length<2;
+  sn.innerHTML=ts.length<2?"":ts.map(k=>`<button type="button" role="tab" data-sub="${k}" aria-selected="${k===v}">${SHORT[k]}</button>`).join("");
+}
 function show(v){
   if(!visibleTabs().includes(v))v=visibleTabs()[0];
-  data.ui.view=v;saveUI();
+  const g=groupOf(v);
+  data.ui.view=v;data.ui.glast=data.ui.glast||{};data.ui.glast[g.k]=v;saveUI();
   document.querySelectorAll(".view").forEach(s=>s.hidden=s.id!=="v-"+v);
-  document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.v===v));
-  if(v==="more"){renderStats();renderTabsCard();renderHomeSel();if(session)renderNotif()}
+  document.querySelectorAll("nav .tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.g===g.k));
+  renderSubnav(g,v);
+  if(v==="more"){renderStats();renderTabsCard();renderHomeSel();renderLook();if(session)renderNotif()}
   if(v==="docs")renderDocs();
   if(v!=="pwd")pwdLock();else renderPwd();
   if(v==="notes"&&!noteOpenId)renderNotes();
+  if(v!=="notes"&&v!=="nutri")dictStop();
+  if(v==="nutri")renderNutri();
   if(v==="pomo")renderSpotify();
   window.scrollTo(0,0);
 }
-document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>show(t.dataset.v)));
+$("navIn").addEventListener("click",e=>{const t=e.target.closest("[data-g]");if(!t)return;
+  const g=GROUPS.find(x=>x.k===t.dataset.g),ts=groupTabs(g),last=(data.ui.glast||{})[g.k];
+  show(ts.includes(last)?last:ts[0])});
+$("subnav").addEventListener("click",e=>{const b=e.target.closest("[data-sub]");if(b)show(b.dataset.sub)});
 function applyTabs(){
-  const vis=visibleTabs();
-  document.querySelectorAll(".tab").forEach(t=>t.hidden=!vis.includes(t.dataset.v));
-  document.querySelector("nav .in").style.gridTemplateColumns=`repeat(${vis.length},1fr)`;
-  document.querySelector("nav").classList.toggle("many",vis.length>6);
-  document.querySelector("nav").classList.toggle("lots",vis.length>7);
-  if(!vis.includes(data.ui.view))show(vis[0]);
+  const vis=visibleTabs(),gs=GROUPS.filter(g=>groupTabs(g).length);
+  document.querySelectorAll("nav .tab").forEach(t=>t.hidden=!gs.some(g=>g.k===t.dataset.g));
+  $("navIn").style.gridTemplateColumns=`repeat(${gs.length},1fr)`;
+  if(!vis.includes(data.ui.view))show(vis[0]);else renderSubnav(groupOf(data.ui.view),data.ui.view);
 }
 function renderTabsCard(){
-  $("tabsCard").innerHTML=TABS.map(([k,l])=>`<label class="row" style="cursor:pointer"><span class="grow">${l}</span><input type="checkbox" class="switch" data-tabpref="${k}" ${data.prefs.tabs[k]!==false?"checked":""}></label>`).join("")+
-    `<div class="row"><span class="grow">Réglages</span><span class="small muted">toujours affiché</span></div>`;
+  $("tabsCard").innerHTML=GROUPS.map(g=>`<div class="tabgrp">${ICON("g-"+g.k)}${L(g.label)}</div><div class="card">`+
+    g.tabs.map(k=>k==="more"?`<div class="row"><span class="grow">${L("Réglages")}</span><span class="small muted">${L("toujours affiché")}</span></div>`
+      :`<label class="row" style="cursor:pointer"><span class="grow">${L(TABS.find(t=>t[0]===k)[1])}</span><input type="checkbox" class="switch" data-tabpref="${k}" ${data.prefs.tabs[k]!==false?"checked":""}></label>`).join("")+`</div>`).join("");
 }
 $("tabsCard").addEventListener("change",e=>{const c=e.target.closest("[data-tabpref]");if(!c)return;
   data.prefs.tabs[c.dataset.tabpref]=c.checked;save();applyTabs();renderHomeSel();toast(c.checked?"Onglet affiché":"Onglet masqué")});
@@ -1843,7 +2057,7 @@ function renderPomoStats(){
 setInterval(()=>{if(P.run){tickPomo();if(!$("v-pomo").hidden)renderPomoStats()}},500);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&P.run){unlockAudio();if(!P.run.pausedAt)keepAwake(true);tickPomo()}});
 
-function renderAll(){renderTodos();renderPlan();renderStats();renderPomo();renderTypes();renderMuscu();renderDocs();renderNotes();renderPwd()}
+function renderAll(){renderTodos();renderPlan();renderStats();renderPomo();renderTypes();renderMuscu();renderDocs();renderNotes();renderPwd();renderNutri()}
 
 /* ---------- écran de connexion ---------- */
 let authMode="login";
@@ -2705,6 +2919,226 @@ $("pwDel").addEventListener("click",e=>{const b=e.currentTarget;if(!pwEditId)ret
   const id=pwEditId;tomb(id);data.pwds=PW().filter(x=>x.id!==id);vaultItems.delete(id);pwShown.delete(id);save();closePwSheet();renderPwList();toast("Supprimé");
 });
 
+/* ---------- apparence : couleur et thème ---------- */
+const ACCENTS={
+  bleu:["Bleu","#1f5fbf","#e3ecfa","#58a6ff","#16263d"],vert:["Vert","#0f7a5a","#def3ea","#3fc590","#12291f"],
+  violet:["Violet","#6d3fd6","#ece5fb","#a78bfa","#221a3a"],rose:["Rose","#c0306f","#fbe4ee","#f472b6","#3a1a2a"],
+  orange:["Orange","#c2410c","#fbe7dc","#fb923c","#3a2214"],rouge:["Rouge","#c62828","#fbe3e3","#f87171","#3a1a1a"],
+  turquoise:["Turquoise","#0e7490","#dcf1f6","#22b8cf","#11303a"],graphite:["Graphite","#374151","#e5e7eb","#c9d1d9","#262d36"]};
+function applyLook(){
+  const p=(session&&data.prefs)||{},look=ls.get("sidnote-look")||{};
+  const acc=ACCENTS[p.accent||look.accent]?p.accent||look.accent:"bleu",theme=p.theme||look.theme||"auto";
+  const [,l,ls_,d,ds]=ACCENTS[acc];
+  let st=document.getElementById("accentCss");if(!st){st=document.createElement("style");st.id="accentCss";document.head.appendChild(st)}
+  st.textContent=`:root{--accent:${l};--accent-soft:${ls_}}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accent:${d};--accent-soft:${ds}}}:root[data-theme="dark"]{--accent:${d};--accent-soft:${ds}}`;
+  if(theme==="auto")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",theme);
+  const dark=theme==="dark"||(theme==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content",dark?"#0d1117":"#f2f4f7"));
+  ls.set("sidnote-look",{accent:acc,theme}); // pour l'écran de connexion
+}
+function renderLook(){
+  const acc=data.prefs.accent||"bleu",th=data.prefs.theme||"auto",dark=document.documentElement.dataset.theme==="dark"||(!document.documentElement.dataset.theme&&matchMedia("(prefers-color-scheme: dark)").matches);
+  $("accentSel").innerHTML=Object.entries(ACCENTS).map(([k,a])=>`<button type="button" data-accent="${k}" style="--a:${dark?a[3]:a[1]}" aria-pressed="${k===acc}" aria-label="${L(a[0])}" title="${L(a[0])}">${k===acc?CHECK:""}</button>`).join("");
+  document.querySelectorAll("#themeSel button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.theme===th));
+}
+$("accentSel").addEventListener("click",e=>{const b=e.target.closest("[data-accent]");if(!b)return;data.prefs.accent=b.dataset.accent;save();applyLook();renderLook()});
+$("themeSel").addEventListener("click",e=>{const b=e.target.closest("[data-theme]");if(!b)return;data.prefs.theme=b.dataset.theme;save();applyLook();renderLook()});
+applyLook();
+// sections des réglages : on se souvient de celles qui sont ouvertes (sur cet appareil)
+document.querySelectorAll("#v-more .setsec").forEach(d=>{const o=(data.ui.setOpen||{})[d.dataset.sec];if(o!==undefined)d.open=o;
+  d.addEventListener("toggle",()=>{data.ui.setOpen=data.ui.setOpen||{};data.ui.setOpen[d.dataset.sec]=d.open;saveUI()})});
+
+/* ---------- dictée vocale ---------- */
+// Reconnaissance vocale du navigateur (Safari iOS 14.5+). Sinon, le micro du clavier de l'iPhone marche toujours.
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let dict=null;
+function dictStop(){if(dict){try{dict.rec.stop()}catch(e){}dict.btn.classList.remove("on");dict=null}}
+function dictate(btn,field,onChange){
+  if(dict){const same=dict.btn===btn;dictStop();if(same)return}
+  if(!SR){toast("Dictée indisponible ici : touche le micro 🎤 du clavier de l'iPhone.");field.focus();return}
+  const rec=new SR();rec.lang=LANG==="en"?"en-US":"fr-FR";rec.continuous=true;rec.interimResults=true;
+  // le texte dicté s'insère à l'endroit du curseur
+  const start=field.selectionStart??field.value.length,before=field.value.slice(0,start),after=field.value.slice(field.selectionEnd??start);
+  const sep=before&&!/\s$/.test(before)?" ":"";let finals="";
+  rec.onresult=ev=>{let interim="";for(let i=ev.resultIndex;i<ev.results.length;i++){const r=ev.results[i];if(r.isFinal)finals+=r[0].transcript;else interim+=r[0].transcript}
+    field.value=before+sep+(finals+interim).trimStart()+after;onChange&&onChange()};
+  rec.onerror=ev=>{if(ev.error==="not-allowed"||ev.error==="service-not-allowed")toast("Micro refusé : autorise-le dans les réglages de l'iPhone.");else if(ev.error!=="aborted"&&ev.error!=="no-speech")toast("Dictée interrompue")};
+  rec.onend=()=>{if(dict&&dict.rec===rec){btn.classList.remove("on");dict=null}};
+  try{rec.start();dict={rec,btn};btn.classList.add("on");toast("Parle, je t'écoute…")}catch(e){toast("Dictée indisponible ici : touche le micro 🎤 du clavier de l'iPhone.")}
+}
+$("noteMic").addEventListener("click",e=>dictate(e.currentTarget,$("noteBody"),noteInput));
+$("nuMic").addEventListener("click",e=>dictate(e.currentTarget,$("nuAsk")));
+document.addEventListener("visibilitychange",()=>{if(document.hidden)dictStop()});
+
+/* ---------- nutrition (calories et macros, calculés par Claude) ---------- */
+// data.nutri = {profile, plan, menuPrefs, menu, upd, log:[{id, day, at, name, qty, kcal, p, c, f, upd}]}
+const NU=()=>{const n=data.nutri||(data.nutri={});if(!Array.isArray(n.log))n.log=[];return n};
+let nuDay=iso(today()),nuEditing=false,nuDraft=null,nuPending=null,nuBusy="",nuEditId=null;
+const r0=x=>Math.round(+x||0),r1=x=>Math.round((+x||0)*10)/10;
+async function nuCall(kind,payload){
+  if(!navigator.onLine)throw new Error(L("Pas de connexion internet"));
+  return (await api("/functions/v1/nutrition",{method:"POST",token:await token(),body:{kind,lang:LANG,...payload}})).result;
+}
+const nuErrMsg=ex=>ex instanceof TypeError?L("Pas de connexion internet"):ex.status===404?L("La fonction « nutrition » n'est pas encore installée sur Supabase."):ex.message;
+// --- profil ---
+function nuFillForm(){
+  const p=NU().profile||{};nuDraft={sex:p.sex||"",goal:p.goal||"",sports:(p.sports||[]).map(x=>({...x}))};
+  $("nuAge").value=p.age||"";$("nuHeight").value=p.height||"";$("nuWeight").value=p.weight||"";$("nuNotes").value=p.notes||"";
+  if(!nuDraft.sports.length)nuDraft.sports.push({name:"",freq:"",min:""});
+  $("nuErr").hidden=true;nuDraftRender();
+}
+function nuDraftRender(){
+  document.querySelectorAll("#nuSex button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.sex===nuDraft.sex));
+  document.querySelectorAll("#nuGoal button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.goal===nuDraft.goal));
+  $("nuSports").innerHTML=nuDraft.sports.map((x,i)=>`<div class="nu-sport"><input data-sp="${i}" data-f="name" value="${esc(x.name)}" placeholder="${L("Ex. Foot")}" aria-label="${L("Sport")}" autocomplete="off">
+    <span class="unit"><input data-sp="${i}" data-f="freq" type="number" inputmode="numeric" min="0" max="14" value="${esc(x.freq)}" aria-label="${L("Fois par semaine")}"><span>${L("×/sem")}</span></span>
+    <span class="unit"><input data-sp="${i}" data-f="min" type="number" inputmode="numeric" min="0" max="600" value="${esc(x.min)}" aria-label="${L("Minutes par séance")}"><span>min</span></span>
+    <button type="button" class="x" data-sprm="${i}" aria-label="${L("Retirer ce sport")}">×</button></div>`).join("");
+}
+$("nuSports").addEventListener("input",e=>{const i=e.target.dataset.sp;if(i!==undefined)nuDraft.sports[+i][e.target.dataset.f]=e.target.value});
+$("nuSports").addEventListener("click",e=>{const b=e.target.closest("[data-sprm]");if(!b)return;nuDraft.sports.splice(+b.dataset.sprm,1);nuDraftRender()});
+$("nuSportAdd").addEventListener("click",()=>{nuDraft.sports.push({name:"",freq:"",min:""});nuDraftRender();const ins=$("nuSports").querySelectorAll('[data-f="name"]');ins[ins.length-1].focus()});
+$("nuSex").addEventListener("click",e=>{const b=e.target.closest("[data-sex]");if(b){nuDraft.sex=b.dataset.sex;nuDraftRender()}});
+$("nuGoal").addEventListener("click",e=>{const b=e.target.closest("[data-goal]");if(b){nuDraft.goal=b.dataset.goal;nuDraftRender()}});
+$("nuCancel").addEventListener("click",()=>{nuEditing=false;renderNutri()});
+$("nuEditProfile").addEventListener("click",()=>{nuEditing=true;nuFillForm();renderNutri();window.scrollTo(0,0)});
+$("nuForm").addEventListener("submit",async e=>{
+  e.preventDefault();if(nuBusy)return;
+  const fail=m=>{$("nuErr").textContent=L(m);$("nuErr").hidden=false};
+  const age=+$("nuAge").value,height=+$("nuHeight").value,weight=+String($("nuWeight").value).replace(",",".");
+  if(!nuDraft.sex)return fail("Indique ton sexe.");
+  if(!(age>=10&&age<=100))return fail("Indique ton âge.");
+  if(!(height>=100&&height<=250))return fail("Indique ta taille en cm.");
+  if(!(weight>=25&&weight<=300))return fail("Indique ton poids en kg.");
+  if(!nuDraft.goal)return fail("Choisis ton objectif.");
+  const sports=nuDraft.sports.map(x=>({name:String(x.name||"").trim(),freq:+x.freq||0,min:+x.min||0})).filter(x=>x.name);
+  const profile={sex:nuDraft.sex,age,height,weight,sports,goal:nuDraft.goal,notes:$("nuNotes").value.trim().slice(0,800)};
+  $("nuErr").hidden=true;nuBusy="profil";const btn=$("nuCalc");btn.disabled=true;btn.innerHTML=`<span class="spin"></span>${L("Claude calcule…")}`;
+  try{
+    const r=await nuCall("profil",{data:{sex:profile.sex==="h"?"male":"female",age,height_cm:height,weight_kg:weight,
+      sports:sports.map(x=>({sport:x.name,times_per_week:x.freq,minutes_per_session:x.min})),goal:profile.goal,notes:profile.notes}});
+    const n=NU();n.profile=profile;n.plan={bmr:r0(r.bmr_kcal),tdee:r0(r.tdee_kcal),kcal:r0(r.target_kcal),p:r0(r.protein_g),c:r0(r.carbs_g),f:r0(r.fat_g),
+      text:String(r.explanation||""),warn:(r.warnings||[]).map(String),at:new Date().toISOString()};
+    n.upd=Date.now();nuEditing=false;save();renderNutri();window.scrollTo(0,0);toast("Tes besoins sont calculés");
+  }catch(ex){fail(nuErrMsg(ex))}
+  nuBusy="";btn.disabled=false;btn.textContent=L("Calculer mes besoins avec Claude");
+});
+// --- journée ---
+const dayLog=d=>NU().log.filter(x=>x.day===d).sort((a,b)=>(a.at||"").localeCompare(b.at||""));
+const sumOf=list=>list.reduce((s,x)=>({kcal:s.kcal+(+x.kcal||0),p:s.p+(+x.p||0),c:s.c+(+x.c||0),f:s.f+(+x.f||0)}),{kcal:0,p:0,c:0,f:0});
+function nuDayLabel(d){const t=iso(today()),dt=parse(d),y=new Date(today());y.setDate(y.getDate()-1);
+  if(d===t)return L("Aujourd'hui");if(d===iso(y))return L("Hier");return `${DOW[dt.getDay()]} ${dt.getDate()} ${MO[dt.getMonth()]}`}
+function renderNutri(){
+  if(!$("nuMain"))return;
+  const n=NU(),has=!!(n.plan&&n.plan.kcal);
+  $("nuProfile").hidden=has&&!nuEditing;$("nuMain").hidden=!has||nuEditing;$("nuCancel").hidden=!has;
+  $("nuProfSub").textContent=L(has?"Modifie tes infos : Claude recalcule tes besoins.":"Présente-toi en quelques infos : Claude calcule ton métabolisme, tes besoins du jour et tes macros.");
+  if(!has||nuEditing){if(!nuDraft)nuFillForm();return}
+  const pl=n.plan,list=dayLog(nuDay),s=sumOf(list);
+  $("nuDayTxt").textContent=nuDayLabel(nuDay);$("nuDate").value=nuDay;$("nuNext").disabled=nuDay>=iso(today());
+  const pct=Math.min(1,s.kcal/pl.kcal);$("nuRing").style.strokeDashoffset=326.73*(1-pct);
+  $("nuRing").closest(".nu-ring").classList.toggle("over",s.kcal>pl.kcal*1.05);
+  $("nuKcal").textContent=r0(s.kcal);
+  $("nuKcalOf").innerHTML=`${L("sur")} ${pl.kcal} kcal<br>`+(s.kcal>pl.kcal?`<b style="color:var(--late)">+${r0(s.kcal-pl.kcal)}</b>`:`${L("reste")} ${r0(pl.kcal-s.kcal)}`);
+  const M=[["Protéines","p","var(--c-cours)"],["Glucides","c","var(--warn)"],["Lipides","f","var(--x2)"]];
+  $("nuMacros").innerHTML=M.map(([l,k,c])=>`<div class="nu-m"><div class="top"><b>${L(l)}</b><span>${r0(s[k])} / ${pl[k]} g</span></div><div class="bar"><i style="--c:${c};width:${Math.min(100,pl[k]?s[k]/pl[k]*100:0)}%"></i></div></div>`).join("");
+  $("nuLogH").textContent=nuDay===iso(today())?L("Ma journée"):L("Ce jour-là");
+  $("nuLog").innerHTML=list.length?list.map(x=>{const d=new Date(x.at);
+    return `<div class="row" style="gap:10px"><span class="donetime">${two(d.getHours())}:${two(d.getMinutes())}</span><div class="grow"><b class="notr">${esc(x.name)}</b>${x.qty?` <span class="small muted notr">· ${esc(x.qty)}</span>`:""}<div class="nu-mac">P ${r1(x.p)} · G ${r1(x.c)} · L ${r1(x.f)}</div></div><span class="nu-num">${r0(x.kcal)} kcal</span><button class="pen" data-nuedit="${x.id}" aria-label="${L("Modifier")}">${PEN}</button></div>`}).join("")
+    :`<div class="empty">${L(nuDay===iso(today())?"Rien pour l'instant. Écris ce que tu manges ci-dessus.":"Rien d'enregistré ce jour-là. Tu peux encore le compléter.")}</div>`;
+  renderNuResult();renderNuPlan();renderNuMenu();
+  const mp=n.menuPrefs||{};$("nuMeals").textContent=mp.meals||3;
+  if(document.activeElement!==$("nuInclude"))$("nuInclude").value=mp.include||"";if(document.activeElement!==$("nuExclude"))$("nuExclude").value=mp.exclude||"";
+}
+function renderNuPlan(){
+  const pl=NU().plan;if(!pl)return;
+  $("nuPlan").innerHTML=`<div class="nu-plan"><div><b>${pl.bmr}</b><span>${L("Métabolisme de base")}</span></div><div><b>${pl.tdee}</b><span>${L("Dépense du jour")}</span></div><div><b>${pl.kcal}</b><span>${L("Objectif (kcal)")}</span></div></div>
+    <div class="nu-plan"><div><b>${pl.p} g</b><span>${L("Protéines")}</span></div><div><b>${pl.c} g</b><span>${L("Glucides")}</span></div><div><b>${pl.f} g</b><span>${L("Lipides")}</span></div></div>
+    <p class="small notr" style="margin:0 4px">${esc(pl.text)}</p>${pl.warn.map(w=>`<div class="nu-warn notr">${esc(w)}</div>`).join("")}`;
+}
+function nuSetDay(d){nuDay=d>iso(today())?iso(today()):d;nuPending=null;renderNutri()}
+$("nuPrev").addEventListener("click",()=>{const d=parse(nuDay);d.setDate(d.getDate()-1);nuSetDay(iso(d))});
+$("nuNext").addEventListener("click",()=>{const d=parse(nuDay);d.setDate(d.getDate()+1);nuSetDay(iso(d))});
+$("nuDate").addEventListener("change",e=>{if(e.target.value)nuSetDay(e.target.value)});
+// heure de l'entrée : maintenant si c'est aujourd'hui, sinon midi (modifiable)
+const nuAt=(time)=>{const d=parse(nuDay),now=new Date();
+  if(time){const[h,m]=time.split(":").map(Number);d.setHours(h,m)}else if(nuDay===iso(today()))d.setHours(now.getHours(),now.getMinutes());else d.setHours(12,0);
+  return d.toISOString()};
+$("nuAskForm").addEventListener("submit",async e=>{
+  e.preventDefault();const q=$("nuAsk").value.trim();if(!q||nuBusy)return;dictStop();
+  nuBusy="aliment";const btn=$("nuAskBtn");btn.disabled=true;btn.innerHTML=`<span class="spin"></span>${L("Claude calcule…")}`;
+  try{const r=await nuCall("aliment",{text:q});
+    nuPending={q,note:String(r.note||""),items:(r.items||[]).map(x=>({name:String(x.name||q),qty:String(x.quantity||""),kcal:r0(x.kcal),p:r1(x.protein_g),c:r1(x.carbs_g),f:r1(x.fat_g)}))};
+    if(!nuPending.items.length){nuPending=null;toast("Aliment non reconnu, précise un peu")}
+  }catch(ex){toast(nuErrMsg(ex))}
+  nuBusy="";btn.disabled=false;btn.textContent=L("Calculer avec Claude");renderNuResult();
+});
+function renderNuResult(){
+  const p=nuPending;if(!p){$("nuResult").innerHTML="";return}
+  const s=sumOf(p.items);
+  $("nuResult").innerHTML=`<div class="nu-res">${p.items.map((x,i)=>`<div class="nu-it"><div class="grow"><b class="notr">${esc(x.name)}</b><span class="small muted notr">${esc(x.qty)}</span><div class="nu-mac">P ${x.p} · G ${x.c} · L ${x.f}</div></div><span class="nu-num">${x.kcal} kcal</span><button type="button" class="x" data-nurm="${i}" aria-label="${L("Retirer")}">×</button></div>`).join("")}
+    ${p.note?`<div class="small muted notr">${esc(p.note)}</div>`:""}
+    <div class="two" style="display:grid;gap:8px;margin-top:6px"><button type="button" class="btn ghost" data-nucancel="1">${L("Annuler")}</button><button type="button" class="btn" data-nuadd="1">${L("Ajouter")} · ${r0(s.kcal)} kcal</button></div></div>`;
+}
+$("nuResult").addEventListener("click",e=>{const b=e.target.closest("button");if(!b||!nuPending)return;
+  if(b.dataset.nurm){nuPending.items.splice(+b.dataset.nurm,1);if(!nuPending.items.length)nuPending=null;renderNuResult()}
+  else if(b.dataset.nucancel){nuPending=null;renderNuResult()}
+  else if(b.dataset.nuadd){nuAddItems(nuPending.items);nuPending=null;$("nuAsk").value="";renderNutri();toast(nuDay===iso(today())?"Ajouté à ta journée":"Ajouté à ce jour")}
+});
+function nuAddItems(items,time){const at=nuAt(time);items.forEach(x=>NU().log.push({id:uid(),day:nuDay,at,name:x.name,qty:x.qty||"",kcal:r0(x.kcal),p:r1(x.p),c:r1(x.c),f:r1(x.f),upd:Date.now()}));save()}
+// saisie ou correction à la main
+function nuOpenSheet(id){
+  const x=id?NU().log.find(e=>e.id===id):null;nuEditId=x?x.id:null;
+  $("nuSheetTitle").textContent=L(x?"Modifier":"Ajouter à la main");$("nuEDel").hidden=!x;$("nuEDel").classList.remove("armed");$("nuEDel").textContent=L("Supprimer");
+  const d=x?new Date(x.at):null;
+  $("nuEName").value=x?x.name:($("nuAsk").value.trim());$("nuEQty").value=x?x.qty:"";$("nuETime").value=d?`${two(d.getHours())}:${two(d.getMinutes())}`:"";
+  $("nuEKcal").value=x?x.kcal:"";$("nuEP").value=x?x.p:"";$("nuEC").value=x?x.c:"";$("nuEF").value=x?x.f:"";
+  $("nuSheet").hidden=false;
+}
+$("nuManual").addEventListener("click",()=>nuOpenSheet(null));
+$("nuLog").addEventListener("click",e=>{const b=e.target.closest("[data-nuedit]");if(b)nuOpenSheet(b.dataset.nuedit)});
+$("nuSheetClose").addEventListener("click",()=>{$("nuSheet").hidden=true});
+$("nuSheet").addEventListener("click",e=>{if(e.target.id==="nuSheet")$("nuSheet").hidden=true});
+$("nuEntryForm").addEventListener("submit",e=>{
+  e.preventDefault();const name=$("nuEName").value.trim(),num=id=>Math.max(0,+String($(id).value).replace(",",".")||0);
+  if(!name){toast("Indique l'aliment");return}
+  const v={name,qty:$("nuEQty").value.trim(),kcal:num("nuEKcal"),p:num("nuEP"),c:num("nuEC"),f:num("nuEF")};
+  if(nuEditId){const x=NU().log.find(e=>e.id===nuEditId);if(x){Object.assign(x,{...v,kcal:r0(v.kcal),p:r1(v.p),c:r1(v.c),f:r1(v.f),upd:Date.now()});
+      if($("nuETime").value){const d=parse(x.day),[h,m]=$("nuETime").value.split(":").map(Number);d.setHours(h,m);x.at=d.toISOString()}save()}}
+  else nuAddItems([v],$("nuETime").value);
+  $("nuSheet").hidden=true;renderNutri();toast("Enregistré");
+});
+$("nuEDel").addEventListener("click",e=>{const b=e.currentTarget;if(!nuEditId)return;
+  if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent=L("Confirmer la suppression");return}
+  tomb(nuEditId);NU().log=NU().log.filter(x=>x.id!==nuEditId);save();$("nuSheet").hidden=true;renderNutri();toast("Supprimé")});
+// --- menus sur mesure ---
+const nuMP=()=>{const n=NU();n.menuPrefs=n.menuPrefs||{meals:3,include:"",exclude:""};return n.menuPrefs};
+$("nuMenuSec").addEventListener("click",e=>{const b=e.target.closest("[data-meals]");if(!b)return;const mp=nuMP();mp.meals=Math.min(8,Math.max(1,(mp.meals||3)+ +b.dataset.meals));$("nuMeals").textContent=mp.meals;NU().upd=Date.now();save()});
+["nuInclude","nuExclude"].forEach(id=>$(id).addEventListener("change",e=>{nuMP()[id==="nuInclude"?"include":"exclude"]=e.target.value.trim();NU().upd=Date.now();save()}));
+$("nuMenuBtn").addEventListener("click",async()=>{
+  if(nuBusy)return;const n=NU(),mp=nuMP(),pl=n.plan;mp.include=$("nuInclude").value.trim();mp.exclude=$("nuExclude").value.trim();
+  nuBusy="menu";const btn=$("nuMenuBtn");btn.disabled=true;btn.innerHTML=`<span class="spin"></span>${L("Claude prépare ton menu…")}`;
+  try{const r=await nuCall("menu",{data:{target_kcal:pl.kcal,protein_g:pl.p,carbs_g:pl.c,fat_g:pl.f,meals_per_day:mp.meals||3,must_include:mp.include,avoid:mp.exclude,
+      goal:n.profile&&n.profile.goal,notes:n.profile&&n.profile.notes}});
+    n.menu={meals:(r.meals||[]).map(m=>({name:String(m.name||""),kcal:r0(m.kcal),p:r1(m.protein_g),c:r1(m.carbs_g),f:r1(m.fat_g),
+      items:(m.items||[]).map(x=>({name:String(x.food||""),qty:r0(x.grams)+" g",kcal:r0(x.kcal),p:r1(x.protein_g),c:r1(x.carbs_g),f:r1(x.fat_g)}))})),
+      total:{kcal:r0(r.total&&r.total.kcal),p:r1(r.total&&r.total.protein_g),c:r1(r.total&&r.total.carbs_g),f:r1(r.total&&r.total.fat_g)},tips:String(r.tips||""),at:new Date().toISOString()};
+    n.upd=Date.now();save();renderNuMenu();toast("Menu prêt");
+  }catch(ex){toast(nuErrMsg(ex))}
+  nuBusy="";btn.disabled=false;btn.textContent=L("Générer mon menu");
+});
+function renderNuMenu(){
+  const m=NU().menu;if(!m||!m.meals){$("nuMenu").innerHTML="";return}
+  $("nuMenu").innerHTML=m.meals.map((ml,i)=>`<div class="nu-meal"><div class="nu-meal-h"><b class="notr">${esc(ml.name)}</b><span class="nu-num">${ml.kcal} kcal</span><button type="button" class="mini" data-numeal="${i}">+ ${L("Ma journée")}</button></div>
+      <div class="card">${ml.items.map(x=>`<div class="row" style="gap:10px"><div class="grow"><b class="notr">${esc(x.name)}</b> <span class="small muted">· ${esc(x.qty)}</span><div class="nu-mac">P ${x.p} · G ${x.c} · L ${x.f}</div></div><span class="nu-num">${x.kcal}</span></div>`).join("")}</div></div>`).join("")+
+    `<div class="nu-plan" style="margin-top:12px"><div><b>${m.total.kcal}</b><span>kcal</span></div><div><b>${m.total.p} g</b><span>${L("Protéines")}</span></div><div><b>${m.total.c}·${m.total.f}</b><span>${L("Glucides · Lipides")}</span></div></div>`+
+    (m.tips?`<p class="small muted notr" style="margin:6px 4px">${esc(m.tips)}</p>`:"");
+}
+$("nuMenu").addEventListener("click",e=>{const b=e.target.closest("[data-numeal]");if(!b)return;const ml=NU().menu.meals[+b.dataset.numeal];if(!ml)return;
+  nuAddItems(ml.items);renderNutri();toast(`${L("Ajouté à ta journée")} · ${ml.kcal} kcal`)});
+// minuit passé : la journée suivante commence
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&data.ui.view==="nutri"&&nuDay<iso(today())&&!nuPending){nuDay=iso(today());renderNutri()}});
+
 /* ---------- onglet Appli ---------- */
 function renderApp(){
   const ok=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
@@ -2765,6 +3199,7 @@ const ONB_DESC={
   notes:"Tes notes libres : idées, listes, brouillons, à écrire comme tu veux.",
   pwd:"Tes mots de passe et les sites qui vont avec, protégés par un code à 5 chiffres.",
   pomo:"Travaille concentré : sessions et pauses s'enchaînent toutes seules, avec ta musique.",
+  nutri:"Tes calories et tes macros du jour, calculées par Claude, et des menus faits pour toi.",
   muscu:"Tes séances, tes charges et tes répétitions, avec chrono, tours et minuteur fractionné.",
   docs:"Range tes PDF, scanne des feuilles avec l'appareil photo et retrouve-les en un instant.",
   app:"Les étapes pour installer Sid'note sur ton écran d'accueil."};
@@ -2772,8 +3207,9 @@ let onbSel={};
 function openOnb(){
   onbSel={};TABS.forEach(([k])=>onbSel[k]=data.prefs.tabs[k]!==false);
   document.querySelectorAll("#onbLang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG));
-  $("onbList").innerHTML=TABS.map(([k,l])=>{const ic=document.querySelector(`.tab[data-v="${k}"] svg`);
-    return `<label class="onb-it ${onbSel[k]?"":"off"}" data-onb="${k}"><span class="ic">${ic?ic.outerHTML:""}</span><span class="grow"><b>${l}</b><span class="small muted">${ONB_DESC[k]}</span></span><input type="checkbox" class="switch" data-onbk="${k}" ${onbSel[k]?"checked":""} aria-label="Garder ${l}"></label>`}).join("");
+  const it=([k,l])=>`<label class="onb-it ${onbSel[k]?"":"off"}" data-onb="${k}"><span class="ic">${ICON(k)}</span><span class="grow"><b>${l}</b><span class="small muted">${ONB_DESC[k]}</span></span><input type="checkbox" class="switch" data-onbk="${k}" ${onbSel[k]?"checked":""} aria-label="Garder ${l}"></label>`;
+  $("onbList").innerHTML=GROUPS.map(g=>{const ts=TABS.filter(([k])=>g.tabs.includes(k));
+    return ts.length?`<div class="onb-grp">${g.label}</div>`+ts.map(it).join(""):""}).join("");
   $("onb").hidden=false;document.body.style.overflow="hidden";
 }
 $("onbList").addEventListener("change",e=>{const c=e.target.closest("[data-onbk]");if(!c)return;onbSel[c.dataset.onbk]=c.checked;c.closest(".onb-it").classList.toggle("off",!c.checked)});

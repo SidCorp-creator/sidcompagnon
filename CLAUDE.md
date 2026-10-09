@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 19.**
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 20.**
 
 ## Comment travailler avec Sid
 - Réponds **en français**, simplement et brièvement. Sid n'est pas développeur : explique en mots simples, avec des étapes cliquables.
@@ -15,8 +15,8 @@ site/                 ← exactement ce qui est mis en ligne sur Netlify
   index.html          ← TOUTE l'app (HTML + CSS + JS, ~2 300 lignes, pas de framework, pas de build)
   sw.js               ← service worker (réseau d'abord ; cache pdf.js à part)
   manifest.webmanifest, icônes
-supabase/functions/   ← fonctions Edge (Deno) : horaire (relais iCal, ACTIVE), rappels (notifications, EN PAUSE)
-supabase/sql/         ← SQL déjà exécuté : documents.sql (bucket Storage + règles)
+supabase/functions/   ← fonctions Edge (Deno) : horaire (relais iCal, ACTIVE), nutrition (relais Claude, v20), rappels (notifications, EN PAUSE)
+supabase/sql/         ← SQL : documents.sql (déjà exécuté), nutrition.sql (v20, compteur d'appels Claude)
 secrets/              ← clés VAPID, secret cron, version complète de rappels : NE JAMAIS publier ni committer
 tests/                ← serve.js (aperçu local + faux Supabase), smoke.js (test Playwright), mock-supabase.js
 assets/               ← logo
@@ -30,6 +30,7 @@ assets/               ← logo
   - Données : table `user_data(user_id, data jsonb, updated_at)`, en upsert PostgREST (`Prefer: resolution=merge-duplicates`). Toutes les données d'un utilisateur tiennent dans un seul JSON.
   - Storage : bucket privé `documents`, chemin `<uid>/<docId>.pdf`, 50 Mo max. Règles par dossier dans `supabase/sql/documents.sql`.
   - Fonction `horaire` : relaie le lien iCal (UMons/HyperPlanning), car le navigateur ne peut pas le lire directement. Elle vérifie que l'utilisateur est connecté. Réglage Supabase : « Verify JWT with legacy secret » est sur OFF.
+  - Fonction `nutrition` (v20) : relais vers l'API Claude (`claude-opus-5-5`, sorties JSON structurées, `fallbacks: "default"`). Trois demandes : `profil` (métabolisme, besoins, macros), `aliment` (calories de ce qu'on mange), `menu`. Secret Supabase `ANTHROPIC_API_KEY` obligatoire (jamais dans le site). Limite : 60 appels par personne et par jour (`NUTRITION_DAILY_LIMIT`), compteur `nutrition_hit()` de `nutrition.sql`.
   - Fonction `rappels` (notifications la veille) : **en pause à la demande de Sid**. Elle n'est pas déployée et la section reste cachée (`#rappelsSec`).
 - Comptes historiques : les anciens comptes « pseudo » utilisent `slug@sidnote.netlify.app`. Une migration vers l'e-mail est proposée dans Réglages.
 
@@ -43,7 +44,8 @@ assets/               ← logo
 - Session : `localStorage["sidnote-session"]`.
   - Avec « Rester connecté » décoché, `session.eph = true` et un marqueur dans `sessionStorage` (`sidnote-alive`). Au relancement sans ce marqueur, l'app envoie les modifications puis déconnecte.
   - Compte test : `TEST_EMAILS = ["test@sidcorp.app"]`. Il est remis à zéro à chaque connexion, ne reste jamais connecté et affiche la présentation à chaque fois.
-- Onglets : constante `TABS` (plan, todo, notes, pomo, muscu, docs, pwd, app) ; Réglages est toujours affiché.
+- Onglets : constante `TABS` (plan, todo, notes, pomo, muscu, nutri, docs, pwd, app) ; Réglages est toujours affiché.
+  - v20 : rangés en catégories (`GROUPS`) : Organisation (plan, todo, pomo), Sport (muscu, nutri), Classeur (notes, docs, pwd), Réglages (more, app). La barre du bas montre les catégories ; `#subnav` en haut choisit la fonction. Dernière fonction ouverte par catégorie : `data.ui.glast`. Icônes dans `#fnIcons` (`ICON(k)`).
   - Visibilité dans `data.prefs.tabs`, page d'accueil dans `data.prefs.home` (`"last"` = dernière page ouverte), présentation déjà vue dans `data.prefs.onboarded`.
 - **Langue** : le français est la source.
   - L'anglais passe par le dictionnaire `DICT` (FR → EN), les motifs `PATS` (textes avec chiffres) et un MutationObserver qui traduit le DOM. Le contenu utilisateur est protégé par la liste `NOTR` (`.ttl`, `.ms-name`…).
@@ -67,6 +69,9 @@ assets/               ← logo
   - Limite à connaître : 5 chiffres = 100 000 codes possibles. Quelqu'un qui volerait le JSON chiffré pourrait les essayer tous (lent mais faisable). La vraie protection reste le compte Supabase (règles RLS).
 - À faire : en vue « Toutes », chaque catégorie se replie (`data.ui.todoFold`, propre à l'appareil) + bouton « Tout replier ».
 - Documents : tri « Récents » / « A → Z » (`data.prefs.docSort`). Le scanner interne est passé en meilleure définition (2600 px, JPEG 0,85). Le vrai scanner d'iPhone (VisionKit) n'est pas accessible depuis une app web : l'app explique comment scanner avec l'app Fichiers puis importer le PDF.
+- Apparence (v20) : couleur d'accent (`data.prefs.accent`, palette `ACCENTS`) et thème Auto/Clair/Sombre (`data.prefs.theme`, attribut `data-theme` sur `<html>`), appliqués par `applyLook()`. Copie dans `localStorage["sidnote-look"]` pour l'écran de connexion. Réglages en sections repliables (`.setsec`, état dans `data.ui.setOpen`).
+- Dictée (v20) : `dictate(btn, champ)` via `webkitSpeechRecognition` (Notes et Nutrition). Si le navigateur ne la gère pas, message : utiliser le micro du clavier iPhone.
+- Nutrition (v20) : `data.nutri = {profile, plan, menuPrefs, menu, upd, log:[{id, day, at, name, qty, kcal, p, c, f, upd}]}`. Journée = date locale (00:00 → 23:59), navigation ‹ › et sélecteur de date pour compléter les jours passés. Fusion : profil/plan/menu = le plus récent (`upd`), `log` = union par id. Saisie à la main possible sans Claude.
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés
@@ -87,7 +92,9 @@ assets/               ← logo
 
 ## État et prochaines étapes
 - La v18 a été livrée le 9 oct. 2026 et le SQL Storage a été exécuté avec succès.
-- v19 préparée (pas encore mise en ligne) : phrase d'accueil, onglets Notes et Mots de passe, tri des documents, catégories repliables, scanner plus net.
+- v19 préparée : phrase d'accueil, onglets Notes et Mots de passe, tri des documents, catégories repliables, scanner plus net.
+- v20 préparée (pas encore mise en ligne) : catégories d'onglets, couleurs et thème, réglages repliables, dictée, Nutrition avec Claude.
+  - Pour que Nutrition marche, Sid doit : créer une clé API Claude (console.anthropic.com, payant à l'usage), l'ajouter en secret Supabase `ANTHROPIC_API_KEY`, exécuter `supabase/sql/nutrition.sql`, déployer la fonction `nutrition` (Verify JWT : OFF, comme `horaire`).
 - À vérifier sur l'iPhone de Sid :
   - l'ouverture d'un PDF dans le lecteur (pdf.js n'a pas pu être testé dans Cowork) ;
   - la synchronisation d'un document entre deux appareils.
@@ -96,6 +103,7 @@ assets/               ← logo
   - v1–v10 : planning, à faire, pomodoro, comptes Supabase, réglages ;
   - v11–v14 : e-mail, heures, Spotify, recherche, vue jour ;
   - v15–v17 : musculation, chrono et minuteur, horaire iCal UMons ;
+  - v20 : catégories d'onglets, couleurs, réglages repliables, dictée, nutrition avec Claude ;
   - v19 : notes, mots de passe chiffrés, tri des documents, catégories repliables, nouvelle phrase d'accueil ;
   - v18 : documents et scanner, catégories et ordre des tâches, fractionné, tours, langue EN, page d'accueil, présentation, rester connecté, compte test, SidCorp.
 

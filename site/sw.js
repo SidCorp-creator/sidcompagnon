@@ -1,4 +1,4 @@
-const CACHE = "sidnote-v19";
+const CACHE = "sidnote-v20";
 const LIB = "sidnote-lib-1"; // lecteur PDF (pdf.js), gardé entre les versions
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./apple-touch-icon.png", "./icon-192.png", "./icon-512.png"];
 

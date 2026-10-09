@@ -39,6 +39,8 @@ const SCHEMAS: Record<string, unknown> = {
     protein_g: num, carbs_g: num, fat_g: num,
     explanation: str,
     warnings: { type: "array", items: str },
+    // objectif de poids : délai réaliste ou non, rythme et durée conseillés
+    weight_goal: obj({ realistic: { type: "boolean" }, weekly_change_kg: num, suggested_weeks: num, advice: str }),
   }),
   aliment: obj({
     items: { type: "array", items: obj({ name: str, quantity: str, grams: num, ...macros }) },
@@ -66,13 +68,14 @@ function prompt(kind: string, b: any, lang: string): { system: string; user: str
   if (kind === "profil")
     return {
       system: `${BASE}\n${out}`,
-      user: `Compute this person's basal metabolic rate (Mifflin-St Jeor), their total daily energy expenditure from their sports and frequency, a daily calorie target for their goal ("gain" = gain weight, "maintain", "lose" = lose weight), and daily macros in grams. Take their notes into account. In "explanation", explain the numbers in 3–5 short sentences for a non-expert.\n\nProfile (JSON):\n${data}`,
+      user: `Compute this person's basal metabolic rate (Mifflin-St Jeor), their total daily energy expenditure from their sports and frequency, a daily calorie target for their goal ("gain" = gain weight, "maintain", "lose" = lose weight), and daily macros in grams. Take their notes into account. In "explanation", explain the numbers in 3–5 short sentences for a non-expert.
+If they give a target weight and a timeframe, check whether it is realistic and healthy: as a guide, losing about 0.5–1 % of body weight per week, and gaining about 0.25–0.5 % per week (mostly muscle) for someone who trains. Set "weight_goal.realistic" accordingly, "weekly_change_kg" to the recommended weekly change (negative when losing), and "suggested_weeks" to the realistic number of weeks to reach the target. In "weight_goal.advice", say it plainly in 1–3 sentences: if the timeframe is unrealistic, explain why and propose the realistic path; if it is realistic, encourage them briefly. Always base the calorie target on the realistic pace, never on an unrealistic deadline. Also flag it if the target goes against the chosen goal (for example a lower target weight with the goal "gain"). If there is no target weight, set realistic to true, both numbers to 0 and advice to an empty string.\n\nProfile (JSON):\n${data}`,
       effort: "medium", max: 8000,
     };
   if (kind === "aliment")
     return {
       system: `${BASE}\n${out}`,
-      user: `Estimate the calories and macros of what the person ate. They may give a weight ("150 g de riz cuit"), a count ("1 kinder bueno", "2 oeufs") or a portion ("une assiette de pâtes"). Split it into separate foods when there are several. For each, give a readable quantity, the estimated grams and the macros for that quantity. In "note", state briefly any assumption (raw vs cooked, typical portion…), or leave it empty.\n\nWhat they ate:\n${String(b.text ?? "").slice(0, 600)}`,
+      user: `Estimate the calories and macros of what the person ate. They may give a weight ("150 g of cooked rice"), a count ("2 eggs", "1 chocolate bar of a given brand") or a portion ("a plate of pasta"). Split it into separate foods when there are several. For each, give a readable quantity, the estimated grams and the macros for that quantity. In "note", state briefly any assumption (raw vs cooked, typical portion…), or leave it empty.\n\nWhat they ate:\n${String(b.text ?? "").slice(0, 600)}`,
       effort: "low", max: 4000,
     };
   return {

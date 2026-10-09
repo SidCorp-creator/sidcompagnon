@@ -42,9 +42,10 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(!(await pg.textContent("#pwList")).includes("Netflix"))errs.push(scheme+": mot de passe non relu après déverrouillage");
     // v20 : nutrition (faux Claude du serveur de test)
     await go("nutri");await shot(pg,scheme+"-fr-nutri-profil");
-    await pg.click('[data-sex="h"]');await pg.fill("#nuAge","24");await pg.fill("#nuHeight","180");await pg.fill("#nuWeight","72");
+    await pg.click('[data-sex="h"]');await pg.fill("#nuAge","24");await pg.fill("#nuHeight","180");await pg.fill("#nuWeight","72");await pg.fill("#nuTarget","80");await pg.fill("#nuDur","1");await pg.selectOption("#nuDurU","m");
     await pg.fill('[data-sp="0"][data-f="name"]',"Musculation");await pg.fill('[data-sp="0"][data-f="freq"]',"4");await pg.fill('[data-sp="0"][data-f="min"]',"75");
     await pg.click('[data-goal="gain"]');await pg.click("#nuCalc");await pg.waitForSelector("#nuMain:not([hidden])",{timeout:8000});
+    if(!(await pg.isVisible("#nuGoalCard")))errs.push(scheme+": alerte de délai irréaliste absente");await shot(pg,scheme+"-fr-nutri-objectif");
     await pg.fill("#nuAsk","1 kinder bueno");await pg.click("#nuAskBtn");await pg.waitForSelector("[data-nuadd]",{timeout:8000});await shot(pg,scheme+"-fr-nutri-resultat");
     await pg.click("[data-nuadd]");await pg.waitForTimeout(200);if(!(await pg.textContent("#nuKcal")).includes("246"))errs.push(scheme+": calories du jour incorrectes");
     await pg.click("#nuPrev");await pg.click("#nuManual");await pg.fill("#nuEName","Pâtes");await pg.fill("#nuEKcal","500");await pg.click("#nuEntryForm [type=submit]");

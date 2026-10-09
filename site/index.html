@@ -469,6 +469,15 @@ nav.lots .tab svg{width:21px;height:21px}
 .nu-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .nu-3 label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
 .nu-3 .unit input{background:var(--bg);padding-right:34px}
+.nu-tgt{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:8px}
+.nu-tgt label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.nu-tgt .unit input{background:var(--bg);padding-right:34px}
+.nu-dur{display:flex;gap:6px}
+.nu-dur input{width:64px;flex:none;text-align:center}
+.nu-dur .sel{max-width:none;flex:1;min-width:0}
+.nu-goalcard{border-left:4px solid var(--warn);margin-bottom:12px;padding:12px 14px;display:grid;gap:4px}
+.nu-goalcard.ok{border-left-color:var(--ok)}
+.nu-goalcard b{font-size:15px}
 .nu-sports{display:grid;gap:6px}
 .nu-sport{display:grid;grid-template-columns:minmax(0,1fr) 92px 92px 30px;gap:6px;align-items:center}
 .nu-sport .unit input{padding-right:30px;text-align:right}
@@ -745,13 +754,17 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
     <h1>Nutrition</h1>
     <!-- profil -->
     <div id="nuProfile" hidden>
-      <p class="sub" id="nuProfSub">Présente-toi en quelques infos : Claude calcule ton métabolisme, tes besoins du jour et tes macros.</p>
+      <p class="sub" id="nuProfSub">Présente-toi en quelques infos : on calcule ton métabolisme, tes besoins du jour et tes macros.</p>
       <form class="card form" id="nuForm" novalidate>
         <div class="nu-lbl">Sexe<div class="seg" id="nuSex" role="group" aria-label="Sexe"><button type="button" data-sex="h">Homme</button><button type="button" data-sex="f">Femme</button></div></div>
         <div class="nu-3">
           <label>Âge<span class="unit"><input id="nuAge" type="number" inputmode="numeric" min="10" max="100"><span>ans</span></span></label>
           <label>Taille<span class="unit"><input id="nuHeight" type="number" inputmode="numeric" min="100" max="250"><span>cm</span></span></label>
           <label>Poids<span class="unit"><input id="nuWeight" type="number" inputmode="decimal" min="25" max="300" step="0.1"><span>kg</span></span></label>
+        </div>
+        <div class="nu-tgt">
+          <label>Poids visé (optionnel)<span class="unit"><input id="nuTarget" type="number" inputmode="decimal" min="30" max="300" step="0.1"><span>kg</span></span></label>
+          <label>En combien de temps<span class="nu-dur"><input id="nuDur" type="number" inputmode="numeric" min="1" max="104" aria-label="Durée"><select id="nuDurU" class="sel" aria-label="Unité"><option value="w">semaines</option><option value="m">mois</option></select></span></label>
         </div>
         <div class="small muted" style="margin-top:4px">Tes sports</div>
         <div id="nuSports" class="nu-sports"></div>
@@ -764,22 +777,23 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
         </div>
         <label>Tes spécificités (optionnel)<textarea id="nuNotes" placeholder="Ex. végétarien, allergie aux noix, travail debout, je mange peu le matin…" style="min-height:80px"></textarea></label>
         <p class="err" id="nuErr" role="alert" hidden></p>
-        <button class="btn" type="submit" id="nuCalc" style="padding:14px">Calculer mes besoins avec Claude</button>
+        <button class="btn" type="submit" id="nuCalc" style="padding:14px">Calculer mes besoins</button>
         <button type="button" class="btn ghost" id="nuCancel" hidden>Annuler</button>
       </form>
-      <p class="small muted" style="margin:8px 4px 0">Ces informations sont envoyées à Claude (Anthropic) pour le calcul. Ce n'est pas un avis médical.</p>
+      <p class="small muted" style="margin:8px 4px 0">Les calculs sont réalisés par une IA (Claude, d'Anthropic) à partir de ces informations. Ce n'est pas un avis médical.</p>
     </div>
     <!-- journée -->
     <div id="nuMain" hidden>
       <div class="dayv-head" style="margin-top:4px"><button type="button" class="cal-nav" id="nuPrev" aria-label="Jour précédent">‹</button><label class="dayv-title nu-daylbl"><span id="nuDayTxt"></span><input type="date" id="nuDate" aria-label="Choisir le jour"></label><button type="button" class="cal-nav" id="nuNext" aria-label="Jour suivant">›</button></div>
+      <div class="card nu-goalcard" id="nuGoalCard" hidden></div>
       <div class="card nu-sum">
         <div class="sw-ring nu-ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="bgc" cx="60" cy="60" r="52" fill="none" stroke-width="10"/><circle class="fgc" id="nuRing" cx="60" cy="60" r="52" fill="none" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="326.73"/></svg><div class="sw-txt"><div><div class="nu-big" id="nuKcal">0</div><div class="small muted" id="nuKcalOf"></div></div></div></div>
         <div class="nu-macros" id="nuMacros"></div>
       </div>
       <h2>Ajouter ce que tu manges</h2>
       <form class="card form" id="nuAskForm">
-        <div class="pw-field"><input id="nuAsk" placeholder="Ex. 1 kinder bueno, 150 g de riz cuit" aria-label="Ce que tu manges" autocomplete="off" enterkeyhint="send"><button type="button" class="mini nu-mic" id="nuMic" aria-label="Dicter">🎤</button></div>
-        <button class="btn" type="submit" id="nuAskBtn">Calculer avec Claude</button>
+        <div class="pw-field"><input id="nuAsk" placeholder="Ce que tu manges, avec la quantité" aria-label="Ce que tu manges" autocomplete="off" enterkeyhint="send"><button type="button" class="mini nu-mic" id="nuMic" aria-label="Dicter">🎤</button></div>
+        <button class="btn" type="submit" id="nuAskBtn">Analyser</button>
         <div id="nuResult"></div>
         <button type="button" class="linkbtn" id="nuManual" style="background:none;border:0;cursor:pointer;font-size:14px;justify-self:center">Saisir les valeurs à la main</button>
       </form>
@@ -788,7 +802,7 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
       <details class="setsec" id="nuMenuSec" style="margin-top:22px"><summary><span>Menus sur mesure</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
         <div class="setsec-in">
           <div class="card form">
-            <div class="small muted">Claude compose une journée de repas qui respecte tes calories et tes macros.</div>
+            <div class="small muted">Une journée de repas qui respecte tes calories et tes macros.</div>
             <div class="row" style="padding:0;border:0;min-height:0"><span class="grow">Repas par jour</span><div class="stepper"><button type="button" data-meals="-1" aria-label="Un repas de moins">−</button><output id="nuMeals">3</output><button type="button" data-meals="1" aria-label="Un repas de plus">+</button></div></div>
             <label>Ingrédients à inclure absolument<input id="nuInclude" placeholder="Ex. poulet, riz, avocat" autocomplete="off"></label>
             <label>À éviter (optionnel)<input id="nuExclude" placeholder="Ex. poisson, lactose" autocomplete="off"></label>
@@ -1171,34 +1185,38 @@ const DICT={
 "Une app":"An app","Séance":"Workout","Séances":"Workouts","Exercice":"Exercise","Chargement…":"Loading…","Mode test":"Test mode",
 "Choisis au moins 5 secondes ":"Choose at least 5 seconds",
 // v20
+"Poids visé (optionnel)":"Target weight (optional)","En combien de temps":"How long","Durée":"Duration","Unité":"Unit","semaines":"weeks","semaine":"week","mois":"months",
+"Indique un poids visé en kg.":"Enter a target weight in kg.","Indique en combien de temps tu veux atteindre ce poids.":"Enter how long you want to take to reach this weight.",
+"par semaine":"per week","en":"in","Ton délai est réaliste.":"Your timeframe is realistic.","Ce délai n'est pas réaliste, ni bon pour ta santé.":"This timeframe isn't realistic, nor good for your health.",
+"Chemin conseillé":"Suggested path","environ":"about","OK, compris":"OK, got it","Changer mon objectif":"Change my goal",
 "Organisation":"Organizer","Sport":"Sport","Classeur":"Binder","Nutrition":"Nutrition","Onglets et catégories":"Tabs and categories","Apparence":"Appearance",
 "Couleur de Sid'note":"Sid'note color","Thème":"Theme","Auto":"Auto","Clair":"Light","Sombre":"Dark",
 "Bleu":"Blue","Vert":"Green","Violet":"Purple","Rose":"Pink","Orange":"Orange","Rouge":"Red","Turquoise":"Teal","Graphite":"Graphite",
 "🎤 Dicter":"🎤 Dictate","Dicter":"Dictate","Dicter la note":"Dictate the note","Parle, je t'écoute…":"Go ahead, I'm listening…","Dictée interrompue":"Dictation stopped",
 "Dictée indisponible ici : touche le micro 🎤 du clavier de l'iPhone.":"Dictation isn't available here: tap the 🎤 mic on the iPhone keyboard.",
 "Micro refusé : autorise-le dans les réglages de l'iPhone.":"Microphone denied: allow it in the iPhone settings.",
-"Tes calories et tes macros du jour, calculées par Claude, et des menus faits pour toi.":"Your daily calories and macros, worked out by Claude, plus menus made for you.",
-"Présente-toi en quelques infos : Claude calcule ton métabolisme, tes besoins du jour et tes macros.":"Tell us a little about yourself: Claude works out your metabolism, daily needs and macros.",
-"Modifie tes infos : Claude recalcule tes besoins.":"Edit your info: Claude recalculates your needs.",
+"Tes calories et tes macros du jour, et des menus faits pour toi.":"Your daily calories and macros, plus menus made for you.",
+"Présente-toi en quelques infos : on calcule ton métabolisme, tes besoins du jour et tes macros.":"Tell us a little about yourself: we work out your metabolism, daily needs and macros.",
+"Modifie tes infos : tes besoins sont recalculés.":"Edit your info: your needs are recalculated.",
 "Sexe":"Sex","Homme":"Male","Femme":"Female","Âge":"Age","Taille":"Height","Poids":"Weight","ans":"yrs","Tes sports":"Your sports","Ex. Foot":"E.g. Football",
 "Fois par semaine":"Times per week","×/sem":"×/wk","Minutes par séance":"Minutes per session","Retirer ce sport":"Remove this sport","+ Ajouter un sport":"+ Add a sport",
 "Ton objectif":"Your goal","Prendre du poids":"Gain weight","Me maintenir":"Stay the same","Perdre du poids":"Lose weight",
 "Plus de calories que tu n'en dépenses":"More calories than you burn","Autant que tu dépenses":"As much as you burn","Un peu moins que tu dépenses":"A little less than you burn",
 "Tes spécificités (optionnel)":"Anything specific (optional)","Ex. végétarien, allergie aux noix, travail debout, je mange peu le matin…":"E.g. vegetarian, nut allergy, standing job, small breakfast…",
-"Calculer mes besoins avec Claude":"Work out my needs with Claude","Claude calcule…":"Claude is calculating…","Tes besoins sont calculés":"Your needs are calculated",
-"Ces informations sont envoyées à Claude (Anthropic) pour le calcul. Ce n'est pas un avis médical.":"This information is sent to Claude (Anthropic) for the calculation. It isn't medical advice.",
+"Calculer mes besoins":"Work out my needs","Calcul en cours…":"Calculating…","Tes besoins sont calculés":"Your needs are calculated",
+"Les calculs sont réalisés par une IA (Claude, d'Anthropic) à partir de ces informations. Ce n'est pas un avis médical.":"Calculations are done by an AI (Claude, by Anthropic) from this information. It isn't medical advice.",
 "Indique ton sexe.":"Choose your sex.","Indique ton âge.":"Enter your age.","Indique ta taille en cm.":"Enter your height in cm.","Indique ton poids en kg.":"Enter your weight in kg.","Choisis ton objectif.":"Choose your goal.",
 "Hier":"Yesterday","sur":"of","reste":"left","Protéines":"Protein","Glucides":"Carbs","Lipides":"Fat","Choisir le jour":"Pick the day",
-"Ajouter ce que tu manges":"Add what you eat","Ex. 1 kinder bueno, 150 g de riz cuit":"E.g. 1 kinder bueno, 150 g cooked rice","Ce que tu manges":"What you eat",
-"Calculer avec Claude":"Calculate with Claude","Saisir les valeurs à la main":"Enter values by hand","Ma journée":"My day","Ce jour-là":"That day",
+"Ajouter ce que tu manges":"Add what you eat","Ce que tu manges, avec la quantité":"What you eat, with the amount","Ce que tu manges":"What you eat",
+"Analyser":"Analyze","Saisir les valeurs à la main":"Enter values by hand","Ma journée":"My day","Ce jour-là":"That day",
 "Rien pour l'instant. Écris ce que tu manges ci-dessus.":"Nothing yet. Write what you eat above.","Rien d'enregistré ce jour-là. Tu peux encore le compléter.":"Nothing logged that day. You can still fill it in.",
 "Ajouté à ta journée":"Added to your day","Ajouté à ce jour":"Added to that day","Aliment non reconnu, précise un peu":"Food not recognized, add a bit more detail",
 "Ajouter à la main":"Add by hand","Aliment":"Food","Quantité":"Amount","Ex. 150 g, 1 barre":"E.g. 150 g, 1 bar","Heure":"Time","Calories (kcal)":"Calories (kcal)",
 "Protéines (g)":"Protein (g)","Glucides (g)":"Carbs (g)","Lipides (g)":"Fat (g)","Indique l'aliment":"Enter the food","Enregistré":"Saved",
-"Menus sur mesure":"Custom menus","Claude compose une journée de repas qui respecte tes calories et tes macros.":"Claude puts together a day of meals that fits your calories and macros.",
+"Menus sur mesure":"Custom menus","Une journée de repas qui respecte tes calories et tes macros.":"A day of meals that fits your calories and macros.",
 "Repas par jour":"Meals per day","Un repas de moins":"One meal less","Un repas de plus":"One meal more","Ingrédients à inclure absolument":"Must-have ingredients",
 "Ex. poulet, riz, avocat":"E.g. chicken, rice, avocado","À éviter (optionnel)":"To avoid (optional)","Ex. poisson, lactose":"E.g. fish, lactose",
-"Générer mon menu":"Generate my menu","Claude prépare ton menu…":"Claude is preparing your menu…","Menu prêt":"Menu ready","Glucides · Lipides":"Carbs · Fat",
+"Générer mon menu":"Generate my menu","Préparation du menu…":"Preparing the menu…","Menu prêt":"Menu ready","Glucides · Lipides":"Carbs · Fat",
 "Mon profil et mes besoins":"My profile and needs","Modifier mon profil":"Edit my profile","Métabolisme de base":"Basal metabolism","Dépense du jour":"Daily burn","Objectif (kcal)":"Target (kcal)",
 "La fonction « nutrition » n'est pas encore installée sur Supabase.":"The “nutrition” function isn't installed on Supabase yet.",
 // v19
@@ -2984,6 +3002,7 @@ const nuErrMsg=ex=>ex instanceof TypeError?L("Pas de connexion internet"):ex.sta
 function nuFillForm(){
   const p=NU().profile||{};nuDraft={sex:p.sex||"",goal:p.goal||"",sports:(p.sports||[]).map(x=>({...x}))};
   $("nuAge").value=p.age||"";$("nuHeight").value=p.height||"";$("nuWeight").value=p.weight||"";$("nuNotes").value=p.notes||"";
+  $("nuTarget").value=p.target||"";$("nuDur").value=p.dur||"";$("nuDurU").value=p.durU||"m";
   if(!nuDraft.sports.length)nuDraft.sports.push({name:"",freq:"",min:""});
   $("nuErr").hidden=true;nuDraftRender();
 }
@@ -3011,17 +3030,24 @@ $("nuForm").addEventListener("submit",async e=>{
   if(!(height>=100&&height<=250))return fail("Indique ta taille en cm.");
   if(!(weight>=25&&weight<=300))return fail("Indique ton poids en kg.");
   if(!nuDraft.goal)return fail("Choisis ton objectif.");
+  const target=$("nuTarget").value?+String($("nuTarget").value).replace(",","."):0,dur=+$("nuDur").value||0,durU=$("nuDurU").value;
+  if(target&&!(target>=30&&target<=300))return fail("Indique un poids visé en kg.");
+  if(target&&!dur)return fail("Indique en combien de temps tu veux atteindre ce poids.");
+  const weeks=target?Math.round((durU==="m"?dur*4.35:dur)*10)/10:0;
   const sports=nuDraft.sports.map(x=>({name:String(x.name||"").trim(),freq:+x.freq||0,min:+x.min||0})).filter(x=>x.name);
-  const profile={sex:nuDraft.sex,age,height,weight,sports,goal:nuDraft.goal,notes:$("nuNotes").value.trim().slice(0,800)};
-  $("nuErr").hidden=true;nuBusy="profil";const btn=$("nuCalc");btn.disabled=true;btn.innerHTML=`<span class="spin"></span>${L("Claude calcule…")}`;
+  const profile={sex:nuDraft.sex,age,height,weight,sports,goal:nuDraft.goal,target,dur:target?dur:0,durU,notes:$("nuNotes").value.trim().slice(0,800)};
+  $("nuErr").hidden=true;nuBusy="profil";const btn=$("nuCalc");btn.disabled=true;btn.innerHTML=`<span class="spin"></span>${L("Calcul en cours…")}`;
   try{
     const r=await nuCall("profil",{data:{sex:profile.sex==="h"?"male":"female",age,height_cm:height,weight_kg:weight,
-      sports:sports.map(x=>({sport:x.name,times_per_week:x.freq,minutes_per_session:x.min})),goal:profile.goal,notes:profile.notes}});
+      sports:sports.map(x=>({sport:x.name,times_per_week:x.freq,minutes_per_session:x.min})),goal:profile.goal,
+      target_weight_kg:target||null,timeframe_weeks:weeks||null,notes:profile.notes}});
     const n=NU();n.profile=profile;n.plan={bmr:r0(r.bmr_kcal),tdee:r0(r.tdee_kcal),kcal:r0(r.target_kcal),p:r0(r.protein_g),c:r0(r.carbs_g),f:r0(r.fat_g),
       text:String(r.explanation||""),warn:(r.warnings||[]).map(String),at:new Date().toISOString()};
+    const wg=r.weight_goal||{};if(target)n.plan.wg={ok:wg.realistic!==false,wk:r1(wg.weekly_change_kg),weeks:r0(wg.suggested_weeks),advice:String(wg.advice||"")};
     n.upd=Date.now();nuEditing=false;save();renderNutri();window.scrollTo(0,0);toast("Tes besoins sont calculés");
   }catch(ex){fail(nuErrMsg(ex))}
-  nuBusy="";btn.disabled=false;btn.textContent=L("Calculer mes besoins avec Claude");
+  nuBusy="";btn.disabled=false;btn.textContent=L("Calculer mes besoins");
+  if(!$("nuGoalCard").hidden)$("nuGoalCard").scrollIntoView({block:"center"});
 });
 // --- journée ---
 const dayLog=d=>NU().log.filter(x=>x.day===d).sort((a,b)=>(a.at||"").localeCompare(b.at||""));
@@ -3032,9 +3058,10 @@ function renderNutri(){
   if(!$("nuMain"))return;
   const n=NU(),has=!!(n.plan&&n.plan.kcal);
   $("nuProfile").hidden=has&&!nuEditing;$("nuMain").hidden=!has||nuEditing;$("nuCancel").hidden=!has;
-  $("nuProfSub").textContent=L(has?"Modifie tes infos : Claude recalcule tes besoins.":"Présente-toi en quelques infos : Claude calcule ton métabolisme, tes besoins du jour et tes macros.");
+  $("nuProfSub").textContent=L(has?"Modifie tes infos : tes besoins sont recalculés.":"Présente-toi en quelques infos : on calcule ton métabolisme, tes besoins du jour et tes macros.");
   if(!has||nuEditing){if(!nuDraft)nuFillForm();return}
   const pl=n.plan,list=dayLog(nuDay),s=sumOf(list);
+  $("nuGoalCard").innerHTML=nuGoalHtml();$("nuGoalCard").hidden=!pl.wg||(pl.wg.ok&&pl.wgSeen);$("nuGoalCard").classList.toggle("ok",!!(pl.wg&&pl.wg.ok));
   $("nuDayTxt").textContent=nuDayLabel(nuDay);$("nuDate").value=nuDay;$("nuNext").disabled=nuDay>=iso(today());
   const pct=Math.min(1,s.kcal/pl.kcal);$("nuRing").style.strokeDashoffset=326.73*(1-pct);
   $("nuRing").closest(".nu-ring").classList.toggle("over",s.kcal>pl.kcal*1.05);
@@ -3050,10 +3077,25 @@ function renderNutri(){
   const mp=n.menuPrefs||{};$("nuMeals").textContent=mp.meals||3;
   if(document.activeElement!==$("nuInclude"))$("nuInclude").value=mp.include||"";if(document.activeElement!==$("nuExclude"))$("nuExclude").value=mp.exclude||"";
 }
+// objectif de poids : chemin conseillé, et alerte si le délai choisi n'est pas réaliste
+function nuGoalHtml(){
+  const n=NU(),pl=n.plan,p=n.profile||{},w=pl&&pl.wg;if(!w||!p.target)return"";
+  const unit=p.durU==="m"?(LANG==="en"?(p.dur>1?"months":"month"):"mois"):L(p.dur>1?"semaines":"semaine");
+  const pace=w.wk?`${w.wk>0?"+":""}${String(w.wk).replace(".",LANG==="en"?".":",")} kg ${L("par semaine")}`:"";
+  return `<b>${w.ok?"✓ ":"⚠️ "}${p.weight} → ${p.target} kg ${L("en")} ${p.dur} ${unit}</b>
+    <span class="small">${L(w.ok?"Ton délai est réaliste.":"Ce délai n'est pas réaliste, ni bon pour ta santé.")}</span>
+    ${w.advice?`<span class="small muted notr">${esc(w.advice)}</span>`:""}
+    ${pace||w.weeks?`<span class="small"><b>${L("Chemin conseillé")} :</b> ${pace}${pace&&w.weeks?" · ":""}${w.weeks?`${L("environ")} ${w.weeks} ${L("semaines")}`:""}</span>`:""}
+    ${w.ok?`<button type="button" class="mini" data-nugoalok="1" style="justify-self:start;margin-top:4px">${L("OK, compris")}</button>`:`<button type="button" class="mini" data-nugoaledit="1" style="justify-self:start;margin-top:4px">${L("Changer mon objectif")}</button>`}`;
+}
+$("nuGoalCard").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.nugoalok){NU().plan.wgSeen=true;save();renderNutri()}
+  else if(b.dataset.nugoaledit){nuEditing=true;nuFillForm();renderNutri();window.scrollTo(0,0);setTimeout(()=>$("nuTarget").focus(),100)}});
 function renderNuPlan(){
   const pl=NU().plan;if(!pl)return;
   $("nuPlan").innerHTML=`<div class="nu-plan"><div><b>${pl.bmr}</b><span>${L("Métabolisme de base")}</span></div><div><b>${pl.tdee}</b><span>${L("Dépense du jour")}</span></div><div><b>${pl.kcal}</b><span>${L("Objectif (kcal)")}</span></div></div>
     <div class="nu-plan"><div><b>${pl.p} g</b><span>${L("Protéines")}</span></div><div><b>${pl.c} g</b><span>${L("Glucides")}</span></div><div><b>${pl.f} g</b><span>${L("Lipides")}</span></div></div>
+    ${pl.wg?`<div class="card nu-goalcard ${pl.wg.ok?"ok":""}" style="background:var(--bg)">${nuGoalHtml().replace(/<button[^>]*>.*?<\/button>/,"")}</div>`:""}
     <p class="small notr" style="margin:0 4px">${esc(pl.text)}</p>${pl.warn.map(w=>`<div class="nu-warn notr">${esc(w)}</div>`).join("")}`;
 }
 function nuSetDay(d){nuDay=d>iso(today())?iso(today()):d;nuPending=null;renderNutri()}
@@ -3066,12 +3108,12 @@ const nuAt=(time)=>{const d=parse(nuDay),now=new Date();
   return d.toISOString()};
 $("nuAskForm").addEventListener("submit",async e=>{
   e.preventDefault();const q=$("nuAsk").value.trim();if(!q||nuBusy)return;dictStop();
-  nuBusy="aliment";const btn=$("nuAskBtn");btn.disabled=true;btn.innerHTML=`<span class="spin"></span>${L("Claude calcule…")}`;
+  nuBusy="aliment";const btn=$("nuAskBtn");btn.disabled=true;btn.innerHTML=`<span class="spin"></span>${L("Calcul en cours…")}`;
   try{const r=await nuCall("aliment",{text:q});
     nuPending={q,note:String(r.note||""),items:(r.items||[]).map(x=>({name:String(x.name||q),qty:String(x.quantity||""),kcal:r0(x.kcal),p:r1(x.protein_g),c:r1(x.carbs_g),f:r1(x.fat_g)}))};
     if(!nuPending.items.length){nuPending=null;toast("Aliment non reconnu, précise un peu")}
   }catch(ex){toast(nuErrMsg(ex))}
-  nuBusy="";btn.disabled=false;btn.textContent=L("Calculer avec Claude");renderNuResult();
+  nuBusy="";btn.disabled=false;btn.textContent=L("Analyser");renderNuResult();
 });
 function renderNuResult(){
   const p=nuPending;if(!p){$("nuResult").innerHTML="";return}
@@ -3117,7 +3159,7 @@ $("nuMenuSec").addEventListener("click",e=>{const b=e.target.closest("[data-meal
 ["nuInclude","nuExclude"].forEach(id=>$(id).addEventListener("change",e=>{nuMP()[id==="nuInclude"?"include":"exclude"]=e.target.value.trim();NU().upd=Date.now();save()}));
 $("nuMenuBtn").addEventListener("click",async()=>{
   if(nuBusy)return;const n=NU(),mp=nuMP(),pl=n.plan;mp.include=$("nuInclude").value.trim();mp.exclude=$("nuExclude").value.trim();
-  nuBusy="menu";const btn=$("nuMenuBtn");btn.disabled=true;btn.innerHTML=`<span class="spin"></span>${L("Claude prépare ton menu…")}`;
+  nuBusy="menu";const btn=$("nuMenuBtn");btn.disabled=true;btn.innerHTML=`<span class="spin"></span>${L("Préparation du menu…")}`;
   try{const r=await nuCall("menu",{data:{target_kcal:pl.kcal,protein_g:pl.p,carbs_g:pl.c,fat_g:pl.f,meals_per_day:mp.meals||3,must_include:mp.include,avoid:mp.exclude,
       goal:n.profile&&n.profile.goal,notes:n.profile&&n.profile.notes}});
     n.menu={meals:(r.meals||[]).map(m=>({name:String(m.name||""),kcal:r0(m.kcal),p:r1(m.protein_g),c:r1(m.carbs_g),f:r1(m.fat_g),
@@ -3199,7 +3241,7 @@ const ONB_DESC={
   notes:"Tes notes libres : idées, listes, brouillons, à écrire comme tu veux.",
   pwd:"Tes mots de passe et les sites qui vont avec, protégés par un code à 5 chiffres.",
   pomo:"Travaille concentré : sessions et pauses s'enchaînent toutes seules, avec ta musique.",
-  nutri:"Tes calories et tes macros du jour, calculées par Claude, et des menus faits pour toi.",
+  nutri:"Tes calories et tes macros du jour, et des menus faits pour toi.",
   muscu:"Tes séances, tes charges et tes répétitions, avec chrono, tours et minuteur fractionné.",
   docs:"Range tes PDF, scanne des feuilles avec l'appareil photo et retrouve-les en un instant.",
   app:"Les étapes pour installer Sid'note sur ton écran d'accueil."};

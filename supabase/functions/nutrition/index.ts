@@ -1,7 +1,7 @@
 // Sid'note : fonction "nutrition" (v20)
 // Relais entre l'app et Claude pour l'onglet Nutrition :
 //   - "profil" : métabolisme de base, besoins du jour et macros à partir du profil
-//   - "aliment" : calories et macros de ce que l'on mange ("1 kinder bueno", "150 g de riz cuit")
+//   - "aliment" : calories et macros de ce que l'on mange ("150 g de riz cuit", "2 oeufs")
 //   - "menu"    : menus du jour sur mesure (grammages, calories, macros)
 // La clé Claude (ANTHROPIC_API_KEY) reste ici, côté serveur : elle n'est jamais dans le site.
 // Seuls les utilisateurs connectés peuvent s'en servir, avec une limite d'appels par jour.

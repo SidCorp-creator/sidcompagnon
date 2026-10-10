@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 20.**
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 21.**
 
 ## Comment travailler avec Sid
 - Réponds **en français**, simplement et brièvement. Sid n'est pas développeur : explique en mots simples, avec des étapes cliquables.
@@ -45,7 +45,7 @@ assets/               ← logo
   - Avec « Rester connecté » décoché, `session.eph = true` et un marqueur dans `sessionStorage` (`sidnote-alive`). Au relancement sans ce marqueur, l'app envoie les modifications puis déconnecte.
   - Compte test : `TEST_EMAILS = ["test@sidcorp.app"]`. Il est remis à zéro à chaque connexion, ne reste jamais connecté et affiche la présentation à chaque fois.
 - Onglets : constante `TABS` (plan, todo, notes, pomo, muscu, nutri, docs, pwd, app) ; Réglages est toujours affiché.
-  - v20 : rangés en catégories (`GROUPS`) : Organisation (plan, todo, pomo), Sport (muscu, nutri), Classeur (notes, docs, pwd), Réglages (more, app). La barre du bas montre les catégories ; `#subnav` en haut choisit la fonction. Dernière fonction ouverte par catégorie : `data.ui.glast`. Icônes dans `#fnIcons` (`ICON(k)`).
+  - v20 : rangés en catégories (`GROUPS`) : Organisation (plan, todo, pomo), Sport (muscu, nutri, graph), Classeur (notes, docs, pwd), Réglages (more, app). Pastilles par fonction dans `#subnav` (`setBadge(k,v)`), pas de résumé en bas (sauf si la catégorie n'a qu'une fonction affichée). La barre du bas montre les catégories ; `#subnav` en haut choisit la fonction. Dernière fonction ouverte par catégorie : `data.ui.glast`. Icônes dans `#fnIcons` (`ICON(k)`).
   - Visibilité dans `data.prefs.tabs`, page d'accueil dans `data.prefs.home` (`"last"` = dernière page ouverte), présentation déjà vue dans `data.prefs.onboarded`.
 - **Langue** : le français est la source.
   - L'anglais passe par le dictionnaire `DICT` (FR → EN), les motifs `PATS` (textes avec chiffres) et un MutationObserver qui traduit le DOM. Le contenu utilisateur est protégé par la liste `NOTR` (`.ttl`, `.ms-name`…).
@@ -74,6 +74,15 @@ assets/               ← logo
 - Apparence (v20) : couleur d'accent (`data.prefs.accent`, palette `ACCENTS`) et thème Auto/Clair/Sombre (`data.prefs.theme`, attribut `data-theme` sur `<html>`), appliqués par `applyLook()`. Copie dans `localStorage["sidnote-look"]` pour l'écran de connexion. Réglages en sections repliables (`.setsec`, état dans `data.ui.setOpen`).
 - Dictée (v20) : `dictate(btn, champ)` via `webkitSpeechRecognition` (Notes et Nutrition). Si le navigateur ne la gère pas, message : utiliser le micro du clavier iPhone.
 - Nutrition (v20) : `data.nutri = {profile, plan, menuPrefs, menu, upd, log:[{id, day, at, name, qty, kcal, p, c, f, upd}]}`. Objectif de poids optionnel (`profile.target`, `dur`, `durU`) : Claude dit si le délai est réaliste et propose un rythme (`plan.wg = {ok, wk, weeks, advice}`, carte `#nuGoalCard`). Textes sans le mot « Claude » sur les boutons et sans exemple de marque (demande de Sid). Journée = date locale (00:00 → 23:59), navigation ‹ › et sélecteur de date pour compléter les jours passés. Fusion : profil/plan/menu = le plus récent (`upd`), `log` = union par id. Saisie à la main possible sans Claude.
+- v21 :
+  - Récupération des codes oubliés (mots de passe, notes secrètes, documents) : le code est aussi chiffré avec le mot de passe du compte (`vault.rec`, PBKDF2). « Code oublié ? » → mot de passe du compte → le code est retrouvé, rien n'est effacé. Proposé à la création du code et au premier déverrouillage (`recEnable`, `recOffer`, `recRecover`). Si le mot de passe du compte change, la récupération est à réactiver.
+  - Claviers de code : `padTap()` gère `touchend` + `preventDefault` (plus de zoom au double appui sur iPhone).
+  - Documents : classeurs (`data.docFolders`, `doc.folder`), recherche globale en haut, recherche propre au classeur ouvert, classeur protégé par le code des documents (`data.docVault`, `dvOpen`). Le code masque les documents dans l'app ; les fichiers restent privés dans le compte (pas chiffrés).
+  - Apparence : styles Discret / Coloré / Intense (`data.prefs.look`, attribut `data-look`), Coloré par défaut.
+  - Dictée : bouton 🎤 à côté des principaux champs (`micFor`).
+  - Planning : les types existants sont proposés en pastilles sous chaque champ « Type » (`typeChipsFor`).
+  - Nutrition : accès réservé à `NUTRI_ALLOW` (mohamed29082002@gmail.com, test@sidcorp.app) ; les autres voient l'onglet flouté « Bientôt disponible » (`applySoon`). La fonction serveur vérifie aussi (`NUTRITION_EMAILS`). Rythme Drastique / Réaliste / À mon aise, délai facultatif. Photo du plat (envoyée à Claude, vignette gardée sur l'appareil en IndexedDB `thumb:<grp>`). Plats en cartes visuelles (emoji, barre et cases de macros), entrées groupées par `grp`, suppression d'un aliment ou d'un plat. Animations de chargement (`nuLoading`).
+  - Graphiques (Sport → Graphiques) : macros par jour, poids (`data.nutri.weights`), calories vs objectif (couleurs d'état + icônes). Palette validée par le script dataviz (P bleu, G orange, L vert d'eau). Commentaire du jour / de la semaine via Claude (`kind:"bilan"`), suivi des semaines dans `data.nutri.weeks`.
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés
@@ -95,7 +104,9 @@ assets/               ← logo
 ## État et prochaines étapes
 - La v18 a été livrée le 9 oct. 2026 et le SQL Storage a été exécuté avec succès.
 - v19 préparée : phrase d'accueil, onglets Notes et Mots de passe, tri des documents, catégories repliables, scanner plus net.
-- v20 préparée (pas encore mise en ligne) : catégories d'onglets, couleurs et thème, réglages repliables, dictée, Nutrition avec Claude.
+- v20 mise en ligne le 9 oct. 2026 (Nutrition branchée sur Supabase avec la clé Claude).
+- v21 préparée (pas encore mise en ligne) : voir « v21 » ci-dessus. **Recoller le nouveau code de la fonction `nutrition` dans Supabase** (photo, emojis, rythme, bilans, accès réservé).
+- Ancien plan v20 : catégories d'onglets, couleurs et thème, réglages repliables, dictée, Nutrition avec Claude.
   - Pour que Nutrition marche, Sid doit : créer une clé API Claude (console.anthropic.com, payant à l'usage), l'ajouter en secret Supabase `ANTHROPIC_API_KEY`, exécuter `supabase/sql/nutrition.sql`, déployer la fonction `nutrition` (Verify JWT : OFF, comme `horaire`).
 - À vérifier sur l'iPhone de Sid :
   - l'ouverture d'un PDF dans le lecteur (pdf.js n'a pas pu être testé dans Cowork) ;
@@ -105,6 +116,7 @@ assets/               ← logo
   - v1–v10 : planning, à faire, pomodoro, comptes Supabase, réglages ;
   - v11–v14 : e-mail, heures, Spotify, recherche, vue jour ;
   - v15–v17 : musculation, chrono et minuteur, horaire iCal UMons ;
+  - v21 : récupération des codes, classeurs de documents, graphiques et bilans, photo des plats, styles de couleur, pastilles par fonction ;
   - v20 : catégories d'onglets, couleurs, réglages repliables, dictée, nutrition avec Claude ;
   - v19 : notes, mots de passe chiffrés, tri des documents, catégories repliables, nouvelle phrase d'accueil ;
   - v18 : documents et scanner, catégories et ordre des tâches, fractionné, tours, langue EN, page d'accueil, présentation, rester connecté, compte test, SidCorp.

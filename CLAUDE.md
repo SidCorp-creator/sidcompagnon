@@ -16,9 +16,9 @@ site/                 ← exactement ce qui est mis en ligne sur Netlify
   sw.js               ← service worker (réseau d'abord ; cache pdf.js à part)
   manifest.webmanifest, icônes
 supabase/functions/   ← fonctions Edge (Deno) : horaire (relais iCal, ACTIVE), nutrition (relais Claude, v20), rappels (notifications, EN PAUSE)
-supabase/sql/         ← SQL : documents.sql (déjà exécuté), nutrition.sql (v20, compteur d'appels Claude)
+supabase/sql/         ← SQL : documents.sql (déjà exécuté), nutrition.sql (v20, compteur d'appels Claude, exécuté), food_memory.sql (v21, mémoire des aliments)
 secrets/              ← clés VAPID, secret cron, version complète de rappels : NE JAMAIS publier ni committer
-tests/                ← serve.js (aperçu local + faux Supabase), smoke.js (test Playwright), mock-supabase.js
+tests/                ← serve.js (aperçu local + faux Supabase), smoke.js (test Playwright), mock-supabase.js, memory.test.js (mémoire des aliments, `node tests/memory.test.js`)
 assets/               ← logo
 ```
 
@@ -82,6 +82,7 @@ assets/               ← logo
   - Dictée : bouton 🎤 à côté des principaux champs (`micFor`).
   - Planning : les types existants sont proposés en pastilles sous chaque champ « Type » (`typeChipsFor`).
   - Nutrition : accès réservé à `NUTRI_ALLOW` (mohamed29082002@gmail.com, test@sidcorp.app) ; les autres voient l'onglet flouté « Bientôt disponible » (`applySoon`). La fonction serveur vérifie aussi (`NUTRITION_EMAILS`). Rythme Drastique / Réaliste / À mon aise, délai facultatif. Photo du plat (envoyée à Claude, vignette gardée sur l'appareil en IndexedDB `thumb:<grp>`). Plats en cartes visuelles (emoji, barre et cases de macros), entrées groupées par `grp`, suppression d'un aliment ou d'un plat. Animations de chargement (`nuLoading`).
+  - Mémoire des aliments (partagée entre tous les comptes) : la fonction `nutrition` cherche d'abord dans `food_answers` (même phrase normalisée) puis dans `foods` (aliment pour 100 g + poids d'une unité, ex. « 200 g de riz cuit », « 3 oeufs ») ; si trouvé → réponse sans Claude (`source:"memory"`, badge « ⚡ Mémoire Sid'note », hors limite du jour). Sinon Claude répond et la mémoire apprend (`remember`, `learnRows`). Photos : toujours Claude, mais les aliments sont retenus. Fonctions pures testées par `tests/memory.test.js`. La première réponse retenue fait référence pour tout le monde (corriger directement dans la table `foods` si besoin).
   - Graphiques (Sport → Graphiques) : macros par jour, poids (`data.nutri.weights`), calories vs objectif (couleurs d'état + icônes). Palette validée par le script dataviz (P bleu, G orange, L vert d'eau). Commentaire du jour / de la semaine via Claude (`kind:"bilan"`), suivi des semaines dans `data.nutri.weeks`.
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
@@ -105,7 +106,7 @@ assets/               ← logo
 - La v18 a été livrée le 9 oct. 2026 et le SQL Storage a été exécuté avec succès.
 - v19 préparée : phrase d'accueil, onglets Notes et Mots de passe, tri des documents, catégories repliables, scanner plus net.
 - v20 mise en ligne le 9 oct. 2026 (Nutrition branchée sur Supabase avec la clé Claude).
-- v21 préparée (pas encore mise en ligne) : voir « v21 » ci-dessus. **Recoller le nouveau code de la fonction `nutrition` dans Supabase** (photo, emojis, rythme, bilans, accès réservé).
+- v21 préparée (pas encore mise en ligne) : voir « v21 » ci-dessus. **Recoller le nouveau code de la fonction `nutrition` dans Supabase** (photo, emojis, rythme, bilans, accès réservé, mémoire) et **exécuter `supabase/sql/food_memory.sql`**.
 - Ancien plan v20 : catégories d'onglets, couleurs et thème, réglages repliables, dictée, Nutrition avec Claude.
   - Pour que Nutrition marche, Sid doit : créer une clé API Claude (console.anthropic.com, payant à l'usage), l'ajouter en secret Supabase `ANTHROPIC_API_KEY`, exécuter `supabase/sql/nutrition.sql`, déployer la fonction `nutrition` (Verify JWT : OFF, comme `horaire`).
 - À vérifier sur l'iPhone de Sid :

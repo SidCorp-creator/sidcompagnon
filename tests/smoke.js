@@ -80,6 +80,9 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(!(await pg.isVisible("#nuGoalCard")))errs.push(scheme+": alerte de délai irréaliste absente");await shot(pg,scheme+"-fr-nutri-objectif");
     await pg.fill("#nuAsk","1 barre chocolatée");await pg.click("#nuAskBtn");await pg.waitForSelector("[data-nuadd]",{timeout:8000});await shot(pg,scheme+"-fr-nutri-resultat");
     await pg.click("[data-nuadd]");await pg.waitForTimeout(200);if(!(await pg.textContent("#nuKcal")).includes("246"))errs.push(scheme+": calories du jour incorrectes");
+    // même aliment une 2e fois : servi par la mémoire partagée, sans Claude
+    await pg.fill("#nuAsk","1 barre chocolatée");await pg.click("#nuAskBtn");await pg.waitForSelector("[data-nuadd]",{timeout:8000});
+    if(!(await pg.isVisible("#nuResult .memtag")))errs.push(scheme+": réponse de la mémoire non signalée");await shot(pg,scheme+"-fr-nutri-memoire");await pg.click("[data-nucancel]");await pg.fill("#nuAsk","");
     await pg.click("#nuPrev");await pg.click("#nuManual");await pg.fill("#nuEName","Pâtes");await pg.fill("#nuEKcal","500");await pg.click("#nuEntryForm [type=submit]");
     if(!(await pg.textContent("#nuKcal")).includes("500"))errs.push(scheme+": ajout a posteriori incorrect");await pg.click("#nuNext");
     // photo du plat, puis suppression d'un plat

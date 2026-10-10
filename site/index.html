@@ -575,6 +575,7 @@ input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appear
 .dish-act{display:grid;grid-template-columns:1fr 1.4fr;gap:8px;padding:10px 12px 12px}
 .dish>summary{list-style:none;cursor:pointer}
 .dish>summary::-webkit-details-marker{display:none}
+.memtag{display:inline-block;margin-top:4px;font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:99px;padding:2px 8px}
 .dish-time{font:600 12px var(--mono);color:var(--muted)}
 /* chargement */
 .loadcard{background:var(--bg);border-radius:16px;padding:16px;display:grid;gap:12px;justify-items:center;text-align:center}
@@ -1396,7 +1397,7 @@ const DICT={
 "Une app":"An app","Séance":"Workout","Séances":"Workouts","Exercice":"Exercise","Chargement…":"Loading…","Mode test":"Test mode",
 "Choisis au moins 5 secondes ":"Choose at least 5 seconds",
 // v21
-"Toi":"You","Tes sports":"Your sports","Ex. Musculation":"E.g. Weightlifting","Durée d'une séance":"Session length","/sem":"/wk","Ton rythme":"Your pace",
+"Mémoire Sid'note":"Sid'note memory","Toi":"You","Tes sports":"Your sports","Ex. Musculation":"E.g. Weightlifting","Durée d'une séance":"Session length","/sem":"/wk","Ton rythme":"Your pace",
 "Drastique":"Drastic","Réaliste":"Realistic","À mon aise":"At my own pace","Le plus vite possible, sans danger":"As fast as is safe","Le bon équilibre (conseillé)":"The right balance (recommended)",
 "Doucement, sans frustration":"Gently, no frustration","🔥 Drastique":"🔥 Drastic","🎯 Réaliste":"🎯 Realistic","🌿 À mon aise":"🌿 At my own pace","Rythme":"Pace",
 "Délai (optionnel)":"Timeframe (optional)","Sans délai, on te propose le temps qu'il faut selon ton rythme.":"Without a timeframe, we suggest how long it takes at your pace.",
@@ -3511,7 +3512,9 @@ const fmtDur=m=>!m?"":m>=60?`${Math.floor(m/60)}h${m%60?two(m%60):""}`:`${m} min
 const MAC=[["p","Protéines","--m-p"],["c","Glucides","--m-c"],["f","Lipides","--m-f"]];
 async function nuCall(kind,payload){
   if(!navigator.onLine)throw new Error(L("Pas de connexion internet"));
-  return (await api("/functions/v1/nutrition",{method:"POST",token:await token(),body:{kind,lang:LANG,...payload}})).result;
+  const j=await api("/functions/v1/nutrition",{method:"POST",token:await token(),body:{kind,lang:LANG,...payload}});
+  if(j&&j.result&&j.source)j.result._src=j.source; // "memory" = trouvé dans la mémoire partagée, sans Claude
+  return j.result;
 }
 const nuErrMsg=ex=>ex instanceof TypeError?L("Pas de connexion internet"):ex.status===404?L("La fonction « nutrition » n'est pas encore installée sur Supabase."):ex.message;
 // animation pendant que Claude travaille
@@ -3669,7 +3672,7 @@ $("nuAskForm").addEventListener("submit",async e=>{
   const stop=nuLoading($("nuResult"),nuPhoto?["Analyse de la photo…","Reconnaissance des aliments…","Estimation des portions…","Calcul des calories…"]:["Analyse du plat…","Calcul des calories…","Estimation des macros…"]);
   const photo=nuPhoto;
   try{const r=await nuCall("aliment",{text:q,image:photo?photo.big.split(",")[1]:undefined});
-    nuPending={q,title:String(r.dish||q||L("Mon plat")),em:String(r.emoji||"🍽️"),note:String(r.note||""),photo:photo&&photo.small,
+    nuPending={q,mem:r._src==="memory",title:String(r.dish||q||L("Mon plat")),em:String(r.emoji||"🍽️"),note:String(r.note||""),photo:photo&&photo.small,
       items:(r.items||[]).map(x=>({name:String(x.name||q),qty:String(x.quantity||""),em:String(x.emoji||""),kcal:r0(x.kcal),p:r1(x.protein_g),c:r1(x.carbs_g),f:r1(x.fat_g)}))};
     if(!nuPending.items.length){nuPending=null;toast("Aliment non reconnu, précise un peu")}
   }catch(ex){toast(nuErrMsg(ex))}
@@ -3678,7 +3681,7 @@ $("nuAskForm").addEventListener("submit",async e=>{
 function renderNuResult(){
   const p=nuPending;if(!p){if(!nuBusy)$("nuResult").innerHTML="";return}
   const s=sumOf(p.items);
-  $("nuResult").innerHTML=`<div class="dish"><div class="dish-h"><span class="dish-ic">${p.photo?`<img src="${p.photo}" alt="">`:p.em}</span><span class="dish-t"><b class="notr">${esc(p.title)}</b><span class="small muted">${p.items.length} ${L(p.items.length>1?"aliments":"aliment")}</span></span><span class="dish-kcal">${r0(s.kcal)}<small>kcal</small></span></div>
+  $("nuResult").innerHTML=`<div class="dish"><div class="dish-h"><span class="dish-ic">${p.photo?`<img src="${p.photo}" alt="">`:p.em}</span><span class="dish-t"><b class="notr">${esc(p.title)}</b><span class="small muted">${p.items.length} ${L(p.items.length>1?"aliments":"aliment")}</span>${p.mem?`<span class="memtag">⚡ ${L("Mémoire Sid'note")}</span>`:""}</span><span class="dish-kcal">${r0(s.kcal)}<small>kcal</small></span></div>
     ${macroHtml(s)}<div class="dish-items">${p.items.map((x,i)=>`<div class="dish-it"><span class="em">${x.em||"•"}</span><div class="grow"><b class="notr">${esc(x.name)}</b><span class="small muted notr">${esc(x.qty)}</span></div><span class="k">${x.kcal} kcal</span><button type="button" class="x" data-nurm="${i}" aria-label="${L("Retirer")}">×</button></div>`).join("")}</div>
     ${p.note?`<div class="dish-note notr" style="padding-top:8px">${esc(p.note)}</div>`:""}
     <div class="dish-act"><button type="button" class="btn ghost" data-nucancel="1">${L("Annuler")}</button><button type="button" class="btn" data-nuadd="1">${L("Ajouter")} · ${r0(s.kcal)} kcal</button></div></div>`;

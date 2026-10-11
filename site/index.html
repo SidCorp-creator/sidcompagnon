@@ -1237,7 +1237,7 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
     <div class="card priv">
       <div class="row"><span class="priv-ic">🗄️</span><div class="grow"><b>Ce que tu écris</b><div class="small muted">Planning, tâches, notes, séances, nutrition et réglages sont enregistrés dans ton compte, sur les serveurs de Supabase. Les autres utilisateurs ne peuvent pas les voir. L'administrateur de Sid'note (SidCorp) peut techniquement y accéder pour l'entretien, mais ne les consulte pas.</div></div></div>
       <div class="row"><span class="priv-ic">🔐</span><div class="grow"><b>Mots de passe et notes secrètes</b><div class="small muted">Chiffrés sur ton téléphone avec ton code avant d'être envoyés. Le serveur ne reçoit que du texte illisible ; ni SidCorp ni Supabase ne peuvent les lire.</div></div></div>
-      <div class="row"><span class="priv-ic">📄</span><div class="grow"><b>Documents (PDF, scans)</b><div class="small muted">Gardés sur ton appareil et copiés dans un espace de stockage privé de ton compte (Supabase Storage). Ils ne sont pas chiffrés : les autres utilisateurs n'y ont pas accès, mais l'administrateur pourrait techniquement les ouvrir.</div></div></div>
+      <div class="row"><span class="priv-ic">📄</span><div class="grow"><b>Documents (PDF, scans)</b><div class="small muted">Chiffrés sur ton téléphone avec le code de tes documents, puis copiés dans ton espace privé (Supabase Storage). En ligne, ce n'est que du contenu illisible : toi seul peux les ouvrir, ni l'administrateur ni Supabase.</div></div></div>
       <div class="row"><span class="priv-ic">📸</span><div class="grow"><b>Photos de tes plats</b><div class="small muted">Envoyées une seule fois pour être analysées : elles passent par le serveur Sid'note puis par le service d'IA d'Anthropic, qui calcule les calories. Elles ne sont pas enregistrées dans ton compte, ne servent pas à entraîner l'IA et ne sont gardées que peu de temps par Anthropic (sécurité) avant d'être effacées. Seule une petite vignette reste sur ton téléphone.</div></div></div>
       <div class="row"><span class="priv-ic">🥗</span><div class="grow"><b>Textes de nutrition</b><div class="small muted">Ce que tu tapes (aliments, profil) est envoyé à l'IA pour le calcul. Les aliments sont retenus dans une mémoire commune et anonyme (juste « 100 g de riz = 130 kcal », jamais ton nom).</div></div></div>
       <div class="row"><span class="priv-ic">🌐</span><div class="grow"><b>Le site</b><div class="small muted">Netlify héberge seulement l'application. Il ne voit pas tes données. Pas de publicité, pas de pisteur, rien n'est vendu.</div></div></div>
@@ -1540,7 +1540,7 @@ const DICT={
 "Mots de passe et notes secrètes":"Passwords and secret notes",
 "Chiffrés sur ton téléphone avec ton code avant d'être envoyés. Le serveur ne reçoit que du texte illisible ; ni SidCorp ni Supabase ne peuvent les lire.":"Encrypted on your phone with your code before being sent. The server only receives unreadable text; neither SidCorp nor Supabase can read them.",
 "Documents (PDF, scans)":"Documents (PDFs, scans)",
-"Gardés sur ton appareil et copiés dans un espace de stockage privé de ton compte (Supabase Storage). Ils ne sont pas chiffrés : les autres utilisateurs n'y ont pas accès, mais l'administrateur pourrait techniquement les ouvrir.":"Kept on your device and copied to private storage in your account (Supabase Storage). They aren't encrypted: other users can't access them, but the administrator could technically open them.",
+"Chiffrés sur ton téléphone avec le code de tes documents, puis copiés dans ton espace privé (Supabase Storage). En ligne, ce n'est que du contenu illisible : toi seul peux les ouvrir, ni l'administrateur ni Supabase.":"Encrypted on your phone with your documents code, then copied to your private space (Supabase Storage). Online it's just unreadable content: only you can open them, not the administrator, not Supabase.",
 "Photos de tes plats":"Photos of your meals",
 "Envoyées une seule fois pour être analysées : elles passent par le serveur Sid'note puis par le service d'IA d'Anthropic, qui calcule les calories. Elles ne sont pas enregistrées dans ton compte, ne servent pas à entraîner l'IA et ne sont gardées que peu de temps par Anthropic (sécurité) avant d'être effacées. Seule une petite vignette reste sur ton téléphone.":"Sent once to be analyzed: they go through the Sid'note server, then Anthropic's AI service, which works out the calories. They aren't saved in your account, aren't used to train the AI, and Anthropic only keeps them briefly (for safety) before deleting them. Only a small thumbnail stays on your phone.",
 "Textes de nutrition":"Nutrition text",
@@ -1558,9 +1558,9 @@ const DICT={
 "Touche un jour pour voir sa journée en détail. Pince ou touche le mois pour voir toute l'année.":"Tap a day to see it in detail. Pinch or tap the month to see the whole year.",
 "Documents verrouillés":"Documents locked","Entre ton code pour voir tes documents.":"Enter your code to see your documents.","Déverrouiller":"Unlock",
 "Glisser vers un classeur":"Drag to a folder","Document sorti de son classeur":"Document taken out of its folder","Rangé dans":"Filed in",
-"Code effacé : choisis-en un nouveau. Tes documents sont gardés.":"Code erased: choose a new one. Your documents are kept.",
+"Code effacé : choisis-en un nouveau. Les documents de cet appareil sont gardés.":"Code erased: choose a new one. Documents on this device are kept.","Déverrouille tes documents pour ouvrir ce fichier.":"Unlock your documents to open this file.","Ce document a été protégé avec un ancien code : ouvre-le sur l'appareil où tu l'as ajouté.":"This document was protected with an old code: open it on the device where you added it.",
 "Choisis le code qui protège tes documents. Ils ne seront jamais effacés si tu l'oublies.":"Choose the code that protects your documents. They'll never be erased if you forget it.",
-"La récupération n'était pas activée. Choisir un nouveau code (tes documents sont gardés) ? Touche encore pour confirmer.":"Recovery wasn't turned on. Choose a new code (your documents are kept)? Tap again to confirm.",
+"La récupération n'était pas activée. Choisir un nouveau code ? Seuls les documents déjà sur cet appareil pourront encore s'ouvrir. Touche encore pour confirmer.":"Recovery wasn't turned on. Choose a new code? Only documents already on this device will still open. Tap again to confirm.",
 "terminées":"done","terminée":"done",
 // v21
 "Mémoire Sid'note":"Sid'note memory","Toi":"You","Tes sports":"Your sports","Ex. Musculation":"E.g. Weightlifting","Durée d'une séance":"Session length","/sem":"/wk","Ton rythme":"Your pace",
@@ -3070,20 +3070,36 @@ function storErr(ex){
   if(ex.status===401||ex.status===403)return "Accès au stockage refusé : vérifie la configuration Supabase.";
   return "Envoi impossible : "+ex.message;
 }
+// v22 : les documents sont chiffrés sur l'appareil avec la clé du code des documents avant l'envoi.
+// En ligne, il n'y a que du contenu illisible (« SNE1 » + iv + chiffré) : ni l'administrateur ni Supabase ne peuvent les ouvrir.
+const ENC_MAGIC=[83,78,69,49]; // "SNE1"
+const isEnc=u=>u.length>16&&ENC_MAGIC.every((c,i)=>u[i]===c);
+async function docEncrypt(blob){const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},dvKey,await blob.arrayBuffer());
+  return new Blob([new Uint8Array(ENC_MAGIC),iv,new Uint8Array(ct)],{type:"application/pdf"})}
+async function docDecrypt(u){if(!dvKey)throw new Error(L("Déverrouille tes documents pour ouvrir ce fichier."));
+  try{return new Blob([await crypto.subtle.decrypt({name:"AES-GCM",iv:u.slice(4,16)},dvKey,u.slice(16))],{type:"application/pdf"})}
+  catch(e){throw new Error(L("Ce document a été protégé avec un ancien code : ouvre-le sur l'appareil où tu l'as ajouté."))}}
 async function docUpload(d){
-  if(d.up||docBusy.has(d.id))return;
+  if(d.up||docBusy.has(d.id)||!dvKey)return; // sans la clé (documents verrouillés), l'envoi attend le prochain déverrouillage
   const b=await idb.get(docKey(d));if(!b)return;
   docBusy.add(d.id);renderDocs();
-  try{await stor("POST","documents/"+docPath(d),b);d.up=true;d.path=docPath(d);docStoreMsg="";save()}
+  try{await stor("POST","documents/"+docPath(d),await docEncrypt(b));d.up=true;d.enc=data.docVault&&data.docVault.id;d.path=docPath(d);docStoreMsg="";save()}
   catch(ex){docStoreMsg=storErr(ex)}
   docBusy.delete(d.id);renderDocs();
 }
 function docsSyncPending(){if(!session)return;docsArr().filter(d=>!d.up).forEach(d=>docUpload(d))}
+// documents envoyés avant le chiffrement (ou avec un ancien code) : rechiffrés au déverrouillage
+let docsSecuring=false;
+async function docsSecure(){if(!session||!dvKey||docsSecuring)return;docsSecuring=true;const vid=data.docVault&&data.docVault.id;
+  try{for(const d of docsArr().filter(x=>x.up&&x.enc!==vid)){if(!dvKey)break;
+    try{const b=await docBlob(d);await stor("POST","documents/"+(d.path||docPath(d)),await docEncrypt(b));d.enc=vid;save()}catch(e){}}}
+  finally{docsSecuring=false}}
 async function docBlob(d){
   let b=await idb.get(docKey(d));if(b)return b;
   if(!d.up)throw new Error("Ce document n'a pas encore été envoyé en ligne : ouvre-le sur l'appareil où tu l'as ajouté.");
-  const r=await stor("GET","authenticated/documents/"+(d.path||docPath(d)));
-  b=new Blob([await r.arrayBuffer()],{type:"application/pdf"});
+  const r=await stor("GET","authenticated/documents/"+(d.path||docPath(d))),u=new Uint8Array(await r.arrayBuffer());
+  b=isEnc(u)?await docDecrypt(u):new Blob([u],{type:"application/pdf"});
   idb.put(docKey(d),b).catch(()=>{});return b;
 }
 const countPages=bytes=>{try{const t=new TextDecoder("latin1").decode(bytes);const m=t.match(/\/Type\s*\/Page(?![a-zA-Z])/g);return m?m.length:0}catch(e){return 0}};
@@ -3168,21 +3184,22 @@ function renderDocs(){
   $("docInfo").style.color=docStoreMsg?"var(--warn)":"";
 }
 // code des documents : vérifié comme les autres codes (PBKDF2 + petit texte chiffré), récupérable avec le mot de passe du compte
-async function dvTry(code){try{const v=data.docVault,key=await pinKey(code,v.salt,v.iter||PIN_ITER);await decJ(key,v.chk);dvOpen=true;return true}catch(e){return false}}
+let dvKey=null; // clé des documents, en mémoire seulement tant que l'onglet est déverrouillé
+async function dvTry(code){try{const v=data.docVault,key=await pinKey(code,v.salt,v.iter||PIN_ITER);await decJ(key,v.chk);dvKey=key;dvOpen=true;return true}catch(e){return false}}
 async function dvUnlock(){
   if(dvOpen)return true;
   if(!(data.docVault&&data.docVault.chk)){
     const code=await askPin({mode:"new",head:"Documents",sub:"Choisis le code qui protège tes documents. Ils ne seront jamais effacés si tu l'oublies."});if(!code)return false;
     const salt=b64e(crypto.getRandomValues(new Uint8Array(16))),key=await pinKey(code,salt,PIN_ITER);
     data.docVault={id:uid(),salt,iter:PIN_ITER,chk:await encJ(key,{ok:"sidnote-docs"}),createdAt:new Date().toISOString()};
-    dvOpen=true;save();toast("Code enregistré");await recEnable(data.docVault,code);return true}
+    dvKey=key;dvOpen=true;save();toast("Code enregistré");await recEnable(data.docVault,code);return true}
   const v=data.docVault,code=await askPin({mode:"unlock",head:"Documents",sub:"Entre le code de tes documents.",verify:dvTry,rec:v.rec,forgot:dvReset,
-    forgotText:"La récupération n'était pas activée. Choisir un nouveau code (tes documents sont gardés) ? Touche encore pour confirmer."});
+    forgotText:"La récupération n'était pas activée. Choisir un nouveau code ? Seuls les documents déjà sur cet appareil pourront encore s'ouvrir. Touche encore pour confirmer."});
   if(code&&dvOpen)recOffer(v,code);return !!code&&dvOpen;
 }
 // l'onglet Documents s'ouvre avec le code, comme Mots de passe
 function renderDocLock(){const lk=!dvOpen;$("v-docs").classList.toggle("is-locked",lk);$("docLocked").hidden=!lk}
-async function docsEnter(){renderDocLock();if(dvOpen){renderDocs();return}if(await dvUnlock()){renderDocLock();renderDocs()}}
+async function docsEnter(){renderDocLock();if(dvOpen){renderDocs();return}if(await dvUnlock()){renderDocLock();renderDocs();docsSyncPending();docsSecure()}}
 $("docUnlockBtn").addEventListener("click",docsEnter);
 // glisser un document (poignée ⠿) sur un classeur pour l'y ranger ; sur « Tous » pour le sortir de son classeur
 $("docList").addEventListener("pointerdown",e=>{const g=e.target.closest("[data-dgrip]");if(!g)return;e.preventDefault();
@@ -3200,8 +3217,11 @@ $("docList").addEventListener("pointerdown",e=>{const g=e.target.closest("[data-
     renderDocs()};
   g.addEventListener("pointermove",pos);g.addEventListener("pointerup",up);g.addEventListener("pointercancel",up)});
 // code oublié sans récupération : on choisit un nouveau code, les documents sont gardés
-function dvReset(){data.docVault=null;dvOpen=false;save();toast("Code effacé : choisis-en un nouveau. Tes documents sont gardés.");docsEnter()}
-function dvLock(){if(!dvOpen)return;dvOpen=false;renderDocLock()}
+// les documents présents sur cet appareil sont renvoyés, chiffrés avec le nouveau code
+async function dvReset(){data.docVault=null;dvOpen=false;dvKey=null;
+  for(const d of docsArr())if(d.up&&await idb.get(docKey(d)))d.up=false;
+  save();toast("Code effacé : choisis-en un nouveau. Les documents de cet appareil sont gardés.");docsEnter()}
+function dvLock(){if(!dvOpen)return;dvOpen=false;dvKey=null;renderDocLock()}
 document.addEventListener("visibilitychange",()=>{if(document.hidden)dvLock()});
 $("docFolders").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b)return;
   if(b.dataset.dfoldnew){const f=$("folderForm");f.hidden=!f.hidden;if(!f.hidden)$("folderIn").focus();return}

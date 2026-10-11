@@ -44,6 +44,16 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.click("[data-dfoldnew]");await pg.fill("#folderIn","Admin");await pg.press("#folderIn","Enter");
     await pg.setInputFiles("#docImport",path.join(__dirname,"Contrat de bail.pdf"));await pg.waitForTimeout(600);
     await pg.fill("#folderSearch","zzz");if(!(await pg.textContent("#docList")).includes("Aucun document"))errs.push(scheme+": recherche du classeur incorrecte");await pg.fill("#folderSearch","");
+    // v22 : les documents en ligne sont chiffrés (« SNE1 ») et se rouvrent après téléchargement
+    await pg.waitForTimeout(800);{const heads=await (await fetch("http://localhost:8790/__heads")).json(),hv=Object.values(heads);
+      if(!hv.length||hv.some(h=>h!=="SNE1"))errs.push(scheme+": document envoyé sans chiffrement "+JSON.stringify(heads))}
+    {const ok=await pg.evaluate(async()=>{const d=docsArr().find(x=>x.up);if(!d)return "aucun document en ligne";await idb.del(docKey(d));const b=await docBlob(d);
+      const u=new Uint8Array(await b.arrayBuffer());return b.size===d.size&&String.fromCharCode(...u.slice(0,4))==="%PDF"?true:"taille "+b.size+"/"+d.size});
+      if(ok!==true)errs.push(scheme+": document chiffré illisible après téléchargement ("+ok+")")}
+    // ancien document envoyé en clair : rechiffré par docsSecure
+    {const r=await pg.evaluate(async()=>{const d=docsArr().find(x=>x.up);await stor("POST","documents/"+docPath(d),await docBlob(d));delete d.enc;await docsSecure();return d.enc===data.docVault.id});
+      const heads=await (await fetch("http://localhost:8790/__heads")).json();
+      if(!r||Object.values(heads).some(h=>h!=="SNE1"))errs.push(scheme+": ancien document non rechiffré")}
     await shot(pg,scheme+"-fr-docs-classeur");await pg.click('[data-dfold="all"]');
     // glisser « photo » (poignée) sur le classeur Admin
     await pg.setViewportSize({width:390,height:1600});await pg.evaluate(()=>window.scrollTo(0,0));

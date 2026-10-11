@@ -42,6 +42,7 @@ http.createServer((req,res)=>{const ch=[];req.on('data',c=>ch.push(c));req.on('e
     if(req.method==='GET'){if(!objs[p])return send(res,404,{message:'Object not found'});res.writeHead(200,{...cors,'Content-Type':'application/pdf'});return res.end(objs[p])}
     if(req.method==='DELETE'){delete objs[p];return send(res,200,[{name:p}])}
   }
+  if(url.pathname==='/__heads')return send(res,200,Object.fromEntries(Object.entries(objs).map(([k,v])=>[k,v.slice(0,4).toString('latin1')])));
   if(url.pathname==='/__objs')return send(res,200,Object.fromEntries(Object.entries(objs).map(([k,v])=>[k,v.length])));
   if(url.pathname==='/__dump')return send(res,200,{users:Object.keys(users),rows});
   send(res,404,{msg:'nf'})})}).listen(8790);

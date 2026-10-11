@@ -128,6 +128,8 @@ const SCHEMAS: Record<string, unknown> = {
     warnings: { type: "array", items: str },
     // objectif de poids : délai réaliste ou non, rythme et durée conseillés
     weight_goal: obj({ realistic: { type: "boolean" }, weekly_change_kg: num, suggested_weeks: num, advice: str }),
+    // calories d'une séance pour chaque sport (sert à ajuster l'objectif quand le nombre de séances change dans la semaine)
+    sports_kcal: { type: "array", items: obj({ sport: str, kcal_per_session: num }) },
   }),
   aliment: obj({
     dish: str, // nom court du plat
@@ -161,7 +163,8 @@ function prompt(kind: string, b: any, lang: string): { system: string; user: str
       system: `${BASE}\n${out}`,
       user: `Compute this person's basal metabolic rate (Mifflin-St Jeor), their total daily energy expenditure from their sports and frequency, a daily calorie target for their goal ("gain" = gain weight, "maintain", "lose" = lose weight), and daily macros in grams. Take their notes into account. In "explanation", explain the numbers in 3–5 short sentences for a non-expert.
 They chose a pace: "drastic" (as fast as is still safe: about 1 % of body weight per week when losing, 0.5 % when gaining), "realistic" (the balanced default: about 0.5–0.75 % when losing, 0.25–0.35 % when gaining) or "relaxed" (gentle: about 0.25–0.4 % when losing, 0.15–0.25 % when gaining). Base the calorie target on that pace, never beyond the safe limits.
-If they give a target weight, check it. The timeframe is optional: without one, use the chosen pace to compute "suggested_weeks". With one, check whether it is realistic and healthy for their pace and the safe limits above. Set "weight_goal.realistic" accordingly, "weekly_change_kg" to the recommended weekly change (negative when losing), and "suggested_weeks" to the realistic number of weeks to reach the target. In "weight_goal.advice", say it plainly in 1–3 sentences: if the timeframe is unrealistic, explain why and propose the realistic path; if it is realistic, encourage them briefly. Always base the calorie target on the realistic pace, never on an unrealistic deadline. Also flag it if the target goes against the chosen goal (for example a lower target weight with the goal "gain"). If there is no target weight, set realistic to true, both numbers to 0 and advice to an empty string.\n\nProfile (JSON):\n${data}`,
+If they give a target weight, check it. The timeframe is optional: without one, use the chosen pace to compute "suggested_weeks". With one, check whether it is realistic and healthy for their pace and the safe limits above. Set "weight_goal.realistic" accordingly, "weekly_change_kg" to the recommended weekly change (negative when losing), and "suggested_weeks" to the realistic number of weeks to reach the target. In "weight_goal.advice", say it plainly in 1–3 sentences: if the timeframe is unrealistic, explain why and propose the realistic path; if it is realistic, encourage them briefly. Always base the calorie target on the realistic pace, never on an unrealistic deadline. Also flag it if the target goes against the chosen goal (for example a lower target weight with the goal "gain"). If there is no target weight, set realistic to true, both numbers to 0 and advice to an empty string.
+In "sports_kcal", give for each of their sports (same name as given) the calories burned in one session of the stated length, for this person.\n\nProfile (JSON):\n${data}`,
       effort: "medium", max: 8000,
     };
   if (kind === "aliment")
@@ -180,7 +183,7 @@ If they give a target weight, check it. The timeframe is optional: without one, 
     };
   return {
     system: `${BASE}\n${out}`,
-    user: `Create a one-day menu for this person. Give each meal and each food one fitting emoji. Respect their calorie target and macros (within about 5 %), the number of meals they asked for, and include every ingredient they want. Avoid what they exclude. Give each food in grams with its calories and macros, a total per meal and for the day. Prefer simple, realistic dishes. In "tips", give 1–3 short practical tips.\n\nRequest (JSON):\n${data}`,
+    user: `${b.data?.meal_type && b.data.meal_type !== "day" ? `Create exactly one ${String(b.data.meal_type)} (breakfast, lunch, snack or dinner) for this person.` : "Create a one-day menu for this person."} The request lists the meals to create, in order, each with its own calorie target ("meals"): return exactly those meals in that order, and keep each meal within about 5 % of its own calorie target. Spread the protein / carbs / fat targets across the meals in proportion. Give each meal a short appetizing name and one fitting emoji, and each food one fitting emoji. Include every ingredient they want somewhere and avoid what they exclude. Give each food in grams with its calories and macros, a total per meal and overall. Prefer simple, realistic dishes. In "tips", give 1–3 short practical tips.\n\nRequest (JSON):\n${data}`,
     effort: "medium", max: 16000,
   };
 }

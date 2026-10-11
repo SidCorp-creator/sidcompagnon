@@ -122,6 +122,19 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .marks .bars i.s.e{border-radius:99px}
 .marks .dots{display:flex;gap:3px}
 .marks .dots i{width:6px;height:6px;border-radius:50%;background:var(--c)}
+/* v22 : vue année */
+.yr-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.yr-title{font-size:22px;font-weight:800;color:var(--accent)}
+.yr-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px}
+.ym{border:0;background:none;padding:4px 2px;border-radius:10px;cursor:pointer;text-align:left;color:var(--ink)}
+.ym:active{background:var(--accent-soft)}
+.ym b{display:block;font-size:14px;margin:0 2px 3px}
+.ym.cur b{color:var(--late)}
+.ym-g{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;font:500 9px/1.6 var(--font);text-align:center;font-variant-numeric:tabular-nums}
+.ym-g i{font-style:normal;border-radius:50%}
+.ym-g i.ev{font-weight:800;color:var(--accent)}
+.ym-g i.td{background:var(--late);color:#fff;font-weight:700}
+.ym-g i.past{opacity:.55}
 .cal-sel{border-top:1px solid var(--line);margin-top:8px;padding:8px 4px 6px}
 .cal-sel .lbl{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:4px}
 .cal-sel .lbl::first-letter{text-transform:uppercase}
@@ -138,7 +151,9 @@ input[type=search]{-webkit-appearance:none;appearance:none}
 .status[data-s="en cours"]{color:var(--warn);border-color:var(--warn)}
 .status[data-s="fait"]{color:var(--ok);border-color:var(--ok)}
 .task.isfait .ttl{text-decoration:line-through;color:var(--muted)}
-.form{display:grid;gap:8px;padding:14px}
+.form{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;padding:14px}
+.form>*,.dish,.dish *{min-width:0}
+.dish-note,.dish-it .grow{overflow-wrap:anywhere}
 .form .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .form label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
 
@@ -383,7 +398,34 @@ textarea{font:15px var(--font);color:var(--ink);background:var(--bg);border:1px 
 .scan-pages .pg .rot{left:4px}
 .scan-pages .pg span{position:absolute;bottom:4px;left:6px;font:600 11px var(--font);color:#fff;text-shadow:0 1px 2px #000}
 /* présentation */
-.onb{position:fixed;inset:0;z-index:50;background:var(--bg);overflow:auto;padding:calc(env(safe-area-inset-top,0px) + 20px) 16px calc(24px + env(safe-area-inset-bottom,0px))}
+.onb{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 8px) 0 calc(12px + env(safe-area-inset-bottom,0px))}
+.onb-track{flex:1;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.onb-track::-webkit-scrollbar{display:none}
+.onb-slide{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;overflow-y:auto;padding:16px 16px 12px}
+.onb-slide .onb-box>*{transition:opacity .45s,transform .45s}
+.onb-slide:not(.on) .onb-box>*{opacity:0;transform:translateY(14px)}
+.onb-slide.on .onb-box>*:nth-child(2){transition-delay:.06s}.onb-slide.on .onb-box>*:nth-child(3){transition-delay:.12s}.onb-slide.on .onb-box>*:nth-child(4){transition-delay:.18s}.onb-slide.on .onb-box>*:nth-child(n+5){transition-delay:.24s}
+.onb-skip{position:absolute;top:calc(env(safe-area-inset-top,0px) + 10px);right:14px;z-index:2;border:0;background:none;color:var(--muted);font-weight:600;cursor:pointer;padding:8px}
+.onb-nav{display:flex;align-items:center;gap:12px;padding:8px 16px 0;max-width:560px;width:100%;margin:0 auto}
+.onb-nav .btn{padding:12px 18px}
+.onb-nav #onbNext{margin-left:auto}
+.onb-dots{display:flex;gap:7px;flex:1;justify-content:center}
+.onb-dots i{width:8px;height:8px;border-radius:99px;background:var(--line);transition:width .25s,background .25s}
+.onb-dots i.on{width:22px;background:var(--accent)}
+.onb-pop{animation:onbpop .7s cubic-bezier(.2,1.6,.4,1)}
+@keyframes onbpop{from{transform:scale(.4);opacity:0}}
+.onb-big{font-size:64px;line-height:1;animation:onbfloat 3s ease-in-out infinite}
+@keyframes onbfloat{50%{transform:translateY(-8px) rotate(-4deg)}}
+.onb-floats{display:flex;justify-content:center;gap:14px;font-size:30px}
+.onb-floats span{animation:onbfloat 2.6s ease-in-out infinite}
+.onb-floats span:nth-child(2n){animation-delay:-1.3s}.onb-floats span:nth-child(3n){animation-delay:-.6s}
+.onb-it{transition:transform .15s,opacity .2s}
+.onb-it:active{transform:scale(.97)}
+.onb-it.bump{animation:bump .3s}
+@keyframes bump{40%{transform:scale(1.03)}}
+.onb-preview{padding:14px;display:grid;gap:10px;text-align:left;background:var(--surface)}
+.onb-pv-t{font-size:20px;color:var(--accent)}
+@media (prefers-reduced-motion:reduce){.onb-big,.onb-floats span,.onb-pop{animation:none}.onb-slide .onb-box>*{transition:none}}
 .onb-box{max-width:520px;margin:0 auto;display:grid;gap:14px;text-align:center}
 .onb-list{display:grid;gap:10px;text-align:left}
 .onb-it{background:var(--surface);border-radius:14px;padding:12px 14px;display:flex;gap:12px;align-items:center;cursor:pointer}
@@ -435,6 +477,13 @@ nav.lots .tab svg{width:21px;height:21px}
 .pad button.blank{visibility:hidden}
 .pad button.del{background:none;box-shadow:none;font-size:16px;font-weight:600;color:var(--accent)}
 .pin-err{min-height:18px;color:var(--late);font-size:14px;font-weight:600;margin:0}
+#v-docs.is-locked>*:not(.brand):not(h1):not(.sub):not(#docLocked){display:none!important}
+.doc-locked{padding:26px 16px;display:grid;gap:8px;justify-items:center;text-align:center}
+.pin-ic2{font-size:40px}
+.doc .grip{padding:6px 0}
+.doc.dragging{opacity:.4}
+.doc-ghost{position:fixed;z-index:70;pointer-events:none;background:var(--surface);border-radius:12px;padding:10px 14px;box-shadow:0 10px 28px rgba(0,0,0,.25);font-weight:600;max-width:70vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#docFolders .pill.drop{background:var(--accent);color:var(--on-accent);border-color:var(--accent);transform:scale(1.06)}
 .ns-bar{display:flex;align-items:center;gap:8px;background:var(--surface);border-radius:12px;padding:8px 12px;margin:0 0 10px;font-size:14px}
 .note-lock b{color:var(--muted)}
 .pw-row{display:flex;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line);min-height:62px}
@@ -477,6 +526,7 @@ nav.lots .tab svg{width:21px;height:21px}
 .setsec>summary .chev{color:var(--muted);transition:transform .2s;flex:none}
 .setsec[open]>summary .chev{transform:rotate(90deg)}
 .setsec-in{padding:0 12px 14px}
+.priv .row{align-items:flex-start;gap:12px}.priv-ic{font-size:22px;line-height:1.2}.priv b{display:block;margin-bottom:2px}
 .setsec-in .card{background:var(--bg)}
 .setsec-in .card .card{background:var(--surface)}
 .accents{display:flex;flex-wrap:wrap;gap:12px}
@@ -596,6 +646,28 @@ input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appear
 .nu-plan span{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px}
 .nu-warn{border-left:4px solid var(--warn);background:var(--bg);border-radius:8px;padding:8px 10px;font-size:14px;margin-top:8px}
 .nu-meal{margin-top:12px}
+.nu-ehint{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);background:var(--bg);border-radius:10px;padding:8px 10px}
+.nu-ehint .mini{margin-left:auto;flex:none}
+.nu-mtype{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.nu-mtype button{border:1.5px solid var(--line);background:var(--bg);border-radius:12px;padding:8px 2px;display:grid;gap:2px;justify-items:center;font-size:12px;font-weight:600;color:var(--ink);cursor:pointer}
+.nu-mtype button span{font-size:22px;line-height:1.1}
+.nu-mtype button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.nu-mk{display:grid;gap:6px}
+.nu-mk .row{padding:0;border:0;min-height:0;gap:10px}
+.nu-mk .em{font-size:20px;width:26px;text-align:center}
+.nu-mk .nu-in{width:120px;flex:none}
+.nu-mk .nu-in input{padding:8px 44px 8px 10px;font-size:16px}
+.me-act{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:10px 12px 12px}
+.me-act .mini{padding:8px 4px;text-align:center}
+.me-add{display:flex;gap:6px;padding:0 12px 10px}
+.me-add input{flex:1}
+.me-qty{display:flex;gap:6px;align-items:center}
+.me-qty input{width:84px;padding:6px 8px;font-size:16px}
+.nu-week{padding:12px 14px;margin-bottom:12px;display:grid;gap:8px}
+.nu-week-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.nu-week-h b{font-size:15px}
+.nu-wsp{display:flex;align-items:center;gap:10px}
+.nu-wsp .grow b{display:block;font-size:15px}
 .nu-meal-h{display:flex;align-items:center;gap:8px;margin:0 4px 6px}
 .nu-meal-h b{flex:1}
 .spin{display:inline-block;width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-3px;margin-right:6px}
@@ -742,9 +814,10 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
         </div>
         <div class="cal-grid cal-dow"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
         <div class="cal-grid" id="calDays"></div>
-        <p class="small muted" style="text-align:center;margin:6px 0 4px">Touche un jour pour voir sa journée en détail.</p>
+        <p class="small muted" style="text-align:center;margin:6px 0 4px">Touche un jour pour voir sa journée en détail. Pince ou touche le mois pour voir toute l'année.</p>
       </div>
       <div id="calDayView" hidden></div>
+      <div id="calYear" hidden></div>
     </div>
     <details class="more-opts" id="moreOpts" style="margin-top:10px">
       <summary><span class="plus">+</span> Plus d'options</summary>
@@ -934,6 +1007,28 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
         <div class="sw-ring nu-ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="bgc" cx="60" cy="60" r="52" fill="none" stroke-width="10"/><circle class="fgc" id="nuRing" cx="60" cy="60" r="52" fill="none" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="326.73"/></svg><div class="sw-txt"><div><div class="nu-big" id="nuKcal">0</div><div class="small muted" id="nuKcalOf"></div></div></div></div>
         <div class="nu-macros" id="nuMacros"></div>
       </div>
+      <div class="card nu-week" id="nuWeek" hidden></div>
+      <h2>Menus sur mesure</h2>
+      <div class="card form" id="nuMenuSec">
+        <div class="nu-mtype" id="nuMType" role="group" aria-label="Que veux-tu générer ?">
+          <button type="button" data-mtype="day"><span>🍽️</span>Journée</button>
+          <button type="button" data-mtype="breakfast"><span>🥐</span>Petit-déj</button>
+          <button type="button" data-mtype="lunch"><span>🥗</span>Midi</button>
+          <button type="button" data-mtype="snack"><span>🍎</span>Collation</button>
+          <button type="button" data-mtype="dinner"><span>🍲</span>Soir</button>
+        </div>
+        <div id="nuMDay">
+          <div class="row" style="padding:0;border:0;min-height:0"><span class="grow">Repas par jour</span><div class="stepper"><button type="button" data-meals="-1" aria-label="Un repas de moins">−</button><output id="nuMeals">3</output><button type="button" data-meals="1" aria-label="Un repas de plus">+</button></div></div>
+          <div class="small muted" style="margin:8px 2px 4px">Calories par repas (modifiables)</div>
+          <div class="nu-mk" id="nuMealKcal"></div>
+          <div class="small" id="nuMkTot" style="margin:4px 2px 0"></div>
+        </div>
+        <label class="nu-f" id="nuMOne" hidden><span>Calories pour ce repas</span><span class="nu-in"><input id="nuOneKcal" type="text" inputmode="numeric" maxlength="4" autocomplete="off"><i>kcal</i></span></label>
+        <label>Ingrédients à inclure absolument<input id="nuInclude" placeholder="Ex. poulet, riz, avocat" autocomplete="off"></label>
+        <label>À éviter (optionnel)<input id="nuExclude" placeholder="Ex. poisson, lactose" autocomplete="off"></label>
+        <button type="button" class="btn" id="nuMenuBtn">Générer</button>
+      </div>
+      <div id="nuMenu"></div>
       <h2>Ajouter ce que tu manges</h2>
       <form class="card form nu-ask" id="nuAskForm">
         <textarea id="nuAsk" rows="2" placeholder="Ce que tu manges, avec la quantité" aria-label="Ce que tu manges" enterkeyhint="send"></textarea>
@@ -948,18 +1043,7 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
       </form>
       <h2 id="nuLogH">Ma journée</h2>
       <div id="nuLog"></div>
-      <details class="setsec" id="nuMenuSec" style="margin-top:22px"><summary><span>Menus sur mesure</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
-        <div class="setsec-in">
-          <div class="card form">
-            <div class="small muted">Une journée de repas qui respecte tes calories et tes macros.</div>
-            <div class="row" style="padding:0;border:0;min-height:0"><span class="grow">Repas par jour</span><div class="stepper"><button type="button" data-meals="-1" aria-label="Un repas de moins">−</button><output id="nuMeals">3</output><button type="button" data-meals="1" aria-label="Un repas de plus">+</button></div></div>
-            <label>Ingrédients à inclure absolument<input id="nuInclude" placeholder="Ex. poulet, riz, avocat" autocomplete="off"></label>
-            <label>À éviter (optionnel)<input id="nuExclude" placeholder="Ex. poisson, lactose" autocomplete="off"></label>
-            <button type="button" class="btn" id="nuMenuBtn">Générer mon menu</button>
-          </div>
-          <div id="nuMenu"></div>
-        </div>
-      </details>
+
       <details class="setsec" id="nuPlanSec"><summary><span>Mon profil et mes besoins</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
         <div class="setsec-in"><div id="nuPlan"></div><button type="button" class="qbtn" id="nuEditProfile">Modifier mon profil</button></div>
       </details>
@@ -1002,6 +1086,7 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
     <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
     <h1>Documents</h1>
     <p class="sub">Range tes PDF et scanne tes documents. Ils te suivent sur tous tes appareils.</p>
+    <div class="card doc-locked" id="docLocked" hidden><div class="pin-ic2">🔒</div><b>Documents verrouillés</b><span class="small muted">Entre ton code pour voir tes documents.</span><button type="button" class="btn" id="docUnlockBtn">Déverrouiller</button></div>
     <input type="search" class="search" id="docSearch" placeholder="Rechercher dans tous les documents" aria-label="Rechercher dans tous les documents" autocomplete="off">
     <div class="chips" id="docFolders" style="margin-bottom:10px"></div>
     <form class="addbar" id="folderForm" hidden>
@@ -1127,19 +1212,40 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
     <button type="button" class="qbtn" id="replayOnb" style="margin-top:8px">Revoir la présentation</button>
       </div>
     </details>
-    <div id="rappelsSec" hidden>
-    <h2>Rappels</h2>
+    <details class="setsec" data-sec="notif" id="rappelsSec"><summary><span>Notifications</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+      <div class="setsec-in">
     <div class="card">
-      <div class="row"><div class="grow">Une notification la veille de chaque date du planning.<div class="small muted" id="notifState"></div></div></div>
-      <div class="row" id="notifRow" style="gap:8px"><button class="btn" id="notifBtn" style="flex:1">Activer les rappels</button><button class="btn ghost" id="notifTest" hidden>Tester</button></div>
+      <div class="row"><div class="grow">Sois prévenu avant chaque activité du planning.<div class="small muted" id="notifState"></div></div></div>
+      <div class="row" id="notifRow" style="gap:8px"><button class="btn" id="notifBtn" style="flex:1">Activer les notifications</button><button class="btn ghost" id="notifTest" hidden>Tester</button></div>
     </div>
-    </div>
+    <div class="label" style="margin:12px 4px 6px">Me prévenir</div>
+    <div class="chips" id="notifLeads" style="flex-wrap:wrap;margin:0;padding-inline:0"></div>
+    <p class="small muted" style="margin:8px 4px 0">Tu peux en choisir plusieurs. Une activité sans heure compte pour 8 h. Les cours UMons ne sont pas notifiés. Sur iPhone : iOS 16.4 ou plus, et Sid'note ouvert depuis l'écran d'accueil.</p>
+      </div>
+    </details>
     <details class="setsec" data-sec="backup"><summary><span>Sauvegarde</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
       <div class="setsec-in">
     <div class="card">
       <div class="row"><div class="grow">Tes données sont enregistrées dans ton compte. Tu peux aussi garder une copie dans un fichier.</div></div>
       <div class="row"><button class="btn" id="backupBtn" style="width:100%">Exporter une sauvegarde</button></div>
       <div class="row"><label class="btn ghost" style="width:100%;text-align:center;cursor:pointer">Restaurer une sauvegarde<input type="file" id="restoreIn" accept="application/json,.json" hidden></label></div>
+    </div>
+      </div>
+    </details>
+    <details class="setsec" data-sec="privacy"><summary><span>Tes données et ta vie privée</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+      <div class="setsec-in">
+    <div class="card priv">
+      <div class="row"><span class="priv-ic">🗄️</span><div class="grow"><b>Ce que tu écris</b><div class="small muted">Planning, tâches, notes, séances, nutrition et réglages sont enregistrés dans ton compte, sur les serveurs de Supabase. Seul ton compte peut les lire : chaque personne a son espace séparé.</div></div></div>
+      <div class="row"><span class="priv-ic">🔐</span><div class="grow"><b>Mots de passe et notes secrètes</b><div class="small muted">Chiffrés sur ton téléphone avec ton code avant d'être envoyés. Le serveur ne reçoit que du texte illisible ; ni SidCorp ni Supabase ne peuvent les lire.</div></div></div>
+      <div class="row"><span class="priv-ic">📄</span><div class="grow"><b>Documents (PDF, scans)</b><div class="small muted">Gardés sur ton appareil et copiés dans un espace de stockage privé de ton compte (Supabase Storage). Ils ne sont pas chiffrés, mais personne d'autre n'y a accès.</div></div></div>
+      <div class="row"><span class="priv-ic">📸</span><div class="grow"><b>Photos de tes plats</b><div class="small muted">Envoyées une seule fois pour être analysées : elles passent par le serveur Sid'note puis par le service d'IA d'Anthropic, qui calcule les calories. Elles ne sont pas enregistrées dans ton compte, ne servent pas à entraîner l'IA et ne sont gardées que peu de temps par Anthropic (sécurité) avant d'être effacées. Seule une petite vignette reste sur ton téléphone.</div></div></div>
+      <div class="row"><span class="priv-ic">🥗</span><div class="grow"><b>Textes de nutrition</b><div class="small muted">Ce que tu tapes (aliments, profil) est envoyé à l'IA pour le calcul. Les aliments sont retenus dans une mémoire commune et anonyme (juste « 100 g de riz = 130 kcal », jamais ton nom).</div></div></div>
+      <div class="row"><span class="priv-ic">🌐</span><div class="grow"><b>Le site</b><div class="small muted">Netlify héberge seulement l'application. Il ne voit pas tes données. Pas de publicité, pas de pisteur, rien n'est vendu.</div></div></div>
+    </div>
+    <div class="card" style="margin-top:10px">
+      <div class="row"><div class="grow">Tes droits : voir, récupérer et effacer tes données à tout moment. Pour fermer complètement ton compte, écris à SidCorp.</div></div>
+      <div class="row"><button class="btn" id="exportAllBtn" style="width:100%">Télécharger toutes mes données</button></div>
+      <div class="row"><button class="btn stop" id="wipeBtn" style="width:100%">Supprimer mes données</button></div>
     </div>
       </div>
     </details>
@@ -1154,7 +1260,7 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
     <div class="card" id="stats"></div>
       </div>
     </details>
-    <p class="small muted" style="margin:18px 4px">Sid'note · version 21 · une app <b>SidCorp</b></p>
+    <p class="small muted" style="margin:18px 4px">Sid'note · version 22 · une app <b>SidCorp</b></p>
   </section>
 </main>
 
@@ -1179,6 +1285,7 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
     <div class="sheet-head"><b id="nuSheetTitle">Ajouter à la main</b><button type="button" class="x" id="nuSheetClose" aria-label="Fermer">×</button></div>
     <label>Aliment<input id="nuEName" autocomplete="off"></label>
     <div class="two"><label>Quantité<input id="nuEQty" placeholder="Ex. 150 g, 1 barre" autocomplete="off"></label><label>Heure<input id="nuETime" type="time"></label></div>
+    <div class="nu-ehint" id="nuEHint" hidden></div>
     <div class="two"><label>Calories (kcal)<input id="nuEKcal" type="number" inputmode="decimal" min="0"></label><label>Protéines (g)<input id="nuEP" type="number" inputmode="decimal" min="0" step="0.1"></label></div>
     <div class="two"><label>Glucides (g)<input id="nuEC" type="number" inputmode="decimal" min="0" step="0.1"></label><label>Lipides (g)<input id="nuEF" type="number" inputmode="decimal" min="0" step="0.1"></label></div>
     <div class="two"><button type="button" class="btn stop" id="nuEDel">Supprimer</button><button class="btn" type="submit">Enregistrer</button></div>
@@ -1217,15 +1324,32 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
   </form>
 </div>
 <div class="onb" id="onb" hidden>
-  <div class="onb-box">
-    <img src="icon-192.png" alt="" class="auth-logo" style="width:64px;height:64px">
-    <h1 id="onbTitle">Bienvenue sur Sid'note</h1>
-    <p class="onb-tag">Chacun sa vie, chacun sa personnalité&nbsp;: à chacun son Sid'note.</p>
-    <p class="sub">Garde ce qui te ressemble. Tu pourras tout changer plus tard dans Réglages.</p>
-    <div class="seg" id="onbLang" role="group" aria-label="Langue"><button type="button" data-lang="fr" aria-pressed="true">Français</button><button type="button" data-lang="en" aria-pressed="false">English</button></div>
-    <div class="onb-list" id="onbList"></div>
-    <button class="btn" id="onbGo" style="padding:14px;font-size:17px">C'est parti</button>
+  <button type="button" class="onb-skip" id="onbSkip">Passer</button>
+  <div class="onb-track" id="onbTrack">
+    <section class="onb-slide">
+      <div class="onb-box">
+        <img src="icon-192.png" alt="" class="auth-logo onb-pop" style="width:84px;height:84px">
+        <h1 id="onbTitle">Bienvenue sur Sid'note</h1>
+        <p class="onb-tag">Chacun sa vie, chacun sa personnalité&nbsp;: à chacun son Sid'note.</p>
+        <p class="sub">Choisis ce qui te ressemble, en quelques gestes.</p>
+        <div class="seg" id="onbLang" role="group" aria-label="Langue"><button type="button" data-lang="fr" aria-pressed="true">Français</button><button type="button" data-lang="en" aria-pressed="false">English</button></div>
+        <div class="onb-floats" aria-hidden="true"><span>🗓️</span><span>✅</span><span>🏋️</span><span>🥗</span><span>📝</span><span>🔒</span></div>
+      </div>
+    </section>
+    <div id="onbGroups" style="display:contents"></div>
+    <section class="onb-slide">
+      <div class="onb-box">
+        <div class="onb-big">🎨</div>
+        <h1>À ton image</h1>
+        <p class="sub">Choisis ta couleur et ton style : tout l'écran change en direct.</p>
+        <div class="accents" id="onbAccent" style="justify-content:center"></div>
+        <div class="seg" id="onbLook" role="group" aria-label="Style" style="grid-template-columns:repeat(3,1fr)"><button type="button" data-look="soft">Discret</button><button type="button" data-look="color">Coloré</button><button type="button" data-look="vivid">Intense</button></div>
+        <div class="onb-preview card"><div class="brand"><img src="icon-192.png" alt="">Sid'note</div><b class="onb-pv-t">Aperçu</b><div class="prog"><div class="track"><div class="fill" style="width:62%;background:var(--accent)"></div></div></div><button type="button" class="btn" tabindex="-1">Bouton</button></div>
+        <button class="btn" id="onbGo" style="padding:14px;font-size:17px">C'est parti 🚀</button>
+      </div>
+    </section>
   </div>
+  <div class="onb-nav"><button type="button" class="btn ghost" id="onbPrev">‹</button><div class="onb-dots" id="onbDots"></div><button type="button" class="btn" id="onbNext">Suivant ›</button></div>
 </div>
 <div class="viewer" id="viewer" hidden>
   <div class="viewer-head"><button type="button" class="back" id="vwBack">‹ Documents</button><b class="grow" id="vwTitle"></b><button type="button" class="mini" id="vwShare">Partager</button></div>
@@ -1340,7 +1464,7 @@ const DICT={
 "Pas encore mis à jour.":"Not updated yet.","Passer":"Skip","Passer à l'e-mail":"Switch to e-mail","Passer à la connexion par e-mail":"Switch to e-mail sign-in",
 "Pause":"Break","Planning":"Planner","Playlist par défaut : Deep Focus":"Default playlist: Deep Focus","Plus 15 secondes":"Plus 15 seconds","Plus d'options":"More options",
 "Plus de pause":"Longer break","Plus de temps":"More time","Plus de travail":"More work","Pomodoro":"Pomodoro",
-"Pour activer les rappels, ouvre Sid'note depuis l'icône de ton écran d'accueil.":"To turn on reminders, open Sid'note from its home-screen icon.",
+"Pour activer les notifications, ouvre Sid'note depuis l'icône de ton écran d'accueil.":"To turn on reminders, open Sid'note from its home-screen icon.",
 "Pour les étudiants : colle le lien iCal de ton horaire (par exemple celui de l'UMons). Tes cours s'affichent dans le calendrier et se mettent à jour tout seuls.":"For students: paste your timetable's iCal link (for example the UMons one). Your classes show up in the calendar and update by themselves.",
 "Prochaines échéances":"Coming up","Programme":"Schedule","Préférences":"Preferences","Pseudo":"Username","Pseudo modifié":"Username changed",
 "Qu'as-tu de prévu ?":"What's planned?","Que fais-tu ce jour-là ?":"What are you doing that day?",
@@ -1353,7 +1477,7 @@ const DICT={
 "Récupérer les données déjà présentes sur ce téléphone":"Bring over the data already on this phone","Réglages":"Settings","Résultats":"Results","Sauvegarde":"Backup",
 "Sauvegarde restaurée":"Backup restored","Scan enregistré dans Documents":"Scan saved to Documents","Scanner un document":"Scan a document","◎ Scanner":"◎ Scan",
 "Se connecter":"Sign in","Se déconnecter":"Sign out","Secondes":"Seconds","Session arrêtée":"Session stopped","Sid'note · une app":"Sid'note · an app by",
-"Sid'note · version 21 · une app":"Sid'note · version 19 · an app by","Simple":"Simple","Statistiques":"Statistics","Supprimer":"Delete","Supprimer ?":"Delete?","Supprimer la séance":"Delete workout",
+"Sid'note · version 22 · une app":"Sid'note · version 22 · an app by","Simple":"Simple","Statistiques":"Statistics","Supprimer":"Delete","Supprimer ?":"Delete?","Supprimer la séance":"Delete workout",
 "Supprimer l'exercice":"Delete exercise","Supprimer la catégorie":"Delete category","Supprimé":"Deleted","Sur cet appareil seulement":"On this device only","Sur l'écran d'accueil":"Add to Home Screen",
 "Sur les 7 derniers jours":"Over the last 7 days","Synchronisé":"Synced","Synchronisation…":"Syncing…","Séance copiée":"Workout copied","Séance copiée : colle-la dans un message":"Workout copied: paste it in a message",
 "Séance créée":"Workout created","Séance remise à zéro":"Workout cleared","Séance supprimée":"Workout deleted","Séries":"Sets","Ta musique":"Your music",
@@ -1396,6 +1520,48 @@ const DICT={
 "Effort ":"Work","Repos ":"Rest","Séries ":"Sets","Garder":"Keep","Langue ":"Language","Mot de passe ":"Password","Activés":"On","Désactivés":"Off","Prochaine":"Next",
 "Une app":"An app","Séance":"Workout","Séances":"Workouts","Exercice":"Exercise","Chargement…":"Loading…","Mode test":"Test mode",
 "Choisis au moins 5 secondes ":"Choose at least 5 seconds",
+// v22
+"Tout effacer ? Toucher encore pour confirmer":"Erase everything? Tap again to confirm","Supprimer mes données":"Delete my data",
+"Tout ce que tu as mis dans Sid'note sera effacé, sur tous tes appareils. C'est définitif. Continuer ?":"Everything you put in Sid'note will be erased, on all your devices. This can't be undone. Continue?",
+"Tes données ont été supprimées":"Your data has been deleted","Suppression impossible : ":"Couldn't delete: ","Tous":"All",
+"Ton sport cette semaine":"Your sport this week","par séance":"per session","d'habitude":"usually","Une séance de moins":"One session less","Une séance de plus":"One more session",
+"Objectif par jour cette semaine":"Daily goal this week","selon ton sport":"based on your sport","Calories recalculées selon la quantité":"Calories recalculated for the quantity",
+"Quantité sans chiffre : je ne peux pas recalculer seul.":"Quantity without a number: I can't recalculate on my own.","Recalculer":"Recalculate","Total":"Total","Répartir l'objectif":"Split the goal",
+"Retirer ce repas":"Remove this meal","Grammes":"Grams","Changer la quantité":"Change the quantity","Ex. 30 g d'amandes":"E.g. 30 g of almonds","Autre idée":"Another idea","Je l'ai mangé":"I ate it",
+"Petit-déj":"Breakfast","Collation":"Snack","Midi":"Lunch","Soir":"Dinner","Calories par repas (modifiables)":"Calories per meal (editable)","Calories pour ce repas":"Calories for this meal","Que veux-tu générer ?":"What do you want to generate?",
+"Générer ma journée":"Generate my day","Générer un petit-déjeuner":"Generate a breakfast","Générer un déjeuner":"Generate a lunch","Générer une collation":"Generate a snack","Générer un dîner":"Generate a dinner",
+"Nouvelle idée prête":"New idea ready","Petit-déjeuner":"Breakfast","Déjeuner":"Lunch","Dîner":"Dinner",
+"Notifications":"Notifications","Sois prévenu avant chaque activité du planning.":"Get notified before each activity in your planner.","Activer les notifications":"Turn on notifications","Me prévenir":"Notify me",
+"Tu peux en choisir plusieurs. Une activité sans heure compte pour 8 h. Les cours UMons ne sont pas notifiés. Sur iPhone : iOS 16.4 ou plus, et Sid'note ouvert depuis l'écran d'accueil.":"You can pick several. An activity without a time counts as 8 am. UMons classes aren't notified. On iPhone: iOS 16.4 or later, with Sid'note opened from the Home Screen.",
+"La veille":"The day before","2 jours":"2 days","10 min":"10 min","30 min":"30 min","1 h":"1 h","2 h":"2 h","Garde au moins un délai":"Keep at least one option",
+"Notifications activées":"Notifications on","Notifications désactivées":"Notifications off","Pour activer les notifications, ouvre Sid'note depuis l'icône de ton écran d'accueil.":"To turn on notifications, open Sid'note from its Home Screen icon.",
+"Tes données et ta vie privée":"Your data and privacy","Ce que tu écris":"What you write",
+"Planning, tâches, notes, séances, nutrition et réglages sont enregistrés dans ton compte, sur les serveurs de Supabase. Seul ton compte peut les lire : chaque personne a son espace séparé.":"Planner, tasks, notes, workouts, nutrition and settings are saved in your account, on Supabase servers. Only your account can read them: everyone has their own separate space.",
+"Mots de passe et notes secrètes":"Passwords and secret notes",
+"Chiffrés sur ton téléphone avec ton code avant d'être envoyés. Le serveur ne reçoit que du texte illisible ; ni SidCorp ni Supabase ne peuvent les lire.":"Encrypted on your phone with your code before being sent. The server only receives unreadable text; neither SidCorp nor Supabase can read them.",
+"Documents (PDF, scans)":"Documents (PDFs, scans)",
+"Gardés sur ton appareil et copiés dans un espace de stockage privé de ton compte (Supabase Storage). Ils ne sont pas chiffrés, mais personne d'autre n'y a accès.":"Kept on your device and copied to private storage in your account (Supabase Storage). They aren't encrypted, but no one else can access them.",
+"Photos de tes plats":"Photos of your meals",
+"Envoyées une seule fois pour être analysées : elles passent par le serveur Sid'note puis par le service d'IA d'Anthropic, qui calcule les calories. Elles ne sont pas enregistrées dans ton compte, ne servent pas à entraîner l'IA et ne sont gardées que peu de temps par Anthropic (sécurité) avant d'être effacées. Seule une petite vignette reste sur ton téléphone.":"Sent once to be analyzed: they go through the Sid'note server, then Anthropic's AI service, which works out the calories. They aren't saved in your account, aren't used to train the AI, and Anthropic only keeps them briefly (for safety) before deleting them. Only a small thumbnail stays on your phone.",
+"Textes de nutrition":"Nutrition text",
+"Ce que tu tapes (aliments, profil) est envoyé à l'IA pour le calcul. Les aliments sont retenus dans une mémoire commune et anonyme (juste « 100 g de riz = 130 kcal », jamais ton nom).":"What you type (foods, profile) is sent to the AI for the calculation. Foods are kept in a shared, anonymous memory (just “100 g of rice = 130 kcal”, never your name).",
+"Le site":"The website","Netlify héberge seulement l'application. Il ne voit pas tes données. Pas de publicité, pas de pisteur, rien n'est vendu.":"Netlify only hosts the app. It doesn't see your data. No ads, no trackers, nothing is sold.",
+"Tes droits : voir, récupérer et effacer tes données à tout moment. Pour fermer complètement ton compte, écris à SidCorp.":"Your rights: see, download and erase your data at any time. To fully close your account, write to SidCorp.",
+"Télécharger toutes mes données":"Download all my data",
+"Passer":"Skip","Choisis ce qui te ressemble, en quelques gestes.":"Pick what feels like you, in a few taps.","Suivant ›":"Next ›","À ton image":"Make it yours",
+"Choisis ta couleur et ton style : tout l'écran change en direct.":"Pick your color and style: the whole screen changes live.","Aperçu":"Preview","Bouton":"Button","C'est parti 🚀":"Let's go 🚀",
+"Organise tes journées":"Organize your days","Ton planning, tes tâches et ta concentration au même endroit.":"Your planner, tasks and focus in one place.",
+"Bouge et mange bien":"Move and eat well","Tes séances, ta nutrition et tes progrès en graphiques.":"Your workouts, nutrition and progress in charts.",
+"Garde tout à l'abri":"Keep everything safe","Tes notes, tes documents et tes mots de passe, protégés par code.":"Your notes, documents and passwords, protected by code.",
+"Touche une carte pour la garder ou la masquer.":"Tap a card to keep or hide it.",
+"Cette année":"This year","Année précédente":"Previous year","Année suivante":"Next year","Touche un mois pour l'ouvrir.":"Tap a month to open it.",
+"Touche un jour pour voir sa journée en détail. Pince ou touche le mois pour voir toute l'année.":"Tap a day to see it in detail. Pinch or tap the month to see the whole year.",
+"Documents verrouillés":"Documents locked","Entre ton code pour voir tes documents.":"Enter your code to see your documents.","Déverrouiller":"Unlock",
+"Glisser vers un classeur":"Drag to a folder","Document sorti de son classeur":"Document taken out of its folder","Rangé dans":"Filed in",
+"Code effacé : choisis-en un nouveau. Tes documents sont gardés.":"Code erased: choose a new one. Your documents are kept.",
+"Choisis le code qui protège tes documents. Ils ne seront jamais effacés si tu l'oublies.":"Choose the code that protects your documents. They'll never be erased if you forget it.",
+"La récupération n'était pas activée. Choisir un nouveau code (tes documents sont gardés) ? Touche encore pour confirmer.":"Recovery wasn't turned on. Choose a new code (your documents are kept)? Tap again to confirm.",
+"terminées":"done","terminée":"done",
 // v21
 "Mémoire Sid'note":"Sid'note memory","Toi":"You","Tes sports":"Your sports","Ex. Musculation":"E.g. Weightlifting","Durée d'une séance":"Session length","/sem":"/wk","Ton rythme":"Your pace",
 "Drastique":"Drastic","Réaliste":"Realistic","À mon aise":"At my own pace","Le plus vite possible, sans danger":"As fast as is safe","Le bon équilibre (conseillé)":"The right balance (recommended)",
@@ -1607,6 +1773,9 @@ function tomb(id){if(!id)return;data.del=data.del||{};data.del[id]=Date.now()}
 // fusionne les données d'un autre appareil avec celles de cet appareil, sans rien perdre
 function mergeData(loc,rem){
   loc=loc||{};rem=rem||{};
+  // « Supprimer mes données » sur un autre appareil : l'effacement gagne sur tout le reste
+  if((rem.wipe||"")>(loc.wipe||""))return {...JSON.parse(JSON.stringify(rem)),ui:loc.ui||rem.ui};
+  if((loc.wipe||"")>(rem.wipe||""))return {...loc};
   const now=Date.now(),del={};
   for(const src of [rem.del||{},loc.del||{}])for(const k in src)if(now-src[k]<90*864e5)del[k]=Math.max(del[k]||0,src[k]);
   const arr=(a,b)=>{a=Array.isArray(a)?a:[];b=Array.isArray(b)?b:[];const ids=new Set(a.map(x=>x&&x.id));
@@ -1762,7 +1931,7 @@ function show(v){
   document.querySelectorAll("nav .tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.g===g.k));
   renderSubnav(g,v);
   if(v==="more"){renderStats();renderTabsCard();renderHomeSel();renderLook();if(session)renderNotif()}
-  if(v==="docs")renderDocs();
+  if(v==="docs")docsEnter();
   if(v!=="docs")dvLock();
   if(v!=="pwd")pwdLock();else renderPwd();
   if(v==="notes"&&!noteOpenId)renderNotes();
@@ -1855,8 +2024,12 @@ function renderTodos(){
   const doneOpen=q?true:!!data.ui.doneOpen,pausedOpen=q?true:data.ui.pausedOpen!==false;
   // catégories
   const openN=id=>data.todos.filter(t=>!t.done&&!t.paused&&(id==="none"?!(t.cat&&catOf(t.cat)):t.cat===id)).length;
+  // une catégorie dont toutes les tâches sont réalisées quitte la rangée du haut (rangée dans « ✓ Terminées »)
+  const finished=c=>!openN(c.id)&&!data.todos.some(t=>t.cat===c.id&&t.paused)&&data.todos.some(t=>t.cat===c.id&&t.done);
+  const fin=cats.filter(finished),showFin=!!data.ui.showDoneCats||fin.some(c=>c.id===cc);
   $("todoCats").innerHTML=`<button class="pill" data-tcat="all" aria-pressed="${cc==="all"}">${L("Toutes")}</button>`+
-    cats.map(c=>`<button class="pill" data-tcat="${c.id}" aria-pressed="${cc===c.id}">${esc(c.name)} <span class="cnt">${openN(c.id)||""}</span></button>`).join("")+
+    cats.filter(c=>!finished(c)).map(c=>`<button class="pill" data-tcat="${c.id}" aria-pressed="${cc===c.id}">${esc(c.name)} <span class="cnt">${openN(c.id)||""}</span></button>`).join("")+
+    (fin.length?`<button class="pill" data-tcatfin="1" aria-pressed="${showFin}">✓ ${fin.length} ${L(fin.length>1?"terminées":"terminée")}</button>`+(showFin?fin.map(c=>`<button class="pill" data-tcat="${c.id}" aria-pressed="${cc===c.id}" style="opacity:.75">✓ ${esc(c.name)}</button>`).join(""):""):"")+
     `<button class="pill add" data-tcatnew="1">+ ${L("Catégorie")}</button>`;
   const cat=catOf(cc);
   $("catBar").hidden=!cat;
@@ -1915,6 +2088,7 @@ document.getElementById("v-todo").addEventListener("click",e=>{
   if(b.dataset.tfold){const f=data.ui.todoFold=data.ui.todoFold||{},k=b.dataset.tfold;if(f[k])delete f[k];else f[k]=1;saveUI();renderTodos();return}
   if(b.dataset.tfoldall){const ks=[...document.querySelectorAll("#todoOpen [data-tfold]")].map(x=>x.dataset.tfold),f=data.ui.todoFold=data.ui.todoFold||{};
     const close=ks.some(k=>!f[k]);ks.forEach(k=>{if(close)f[k]=1;else delete f[k]});saveUI();renderTodos();return}
+  if(b.dataset.tcatfin){data.ui.showDoneCats=!data.ui.showDoneCats;saveUI();renderTodos();return}
   if(b.dataset.tcatnew){const f=$("catForm");f.hidden=!f.hidden;if(!f.hidden)$("catIn").focus();return}
   if(b.dataset.catren){catEditing=true;renderTodos();const i=$("catRenIn");i.focus();i.select();return}
   if(b.dataset.catdel){armDelete(b,()=>{const c=catOf(curCat());if(!c)return;tomb(c.id);
@@ -2013,11 +2187,36 @@ function renderDayView(){
 }
 function renderCal(){
   if(!selDay)selDay=iso(today());
-  const day=calMode==="day";
-  $("calMonth").hidden=day;$("calDayView").hidden=!day;
-  $("calH2").textContent=day?"Journée":"Ce mois-ci";
-  if(day)renderDayView();else renderMonth();
+  const day=calMode==="day",yr=calMode==="year";
+  $("calMonth").hidden=day||yr;$("calDayView").hidden=!day;$("calYear").hidden=!yr;
+  $("calH2").textContent=L(day?"Journée":yr?"Cette année":"Ce mois-ci");
+  if(day)renderDayView();else if(yr)renderYear();else renderMonth();
 }
+// vue année : 12 petits mois, jours avec activité en couleur, aujourd'hui en rouge (comme le Calendrier de l'iPhone)
+function renderYear(){
+  const T=allT(),tIso=iso(today()),has=new Set();T.forEach(t=>{if(!t.date)return;const e=t.end&&t.end>t.date?t.end:t.date;for(let d=parse(t.date);iso(d)<=e;d.setDate(d.getDate()+1))has.add(iso(d))});
+  const now=today();let h="";
+  for(let m=0;m<12;m++){const first=new Date(calY,m,1),lead=(first.getDay()+6)%7,n=new Date(calY,m+1,0).getDate();
+    let g="";for(let i=0;i<lead;i++)g+="<i></i>";
+    for(let d=1;d<=n;d++){const k=iso(new Date(calY,m,d));g+=`<i class="${k===tIso?"td":has.has(k)?"ev":""} ${k<tIso?"past":""}">${d}</i>`}
+    h+=`<button class="ym ${calY===now.getFullYear()&&m===now.getMonth()?"cur":""}" data-ym="${m}" aria-label="${MOL[m]} ${calY}"><b>${MOL[m]}</b><div class="ym-g">${g}</div></button>`}
+  $("calYear").innerHTML=`<div class="yr-head"><button class="cal-nav" data-yrn="-1" aria-label="${L("Année précédente")}">‹</button><span class="yr-title">${calY}</span><button class="cal-nav" data-yrn="1" aria-label="${L("Année suivante")}">›</button></div><div class="yr-grid">${h}</div>
+    <p class="small muted" style="text-align:center;margin:10px 0 4px">${L("Touche un mois pour l'ouvrir.")} <button type="button" class="linkbtn" data-yrtoday="1" style="background:none;border:0;cursor:pointer">${L("Aujourd'hui")}</button></p>`;
+}
+$("calYear").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.yrn){calY+= +b.dataset.yrn;renderCal();return}
+  if(b.dataset.yrtoday){const t=today();calY=t.getFullYear();calM=t.getMonth();calMode="month";renderCal();zoom($("calMonth"));return}
+  if(b.dataset.ym){const r=b.getBoundingClientRect(),c=$("calYear").getBoundingClientRect();
+    $("calMonth").style.setProperty("--zo",`${((r.left+r.width/2-c.left)/c.width*100).toFixed(0)}% ${((r.top-c.top)/c.height*100).toFixed(0)}%`);
+    calM=+b.dataset.ym;calMode="month";renderCal();zoom($("calMonth"))}});
+// pincer pour dézoomer (mois → année) ou zoomer (année → mois)
+(()=>{let d0=0,ratio=1,mid=null;const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);const box=document.querySelector(".card.cal");
+  box.addEventListener("touchstart",e=>{if(e.touches.length===2){d0=dist(e.touches);ratio=1;mid={x:(e.touches[0].clientX+e.touches[1].clientX)/2,y:(e.touches[0].clientY+e.touches[1].clientY)/2}}},{passive:true});
+  box.addEventListener("touchmove",e=>{if(e.touches.length===2&&d0){e.preventDefault();ratio=dist(e.touches)/d0}},{passive:false});
+  box.addEventListener("touchend",()=>{if(!d0)return;const r=ratio;d0=0;
+    if(r<.75&&calMode==="month"){calMode="year";renderCal();zoom($("calYear"))}
+    else if(r>1.33&&calMode==="year"){const el=document.elementFromPoint(mid.x,mid.y),b=el&&el.closest("[data-ym]");calM=b?+b.dataset.ym:calM;calMode="month";renderCal();zoom($("calMonth"))}});
+})();
 function zoom(el){el.classList.remove("zoom");void el.offsetWidth;el.classList.add("zoom")}
 $("calDays").addEventListener("click",e=>{const b=e.target.closest(".day[data-day]");if(!b)return;
   const r=b.getBoundingClientRect(),c=$("calMonth").getBoundingClientRect();
@@ -2042,7 +2241,7 @@ $("calDayView").addEventListener("submit",e=>{
 });
 $("calPrev").addEventListener("click",()=>{calM--;if(calM<0){calM=11;calY--}renderCal()});
 $("calNext").addEventListener("click",()=>{calM++;if(calM>11){calM=0;calY++}renderCal()});
-$("calTitle").addEventListener("click",()=>{const t=today();calY=t.getFullYear();calM=t.getMonth();renderCal()});
+$("calTitle").addEventListener("click",()=>{calMode="year";renderCal();zoom($("calYear"))});
 $("planSearch").addEventListener("input",e=>{planQ=e.target.value;renderPlan()});
 function renderPlan(){
   const T=data.tasks,q=norm(planQ);
@@ -2214,6 +2413,30 @@ $("backupBtn").addEventListener("click",async()=>{
   }catch(e){if(e.name==="AbortError")return}
   const a=document.createElement("a");a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+});
+// RGPD : export complet (JSON) et suppression des données du compte
+$("exportAllBtn").addEventListener("click",async()=>{
+  const out={app:"Sid'note",exported:new Date().toISOString(),account:{email:session&&session.email,id:session&&session.user.id},data:forServer(data)};
+  const name=`sidnote-mes-donnees-${new Date().toISOString().slice(0,10)}.json`,file=new File([JSON.stringify(out,null,1)],name,{type:"application/json"});
+  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:"Mes données Sid'note"});return}}catch(e){if(e.name==="AbortError")return}
+  const a=document.createElement("a");a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+});
+$("wipeBtn").addEventListener("click",async e=>{
+  const b=e.currentTarget;
+  if(!b.dataset.armed){b.dataset.armed="1";b.textContent=L("Tout effacer ? Toucher encore pour confirmer");setTimeout(()=>{delete b.dataset.armed;b.textContent=L("Supprimer mes données")},4000);return}
+  if(!confirm(L("Tout ce que tu as mis dans Sid'note sera effacé, sur tous tes appareils. C'est définitif. Continuer ?")))return;
+  b.disabled=true;b.textContent="…";
+  try{
+    const t=await token(),u=session.user.id;
+    for(const d of docsArr())if(d.up||d.path){try{await stor("DELETE","documents/"+(d.path||docPath(d)))}catch(x){}}
+    await dropSub().catch(()=>{});
+    const fresh={...blank(),wipe:new Date().toISOString()},rev=new Date().toISOString();
+    await api("/rest/v1/user_data?on_conflict=user_id",{method:"POST",token:t,headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:{user_id:u,data:forServer(fresh),updated_at:rev}});
+    await idbClearUser(u);ls.del("sidnote-ical-"+u);ls.del(cacheKey(u));
+    toast(L("Tes données ont été supprimées"));
+    try{api("/auth/v1/logout",{method:"POST",token:session.access_token}).catch(()=>{})}catch(x){}
+    setTimeout(()=>endSession("",false),900);
+  }catch(ex){b.disabled=false;delete b.dataset.armed;b.textContent=L("Supprimer mes données");toast(ex instanceof TypeError?L("Pas de connexion internet"):L("Suppression impossible : ")+(ex.message||""))}
 });
 $("restoreIn").addEventListener("change",async e=>{
   const f=e.target.files[0];if(!f)return;
@@ -2493,16 +2716,16 @@ const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
 const standalone=()=>window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
 function b64u(s){const p="=".repeat((4-s.length%4)%4),b=atob((s+p).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from(b,c=>c.charCodeAt(0))}
 async function currentSub(){if(!pushOK())return null;const r=await navigator.serviceWorker.ready;return r.pushManager.getSubscription()}
-async function renderNotif(){
+async function renderNotif(){renderLeads();
   const st=$("notifState"),btn=$("notifBtn"),test=$("notifTest");if(!st)return;
   test.hidden=true;btn.hidden=false;btn.disabled=false;$("notifRow").hidden=false;
   if(!pushOK()){
-    st.textContent=isIOS&&!standalone()?"Pour activer les rappels, ouvre Sid'note depuis l'icône de ton écran d'accueil.":"Ce navigateur ne gère pas les notifications.";
+    st.textContent=isIOS&&!standalone()?"Pour activer les notifications, ouvre Sid'note depuis l'icône de ton écran d'accueil.":"Ce navigateur ne gère pas les notifications.";
     btn.hidden=true;$("notifRow").hidden=true;return}
   if(Notification.permission==="denied"){st.textContent="Notifications bloquées. Autorise-les dans Réglages > Notifications > Sid'note.";btn.hidden=true;$("notifRow").hidden=true;return}
   const sub=await currentSub().catch(()=>null);
   if(sub&&Notification.permission==="granted"){st.innerHTML='<span class="syncdot"></span>Activés sur cet appareil';btn.textContent="Désactiver";btn.className="btn ghost";test.hidden=false}
-  else{st.textContent="Désactivés sur cet appareil.";btn.textContent="Activer les rappels";btn.className="btn"}
+  else{st.textContent="Désactivés sur cet appareil.";btn.textContent="Activer les notifications";btn.className="btn"}
 }
 async function saveSub(sub){
   await api("/rest/v1/push_subscriptions?on_conflict=endpoint",{method:"POST",token:await token(),
@@ -2517,19 +2740,27 @@ $("notifBtn").addEventListener("click",async()=>{
   const btn=$("notifBtn");btn.disabled=true;
   try{
     const sub=await currentSub();
-    if(sub&&Notification.permission==="granted"){await dropSub();toast("Rappels désactivés")}
+    if(sub&&Notification.permission==="granted"){await dropSub();toast("Notifications désactivées")}
     else{
       const perm=await Notification.requestPermission();
       if(perm!=="granted"){toast("Notifications refusées");renderNotif();return}
       const r=await navigator.serviceWorker.ready;
       const s=sub||await r.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(VAPID_PUBLIC)});
-      await saveSub(s);toast("Rappels activés");
+      await saveSub(s);toast("Notifications activées");
     }
   }catch(ex){toast(ex instanceof TypeError?"Pas de connexion internet":"Activation impossible : "+(ex.message||"erreur"))}
   renderNotif();
 });
+// délais choisis (minutes avant l'activité), synchronisés avec le compte : le serveur les lit
+const LEADS=[[10,"10 min"],[30,"30 min"],[60,"1 h"],[120,"2 h"],[1440,"La veille"],[2880,"2 jours"]];
+const notifLeads=()=>{const n=data.prefs.notif;return n&&Array.isArray(n.leads)?n.leads:[1440]};
+function renderLeads(){const box=$("notifLeads");if(!box)return;const cur=notifLeads();
+  box.innerHTML=LEADS.map(([m,l])=>`<button type="button" class="pill" data-lead="${m}" aria-pressed="${cur.includes(m)}">${L(l)}</button>`).join("")}
+$("notifLeads").addEventListener("click",e=>{const b=e.target.closest("[data-lead]");if(!b)return;const m=+b.dataset.lead;let cur=notifLeads().slice();
+  cur=cur.includes(m)?cur.filter(x=>x!==m):[...cur,m].sort((a,b)=>a-b);if(!cur.length){toast("Garde au moins un délai");return}
+  data.prefs.notif={...(data.prefs.notif||{}),leads:cur};save();renderLeads()});
 $("notifTest").addEventListener("click",async()=>{
-  try{await api("/functions/v1/rappels",{method:"POST",token:await token(),body:{test:true}});toast("Notification de test envoyée")}
+  try{await api("/functions/v1/rappels",{method:"POST",token:await token(),body:{test:true,lang:LANG}});toast("Notification de test envoyée")}
   catch(ex){toast("Test impossible : "+(ex.message||"erreur"))}
 });
 // garder l'abonnement à jour côté serveur (il peut changer)
@@ -2899,21 +3130,21 @@ const fmtDay=s=>{const d=new Date(s);return `${d.getDate()} ${MO[d.getMonth()]} 
 const DF=()=>data.docFolders||(data.docFolders=[]);
 let dfQ="",dfEditing=false,dvOpen=false;
 const folderOf=d=>d.folder&&DF().find(f=>f.id===d.folder);
-const curFolder=()=>{const f=DF().find(x=>x.id===data.ui.docFolder);return f&&(!f.locked||dvOpen)?f:null};
-const docHidden=d=>{const f=folderOf(d);return !!(f&&f.locked&&!dvOpen)};
+const curFolder=()=>DF().find(x=>x.id===data.ui.docFolder)||null;
+const docHidden=()=>false; // v22 : tout l'onglet est protégé par le code, plus de classeur verrouillé à part
 function renderDocs(){
-  if(!$("docList"))return;
+  if(!$("docList"))return;renderDocLock();
   const all=docsArr(),q=docQ.trim(),cf=curFolder(),fq=dfQ.trim();
   const alpha=data.prefs.docSort==="alpha";
   // classeurs
   const cnt=id=>all.filter(d=>d.folder===id).length;
   $("docFolders").innerHTML=`<button class="pill" data-dfold="all" aria-pressed="${!cf}">${L("Tous")}</button>`+
-    DF().map(f=>`<button class="pill" data-dfold="${f.id}" aria-pressed="${cf&&cf.id===f.id}">${f.locked?(dvOpen?"🔓":"🔒"):"📁"} ${esc(f.name)} <span class="cnt">${f.locked&&!dvOpen?"":cnt(f.id)||""}</span></button>`).join("")+
+    DF().map(f=>`<button class="pill" data-dfold="${f.id}" aria-pressed="${cf&&cf.id===f.id}">📁 ${esc(f.name)} <span class="cnt">${cnt(f.id)||""}</span></button>`).join("")+
     `<button class="pill add" data-dfoldnew="1">+ ${L("Classeur")}</button>`;
   $("folderBar").hidden=!cf;
   if(cf)$("folderBar").innerHTML=dfEditing?`<form id="folderRename" style="display:flex;gap:8px;width:100%"><input id="folderRenIn" value="${esc(cf.name)}" aria-label="${L("Nouveau nom")}" autocomplete="off"><button class="btn" type="submit">OK</button></form>`
-    :`<div class="grow"><b class="notr">📁 ${esc(cf.name)}</b><div class="small muted">${cnt(cf.id)} ${L(cnt(cf.id)>1?"documents":"document")}${cf.locked?" · 🔒 "+L("protégé par code"):""}</div></div>
-      <button class="mini" data-dflock="1">${cf.locked?"🔓 "+L("Retirer le code"):"🔒 "+L("Protéger")}</button><button class="mini" data-dfren="1">${L("Renommer")}</button><button class="x" data-dfdel="1" aria-label="${L("Supprimer le classeur")}">×</button>
+    :`<div class="grow"><b class="notr">📁 ${esc(cf.name)}</b><div class="small muted">${cnt(cf.id)} ${L(cnt(cf.id)>1?"documents":"document")}</div></div>
+      <button class="mini" data-dfren="1">${L("Renommer")}</button><button class="x" data-dfdel="1" aria-label="${L("Supprimer le classeur")}">×</button>
       <input type="search" class="search" id="folderSearch" style="margin:8px 0 0;width:100%" placeholder="${L("Rechercher dans ce classeur")}" aria-label="${L("Rechercher dans ce classeur")}" value="${esc(dfQ)}" autocomplete="off">`;
   // liste : recherche globale (partout) > classeur ouvert (avec sa recherche) > tous
   let list,scope;
@@ -2927,7 +3158,7 @@ function renderDocs(){
   const SHARE=`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7.5 7.5L12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>`;
   $("docList").innerHTML=list.length?list.map(d=>{
     const st=docBusy.has(d.id)?L("Envoi…"):d.up?"":L("Sur cet appareil seulement"),f=folderOf(d);
-    return `<div class="doc" data-doc="${d.id}"><button class="doc-ic" data-docopen="${d.id}" aria-label="Ouvrir">PDF</button>
+    return `<div class="doc" data-doc="${d.id}">${DF().length?`<button class="grip" data-dgrip="${d.id}" aria-label="${L("Glisser vers un classeur")}" title="${L("Glisser vers un classeur")}">${GRIP}</button>`:""}<button class="doc-ic" data-docopen="${d.id}" aria-label="Ouvrir">PDF</button>
       <button class="doc-open" data-docopen="${d.id}"><b>${esc(d.title)}</b><span class="small muted">${f&&scope==="all"?`📁 <span class="notr">${esc(f.name)}</span> · `:""}${d.pages?`${d.pages} ${L(d.pages>1?"pages":"page")} · `:""}${fmtSize(d.size||0)} · ${fmtDay(d.createdAt)}${st?` · <span style="color:var(--warn)">${st}</span>`:""}</span></button>
       <button class="pen" data-docshare="${d.id}" aria-label="Partager ou enregistrer">${SHARE}</button>
       <button class="pen" data-edit="doc:${d.id}" aria-label="Modifier">${PEN}</button></div>`}).join("")
@@ -2941,21 +3172,40 @@ async function dvTry(code){try{const v=data.docVault,key=await pinKey(code,v.sal
 async function dvUnlock(){
   if(dvOpen)return true;
   if(!(data.docVault&&data.docVault.chk)){
-    const code=await askPin({mode:"new",head:"Documents",sub:"Choisis le code qui protège tes classeurs. Tes documents ne seront jamais effacés si tu l'oublies."});if(!code)return false;
+    const code=await askPin({mode:"new",head:"Documents",sub:"Choisis le code qui protège tes documents. Ils ne seront jamais effacés si tu l'oublies."});if(!code)return false;
     const salt=b64e(crypto.getRandomValues(new Uint8Array(16))),key=await pinKey(code,salt,PIN_ITER);
     data.docVault={id:uid(),salt,iter:PIN_ITER,chk:await encJ(key,{ok:"sidnote-docs"}),createdAt:new Date().toISOString()};
     dvOpen=true;save();toast("Code enregistré");await recEnable(data.docVault,code);return true}
   const v=data.docVault,code=await askPin({mode:"unlock",head:"Documents",sub:"Entre le code de tes documents.",verify:dvTry,rec:v.rec,forgot:dvReset,
-    forgotText:"La récupération n'était pas activée. Retirer le code de tous les classeurs (tes documents sont gardés) ? Touche encore pour confirmer."});
+    forgotText:"La récupération n'était pas activée. Choisir un nouveau code (tes documents sont gardés) ? Touche encore pour confirmer."});
   if(code&&dvOpen)recOffer(v,code);return !!code&&dvOpen;
 }
-function dvReset(){DF().forEach(f=>delete f.locked);data.docVault=null;dvOpen=false;save();renderDocs();toast("Code retiré : tes documents sont tous visibles")}
-function dvLock(){if(!dvOpen)return;dvOpen=false;if(!curFolder())data.ui.docFolder="all";renderDocs()}
+// l'onglet Documents s'ouvre avec le code, comme Mots de passe
+function renderDocLock(){const lk=!dvOpen;$("v-docs").classList.toggle("is-locked",lk);$("docLocked").hidden=!lk}
+async function docsEnter(){renderDocLock();if(dvOpen){renderDocs();return}if(await dvUnlock()){renderDocLock();renderDocs()}}
+$("docUnlockBtn").addEventListener("click",docsEnter);
+// glisser un document (poignée ⠿) sur un classeur pour l'y ranger ; sur « Tous » pour le sortir de son classeur
+$("docList").addEventListener("pointerdown",e=>{const g=e.target.closest("[data-dgrip]");if(!g)return;e.preventDefault();
+  const d=docsArr().find(x=>x.id===g.dataset.dgrip),row=g.closest(".doc");if(!d)return;
+  const ghost=document.createElement("div");ghost.className="doc-ghost";ghost.textContent="📄 "+d.title;document.body.appendChild(ghost);row.classList.add("dragging");
+  try{g.setPointerCapture(e.pointerId)}catch(x){}if(navigator.vibrate)navigator.vibrate(10);
+  let over=null;const pos=ev=>{ghost.style.left=(ev.clientX+12)+"px";ghost.style.top=(ev.clientY-20)+"px";
+    const el=document.elementFromPoint(ev.clientX,ev.clientY),c=el&&el.closest("#docFolders [data-dfold]");
+    if(c!==over){if(over)over.classList.remove("drop");over=c;if(over)over.classList.add("drop")}
+    if(ev.clientY<90)window.scrollBy(0,-12)};pos(e);
+  const up=()=>{g.removeEventListener("pointermove",pos);g.removeEventListener("pointerup",up);g.removeEventListener("pointercancel",up);ghost.remove();row.classList.remove("dragging");
+    if(over){const id=over.dataset.dfold,f=DF().find(x=>x.id===id);over.classList.remove("drop");
+      if(id==="all"){if(d.folder){delete d.folder;d.mod=Date.now();save();toast("Document sorti de son classeur")}}
+      else if(f&&d.folder!==f.id){d.folder=f.id;d.mod=Date.now();save();toast(`${L("Rangé dans")} « ${f.name} »`)}}
+    renderDocs()};
+  g.addEventListener("pointermove",pos);g.addEventListener("pointerup",up);g.addEventListener("pointercancel",up)});
+// code oublié sans récupération : on choisit un nouveau code, les documents sont gardés
+function dvReset(){data.docVault=null;dvOpen=false;save();toast("Code effacé : choisis-en un nouveau. Tes documents sont gardés.");docsEnter()}
+function dvLock(){if(!dvOpen)return;dvOpen=false;renderDocLock()}
 document.addEventListener("visibilitychange",()=>{if(document.hidden)dvLock()});
 $("docFolders").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b)return;
   if(b.dataset.dfoldnew){const f=$("folderForm");f.hidden=!f.hidden;if(!f.hidden)$("folderIn").focus();return}
-  if(b.dataset.dfold){const id=b.dataset.dfold,f=DF().find(x=>x.id===id);
-    if(f&&f.locked&&!dvOpen&&!(await dvUnlock()))return;
+  if(b.dataset.dfold){const id=b.dataset.dfold;
     data.ui.docFolder=id;dfQ="";dfEditing=false;docQ="";$("docSearch").value="";saveUI();renderDocs()}});
 $("folderForm").addEventListener("submit",e=>{e.preventDefault();const v=$("folderIn").value.trim().replace(/\s+/g," ");if(!v)return;
   if(DF().some(f=>norm(f.name)===norm(v))){toast("Ce classeur existe déjà");return}
@@ -2964,8 +3214,6 @@ $("folderBar").addEventListener("input",e=>{if(e.target.id==="folderSearch"){dfQ
 $("folderBar").addEventListener("submit",e=>{e.preventDefault();const f=curFolder(),v=$("folderRenIn").value.trim();if(f&&v){f.name=v;save()}dfEditing=false;renderDocs()});
 $("folderBar").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b)return;const f=curFolder();if(!f)return;
   if(b.dataset.dfren){dfEditing=true;renderDocs();const i=$("folderRenIn");i.focus();i.select()}
-  else if(b.dataset.dflock){if(f.locked){delete f.locked;save();renderDocs();toast("Code retiré de ce classeur");return}
-    if(!(await dvUnlock()))return;f.locked=true;save();renderDocs();toast("Classeur protégé par code")}
   else if(b.dataset.dfdel)armDelete(b,()=>{tomb(f.id);docsArr().forEach(d=>{if(d.folder===f.id)delete d.folder});data.docFolders=DF().filter(x=>x!==f);data.ui.docFolder="all";saveUI();save();renderDocs();toast("Classeur supprimé, ses documents sont gardés")});
 });
 $("docSearch").addEventListener("input",e=>{docQ=e.target.value;renderDocs()});
@@ -3100,7 +3348,7 @@ $("scanSave").addEventListener("click",async()=>{
 /* ---------- récupération d'un code oublié, grâce au mot de passe du compte ---------- */
 // Quand on choisit un code (mots de passe, notes secrètes, documents), on le garde aussi chiffré avec le mot de passe
 // du compte Sid'note (v.rec). Code oublié → on redemande le mot de passe du compte → le code est retrouvé, rien n'est effacé.
-let recRes=null,recCheck=null;
+let recRes=null,recCheck=null;const recAsked=new Set();
 function askAccountPw(title,text,check,laterLabel){return new Promise(res=>{
   recRes=res;recCheck=check;$("recTitle").textContent=L(title);$("recText").textContent=L(text);$("recPw").value="";$("recErr").hidden=true;
   $("recLater").textContent=L(laterLabel||"Annuler");$("recOk").disabled=false;$("recSheet").hidden=false;setTimeout(()=>$("recPw").focus(),80)})}
@@ -3112,6 +3360,7 @@ $("recLater").addEventListener("click",()=>recEnd(null));$("recClose").addEventL
 const accEmail=()=>session.email||`${slug(session.name||"")}@${EMAIL_DOMAIN}`;
 // active la récupération pour un coffre (après création du code, ou plus tard)
 async function recEnable(v,code){
+  if(v&&v.id)recAsked.add(v.id); // une seule proposition par session, même si on répond « Plus tard »
   const pw=await askAccountPw("Ne perds jamais ton code","Entre le mot de passe de ton compte Sid'note : si tu oublies ce code un jour, il te suffira de ce mot de passe pour le retrouver.",
     async pw=>{try{await api("/auth/v1/token?grant_type=password",{method:"POST",body:{email:accEmail(),password:pw}});return null}
       catch(ex){return ex instanceof TypeError?"Pas de connexion internet. Réessaie quand tu es connecté.":"Mot de passe incorrect."}},"Plus tard");
@@ -3119,7 +3368,6 @@ async function recEnable(v,code){
   const salt=b64e(crypto.getRandomValues(new Uint8Array(16))),key=await pinKey(pw,salt,PIN_ITER);
   v.rec={salt,...await encJ(key,{pin:code})};save();toast("Récupération du code activée");return true;
 }
-const recAsked=new Set();
 function recOffer(v,code){if(v&&!v.rec&&!recAsked.has(v.id)){recAsked.add(v.id);recEnable(v,code)}}
 // retrouve le code oublié (null si annulé)
 async function recRecover(v){let code=null;
@@ -3571,6 +3819,7 @@ $("nuForm").addEventListener("submit",async e=>{
       target_weight_kg:target||null,timeframe_weeks:weeks||null,notes:profile.notes}});
     const n=NU();n.profile=profile;n.plan={bmr:r0(r.bmr_kcal),tdee:r0(r.tdee_kcal),kcal:r0(r.target_kcal),p:r0(r.protein_g),c:r0(r.carbs_g),f:r0(r.fat_g),
       text:String(r.explanation||""),warn:(r.warnings||[]).map(String),at:new Date().toISOString()};
+    n.plan.kps={};(r.sports_kcal||[]).forEach(x=>{if(x&&x.sport)n.plan.kps[norm(x.sport)]=r0(x.kcal_per_session)});
     const wg=r.weight_goal||{};if(target)n.plan.wg={ok:wg.realistic!==false,wk:r1(wg.weekly_change_kg),weeks:r0(wg.suggested_weeks),advice:String(wg.advice||"")};
     // le poids du profil devient la première mesure du graphique
     if(!n.weights.some(w=>w.day===iso(today())))n.weights.push({id:uid(),day:iso(today()),kg:weight,upd:Date.now()});
@@ -3578,6 +3827,23 @@ $("nuForm").addEventListener("submit",async e=>{
   }catch(ex){fail(nuErrMsg(ex))}
   stop();box.remove();nuBusy="";btn.disabled=false;btn.hidden=false;
 });
+// --- sport de la semaine : le nombre de séances peut changer d'une semaine à l'autre, l'objectif suit ---
+// plan.kps = calories d'une séance par sport (donné par Claude) ; à défaut, estimation simple (6 MET × poids × durée)
+const sportKps=()=>{const n=NU(),pl=n.plan||{},p=n.profile||{},m={};(p.sports||[]).forEach(s=>{const c=(pl.kps||{})[norm(s.name)];m[s.name]=c||Math.round(6*(p.weight||70)*((s.min||60)/60))});return m};
+const wKey=d=>iso(mondayOf(parse(d)));
+function weekSports(wk){const n=NU(),p=n.profile||{},o=(n.wsports||{})[wk]||{},k=sportKps();
+  return (p.sports||[]).map(s=>({name:s.name,base:s.freq||0,count:o[s.name]!=null?o[s.name]:(s.freq||0),kps:k[s.name]||0}))}
+function dayTarget(d){const pl=NU().plan||{},delta=Math.round(weekSports(wKey(d)).reduce((a,s)=>a+(s.count-s.base)*s.kps,0)/7);
+  return{kcal:(pl.kcal||0)+delta,p:pl.p||0,c:Math.max(0,(pl.c||0)+Math.round(delta/4)),f:pl.f||0,delta}}
+function renderNuWeek(){
+  const ws=weekSports(wKey(nuDay)),el=$("nuWeek");el.hidden=!ws.length;if(!ws.length)return;
+  const m=parse(wKey(nuDay)),e=new Date(m);e.setDate(e.getDate()+6),t=dayTarget(nuDay);
+  el.innerHTML=`<div class="nu-week-h"><b>🏃 ${L("Ton sport cette semaine")}</b><span class="small muted">${m.getDate()} ${MO[m.getMonth()]} – ${e.getDate()} ${MO[e.getMonth()]}</span></div>`+
+    ws.map(s=>`<div class="nu-wsp"><div class="grow"><b class="notr">${esc(s.name)}</b><span class="small muted">≈ ${s.kps} kcal ${L("par séance")}${s.count!==s.base?` · ${L("d'habitude")} ${s.base}`:""}</span></div><div class="stepper"><button type="button" data-ws="${esc(s.name)}" data-d="-1" aria-label="${L("Une séance de moins")}">−</button><output>${s.count}</output><button type="button" data-ws="${esc(s.name)}" data-d="1" aria-label="${L("Une séance de plus")}">+</button></div></div>`).join("")+
+    `<div class="small">${L("Objectif par jour cette semaine")} : <b>${fmtFull(t.kcal)} kcal</b>${t.delta?` <span class="muted">(${t.delta>0?"+":""}${t.delta} ${L("selon ton sport")})</span>`:""}</div>`;
+}
+$("nuWeek").addEventListener("click",e=>{const b=e.target.closest("[data-ws]");if(!b)return;const n=NU(),wk=wKey(nuDay);n.wsports=n.wsports||{};const o=n.wsports[wk]=n.wsports[wk]||{};
+  const cur=weekSports(wk).find(s=>s.name===b.dataset.ws);if(!cur)return;o[cur.name]=Math.max(0,Math.min(21,cur.count+ +b.dataset.d));n.upd=Date.now();save();renderNutri()});
 // --- journée ---
 const dayLog=d=>NU().log.filter(x=>x.day===d).sort((a,b)=>(a.at||"").localeCompare(b.at||""));
 const sumOf=list=>list.reduce((s,x)=>({kcal:s.kcal+(+x.kcal||0),p:s.p+(+x.p||0),c:s.c+(+x.c||0),f:s.f+(+x.f||0)}),{kcal:0,p:0,c:0,f:0});
@@ -3597,14 +3863,14 @@ function renderNutri(){
   $("nuProfile").hidden=has&&!nuEditing;$("nuMain").hidden=!has||nuEditing;$("nuCancel").hidden=!has;
   $("nuProfSub").textContent=L(has?"Modifie tes infos : tes besoins sont recalculés.":"Présente-toi en quelques infos : on calcule ton métabolisme, tes besoins du jour et tes macros.");
   if(!has||nuEditing){if(!nuDraft)nuFillForm();return}
-  const pl=n.plan,list=dayLog(nuDay),s=sumOf(list);
+  const pl=n.plan,list=dayLog(nuDay),s=sumOf(list),tg=dayTarget(nuDay);
   $("nuGoalCard").innerHTML=nuGoalHtml();$("nuGoalCard").hidden=!pl.wg||(pl.wg.ok&&pl.wgSeen);$("nuGoalCard").classList.toggle("ok",!!(pl.wg&&pl.wg.ok));
   $("nuDayTxt").textContent=nuDayLabel(nuDay);$("nuDate").value=nuDay;$("nuNext").disabled=nuDay>=iso(today());
-  const pct=Math.min(1,s.kcal/pl.kcal);$("nuRing").style.strokeDashoffset=326.73*(1-pct);
-  $("nuRing").closest(".nu-ring").classList.toggle("over",s.kcal>pl.kcal*1.05);
+  const pct=Math.min(1,s.kcal/tg.kcal);$("nuRing").style.strokeDashoffset=326.73*(1-pct);
+  $("nuRing").closest(".nu-ring").classList.toggle("over",s.kcal>tg.kcal*1.05);
   $("nuKcal").textContent=r0(s.kcal);
-  $("nuKcalOf").innerHTML=`${L("sur")} ${pl.kcal} kcal<br>`+(s.kcal>pl.kcal?`<b style="color:var(--late)">+${r0(s.kcal-pl.kcal)}</b>`:`${L("reste")} ${r0(pl.kcal-s.kcal)}`);
-  $("nuMacros").innerHTML=MAC.map(([k,l,v])=>`<div class="nu-m"><div class="top"><b><span class="mdot" style="--c:var(${v})"></span>${L(l)}</b><span>${r0(s[k])} / ${pl[k]} g</span></div><div class="bar"><i style="--c:var(${v});width:${Math.min(100,pl[k]?s[k]/pl[k]*100:0)}%"></i></div></div>`).join("");
+  $("nuKcalOf").innerHTML=`${L("sur")} ${tg.kcal} kcal<br>`+(s.kcal>tg.kcal?`<b style="color:var(--late)">+${r0(s.kcal-tg.kcal)}</b>`:`${L("reste")} ${r0(tg.kcal-s.kcal)}`);
+  $("nuMacros").innerHTML=MAC.map(([k,l,v])=>`<div class="nu-m"><div class="top"><b><span class="mdot" style="--c:var(${v})"></span>${L(l)}</b><span>${r0(s[k])} / ${tg[k]} g</span></div><div class="bar"><i style="--c:var(${v});width:${Math.min(100,tg[k]?s[k]/tg[k]*100:0)}%"></i></div></div>`).join("");
   $("nuLogH").textContent=nuDay===iso(today())?L("Ma journée"):L("Ce jour-là");
   // plats du jour : une carte par plat, ses aliments dedans
   const groups=[];list.forEach(x=>{const g=x.grp||x.id;let G=groups.find(y=>y.g===g);if(!G){G={g,items:[],name:x.gname||x.name,em:x.gem||x.em||"🍽️",at:x.at};groups.push(G)}G.items.push(x)});
@@ -3615,9 +3881,7 @@ function renderNutri(){
       ${macroHtml(t)}${G.items.length===1?(G.items[0].qty?`<div class="dish-note notr">${esc(G.items[0].qty)}</div>`:""):`<div class="dish-items">${G.items.map(x=>`<div class="dish-it"><span class="em">${x.em||"•"}</span><div class="grow"><b class="notr">${esc(x.name)}</b>${x.qty?`<span class="small muted notr">${esc(x.qty)}</span>`:""}</div><span class="k">${r0(x.kcal)} kcal</span><button class="pen" data-nuedit="${x.id}" aria-label="${L("Modifier")}">${PEN}</button><button class="x" data-nudel="${x.id}" aria-label="${L("Supprimer")}">×</button></div>`).join("")}</div>`}</details>`}).join("")
     :`<div class="card"><div class="empty">${L(nuDay===iso(today())?"Rien pour l'instant. Écris ce que tu manges ci-dessus, ou prends ton plat en photo.":"Rien d'enregistré ce jour-là. Tu peux encore le compléter.")}</div></div>`;
   groups.forEach(G=>loadThumb(G.g));
-  renderNuResult();renderNuPlan();renderNuMenu();
-  const mp=n.menuPrefs||{};$("nuMeals").textContent=mp.meals||3;
-  if(document.activeElement!==$("nuInclude"))$("nuInclude").value=mp.include||"";if(document.activeElement!==$("nuExclude"))$("nuExclude").value=mp.exclude||"";
+  renderNuResult();renderNuPlan();renderNuMenu();renderMenuForm();renderNuWeek();
 }
 // objectif de poids : chemin conseillé, et alerte si le délai choisi n'est pas réaliste
 function nuGoalHtml(){
@@ -3710,9 +3974,23 @@ function nuOpenSheet(id){
   const d=x?new Date(x.at):null;
   $("nuEName").value=x?x.name:($("nuAsk").value.trim());$("nuEQty").value=x?x.qty:"";$("nuETime").value=d?`${two(d.getHours())}:${two(d.getMinutes())}`:"";
   $("nuEKcal").value=x?x.kcal:"";$("nuEP").value=x?x.p:"";$("nuEC").value=x?x.c:"";$("nuEF").value=x?x.f:"";
+  nuEBase=x?{qty:x.qty,kcal:x.kcal,p:x.p,c:x.c,f:x.f}:null;$("nuEHint").hidden=true;
   $("nuSheet").hidden=false;
 }
 $("nuManual").addEventListener("click",()=>nuOpenSheet(null));
+// quantité lue dans un texte : « 1/3 de baguette » → 0,333 ; « 150 g » → 150 ; « ½ » → 0,5 ; « 2 oeufs » → 2
+function qtyNum(t){t=String(t||"").replace(/½/g,"1/2").replace(/¼/g,"1/4").replace(/¾/g,"3/4").replace(",",".");
+  let m=t.match(/(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)/);if(m&&+m[2])return +m[1]/+m[2];m=t.match(/\d+(?:\.\d+)?/);return m?+m[0]:0}
+let nuEBase=null;
+$("nuEQty").addEventListener("input",()=>{if(!nuEBase)return;const a=qtyNum(nuEBase.qty),b=qtyNum($("nuEQty").value),h=$("nuEHint");
+  if(a>0&&b>0){const k=b/a;$("nuEKcal").value=r0(nuEBase.kcal*k);$("nuEP").value=r1(nuEBase.p*k);$("nuEC").value=r1(nuEBase.c*k);$("nuEF").value=r1(nuEBase.f*k);
+    h.hidden=k===1;h.innerHTML=`✓ ${L("Calories recalculées selon la quantité")}`}
+  else{h.hidden=false;h.innerHTML=`${L("Quantité sans chiffre : je ne peux pas recalculer seul.")}<button type="button" class="mini" id="nuERecalc">↻ ${L("Recalculer")}</button>`}});
+$("nuEHint").addEventListener("click",async e=>{if(!e.target.closest("#nuERecalc")||nuBusy)return;const q=`${$("nuEQty").value.trim()} ${$("nuEName").value.trim()}`.trim();if(!q)return;
+  nuBusy="recalc";e.target.innerHTML=`<span class="spin"></span>`;
+  try{const r=await nuCall("aliment",{text:q}),t=(r.items||[]).reduce((s,x)=>({k:s.k+(+x.kcal||0),p:s.p+(+x.protein_g||0),c:s.c+(+x.carbs_g||0),f:s.f+(+x.fat_g||0)}),{k:0,p:0,c:0,f:0});
+    $("nuEKcal").value=r0(t.k);$("nuEP").value=r1(t.p);$("nuEC").value=r1(t.c);$("nuEF").value=r1(t.f);$("nuEHint").innerHTML=`✓ ${L("Calories recalculées selon la quantité")}`}
+  catch(ex){toast(nuErrMsg(ex))}nuBusy=""});
 $("nuSheetClose").addEventListener("click",()=>{$("nuSheet").hidden=true});
 $("nuSheet").addEventListener("click",e=>{if(e.target.id==="nuSheet")$("nuSheet").hidden=true});
 $("nuEntryForm").addEventListener("submit",e=>{
@@ -3727,33 +4005,87 @@ $("nuEntryForm").addEventListener("submit",e=>{
 $("nuEDel").addEventListener("click",e=>{const b=e.currentTarget;if(!nuEditId)return;
   if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent=L("Confirmer la suppression");return}
   tomb(nuEditId);NU().log=NU().log.filter(x=>x.id!==nuEditId);save();$("nuSheet").hidden=true;renderNutri();toast("Supprimé")});
-// --- menus sur mesure ---
-const nuMP=()=>{const n=NU();n.menuPrefs=n.menuPrefs||{meals:3,include:"",exclude:""};return n.menuPrefs};
-$("nuMenuSec").addEventListener("click",e=>{const b=e.target.closest("[data-meals]");if(!b)return;const mp=nuMP();mp.meals=Math.min(8,Math.max(1,(mp.meals||3)+ +b.dataset.meals));$("nuMeals").textContent=mp.meals;NU().upd=Date.now();save()});
+// --- menus sur mesure : journée complète ou un seul repas, calories précises par repas, menu modifiable ---
+const SLOT={breakfast:["Petit-déjeuner","🥐",25],lunch:["Déjeuner","🥗",35],snack:["Collation","🍎",10],dinner:["Dîner","🍲",30]};
+const slotsFor=n=>({1:["lunch"],2:["lunch","dinner"],3:["breakfast","lunch","dinner"],4:["breakfast","lunch","snack","dinner"],5:["breakfast","snack","lunch","snack","dinner"]})[n]||["breakfast","snack","lunch","snack","dinner",...Array(n-5).fill("snack")];
+const splitKcal=(total,slots)=>{const w=slots.map(s=>SLOT[s][2]),t=w.reduce((a,b)=>a+b,0);return w.map(x=>Math.round(total*x/t/10)*10)};
+const nuMP=()=>{const n=NU();n.menuPrefs=n.menuPrefs||{};const m=n.menuPrefs;m.meals=m.meals||3;m.type=m.type||"day";m.one=m.one||{};return m};
+const mpKcals=()=>{const mp=nuMP(),sl=slotsFor(mp.meals);return mp.kcals&&mp.kcals.length===sl.length?mp.kcals:splitKcal(dayTarget(iso(today())).kcal,sl)};
+const oneKcal=slot=>{const mp=nuMP();return mp.one[slot]||splitKcal(dayTarget(iso(today())).kcal,slotsFor(4))[["breakfast","lunch","snack","dinner"].indexOf(slot)]};
+function renderMenuForm(){
+  const mp=nuMP(),day=mp.type==="day";
+  document.querySelectorAll("#nuMType button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mtype===mp.type));
+  $("nuMDay").hidden=!day;$("nuMOne").hidden=day;$("nuMeals").textContent=mp.meals;
+  $("nuMenuBtn").textContent=L(day?"Générer ma journée":{breakfast:"Générer un petit-déjeuner",lunch:"Générer un déjeuner",snack:"Générer une collation",dinner:"Générer un dîner"}[mp.type]);
+  if(day){const sl=slotsFor(mp.meals),k=mpKcals(),tot=k.reduce((a,b)=>a+b,0),tg=dayTarget(iso(today())).kcal;
+    if(!$("nuMealKcal").contains(document.activeElement))$("nuMealKcal").innerHTML=sl.map((s,i)=>`<div class="row"><span class="em">${SLOT[s][1]}</span><span class="grow">${L(SLOT[s][0])}</span><span class="nu-in"><input data-mk="${i}" type="text" inputmode="numeric" maxlength="4" value="${k[i]}" aria-label="${L("Calories")} ${L(SLOT[s][0])}"><i>kcal</i></span></div>`).join("");
+    const diff=tot-tg;$("nuMkTot").innerHTML=`${L("Total")} <b>${fmtFull(tot)}</b> / ${fmtFull(tg)} kcal${Math.abs(diff)>50?` <span style="color:var(--warn)">(${diff>0?"+":""}${fmtFull(diff)})</span> <button type="button" class="mini" data-mkreset="1">${L("Répartir l'objectif")}</button>`:" ✓"}`}
+  else if(document.activeElement!==$("nuOneKcal"))$("nuOneKcal").value=oneKcal(mp.type);
+  if(document.activeElement!==$("nuInclude"))$("nuInclude").value=mp.include||"";if(document.activeElement!==$("nuExclude"))$("nuExclude").value=mp.exclude||"";
+}
+$("nuMType").addEventListener("click",e=>{const b=e.target.closest("[data-mtype]");if(!b)return;nuMP().type=b.dataset.mtype;NU().upd=Date.now();save();renderMenuForm()});
+$("nuMenuSec").addEventListener("click",e=>{const b=e.target.closest("[data-meals],[data-mkreset]");if(!b)return;const mp=nuMP();
+  if(b.dataset.mkreset)mp.kcals=null;else{mp.meals=Math.min(8,Math.max(1,mp.meals+ +b.dataset.meals));mp.kcals=null}
+  NU().upd=Date.now();save();$("nuMealKcal").innerHTML="";renderMenuForm()});
+$("nuMealKcal").addEventListener("change",e=>{const i=e.target.dataset.mk;if(i===undefined)return;const mp=nuMP(),k=mpKcals().slice();k[+i]=Math.max(0,Math.round(numIn(e.target.value)));mp.kcals=k;NU().upd=Date.now();save();renderMenuForm()});
+$("nuOneKcal").addEventListener("change",e=>{const mp=nuMP();mp.one[mp.type]=Math.max(0,Math.round(numIn(e.target.value)));NU().upd=Date.now();save()});
 ["nuInclude","nuExclude"].forEach(id=>$(id).addEventListener("change",e=>{nuMP()[id==="nuInclude"?"include":"exclude"]=e.target.value.trim();NU().upd=Date.now();save()}));
+// demande à Claude un ou plusieurs repas (calories précises par repas)
+async function genMeals(slots,kcals){
+  const n=NU(),mp=nuMP(),t=dayTarget(iso(today())),tot=kcals.reduce((a,b)=>a+b,0)||1,k=tot/t.kcal;
+  const r=await nuCall("menu",{data:{meal_type:slots.length===1&&mp.type!=="day"?slots[0]:"day",meals:slots.map((s,i)=>({slot:s,name:L(SLOT[s][0]),kcal:kcals[i]})),
+    target_kcal:tot,protein_g:r0(t.p*k),carbs_g:r0(t.c*k),fat_g:r0(t.f*k),must_include:mp.include||"",avoid:mp.exclude||"",goal:n.profile&&n.profile.goal,notes:n.profile&&n.profile.notes}});
+  const meals=(r.meals||[]).map((m,i)=>({slot:slots[i]||slots[slots.length-1],target:kcals[i]||kcals[kcals.length-1],name:String(m.name||""),em:String(m.emoji||"🍽️"),
+    items:(m.items||[]).map(x=>({name:String(x.food||""),em:String(x.emoji||""),g:r0(x.grams),qty:r0(x.grams)+" g",kcal:r0(x.kcal),p:r1(x.protein_g),c:r1(x.carbs_g),f:r1(x.fat_g)}))}));
+  return{meals,tips:String(r.tips||"")};
+}
 $("nuMenuBtn").addEventListener("click",async()=>{
-  if(nuBusy||!nutriAllowed())return;const n=NU(),mp=nuMP(),pl=n.plan;mp.include=$("nuInclude").value.trim();mp.exclude=$("nuExclude").value.trim();
+  if(nuBusy||!nutriAllowed())return;const n=NU(),mp=nuMP();mp.include=$("nuInclude").value.trim();mp.exclude=$("nuExclude").value.trim();
+  if(mp.type!=="day")mp.one[mp.type]=Math.max(0,Math.round(numIn($("nuOneKcal").value)))||oneKcal(mp.type);
+  const slots=mp.type==="day"?slotsFor(mp.meals):[mp.type],kcals=mp.type==="day"?mpKcals():[mp.one[mp.type]];
   nuBusy="menu";const btn=$("nuMenuBtn");btn.disabled=true;const stop=nuLoading($("nuMenu"),["Préparation du menu…","Choix des recettes…","Calcul des grammages…","Équilibrage des macros…"]);
-  try{const r=await nuCall("menu",{data:{target_kcal:pl.kcal,protein_g:pl.p,carbs_g:pl.c,fat_g:pl.f,meals_per_day:mp.meals||3,must_include:mp.include,avoid:mp.exclude,
-      goal:n.profile&&n.profile.goal,notes:n.profile&&n.profile.notes}});
-    n.menu={meals:(r.meals||[]).map(m=>({name:String(m.name||""),em:String(m.emoji||"🍽️"),kcal:r0(m.kcal),p:r1(m.protein_g),c:r1(m.carbs_g),f:r1(m.fat_g),
-      items:(m.items||[]).map(x=>({name:String(x.food||""),em:String(x.emoji||""),qty:r0(x.grams)+" g",kcal:r0(x.kcal),p:r1(x.protein_g),c:r1(x.carbs_g),f:r1(x.fat_g)}))})),
-      total:{kcal:r0(r.total&&r.total.kcal),p:r1(r.total&&r.total.protein_g),c:r1(r.total&&r.total.carbs_g),f:r1(r.total&&r.total.fat_g)},tips:String(r.tips||""),at:new Date().toISOString()};
+  try{const g=await genMeals(slots,kcals);
+    if(mp.type==="day"||!n.menu||!n.menu.meals)n.menu={meals:g.meals,tips:g.tips,at:new Date().toISOString()};
+    else{const i=n.menu.meals.findIndex(m=>m.slot===mp.type);if(i>=0)n.menu.meals[i]=g.meals[0];else n.menu.meals.push(g.meals[0]);n.menu.at=new Date().toISOString()}
     n.upd=Date.now();save();toast("Menu prêt");
   }catch(ex){toast(nuErrMsg(ex))}
   stop();nuBusy="";btn.disabled=false;renderNuMenu();
 });
+let meEdit=null,meAdd=null;
 function renderNuMenu(){
   if(nuBusy==="menu")return;
-  const m=NU().menu;if(!m||!m.meals){$("nuMenu").innerHTML="";return}
-  $("nuMenu").innerHTML=`<div style="margin-top:12px">`+boxes([[m.total.kcal,"kcal"],[m.total.p+" g","Protéines","--m-p"],[m.total.c+" g","Glucides","--m-c"],[m.total.f+" g","Lipides","--m-f"]])+`</div>`+
-    m.meals.map((ml,i)=>`<div class="dish"><div class="dish-h"><span class="dish-ic">${ml.em||"🍽️"}</span><span class="dish-t"><b class="notr">${esc(ml.name)}</b><span class="small muted">${ml.items.length} ${L(ml.items.length>1?"aliments":"aliment")}</span></span><span class="dish-kcal">${ml.kcal}<small>kcal</small></span></div>
-      ${macroHtml(ml)}<div class="dish-items">${ml.items.map(x=>`<div class="dish-it"><span class="em">${x.em||"•"}</span><div class="grow"><b class="notr">${esc(x.name)}</b><span class="small muted">${esc(x.qty)}</span></div><span class="k">${x.kcal} kcal</span></div>`).join("")}</div>
-      <div class="dish-act" style="grid-template-columns:1fr"><button type="button" class="btn ghost" data-numeal="${i}">+ ${L("Ajouter à ma journée")}</button></div></div>`).join("")+
+  const m=NU().menu;if(!m||!m.meals||!m.meals.length){$("nuMenu").innerHTML="";return}
+  m.meals.forEach(ml=>{const s=sumOf(ml.items);Object.assign(ml,{kcal:r0(s.kcal),p:r1(s.p),c:r1(s.c),f:r1(s.f)})});
+  const T=sumOf(m.meals);
+  $("nuMenu").innerHTML=`<div style="margin-top:12px">`+boxes([[r0(T.kcal),"kcal"],[r1(T.p)+" g","Protéines","--m-p"],[r1(T.c)+" g","Glucides","--m-c"],[r1(T.f)+" g","Lipides","--m-f"]])+`</div>`+
+    m.meals.map((ml,i)=>`<div class="dish"><div class="dish-h"><span class="dish-ic">${ml.em||"🍽️"}</span><span class="dish-t"><b class="notr">${esc(ml.name)}</b><span class="small muted">${L(SLOT[ml.slot]?SLOT[ml.slot][0]:"Repas")}${ml.target?` · ${L("objectif")} ${ml.target} kcal`:""}</span></span><span class="dish-kcal">${ml.kcal}<small>kcal</small></span><button type="button" class="x" data-medel="${i}" aria-label="${L("Retirer ce repas")}">×</button></div>
+      ${macroHtml(ml)}<div class="dish-items">${ml.items.map((x,j)=>`<div class="dish-it"><span class="em">${x.em||"•"}</span><div class="grow"><b class="notr">${esc(x.name)}</b>${meEdit===`${i}:${j}`?`<span class="me-qty"><input type="text" inputmode="decimal" id="meQtyIn" value="${x.g||""}" aria-label="${L("Grammes")}"> g <button type="button" class="mini" data-meqok="${i}:${j}">OK</button></span>`:`<span class="small muted notr">${esc(x.qty)}</span>`}</div><span class="k">${x.kcal} kcal</span>${x.g?`<button class="pen" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${PEN}</button>`:""}<button class="x" data-merm="${i}:${j}" aria-label="${L("Retirer")}">×</button></div>`).join("")}</div>
+      ${meAdd===i?`<form class="me-add" data-meaddf="${i}"><input id="meAddIn" placeholder="${L("Ex. 30 g d'amandes")}" autocomplete="off"><button class="btn" type="submit">OK</button></form>`:""}
+      <div class="me-act"><button type="button" class="mini" data-meadd="${i}">+ ${L("Aliment")}</button><button type="button" class="mini" data-meregen="${i}">↻ ${L("Autre idée")}</button><button type="button" class="mini" data-numeal="${i}">✓ ${L("Je l'ai mangé")}</button></div></div>`).join("")+
     (m.tips?`<p class="small muted notr" style="margin:6px 4px">${esc(m.tips)}</p>`:"");
+  if(meEdit){const i=$("meQtyIn");if(i){i.focus();i.select()}}if(meAdd!==null){const i=$("meAddIn");if(i)i.focus()}
 }
-$("nuMenu").addEventListener("click",e=>{const b=e.target.closest("[data-numeal]");if(!b)return;const ml=NU().menu.meals[+b.dataset.numeal];if(!ml)return;
-  nuAddItems(ml.items,null,{name:ml.name,em:ml.em});renderNutri();toast(`${L("Ajouté à ta journée")} · ${ml.kcal} kcal`)});
+// changer la quantité d'un aliment du menu : calories et macros suivent
+function meScale(i,j,g){const it=NU().menu.meals[i].items[j];if(!(g>0)||!it.g)return;const k=g/it.g;
+  Object.assign(it,{g:r0(g),qty:r0(g)+" g",kcal:r0(it.kcal*k),p:r1(it.p*k),c:r1(it.c*k),f:r1(it.f*k)});NU().upd=Date.now();save()}
+$("nuMenu").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b)return;const n=NU(),M=n.menu;
+  if(b.dataset.numeal){const ml=M.meals[+b.dataset.numeal];nuAddItems(ml.items,null,{name:ml.name,em:ml.em});renderNutri();toast(`${L("Ajouté à ta journée")} · ${ml.kcal} kcal`);return}
+  if(b.dataset.meq){meEdit=b.dataset.meq;meAdd=null;renderNuMenu();return}
+  if(b.dataset.meqok){const[i,j]=b.dataset.meqok.split(":").map(Number);meScale(i,j,numIn($("meQtyIn").value));meEdit=null;renderNuMenu();return}
+  if(b.dataset.merm){const[i,j]=b.dataset.merm.split(":").map(Number);M.meals[i].items.splice(j,1);if(!M.meals[i].items.length)M.meals.splice(i,1);n.upd=Date.now();save();renderNuMenu();return}
+  if(b.dataset.medel){armDelete(b,()=>{M.meals.splice(+b.dataset.medel,1);n.upd=Date.now();save();renderNuMenu()});return}
+  if(b.dataset.meadd){meAdd=+b.dataset.meadd;meEdit=null;renderNuMenu();return}
+  if(b.dataset.meregen&&!nuBusy){const i=+b.dataset.meregen,ml=M.meals[i];nuBusy="regen";b.innerHTML=`<span class="spin"></span>`;
+    try{const g=await genMeals([ml.slot||"lunch"],[ml.target||ml.kcal]);if(g.meals[0])M.meals[i]=g.meals[0];n.upd=Date.now();save();toast("Nouvelle idée prête")}catch(ex){toast(nuErrMsg(ex))}
+    nuBusy="";renderNuMenu()}
+});
+$("nuMenu").addEventListener("keydown",e=>{if(e.target.id==="meQtyIn"&&e.key==="Enter"){e.preventDefault();const[i,j]=meEdit.split(":").map(Number);meScale(i,j,numIn(e.target.value));meEdit=null;renderNuMenu()}});
+// ajouter un aliment à un repas du menu (mémoire ou analyse)
+$("nuMenu").addEventListener("submit",async e=>{const f=e.target.closest("[data-meaddf]");if(!f)return;e.preventDefault();const q=$("meAddIn").value.trim();if(!q||nuBusy)return;
+  const i=+f.dataset.meaddf;nuBusy="add";f.querySelector("button").innerHTML=`<span class="spin"></span>`;
+  try{const r=await nuCall("aliment",{text:q});(r.items||[]).forEach(x=>NU().menu.meals[i].items.push({name:String(x.name||q),em:String(x.emoji||""),g:r0(x.grams),qty:String(x.quantity||r0(x.grams)+" g"),kcal:r0(x.kcal),p:r1(x.protein_g),c:r1(x.carbs_g),f:r1(x.fat_g)}));
+    NU().upd=Date.now();save();meAdd=null}catch(ex){toast(nuErrMsg(ex))}
+  nuBusy="";renderNuMenu()});
 // minuit passé : la journée suivante commence
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&data.ui.view==="nutri"&&nuDay<iso(today())&&!nuPending){nuDay=iso(today());renderNutri()}});
 
@@ -3814,7 +4146,7 @@ function colChart(el,days,vals){
   el.querySelector("svg").addEventListener("pointerleave",ev=>{if(ev.pointerType!=="touch")grTipHide()});
 }
 function grData(days){const n=NU(),pl=n.plan||{},W=new Map(n.weights.map(w=>[w.day,w.kg]));
-  return days.map(k=>{const l=dayLog(k),s=sumOf(l);return{k,has:l.length>0,kcal:s.kcal,p:s.p,c:s.c,f:s.f,t:pl.kcal||0,kg:W.has(k)?W.get(k):null}})}
+  return days.map(k=>{const l=dayLog(k),s=sumOf(l);return{k,has:l.length>0,kcal:s.kcal,p:s.p,c:s.c,f:s.f,t:pl.kcal?dayTarget(k).kcal:0,kg:W.has(k)?W.get(k):null}})}
 function renderGraph(){
   if(!$("grMacros"))return;applySoon();
   grRange=data.ui.grRange||7;document.querySelectorAll("#grRange button").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.range===grRange));
@@ -3937,22 +4269,39 @@ const ONB_DESC={
   docs:"Range tes PDF, scanne des feuilles avec l'appareil photo et retrouve-les en un instant.",
   app:"Les étapes pour installer Sid'note sur ton écran d'accueil."};
 let onbSel={};
+const ONB_GROUP={orga:["🗓️","Organise tes journées","Ton planning, tes tâches et ta concentration au même endroit."],
+  sport:["🏋️","Bouge et mange bien","Tes séances, ta nutrition et tes progrès en graphiques."],
+  perso:["🗂️","Garde tout à l'abri","Tes notes, tes documents et tes mots de passe, protégés par code."]};
 function openOnb(){
   onbSel={};TABS.forEach(([k])=>onbSel[k]=data.prefs.tabs[k]!==false);
   document.querySelectorAll("#onbLang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG));
-  const it=([k,l])=>`<label class="onb-it ${onbSel[k]?"":"off"}" data-onb="${k}"><span class="ic">${ICON(k)}</span><span class="grow"><b>${l}</b><span class="small muted">${ONB_DESC[k]}</span></span><input type="checkbox" class="switch" data-onbk="${k}" ${onbSel[k]?"checked":""} aria-label="Garder ${l}"></label>`;
-  $("onbList").innerHTML=GROUPS.map(g=>{const ts=TABS.filter(([k])=>g.tabs.includes(k));
-    return ts.length?`<div class="onb-grp">${g.label}</div>`+ts.map(it).join(""):""}).join("");
-  $("onb").hidden=false;document.body.style.overflow="hidden";
+  const it=([k,l])=>`<label class="onb-it ${onbSel[k]?"":"off"}" data-onb="${k}"><span class="ic">${ICON(k)}</span><span class="grow"><b>${L(l)}</b><span class="small muted">${L(ONB_DESC[k])}</span></span><input type="checkbox" class="switch" data-onbk="${k}" ${onbSel[k]?"checked":""} aria-label="${L("Garder")} ${L(l)}"></label>`;
+  $("onbGroups").innerHTML=GROUPS.filter(g=>ONB_GROUP[g.k]).map(g=>{const ts=TABS.filter(([k])=>g.tabs.includes(k)),[em,t,sub]=ONB_GROUP[g.k];
+    return `<section class="onb-slide"><div class="onb-box"><div class="onb-big">${em}</div><div class="onb-grp" style="text-align:center">${L(g.label)}</div><h1 style="font-size:26px">${L(t)}</h1><p class="sub">${L(sub)}</p><div class="onb-list">${ts.map(it).join("")}</div><p class="small muted">${L("Touche une carte pour la garder ou la masquer.")}</p></div></section>`}).join("");
+  onbLook();$("onb").hidden=false;document.body.style.overflow="hidden";$("onbTrack").scrollLeft=0;onbStep();
 }
-$("onbList").addEventListener("change",e=>{const c=e.target.closest("[data-onbk]");if(!c)return;onbSel[c.dataset.onbk]=c.checked;c.closest(".onb-it").classList.toggle("off",!c.checked)});
+const onbSlides=()=>[...document.querySelectorAll("#onbTrack .onb-slide")];
+const onbIdx=()=>Math.round($("onbTrack").scrollLeft/Math.max(1,$("onbTrack").clientWidth));
+function onbStep(){const sl=onbSlides(),i=Math.min(sl.length-1,onbIdx());sl.forEach((x,j)=>x.classList.toggle("on",j===i));
+  $("onbDots").innerHTML=sl.map((_,j)=>`<i class="${j===i?"on":""}"></i>`).join("");$("onbPrev").style.visibility=i?"visible":"hidden";$("onbNext").hidden=i===sl.length-1}
+function onbGoTo(i){const t=$("onbTrack");t.scrollTo({left:i*t.clientWidth,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})}
+$("onbTrack").addEventListener("scroll",()=>{clearTimeout(onbStep.t);onbStep.t=setTimeout(onbStep,60)});
+$("onbNext").addEventListener("click",()=>onbGoTo(onbIdx()+1));$("onbPrev").addEventListener("click",()=>onbGoTo(onbIdx()-1));
+// couleurs et style, appliqués tout de suite
+function onbLook(){const acc=data.prefs.accent||"bleu",lk=data.prefs.look||"color",dark=matchMedia("(prefers-color-scheme: dark)").matches&&document.documentElement.dataset.theme!=="light"||document.documentElement.dataset.theme==="dark";
+  $("onbAccent").innerHTML=Object.entries(ACCENTS).map(([k,a])=>`<button type="button" data-oacc="${k}" style="--a:${dark?a[3]:a[1]}" aria-pressed="${k===acc}" aria-label="${L(a[0])}">${k===acc?CHECK:""}</button>`).join("");
+  document.querySelectorAll("#onbLook button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.look===lk))}
+$("onbAccent").addEventListener("click",e=>{const b=e.target.closest("[data-oacc]");if(!b)return;data.prefs.accent=b.dataset.oacc;applyLook();onbLook()});
+$("onbLook").addEventListener("click",e=>{const b=e.target.closest("[data-look]");if(!b)return;data.prefs.look=b.dataset.look;applyLook();onbLook()});
+$("onbGroups").addEventListener("change",e=>{const c=e.target.closest("[data-onbk]");if(!c)return;onbSel[c.dataset.onbk]=c.checked;const card=c.closest(".onb-it");card.classList.toggle("off",!c.checked);card.classList.remove("bump");void card.offsetWidth;card.classList.add("bump");if(navigator.vibrate)navigator.vibrate(8)});
 $("onbLang").addEventListener("click",e=>{const b=e.target.closest("[data-lang]");if(!b||b.dataset.lang===LANG)return;data.prefs.onbPending=true;setLang(b.dataset.lang)});
-$("onbGo").addEventListener("click",()=>{
+function onbFinish(){
   if(!Object.values(onbSel).some(Boolean)){toast("Garde au moins un onglet");return}
   Object.assign(data.prefs.tabs,onbSel);data.prefs.onboarded=true;delete data.prefs.onbPending;save();
   $("onb").hidden=true;document.body.style.overflow="";applyTabs();renderHomeSel();
   const first=visibleTabs()[0];show(first);toast("Bienvenue sur Sid'note !");
-});
+}
+$("onbGo").addEventListener("click",onbFinish);$("onbSkip").addEventListener("click",onbFinish);
 $("replayOnb").addEventListener("click",openOnb);
 
 /* ---------- démarrage ---------- */

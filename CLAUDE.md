@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 21.**
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 22.**
 
 ## Comment travailler avec Sid
 - Réponds **en français**, simplement et brièvement. Sid n'est pas développeur : explique en mots simples, avec des étapes cliquables.
@@ -15,10 +15,10 @@ site/                 ← exactement ce qui est mis en ligne sur Netlify
   index.html          ← TOUTE l'app (HTML + CSS + JS, ~2 300 lignes, pas de framework, pas de build)
   sw.js               ← service worker (réseau d'abord ; cache pdf.js à part)
   manifest.webmanifest, icônes
-supabase/functions/   ← fonctions Edge (Deno) : horaire (relais iCal, ACTIVE), nutrition (relais Claude, v20), rappels (notifications, EN PAUSE)
-supabase/sql/         ← SQL : documents.sql (déjà exécuté), nutrition.sql (v20, compteur d'appels Claude, exécuté), food_memory.sql (v21, mémoire des aliments)
+supabase/functions/   ← fonctions Edge (Deno) : horaire (relais iCal, ACTIVE), nutrition (relais Claude, v20), rappels (notifications du planning, v22, à déployer)
+supabase/sql/         ← SQL : documents.sql (déjà exécuté), nutrition.sql (v20, compteur d'appels Claude, exécuté), food_memory.sql (v21, mémoire des aliments), notifications.sql (v22, cron 5 min + anti-doublon)
 secrets/              ← clés VAPID, secret cron, version complète de rappels : NE JAMAIS publier ni committer
-tests/                ← serve.js (aperçu local + faux Supabase), smoke.js (test Playwright), mock-supabase.js, memory.test.js (mémoire des aliments, `node tests/memory.test.js`)
+tests/                ← serve.js (aperçu local + faux Supabase), smoke.js (test Playwright), mock-supabase.js, memory.test.js (mémoire des aliments, `node tests/memory.test.js`), rappels.test.js (calcul des rappels)
 assets/               ← logo
 ```
 
@@ -31,7 +31,7 @@ assets/               ← logo
   - Storage : bucket privé `documents`, chemin `<uid>/<docId>.pdf`, 50 Mo max. Règles par dossier dans `supabase/sql/documents.sql`.
   - Fonction `horaire` : relaie le lien iCal (UMons/HyperPlanning), car le navigateur ne peut pas le lire directement. Elle vérifie que l'utilisateur est connecté. Réglage Supabase : « Verify JWT with legacy secret » est sur OFF.
   - Fonction `nutrition` (v20) : relais vers l'API Claude (`claude-opus-5-5`, sorties JSON structurées, `fallbacks: "default"`). Trois demandes : `profil` (métabolisme, besoins, macros), `aliment` (calories de ce qu'on mange), `menu`. Secret Supabase `ANTHROPIC_API_KEY` obligatoire (jamais dans le site). Limite : 60 appels par personne et par jour (`NUTRITION_DAILY_LIMIT`), compteur `nutrition_hit()` de `nutrition.sql`.
-  - Fonction `rappels` (notifications la veille) : **en pause à la demande de Sid**. Elle n'est pas déployée et la section reste cachée (`#rappelsSec`).
+  - Fonction `rappels` (v22) : appelée toutes les 5 min par pg_cron (`notifications.sql`). Pour chaque personne abonnée (`push_subscriptions`), lit `data.prefs.notif.leads` (minutes avant, défaut 1440 = la veille) et `data.tasks` (heure de Bruxelles ; sans heure = 8 h ; ni faites, ni annulées, ni cours iCal). Anti-doublon : table `push_sent`. Secrets Supabase `VAPID_PUBLIC` / `VAPID_PRIVATE` (valeurs de `secrets/vapid.json`) ; le secret du cron est généré par le SQL dans Vault (`sidnote_cron`, lu par `sidnote_cron_secret()`), rien à recopier. Verify JWT : OFF.
 - Comptes historiques : les anciens comptes « pseudo » utilisent `slug@sidnote.netlify.app`. Une migration vers l'e-mail est proposée dans Réglages.
 
 ## Architecture de index.html (repères)
@@ -84,6 +84,15 @@ assets/               ← logo
   - Nutrition : accès réservé à `NUTRI_ALLOW` (mohamed29082002@gmail.com, test@sidcorp.app) ; les autres voient l'onglet flouté « Bientôt disponible » (`applySoon`). La fonction serveur vérifie aussi (`NUTRITION_EMAILS`). Rythme Drastique / Réaliste / À mon aise, délai facultatif. Photo du plat (envoyée à Claude, vignette gardée sur l'appareil en IndexedDB `thumb:<grp>`). Plats en cartes visuelles (emoji, barre et cases de macros), entrées groupées par `grp`, suppression d'un aliment ou d'un plat. Animations de chargement (`nuLoading`).
   - Mémoire des aliments (partagée entre tous les comptes) : la fonction `nutrition` cherche d'abord dans `food_answers` (même phrase normalisée) puis dans `foods` (aliment pour 100 g + poids d'une unité, ex. « 200 g de riz cuit », « 3 oeufs ») ; si trouvé → réponse sans Claude (`source:"memory"`, badge « ⚡ Mémoire Sid'note », hors limite du jour). Sinon Claude répond et la mémoire apprend (`remember`, `learnRows`). Photos : toujours Claude, mais les aliments sont retenus. Fonctions pures testées par `tests/memory.test.js`. La première réponse retenue fait référence pour tout le monde (corriger directement dans la table `foods` si besoin).
   - Graphiques (Sport → Graphiques) : macros par jour, poids (`data.nutri.weights`), calories vs objectif (couleurs d'état + icônes). Palette validée par le script dataviz (P bleu, G orange, L vert d'eau). Commentaire du jour / de la semaine via Claude (`kind:"bilan"`), suivi des semaines dans `data.nutri.weeks`.
+- v22 :
+  - Documents : tout l'onglet est verrouillé par le code (`#docLocked`, `dvUnlock`, `dvLock` en quittant), comme Mots de passe ; plus de classeur verrouillé à part. Glisser-déposer d'un document (poignée `data-dgrip`) sur une pastille de classeur ; « Tous » le sort du classeur.
+  - À faire : une catégorie dont tout est réalisé quitte la rangée → pastille « ✓ n terminées » (`data.ui.showDoneCats`).
+  - Nutrition : ordre Menus sur mesure → Ajouter ce que tu manges → Ma journée. Menu : journée ou un seul repas (`SLOT`, `menuPrefs.type`), calories par repas (`menuPrefs.kcals`, `one`), menu modifiable (grammes, retirer, ajouter, « ↻ Autre idée », « ✓ Je l'ai mangé »). Quantité modifiée → calories recalculées (`qtyNum`, `nuEBase`). Sport par semaine (`n.wsports[semaine][sport]`, `plan.kps` = kcal par séance, `dayTarget(d)` ajuste l'objectif du jour).
+  - Planning : vue année (`calMode="year"`, `renderYear`), en touchant le titre du mois ou en pinçant.
+  - Présentation en diapositives (`#onbTrack`, `ONB_GROUP`, `onbStep`, `onbFinish`).
+  - Notifications : Réglages → Notifications, délais au choix (`LEADS`, `data.prefs.notif.leads`).
+  - Vie privée (RGPD) : Réglages → « Tes données et ta vie privée » (explications, export JSON complet, « Supprimer mes données » : fichiers Storage, abonnements, ligne `user_data` remise à zéro avec `data.wipe` — l'effacement gagne dans `mergeData`). La suppression du compte lui-même se fait par Sid dans Supabase → Authentication.
+  - Correction mobile : `.form` en `minmax(0,1fr)` (les cartes ne débordent plus).
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés
@@ -112,11 +121,12 @@ assets/               ← logo
 - À vérifier sur l'iPhone de Sid :
   - l'ouverture d'un PDF dans le lecteur (pdf.js n'a pas pu être testé dans Cowork) ;
   - la synchronisation d'un document entre deux appareils.
-- Toujours en pause : les notifications (rappels).
+- v22 préparée (pas encore mise en ligne) : voir « v22 ». Côté Supabase : recoller `nutrition` (sports_kcal, repas), créer les secrets `VAPID_PUBLIC`/`VAPID_PRIVATE`, déployer `rappels` (Verify JWT OFF), exécuter `supabase/sql/notifications.sql`.
 - Historique rapide :
   - v1–v10 : planning, à faire, pomodoro, comptes Supabase, réglages ;
   - v11–v14 : e-mail, heures, Spotify, recherche, vue jour ;
   - v15–v17 : musculation, chrono et minuteur, horaire iCal UMons ;
+  - v22 : code pour tout Documents, glisser vers les classeurs, menus par repas et modifiables, sport par semaine, vue année, présentation interactive, notifications, vie privée ;
   - v21 : récupération des codes, classeurs de documents, graphiques et bilans, photo des plats, styles de couleur, pastilles par fonction ;
   - v20 : catégories d'onglets, couleurs, réglages repliables, dictée, nutrition avec Claude ;
   - v19 : notes, mots de passe chiffrés, tri des documents, catégories repliables, nouvelle phrase d'accueil ;

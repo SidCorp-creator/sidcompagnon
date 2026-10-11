@@ -12,11 +12,25 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const ctx=await b.newContext({...devices["iPhone 13"],colorScheme:scheme}),pg=await ctx.newPage();
     pg.on("pageerror",e=>errs.push(scheme+": "+e.message));
     // navigation : catégorie en bas, puis fonction dans la barre du haut
-    const go=async v=>{await pg.click(`nav .tab[data-g=${G[v]}]`);if(await pg.isVisible(`#subnav [data-sub=${v}]`))await pg.click(`#subnav [data-sub=${v}]`);await pg.waitForTimeout(150)};
+    const psc=async c=>{for(const d of c)await pg.click(`[data-ps="${d}"]`)};
+    // Documents demande son code : la 1re fois on le choisit (2 fois), ensuite on le tape
+    const docCode=async()=>{if(!(await pg.isVisible("#pinSheet")))return;const fresh=(await pg.textContent("#psTitle")).includes("Choisis");
+      await psc("13579");if(fresh){await pg.waitForTimeout(300);await psc("13579");await pg.waitForSelector("#recSheet:not([hidden])",{timeout:8000});await pg.click("#recLater")}
+      await pg.waitForSelector("#pinSheet",{state:"hidden",timeout:8000});await pg.waitForTimeout(250);if(await pg.isVisible("#recSheet"))await pg.click("#recLater")};
+    const go=async v=>{await pg.click(`nav .tab[data-g=${G[v]}]`);await pg.waitForTimeout(150);if(await pg.isVisible("#pinSheet")){if(v==="docs"){await docCode();return}await pg.click("#psClose")}
+      if(await pg.isVisible(`#subnav [data-sub=${v}]`))await pg.click(`#subnav [data-sub=${v}]`);await pg.waitForTimeout(150);if(v==="docs"){await pg.waitForTimeout(150);await docCode()}};
     await pg.goto(U);await pg.waitForTimeout(400);await shot(pg,scheme+"-01-connexion");
     await pg.click("#mSignup");await pg.fill("#aName","Test");await pg.fill("#aEmail",scheme+"@test.be");
     await pg.fill("#aPw","secret1");await pg.fill("#aPw2","secret1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
-    if(await pg.isVisible("#onb")){await shot(pg,scheme+"-02-presentation");await pg.click("#onbGo")}
+    if(await pg.isVisible("#onb")){await shot(pg,scheme+"-02-presentation");
+      const onLast=()=>pg.evaluate(()=>!!document.querySelector(".onb-slide.on #onbGo"));
+      for(let i=0;i<8&&!(await onLast());i++){await pg.click("#onbNext");await pg.waitForTimeout(700);if(i===0){await pg.click(".onb-slide.on [data-onbk]");await pg.waitForTimeout(300);await shot(pg,scheme+"-02-presentation-orga");await pg.click(".onb-slide.on [data-onbk]")}}
+      if(!(await onLast()))errs.push(scheme+": « Suivant » n'atteint pas la fin de la présentation");
+      await pg.click('[data-oacc]:nth-child(3)');await pg.waitForTimeout(600);await shot(pg,scheme+"-02-presentation-fin");await pg.click("#onbGo");await pg.waitForTimeout(300);
+      if(await pg.isVisible("#onb"))errs.push(scheme+": la présentation ne se ferme pas")}
+    // vue année du planning
+    await go("plan");await pg.click("#calTitle");await pg.waitForTimeout(250);if(!(await pg.isVisible("#calYear")))errs.push(scheme+": vue année absente");
+    else{await shot(pg,scheme+"-fr-plan-annee");await pg.click("[data-ym]");await pg.waitForTimeout(250);if(await pg.isVisible("#calYear"))errs.push(scheme+": la vue année ne revient pas au mois")}
     await go("todo");await pg.fill("#todoIn","Tâche de test");await pg.press("#todoIn","Enter");
     await go("docs");await pg.setInputFiles("#docImport",path.join(__dirname,"Contrat de bail.pdf"));await pg.waitForTimeout(800);
     // v19 : catégorie repliable, tri des documents, notes, coffre à mots de passe
@@ -30,10 +44,16 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.click("[data-dfoldnew]");await pg.fill("#folderIn","Admin");await pg.press("#folderIn","Enter");
     await pg.setInputFiles("#docImport",path.join(__dirname,"Contrat de bail.pdf"));await pg.waitForTimeout(600);
     await pg.fill("#folderSearch","zzz");if(!(await pg.textContent("#docList")).includes("Aucun document"))errs.push(scheme+": recherche du classeur incorrecte");await pg.fill("#folderSearch","");
-    await pg.click("[data-dflock]");await pg.waitForSelector("#pinSheet:not([hidden])");const ps2=async c=>{for(const d of c)await pg.click(`[data-ps="${d}"]`)};
-    await ps2("13579");await pg.waitForTimeout(300);await ps2("13579");await pg.waitForSelector("#recSheet:not([hidden])",{timeout:8000});await pg.click("#recLater");
-    await shot(pg,scheme+"-fr-docs-classeur");await pg.evaluate(()=>dvLock());await pg.click('[data-dfold="all"]');
-    const vis=await pg.$$eval("#docList .doc",x=>x.length);if(vis!==2)errs.push(scheme+": document d'un classeur protégé visible ("+vis+")");const first=await pg.textContent("#docList .doc-open b");if(first!=="Contrat de bail")errs.push(scheme+": tri A→Z incorrect ("+first+")");
+    await shot(pg,scheme+"-fr-docs-classeur");await pg.click('[data-dfold="all"]');
+    // glisser « photo » (poignée) sur le classeur Admin
+    await pg.setViewportSize({width:390,height:1600});await pg.evaluate(()=>window.scrollTo(0,0));
+    const grip=await pg.$('#docList .doc:has-text("photo") [data-dgrip]'),chip=await pg.$('#docFolders [data-dfold]:not([data-dfold="all"])');
+    const ga=await grip.boundingBox(),gb=await chip.boundingBox();await pg.mouse.move(ga.x+ga.width/2,ga.y+ga.height/2);await pg.mouse.down();
+    await pg.mouse.move(gb.x+gb.width/2,gb.y+gb.height/2,{steps:8});await pg.mouse.up();await pg.waitForTimeout(200);
+    if(!(await pg.textContent("#docFolders")).includes("Admin 2"))errs.push(scheme+": glisser vers un classeur inopérant");await pg.setViewportSize({width:390,height:664});
+    // tout l'onglet se reverrouille, et se rouvre avec le code
+    await pg.evaluate(()=>dvLock());if(!(await pg.isVisible("#docLocked")))errs.push(scheme+": Documents non verrouillé");await shot(pg,scheme+"-fr-docs-verrou");
+    await pg.click("#docUnlockBtn");await docCode();const vis=await pg.$$eval("#docList .doc",x=>x.length);if(vis!==3)errs.push(scheme+": documents absents après déverrouillage ("+vis+")");const first=await pg.textContent("#docList .doc-open b");if(first!=="Contrat de bail")errs.push(scheme+": tri A→Z incorrect ("+first+")");
     await go("notes");await pg.click("#noteNew");await pg.fill("#noteTitle","Idées");await pg.fill("#noteBody","Première ligne\nDeuxième ligne");
     await shot(pg,scheme+"-fr-note-edition");await pg.click("#noteBack");await pg.waitForTimeout(200);
     if(!(await pg.textContent("#noteList")).includes("Idées"))errs.push(scheme+": note non enregistrée");
@@ -44,8 +64,8 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.waitForSelector("#recSheet:not([hidden])",{timeout:8000});await shot(pg,scheme+"-fr-recuperation");await pg.fill("#recPw","faux");await pg.click("#recOk");await pg.waitForTimeout(300);
     if(!(await pg.isVisible("#recErr")))errs.push(scheme+": mauvais mot de passe de compte accepté");
     await pg.fill("#recPw","secret1");await pg.click("#recOk");await pg.waitForSelector("#recSheet",{state:"hidden",timeout:8000});
-    await pg.waitForSelector("#pinSheet",{state:"hidden",timeout:8000});await pg.waitForTimeout(300);
-    if((await pg.textContent("#noteList")).includes("Idées"))errs.push(scheme+": note secrète visible sans code");
+    await pg.waitForSelector("#pinSheet",{state:"hidden",timeout:8000});
+    await pg.waitForFunction(()=>!document.getElementById("noteList").textContent.includes("Idées"),null,{timeout:8000}).catch(()=>errs.push(scheme+": note secrète visible sans code"));
     if((await pg.evaluate(()=>JSON.stringify(data.notes))).includes("Première"))errs.push(scheme+": note secrète stockée en clair");
     await shot(pg,scheme+"-fr-notes-secrete");
     await pg.click("#noteList [data-note]");await pg.waitForSelector("#pinSheet:not([hidden])");await shot(pg,scheme+"-fr-notes-code");
@@ -83,6 +103,9 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     // même aliment une 2e fois : servi par la mémoire partagée, sans Claude
     await pg.fill("#nuAsk","1 barre chocolatée");await pg.click("#nuAskBtn");await pg.waitForSelector("[data-nuadd]",{timeout:8000});
     if(!(await pg.isVisible("#nuResult .memtag")))errs.push(scheme+": réponse de la mémoire non signalée");await shot(pg,scheme+"-fr-nutri-memoire");await pg.click("[data-nucancel]");await pg.fill("#nuAsk","");
+    // modifier la quantité d'un aliment : les calories suivent (1 barre → 2 barres = ×2)
+    await pg.click("#nuLog [data-nuedit]");await pg.fill("#nuEQty","2 barres (86 g)");if(await pg.inputValue("#nuEKcal")!=="492")errs.push(scheme+": calories non recalculées avec la quantité");
+    await pg.click("#nuSheetClose");
     await pg.click("#nuPrev");await pg.click("#nuManual");await pg.fill("#nuEName","Pâtes");await pg.fill("#nuEKcal","500");await pg.click("#nuEntryForm [type=submit]");
     if(!(await pg.textContent("#nuKcal")).includes("500"))errs.push(scheme+": ajout a posteriori incorrect");await pg.click("#nuNext");
     // photo du plat, puis suppression d'un plat
@@ -90,7 +113,17 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.click("[data-nuadd]");await pg.waitForTimeout(300);await shot(pg,scheme+"-fr-nutri-plats");
     const before=await pg.$$eval("#nuLog .dish",x=>x.length);await pg.click("#nuLog [data-nudelg]");await pg.click("#nuLog [data-nudelg]");await pg.waitForTimeout(200);
     if(await pg.$$eval("#nuLog .dish",x=>x.length)!==before-1)errs.push(scheme+": suppression d'un plat impossible");
-    await pg.click("#nuMenuSec summary");await pg.fill("#nuInclude","poulet");await pg.click("#nuMenuBtn");await pg.waitForSelector("[data-numeal]",{timeout:8000});
+    // sport de la semaine : une séance de plus → objectif du jour plus haut
+    const t0=await pg.textContent("#nuKcalOf");await pg.click('#nuWeek [data-d="1"]');const t1=await pg.textContent("#nuKcalOf");
+    if(t0===t1)errs.push(scheme+": l'objectif ne suit pas le sport de la semaine");await pg.click('#nuWeek [data-d="-1"]');
+    // menu : journée avec calories par repas, puis un petit-déjeuner seul, quantité modifiée
+    await pg.fill('[data-mk="0"]',"600");await pg.press('[data-mk="0"]',"Tab");await pg.fill("#nuInclude","poulet");await pg.click("#nuMenuBtn");await pg.waitForSelector("[data-numeal]",{timeout:8000});
+    if(await pg.$$eval("#nuMenu .dish",x=>x.length)!==3)errs.push(scheme+": menu de la journée incomplet");
+    await pg.click('[data-mtype="breakfast"]');await pg.fill("#nuOneKcal","450");await pg.click("#nuMenuBtn");await pg.waitForSelector("[data-numeal]",{timeout:8000});
+    if(!(await pg.textContent("#nuMenu")).includes("450"))errs.push(scheme+": calories du petit-déjeuner non respectées");
+    await pg.click('[data-meq="0:0"]');await pg.fill("#meQtyIn","300");await pg.press("#meQtyIn","Enter");
+    if(!(await pg.textContent("#nuMenu .dish")).includes("300 g"))errs.push(scheme+": quantité du menu non modifiée");
+    await pg.click('[data-mtype="day"]');
     await shot(pg,scheme+"-fr-nutri-menu");
     // v21 : graphiques et bilans
     await go("graph");await pg.fill("#grWIn","72,5");await pg.click("#grWForm [type=submit]");await pg.waitForTimeout(200);
@@ -101,6 +134,12 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     // v20 : couleur
     await go("more");if(!(await pg.isVisible("#accentSel")))await pg.click('[data-sec="look"] summary');await pg.click('[data-accent="vert"]');await shot(pg,scheme+"-fr-reglages-apparence");
     await pg.click('[data-sec="tabs"] summary');await shot(pg,scheme+"-fr-reglages-onglets");
+    // v22 : notifications (délais) et vie privée
+    await pg.click('[data-sec="notif"] summary');await pg.click('[data-lead="30"]');
+    if(!(await pg.evaluate(()=>data.prefs.notif&&data.prefs.notif.leads.includes(30)&&data.prefs.notif.leads.includes(1440))))errs.push(scheme+": délai de notification non enregistré");
+    await pg.locator('[data-sec="notif"]').scrollIntoViewIfNeeded();await shot(pg,scheme+"-fr-reglages-notif");
+    await pg.click('[data-sec="privacy"] summary');await pg.locator('[data-sec="privacy"]').scrollIntoViewIfNeeded();await shot(pg,scheme+"-fr-reglages-vieprivee");
+    await pg.click('[data-sec="privacy"] summary');await pg.click('[data-sec="notif"] summary');
     for(const v of ["plan","todo","notes","muscu","nutri","graph","docs","pwd","more"]){await go(v);await pg.waitForTimeout(250);await shot(pg,`${scheme}-fr-${v}`)}
     await go("more");if(!(await pg.isVisible("#langSel")))await pg.click('[data-sec="look"] summary');await pg.selectOption("#langSel","en");await pg.waitForTimeout(1200);await pg.evaluate(()=>{NUTRI_ALLOW.push(session.email);applySoon()});
     for(const v of ["plan","todo","notes","nutri","graph","docs","pwd","more"]){await go(v);await pg.waitForTimeout(250);await shot(pg,`${scheme}-en-${v}`)}

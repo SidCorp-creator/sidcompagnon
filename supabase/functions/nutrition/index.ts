@@ -1,4 +1,4 @@
-// Sid'note : fonction "nutrition" (v21)
+// Sid'note : fonction "nutrition" (v23 : recette, aliments non ajoutés, menus plus longs)
 // Relais entre l'app et Claude pour l'onglet Nutrition :
 //   - "profil" : métabolisme de base, besoins du jour et macros à partir du profil
 //   - "aliment" : calories et macros de ce que l'on mange ("150 g de riz cuit", "2 oeufs")
@@ -147,6 +147,8 @@ const SCHEMAS: Record<string, unknown> = {
   }),
   // bilans du jour et de la semaine
   bilan: obj({ summary: str, good: { type: "array", items: str }, improve: { type: "array", items: str }, tips: { type: "array", items: str } }),
+  // v23 : recette pas à pas d'un repas du menu (mêmes aliments, mêmes quantités)
+  recette: obj({ steps: { type: "array", items: str }, prep_min: num, cook_min: num, tips: str }),
 };
 
 const BASE = `You are the nutrition assistant inside Sid'note, a personal app. Be accurate and practical.
@@ -170,7 +172,7 @@ In "sports_kcal", give for each of their sports (same name as given) the calorie
   if (kind === "aliment")
     return {
       system: `${BASE}\n${out}`,
-      user: `Estimate the calories and macros of what the person ate. They may give a weight ("150 g of cooked rice"), a count ("2 eggs", "1 chocolate bar of a given brand") or a portion ("a plate of pasta"). Split it into separate foods when there are several. For each, give a readable quantity, the estimated grams, one fitting food emoji and the macros for that quantity. Give the whole dish a short name ("dish") and one emoji. In "note", state briefly any assumption (raw vs cooked, typical portion…), or leave it empty.${b.image ? " A photo of the plate is attached: identify each food and estimate portions from the plate size and usual servings; use the text, if any, as extra context." : ""}\n\nWhat they ate:\n${String(b.text ?? "").slice(0, 600) || "(see the photo)"}`,
+      user: `Estimate the calories and macros of what the person ate. They may give a weight ("150 g of cooked rice"), a count ("2 eggs", "1 chocolate bar of a given brand") or a portion ("a plate of pasta"). Split it into separate foods when there are several. For each, give a readable quantity, the estimated grams, one fitting food emoji and the macros for that quantity. Give the whole dish a short name ("dish") and one emoji. In "note", state briefly any assumption (raw vs cooked, typical portion…), or leave it empty.${b.image ? " A photo of the plate is attached: identify each food and estimate portions from the plate size and usual servings; use the text, if any, as extra context. Only list foods you can actually see or that the text mentions." : " Only list the foods the person actually wrote: never add cooking oil, butter, sauce, dressing, drinks, bread or side dishes they did not mention. If you think something is usually added (for example oil for cooking), mention it in \"note\" instead of adding it."}\n\nWhat they ate:\n${String(b.text ?? "").slice(0, 600) || "(see the photo)"}`,
       effort: "low", max: 4000, image: typeof b.image === "string" && b.image.length < 2_000_000 ? b.image : undefined,
     };
   if (kind === "bilan")
@@ -181,10 +183,16 @@ In "sports_kcal", give for each of their sports (same name as given) the calorie
         : `Write a short comment on this person's day (${String(b.data?.today ?? "")}): calories vs target, protein / carbs / fat vs targets, and weight if logged, compared with the previous days. "summary": 2–3 sentences, specific and encouraging. "good": 1–2 points. "improve": 0–2 points. "tips": 1–2 concrete actions for the rest of the day or tomorrow. If nothing is logged today, say so kindly.\n\nData (JSON):\n${data}`,
       effort: b.scope === "week" ? "medium" : "low", max: 6000,
     };
+  if (kind === "recette")
+    return {
+      system: `${BASE}\n${out}`,
+      user: `Write the recipe for this exact meal: keep exactly these foods and these quantities, add nothing except water, salt, pepper, herbs and spices. Give 3 to 8 short, numbered-in-order steps in "steps" (one action per step, with cooking times and heat level, no numbers at the start of each step). Express small amounts of oil, butter, honey or sauce in teaspoons or tablespoons (with grams in brackets). Give the preparation and cooking times in minutes. In "tips", one short practical tip, or an empty string.\n\nMeal (JSON):\n${data}`,
+      effort: "low", max: 4000,
+    };
   return {
     system: `${BASE}\n${out}`,
-    user: `${b.data?.meal_type && b.data.meal_type !== "day" ? `Create exactly one ${String(b.data.meal_type)} (breakfast, lunch, snack or dinner) for this person.` : "Create a one-day menu for this person."} The request lists the meals to create, in order, each with its own calorie target ("meals"): return exactly those meals in that order, and keep each meal within about 5 % of its own calorie target. Spread the protein / carbs / fat targets across the meals in proportion. Give each meal a short appetizing name and one fitting emoji, and each food one fitting emoji. Include every ingredient they want somewhere and avoid what they exclude. Give each food in grams with its calories and macros, a total per meal and overall. Prefer simple, realistic dishes. In "tips", give 1–3 short practical tips.\n\nRequest (JSON):\n${data}`,
-    effort: "medium", max: 16000,
+    user: `${b.data?.meal_type && b.data.meal_type !== "day" ? `Create exactly one ${String(b.data.meal_type)} (breakfast, lunch, snack or dinner) for this person.` : "Create a one-day menu for this person."} The request lists the meals to create, in order, each with its own calorie target ("meals"): return exactly those meals in that order, and keep each meal within about 5 % of its own calorie target. Spread the protein / carbs / fat targets across the meals in proportion. Give each meal a short appetizing name and one fitting emoji, and each food one fitting emoji. Include every ingredient they want somewhere and avoid what they exclude. Give each food in grams with its calories and macros, a total per meal and overall. Prefer simple, realistic dishes. Use the meal names given in the request: "Repas unique (OMAD)" / "One meal a day (OMAD)" means it is the only meal of the day and must cover the whole day. In "tips", give 1–3 short practical tips.\n\nRequest (JSON):\n${data}`,
+    effort: "medium", max: 24000,
   };
 }
 
@@ -232,7 +240,7 @@ Deno.serve(async (req) => {
           ? [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: p.image } }, { type: "text", text: p.user }]
           : p.user,
       }],
-    } as any);
+    } as any, { timeout: 145_000 }); // délai explicite : sans lui, le SDK refuse les réponses longues (max_tokens élevé) sans streaming
     if (res.stop_reason === "refusal") return fail("Claude n'a pas pu répondre à cette demande.", 422);
     if (res.stop_reason === "max_tokens") return fail("Réponse trop longue, simplifie la demande.", 422);
     const text = res.content.find((b: any) => b.type === "text") as any;

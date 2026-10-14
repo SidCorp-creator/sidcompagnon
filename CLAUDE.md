@@ -26,7 +26,7 @@ assets/               ← logo
 
 ## Supabase (backend)
 - Projet : `https://eloeoaidgbkygazwjwiu.supabase.co`. La clé publique (publishable) est dans `index.html`, ce qui est normal. **Ne jamais mettre la clé secrète ou service_role dans le site.**
-- Organisation Supabase : « SidCorp », offre gratuite. La confirmation par e-mail est désactivée.
+- Organisation Supabase : « SidCorp », offre gratuite. Région de la base : **eu-central-1 (Francfort)**. Un connecteur Supabase peut être relié à Claude (SQL, fonctions, journaux) ; il ne gère pas les réglages Auth (Site URL, SMTP, mots de passe compromis) : ceux-là se font dans le tableau de bord. La confirmation par e-mail est désactivée.
 - Pas de supabase-js : tout passe par `fetch` (fonction `api()`).
   - Auth GoTrue : `/auth/v1/signup`, `token?grant_type=password|refresh_token`, `/auth/v1/user`, `/auth/v1/logout`.
   - Données : table `user_data(user_id, data jsonb, updated_at)`, en upsert PostgREST (`Prefer: resolution=merge-duplicates`). Toutes les données d'un utilisateur tiennent dans un seul JSON.
@@ -103,6 +103,7 @@ assets/               ← logo
   - Mots de passe : tri « Récents » / « A → Z » (`data.prefs.pwSort`).
   - iCal : renommé « Calendrier relié » (`ICAL_CAT`), option « + Relier un calendrier » ; l'interrupteur de rappel des événements reliés n'apparaît que si un calendrier est relié (`.nf-ical`).
   - Connexion : œil sur les mots de passe (`[data-pweyefor]`), blocage après 5 erreurs (30 s puis double, `sidnote-auth-lock` dans localStorage), « Mot de passe oublié ? » (`/auth/v1/recover`, retour par `#access_token…&type=recovery` → `recoveryFromHash` → `#npSheet`), « Changer mon mot de passe » dans Compte (`#chPwBtn`, rechiffre la récupération des codes : `recRewrap`). **Il faut un SMTP personnalisé dans Supabase** pour que les e-mails partent vers d'autres adresses que l'équipe, et Site URL = https://sidnote.netlify.app.
+  - Fonctions `nutrition` (v23, recette, OMAD) et `rappels` (v23, `t.leads`, `t.remind`, `data.icalSoon`) recopiées depuis Supabase le 14 oct. 2026 : le dépôt correspond à ce qui est en ligne.
   - Test : `tests/smoke.js` réécrit pour la v28 (l'ancien est dans `tests/smoke-v22.js`).
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 

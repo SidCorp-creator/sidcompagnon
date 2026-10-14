@@ -1,6 +1,6 @@
-const CACHE = "sidnote-v22";
+const CACHE = "sidnote-v27";
 const LIB = "sidnote-lib-1"; // lecteur PDF (pdf.js), gardé entre les versions
-const FILES = ["./", "./index.html", "./manifest.webmanifest", "./apple-touch-icon.png", "./icon-192.png", "./icon-512.png"];
+const FILES = ["./", "./index.html", "./manifest.webmanifest", "./apple-touch-icon.png", "./icon-192.png", "./icon-512.png", "./logo-180.png", "./logo-192.png", "./logo-512.png", "./logo-32.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
@@ -18,7 +18,8 @@ self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
   const u = new URL(e.request.url);
   // lecteur PDF : cache d'abord, pour lire les documents hors connexion
-  if (u.hostname === "cdnjs.cloudflare.com" && u.pathname.includes("/pdf.js/")) {
+  // police Outfit (style Galets) : gardée aussi, pour que l'app garde sa police hors connexion
+  if ((u.hostname === "cdnjs.cloudflare.com" && u.pathname.includes("/pdf.js/")) || u.hostname === "fonts.googleapis.com" || u.hostname === "fonts.gstatic.com") {
     e.respondWith(caches.open(LIB).then(c => c.match(e.request).then(r => r || fetch(e.request).then(res => { if (res.ok) c.put(e.request, res.clone()); return res; }))));
     return;
   }
@@ -40,8 +41,8 @@ self.addEventListener("push", e => {
   try { d = e.data ? e.data.json() : {}; } catch (err) { d = { body: e.data && e.data.text() }; }
   e.waitUntil(self.registration.showNotification(d.title || "sid'note", {
     body: d.body || "",
-    icon: "icon-192.png",
-    badge: "icon-192.png",
+    icon: "logo-192.png",
+    badge: "logo-192.png",
     tag: d.tag,
     data: { url: d.url || "./" }
   }));

@@ -8,34 +8,47 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="sid'note">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#f2f4f7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F4F4F2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E0F11" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="logo-180.png">
+<link rel="icon" href="logo-32.png" sizes="32x32"><link rel="icon" href="logo-192.png" sizes="192x192">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
 <style>
+/* v24 : style « Graphite » — sobre et haut de gamme : noir profond (ou blanc cassé), police Manrope,
+   une seule couleur d'accent (champagne), filets fins, aucune couleur par partie.
+   Les noms --g-* sont gardés : --g-strong = boutons, --g-bg = fond d'accent discret, --g-ink = texte d'accent, --gold = touche champagne */
 :root{
-  --bg:#f2f4f7; --surface:#ffffff; --ink:#111827; --muted:#6b7280; --line:#e3e6eb;
-  --accent:#1f5fbf; --accent-soft:#e3ecfa; --on-accent:#ffffff;
-  --c-event:#c2410c; --c-cours:#1f5fbf; --c-stage:#0f7a5a; --c-memoire:#7c3aed; --c-perso:#64748b; --x1:#0e7490; --x2:#be185d; --x3:#a16207; --x4:#4338ca; --x5:#15803d; --x6:#9f1239;
-  --ok:#0f8a5f; --warn:#b45309; --late:#c62828;
-  --bar:rgba(248,249,251,.92);
-  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;
-  --mono:ui-monospace,"SF Mono",Menlo,monospace;
+  --bg:#F4F4F2; --surface:#ffffff; --ink:#111214; --muted:#6B6E76; --line:#E4E4E1; --field:#EEEEEB;
+  --on-accent:#ffffff;
+  --c-event:#B5652F; --c-cours:#3F6FB5; --c-stage:#2F7D5B; --c-memoire:#6B5BB0; --c-perso:#7A7F8C; --x1:#2A7F95; --x2:#A84A72; --x3:#9A7A2C; --x4:#5560B0; --x5:#4B8240; --x6:#A33D52;
+  --ok:#2F7D5B; --warn:#A86A1C; --late:#B9443D;
+  --bar:rgba(255,255,255,.92);
+  --font:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --mono:"Manrope",-apple-system,sans-serif;
+  --digits:"Manrope",-apple-system,sans-serif;
+  --r-card:16px; --r-ctl:12px;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0d1117; --surface:#161b22; --ink:#e6edf3; --muted:#8b949e; --line:#262d36;
-  --accent:#58a6ff; --accent-soft:#16263d; --on-accent:#0d1117;
-  --c-event:#f0885a; --c-cours:#58a6ff; --c-stage:#3fc590; --c-memoire:#b392f0; --c-perso:#94a3b8; --x1:#22b8cf; --x2:#f472b6; --x3:#facc15; --x4:#818cf8; --x5:#4ade80; --x6:#fb7185;
-  --ok:#3fc590; --warn:#e3b341; --late:#f47067;
-  --bar:rgba(22,27,34,.92); color-scheme:dark}}
+  --bg:#0E0F11; --surface:#16171A; --ink:#ECEDEF; --muted:#878A93; --line:#25272C; --field:#1D1F23;
+  --on-accent:#0E0F11;
+  --c-event:#D9925F; --c-cours:#7EA6E0; --c-stage:#6FBF98; --c-memoire:#A99BE0; --c-perso:#A3A7B2; --x1:#6FC3D6; --x2:#D98AAE; --x3:#D9B862; --x4:#9AA2E8; --x5:#8CC57E; --x6:#E08A9A;
+  --ok:#6FBF98; --warn:#D9AE62; --late:#E37A72;
+  --bar:rgba(22,23,26,.92); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0d1117; --surface:#161b22; --ink:#e6edf3; --muted:#8b949e; --line:#262d36;
-  --accent:#58a6ff; --accent-soft:#16263d; --on-accent:#0d1117;
-  --c-event:#f0885a; --c-cours:#58a6ff; --c-stage:#3fc590; --c-memoire:#b392f0; --c-perso:#94a3b8; --x1:#22b8cf; --x2:#f472b6; --x3:#facc15; --x4:#818cf8; --x5:#4ade80; --x6:#fb7185;
-  --ok:#3fc590; --warn:#e3b341; --late:#f47067;
-  --bar:rgba(22,27,34,.92); color-scheme:dark}
+  --bg:#0E0F11; --surface:#16171A; --ink:#ECEDEF; --muted:#878A93; --line:#25272C; --field:#1D1F23;
+  --on-accent:#0E0F11;
+  --c-event:#D9925F; --c-cours:#7EA6E0; --c-stage:#6FBF98; --c-memoire:#A99BE0; --c-perso:#A3A7B2; --x1:#6FC3D6; --x2:#D98AAE; --x3:#D9B862; --x4:#9AA2E8; --x5:#8CC57E; --x6:#E08A9A;
+  --ok:#6FBF98; --warn:#D9AE62; --late:#E37A72;
+  --bar:rgba(22,23,26,.92); color-scheme:dark}
+/* accent : encre en clair, champagne en sombre */
+body{--g-strong:#111214;--g-bg:#EFEADF;--g-ink:#6E5A2E;--gold:#9C7A3C;--on-gold:#ffffff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body{--g-strong:#C9B48A;--g-bg:#24211B;--g-ink:#D9C79E;--gold:#C9B48A;--on-gold:#0E0F11}}
+:root[data-theme="dark"] body{--g-strong:#C9B48A;--g-bg:#24211B;--g-ink:#D9C79E;--gold:#C9B48A;--on-gold:#0E0F11}
+body{--accent:var(--g-ink);--accent-soft:var(--g-bg)}
 [hidden]{display:none!important}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 var(--font)}
@@ -440,6 +453,33 @@ nav.many .tab svg{width:22px;height:22px}
 nav.lots .tab{font-size:9px;letter-spacing:-.01em;line-height:1.1;padding-inline:1px;text-align:center}
 nav.lots .tab svg{width:21px;height:21px}
 .onb-tag{text-wrap:balance;font-size:19px;font-weight:700;line-height:1.3;letter-spacing:-.01em;margin:0;color:var(--accent)}
+.onb-steps{list-style:none;margin:0;padding:0;display:grid;gap:8px;text-align:left;width:100%;max-width:340px}
+.onb-steps li{display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:12px;padding:10px 12px;font-size:15px}
+.onb-steps li span{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:14px}
+/* v23 : nutrition en 3 onglets, choix des repas, recette, quantités, rappels */
+.nu-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--surface);border-radius:14px;padding:4px;margin:6px 0 4px}
+.nu-tabs button{border:0;background:none;border-radius:10px;padding:9px 4px;font-family:inherit;font-weight:600;font-size:14px;color:var(--muted);cursor:pointer;display:grid;gap:1px;justify-items:center}
+.nu-tabs button span{font-size:18px;line-height:1}
+.nu-tabs button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+.nu-hint{margin:8px 4px 4px;font-size:14px;color:var(--muted)}
+.nu-left{display:flex;align-items:center;gap:10px;background:var(--accent-soft);color:var(--ink);border-radius:12px;padding:10px 12px;margin:8px 0;font-size:14px}
+.nu-left b{color:var(--accent)}
+.nu-slots{display:flex;flex-wrap:wrap;gap:6px}
+.nu-slots .pill{font-size:14px}
+.nu-mk-note{font-size:13px;color:var(--muted);margin:2px 2px 0}
+.qty-ed{border:0;background:none;padding:0;font:inherit;color:var(--muted);font-size:13px;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;text-align:left}
+.qty-in{display:inline-flex;gap:6px;align-items:center;margin-top:2px}
+.qty-in input{width:110px;font-size:16px;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.notmention{display:inline-block;margin-left:6px;font-size:11px;font-weight:600;color:var(--warn);border:1px solid currentColor;border-radius:99px;padding:0 6px;vertical-align:1px}
+.recipe{margin:8px 0 2px;padding:10px 12px;border-radius:12px;background:var(--bg);font-size:14px}
+.recipe ol{margin:6px 0 0;padding-left:20px;display:grid;gap:6px}
+.me-done{font-size:13px;color:var(--st-good,var(--accent));font-weight:600}
+.cal-title{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft)!important;color:var(--accent)}
+.cal-title .yr-ic{font-size:11px;font-weight:700;border:1px solid currentColor;border-radius:99px;padding:1px 7px;opacity:.9}
+.notif-lead-custom{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.notif-lead-custom input{width:70px;font-size:16px}
+.plan-notif{display:flex;align-items:center;gap:10px;margin-top:10px}
+#docFolders{flex-wrap:wrap;overflow:visible;margin-inline:0;padding-inline:0}
 /* v19 : catégories repliables */
 .foldc{border:0;background:none;color:var(--muted);padding:2px 4px;cursor:pointer;display:grid;place-items:center;flex:none}
 .foldc svg{transition:transform .2s}
@@ -720,12 +760,263 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
 .badge{position:absolute;margin-left:18px;margin-top:-2px;background:var(--late);color:#fff;font-size:11px;font-weight:700;border-radius:99px;padding:0 5px;line-height:16px}
 .tabicon{position:relative;display:grid;place-items:center}
 .toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:12px;font-size:14px;z-index:20;max-width:calc(100% - 32px)}
+
+/* ===================== v24 : style « Graphite » ===================== */
+html,body{font-family:var(--font);letter-spacing:-.005em;-webkit-font-smoothing:antialiased}
+/* icônes au trait */
+svg.i{width:1.15em;height:1.15em;vertical-align:-.2em;flex:none}
+i.ic{font-style:normal;display:inline-flex;align-items:center}
+/* en-tête de page : petite marque en capitales, grand titre net */
+.view>.brand{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:6px 2px 0;gap:8px}
+.view>.brand img{width:18px;height:18px;border-radius:5px}
+.view>h1,#notesList>h1{font-size:32px;font-weight:600;letter-spacing:-.035em;line-height:1.08;color:var(--ink);margin:6px 2px 14px;padding:0;background:none}
+.view>h1+.sub,#notesList>h1+.sub{margin-top:-6px}
+h1{font-weight:600;letter-spacing:-.03em}
+h2{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin:26px 2px 10px}
+.foldbtn,.grp-w,.tabgrp{letter-spacing:.14em}
+.sub{color:var(--muted)}
+/* surfaces : filet fin, arrondi mesuré, aucune ombre */
+.card,.setsec,.dish,.onb-it,.catbar,.ns-bar,.note-ed,.pomo-stage,.loadcard,.soon-card,.onb-steps li{border-radius:var(--r-card)}
+.card,.setsec,.dish,.onb-it,.catbar,.note-ed,.pomo-stage,.onb-steps li{border:1px solid var(--line);box-shadow:none}
+.setsec-in .card,.nu-ask .dish,.sheet.card{border:0}
+.setsec>summary{padding:16px;font-size:16px;font-weight:600}
+.row{padding:13px 16px}
+/* boutons : nets, peu arrondis */
+.btn{border-radius:var(--r-ctl);padding:12px 18px;font-weight:600;background:var(--g-strong);color:var(--on-accent);letter-spacing:0}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.btn.stop{border-radius:var(--r-ctl);background:transparent}
+.mini{border:0;background:var(--field);border-radius:10px;padding:7px 12px;font-weight:600;color:var(--ink)}
+.pill{border:1px solid var(--line);border-radius:10px;padding:7px 12px;font-weight:500;background:var(--surface);color:var(--ink)}
+.pill[aria-pressed="true"]{background:var(--g-bg);border-color:var(--gold);color:var(--ink);font-weight:600}
+.pill.add{border-style:dashed;color:var(--muted)}
+.qbtn{border-radius:var(--r-ctl);color:var(--ink);border:1px dashed var(--line);display:flex;align-items:center;justify-content:center;gap:8px}
+.realise,.resume,.status{border-radius:10px}
+.stepper button{background:var(--field);color:var(--ink);border-radius:10px}
+.cal-nav{background:var(--field);color:var(--ink);border-radius:10px}
+.back,.linkbtn,.howto>summary,.install summary{color:var(--g-ink)}
+/* champs */
+input,select,textarea{background:var(--field);border:1px solid transparent;border-radius:var(--r-ctl);font-family:var(--font)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);background:var(--surface)}
+.search{background-color:var(--surface);border:1px solid var(--line);border-radius:var(--r-ctl)}
+.nu-in input,.unit input,.ex-head input{background:var(--field)}
+.sel{background-color:var(--field);border-radius:10px}
+/* sélecteurs segmentés et barre de partie */
+.seg{background:var(--field);border-radius:var(--r-ctl);padding:3px;gap:3px}
+.seg button{border-radius:9px}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+.subnav{background:var(--field);-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:var(--r-ctl);padding:3px;gap:3px;box-shadow:0 0 0 4px var(--bg)}
+.subnav button{border-radius:9px;color:var(--muted);padding:9px 6px}
+.subnav button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+/* barre du bas : l'onglet ouvert en clair, souligné d'un point champagne */
+nav{border-top:1px solid var(--line)}
+.tab{font-weight:600;padding:8px 0 7px;gap:4px;letter-spacing:.01em}
+.tab .tabicon{padding:0}
+.tab[aria-selected="true"]{color:var(--ink)}
+.tab[aria-selected="true"] .tabicon::after{content:"";position:absolute;left:50%;bottom:-5px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--gold)}
+.tab svg{width:22px;height:22px;stroke-width:1.7}
+/* calendrier */
+.cal-title{background:var(--field)!important;color:var(--ink);border-radius:10px;padding:7px 12px;font-weight:600}
+.cal-title .yr-ic{border-color:var(--line);color:var(--muted);font-weight:600}
+.day{border-radius:10px}
+.day.today .num{background:var(--gold);color:var(--on-gold)}
+.day.sel{background:var(--field)}
+.ym-g i.ev{color:var(--gold)}
+.ym-g i.td{background:var(--gold);color:var(--on-gold)}
+.ym.cur b{color:var(--gold)}
+.next .n{border-left:0;border-radius:14px;background:var(--surface);border:1px solid var(--line);box-shadow:inset 3px 0 0 var(--c)}
+.next .d{color:var(--muted)}
+.blk{border-radius:8px}
+.chip-ev{border-radius:10px}
+.yr-title{background:var(--field)!important;color:var(--ink)!important;border-radius:10px!important;font-weight:700!important}
+.yr-title .yr-ic{border-color:var(--line)!important;color:var(--muted)}
+.nowline,.nowline::before{background:var(--gold)}
+/* chiffres */
+.big,.rest-clock,.pomo-meta b,.stepper output,.nu-big,.dish-kcal,.nu-plan b,.time,.date,.ects,.donetime,.dish-time{font-family:var(--font);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.nu-big{font-size:34px;font-weight:600}
+.dish-kcal{font-weight:700}
+.nu-ring{--pc:var(--gold)}
+.ringwrap .fgc{stroke:var(--pc,var(--gold))}
+.prog .fill,.cat-prog i{background:var(--gold)}
+.plan i.w{background:var(--gold)}
+/* nutrition */
+.nu-tabs{background:var(--field);border-radius:var(--r-ctl);padding:3px}
+.nu-tabs button{border-radius:9px;display:flex;justify-content:center;gap:7px;align-items:center;padding:9px 4px;white-space:nowrap;min-width:0;color:var(--muted)}
+.nu-tabs button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+.nu-left{background:var(--surface);border:1px solid var(--line);color:var(--ink);border-radius:var(--r-card)}
+.nu-left svg.i{color:var(--gold);width:20px;height:20px}
+.nu-left b{color:var(--ink)}
+.nu-left .muted{color:var(--muted)}
+.nu-mtype button,.nu-goals button,.nu-pace button,.preset{border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.nu-mtype button svg.i,.nu-gi svg.i{width:22px;height:22px;color:var(--muted)}
+.nu-mtype button[aria-pressed="true"],.nu-goals button[aria-pressed="true"],.nu-pace button[aria-pressed="true"],.preset[aria-pressed="true"]{background:var(--g-bg);color:var(--ink);border-color:var(--gold)}
+.nu-mtype button[aria-pressed="true"] svg.i,.nu-goals button[aria-pressed="true"] svg.i,.nu-pace button[aria-pressed="true"] svg.i{color:var(--gold)}
+.nu-mk .em svg.i{width:20px;height:20px;color:var(--muted)}
+/* plats : initiales sobres à la place des émojis */
+.dish-ic{background:var(--field);color:var(--ink);border-radius:12px;width:44px;height:44px;font-size:14px;font-weight:700;letter-spacing:.06em}
+.dish-it .em{display:none}
+.mchip,.nu-plan div,.pomo-meta div{border-radius:12px;background:var(--field)}
+.memtag{background:var(--g-bg);color:var(--g-ink);border-radius:8px}
+.recipe{background:var(--field);color:var(--ink);border-radius:12px}
+.recipe b{display:flex;align-items:center;gap:6px}
+.qty-ed{color:var(--g-ink)}
+.mbar{border-radius:3px}
+/* chargement : un anneau fin au lieu des émojis */
+.load-em{font-size:0;width:28px;height:28px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--gold);animation:spin .9s linear infinite}
+.load-msg{font-weight:500;color:var(--muted)}
+/* divers */
+.check{border-color:var(--line);border-width:1.5px}
+.done .check{background:var(--ok);border-color:var(--ok)}
+.switch:checked{background:var(--gold)}
+.toast{border-radius:12px;padding:10px 16px;font-weight:500}
+.sheet{border-radius:20px 20px 0 0}
+.sheet-bg{background:rgba(8,8,10,.55)}
+.steps li::before,.onb-steps li span,.onb-it .ic,.pw-av{background:var(--field);color:var(--ink)}
+.pw-av{border-radius:10px}
+.auth-logo{box-shadow:none;border-radius:18px}
+.onb-tag{color:var(--ink);font-weight:600}
+.onb-dots i.on{background:var(--gold)}
+.load-bar i,.pin-dots i.on{background:var(--gold);border-color:var(--gold)}
+.more-opts .plus{border-color:var(--line);color:var(--ink)}
+.more-opts .plus svg.i{width:14px;height:14px}
+.alert,.nu-goalcard,.nu-warn{border-radius:12px}
+.gr-tip{border-radius:10px}
+.pad button{background:var(--surface);border:1px solid var(--line);box-shadow:none;font-weight:500}
+.doc-ic{border-radius:8px}
+.priv-ic svg.i{width:20px;height:20px;color:var(--muted)}
+.soon-ic svg.i,.pin-ic2 svg.i{width:30px;height:30px;color:var(--muted)}
+.nu-mic svg.i{width:16px;height:16px}
+.nu-tool{display:inline-flex!important;flex-direction:row;align-items:center;gap:6px;white-space:nowrap}
+/* macros : couleurs adoucies */
+:root{--m-p:#3F6FB5;--m-c:#B5732F;--m-f:#2F7D5B}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--m-p:#8FB0E0;--m-c:#D9A066;--m-f:#7FC2A0}}
+:root[data-theme="dark"]{--m-p:#8FB0E0;--m-c:#D9A066;--m-f:#7FC2A0}
+.ns-bar svg.i{color:var(--gold)}
+#docFolders .pill svg.i{width:15px;height:15px;color:var(--muted)}
+/* présentation : sobre, sans animations ludiques */
+.onb-big{animation:none;color:var(--gold)}
+.onb-big svg{width:44px;height:44px;stroke-width:1.5}
+.onb-floats{gap:18px}
+.onb-floats span{animation:none;color:var(--muted)}
+.onb-floats svg{width:24px;height:24px}
+.onb-pop{animation:none}
+.onb-grp{color:var(--gold);letter-spacing:.14em}
+/* l'ancien choix « couleur / style » n'a plus d'effet */
+.look-old{display:none!important}
+/* étapes centrées, année → mois actuel, repas à cocher, rappel par activité */
+.onb-steps{justify-self:center;margin:0 auto}
+.yr-title{border:0;padding:6px 12px;font-size:19px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-family:var(--font)}
+.yr-title .yr-ic{font-size:11px;font-weight:600;border:1px solid;border-radius:8px;padding:1px 7px}
+.meal-tg{gap:8px;padding:8px 12px 8px 9px}
+.meal-tg svg.i{color:var(--muted)}
+.meal-tg .tg-box{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--line);display:grid;place-items:center;font-size:12px;font-weight:800;line-height:1}
+.meal-tg[aria-pressed="true"] .tg-box{background:var(--gold);color:var(--on-gold);border-color:var(--gold)}
+.meal-tg[aria-pressed="false"]{border-style:dashed;color:var(--muted)}
+.rem-box{display:grid;gap:8px;background:var(--field);border-radius:14px;padding:10px 12px}
+.rem-h{font-size:13px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:6px}
+.rem-h svg.i{color:var(--gold)}
+.rem-chips{display:flex;flex-wrap:wrap;gap:6px}
+.rem-chips .pill{font-size:13px;padding:6px 10px}
+.rem-on{justify-self:start;padding:8px 14px;display:inline-flex;align-items:center;gap:6px}
+.na-box{justify-items:center;text-align:center;gap:12px;padding:26px 20px calc(22px + env(safe-area-inset-bottom,0px))}
+.na-ic{width:56px;height:56px;border-radius:16px;background:var(--g-bg);color:var(--gold);display:grid;place-items:center}
+.na-ic svg{width:28px;height:28px}
+.na-t{font-size:20px;font-weight:600;letter-spacing:-.02em}
+.na-box .btn{width:100%;max-width:360px}
+/* ===================== v25 : nouvelle structure ===================== */
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.view>.brand{display:none!important}
+.subnav{display:none!important}
+/* en-tête de module */
+.vhead{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:34px;margin:4px 0 0}
+.vback{border:0;background:none;color:var(--g-ink);font:600 15px var(--font);display:inline-flex;align-items:center;gap:2px;padding:6px 6px 6px 0;cursor:pointer}
+.vback svg{width:18px;height:18px}
+.vhead .eyebrow:only-child{margin-top:6px}
+/* barre du bas : fixe, collée en bas, pleine largeur, fond opaque (rien ne passe en dessous) */
+nav{left:0;right:0;bottom:0;transform:none;width:auto;border:0;border-top:1px solid var(--line);border-radius:0;padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px));background:var(--surface);-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none}
+nav .in{max-width:520px;margin:0 auto}
+nav .in{display:flex!important;align-items:center;justify-content:space-between;grid-template-columns:none!important}
+nav .tab{flex:1;padding:6px 0 4px;gap:3px;font-size:10px;color:var(--muted)}
+nav .tab .tab-l{font-size:10px;font-weight:600;letter-spacing:.02em}
+nav .tab[aria-selected="true"]{color:var(--ink)}
+nav .tab svg{width:22px;height:22px}
+.dock-add{flex:none;width:48px;height:48px;border-radius:16px;border:0;background:var(--gold);color:var(--on-gold);display:grid;place-items:center;cursor:pointer;margin:0 6px;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+.dock-add svg{width:24px;height:24px}
+.dock-add:active{transform:scale(.95)}
+main{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+.toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+/* Aujourd'hui */
+.home-top{display:flex;align-items:center;justify-content:space-between;margin:10px 2px 0}
+.avatar{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--field);color:var(--ink);font:700 13px var(--font);letter-spacing:.04em;cursor:pointer}
+.home-hello{font-size:36px!important;margin:6px 2px 18px!important}
+.hm-next{display:grid;gap:4px;text-align:left;width:100%;padding:16px;cursor:pointer;color:var(--ink);font:inherit;border-color:color-mix(in srgb,var(--gold) 45%,var(--line))!important;background:linear-gradient(0deg,var(--surface),var(--surface))}
+.hm-next .eyebrow{color:var(--gold)}
+.hm-next b{font-size:19px;font-weight:600;letter-spacing:-.02em}
+.hm-tiles{display:grid;gap:8px;margin-top:10px}
+.hm-tile{display:grid;gap:2px;text-align:left;padding:12px;cursor:pointer;color:var(--ink);font:inherit;min-width:0}
+.hm-tile b{font-size:22px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hm-list{display:grid}
+.hm-row{display:flex;align-items:center;gap:12px;padding:13px 16px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.hm-row:last-child{border-bottom:0}
+.hm-row.is-done{color:var(--muted);text-decoration:line-through}
+.hm-time{font-size:13px;font-weight:600;color:var(--gold);width:58px;flex:none;font-variant-numeric:tabular-nums}
+.hm-box{width:16px;height:16px;border-radius:5px;border:1.5px solid var(--line);flex:none}
+@keyframes hlpulse{0%,60%{background:var(--g-bg);box-shadow:inset 3px 0 0 var(--gold)}100%{background:transparent;box-shadow:inset 3px 0 0 transparent}}
+.row.hl{animation:hlpulse 2.4s ease-out}
+/* Espaces */
+#v-spaces>.eyebrow{display:block;margin:14px 2px 0}
+.sp-h{margin:22px 2px 8px}
+.sp-card{display:grid}
+.sp-row,.qa-it{display:flex;align-items:center;gap:12px;padding:14px 16px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);font:500 16px var(--font);text-align:left;cursor:pointer}
+.sp-row:last-child,.qa-it:last-child{border-bottom:0}
+.sp-ic{width:34px;height:34px;border-radius:10px;background:var(--field);display:grid;place-items:center;flex:none;color:var(--ink)}
+.sp-ic svg{width:19px;height:19px}
+.sp-meta{font-size:13px;color:var(--muted);white-space:nowrap}
+.chev-r{width:16px;height:16px;color:var(--muted);flex:none}
+/* ajout rapide */
+.qa-list{display:grid;border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden}
+.qa-it b{display:block;font-weight:600}
+.qa-it .sp-ic{color:var(--gold)}
+/* photos dans les notes */
+.note-ph-btn{cursor:pointer;display:inline-flex;align-items:center}
+.note-ed textarea{min-height:38vh!important}
+.note-photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.np{aspect-ratio:1;border:1px solid var(--line);border-radius:12px;overflow:hidden;padding:0;background:var(--field);cursor:pointer;display:grid;place-items:center}
+.np img{width:100%;height:100%;object-fit:cover;display:block}
+.np-load{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--gold);animation:spin .9s linear infinite}
+.np-count{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);margin-top:4px}
+.lightbox{position:fixed;inset:0;z-index:60;background:rgba(5,5,7,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 16px) 16px calc(env(safe-area-inset-bottom,0px) + 16px);gap:14px}
+.lightbox img{max-width:100%;max-height:78vh;border-radius:12px;object-fit:contain}
+.lb-bar{display:flex;gap:10px}
+.lb-bar .btn.ghost{color:#ECEDEF;box-shadow:inset 0 0 0 1px #3A3D44}
+/* barre latérale : seulement sur grand écran (ordinateur) */
+.side{display:none}
+@media (min-width:960px){
+  .side{display:flex;flex-direction:column;gap:2px;position:fixed;top:0;bottom:0;left:0;width:264px;padding:22px 14px;border-right:1px solid var(--line);background:var(--surface);overflow-y:auto;z-index:9}
+  .side-brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:-.01em;margin:0 8px 18px}
+  .side-brand img{width:28px;height:28px;border-radius:8px}
+  .side-h{margin:18px 10px 6px}
+  .side-it,.side-add{display:flex;align-items:center;gap:10px;padding:8px 10px;border:0;border-radius:10px;background:none;color:var(--muted);font:600 14px var(--font);text-align:left;cursor:pointer}
+  .side-it .sp-ic,.side-add .sp-ic{width:28px;height:28px;border-radius:8px;background:transparent}
+  .side-it:hover{background:var(--field);color:var(--ink)}
+  .side-it[aria-current="true"]{background:var(--field);color:var(--ink)}
+  .side-it[aria-current="true"] .sp-ic{color:var(--gold)}
+  .side-add{color:var(--on-gold);background:var(--gold);margin:6px 0 4px}
+  .side-add .sp-ic{color:var(--on-gold)}
+  .side .sp-meta{font-size:12px}
+  nav{display:none!important}
+  main{margin-left:264px;max-width:none;padding:28px 48px 60px}
+  main>.view,main>.vhead{max-width:880px;margin-left:auto;margin-right:auto}
+  body.locked main{margin-left:0}
+  .toast{bottom:24px;left:calc(50% + 132px)}
+  .home-hello{font-size:44px!important}
+}
+body.locked .side{display:none!important}
 </style>
 </head>
 <body>
 <div id="auth" class="auth" hidden>
   <div class="auth-box">
-    <img src="icon-192.png" alt="" class="auth-logo">
+    <img src="logo-192.png" alt="" class="auth-logo">
     <h1>Sid'note</h1>
     <p class="sub" id="authSub">Connecte-toi pour retrouver tes tâches sur tous tes appareils.</p>
     <div class="seg" role="group" aria-label="Choix">
@@ -755,12 +1046,26 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
     <div class="auth-foot"><button type="button" class="linkbtn" id="authLang" style="background:none;border:0;cursor:pointer;font-size:14px">English</button><span class="small muted">Sid'note · une app <b>SidCorp</b></span></div>
   </div>
 </div>
+<aside class="side" id="side" aria-label="Navigation"></aside>
 <main>
   <div class="subnav" id="subnav" role="tablist" hidden></div>
+  <div class="vhead" id="vhead" hidden></div>
+  <!-- AUJOURD'HUI (v25) -->
+  <section class="view" id="v-home" hidden>
+    <div class="home-top"><span class="eyebrow" id="homeDate"></span><button type="button" class="avatar" id="homeAvatar" aria-label="Compte"></button></div>
+    <h1 class="home-hello" id="homeHello"></h1>
+    <div id="homeBody"></div>
+  </section>
+  <!-- ESPACES (v25) -->
+  <section class="view" id="v-spaces" hidden>
+    <span class="eyebrow">Espaces</span>
+    <h1>Tout Sid'note</h1>
+    <div id="spacesList"></div>
+  </section>
   <!-- À FAIRE -->
   <section class="view" id="v-todo" hidden>
-    <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
-    <h1>À faire</h1>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
+    <h1>Tâches</h1>
     <p class="sub" id="hello" style="margin-top:-2px"></p>
     <input type="search" class="search" id="todoSearch" placeholder="Rechercher une tâche" aria-label="Rechercher une tâche" autocomplete="off">
     <div class="prog"><div class="track"><div class="fill" id="pfill" style="width:0"></div></div><span class="small muted" id="ptext"></span></div>
@@ -783,8 +1088,8 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
 
   <!-- PLANNING -->
   <section class="view" id="v-plan" hidden>
-    <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
-    <h1>Planning</h1>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
+    <h1>Agenda</h1>
     <input type="search" class="search" id="planSearch" placeholder="Rechercher une activité" aria-label="Rechercher une activité" autocomplete="off" style="margin-top:6px">
     <div id="planTop">
     <form class="card form" id="taskForm">
@@ -799,7 +1104,8 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
         <label>Heure de fin<input id="fTimeEnd" type="time"></label>
       </div>
       <label>Type<input id="fCat" list="typeList" placeholder="Ex. Sport" autocomplete="off"></label>
-      <button class="btn" type="submit">Ajouter au planning</button>
+      <div class="rem-box" id="fRem"></div>
+      <button class="btn" type="submit">Ajouter à l'agenda</button>
     </form>
     <datalist id="typeList"></datalist>
     <h2>Prochaines échéances</h2>
@@ -814,11 +1120,15 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
         </div>
         <div class="cal-grid cal-dow"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
         <div class="cal-grid" id="calDays"></div>
-        <p class="small muted" style="text-align:center;margin:6px 0 4px">Touche un jour pour voir sa journée en détail. Pince ou touche le mois pour voir toute l'année.</p>
+        <p class="small muted" style="text-align:center;margin:6px 0 4px">Touche un jour pour voir sa journée en détail. Touche « ▦ Année » (ou pince l'écran) pour voir toute l'année.</p>
       </div>
       <div id="calDayView" hidden></div>
       <div id="calYear" hidden></div>
     </div>
+    <details class="more-opts" id="planNotif" style="margin-top:10px">
+      <summary><span class="plus"><i class="ic" data-i="bell"></i></span> <span id="planNotifSum">Rappels</span></summary>
+      <div class="notif-box" style="margin-top:8px"></div>
+    </details>
     <details class="more-opts" id="moreOpts" style="margin-top:10px">
       <summary><span class="plus">+</span> Plus d'options</summary>
       <div class="card form" id="icalCard" style="margin-top:8px">
@@ -837,8 +1147,8 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
 
   <!-- POMODORO -->
   <section class="view" id="v-pomo" hidden>
-    <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
-    <h1>Pomodoro</h1>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
+    <h1>Focus</h1>
     <!-- réglage -->
     <div id="pomoSetup">
       <p class="sub">Choisis combien de temps tu veux travailler. Les sessions et les pauses s'enchaînent toutes seules.</p>
@@ -892,7 +1202,7 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
 
   <!-- MUSCULATION -->
   <section class="view" id="v-muscu" hidden>
-    <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
     <h1>Musculation</h1>
     <p class="sub">Crée tes séances, note tes charges et tes répétitions série par série.</p>
     <div class="rest" id="rest">
@@ -948,7 +1258,7 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
 
   <!-- NUTRITION -->
   <section class="view soonable" id="v-nutri" hidden>
-    <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
     <h1>Nutrition</h1>
     <!-- profil -->
     <div id="nuProfile" hidden>
@@ -971,16 +1281,16 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
         <div class="card nu-blk">
           <div class="nu-blk-h">Ton objectif</div>
           <div class="nu-goals" id="nuGoal" role="group" aria-label="Objectif">
-            <button type="button" data-goal="gain"><span class="nu-gi">📈</span><span><b>Prendre du poids</b><span class="small muted">Plus de calories que tu n'en dépenses</span></span></button>
-            <button type="button" data-goal="maintain"><span class="nu-gi">⚖️</span><span><b>Me maintenir</b><span class="small muted">Autant que tu dépenses</span></span></button>
-            <button type="button" data-goal="lose"><span class="nu-gi">📉</span><span><b>Perdre du poids</b><span class="small muted">Un peu moins que tu dépenses</span></span></button>
+            <button type="button" data-goal="gain"><span class="nu-gi"><i class="ic" data-i="trendup"></i></span><span><b>Prendre du poids</b><span class="small muted">Plus de calories que tu n'en dépenses</span></span></button>
+            <button type="button" data-goal="maintain"><span class="nu-gi"><i class="ic" data-i="equal"></i></span><span><b>Me maintenir</b><span class="small muted">Autant que tu dépenses</span></span></button>
+            <button type="button" data-goal="lose"><span class="nu-gi"><i class="ic" data-i="trenddown"></i></span><span><b>Perdre du poids</b><span class="small muted">Un peu moins que tu dépenses</span></span></button>
           </div>
           <div id="nuPaceWrap" hidden>
             <div class="small muted" style="margin:4px 2px 0">Ton rythme</div>
             <div class="nu-pace" id="nuPace" role="group" aria-label="Rythme">
-              <button type="button" data-pace="fast"><span class="nu-gi">🔥</span><b>Drastique</b><span class="small muted">Le plus vite possible, sans danger</span></button>
-              <button type="button" data-pace="real"><span class="nu-gi">🎯</span><b>Réaliste</b><span class="small muted">Le bon équilibre (conseillé)</span></button>
-              <button type="button" data-pace="easy"><span class="nu-gi">🌿</span><b>À mon aise</b><span class="small muted">Doucement, sans frustration</span></button>
+              <button type="button" data-pace="fast"><span class="nu-gi"><i class="ic" data-i="flame"></i></span><b>Drastique</b><span class="small muted">Le plus vite possible, sans danger</span></button>
+              <button type="button" data-pace="real"><span class="nu-gi"><i class="ic" data-i="target"></i></span><b>Réaliste</b><span class="small muted">Le bon équilibre (conseillé)</span></button>
+              <button type="button" data-pace="easy"><span class="nu-gi"><i class="ic" data-i="leaf"></i></span><b>À mon aise</b><span class="small muted">Doucement, sans frustration</span></button>
             </div>
             <div class="nu-tgt">
               <label class="nu-f"><span>Poids visé (optionnel)</span><span class="nu-in"><input id="nuTarget" type="text" inputmode="decimal" maxlength="5" autocomplete="off"><i>kg</i></span></label>
@@ -1001,6 +1311,13 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
     </div>
     <!-- journée -->
     <div id="nuMain" hidden>
+      <div class="nu-tabs" id="nuTabs" role="group" aria-label="Nutrition">
+        <button type="button" data-nutab="day"><i class="ic" data-i="calendar"></i>Ma journée</button>
+        <button type="button" data-nutab="menu"><i class="ic" data-i="utensils"></i>Menus</button>
+        <button type="button" data-nutab="profile"><i class="ic" data-i="user"></i>Profil</button>
+      </div>
+      <div data-nupane="day">
+      <p class="nu-hint">Ce que tu as mangé aujourd'hui, et ce qu'il te reste.</p>
       <div class="dayv-head" style="margin-top:4px"><button type="button" class="cal-nav" id="nuPrev" aria-label="Jour précédent">‹</button><label class="dayv-title nu-daylbl"><span id="nuDayTxt"></span><input type="date" id="nuDate" aria-label="Choisir le jour"></label><button type="button" class="cal-nav" id="nuNext" aria-label="Jour suivant">›</button></div>
       <div class="card nu-goalcard" id="nuGoalCard" hidden></div>
       <div class="card nu-sum">
@@ -1008,19 +1325,41 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
         <div class="nu-macros" id="nuMacros"></div>
       </div>
       <div class="card nu-week" id="nuWeek" hidden></div>
-      <h2>Menus sur mesure</h2>
+      <h2>Ajouter ce que tu manges</h2>
+      <form class="card form nu-ask" id="nuAskForm">
+        <textarea id="nuAsk" rows="2" placeholder="Ce que tu manges, avec la quantité" aria-label="Ce que tu manges" enterkeyhint="send"></textarea>
+        <div class="nu-photo" id="nuPhotoPrev" hidden></div>
+        <div class="nu-ask-row">
+          <label class="mini nu-tool"><input type="file" id="nuPhoto" accept="image/*" capture="environment" hidden><i class="ic" data-i="camera"></i> Photo</label>
+          <button type="button" class="mini nu-mic nu-tool" id="nuMic" aria-label="Dicter"><i class="ic" data-i="mic"></i></button>
+          <button class="btn" type="submit" id="nuAskBtn">Analyser</button>
+        </div>
+        <div id="nuResult"></div>
+        <button type="button" class="linkbtn" id="nuManual" style="background:none;border:0;cursor:pointer;font-size:14px;justify-self:center">Saisir les valeurs à la main</button>
+      </form>
+      <h2 id="nuLogH">Ma journée</h2>
+      <div id="nuLog"></div>
+      <button type="button" class="qbtn" data-nugo="menu" style="margin-top:10px"><i class="ic" data-i="utensils"></i> Pas d'idée ? Génère un menu</button>
+      </div>
+
+      <div data-nupane="menu" hidden>
+      <p class="nu-hint">1. Choisis tes repas · 2. Génère · 3. Ajuste les quantités · 4. Ajoute à ta journée ce que tu manges.</p>
+      <div class="nu-left" id="nuMenuLeft"></div>
       <div class="card form" id="nuMenuSec">
         <div class="nu-mtype" id="nuMType" role="group" aria-label="Que veux-tu générer ?">
-          <button type="button" data-mtype="day"><span>🍽️</span>Journée</button>
-          <button type="button" data-mtype="breakfast"><span>🥐</span>Petit-déj</button>
-          <button type="button" data-mtype="lunch"><span>🥗</span>Midi</button>
-          <button type="button" data-mtype="snack"><span>🍎</span>Collation</button>
-          <button type="button" data-mtype="dinner"><span>🍲</span>Soir</button>
+          <button type="button" data-mtype="day"><i class="ic" data-i="utensils"></i>Journée</button>
+          <button type="button" data-mtype="breakfast"><i class="ic" data-i="sunrise"></i>Petit-déj</button>
+          <button type="button" data-mtype="lunch"><i class="ic" data-i="sun"></i>Déjeuner</button>
+          <button type="button" data-mtype="snack"><i class="ic" data-i="apple"></i>Collation</button>
+          <button type="button" data-mtype="dinner"><i class="ic" data-i="moon"></i>Dîner</button>
         </div>
         <div id="nuMDay">
-          <div class="row" style="padding:0;border:0;min-height:0"><span class="grow">Repas par jour</span><div class="stepper"><button type="button" data-meals="-1" aria-label="Un repas de moins">−</button><output id="nuMeals">3</output><button type="button" data-meals="1" aria-label="Un repas de plus">+</button></div></div>
-          <div class="small muted" style="margin:8px 2px 4px">Calories par repas (modifiables)</div>
+          <div class="small muted" style="margin:0 2px 6px">Quels repas prends-tu dans la journée ? <b style="color:var(--g-ink)">Touche pour cocher ou décocher.</b></div>
+          <div class="nu-slots" id="nuSlots"></div>
+          <div class="row" style="padding:0;border:0;min-height:0;margin-top:8px"><span class="grow"><i class="ic" data-i="apple"></i> Collations</span><div class="stepper"><button type="button" data-snacks="-1" aria-label="Une collation de moins">−</button><output id="nuSnacks">0</output><button type="button" data-snacks="1" aria-label="Une collation de plus">+</button></div></div>
+          <div class="small muted" style="margin:10px 2px 4px">Calories par repas</div>
           <div class="nu-mk" id="nuMealKcal"></div>
+          <div class="nu-mk-note">Change un repas : les autres s'adaptent tout seuls pour garder ton objectif.</div>
           <div class="small" id="nuMkTot" style="margin:4px 2px 0"></div>
         </div>
         <label class="nu-f" id="nuMOne" hidden><span>Calories pour ce repas</span><span class="nu-in"><input id="nuOneKcal" type="text" inputmode="numeric" maxlength="4" autocomplete="off"><i>kcal</i></span></label>
@@ -1029,42 +1368,31 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
         <button type="button" class="btn" id="nuMenuBtn">Générer</button>
       </div>
       <div id="nuMenu"></div>
-      <h2>Ajouter ce que tu manges</h2>
-      <form class="card form nu-ask" id="nuAskForm">
-        <textarea id="nuAsk" rows="2" placeholder="Ce que tu manges, avec la quantité" aria-label="Ce que tu manges" enterkeyhint="send"></textarea>
-        <div class="nu-photo" id="nuPhotoPrev" hidden></div>
-        <div class="nu-ask-row">
-          <label class="mini nu-tool"><input type="file" id="nuPhoto" accept="image/*" capture="environment" hidden>📷 Photo</label>
-          <button type="button" class="mini nu-mic nu-tool" id="nuMic" aria-label="Dicter">🎤</button>
-          <button class="btn" type="submit" id="nuAskBtn">Analyser</button>
-        </div>
-        <div id="nuResult"></div>
-        <button type="button" class="linkbtn" id="nuManual" style="background:none;border:0;cursor:pointer;font-size:14px;justify-self:center">Saisir les valeurs à la main</button>
-      </form>
-      <h2 id="nuLogH">Ma journée</h2>
-      <div id="nuLog"></div>
+      </div>
 
-      <details class="setsec" id="nuPlanSec"><summary><span>Mon profil et mes besoins</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
-        <div class="setsec-in"><div id="nuPlan"></div><button type="button" class="qbtn" id="nuEditProfile">Modifier mon profil</button></div>
-      </details>
+      <div data-nupane="profile" hidden>
+      <p class="nu-hint">Tes besoins calculés à partir de ton profil.</p>
+      <div class="card" style="padding:12px"><div id="nuPlan"></div></div>
+      <button type="button" class="qbtn" id="nuEditProfile" style="margin-top:10px">Modifier mon profil</button>
+      </div>
     </div>
-    <div class="soon" hidden><div class="soon-card"><div class="soon-ic">🔒</div><b>Bientôt disponible</b><span class="small muted soon-en">Coming soon</span></div></div>
+    <div class="soon" hidden><div class="soon-card"><div class="soon-ic"><i class="ic" data-i="lock"></i></div><b>Bientôt disponible</b><span class="small muted soon-en">Coming soon</span></div></div>
   </section>
 
   <!-- GRAPHIQUES -->
   <section class="view soonable" id="v-graph" hidden>
-    <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
     <h1>Graphiques</h1>
     <div class="gr-filters"><div class="seg" id="grRange" role="group" aria-label="Période"><button type="button" data-range="7">7 jours</button><button type="button" data-range="30">30 jours</button></div></div>
-    <div class="card gr-card">
-      <div class="gr-h"><b>Macros par jour</b><span class="small muted">en grammes</span></div>
-      <div class="gr-legend" id="grMacroLeg"></div>
-      <div class="gr-plot" id="grMacros"></div>
-    </div>
     <div class="card gr-card">
       <div class="gr-h"><b>Poids</b><span class="small muted" id="grWeightSub">en kg</span></div>
       <form class="gr-wform" id="grWForm"><span class="nu-in"><input id="grWIn" type="text" inputmode="decimal" maxlength="5" aria-label="Poids du jour" placeholder="Poids du jour" autocomplete="off"><i>kg</i></span><button class="btn" type="submit">Enregistrer</button></form>
       <div class="gr-plot" id="grWeight"></div>
+    </div>
+    <div class="card gr-card">
+      <div class="gr-h"><b>Macros par jour</b><span class="small muted">en grammes</span></div>
+      <div class="gr-legend" id="grMacroLeg"></div>
+      <div class="gr-plot" id="grMacros"></div>
     </div>
     <div class="card gr-card">
       <div class="gr-h"><b>Calories</b><span class="small muted">par rapport à ton objectif</span></div>
@@ -1078,15 +1406,15 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
     <h2>Suivi des semaines</h2>
     <div id="grWeeks"></div>
     <div class="gr-tip" id="grTip" hidden></div>
-    <div class="soon" hidden><div class="soon-card"><div class="soon-ic">🔒</div><b>Bientôt disponible</b><span class="small muted soon-en">Coming soon</span></div></div>
+    <div class="soon" hidden><div class="soon-card"><div class="soon-ic"><i class="ic" data-i="lock"></i></div><b>Bientôt disponible</b><span class="small muted soon-en">Coming soon</span></div></div>
   </section>
 
   <!-- DOCUMENTS -->
   <section class="view" id="v-docs" hidden>
-    <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
     <h1>Documents</h1>
     <p class="sub">Range tes PDF et scanne tes documents. Ils te suivent sur tous tes appareils.</p>
-    <div class="card doc-locked" id="docLocked" hidden><div class="pin-ic2">🔒</div><b>Documents verrouillés</b><span class="small muted">Entre ton code pour voir tes documents.</span><button type="button" class="btn" id="docUnlockBtn">Déverrouiller</button></div>
+    <div class="card doc-locked" id="docLocked" hidden><div class="pin-ic2"><i class="ic" data-i="lock"></i></div><b>Documents verrouillés</b><span class="small muted">Entre ton code pour voir tes documents.</span><button type="button" class="btn" id="docUnlockBtn">Déverrouiller</button></div>
     <input type="search" class="search" id="docSearch" placeholder="Rechercher dans tous les documents" aria-label="Rechercher dans tous les documents" autocomplete="off">
     <div class="chips" id="docFolders" style="margin-bottom:10px"></div>
     <form class="addbar" id="folderForm" hidden>
@@ -1115,7 +1443,7 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
 
   <!-- NOTES -->
   <section class="view" id="v-notes" hidden>
-    <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
     <div id="notesList">
       <h1>Notes</h1>
       <p class="sub">Écris librement : idées, listes, brouillons. Tout est enregistré au fur et à mesure.</p>
@@ -1124,18 +1452,19 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
       <div class="card" id="noteList"></div>
     </div>
     <div id="noteEdit" hidden>
-      <div class="dayv-head"><button type="button" class="back" id="noteBack">‹ Notes</button><span class="grow small muted" id="noteWhen" style="text-align:center"></span><button type="button" class="mini nu-mic" id="noteMic" aria-label="Dicter la note">🎤</button><button type="button" class="mini" id="noteLock" aria-label="Rendre la note secrète">🔒</button><button type="button" class="x" id="noteDel" aria-label="Supprimer la note">×</button></div>
-      <div class="ns-bar" id="noteSecBar" hidden><span class="grow">🔒 <b>Note secrète</b> · <span class="muted">visible seulement avec ton code</span></span><button type="button" class="mini" id="noteUnsecret">Rendre visible</button></div>
+      <div class="dayv-head"><button type="button" class="back" id="noteBack">‹ Notes</button><span class="grow small muted" id="noteWhen" style="text-align:center"></span><button type="button" class="mini nu-mic" id="noteMic" aria-label="Dicter la note"><i class="ic" data-i="mic"></i></button><label class="mini note-ph-btn" id="notePhotoBtn" aria-label="Ajouter une photo"><input type="file" id="notePhotoIn" accept="image/*" multiple hidden><i class="ic" data-i="camera"></i></label><button type="button" class="mini" id="noteLock" aria-label="Rendre la note secrète"><i class="ic" data-i="lock"></i></button><button type="button" class="x" id="noteDel" aria-label="Supprimer la note">×</button></div>
+      <div class="ns-bar" id="noteSecBar" hidden><span class="grow"><i class="ic" data-i="lock"></i> <b>Note secrète</b> · <span class="muted">visible seulement avec ton code</span></span><button type="button" class="mini" id="noteUnsecret">Rendre visible</button></div>
       <div class="note-ed">
         <input id="noteTitle" placeholder="Titre" aria-label="Titre de la note" autocomplete="off">
         <textarea id="noteBody" placeholder="Écris ta note…" aria-label="Texte de la note"></textarea>
       </div>
+      <div class="note-photos" id="notePhotos"></div>
     </div>
   </section>
 
   <!-- MOTS DE PASSE -->
   <section class="view" id="v-pwd" hidden>
-    <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
     <h1>Mots de passe</h1>
     <div id="pinBox" class="pin">
       <p class="pin-t" id="pinTitle"></p>
@@ -1149,13 +1478,13 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
       <p class="sub">Tes mots de passe, chiffrés avec ton code. Personne d'autre ne peut les lire, même pas le serveur.</p>
       <div class="pw-top"><input type="search" class="search" id="pwSearch" placeholder="Rechercher un site" aria-label="Rechercher un site" autocomplete="off"><button type="button" class="btn" id="pwNew">+ Ajouter</button></div>
       <div class="card" id="pwList"></div>
-      <button type="button" class="qbtn" id="pwLock" style="margin-top:12px">🔒 Verrouiller</button>
+      <button type="button" class="qbtn" id="pwLock" style="margin-top:12px"><i class="ic" data-i="lock"></i> Verrouiller</button>
     </div>
   </section>
 
   <!-- APPLI -->
   <section class="view" id="v-app" hidden>
-    <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
     <h1>Application</h1>
     <p class="sub">Installe Sid'note sur ton iPhone pour l'ouvrir comme une vraie app, en plein écran.</p>
     <div class="card"><div class="row okline" id="appStatus"></div></div>
@@ -1172,7 +1501,7 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
 
   <!-- RÉGLAGES -->
   <section class="view" id="v-more" hidden>
-    <div class="brand"><img src="icon-192.png" alt="">Sid'note</div>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
     <h1>Réglages</h1>
     <details class="setsec" data-sec="compte" open><summary><span>Compte</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
       <div class="setsec-in">
@@ -1197,13 +1526,13 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
     <details class="setsec" data-sec="look"><summary><span>Apparence</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
       <div class="setsec-in">
     <div class="card">
-      <div class="row" style="display:block"><div style="margin-bottom:10px">Couleur de Sid'note</div><div class="accents" id="accentSel" role="group" aria-label="Couleur de Sid'note"></div></div>
-      <div class="row"><span class="grow">Style</span><div class="seg" id="lookSel" role="group" aria-label="Style" style="grid-template-columns:repeat(3,auto);padding:2px"><button type="button" data-look="soft">Discret</button><button type="button" data-look="color">Coloré</button><button type="button" data-look="vivid">Intense</button></div></div>
+      <div class="row look-old" style="display:block"><div style="margin-bottom:10px">Couleur de Sid'note</div><div class="accents" id="accentSel" role="group" aria-label="Couleur de Sid'note"></div></div>
+      <div class="row look-old"><span class="grow">Style</span><div class="seg" id="lookSel" role="group" aria-label="Style" style="grid-template-columns:repeat(3,auto);padding:2px"><button type="button" data-look="soft">Discret</button><button type="button" data-look="color">Coloré</button><button type="button" data-look="vivid">Intense</button></div></div>
       <div class="row"><span class="grow">Thème</span><div class="seg" id="themeSel" role="group" aria-label="Thème" style="grid-template-columns:repeat(3,auto);padding:2px"><button type="button" data-theme="auto">Auto</button><button type="button" data-theme="light">Clair</button><button type="button" data-theme="dark">Sombre</button></div></div>
       <label class="row"><span class="grow">Langue</span><select id="langSel" class="sel"><option value="fr">Français</option><option value="en">English</option></select></label>
-      <label class="row"><span class="grow">Page d'accueil</span><select id="homeSel" class="sel"></select></label>
+      <label class="row look-old"><span class="grow">Page d'accueil</span><select id="homeSel" class="sel"></select></label>
     </div>
-    <p class="small muted" style="margin:6px 4px 0">La page d'accueil est celle qui s'ouvre quand tu lances Sid'note.</p>
+
       </div>
     </details>
     <details class="setsec" data-sec="tabs"><summary><span>Onglets et catégories</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
@@ -1214,13 +1543,7 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
     </details>
     <details class="setsec" data-sec="notif" id="rappelsSec"><summary><span>Notifications</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
       <div class="setsec-in">
-    <div class="card">
-      <div class="row"><div class="grow">Sois prévenu avant chaque activité du planning.<div class="small muted" id="notifState"></div></div></div>
-      <div class="row" id="notifRow" style="gap:8px"><button class="btn" id="notifBtn" style="flex:1">Activer les notifications</button><button class="btn ghost" id="notifTest" hidden>Tester</button></div>
-    </div>
-    <div class="label" style="margin:12px 4px 6px">Me prévenir</div>
-    <div class="chips" id="notifLeads" style="flex-wrap:wrap;margin:0;padding-inline:0"></div>
-    <p class="small muted" style="margin:8px 4px 0">Tu peux en choisir plusieurs. Une activité sans heure compte pour 8 h. Les cours UMons ne sont pas notifiés. Sur iPhone : iOS 16.4 ou plus, et Sid'note ouvert depuis l'écran d'accueil.</p>
+    <div class="notif-box"></div>
       </div>
     </details>
     <details class="setsec" data-sec="backup"><summary><span>Sauvegarde</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
@@ -1235,12 +1558,12 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
     <details class="setsec" data-sec="privacy"><summary><span>Tes données et ta vie privée</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
       <div class="setsec-in">
     <div class="card priv">
-      <div class="row"><span class="priv-ic">🗄️</span><div class="grow"><b>Ce que tu écris</b><div class="small muted">Planning, tâches, notes, séances, nutrition et réglages sont enregistrés dans ton compte, sur les serveurs de Supabase. Les autres utilisateurs ne peuvent pas les voir. L'administrateur de Sid'note (SidCorp) peut techniquement y accéder pour l'entretien, mais ne les consulte pas.</div></div></div>
-      <div class="row"><span class="priv-ic">🔐</span><div class="grow"><b>Mots de passe et notes secrètes</b><div class="small muted">Chiffrés sur ton téléphone avec ton code avant d'être envoyés. Le serveur ne reçoit que du texte illisible ; ni SidCorp ni Supabase ne peuvent les lire.</div></div></div>
-      <div class="row"><span class="priv-ic">📄</span><div class="grow"><b>Documents (PDF, scans)</b><div class="small muted">Chiffrés sur ton téléphone avec le code de tes documents, puis copiés dans ton espace privé (Supabase Storage). En ligne, ce n'est que du contenu illisible : toi seul peux les ouvrir, ni l'administrateur ni Supabase.</div></div></div>
-      <div class="row"><span class="priv-ic">📸</span><div class="grow"><b>Photos de tes plats</b><div class="small muted">Envoyées une seule fois pour être analysées : elles passent par le serveur Sid'note puis par le service d'IA d'Anthropic, qui calcule les calories. Elles ne sont pas enregistrées dans ton compte, ne servent pas à entraîner l'IA et ne sont gardées que peu de temps par Anthropic (sécurité) avant d'être effacées. Seule une petite vignette reste sur ton téléphone.</div></div></div>
-      <div class="row"><span class="priv-ic">🥗</span><div class="grow"><b>Textes de nutrition</b><div class="small muted">Ce que tu tapes (aliments, profil) est envoyé à l'IA pour le calcul. Les aliments sont retenus dans une mémoire commune et anonyme (juste « 100 g de riz = 130 kcal », jamais ton nom).</div></div></div>
-      <div class="row"><span class="priv-ic">🌐</span><div class="grow"><b>Le site</b><div class="small muted">Netlify héberge seulement l'application. Il ne voit pas tes données. Pas de publicité, pas de pisteur, rien n'est vendu.</div></div></div>
+      <div class="row"><span class="priv-ic"><i class="ic" data-i="database"></i></span><div class="grow"><b>Ce que tu écris</b><div class="small muted">Planning, tâches, notes, séances, nutrition et réglages sont enregistrés dans ton compte, sur les serveurs de Supabase. Les autres utilisateurs ne peuvent pas les voir. L'administrateur de Sid'note (SidCorp) peut techniquement y accéder pour l'entretien, mais ne les consulte pas.</div></div></div>
+      <div class="row"><span class="priv-ic"><i class="ic" data-i="shield"></i></span><div class="grow"><b>Mots de passe et notes secrètes</b><div class="small muted">Chiffrés sur ton téléphone avec ton code avant d'être envoyés. Le serveur ne reçoit que du texte illisible ; ni SidCorp ni Supabase ne peuvent les lire.</div></div></div>
+      <div class="row"><span class="priv-ic"><i class="ic" data-i="file"></i></span><div class="grow"><b>Documents (PDF, scans)</b><div class="small muted">Chiffrés sur ton téléphone avec le code de tes documents, puis copiés dans ton espace privé (Supabase Storage). En ligne, ce n'est que du contenu illisible : toi seul peux les ouvrir, ni l'administrateur ni Supabase.</div></div></div>
+      <div class="row"><span class="priv-ic"><i class="ic" data-i="camera"></i></span><div class="grow"><b>Photos de tes plats</b><div class="small muted">Envoyées une seule fois pour être analysées : elles passent par le serveur Sid'note puis par le service d'IA d'Anthropic, qui calcule les calories. Elles ne sont pas enregistrées dans ton compte, ne servent pas à entraîner l'IA et ne sont gardées que peu de temps par Anthropic (sécurité) avant d'être effacées. Seule une petite vignette reste sur ton téléphone.</div></div></div>
+      <div class="row"><span class="priv-ic"><i class="ic" data-i="apple"></i></span><div class="grow"><b>Textes de nutrition</b><div class="small muted">Ce que tu tapes (aliments, profil) est envoyé à l'IA pour le calcul. Les aliments sont retenus dans une mémoire commune et anonyme (juste « 100 g de riz = 130 kcal », jamais ton nom).</div></div></div>
+      <div class="row"><span class="priv-ic"><i class="ic" data-i="globe"></i></span><div class="grow"><b>Le site</b><div class="small muted">Netlify héberge seulement l'application. Il ne voit pas tes données. Pas de publicité, pas de pisteur, rien n'est vendu.</div></div></div>
     </div>
     <div class="card" style="margin-top:10px">
       <div class="row"><div class="grow">Tes droits : voir, récupérer et effacer tes données à tout moment. Pour fermer complètement ton compte, écris à SidCorp.</div></div>
@@ -1260,7 +1583,7 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
     <div class="card" id="stats"></div>
       </div>
     </details>
-    <p class="small muted" style="margin:18px 4px">Sid'note · version 22 · une app <b>SidCorp</b></p>
+    <p class="small muted" style="margin:18px 4px">Sid'note · version 27 · une app <b>SidCorp</b></p>
   </section>
 </main>
 
@@ -1276,6 +1599,7 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
       <div class="two"><label>Date<input id="eDate" type="date"></label><label>Fin (optionnel)<input id="eEnd" type="date"></label></div>
       <div class="small muted" style="margin:2px 0 -6px">Heures (optionnel)</div><div class="two"><label>Heure de début<input id="eTime" type="time"></label><label>Heure de fin<input id="eTimeEnd" type="time"></label></div>
       <label>Type<input id="eCat" list="typeList" autocomplete="off"></label>
+      <div class="rem-box" id="eRem"></div>
     </div>
     <div class="two"><button type="button" class="btn stop" id="eDelete">Supprimer</button><button class="btn" type="submit">Enregistrer</button></div>
   </form>
@@ -1328,24 +1652,29 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
   <div class="onb-track" id="onbTrack">
     <section class="onb-slide">
       <div class="onb-box">
-        <img src="icon-192.png" alt="" class="auth-logo onb-pop" style="width:84px;height:84px">
+        <img src="logo-192.png" alt="" class="auth-logo onb-pop" style="width:84px;height:84px">
         <h1 id="onbTitle">Bienvenue sur Sid'note</h1>
-        <p class="onb-tag">Chacun sa vie, chacun sa personnalité&nbsp;: à chacun son Sid'note.</p>
-        <p class="sub">Choisis ce qui te ressemble, en quelques gestes.</p>
+        <p class="onb-tag">Une seule app pour ton planning, tes tâches, ton sport, ta nutrition et tes documents.</p>
+        <p class="sub">Tu n'as pas besoin de tout : on règle l'app ensemble en 3 étapes.</p>
+        <ol class="onb-steps">
+          <li><span>1</span>Choisis les onglets qui te servent</li>
+          <li><span>2</span>Choisis ton thème, sombre ou clair</li>
+          <li><span>3</span>C'est parti, tout reste modifiable dans Réglages</li>
+        </ol>
+        <p class="small muted" style="margin:0">Ta langue :</p>
         <div class="seg" id="onbLang" role="group" aria-label="Langue"><button type="button" data-lang="fr" aria-pressed="true">Français</button><button type="button" data-lang="en" aria-pressed="false">English</button></div>
-        <div class="onb-floats" aria-hidden="true"><span>🗓️</span><span>✅</span><span>🏋️</span><span>🥗</span><span>📝</span><span>🔒</span></div>
+        <div class="onb-floats" aria-hidden="true"><span data-fn="plan"></span><span data-fn="todo"></span><span data-fn="muscu"></span><span data-fn="nutri"></span><span data-fn="notes"></span><span data-fn="pwd"></span></div>
       </div>
     </section>
     <div id="onbGroups" style="display:contents"></div>
     <section class="onb-slide">
       <div class="onb-box">
-        <div class="onb-big">🎨</div>
-        <h1>À ton image</h1>
-        <p class="sub">Choisis ta couleur et ton style : tout l'écran change en direct.</p>
-        <div class="accents" id="onbAccent" style="justify-content:center"></div>
-        <div class="seg" id="onbLook" role="group" aria-label="Style" style="grid-template-columns:repeat(3,1fr)"><button type="button" data-look="soft">Discret</button><button type="button" data-look="color">Coloré</button><button type="button" data-look="vivid">Intense</button></div>
-        <div class="onb-preview card"><div class="brand"><img src="icon-192.png" alt="">Sid'note</div><b class="onb-pv-t">Aperçu</b><div class="prog"><div class="track"><div class="fill" style="width:62%;background:var(--accent)"></div></div></div><button type="button" class="btn" tabindex="-1">Bouton</button></div>
-        <button class="btn" id="onbGo" style="padding:14px;font-size:17px">C'est parti 🚀</button>
+        <div class="onb-big"><i class="ic" data-i="moon"></i></div>
+        <h1>Ton thème</h1>
+        <p class="sub">Sombre pour le soir, clair pour la journée, ou automatique selon ton téléphone. Tu pourras le changer dans Réglages.</p>
+        <div class="seg" id="onbTheme" role="group" aria-label="Thème" style="grid-template-columns:repeat(3,1fr)"><button type="button" data-otheme="auto">Auto</button><button type="button" data-otheme="light">Clair</button><button type="button" data-otheme="dark">Sombre</button></div>
+        <div class="accents look-old" id="onbAccent"></div><div class="look-old" id="onbLook"></div>
+        <button class="btn" id="onbGo" style="padding:14px;font-size:17px">C'est parti</button>
       </div>
     </section>
   </div>
@@ -1366,9 +1695,60 @@ nav .in{display:grid;grid-template-columns:repeat(5,1fr);width:100%;max-width:64
     <div class="small muted">Astuce : pose la feuille à plat, bien éclairée, et cadre-la au plus près.</div>
   </div>
 </div>
+<div class="lightbox" id="lightbox" hidden><img id="lbImg" alt=""><div class="lb-bar"><button type="button" class="btn ghost" id="lbDel">Supprimer la photo</button><button type="button" class="btn" id="lbClose">Fermer</button></div></div>
+<div class="sheet-bg" id="qaSheet" hidden>
+  <div class="sheet card">
+    <div class="sheet-head"><b>Ajouter</b><button type="button" class="x" id="qaClose" aria-label="Fermer">×</button></div>
+    <div class="qa-list" id="qaList"></div>
+  </div>
+</div>
+<div class="sheet-bg" id="notifAsk" hidden>
+  <div class="sheet card na-box">
+    <div class="na-ic"><i class="ic" data-i="bell"></i></div>
+    <b class="na-t" id="naTitle">Ne rate plus rien</b>
+    <p class="small muted" id="naText" style="margin:0">Active les notifications : Sid'note te prévient avant tes rendez-vous, tes cours et tes échéances. Tu choisis quand, dans Agenda ou Réglages.</p>
+    <button type="button" class="btn" id="naYes">Activer les notifications</button>
+    <button type="button" class="btn ghost" id="naNo">Plus tard</button>
+  </div>
+</div>
 <div class="toast" id="toast" hidden></div>
 
 <script>
+/* ---------- icônes au trait (v24, style Graphite : plus aucun émoji dans l'interface) ---------- */
+const ICS={
+  bell:'<path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3H4a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/>',
+  calendar:'<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/>',
+  utensils:'<path d="M7 3v18M4 3v5a3 3 0 0 0 6 0V3M17 21V3c-2 1.5-3 4-3 8h3"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M5 21v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1"/>',
+  camera:'<path d="M5 7h1a2 2 0 0 0 2-2a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2"/><circle cx="12" cy="13" r="3"/>',
+  mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/>',
+  lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  unlock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/>',
+  trendup:'<path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>',
+  trenddown:'<path d="M3 7l6 6 4-4 8 8"/><path d="M21 10v7h-7"/>',
+  equal:'<path d="M5 9h14M5 15h14"/>',
+  flame:'<path d="M12 21c3.9 0 7-2.9 7-6.8 0-3.6-2.6-5.8-4-8.7-1.6 1.6-2.6 3.5-2.6 5.5-1.1-.8-1.9-2.2-2-3.8C7.6 9 5 11.6 5 14.2 5 18.1 8.1 21 12 21z"/>',
+  target:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".6"/>',
+  leaf:'<path d="M5 21c.5-4.5 2.5-8 7-10"/><path d="M9 18c6.2 0 10.5-3.3 11-12V4h-4c-7 0-11 4-11 9 0 1.8.4 3.3 1 5"/>',
+  sunrise:'<path d="M3 17h18M6 21h12M7 13a5 5 0 0 1 10 0M12 4v3M4.6 8.6l1.4 1.4M19.4 8.6 18 10"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M5.6 5.6 7 7M17 17l1.4 1.4M3 12h2M19 12h2M5.6 18.4 7 17M17 7l1.4-1.4"/>',
+  moon:'<path d="M12 3a7 7 0 1 0 9 9 8 8 0 1 1-9-9"/>',
+  apple:'<path d="M12 7.5c-1.7-1.4-5.4-1.4-6.4 2.3-1 3.7 1.4 8.9 3.7 9.9 1 .4 1.5-.3 2.7-.3s1.7.7 2.7.3c2.3-1 4.7-6.2 3.7-9.9-1-3.7-4.7-3.7-6.4-2.3z"/><path d="M12 7.5c0-2 .9-3.4 2.9-4"/>',
+  book:'<path d="M4 19V5a2 2 0 0 1 2-2h14v14H6a2 2 0 0 0-2 2zm0 0a2 2 0 0 0 2 2h14v-4"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  activity:'<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+  bolt:'<path d="M13 3 4 14h7l-1 7 9-11h-7z"/>',
+  alert:'<path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>',
+  folder:'<path d="M4 5h5l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a1 1 0 0 1 1-1"/>',
+  file:'<path d="M14 3v5h5"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2"/>',
+  database:'<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>',
+  shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+  grad:'<path d="M22 9 12 4 2 9l10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/>'};
+const IC=n=>ICS[n]?`<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICS[n]}</svg>`:"";
+// initiales d'un plat à la place de l'émoji : « Poulet riz » → « PR »
+const mono=s=>{const w=String(s||"").normalize("NFC").split(/[\s,'’-]+/).filter(x=>x&&/^\p{L}/u.test(x)&&!/^(de|du|des|la|le|les|au|aux|et|à|a|en|of|the|and|with|avec)$/i.test(x));return (w.length?w.slice(0,2).map(x=>x[0]).join(""):"·").toUpperCase()};
+const hydrateIcons=root=>(root||document).querySelectorAll("i.ic[data-i]").forEach(e=>{if(!e.firstChild)e.innerHTML=IC(e.dataset.i)});
 /* ---------- données de départ ---------- */
 const LEGACY_COURSES=[
  ["UW-M2-IGGESS-084-M","Strategic Management","Quad 1",6],
@@ -1477,7 +1857,7 @@ const DICT={
 "Récupérer les données déjà présentes sur ce téléphone":"Bring over the data already on this phone","Réglages":"Settings","Résultats":"Results","Sauvegarde":"Backup",
 "Sauvegarde restaurée":"Backup restored","Scan enregistré dans Documents":"Scan saved to Documents","Scanner un document":"Scan a document","◎ Scanner":"◎ Scan",
 "Se connecter":"Sign in","Se déconnecter":"Sign out","Secondes":"Seconds","Session arrêtée":"Session stopped","Sid'note · une app":"Sid'note · an app by",
-"Sid'note · version 22 · une app":"Sid'note · version 22 · an app by","Simple":"Simple","Statistiques":"Statistics","Supprimer":"Delete","Supprimer ?":"Delete?","Supprimer la séance":"Delete workout",
+"Sid'note · version 27 · une app":"Sid'note · version 27 · an app by","Simple":"Simple","Statistiques":"Statistics","Supprimer":"Delete","Supprimer ?":"Delete?","Supprimer la séance":"Delete workout",
 "Supprimer l'exercice":"Delete exercise","Supprimer la catégorie":"Delete category","Supprimé":"Deleted","Sur cet appareil seulement":"On this device only","Sur l'écran d'accueil":"Add to Home Screen",
 "Sur les 7 derniers jours":"Over the last 7 days","Synchronisé":"Synced","Synchronisation…":"Syncing…","Séance copiée":"Workout copied","Séance copiée : colle-la dans un message":"Workout copied: paste it in a message",
 "Séance créée":"Workout created","Séance remise à zéro":"Workout cleared","Séance supprimée":"Workout deleted","Séries":"Sets","Ta musique":"Your music",
@@ -1669,6 +2049,34 @@ const DICT={
 "Reviens ici, appuie sur":"Come back here, tap","Appuie sur les":"Tap the","Choisir un fichier":"Choose File","et sélectionne ton scan.":"and pick your scan.",
 "Le PDF garde toute la qualité du scanner d'Apple (bords détectés, page redressée).":"The PDF keeps the full quality of Apple's scanner (edges detected, page straightened)."
 };
+// v23
+Object.assign(DICT,{
+"Une seule app pour ton planning, tes tâches, ton sport, ta nutrition et tes documents.":"One app for your planner, tasks, workouts, nutrition and documents.",
+"Tu n'as pas besoin de tout : on règle l'app ensemble en 3 étapes.":"You don't need everything: let's set up the app together in 3 steps.",
+"Choisis les onglets qui te servent":"Pick the tabs you need","Choisis ton thème, sombre ou clair":"Pick your theme, dark or light","Ton thème":"Your theme","Sombre pour le soir, clair pour la journée, ou automatique selon ton téléphone. Tu pourras le changer dans Réglages.":"Dark for the evening, light for the day, or automatic with your phone. You can change it in Settings.","Une couleur par partie":"One color per section","Chaque partie de Sid'note a sa couleur : tu sais toujours où tu es, d'un coup d'œil.":"Each part of Sid'note has its own color: you always know where you are at a glance.","Planning, tâches, Pomodoro":"Planner, tasks, Pomodoro","Muscu, nutrition, graphiques":"Workouts, nutrition, charts","Notes, documents, mots de passe":"Notes, documents, passwords","Compte, apparence, rappels":"Account, appearance, reminders",
+"C'est parti, tout reste modifiable dans Réglages":"You're set, everything can be changed in Settings","Ta langue :":"Your language:",
+"Ma journée":"My day","Menus":"Menus","Profil":"Profile","Nutrition":"Nutrition","Ce que tu as mangé aujourd'hui, et ce qu'il te reste.":"What you ate today, and what's left.",
+"Pas d'idée ? Génère un menu":"No idea? Generate a menu","C'est parti":"Let's go","Collations":"Snacks","Verrouiller":"Lock","Photo":"Photo","Temps":"Time","Astuce":"Tip","Verrouillé":"Locked","Drastique":"Drastic","Réaliste":"Realistic","À mon aise":"At my own pace",
+"1. Choisis tes repas · 2. Génère · 3. Ajuste les quantités · 4. Ajoute à ta journée ce que tu manges.":"1. Pick your meals · 2. Generate · 3. Adjust quantities · 4. Add what you eat to your day.",
+"Quels repas prends-tu dans la journée ?":"Which meals do you have during the day?","🍎 Collations":"🍎 Snacks","Une collation de moins":"One snack less","Une collation de plus":"One more snack",
+"Calories par repas":"Calories per meal","Change un repas : les autres s'adaptent tout seuls pour garder ton objectif.":"Change one meal: the others adjust automatically to keep your goal.",
+"Tes besoins calculés à partir de ton profil.":"Your needs, calculated from your profile.","Repas unique (OMAD)":"One meal a day (OMAD)","Repas":"Meal",
+"Générer mon repas unique":"Generate my single meal","Répartition conseillée":"Suggested split","Maximum":"Maximum","Garde au moins un repas":"Keep at least one meal",
+"c. à soupe":"tbsp","c. à café":"tsp","Réponse vide, réessaie.":"Empty answer, try again.","Choisis tes repas, puis touche « Générer ».":"Pick your meals, then tap “Generate”.",
+"Ton menu":"Your menu","Ne rate plus rien":"Never miss a thing","Active les notifications : Sid'note te prévient avant tes rendez-vous, tes cours et tes échéances. Tu choisis quand, dans Agenda ou Réglages.":"Turn on notifications: Sid'note reminds you before your appointments, classes and deadlines. You choose when, in Calendar or Settings.","Pour recevoir des rappels avant tes rendez-vous et tes cours, installe d'abord Sid'note sur ton écran d'accueil, puis ouvre-le depuis son icône.":"To get reminders before your appointments and classes, first add Sid'note to your Home Screen, then open it from its icon.","Voir comment l'installer":"See how to install it","Plus tard":"Later","Ton code Sid'note":"Your Sid'note code","Choisis ton code à 5 chiffres : il protège tes documents et tes mots de passe.":"Choose your 5-digit code: it protects your documents and passwords.","Entre ton code (le même que pour tes mots de passe).":"Enter your code (the same as for your passwords).","Entre ton code.":"Enter your code.","Un seul code":"One single code","Désormais, un seul code protège tes documents et tes mots de passe. Entre d'abord l'ancien code de tes documents.":"From now on, one code protects your documents and passwords. First enter your old documents code.","Entre maintenant le code de tes mots de passe : il ouvrira aussi tes documents.":"Now enter your passwords code: it will also open your documents.","Tes deux codes étaient déjà identiques : c'est réglé":"Your two codes were already the same: all set","Connecte-toi à internet pour passer à un seul code":"Connect to the internet to switch to one code","Passage à un seul code…":"Switching to one code…","Passage impossible pour l'instant (réseau). Réessaie plus tard.":"Can't switch right now (network). Try again later.","C'est fait : un seul code pour tes documents et tes mots de passe":"Done: one code for your documents and passwords","Le même que pour tes documents : il protégera aussi tes mots de passe.":"The same as for your documents: it will also protect your passwords.","Cette semaine":"This week","activités":"events","activité":"event","Ajouter à l'agenda":"Add to calendar","Agenda":"Calendar","Tâches":"Tasks","Focus":"Focus","Santé":"Health","Coffre":"Vault","Compte":"Account","Espaces":"Spaces","Tout Sid'note":"All of Sid'note","Ajouter":"Add","Une activité":"An event","Dans ton agenda":"In your calendar","Une tâche":"A task","Dans ta liste":"In your list","Une note":"A note","Texte ou photo":"Text or photo","Un repas":"A meal","Ce que tu manges":"What you eat","Une séance":"A workout","Bonjour":"Good morning","Bonsoir":"Good evening","Prochain":"Next","dans":"in","ouvertes":"open","ouverte":"open","kcal restantes":"kcal left","kcal en trop":"kcal over","Rien de prévu aujourd'hui.":"Nothing planned today.","Notes récentes":"Recent notes","Touche « + » pour ajouter ta première activité.":"Tap “+” to add your first event.","à venir":"upcoming","séances":"workouts","séance":"workout","aujourd'hui":"today","Installer l'app":"Install the app","Ajouter une photo":"Add a photo","Voir la photo":"View photo","Indisponible":"Unavailable","Pas de photo dans une note secrète":"No photos in a secret note","Photos ajoutées":"Photos added","Photo ajoutée":"Photo added","Supprimer la photo":"Delete photo","Fermer":"Close","Photo supprimée":"Photo deleted","Retire d'abord les photos pour rendre la note secrète":"Remove the photos first to make the note secret","photos":"photos","photo":"photo","Revenir au mois actuel":"Back to the current month","Mois actuel":"This month","Aucun rappel":"No reminder","Autre":"Other","Sans heure, l'activité compte pour 8 h.":"Without a time, the activity counts as 8 am.","Choisis entre 5 minutes et 7 jours":"Choose between 5 minutes and 7 days","Touche pour cocher ou décocher.":"Tap to check or uncheck.","Préparation":"Prep","Cuisson":"Cooking","Recette":"Recipe","Cacher la recette":"Hide recipe","Préparation de la recette…":"Preparing the recipe…","Recette indisponible pour le moment.":"Recipe unavailable for now.",
+"Dans ta journée":"In your day","Ajouter à ma journée":"Add to my day","Il te reste":"You have","à manger aujourd'hui":"left to eat today","Objectif dépassé de":"Goal exceeded by",
+"Ex. 150 g":"E.g. 150 g","Quantité":"Quantity","Ajouter une quantité":"Add a quantity","Quantité sans chiffre : calories inchangées":"Quantity without a number: calories unchanged",
+"Quantité mise à jour":"Quantity updated","pas dans ta description":"not in your description",
+"Année":"Year","voir toute l'année":"see the whole year",
+"Touche un jour pour voir sa journée en détail. Touche « ▦ Année » (ou pince l'écran) pour voir toute l'année.":"Tap a day to see it in detail. Tap “▦ Year” (or pinch) to see the whole year.",
+"Cours UMons : me prévenir 24 h avant":"UMons classes: notify me 24 h before","Chaque cours de ton horaire, la veille à la même heure.":"Every class in your timetable, the day before at the same time.",
+"Relie d'abord ton horaire dans Planning > Plus d'options.":"First link your timetable in Planner > More options.","Autre délai":"Other delay",
+"minutes":"minutes","heures":"hours","jours":"days","jour":"day","avant":"before","Durée":"Duration","Unité":"Unit",
+"Tu peux en choisir plusieurs. Une activité sans heure compte pour 8 h. Sur iPhone : iOS 16.4 ou plus, et Sid'note ouvert depuis l'écran d'accueil.":"You can pick several. An activity without a time counts as 8 am. On iPhone: iOS 16.4 or later, with Sid'note opened from the Home Screen.",
+"Rappels":"Reminders","cours":"classes","Rappels : activer les notifications":"Reminders: turn on notifications","Rappel ajouté":"Reminder added",
+"Choisis entre 5 minutes et 14 jours":"Choose between 5 minutes and 14 days","Cours UMons : rappel 24 h avant":"UMons classes: reminder 24 h before","Cours UMons : plus de rappel":"UMons classes: no more reminders",
+"Activés sur cet appareil":"On for this device","Désactivés sur cet appareil.":"Off on this device.","Désactiver":"Turn off","Tester":"Test"
+});
 const PATS=[
  [/^Salut (.+) !$/,"Hi $1!"],
  [/^Tour (\d+)$/,"Lap $1"],
@@ -1739,7 +2147,7 @@ if(!Array.isArray(data.docs))data.docs=[];
 if(!Array.isArray(data.notes))data.notes=[];
 if(!Array.isArray(data.pwds))data.pwds=[];
 LANG=(data.prefs&&data.prefs.lang)||ls.get("sidnote-lang")||"fr";if(session)ls.set("sidnote-lang",LANG);
-const TABS=[["plan","Planning"],["todo","À faire"],["notes","Notes"],["pomo","Pomodoro"],["muscu","Musculation"],["nutri","Nutrition"],["graph","Graphiques"],["docs","Documents"],["pwd","Mots de passe"],["app","Appli"]];
+const TABS=[["plan","Agenda"],["todo","Tâches"],["notes","Notes"],["pomo","Focus"],["muscu","Musculation"],["nutri","Nutrition"],["graph","Graphiques"],["docs","Documents"],["pwd","Mots de passe"],["app","Appli"]];
 data.prefs=data.prefs||{};data.prefs.tabs=data.prefs.tabs||{plan:true,todo:true,pomo:true,app:true};
 
 function save(){
@@ -1898,17 +2306,27 @@ function armDelete(btn,fn){
 
 /* ---------- onglets, rangés par catégories ---------- */
 // La barre du bas montre des catégories ; dans une catégorie, une barre en haut permet de choisir la fonction.
+// v25 : les catégories deviennent des « espaces » (page Espaces + barre latérale sur ordinateur)
 const GROUPS=[
   {k:"orga",label:"Organisation",tabs:["plan","todo","pomo"]},
-  {k:"sport",label:"Sport",tabs:["muscu","nutri","graph"]},
-  {k:"perso",label:"Classeur",tabs:["notes","docs","pwd"]},
-  {k:"more",label:"Réglages",tabs:["more","app"]}];
-const SHORT={plan:"Planning",todo:"À faire",pomo:"Pomodoro",muscu:"Muscu",nutri:"Nutrition",graph:"Graphiques",notes:"Notes",docs:"Docs",pwd:"Mots de passe",more:"Réglages",app:"Appli"};
+  {k:"sport",label:"Santé",tabs:["muscu","nutri","graph"]},
+  {k:"perso",label:"Coffre",tabs:["notes","docs","pwd"]},
+  {k:"more",label:"Compte",tabs:["more","app"]}];
+const SHORT={plan:"Agenda",todo:"Tâches",pomo:"Focus",muscu:"Musculation",nutri:"Nutrition",graph:"Graphiques",notes:"Notes",docs:"Documents",pwd:"Mots de passe",more:"Réglages",app:"Installer l'app"};
 const ICON=k=>{const e=$("fnIcons").querySelector(`[data-ic="${k}"]`);return e?e.innerHTML:""};
 const groupOf=v=>GROUPS.find(g=>g.tabs.includes(v))||GROUPS[0];
 const visibleTabs=()=>[...TABS.filter(([k])=>data.prefs.tabs[k]!==false).map(([k])=>k),"more"];
 const groupTabs=g=>g.tabs.filter(k=>visibleTabs().includes(k));
-$("navIn").innerHTML=GROUPS.map(g=>`<button class="tab" role="tab" data-g="${g.k}" aria-selected="false"><span class="tabicon">${ICON("g-"+g.k)}<span class="badge" data-gbadge="${g.k}" hidden></span></span>${g.label}</button>`).join("");
+// dock flottant : Aujourd'hui, Agenda, + (ajout rapide), Espaces, Compte
+const HOMEIC=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/></svg>`;
+const GRIDIC=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>`;
+const USERIC=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 21v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1"/></svg>`;
+const PLUSIC=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`;
+const DOCK=[["home","Aujourd'hui",HOMEIC],["plan","Agenda",null],["add","Ajouter",PLUSIC],["spaces","Espaces",GRIDIC],["more","Compte",USERIC]];
+$("navIn").innerHTML=DOCK.map(([k,l,ic])=>k==="add"?`<button type="button" class="dock-add" data-dock="add" aria-label="${L("Ajouter")}">${ic}</button>`
+  :`<button type="button" class="tab" role="tab" data-dock="${k}" aria-selected="false" aria-label="${L(l)}"><span class="tabicon">${ic||ICON(k)}</span><span class="tab-l">${L(l)}</span></button>`).join("");
+// page affichée → bouton du dock allumé
+const dockOf=v=>v==="home"||v==="plan"?v:v==="more"||v==="app"?"more":"spaces";
 // pastilles : chaque fonction a la sienne, dans la barre du haut (À faire : tâches ouvertes, Pomodoro : en cours)
 const BADGES={};
 const badgeHtml=k=>{const b=BADGES[k];return !b?"":b==="dot"?`<i class="sbadge dot" aria-label="${L("En cours")}"></i>`:`<i class="sbadge">${b>99?"99+":b}</i>`};
@@ -1924,12 +2342,15 @@ function renderSubnav(g,v){
   renderGroupBadges();
 }
 function show(v){
-  if(!visibleTabs().includes(v))v=visibleTabs()[0];
+  if(v!=="home"&&v!=="spaces"&&!visibleTabs().includes(v))v="home";
   const g=groupOf(v);
-  data.ui.view=v;data.ui.glast=data.ui.glast||{};data.ui.glast[g.k]=v;saveUI();
+  data.ui.view=v;if(GROUPS.some(x=>x.tabs.includes(v))){data.ui.glast=data.ui.glast||{};data.ui.glast[g.k]=v}saveUI();
+  document.body.dataset.g=g.k;document.body.dataset.v=v;
   document.querySelectorAll(".view").forEach(s=>s.hidden=s.id!=="v-"+v);
-  document.querySelectorAll("nav .tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.g===g.k));
-  renderSubnav(g,v);
+  const dk=dockOf(v);document.querySelectorAll("nav [data-dock]").forEach(t=>t.setAttribute("aria-selected",t.dataset.dock===dk));
+  $("subnav").hidden=true;renderVhead(v);renderSide(v);
+  if(v==="home")renderHome();
+  if(v==="spaces")renderSpaces();
   if(v==="more"){renderStats();renderTabsCard();renderHomeSel();renderLook();if(session)renderNotif()}
   if(v==="docs")docsEnter();
   if(v!=="docs")dvLock();
@@ -1943,16 +2364,93 @@ function show(v){
   if(v==="pomo")renderSpotify();
   window.scrollTo(0,0);
 }
-$("navIn").addEventListener("click",e=>{const t=e.target.closest("[data-g]");if(!t)return;
-  const g=GROUPS.find(x=>x.k===t.dataset.g),ts=groupTabs(g),last=(data.ui.glast||{})[g.k];
-  show(ts.includes(last)?last:ts[0])});
+$("navIn").addEventListener("click",e=>{const t=e.target.closest("[data-dock]");if(!t)return;
+  if(t.dataset.dock==="add"){openQuickAdd();return}show(t.dataset.dock)});
 $("subnav").addEventListener("click",e=>{const b=e.target.closest("[data-sub]");if(b)show(b.dataset.sub)});
 function applyTabs(){
-  const vis=visibleTabs(),gs=GROUPS.filter(g=>groupTabs(g).length);
-  document.querySelectorAll("nav .tab").forEach(t=>t.hidden=!gs.some(g=>g.k===t.dataset.g));
-  $("navIn").style.gridTemplateColumns=`repeat(${gs.length},1fr)`;
-  if(!vis.includes(data.ui.view))show(vis[0]);else renderSubnav(groupOf(data.ui.view),data.ui.view);
+  const vis=visibleTabs();
+  document.querySelectorAll('nav [data-dock="plan"]').forEach(t=>t.hidden=!vis.includes("plan"));
+  const v=data.ui.view;if(v&&v!=="home"&&v!=="spaces"&&!vis.includes(v))show("home");else renderSide(v);
 }
+// --- en-tête d'un module : « ‹ Espaces » + nom de l'espace en petites capitales ---
+function renderVhead(v){const el=$("vhead"),root=["home","spaces","plan","more"].includes(v);
+  if(v==="home"||v==="spaces"){el.hidden=true;return}
+  const g=groupOf(v);el.hidden=false;
+  el.innerHTML=`${root?"":`<button type="button" class="vback" data-go="spaces"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>${L("Espaces")}</button>`}<span class="eyebrow">${L(g.label)}</span>`}
+$("vhead").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
+// --- page Espaces et barre latérale (ordinateur) : tous les modules, rangés par espace, avec un chiffre utile ---
+function spaceMeta(k){try{
+  if(k==="plan"){const t0=iso(today()),n=allT().filter(t=>t.status!=="fait"&&!t.canc&&(t.end||t.date)>=t0).length;return n?`${n} ${L("à venir")}`:""}
+  if(k==="todo"){const n=data.todos.filter(t=>!t.done&&!t.paused).length;return n?`${n} ${L(n>1?"ouvertes":"ouverte")}`:""}
+  if(k==="pomo"){const m=Math.round(((data.pomo&&data.pomo.log||{})[dayKey(new Date())]||0)/60000);return m?`${m} min ${L("aujourd'hui")}`:""}
+  if(k==="nutri"){const n=NU();if(!nutriAllowed()||!n.plan||!n.plan.kcal)return"";const left=Math.round(dayTarget(iso(today())).kcal-sumOf(dayLog(iso(today()))).kcal);return `${fmtFull(Math.max(0,left))} kcal`}
+  if(k==="notes"){const n=NT().length;return n?String(n):""}
+  if(k==="docs"){const n=docsArr().length;return n?String(n):""}
+  if(k==="muscu"){const n=(data.muscu&&data.muscu.sessions||[]).length;return n?`${n} ${L(n>1?"séances":"séance")}`:""}
+  return""}catch(e){return""}}
+const CHEVR=`<svg class="chev-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>`;
+function renderSpaces(){
+  $("spacesList").innerHTML=GROUPS.map(g=>{const ts=groupTabs(g);if(!ts.length)return"";
+    return `<div class="eyebrow sp-h">${L(g.label)}</div><div class="card sp-card">${ts.map(k=>`<button type="button" class="sp-row" data-go="${k}"><span class="sp-ic">${ICON(k)||USERIC}</span><span class="grow">${L(SHORT[k])}</span><span class="sp-meta">${esc(spaceMeta(k))}</span>${CHEVR}</button>`).join("")}</div>`}).join("");
+}
+$("spacesList").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
+function renderSide(v){const el=$("side");if(!el)return;v=v||data.ui.view;
+  el.innerHTML=`<div class="side-brand"><img src="logo-192.png" alt=""><span>Sid'note</span></div>
+    <button type="button" class="side-it" data-go="home" aria-current="${v==="home"}"><span class="sp-ic">${HOMEIC}</span><span class="grow">${L("Aujourd'hui")}</span></button>
+    <button type="button" class="side-add" data-sadd="1"><span class="sp-ic">${PLUSIC}</span><span class="grow">${L("Ajouter")}</span></button>`+
+    GROUPS.map(g=>{const ts=groupTabs(g);if(!ts.length)return"";
+      return `<div class="eyebrow side-h">${L(g.label)}</div>`+ts.map(k=>`<button type="button" class="side-it" data-go="${k}" aria-current="${v===k}"><span class="sp-ic">${ICON(k)||USERIC}</span><span class="grow">${L(SHORT[k])}</span><span class="sp-meta">${esc(spaceMeta(k))}</span></button>`).join("")}).join("")}
+$("side").addEventListener("click",e=>{if(e.target.closest("[data-sadd]")){openQuickAdd();return}const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
+// --- ajout rapide (bouton + du dock) ---
+function openQuickAdd(){const vis=visibleTabs(),acts=[
+  ["plan","Une activité","Dans ton agenda",ICON("plan")],["todo","Une tâche","Dans ta liste",ICON("todo")],["notes","Une note","Texte ou photo",ICON("notes")],
+  ["nutri","Un repas","Ce que tu manges",ICON("nutri")],["muscu","Une séance","Musculation",ICON("muscu")]].filter(a=>vis.includes(a[0])&&(a[0]!=="nutri"||nutriAllowed()));
+  $("qaList").innerHTML=acts.map(([k,t,s,ic])=>`<button type="button" class="qa-it" data-qa="${k}"><span class="sp-ic">${ic}</span><span class="grow"><b>${L(t)}</b><span class="small muted">${L(s)}</span></span>${CHEVR}</button>`).join("");
+  $("qaSheet").hidden=false}
+$("qaClose").addEventListener("click",()=>$("qaSheet").hidden=true);
+$("qaSheet").addEventListener("click",e=>{if(e.target.id==="qaSheet"){$("qaSheet").hidden=true;return}const b=e.target.closest("[data-qa]");if(!b)return;$("qaSheet").hidden=true;const k=b.dataset.qa;show(k);
+  setTimeout(()=>{if(k==="plan"){$("fTitle").focus();$("fTitle").scrollIntoView({block:"center"})}
+    else if(k==="todo")$("todoIn").focus();
+    else if(k==="notes"){if(noteOpenId)closeNote();$("noteNew").click()}
+    else if(k==="nutri"){nuGoTab("day");$("nuAsk").focus();$("nuAsk").scrollIntoView({block:"center"})}
+    else if(k==="muscu"){$("msName")&&$("msName").focus()}},80)});
+// --- page Aujourd'hui : la journée en un coup d'œil ---
+function inCount(ms){const m=Math.round(ms/60000);if(m<60)return `${L("dans")} ${m} min`;const h=Math.floor(m/60),r=m%60;return `${L("dans")} ${h} h${r?" "+two(r):""}`}
+function renderHome(){if(!$("homeBody"))return;
+  const now=new Date(),t0=iso(today()),nm=(session&&session.name||"").split(" ")[0];
+  $("homeDate").textContent=`${DOW[now.getDay()]} ${now.getDate()} ${MOL[now.getMonth()]}`;
+  $("homeHello").textContent=`${L(now.getHours()>=18?"Bonsoir":"Bonjour")}${nm?" "+nm:""}.`;
+  $("homeAvatar").textContent=(nm||"S").slice(0,2).toUpperCase();
+  const vis=visibleTabs(),T=vis.includes("plan")?allT().filter(t=>t.status!=="fait"&&!t.canc):[];
+  const start=t=>{const d=parse(t.date);const[h,m]=(t.time||"08:00").split(":").map(Number);d.setHours(h,m);return d};
+  const next=T.filter(t=>t.time&&start(t)>now).sort((a,b)=>start(a)-start(b))[0]||T.filter(t=>!t.time&&t.date>t0).sort((a,b)=>a.date.localeCompare(b.date))[0];
+  let h="";
+  if(next){const s=start(next),diff=s-now,same=next.date===t0,tm=parse(next.date);tm.setDate(tm.getDate()-1);
+    const when=next.time&&same?inCount(diff):next.time&&iso(tm)===t0?`${L("demain")} · ${next.time}`:`${DOW[s.getDay()]} ${s.getDate()} ${MO[s.getMonth()]}${next.time?" · "+next.time:""}`;
+    h+=`<button type="button" class="card hm-next" data-go="plan"><span class="eyebrow">${L("Prochain")} · ${esc(when)}</span><b class="notr">${esc(next.title)}</b><span class="small muted">${next.time?hrs(next):""}${next.loc?` · <span class="notr">${esc(next.loc)}</span>`:next.cat?` · ${esc(next.cat)}`:""}</span></button>`}
+  const tiles=[];
+  if(vis.includes("todo")){const n=data.todos.filter(t=>!t.done&&!t.paused).length;tiles.push(["todo",L("Tâches"),String(n),L(n>1?"ouvertes":"ouverte")])}
+  if(vis.includes("nutri")&&nutriAllowed()&&NU().plan&&NU().plan.kcal){const l=Math.round(dayTarget(t0).kcal-sumOf(dayLog(t0)).kcal);tiles.push(["nutri",L("Nutrition"),fmtFull(Math.abs(l)),L(l>=0?"kcal restantes":"kcal en trop")])}
+  if(vis.includes("plan")){const e7=new Date(today());e7.setDate(e7.getDate()+6);const k7=iso(e7);const w=T.filter(t=>t.date<=k7&&(t.end||t.date)>=t0).length;tiles.push(["plan",L("Cette semaine"),String(w),L(w>1?"activités":"activité")])}
+  if(tiles.length)h+=`<div class="hm-tiles" style="grid-template-columns:repeat(${tiles.length},minmax(0,1fr))">${tiles.map(([k,l,v,s])=>`<button type="button" class="card hm-tile" data-go="${k}"><span class="small muted">${l}</span><b>${v}</b><span class="small muted">${s}</span></button>`).join("")}</div>`;
+  if(vis.includes("plan")){const day=allT().filter(t=>onDay(t,t0)).sort((a,b)=>sk(a).localeCompare(sk(b)));
+    h+=`<h2>${L("Aujourd'hui")}</h2><div class="card hm-list">${day.length?day.map(t=>`<button type="button" class="hm-row ${t.status==="fait"||t.canc?"is-done":""}" data-go="plan"><span class="hm-time">${t.time||L("Journée")}</span><span class="grow notr">${esc(t.title)}</span><span class="dot" style="background:var(${colorOf(t)})"></span></button>`).join(""):`<div class="empty">${L("Rien de prévu aujourd'hui.")}</div>`}</div>`}
+  if(vis.includes("todo")){const open=data.todos.filter(t=>!t.done&&!t.paused).slice(0,4);
+    if(open.length)h+=`<h2>${L("À faire")}</h2><div class="card hm-list">${open.map(t=>`<button type="button" class="hm-row" data-todo-open="${t.id}"><span class="hm-box"></span><span class="grow notr">${esc(t.title)}</span></button>`).join("")}</div>`}
+  if(vis.includes("notes")){const ns=NT().filter(n=>!n.secret).sort((a,b)=>(b.upd||0)-(a.upd||0)).slice(0,2);
+    if(ns.length)h+=`<h2>${L("Notes récentes")}</h2><div class="card hm-list">${ns.map(n=>{const t=(n.title||"").trim()||String(n.body||"").trim().split("\n")[0]||L("Nouvelle note");return `<button type="button" class="hm-row" data-note-open="${n.id}"><span class="grow notr">${esc(t)}</span><span class="small muted">${fmtWhen(n.upd||Date.parse(n.createdAt))}</span></button>`}).join("")}</div>`}
+  if(!h)h=`<div class="card"><div class="empty">${L("Touche « + » pour ajouter ta première activité.")}</div></div>`;
+  $("homeBody").innerHTML=h}
+$("homeBody").addEventListener("click",e=>{const n=e.target.closest("[data-note-open]");if(n){show("notes");openNote(n.dataset.noteOpen);return}
+  const td=e.target.closest("[data-todo-open]");if(td){goToTodo(td.dataset.todoOpen);return}const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
+$("homeAvatar").addEventListener("click",()=>show("more"));
+// ouvre « Tâches » directement sur une tâche : filtre et recherche retirés, catégorie dépliée, tâche mise en évidence
+function goToTodo(id){const t=data.todos.find(x=>x.id===id);show("todo");if(!t)return;
+  data.ui.todoCat="all";todoQ="";if($("todoSearch"))$("todoSearch").value="";
+  const k=t.cat&&catOf(t.cat)?t.cat:"none";if(data.ui.todoFold&&data.ui.todoFold[k]){data.ui.todoFold[k]=false}saveUI();renderTodos();
+  setTimeout(()=>{const r=document.querySelector(`#v-todo [data-tid="${id}"]`);if(!r)return;r.scrollIntoView({block:"center",behavior:"smooth"});
+    r.classList.remove("hl");void r.offsetWidth;r.classList.add("hl")},60)}
+setInterval(()=>{if(data.ui.view==="home"&&!document.hidden)renderHome()},60000);
 function renderTabsCard(){
   $("tabsCard").innerHTML=GROUPS.map(g=>`<div class="tabgrp">${ICON("g-"+g.k)}${L(g.label)}</div><div class="card">`+
     g.tabs.map(k=>k==="more"?`<div class="row"><span class="grow">${L("Réglages")}</span><span class="small muted">${L("toujours affiché")}</span></div>`
@@ -2141,7 +2639,7 @@ const sk=t=>t.date+(t.time||"99:99");
 const onDay=(t,k)=>t.date===k||(t.end&&t.date<=k&&t.end>=k);
 function renderMonth(){
   const T=allT(),tIso=iso(today());
-  $("calTitle").textContent=`${MOL[calM]} ${calY}`;
+  $("calTitle").innerHTML=`${MOL[calM]} ${calY} <span class="yr-ic">▦ ${L("Année")}</span>`;$("calTitle").setAttribute("aria-label",`${MOL[calM]} ${calY}, ${L("voir toute l'année")}`);
   const first=new Date(calY,calM,1),lead=(first.getDay()+6)%7,n=new Date(calY,calM+1,0).getDate();
   let h="";for(let i=0;i<lead;i++)h+=`<span class="day out"></span>`;
   for(let d=1;d<=n;d++){
@@ -2200,7 +2698,7 @@ function renderYear(){
     let g="";for(let i=0;i<lead;i++)g+="<i></i>";
     for(let d=1;d<=n;d++){const k=iso(new Date(calY,m,d));g+=`<i class="${k===tIso?"td":has.has(k)?"ev":""} ${k<tIso?"past":""}">${d}</i>`}
     h+=`<button class="ym ${calY===now.getFullYear()&&m===now.getMonth()?"cur":""}" data-ym="${m}" aria-label="${MOL[m]} ${calY}"><b>${MOL[m]}</b><div class="ym-g">${g}</div></button>`}
-  $("calYear").innerHTML=`<div class="yr-head"><button class="cal-nav" data-yrn="-1" aria-label="${L("Année précédente")}">‹</button><span class="yr-title">${calY}</span><button class="cal-nav" data-yrn="1" aria-label="${L("Année suivante")}">›</button></div><div class="yr-grid">${h}</div>
+  $("calYear").innerHTML=`<div class="yr-head"><button class="cal-nav" data-yrn="-1" aria-label="${L("Année précédente")}">‹</button><button type="button" class="yr-title" data-yrtoday="1" aria-label="${L("Revenir au mois actuel")}">${calY}<span class="yr-ic">↩ ${L("Mois actuel")}</span></button><button class="cal-nav" data-yrn="1" aria-label="${L("Année suivante")}">›</button></div><div class="yr-grid">${h}</div>
     <p class="small muted" style="text-align:center;margin:10px 0 4px">${L("Touche un mois pour l'ouvrir.")} <button type="button" class="linkbtn" data-yrtoday="1" style="background:none;border:0;cursor:pointer">${L("Aujourd'hui")}</button></p>`;
 }
 $("calYear").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
@@ -2292,7 +2790,7 @@ $("taskForm").addEventListener("submit",e=>{
   if($("fTime").value)t.time=$("fTime").value;
   if(t.time&&$("fTimeEnd").value){if($("fTimeEnd").value<=t.time){toast("L'heure de fin doit être après l'heure de début");return}t.timeEnd=$("fTimeEnd").value}
   if($("fEnd").value&&$("fEnd").value>=t.date)t.end=$("fEnd").value;
-  data.tasks.push(t);save();renderPlan();renderTypes();e.target.reset();toast("Ajouté au planning");
+  remApply(t,"f");data.tasks.push(t);save();renderPlan();renderTypes();e.target.reset();remSel.f=null;renderRem("f");toast("Ajouté au planning");
 });
 
 /* ---------- horaire de cours (iCal) ---------- */
@@ -2351,10 +2849,16 @@ async function icalFetch(force){
       throw new Error(r.status===404?"La fonction « horaire » n'est pas encore installée sur Supabase.":m||("Erreur "+r.status))}
     icalEvents=parseICS(txt);icalAt=Date.now();
     ls.set(icalKey(),{url,at:icalAt,events:icalEvents});
-    renderAllSafe();if(force)toast(`Horaire à jour : ${icalEvents.filter(t=>!t.canc).length} cours`);
+    icalSoonSync();renderAllSafe();if(force)toast(`Horaire à jour : ${icalEvents.filter(t=>!t.canc).length} cours`);
   }catch(ex){icalState(ex instanceof TypeError?"Pas de connexion : l'horaire sera mis à jour plus tard.":ex.message);if(force)toast("Mise à jour impossible");icalBusy=false;return}
   icalBusy=false;icalState();
 }
+// les cours des 14 prochains jours sont copiés dans le compte (data.icalSoon) : le serveur des rappels
+// ne peut pas lire l'horaire lui-même, il prévient 24 h avant chaque cours à partir de cette liste
+function icalSoonSync(){if(!session)return;
+  const t0=iso(today()),e=new Date(today());e.setDate(e.getDate()+14);const t1=iso(e);
+  const list=notifIcal()&&data.prefs.ical?icalEvents.filter(t=>!t.canc&&t.date>=t0&&t.date<=t1).map(t=>({id:t.id,title:t.title,date:t.date,time:t.time||"",loc:t.loc||""})).slice(0,120):[];
+  if(JSON.stringify(list)===JSON.stringify(data.icalSoon||[]))return;data.icalSoon=list;save()}
 function icalState(msg){
   const el=$("icalState");if(!el)return;const url=data.prefs&&data.prefs.ical;
   $("icalRefresh").hidden=!url;
@@ -2575,7 +3079,7 @@ function renderPomoStats(){
 setInterval(()=>{if(P.run){tickPomo();if(!$("v-pomo").hidden)renderPomoStats()}},500);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&P.run){unlockAudio();if(!P.run.pausedAt)keepAwake(true);tickPomo()}});
 
-function renderAll(){renderTodos();renderPlan();renderStats();renderPomo();renderTypes();renderMuscu();renderDocs();renderNotes();renderPwd();renderNutri();if(data.ui.view==="graph")renderGraph()}
+function renderAll(){renderTodos();renderPlan();renderStats();renderPomo();renderTypes();renderMuscu();renderDocs();renderNotes();renderPwd();renderNutri();if(data.ui.view==="graph")renderGraph();if(data.ui.view==="home")renderHome();if(data.ui.view==="spaces")renderSpaces();renderSide()}
 
 /* ---------- écran de connexion ---------- */
 let authMode="login";
@@ -2716,16 +3220,29 @@ const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
 const standalone=()=>window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
 function b64u(s){const p="=".repeat((4-s.length%4)%4),b=atob((s+p).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from(b,c=>c.charCodeAt(0))}
 async function currentSub(){if(!pushOK())return null;const r=await navigator.serviceWorker.ready;return r.pushManager.getSubscription()}
-async function renderNotif(){renderLeads();
-  const st=$("notifState"),btn=$("notifBtn"),test=$("notifTest");if(!st)return;
-  test.hidden=true;btn.hidden=false;btn.disabled=false;$("notifRow").hidden=false;
-  if(!pushOK()){
-    st.textContent=isIOS&&!standalone()?"Pour activer les notifications, ouvre Sid'note depuis l'icône de ton écran d'accueil.":"Ce navigateur ne gère pas les notifications.";
-    btn.hidden=true;$("notifRow").hidden=true;return}
-  if(Notification.permission==="denied"){st.textContent="Notifications bloquées. Autorise-les dans Réglages > Notifications > Sid'note.";btn.hidden=true;$("notifRow").hidden=true;return}
-  const sub=await currentSub().catch(()=>null);
-  if(sub&&Notification.permission==="granted"){st.innerHTML='<span class="syncdot"></span>Activés sur cet appareil';btn.textContent="Désactiver";btn.className="btn ghost";test.hidden=false}
-  else{st.textContent="Désactivés sur cet appareil.";btn.textContent="Activer les notifications";btn.className="btn"}
+// le bloc « notifications » existe à deux endroits (Réglages et Planning) : même contenu, mêmes réglages
+let nfState={kind:"off",msg:""},nfCustom=false;
+async function renderNotif(){
+  if(!pushOK())nfState={kind:"na",msg:isIOS&&!standalone()?"Pour activer les notifications, ouvre Sid'note depuis l'icône de ton écran d'accueil.":"Ce navigateur ne gère pas les notifications."};
+  else if(Notification.permission==="denied")nfState={kind:"na",msg:"Notifications bloquées. Autorise-les dans Réglages > Notifications > Sid'note."};
+  else{const sub=await currentSub().catch(()=>null);nfState=sub&&Notification.permission==="granted"?{kind:"on"}:{kind:"off"}}
+  renderLeads();
+}
+function renderLeads(){
+  const cur=notifLeads(),on=nfState.kind==="on",ical=notifIcal(),all=[...new Set([...LEADS.map(x=>x[0]),...cur])].sort((a,b)=>a-b);
+  const html=`<div class="card">
+      <div class="row"><div class="grow">${L("Sois prévenu avant chaque activité du planning.")}<div class="small muted">${nfState.kind==="na"?L(nfState.msg):on?`<span class="syncdot"></span>${L("Activés sur cet appareil")}`:L("Désactivés sur cet appareil.")}</div></div></div>
+      ${nfState.kind==="na"?"":`<div class="row" style="gap:8px"><button type="button" class="btn ${on?"ghost":""}" data-nf="toggle" style="flex:1">${L(on?"Désactiver":"Activer les notifications")}</button>${on?`<button type="button" class="btn ghost" data-nf="test">${L("Tester")}</button>`:""}</div>`}
+      <label class="row"><span class="grow">${IC("grad")} ${L("Cours UMons : me prévenir 24 h avant")}<span class="small muted" style="display:block">${L(data.prefs.ical?"Chaque cours de ton horaire, la veille à la même heure.":"Relie d'abord ton horaire dans Planning > Plus d'options.")}</span></span><input type="checkbox" class="switch" data-nf="ical" ${ical?"checked":""} aria-label="${L("Cours UMons : me prévenir 24 h avant")}"></label>
+    </div>
+    <div class="label" style="margin:12px 4px 6px">${L("Me prévenir")}</div>
+    <div class="chips" style="flex-wrap:wrap;margin:0;padding-inline:0">${all.map(m=>`<button type="button" class="pill" data-lead="${m}" aria-pressed="${cur.includes(m)}">${leadLbl(m)}</button>`).join("")}<button type="button" class="pill add" data-nf="custom">+ ${L("Autre délai")}</button></div>
+    ${nfCustom?`<form class="notif-lead-custom" data-nf="customf"><input type="text" inputmode="numeric" maxlength="3" name="n" placeholder="15" aria-label="${L("Durée")}" autocomplete="off"><select class="sel" name="u" aria-label="${L("Unité")}"><option value="1">${L("minutes")}</option><option value="60" selected>${L("heures")}</option><option value="1440">${L("jours")}</option></select><span class="small muted">${L("avant")}</span><button class="btn" type="submit" style="padding:8px 14px">OK</button></form>`:""}
+    <p class="small muted" style="margin:8px 4px 0">${L("Tu peux en choisir plusieurs. Une activité sans heure compte pour 8 h. Sur iPhone : iOS 16.4 ou plus, et Sid'note ouvert depuis l'écran d'accueil.")}</p>`;
+  const ae=document.activeElement,typing=ae&&ae.matches&&ae.matches("input[type=text],select");
+  document.querySelectorAll(".notif-box").forEach(b=>{if(!(typing&&b.contains(ae)))b.innerHTML=html});
+  renderRem("f");if(!$("sheet").hidden&&editing&&editing.kind==="task")renderRem("e");
+  const s=$("planNotifSum");if(s)s.textContent=on?`${L("Rappels")} · ${cur.map(leadLbl).join(", ")}${ical?` · ${L("cours")}`:""}`:L("Rappels : activer les notifications");
 }
 async function saveSub(sub){
   await api("/rest/v1/push_subscriptions?on_conflict=endpoint",{method:"POST",token:await token(),
@@ -2736,8 +3253,8 @@ async function dropSub(){
   try{await api(`/rest/v1/push_subscriptions?endpoint=eq.${encodeURIComponent(sub.endpoint)}`,{method:"DELETE",token:await token()})}catch(e){}
   try{await sub.unsubscribe()}catch(e){}
 }
-$("notifBtn").addEventListener("click",async()=>{
-  const btn=$("notifBtn");btn.disabled=true;
+async function notifToggle(btn){
+  btn.disabled=true;
   try{
     const sub=await currentSub();
     if(sub&&Notification.permission==="granted"){await dropSub();toast("Notifications désactivées")}
@@ -2750,19 +3267,49 @@ $("notifBtn").addEventListener("click",async()=>{
     }
   }catch(ex){toast(ex instanceof TypeError?"Pas de connexion internet":"Activation impossible : "+(ex.message||"erreur"))}
   renderNotif();
-});
+}
 // délais choisis (minutes avant l'activité), synchronisés avec le compte : le serveur les lit
 const LEADS=[[10,"10 min"],[30,"30 min"],[60,"1 h"],[120,"2 h"],[1440,"La veille"],[2880,"2 jours"]];
 const notifLeads=()=>{const n=data.prefs.notif;return n&&Array.isArray(n.leads)?n.leads:[1440]};
-function renderLeads(){const box=$("notifLeads");if(!box)return;const cur=notifLeads();
-  box.innerHTML=LEADS.map(([m,l])=>`<button type="button" class="pill" data-lead="${m}" aria-pressed="${cur.includes(m)}">${L(l)}</button>`).join("")}
-$("notifLeads").addEventListener("click",e=>{const b=e.target.closest("[data-lead]");if(!b)return;const m=+b.dataset.lead;let cur=notifLeads().slice();
-  cur=cur.includes(m)?cur.filter(x=>x!==m):[...cur,m].sort((a,b)=>a-b);if(!cur.length){toast("Garde au moins un délai");return}
-  data.prefs.notif={...(data.prefs.notif||{}),leads:cur};save();renderLeads()});
-$("notifTest").addEventListener("click",async()=>{
-  try{await api("/functions/v1/rappels",{method:"POST",token:await token(),body:{test:true,lang:LANG}});toast("Notification de test envoyée")}
-  catch(ex){toast("Test impossible : "+(ex.message||"erreur"))}
+// cours de l'horaire iCal : prévenus 24 h avant (activé par défaut) ; le serveur lit data.icalSoon
+const notifIcal=()=>!(data.prefs.notif&&data.prefs.notif.ical===false);
+function leadLbl(m){const p=LEADS.find(x=>x[0]===m);if(p)return L(p[1]);
+  if(m%1440===0)return `${m/1440} ${L(m/1440>1?"jours":"jour")}`;if(m%60===0)return `${m/60} h`;if(m>60)return `${Math.floor(m/60)} h ${two(m%60)}`;return `${m} min`}
+const setNotif=o=>{data.prefs.notif={...(data.prefs.notif||{}),...o};save();renderLeads()};
+document.addEventListener("click",async e=>{const box=e.target.closest(".notif-box");if(!box)return;
+  const l=e.target.closest("[data-lead]");
+  if(l){const m=+l.dataset.lead;let cur=notifLeads().slice();cur=cur.includes(m)?cur.filter(x=>x!==m):[...cur,m].sort((a,b)=>a-b);
+    if(!cur.length){toast("Garde au moins un délai");return}setNotif({leads:cur});return}
+  const b=e.target.closest("button[data-nf]");if(!b)return;
+  if(b.dataset.nf==="toggle")notifToggle(b);
+  else if(b.dataset.nf==="custom"){nfCustom=!nfCustom;renderLeads();const i=box.querySelector('[data-nf="customf"] input');if(i)i.focus()}
+  else if(b.dataset.nf==="test"){try{await api("/functions/v1/rappels",{method:"POST",token:await token(),body:{test:true,lang:LANG}});toast("Notification de test envoyée")}
+    catch(ex){toast("Test impossible : "+(ex.message||"erreur"))}}
 });
+document.addEventListener("change",e=>{const c=e.target.closest('.notif-box [data-nf="ical"]');if(!c)return;setNotif({ical:c.checked});if(c.checked)icalSoonSync();
+  toast(c.checked?"Cours UMons : rappel 24 h avant":"Cours UMons : plus de rappel")});
+document.addEventListener("submit",e=>{const f=e.target.closest('.notif-box [data-nf="customf"]');if(!f)return;e.preventDefault();
+  const n=Math.round(numIn(f.elements.n.value)),m=n*(+f.elements.u.value);if(!(m>=5&&m<=20160)){toast("Choisis entre 5 minutes et 14 jours");return}
+  document.activeElement&&document.activeElement.blur();nfCustom=false;const cur=notifLeads();setNotif({leads:[...new Set([...cur,m])].sort((a,b)=>a-b)});toast(`${L("Rappel ajouté")} : ${leadLbl(m)}`)});
+// --- rappel propre à une activité (formulaire du planning et fiche « Modifier ») : t.leads = délais choisis, t.remind = false = aucun rappel
+const remSel={f:null,e:null},remCustom={f:false,e:false};
+const remOf=t=>t&&t.remind===false?[]:(t&&Array.isArray(t.leads)&&t.leads.length?t.leads.slice():notifLeads().slice());
+function renderRem(k){const box=$(k==="f"?"fRem":"eRem");if(!box)return;if(!remSel[k])remSel[k]=notifLeads().slice();
+  const sel=remSel[k],on=nfState.kind==="on",all=[...new Set([...LEADS.map(x=>x[0]),...sel])].sort((a,b)=>a-b);
+  box.innerHTML=`<div class="rem-h">${IC("bell")} ${L("Me prévenir")}</div>
+    <div class="rem-chips"><button type="button" class="pill" data-rnone="1" aria-pressed="${!sel.length}">${L("Aucun rappel")}</button>${all.map(m=>`<button type="button" class="pill" data-rl="${m}" aria-pressed="${sel.includes(m)}">${leadLbl(m)}</button>`).join("")}<button type="button" class="pill add" data-rcustom="1">+ ${L("Autre")}</button></div>
+    ${remCustom[k]?`<div class="notif-lead-custom"><input type="text" inputmode="numeric" maxlength="3" data-rn placeholder="15" aria-label="${L("Durée")}" autocomplete="off"><select class="sel" data-ru aria-label="${L("Unité")}"><option value="1">${L("minutes")}</option><option value="60" selected>${L("heures")}</option><option value="1440">${L("jours")}</option></select><span class="small muted">${L("avant")}</span><button type="button" class="btn" data-rok="1" style="padding:8px 14px">OK</button></div>`:""}
+    ${on?`<div class="small muted">${L("Sans heure, l'activité compte pour 8 h.")}</div>`:nfState.kind==="na"?`<div class="small muted">${L(nfState.msg)}</div>`:`<button type="button" class="btn ghost rem-on" data-ron="1">${IC("bell")} ${L("Activer les notifications")}</button>`}`}
+const remApply=(t,k)=>{const s=remSel[k]||notifLeads(),d=notifLeads();delete t.leads;delete t.remind;
+  if(!s.length)t.remind=false;else if(s.length!==d.length||s.some(x=>!d.includes(x)))t.leads=s.slice().sort((a,b)=>a-b)};
+["fRem","eRem"].forEach(id=>{const k=id[0];$(id).addEventListener("click",async e=>{const b=e.target.closest("button");if(!b)return;e.preventDefault();
+  if(b.dataset.rnone)remSel[k]=[];
+  else if(b.dataset.rl){const m=+b.dataset.rl,s=remSel[k];remSel[k]=s.includes(m)?s.filter(x=>x!==m):[...s,m].sort((a,c)=>a-c)}
+  else if(b.dataset.rcustom)remCustom[k]=!remCustom[k];
+  else if(b.dataset.rok){const box=$(id),n=Math.round(numIn(box.querySelector("[data-rn]").value)),m=n*(+box.querySelector("[data-ru]").value);
+    if(!(m>=5&&m<=10080)){toast("Choisis entre 5 minutes et 7 jours");return}remSel[k]=[...new Set([...remSel[k],m])].sort((a,c)=>a-c);remCustom[k]=false}
+  else if(b.dataset.ron){await notifToggle(b)}
+  renderRem(k);if(remCustom[k]){const i=$(id).querySelector("[data-rn]");if(i)i.focus()}})});
 // garder l'abonnement à jour côté serveur (il peut changer)
 async function refreshSub(){try{const s=await currentSub();if(s&&Notification.permission==="granted")await saveSub(s)}catch(e){}}
 
@@ -2775,9 +3322,9 @@ function openEdit(ref){
   $("sheetTitle").textContent=L(kind==="todo"?"Modifier la tâche":kind==="doc"?"Renommer le document":"Modifier l'activité");
   $("eTitle").value=item.title;$("eTask").hidden=kind!=="task";$("eTodoWrap").hidden=kind!=="todo";
   $("eDocWrap").hidden=kind!=="doc";
-  if(kind==="doc")$("eDocFolder").innerHTML=`<option value="">${L("Aucun classeur")}</option>`+DF().map(f=>`<option value="${f.id}" ${item.folder===f.id?"selected":""}>${f.locked?"🔒 ":""}${esc(f.name)}</option>`).join("");
+  if(kind==="doc")$("eDocFolder").innerHTML=`<option value="">${L("Aucun classeur")}</option>`+DF().map(f=>`<option value="${f.id}" ${item.folder===f.id?"selected":""}>${f.locked?L("Verrouillé")+" · ":""}${esc(f.name)}</option>`).join("");
   if(kind==="todo")$("eTodoCat").innerHTML=`<option value="">${L("Sans catégorie")}</option>`+TC().map(c=>`<option value="${c.id}" ${item.cat===c.id?"selected":""}>${esc(c.name)}</option>`).join("");
-  if(kind==="task"){$("eDate").value=item.date;$("eEnd").value=item.end||"";$("eTime").value=item.time||"";$("eTimeEnd").value=item.timeEnd||"";$("eCat").value=item.cat||""}
+  if(kind==="task"){$("eDate").value=item.date;$("eEnd").value=item.end||"";$("eTime").value=item.time||"";$("eTimeEnd").value=item.timeEnd||"";$("eCat").value=item.cat||"";remSel.e=remOf(item);remCustom.e=false;renderRem("e")}
   const d=$("eDelete");d.classList.remove("armed");d.textContent="Supprimer";
   $("sheet").hidden=false;setTimeout(()=>$("eTitle").focus(),50);
 }
@@ -2797,7 +3344,7 @@ $("editForm").addEventListener("submit",e=>{
     if($("eEnd").value&&$("eEnd").value>it.date)it.end=$("eEnd").value;else delete it.end;
     if($("eTime").value)it.time=$("eTime").value;else delete it.time;
     if(it.time&&$("eTimeEnd").value){if($("eTimeEnd").value<=it.time){toast("L'heure de fin doit être après l'heure de début");return}it.timeEnd=$("eTimeEnd").value}else delete it.timeEnd;
-    it.cat=ensureType($("eCat").value);
+    it.cat=ensureType($("eCat").value);remApply(it,"e");
   }
   save();closeEdit();renderTodos();renderPlan();renderTypes();renderDocs();toast("Modifié");
 });
@@ -3057,9 +3604,9 @@ async function idbClearUser(u){try{const db=await idb.open();const tx=db.transac
   st.openCursor().onsuccess=e=>{const c=e.target.result;if(!c)return;if(String(c.key).startsWith(u+":"))c.delete();c.continue()}}catch(e){}}
 const docKey=d=>session.user.id+":"+d.id;
 const docPath=d=>`${session.user.id}/${d.id}.pdf`;
-async function stor(method,path,body){
+async function stor(method,path,body,type){
   const r=await fetch(SUPABASE_URL+"/storage/v1/object/"+path,{method,body,
-    headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+await token(),...(body?{"Content-Type":"application/pdf","x-upsert":"true"}:{})}});
+    headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+await token(),...(body?{"Content-Type":type||"application/pdf","x-upsert":"true"}:{})}});
   if(!r.ok){let m="";try{const j=await r.json();m=j.message||j.error||""}catch(e){}const er=new Error(m||"Erreur "+r.status);er.status=r.status;throw er}
   return r;
 }
@@ -3155,11 +3702,11 @@ function renderDocs(){
   // classeurs
   const cnt=id=>all.filter(d=>d.folder===id).length;
   $("docFolders").innerHTML=`<button class="pill" data-dfold="all" aria-pressed="${!cf}">${L("Tous")}</button>`+
-    DF().map(f=>`<button class="pill" data-dfold="${f.id}" aria-pressed="${cf&&cf.id===f.id}">📁 ${esc(f.name)} <span class="cnt">${cnt(f.id)||""}</span></button>`).join("")+
+    DF().map(f=>`<button class="pill" data-dfold="${f.id}" aria-pressed="${cf&&cf.id===f.id}">${IC("folder")} ${esc(f.name)} <span class="cnt">${cnt(f.id)||""}</span></button>`).join("")+
     `<button class="pill add" data-dfoldnew="1">+ ${L("Classeur")}</button>`;
   $("folderBar").hidden=!cf;
   if(cf)$("folderBar").innerHTML=dfEditing?`<form id="folderRename" style="display:flex;gap:8px;width:100%"><input id="folderRenIn" value="${esc(cf.name)}" aria-label="${L("Nouveau nom")}" autocomplete="off"><button class="btn" type="submit">OK</button></form>`
-    :`<div class="grow"><b class="notr">📁 ${esc(cf.name)}</b><div class="small muted">${cnt(cf.id)} ${L(cnt(cf.id)>1?"documents":"document")}</div></div>
+    :`<div class="grow"><b class="notr">${IC("folder")} ${esc(cf.name)}</b><div class="small muted">${cnt(cf.id)} ${L(cnt(cf.id)>1?"documents":"document")}</div></div>
       <button class="mini" data-dfren="1">${L("Renommer")}</button><button class="x" data-dfdel="1" aria-label="${L("Supprimer le classeur")}">×</button>
       <input type="search" class="search" id="folderSearch" style="margin:8px 0 0;width:100%" placeholder="${L("Rechercher dans ce classeur")}" aria-label="${L("Rechercher dans ce classeur")}" value="${esc(dfQ)}" autocomplete="off">`;
   // liste : recherche globale (partout) > classeur ouvert (avec sa recherche) > tous
@@ -3175,7 +3722,7 @@ function renderDocs(){
   $("docList").innerHTML=list.length?list.map(d=>{
     const st=docBusy.has(d.id)?L("Envoi…"):d.up?"":L("Sur cet appareil seulement"),f=folderOf(d);
     return `<div class="doc" data-doc="${d.id}">${DF().length?`<button class="grip" data-dgrip="${d.id}" aria-label="${L("Glisser vers un classeur")}" title="${L("Glisser vers un classeur")}">${GRIP}</button>`:""}<button class="doc-ic" data-docopen="${d.id}" aria-label="Ouvrir">PDF</button>
-      <button class="doc-open" data-docopen="${d.id}"><b>${esc(d.title)}</b><span class="small muted">${f&&scope==="all"?`📁 <span class="notr">${esc(f.name)}</span> · `:""}${d.pages?`${d.pages} ${L(d.pages>1?"pages":"page")} · `:""}${fmtSize(d.size||0)} · ${fmtDay(d.createdAt)}${st?` · <span style="color:var(--warn)">${st}</span>`:""}</span></button>
+      <button class="doc-open" data-docopen="${d.id}"><b>${esc(d.title)}</b><span class="small muted">${f&&scope==="all"?`${IC("folder")} <span class="notr">${esc(f.name)}</span> · `:""}${d.pages?`${d.pages} ${L(d.pages>1?"pages":"page")} · `:""}${fmtSize(d.size||0)} · ${fmtDay(d.createdAt)}${st?` · <span style="color:var(--warn)">${st}</span>`:""}</span></button>
       <button class="pen" data-docshare="${d.id}" aria-label="Partager ou enregistrer">${SHARE}</button>
       <button class="pen" data-edit="doc:${d.id}" aria-label="Modifier">${PEN}</button></div>`}).join("")
     :`<div class="empty">${sq?L("Aucun document ne correspond."):scope==="folder"?L("Ce classeur est vide. Importe ou scanne un document : il sera rangé ici."):L("Aucun document pour l'instant. Importe un PDF ou scanne une feuille.")}</div>`;
@@ -3186,16 +3733,47 @@ function renderDocs(){
 // code des documents : vérifié comme les autres codes (PBKDF2 + petit texte chiffré), récupérable avec le mot de passe du compte
 let dvKey=null; // clé des documents, en mémoire seulement tant que l'onglet est déverrouillé
 async function dvTry(code){try{const v=data.docVault,key=await pinKey(code,v.salt,v.iter||PIN_ITER);await decJ(key,v.chk);dvKey=key;dvOpen=true;return true}catch(e){return false}}
+// v27 : un seul code pour les documents et les mots de passe (celui du coffre des mots de passe).
+// Chaque coffre garde son propre sel et sa propre clé ; seul le code est commun (docVault.uni = true).
+async function vaultCheck(code){try{const v=data.vault,key=await pinKey(code,v.salt,v.iter||PIN_ITER);await decJ(key,v.chk);return key}catch(e){return null}}
+async function newDocVault(code){const salt=b64e(crypto.getRandomValues(new Uint8Array(16))),key=await pinKey(code,salt,PIN_ITER);
+  return{v:{id:uid(),salt,iter:PIN_ITER,chk:await encJ(key,{ok:"sidnote-docs"}),createdAt:new Date().toISOString(),uni:true,...(data.vault&&data.vault.rec?{rec:data.vault.rec}:{})},key}}
+async function newPwVault(code){const salt=b64e(crypto.getRandomValues(new Uint8Array(16))),key=await pinKey(code,salt,PIN_ITER);
+  return{id:uid(),salt,iter:PIN_ITER,chk:await encJ(key,{ok:"sidnote"}),createdAt:new Date().toISOString(),...(data.docVault&&data.docVault.rec?{rec:data.docVault.rec}:{})}}
+const DV_FORGOT="La récupération n'était pas activée. Choisir un nouveau code ? Seuls les documents déjà sur cet appareil pourront encore s'ouvrir. Touche encore pour confirmer.";
 async function dvUnlock(){
   if(dvOpen)return true;
-  if(!(data.docVault&&data.docVault.chk)){
-    const code=await askPin({mode:"new",head:"Documents",sub:"Choisis le code qui protège tes documents. Ils ne seront jamais effacés si tu l'oublies."});if(!code)return false;
-    const salt=b64e(crypto.getRandomValues(new Uint8Array(16))),key=await pinKey(code,salt,PIN_ITER);
-    data.docVault={id:uid(),salt,iter:PIN_ITER,chk:await encJ(key,{ok:"sidnote-docs"}),createdAt:new Date().toISOString()};
-    dvKey=key;dvOpen=true;save();toast("Code enregistré");await recEnable(data.docVault,code);return true}
-  const v=data.docVault,code=await askPin({mode:"unlock",head:"Documents",sub:"Entre le code de tes documents.",verify:dvTry,rec:v.rec,forgot:dvReset,
-    forgotText:"La récupération n'était pas activée. Choisir un nouveau code ? Seuls les documents déjà sur cet appareil pourront encore s'ouvrir. Touche encore pour confirmer."});
-  if(code&&dvOpen)recOffer(v,code);return !!code&&dvOpen;
+  const hasV=vaultOn(),hasD=!!(data.docVault&&data.docVault.chk);
+  // aucun code encore : on choisit le code unique (documents + mots de passe)
+  if(!hasD&&!hasV){const code=await askPin({mode:"new",head:"Ton code Sid'note",sub:"Choisis ton code à 5 chiffres : il protège tes documents et tes mots de passe."});if(!code)return false;
+    const d=await newDocVault(code);data.docVault=d.v;dvKey=d.key;dvOpen=true;data.vault=await newPwVault(code);save();toast("Code enregistré");
+    await recEnable(data.vault,code);if(data.vault.rec){data.docVault.rec=data.vault.rec;save()}return true}
+  // coffre des mots de passe déjà là : les documents prennent le même code
+  if(!hasD){const code=await askPin({mode:"unlock",head:"Documents",sub:"Entre ton code (le même que pour tes mots de passe).",verify:async c=>!!(await vaultCheck(c)),rec:data.vault.rec});if(!code)return false;
+    const d=await newDocVault(code);data.docVault=d.v;dvKey=d.key;dvOpen=true;save();return true}
+  const v=data.docVault;
+  if(v.uni||!hasV){
+    const code=await askPin({mode:"unlock",head:"Documents",sub:hasV?"Entre ton code (le même que pour tes mots de passe).":"Entre ton code.",verify:dvTry,rec:v.rec,forgot:dvReset,forgotText:DV_FORGOT});
+    if(code&&dvOpen){recOffer(v,code);if(!hasV){data.vault=await newPwVault(code);v.uni=true;save()}}
+    return !!code&&dvOpen}
+  return dvMigrate();
+}
+// passage à un seul code (une fois) : ancien code des documents, puis code des mots de passe ; les documents sont rechiffrés
+async function dvMigrate(){
+  const old=data.docVault;
+  const c1=await askPin({mode:"unlock",head:"Un seul code",sub:"Désormais, un seul code protège tes documents et tes mots de passe. Entre d'abord l'ancien code de tes documents.",verify:dvTry,rec:old.rec,forgot:dvReset,forgotText:DV_FORGOT});
+  if(!c1||!dvOpen)return false;
+  if(await vaultCheck(c1)){old.uni=true;save();toast("Tes deux codes étaient déjà identiques : c'est réglé");return true}
+  const c2=await askPin({mode:"unlock",head:"Un seul code",sub:"Entre maintenant le code de tes mots de passe : il ouvrira aussi tes documents.",verify:async c=>!!(await vaultCheck(c)),rec:data.vault.rec});
+  if(!c2)return true; // documents ouverts avec l'ancien code cette fois-ci ; le passage sera reproposé
+  if(!navigator.onLine){toast("Connecte-toi à internet pour passer à un seul code");return true}
+  toast("Passage à un seul code…");
+  // 1) une copie lisible de chaque document en ligne, gardée sur cet appareil (déchiffrée avec l'ancienne clé)
+  for(const d of docsArr().filter(x=>x.up)){if(await idb.get(docKey(d)))continue;
+    try{await idb.put(docKey(d),await docBlob(d))}catch(e){toast("Passage impossible pour l'instant (réseau). Réessaie plus tard.");return true}}
+  // 2) nouveau coffre des documents avec le code des mots de passe, puis tout est rechiffré et renvoyé
+  const n=await newDocVault(c2);data.docVault=n.v;dvKey=n.key;save();
+  await docsSecure();toast("C'est fait : un seul code pour tes documents et tes mots de passe");return true;
 }
 // l'onglet Documents s'ouvre avec le code, comme Mots de passe
 function renderDocLock(){const lk=!dvOpen;$("v-docs").classList.toggle("is-locked",lk);$("docLocked").hidden=!lk}
@@ -3204,7 +3782,7 @@ $("docUnlockBtn").addEventListener("click",docsEnter);
 // glisser un document (poignée ⠿) sur un classeur pour l'y ranger ; sur « Tous » pour le sortir de son classeur
 $("docList").addEventListener("pointerdown",e=>{const g=e.target.closest("[data-dgrip]");if(!g)return;e.preventDefault();
   const d=docsArr().find(x=>x.id===g.dataset.dgrip),row=g.closest(".doc");if(!d)return;
-  const ghost=document.createElement("div");ghost.className="doc-ghost";ghost.textContent="📄 "+d.title;document.body.appendChild(ghost);row.classList.add("dragging");
+  const ghost=document.createElement("div");ghost.className="doc-ghost";ghost.textContent=d.title;document.body.appendChild(ghost);row.classList.add("dragging");
   try{g.setPointerCapture(e.pointerId)}catch(x){}if(navigator.vibrate)navigator.vibrate(10);
   let over=null;const pos=ev=>{ghost.style.left=(ev.clientX+12)+"px";ghost.style.top=(ev.clientY-20)+"px";
     const el=document.elementFromPoint(ev.clientX,ev.clientY),c=el&&el.closest("#docFolders [data-dfold]");
@@ -3426,7 +4004,7 @@ function renderNotes(){
   if(nsKey&&!nsLoading&&NT().some(n=>n.secret&&n.vid===nsVid&&(nsPlain.get(n.id)||{})._iv!==n.iv)){nsLoading=true;nsLoad().finally(()=>{nsLoading=false;renderNotes()})}
   const n=noteOpenId&&noteFind(noteOpenId),v=noteView(n);
   if(noteOpenId&&!v)noteOpenId=null; // supprimée ailleurs, ou verrouillée
-  $("notesList").hidden=!!noteOpenId;$("noteEdit").hidden=!noteOpenId;
+  $("notesList").hidden=!!noteOpenId;$("noteEdit").hidden=!noteOpenId;if(data.ui.view==="notes")$("vhead").hidden=!!noteOpenId;
   if(noteOpenId){
     if(document.activeElement!==$("noteTitle"))$("noteTitle").value=v.title||"";
     if(document.activeElement!==$("noteBody"))$("noteBody").value=v.body||"";
@@ -3436,21 +4014,21 @@ function renderNotes(){
     return}
   const q=noteQ.trim(),secN=NT().filter(x=>x.secret).length;
   $("nsBar").hidden=!(nsKey&&secN);
-  $("nsBar").innerHTML=`<span class="grow">🔓 ${L("Notes secrètes déverrouillées")}</span><button type="button" class="mini" data-nslock="1">🔒 ${L("Verrouiller")}</button>`;
+  $("nsBar").innerHTML=`<span class="grow">${IC("unlock")} ${L("Notes secrètes déverrouillées")}</span><button type="button" class="mini" data-nslock="1">${IC("lock")} ${L("Verrouiller")}</button>`;
   let list=NT().slice().sort((a,b)=>(b.upd||0)-(a.upd||0));
   if(q)list=list.filter(x=>noteView(x)).map(x=>{const w=noteView(x);return{x,s:Math.max(fuzzyScore(w.title||"",q),fold(w.body).includes(fold(q))?11:0)}}).filter(o=>o.s>0).sort((a,b)=>b.s-a.s).map(o=>o.x);
   $("noteList").innerHTML=list.length?list.map(x=>{const w=noteView(x),when=`<span class="when">${fmtWhen(x.upd||Date.parse(x.createdAt))}</span>`;
-    if(!w)return `<button class="note note-lock" data-note="${x.id}"><b>🔒 ${L("Note secrète")}</b><span class="prev">${L("Touche pour l'ouvrir avec ton code")}</span>${when}</button>`;
+    if(!w)return `<button class="note note-lock" data-note="${x.id}"><b>${IC("lock")} ${L("Note secrète")}</b><span class="prev">${L("Touche pour l'ouvrir avec ton code")}</span>${when}</button>`;
     const lines=String(w.body||"").trim().split("\n").filter(Boolean);
     const t=w.title&&w.title.trim()?w.title:(lines.shift()||L("Nouvelle note"));
-    return `<button class="note" data-note="${x.id}"><b class="notr">${x.secret?"🔒 ":""}${esc(t)}</b><span class="prev notr">${esc(lines.join(" · ")||"")}</span>${when}</button>`}).join("")
+    return `<button class="note" data-note="${x.id}"><b class="notr">${x.secret?IC("lock")+" ":""}${esc(t)}</b><span class="prev notr">${esc(lines.join(" · ")||"")}</span>${x.photos&&x.photos.length?`<span class="np-count">${IC("camera")} ${x.photos.length} ${L(x.photos.length>1?"photos":"photo")}</span>`:""}${when}</button>`}).join("")
     :`<div class="empty">${L(q?"Aucune note ne correspond.":"Aucune note pour l'instant. Touche « + Note » pour écrire.")}</div>`;
 }
 function openNote(id){noteOpenId=id;renderNotes();window.scrollTo(0,0)}
 async function closeNote(){
   await noteFlush();const n=noteOpenId&&noteFind(noteOpenId),v=noteView(n);
   // une note laissée vide n'est pas gardée
-  if(n&&v&&!String(v.title||"").trim()&&!String(v.body||"").trim()){tomb(n.id);data.notes=NT().filter(x=>x!==n);nsPlain.delete(n.id)}
+  if(n&&v&&!String(v.title||"").trim()&&!String(v.body||"").trim()&&!(n.photos&&n.photos.length)){tomb(n.id);data.notes=NT().filter(x=>x!==n);nsPlain.delete(n.id)}
   save();noteOpenId=null;renderNotes();
 }
 $("noteNew").addEventListener("click",()=>{const n={id:uid(),title:"",body:"",createdAt:new Date().toISOString(),upd:Date.now()};NT().push(n);openNote(n.id);$("noteBody").focus()});
@@ -3468,7 +4046,7 @@ function noteInput(){
 }
 $("noteTitle").addEventListener("input",noteInput);$("noteBody").addEventListener("input",noteInput);
 $("noteTitle").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("noteBody").focus()}});
-$("noteDel").addEventListener("click",e=>armDelete(e.currentTarget,()=>{clearTimeout(noteSaveT);notePend=null;const n=noteFind(noteOpenId);if(n){tomb(n.id);data.notes=NT().filter(x=>x!==n);nsPlain.delete(n.id)}
+$("noteDel").addEventListener("click",e=>armDelete(e.currentTarget,()=>{clearTimeout(noteSaveT);notePend=null;const n=noteFind(noteOpenId);if(n){npDropAll(n);tomb(n.id);data.notes=NT().filter(x=>x!==n);nsPlain.delete(n.id)}
   noteOpenId=null;save();renderNotes();toast("Note supprimée")}));
 // cadenas : rend la note secrète (ou la verrouille si elle l'est déjà), puis la ferme
 $("noteLock").addEventListener("click",async()=>{
@@ -3487,6 +4065,38 @@ $("noteUnsecret").addEventListener("click",async()=>{
   n.title=v.title||"";n.body=v.body||"";["secret","vid","iv","ct"].forEach(k=>delete n[k]);n.upd=Date.now();nsPlain.delete(n.id);
   save();renderNotes();toast("La note n'est plus secrète");
 });
+// --- photos dans les notes (v24) : n.photos = [{id, up}] ; l'image (réduite, JPEG) est gardée sur l'appareil (IndexedDB)
+// et copiée dans l'espace privé Supabase (bucket « documents », dossier <uid>/notes/). Pas de photo dans une note secrète.
+const npKey=id=>session.user.id+":np:"+id,npPath=id=>`${session.user.id}/notes/${id}.jpg`;
+const npCache=new Map();let npBusy=new Set(),lbCur=null;
+const dataToBlob=u=>fetch(u).then(r=>r.blob());
+const blobToData=b=>new Promise((res,rej)=>{const f=new FileReader();f.onload=()=>res(f.result);f.onerror=rej;f.readAsDataURL(b)});
+async function npGet(id){if(npCache.has(id))return npCache.get(id);let u=await idb.get(npKey(id));
+  if(!u){try{const r=await stor("GET","authenticated/documents/"+npPath(id));u=await blobToData(new Blob([await r.arrayBuffer()],{type:"image/jpeg"}));idb.put(npKey(id),u).catch(()=>{})}catch(e){return null}}
+  npCache.set(id,u);return u}
+async function npUpload(n,p){if(p.up||npBusy.has(p.id))return;const u=await idb.get(npKey(p.id));if(!u)return;npBusy.add(p.id);
+  try{const b=await dataToBlob(u);try{await stor("POST","documents/"+npPath(p.id),b,"image/jpeg")}catch(ex){if(ex.status&&ex.status<500&&ex.status!==401)await stor("POST","documents/"+npPath(p.id),b,"application/pdf");else throw ex}
+    p.up=true;save()}catch(e){}
+  npBusy.delete(p.id)}
+function notesPhotosPending(){if(!session)return;NT().forEach(n=>(n.photos||[]).forEach(p=>{if(!p.up)npUpload(n,p)}))}
+function renderNotePhotos(n){const box=$("notePhotos");if(!box)return;const ps=(n&&n.photos)||[];box.hidden=!ps.length;
+  box.innerHTML=ps.map(p=>`<button type="button" class="np" data-np="${p.id}" aria-label="${L("Voir la photo")}"><span class="np-load"></span></button>`).join("");
+  ps.forEach(async p=>{const u=await npGet(p.id),el=box.querySelector(`[data-np="${p.id}"]`);if(el)el.innerHTML=u?`<img src="${u}" alt="">`:`<span class="small muted">${L("Indisponible")}</span>`})}
+$("notePhotoIn").addEventListener("change",async e=>{const files=[...e.target.files];e.target.value="";const n=noteFind(noteOpenId);if(!n||!files.length)return;
+  if(n.secret){toast("Pas de photo dans une note secrète");return}
+  n.photos=n.photos||[];
+  for(const f of files.slice(0,10)){try{const u=await shrink(f,1600,.82),id=uid();await idb.put(npKey(id),u);npCache.set(id,u);const p={id,up:false};n.photos.push(p);n.upd=Date.now();save();renderNotePhotos(n);npUpload(n,p)}
+    catch(ex){toast("Photo illisible")}}
+  toast(files.length>1?"Photos ajoutées":"Photo ajoutée")});
+$("notePhotos").addEventListener("click",async e=>{const b=e.target.closest("[data-np]");if(!b)return;const u=await npGet(b.dataset.np);if(!u)return;
+  lbCur=b.dataset.np;$("lbImg").src=u;$("lightbox").hidden=false;const d=$("lbDel");d.classList.remove("armed");d.textContent=L("Supprimer la photo")});
+$("lbClose").addEventListener("click",()=>{$("lightbox").hidden=true;lbCur=null});
+$("lightbox").addEventListener("click",e=>{if(e.target.id==="lightbox"){$("lightbox").hidden=true;lbCur=null}});
+$("lbDel").addEventListener("click",e=>{const b=e.currentTarget,n=noteFind(noteOpenId);if(!n||!lbCur)return;
+  if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent=L("Confirmer la suppression");return}
+  const id=lbCur;n.photos=(n.photos||[]).filter(p=>p.id!==id);n.upd=Date.now();save();idb.del(npKey(id));npCache.delete(id);stor("DELETE","documents/"+npPath(id)).catch(()=>{});
+  $("lightbox").hidden=true;lbCur=null;renderNotePhotos(n);toast("Photo supprimée")});
+const npDropAll=n=>(n&&n.photos||[]).forEach(p=>{idb.del(npKey(p.id));npCache.delete(p.id);stor("DELETE","documents/"+npPath(p.id)).catch(()=>{})});
 async function nsLoad(){
   if(!nsKey)return;const k=nsKey,m=new Map();
   for(const n of NT()){if(!n.secret||n.vid!==nsVid)continue;const o=nsPlain.get(n.id);
@@ -3591,9 +4201,10 @@ function renderPwd(){
   if(vaultKey&&(!vaultOn()||data.vault.id!==vaultVid)){vaultKey=null;vaultItems=new Map();pinStep=""}
   const open=!!vaultKey;$("pinBox").hidden=open;$("vault").hidden=!open;
   if(open){renderPwList();vaultLoad();return}
-  if(!pinStep)pinStep=vaultOn()?"unlock":"new";
+  if(!pinStep)pinStep=vaultOn()?"unlock":(data.docVault&&data.docVault.chk?"adopt":"new");
   const T={new:["Choisis ton code","5 chiffres pour protéger tes mots de passe. Retiens-le bien : sans lui, ils ne peuvent pas être récupérés."],
-    confirm:["Confirme ton code","Tape à nouveau les 5 chiffres."],unlock:["Entre ton code","Tes mots de passe sont verrouillés."]}[pinStep];
+    confirm:["Confirme ton code","Tape à nouveau les 5 chiffres."],unlock:["Entre ton code","Tes mots de passe sont verrouillés."],
+    adopt:["Entre ton code","Le même que pour tes documents : il protégera aussi tes mots de passe."]}[pinStep];
   $("pinTitle").textContent=L(T[0]);$("pinSub").textContent=L(T[1]);$("pinForgot").hidden=pinStep!=="unlock";
   if(!$("pinPad").children.length)$("pinPad").innerHTML=[1,2,3,4,5,6,7,8,9].map(d=>`<button type="button" data-pin="${d}">${d}</button>`).join("")+
     `<button type="button" class="blank" tabindex="-1" aria-hidden="true"></button><button type="button" data-pin="0">0</button><button type="button" class="del" data-pin="del">Effacer</button>`;
@@ -3604,12 +4215,20 @@ function pinFail(msg){const d=$("pinDots");$("pinErr").textContent=L(msg);d.clas
 async function pinDone(){
   const code=pinBuf;
   if(pinStep==="new"){pinFirst=code;pinBuf="";pinStep="confirm";$("pinErr").textContent="";renderPwd();return}
+  // v27 : les documents ont déjà un code → les mots de passe prennent le même
+  if(pinStep==="adopt"){pinBusy=true;$("pinErr").textContent="";
+    try{const dv=data.docVault,dk=await pinKey(code,dv.salt,dv.iter||PIN_ITER);await decJ(dk,dv.chk)}catch(e){pinBusy=false;pinFail("Code incorrect.");return}
+    try{data.vault=await newPwVault(code);data.docVault.uni=true;save();vaultKey=await pinKey(code,data.vault.salt,PIN_ITER);vaultVid=data.vault.id;vaultItems=new Map();pinBuf="";pinStep="";toast("Code enregistré");renderPwd()}
+    catch(ex){pinFail("Ce navigateur ne permet pas de chiffrer les données.")}
+    pinBusy=false;return}
   if(pinStep==="confirm"){
     if(code!==pinFirst){pinFirst="";pinStep="new";renderPwd();pinFail("Les deux codes ne sont pas identiques. Recommence.");return}
     pinBusy=true;$("pinErr").textContent="";$("pinSub").textContent=L("Création du coffre…");
     try{const salt=b64e(crypto.getRandomValues(new Uint8Array(16))),key=await pinKey(code,salt,PIN_ITER);
       data.vault={id:uid(),salt,iter:PIN_ITER,chk:await encJ(key,{ok:"sidnote"}),createdAt:new Date().toISOString()};
-      save();vaultKey=key;vaultVid=data.vault.id;vaultItems=new Map();pinFirst="";pinBuf="";pinStep="";toast("Code enregistré");renderPwd();recEnable(data.vault,code)}
+      if(!(data.docVault&&data.docVault.chk)){const d=await newDocVault(code);data.docVault=d.v} // même code pour les documents
+      else if(data.docVault.uni)data.docVault.uni=false; // nouveau code ici : les documents repasseront au code unique au prochain déverrouillage
+      save();vaultKey=key;vaultVid=data.vault.id;vaultItems=new Map();pinFirst="";pinBuf="";pinStep="";toast("Code enregistré");renderPwd();recEnable(data.vault,code).then(()=>{if(data.vault&&data.vault.rec&&data.docVault&&data.docVault.uni&&!data.docVault.rec){data.docVault.rec=data.vault.rec;save()}})}
     catch(ex){pinStep="new";renderPwd();pinFail("Ce navigateur ne permet pas de chiffrer les données.")}
     pinBusy=false;return}
   // déverrouillage
@@ -3704,18 +4323,12 @@ const ACCENTS={
 function applyLook(){
   const p=(session&&data.prefs)||{},look=ls.get("sidnote-look")||{};
   const acc=ACCENTS[p.accent||look.accent]?p.accent||look.accent:"bleu",theme=p.theme||look.theme||"auto";
-  const [,l,ls_,d,ds]=ACCENTS[acc];
-  let st=document.getElementById("accentCss");if(!st){st=document.createElement("style");st.id="accentCss";document.head.appendChild(st)}
-  st.textContent=`:root{--accent:${l};--accent-soft:${ls_}}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accent:${d};--accent-soft:${ds}}}:root[data-theme="dark"]{--accent:${d};--accent-soft:${ds}}`;
-  // style : Discret = seulement l'accent ; Coloré = fonds et cartes teintés ; Intense = bandeau dégradé et barre d'onglets colorée
-  const lk=["soft","color","vivid"].includes(p.look||look.look)?(p.look||look.look):"color",k1=lk==="vivid"?16:10,k2=lk==="vivid"?6:3;
-  const tint=(bg,sf,ln,bar,acc)=>`--bg:color-mix(in srgb,${acc} ${k1}%,${bg});--surface:color-mix(in srgb,${acc} ${k2}%,${sf});--line:color-mix(in srgb,${acc} ${k1+6}%,${ln});--bar:color-mix(in srgb,${acc} ${k1}%,${bar})`;
-  const TL=tint("#f2f4f7","#ffffff","#e3e6eb","rgba(248,249,251,.94)",l),TD=tint("#0d1117","#161b22","#262d36","rgba(22,27,34,.94)",d);
-  if(lk!=="soft")st.textContent+=`:root[data-look]{${TL}}@media (prefers-color-scheme:dark){:root[data-look]:not([data-theme="light"]){${TD}}}:root[data-look][data-theme="dark"]{${TD}}`;
-  if(lk==="soft")document.documentElement.removeAttribute("data-look");else document.documentElement.setAttribute("data-look",lk);
+  // style Graphite (v24) : une seule couleur d'accent ; l'ancien choix couleur/style est gardé dans les données mais n'a plus d'effet
+  const lk=p.look||look.look||"color";
+  document.documentElement.removeAttribute("data-look");
   if(theme==="auto")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",theme);
   const dark=theme==="dark"||(theme==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);
-  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content",dark?"#0d1117":"#f2f4f7"));
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content",dark?"#0E0F11":"#F4F4F2"));
   ls.set("sidnote-look",{accent:acc,theme,look:lk}); // pour l'écran de connexion
 }
 function renderLook(){
@@ -3739,7 +4352,7 @@ let dict=null;
 function dictStop(){if(dict){try{dict.rec.stop()}catch(e){}dict.btn.classList.remove("on");dict=null}}
 function dictate(btn,field,onChange){
   if(dict){const same=dict.btn===btn;dictStop();if(same)return}
-  if(!SR){toast("Dictée indisponible ici : touche le micro 🎤 du clavier de l'iPhone.");field.focus();return}
+  if(!SR){toast("Dictée indisponible ici : touche le micro du clavier de l'iPhone.");field.focus();return}
   const rec=new SR();rec.lang=LANG==="en"?"en-US":"fr-FR";rec.continuous=true;rec.interimResults=true;
   // le texte dicté s'insère à l'endroit du curseur
   const start=field.selectionStart??field.value.length,before=field.value.slice(0,start),after=field.value.slice(field.selectionEnd??start);
@@ -3748,7 +4361,7 @@ function dictate(btn,field,onChange){
     field.value=before+sep+(finals+interim).trimStart()+after;onChange&&onChange()};
   rec.onerror=ev=>{if(ev.error==="not-allowed"||ev.error==="service-not-allowed")toast("Micro refusé : autorise-le dans les réglages de l'iPhone.");else if(ev.error!=="aborted"&&ev.error!=="no-speech")toast("Dictée interrompue")};
   rec.onend=()=>{if(dict&&dict.rec===rec){btn.classList.remove("on");dict=null}};
-  try{rec.start();dict={rec,btn};btn.classList.add("on");toast("Parle, je t'écoute…")}catch(e){toast("Dictée indisponible ici : touche le micro 🎤 du clavier de l'iPhone.")}
+  try{rec.start();dict={rec,btn};btn.classList.add("on");toast("Parle, je t'écoute…")}catch(e){toast("Dictée indisponible ici : touche le micro du clavier de l'iPhone.")}
 }
 $("noteMic").addEventListener("click",e=>dictate(e.currentTarget,$("noteBody"),noteInput));
 $("nuMic").addEventListener("click",e=>dictate(e.currentTarget,$("nuAsk")));
@@ -3756,7 +4369,7 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden)dictStop()}
 
 // bouton 🎤 ajouté à côté des champs de saisie principaux
 function micFor(inp){if(!inp||inp.dataset.mic)return;inp.dataset.mic="1";
-  const b=document.createElement("button");b.type="button";b.className="mini nu-mic";b.textContent="🎤";b.setAttribute("aria-label",L("Dicter"));
+  const b=document.createElement("button");b.type="button";b.className="mini nu-mic";b.innerHTML=IC("mic");b.setAttribute("aria-label",L("Dicter"));
   const par=inp.parentElement;
   if(par.classList.contains("addbar")||par.classList.contains("pw-field"))inp.after(b);
   else{const w=document.createElement("span");w.className="pw-field";inp.before(w);w.append(inp,b)}
@@ -3786,7 +4399,7 @@ async function nuCall(kind,payload){
 }
 const nuErrMsg=ex=>ex instanceof TypeError?L("Pas de connexion internet"):ex.status===404?L("La fonction « nutrition » n'est pas encore installée sur Supabase."):ex.message;
 // animation pendant que Claude travaille
-function nuLoading(el,msgs){const EM=["🥗","🍝","🍳","🥑","🍗","🍎","🥦","🍚"];let i=0;
+function nuLoading(el,msgs){const EM=[""];let i=0;
   el.innerHTML=`<div class="loadcard" role="status"><div class="load-em">${EM[0]}</div><div class="load-msg">${L(msgs[0])}</div><div class="load-bar"><i></i></div><div class="shim"></div><div class="shim" style="width:70%"></div></div>`;
   const t=setInterval(()=>{i++;const e=el.querySelector(".load-em"),m=el.querySelector(".load-msg");if(!e){clearInterval(t);return}e.textContent=EM[i%EM.length];m.textContent=L(msgs[i%msgs.length])},1300);
   return()=>clearInterval(t)}
@@ -3858,7 +4471,7 @@ function dayTarget(d){const pl=NU().plan||{},delta=Math.round(weekSports(wKey(d)
 function renderNuWeek(){
   const ws=weekSports(wKey(nuDay)),el=$("nuWeek");el.hidden=!ws.length;if(!ws.length)return;
   const m=parse(wKey(nuDay)),e=new Date(m);e.setDate(e.getDate()+6),t=dayTarget(nuDay);
-  el.innerHTML=`<div class="nu-week-h"><b>🏃 ${L("Ton sport cette semaine")}</b><span class="small muted">${m.getDate()} ${MO[m.getMonth()]} – ${e.getDate()} ${MO[e.getMonth()]}</span></div>`+
+  el.innerHTML=`<div class="nu-week-h"><b>${IC("activity")} ${L("Ton sport cette semaine")}</b><span class="small muted">${m.getDate()} ${MO[m.getMonth()]} – ${e.getDate()} ${MO[e.getMonth()]}</span></div>`+
     ws.map(s=>`<div class="nu-wsp"><div class="grow"><b class="notr">${esc(s.name)}</b><span class="small muted">≈ ${s.kps} kcal ${L("par séance")}${s.count!==s.base?` · ${L("d'habitude")} ${s.base}`:""}</span></div><div class="stepper"><button type="button" data-ws="${esc(s.name)}" data-d="-1" aria-label="${L("Une séance de moins")}">−</button><output>${s.count}</output><button type="button" data-ws="${esc(s.name)}" data-d="1" aria-label="${L("Une séance de plus")}">+</button></div></div>`).join("")+
     `<div class="small">${L("Objectif par jour cette semaine")} : <b>${fmtFull(t.kcal)} kcal</b>${t.delta?` <span class="muted">(${t.delta>0?"+":""}${t.delta} ${L("selon ton sport")})</span>`:""}</div>`;
 }
@@ -3895,21 +4508,47 @@ function renderNutri(){
   // plats du jour : une carte par plat, ses aliments dedans
   const groups=[];list.forEach(x=>{const g=x.grp||x.id;let G=groups.find(y=>y.g===g);if(!G){G={g,items:[],name:x.gname||x.name,em:x.gem||x.em||"🍽️",at:x.at};groups.push(G)}G.items.push(x)});
   $("nuLog").innerHTML=groups.length?groups.map(G=>{const t=sumOf(G.items),d=new Date(G.at);
-    return `<details class="dish" open><summary class="dish-h"><span class="dish-ic" data-thumb="${G.g}">${G.em}</span>
+    return `<details class="dish" open><summary class="dish-h"><span class="dish-ic" data-thumb="${G.g}">${mono(G.name)}</span>
       <span class="dish-t"><b class="notr">${esc(G.name)}</b><span class="dish-time">${two(d.getHours())}:${two(d.getMinutes())}</span>${G.items.length>1?` <span class="small muted">· ${G.items.length} ${L("aliments")}</span>`:""}</span>
       <span class="dish-kcal">${r0(t.kcal)}<small>kcal</small></span>${G.items.length===1?`<button class="pen" data-nuedit="${G.items[0].id}" aria-label="${L("Modifier")}">${PEN}</button>`:""}<button type="button" class="x" data-nudelg="${G.g}" aria-label="${L("Supprimer ce plat")}">×</button></summary>
-      ${macroHtml(t)}${G.items.length===1?(G.items[0].qty?`<div class="dish-note notr">${esc(G.items[0].qty)}</div>`:""):`<div class="dish-items">${G.items.map(x=>`<div class="dish-it"><span class="em">${x.em||"•"}</span><div class="grow"><b class="notr">${esc(x.name)}</b>${x.qty?`<span class="small muted notr">${esc(x.qty)}</span>`:""}</div><span class="k">${r0(x.kcal)} kcal</span><button class="pen" data-nuedit="${x.id}" aria-label="${L("Modifier")}">${PEN}</button><button class="x" data-nudel="${x.id}" aria-label="${L("Supprimer")}">×</button></div>`).join("")}</div>`}</details>`}).join("")
+      ${macroHtml(t)}${G.items.length===1?`<div class="dish-note">${qtyCell("log:"+G.items[0].id,G.items[0])}</div>`:`<div class="dish-items">${G.items.map(x=>`<div class="dish-it"><span class="em">${x.em||"•"}</span><div class="grow"><b class="notr">${esc(x.name)}</b>${qtyCell("log:"+x.id,x)}</div><span class="k">${r0(x.kcal)} kcal</span><button class="pen" data-nuedit="${x.id}" aria-label="${L("Modifier")}">${PEN}</button><button class="x" data-nudel="${x.id}" aria-label="${L("Supprimer")}">×</button></div>`).join("")}</div>`}</details>`}).join("")
     :`<div class="card"><div class="empty">${L(nuDay===iso(today())?"Rien pour l'instant. Écris ce que tu manges ci-dessus, ou prends ton plat en photo.":"Rien d'enregistré ce jour-là. Tu peux encore le compléter.")}</div></div>`;
   groups.forEach(G=>loadThumb(G.g));
-  renderNuResult();renderNuPlan();renderNuMenu();renderMenuForm();renderNuWeek();
+  renderNuResult();renderNuPlan();renderNuMenu();renderMenuForm();renderNuWeek();renderMenuLeft();nuShowTab();
+  if(qtyEd){const i=$("qtyEdIn");if(i&&document.activeElement!==i){i.focus();i.select()}}
 }
+// trois onglets : la journée, les menus, le profil (on se souvient du dernier ouvert)
+function nuShowTab(){const t=data.ui.nuTab||"day";
+  document.querySelectorAll("#nuTabs [data-nutab]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.nutab===t));
+  document.querySelectorAll("#nuMain [data-nupane]").forEach(p=>p.hidden=p.dataset.nupane!==t)}
+function nuGoTab(t){data.ui.nuTab=t;saveUI();nuShowTab();const tb=$("nuTabs");if(tb.getBoundingClientRect().top<0)tb.scrollIntoView({block:"start"})}
+$("nuTabs").addEventListener("click",e=>{const b=e.target.closest("[data-nutab]");if(b)nuGoTab(b.dataset.nutab)});
+$("nuMain").addEventListener("click",e=>{const b=e.target.closest("[data-nugo]");if(b)nuGoTab(b.dataset.nugo)});
+// --- quantité modifiable directement (journée et analyse) : calories et macros suivent ---
+let qtyEd=null;
+function qtyCell(key,x){
+  if(qtyEd===key)return `<span class="qty-in"><input id="qtyEdIn" value="${esc(x.qty||"")}" placeholder="${L("Ex. 150 g")}" aria-label="${L("Quantité")}" autocomplete="off" enterkeyhint="done"><button type="button" class="mini" data-qok="${key}">OK</button></span>`;
+  return `<button type="button" class="qty-ed notr" data-qed="${key}">${esc(qtyTxt(x)||L("Ajouter une quantité"))} ✎</button>`}
+// « 2 c. à soupe » d'huile → grammes ; « 150 g » → 150 ; sinon le premier nombre
+function toGrams(name,t){t=String(t||"").toLowerCase().replace(",",".");
+  const sp=t.match(/(\d+(?:\.\d+)?)\s*(?:c\.?|cuill[eè]res?)\s*(?:à|a)?\s*(soupe|s\b|caf[ée]|c\b)/),S=SPOONS.find(([re])=>re.test(name||""));
+  if(sp&&S)return +sp[1]*(/^s/.test(sp[2])?S[1]:S[2]);const g=t.match(/(\d+(?:\.\d+)?)\s*g\b/);return g?+g[1]:0}
+function scaleQty(x,q){const a=toGrams(x.name,x.qty),b=toGrams(x.name,q),k=a>0&&b>0?b/a:(qtyNum(x.qty)>0&&qtyNum(q)>0?qtyNum(q)/qtyNum(x.qty):0);
+  x.qty=q;if(x.g&&b)x.g=r0(b);if(!k){if(q)toast("Quantité sans chiffre : calories inchangées");return}
+  x.kcal=r0(x.kcal*k);x.p=r1(x.p*k);x.c=r1(x.c*k);x.f=r1(x.f*k)}
+function qtyCommit(key){const inp=$("qtyEdIn");if(!inp){qtyEd=null;return}const q=inp.value.trim(),[kind,id]=key.split(":");qtyEd=null;
+  if(kind==="log"){const x=NU().log.find(e=>e.id===id);if(x&&q!==x.qty){scaleQty(x,q);x.upd=Date.now();save();toast("Quantité mise à jour")}renderNutri()}
+  else if(nuPending){const x=nuPending.items[+id];if(x&&q!==x.qty)scaleQty(x,q);renderNuResult()}}
+["nuLog","nuResult"].forEach(id=>{$(id).addEventListener("click",e=>{const b=e.target.closest("[data-qed],[data-qok]");if(!b)return;e.preventDefault();e.stopPropagation();
+    if(b.dataset.qok){qtyCommit(b.dataset.qok);return}if(qtyEd)qtyCommit(qtyEd);qtyEd=b.dataset.qed;if(id==="nuLog")renderNutri();else{renderNuResult();const i=$("qtyEdIn");if(i){i.focus();i.select()}}},true);
+  $(id).addEventListener("keydown",e=>{if(e.target.id==="qtyEdIn"&&e.key==="Enter"){e.preventDefault();qtyCommit(qtyEd)}else if(e.target.id==="qtyEdIn"&&e.key==="Escape"){qtyEd=null;id==="nuLog"?renderNutri():renderNuResult()}})});
 // objectif de poids : chemin conseillé, et alerte si le délai choisi n'est pas réaliste
 function nuGoalHtml(){
   const n=NU(),pl=n.plan,p=n.profile||{},w=pl&&pl.wg;if(!w||!p.target)return"";
   const unit=p.durU==="m"?(LANG==="en"?(p.dur>1?"months":"month"):"mois"):L(p.dur>1?"semaines":"semaine");
   const pace=w.wk?`${w.wk>0?"+":""}${String(w.wk).replace(".",LANG==="en"?".":",")} kg ${L("par semaine")}`:"";
-  const PACE={fast:"🔥 Drastique",real:"🎯 Réaliste",easy:"🌿 À mon aise"}[p.pace];
-  return `<b>${w.ok?"✓ ":"⚠️ "}${p.weight} → ${p.target} kg${p.dur?` ${L("en")} ${p.dur} ${unit}`:""}</b>
+  const PACE={fast:"Drastique",real:"Réaliste",easy:"À mon aise"}[p.pace];
+  return `<b>${w.ok?"✓ ":IC("alert")+" "}${p.weight} → ${p.target} kg${p.dur?` ${L("en")} ${p.dur} ${unit}`:""}</b>
     ${PACE?`<span class="small">${L("Rythme")} : ${L(PACE)}</span>`:""}
     ${p.dur?`<span class="small">${L(w.ok?"Ton délai est réaliste.":"Ce délai n'est pas réaliste, ni bon pour ta santé.")}</span>`:""}
     ${w.advice?`<span class="small muted notr">${esc(w.advice)}</span>`:""}
@@ -3950,14 +4589,20 @@ $("nuPhoto").addEventListener("change",async e=>{const f=e.target.files[0];e.tar
     if(!$("nuAsk").value.trim())$("nuAskForm").requestSubmit()}
   catch(ex){toast("Photo illisible")}});
 $("nuPhotoPrev").addEventListener("click",e=>{if(e.target.closest("[data-nuphrm]")){nuPhoto=null;$("nuPhotoPrev").hidden=true;$("nuPhotoPrev").innerHTML=""}});
+// un aliment renvoyé par l'IA apparaît-il dans ce que la personne a écrit ? (racine des mots, sans accents)
+const nz=x=>String(x||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+function mentioned(q,name){const Q=nz(q),stems=nz(name).split(/[^a-z0-9]+/).filter(w=>w.length>=3&&!/^(les|des|une|avec|sans|aux|the|and|with|cuit|cuite|nature|frais|fraiche|maison)$/.test(w));
+  return !stems.length||stems.some(w=>Q.includes(w.length>5?w.slice(0,5):w.replace(/[sx]$/,"")))}
 $("nuAskForm").addEventListener("submit",async e=>{
   e.preventDefault();const q=$("nuAsk").value.trim();if((!q&&!nuPhoto)||nuBusy||!nutriAllowed())return;dictStop();
   nuBusy="aliment";const btn=$("nuAskBtn");btn.disabled=true;nuPending=null;
   const stop=nuLoading($("nuResult"),nuPhoto?["Analyse de la photo…","Reconnaissance des aliments…","Estimation des portions…","Calcul des calories…"]:["Analyse du plat…","Calcul des calories…","Estimation des macros…"]);
   const photo=nuPhoto;
-  try{const r=await nuCall("aliment",{text:q,image:photo?photo.big.split(",")[1]:undefined});
+  // texte seul : le serveur (v23) ne compte que ce qui est écrit ; le texte est envoyé tel quel pour garder la mémoire des aliments
+  try{const r=await nuRetry(()=>nuCall("aliment",{text:q,image:photo?photo.big.split(",")[1]:undefined}),r=>r&&Array.isArray(r.items)&&r.items.length);
     nuPending={q,mem:r._src==="memory",title:String(r.dish||q||L("Mon plat")),em:String(r.emoji||"🍽️"),note:String(r.note||""),photo:photo&&photo.small,
       items:(r.items||[]).map(x=>({name:String(x.name||q),qty:String(x.quantity||""),em:String(x.emoji||""),kcal:r0(x.kcal),p:r1(x.protein_g),c:r1(x.carbs_g),f:r1(x.fat_g)}))};
+    if(!photo&&nuPending.items.length>1)nuPending.items.forEach(x=>x.extra=!mentioned(q,x.name));
     if(!nuPending.items.length){nuPending=null;toast("Aliment non reconnu, précise un peu")}
   }catch(ex){toast(nuErrMsg(ex))}
   stop();nuBusy="";btn.disabled=false;renderNuResult();
@@ -3965,8 +4610,8 @@ $("nuAskForm").addEventListener("submit",async e=>{
 function renderNuResult(){
   const p=nuPending;if(!p){if(!nuBusy)$("nuResult").innerHTML="";return}
   const s=sumOf(p.items);
-  $("nuResult").innerHTML=`<div class="dish"><div class="dish-h"><span class="dish-ic">${p.photo?`<img src="${p.photo}" alt="">`:p.em}</span><span class="dish-t"><b class="notr">${esc(p.title)}</b><span class="small muted">${p.items.length} ${L(p.items.length>1?"aliments":"aliment")}</span>${p.mem?`<span class="memtag">⚡ ${L("Mémoire Sid'note")}</span>`:""}</span><span class="dish-kcal">${r0(s.kcal)}<small>kcal</small></span></div>
-    ${macroHtml(s)}<div class="dish-items">${p.items.map((x,i)=>`<div class="dish-it"><span class="em">${x.em||"•"}</span><div class="grow"><b class="notr">${esc(x.name)}</b><span class="small muted notr">${esc(x.qty)}</span></div><span class="k">${x.kcal} kcal</span><button type="button" class="x" data-nurm="${i}" aria-label="${L("Retirer")}">×</button></div>`).join("")}</div>
+  $("nuResult").innerHTML=`<div class="dish"><div class="dish-h"><span class="dish-ic">${p.photo?`<img src="${p.photo}" alt="">`:mono(p.title)}</span><span class="dish-t"><b class="notr">${esc(p.title)}</b><span class="small muted">${p.items.length} ${L(p.items.length>1?"aliments":"aliment")}</span>${p.mem?`<span class="memtag">${IC("bolt")} ${L("Mémoire Sid'note")}</span>`:""}</span><span class="dish-kcal">${r0(s.kcal)}<small>kcal</small></span></div>
+    ${macroHtml(s)}<div class="dish-items">${p.items.map((x,i)=>`<div class="dish-it"><span class="em">${x.em||"•"}</span><div class="grow"><b class="notr">${esc(x.name)}</b>${x.extra?`<span class="notmention">${L("pas dans ta description")}</span>`:""}${qtyCell("res:"+i,x)}</div><span class="k">${x.kcal} kcal</span><button type="button" class="x" data-nurm="${i}" aria-label="${L("Retirer")}">×</button></div>`).join("")}</div>
     ${p.note?`<div class="dish-note notr" style="padding-top:8px">${esc(p.note)}</div>`:""}
     <div class="dish-act"><button type="button" class="btn ghost" data-nucancel="1">${L("Annuler")}</button><button type="button" class="btn" data-nuadd="1">${L("Ajouter")} · ${r0(s.kcal)} kcal</button></div></div>`;
 }
@@ -4026,43 +4671,105 @@ $("nuEDel").addEventListener("click",e=>{const b=e.currentTarget;if(!nuEditId)re
   if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent=L("Confirmer la suppression");return}
   tomb(nuEditId);NU().log=NU().log.filter(x=>x.id!==nuEditId);save();$("nuSheet").hidden=true;renderNutri();toast("Supprimé")});
 // --- menus sur mesure : journée complète ou un seul repas, calories précises par repas, menu modifiable ---
-const SLOT={breakfast:["Petit-déjeuner","🥐",25],lunch:["Déjeuner","🥗",35],snack:["Collation","🍎",10],dinner:["Dîner","🍲",30]};
-const slotsFor=n=>({1:["lunch"],2:["lunch","dinner"],3:["breakfast","lunch","dinner"],4:["breakfast","lunch","snack","dinner"],5:["breakfast","snack","lunch","snack","dinner"]})[n]||["breakfast","snack","lunch","snack","dinner",...Array(n-5).fill("snack")];
+// « meal » = repas unique de la journée (OMAD)
+const SLOT={breakfast:["Petit-déjeuner","sunrise",25],lunch:["Déjeuner","sun",35],snack:["Collation","apple",10],dinner:["Dîner","moon",30],meal:["Repas unique (OMAD)","utensils",100]};
+const MAINS=["breakfast","lunch","dinner"];
+// repas choisis : petit-déj / déjeuner / dîner (oui ou non) + nombre de collations, placées entre les repas
+function mpSlots(){const mp=nuMP(),on=MAINS.filter(s=>mp.pick[s]),sn=mp.snacks||0;
+  if(on.length===1&&!sn)return["meal"];
+  if(!on.length)return Array(Math.max(1,sn)).fill("snack");
+  const out=[];let left=sn;on.forEach((s,i)=>{out.push(s);if(left&&i<on.length-1){out.push("snack");left--}});while(left-->0)out.push("snack");return out}
+const slotsFor=n=>({1:["meal"],2:["lunch","dinner"],3:["breakfast","lunch","dinner"],4:["breakfast","lunch","snack","dinner"],5:["breakfast","snack","lunch","snack","dinner"]})[n]||["breakfast","snack","lunch","snack","dinner",...Array(n-5).fill("snack")];
+const slotName=s=>SLOT[s]?SLOT[s][0]:"Repas";
 const splitKcal=(total,slots)=>{const w=slots.map(s=>SLOT[s][2]),t=w.reduce((a,b)=>a+b,0);return w.map(x=>Math.round(total*x/t/10)*10)};
-const nuMP=()=>{const n=NU();n.menuPrefs=n.menuPrefs||{};const m=n.menuPrefs;m.meals=m.meals||3;m.type=m.type||"day";m.one=m.one||{};return m};
-const mpKcals=()=>{const mp=nuMP(),sl=slotsFor(mp.meals);return mp.kcals&&mp.kcals.length===sl.length?mp.kcals:splitKcal(dayTarget(iso(today())).kcal,sl)};
+const nuMP=()=>{const n=NU();n.menuPrefs=n.menuPrefs||{};const m=n.menuPrefs;m.type=m.type||"day";m.one=m.one||{};
+  // ancien réglage « repas par jour » → choix des repas
+  if(!m.pick){const sl=slotsFor(m.meals||3);m.pick={breakfast:sl.includes("breakfast"),lunch:sl.includes("lunch")||sl.includes("meal"),dinner:sl.includes("dinner")};m.snacks=sl.filter(s=>s==="snack").length}
+  return m};
+// calories par repas : toujours ramenées à l'objectif du jour, en gardant la répartition choisie
+const mpKcals=()=>{const mp=nuMP(),sl=mpSlots(),tg=dayTarget(iso(today())).kcal;
+  if(!(mp.kcals&&mp.kcals.length===sl.length&&mp.kcalsFor===sl.join()))return splitKcal(tg,sl);
+  const tot=mp.kcals.reduce((a,b)=>a+b,0);if(!tot||Math.abs(tot-tg)<=20)return mp.kcals;
+  return fitKcals(mp.kcals.map(x=>x*tg/tot),tg)};
+// arrondit à 10 kcal et corrige le dernier repas pour que le total tombe juste
+function fitKcals(arr,tg){const out=arr.map(x=>Math.max(0,Math.round(x/10)*10));const d=tg-out.reduce((a,b)=>a+b,0);
+  for(let i=out.length-1;i>=0&&d;i--){if(out[i]+d>=0){out[i]+=d;break}}return out}
+// un repas change : les autres s'adaptent, proportionnellement à leur part actuelle
+function rebalance(k,i,v,tg){v=Math.max(0,Math.min(tg,v));const rest=tg-v,others=k.reduce((a,x,j)=>j===i?a:a+x,0),n=k.length-1;
+  const out=k.map((x,j)=>j===i?v:Math.round((others>0?x*rest/others:rest/n)/10)*10);
+  let big=-1;out.forEach((x,j)=>{if(j!==i&&(big<0||x>out[big]))big=j});
+  if(big>=0)out[big]=Math.max(0,out[big]+tg-out.reduce((a,b)=>a+b,0));return out}
 const oneKcal=slot=>{const mp=nuMP();return mp.one[slot]||splitKcal(dayTarget(iso(today())).kcal,slotsFor(4))[["breakfast","lunch","snack","dinner"].indexOf(slot)]};
 function renderMenuForm(){
   const mp=nuMP(),day=mp.type==="day";
   document.querySelectorAll("#nuMType button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mtype===mp.type));
-  $("nuMDay").hidden=!day;$("nuMOne").hidden=day;$("nuMeals").textContent=mp.meals;
-  $("nuMenuBtn").textContent=L(day?"Générer ma journée":{breakfast:"Générer un petit-déjeuner",lunch:"Générer un déjeuner",snack:"Générer une collation",dinner:"Générer un dîner"}[mp.type]);
-  if(day){const sl=slotsFor(mp.meals),k=mpKcals(),tot=k.reduce((a,b)=>a+b,0),tg=dayTarget(iso(today())).kcal;
-    if(!$("nuMealKcal").contains(document.activeElement))$("nuMealKcal").innerHTML=sl.map((s,i)=>`<div class="row"><span class="em">${SLOT[s][1]}</span><span class="grow">${L(SLOT[s][0])}</span><span class="nu-in"><input data-mk="${i}" type="text" inputmode="numeric" maxlength="4" value="${k[i]}" aria-label="${L("Calories")} ${L(SLOT[s][0])}"><i>kcal</i></span></div>`).join("");
-    const diff=tot-tg;$("nuMkTot").innerHTML=`${L("Total")} <b>${fmtFull(tot)}</b> / ${fmtFull(tg)} kcal${Math.abs(diff)>50?` <span style="color:var(--warn)">(${diff>0?"+":""}${fmtFull(diff)})</span> <button type="button" class="mini" data-mkreset="1">${L("Répartir l'objectif")}</button>`:" ✓"}`}
+  $("nuMDay").hidden=!day;$("nuMOne").hidden=day;$("nuSnacks").textContent=mp.snacks||0;
+  $("nuSlots").innerHTML=MAINS.map(s=>`<button type="button" class="pill meal-tg" data-pick="${s}" aria-pressed="${!!mp.pick[s]}"><span class="tg-box" aria-hidden="true">${mp.pick[s]?"✓":""}</span>${IC(SLOT[s][1])} ${L(SLOT[s][0])}</button>`).join("");
+  const sl=mpSlots();
+  $("nuMenuBtn").textContent=L(day?(sl.length===1&&sl[0]==="meal"?"Générer mon repas unique":"Générer ma journée"):{breakfast:"Générer un petit-déjeuner",lunch:"Générer un déjeuner",snack:"Générer une collation",dinner:"Générer un dîner"}[mp.type]);
+  if(day){const k=mpKcals(),tot=k.reduce((a,b)=>a+b,0),tg=dayTarget(iso(today())).kcal;
+    if(!$("nuMealKcal").contains(document.activeElement))$("nuMealKcal").innerHTML=sl.map((s,i)=>`<div class="row"><span class="em">${IC(SLOT[s][1])}</span><span class="grow">${L(slotName(s))}</span><span class="nu-in"><input data-mk="${i}" type="text" inputmode="numeric" maxlength="4" value="${k[i]}" aria-label="${L("Calories")} ${L(slotName(s))}"><i>kcal</i></span></div>`).join("");
+    $("nuMkTot").innerHTML=`${L("Total")} <b>${fmtFull(tot)}</b> / ${fmtFull(tg)} kcal ✓${mp.kcals?` <button type="button" class="mini" data-mkreset="1">${L("Répartition conseillée")}</button>`:""}`;
+    document.querySelector(".nu-mk-note").hidden=sl.length<2}
   else if(document.activeElement!==$("nuOneKcal"))$("nuOneKcal").value=oneKcal(mp.type);
   if(document.activeElement!==$("nuInclude"))$("nuInclude").value=mp.include||"";if(document.activeElement!==$("nuExclude"))$("nuExclude").value=mp.exclude||"";
 }
 $("nuMType").addEventListener("click",e=>{const b=e.target.closest("[data-mtype]");if(!b)return;nuMP().type=b.dataset.mtype;NU().upd=Date.now();save();renderMenuForm()});
-$("nuMenuSec").addEventListener("click",e=>{const b=e.target.closest("[data-meals],[data-mkreset]");if(!b)return;const mp=nuMP();
-  if(b.dataset.mkreset)mp.kcals=null;else{mp.meals=Math.min(8,Math.max(1,mp.meals+ +b.dataset.meals));mp.kcals=null}
+$("nuMenuSec").addEventListener("click",e=>{const b=e.target.closest("[data-pick],[data-snacks],[data-mkreset]");if(!b)return;const mp=nuMP();
+  if(b.dataset.mkreset)mp.kcals=null;
+  else if(b.dataset.pick){const s=b.dataset.pick;mp.pick[s]=!mp.pick[s];if(!MAINS.some(x=>mp.pick[x])&&!mp.snacks){mp.pick[s]=true;toast("Garde au moins un repas");return}mp.kcals=null}
+  else{mp.snacks=Math.min(4,Math.max(0,(mp.snacks||0)+ +b.dataset.snacks));if(!MAINS.some(x=>mp.pick[x])&&!mp.snacks)mp.snacks=1;mp.kcals=null}
   NU().upd=Date.now();save();$("nuMealKcal").innerHTML="";renderMenuForm()});
-$("nuMealKcal").addEventListener("change",e=>{const i=e.target.dataset.mk;if(i===undefined)return;const mp=nuMP(),k=mpKcals().slice();k[+i]=Math.max(0,Math.round(numIn(e.target.value)));mp.kcals=k;NU().upd=Date.now();save();renderMenuForm()});
+$("nuMealKcal").addEventListener("change",e=>{const i=e.target.dataset.mk;if(i===undefined)return;const mp=nuMP(),tg=dayTarget(iso(today())).kcal,k=mpKcals().slice();
+  const v=Math.round(numIn(e.target.value)/10)*10;if(v>tg)toast(`${L("Maximum")} ${fmtFull(tg)} kcal`);
+  mp.kcals=k.length>1?rebalance(k,+i,v,tg):[tg];mp.kcalsFor=mpSlots().join();NU().upd=Date.now();save();$("nuMealKcal").innerHTML="";renderMenuForm()});
 $("nuOneKcal").addEventListener("change",e=>{const mp=nuMP();mp.one[mp.type]=Math.max(0,Math.round(numIn(e.target.value)));NU().upd=Date.now();save()});
 ["nuInclude","nuExclude"].forEach(id=>$(id).addEventListener("change",e=>{nuMP()[id==="nuInclude"?"include":"exclude"]=e.target.value.trim();NU().upd=Date.now();save()}));
+// huiles, beurre, miel, sauces… : exprimés en cuillères plutôt qu'en grammes
+const SPOONS=[[/huile|oil/i,13.5,4.5],[/beurre de cacahu|peanut butter|pur[ée]e d'amande|tahin|tahini/i,16,5],[/beurre|butter|margarine|ghee/i,14,5],
+  [/miel|honey|sirop|syrup|confiture|jam/i,21,7],[/vinaigre|vinegar|sauce soja|soy sauce|moutarde|mustard|ketchup|mayonnaise|mayo|pesto|cr[eè]me fra[iî]che/i,15,5]];
+function spoonQty(name,g){if(!(g>0)||g>80)return"";const s=SPOONS.find(([re])=>re.test(name||""));if(!s)return"";
+  const half=x=>Math.max(.5,Math.round(x*2)/2),fr=x=>String(x).replace(".",LANG==="en"?".":",");
+  const tb=g/s[1];if(tb>=.75)return `${fr(half(tb))} ${L("c. à soupe")}`;return `${fr(half(g/s[2]))} ${L("c. à café")}`}
+const qtyTxt=x=>{const m=String(x.qty||"").trim().match(/^(\d+(?:[.,]\d+)?)\s*g$/i),g=x.g||(m?+m[1].replace(",","."):0),sp=g?spoonQty(x.name,g):"";return sp?`${sp} (${r0(g)} g)`:(x.qty||"")};
+// le serveur connaît les créneaux classiques : le repas unique part comme un déjeuner, avec son propre nom
+const srvSlot=s=>s==="meal"?"lunch":s;
+// la toute première génération peut échouer (serveur qui démarre, réponse vide) : on réessaie une fois tout seul
+async function nuRetry(fn,ok){let last;for(let a=0;a<2;a++){try{const r=await fn();if(!ok||ok(r))return r;last=new Error(L("Réponse vide, réessaie."))}
+  catch(ex){last=ex;if(ex instanceof TypeError||(ex.status&&ex.status<500&&![422,429].includes(ex.status)))throw ex}
+  if(a===0)await new Promise(r=>setTimeout(r,1200))}throw last}
 // demande à Claude un ou plusieurs repas (calories précises par repas)
 async function genMeals(slots,kcals){
-  const n=NU(),mp=nuMP(),t=dayTarget(iso(today())),tot=kcals.reduce((a,b)=>a+b,0)||1,k=tot/t.kcal;
-  const r=await nuCall("menu",{data:{meal_type:slots.length===1&&mp.type!=="day"?slots[0]:"day",meals:slots.map((s,i)=>({slot:s,name:L(SLOT[s][0]),kcal:kcals[i]})),
-    target_kcal:tot,protein_g:r0(t.p*k),carbs_g:r0(t.c*k),fat_g:r0(t.f*k),must_include:mp.include||"",avoid:mp.exclude||"",goal:n.profile&&n.profile.goal,notes:n.profile&&n.profile.notes}});
-  const meals=(r.meals||[]).map((m,i)=>({slot:slots[i]||slots[slots.length-1],target:kcals[i]||kcals[kcals.length-1],name:String(m.name||""),em:String(m.emoji||"🍽️"),
-    items:(m.items||[]).map(x=>({name:String(x.food||""),em:String(x.emoji||""),g:r0(x.grams),qty:r0(x.grams)+" g",kcal:r0(x.kcal),p:r1(x.protein_g),c:r1(x.carbs_g),f:r1(x.fat_g)}))}));
+  const n=NU(),mp=nuMP(),t=dayTarget(iso(today())),tot=kcals.reduce((a,b)=>a+b,0)||1,k=tot/t.kcal,one=slots.length===1;
+  const notes=[n.profile&&n.profile.notes,slots[0]==="meal"&&one?"Un seul repas dans la journée (OMAD) : il doit couvrir tous les besoins du jour.":"",
+    "Huiles, beurre, miel et sauces : indique la quantité en grammes, elle sera affichée en cuillères."].filter(Boolean).join(" ");
+  const r=await nuRetry(()=>nuCall("menu",{data:{meal_type:one&&mp.type!=="day"?srvSlot(slots[0]):"day",meals:slots.map((s,i)=>({slot:srvSlot(s),name:L(slotName(s)),kcal:kcals[i]})),
+    target_kcal:tot,protein_g:r0(t.p*k),carbs_g:r0(t.c*k),fat_g:r0(t.f*k),must_include:mp.include||"",avoid:mp.exclude||"",goal:n.profile&&n.profile.goal,notes}}),
+    r=>r&&Array.isArray(r.meals)&&r.meals.some(m=>m&&Array.isArray(m.items)&&m.items.length));
+  const meals=(r.meals||[]).filter(m=>m&&Array.isArray(m.items)&&m.items.length).map((m,i)=>({slot:slots[i]||slots[slots.length-1],target:kcals[i]||kcals[kcals.length-1],name:String(m.name||""),em:String(m.emoji||"🍽️"),
+    steps:recipeSteps(m.steps||m.recipe||m.instructions),
+    items:(m.items||[]).map(x=>({name:String(x.food||x.name||""),em:String(x.emoji||""),g:r0(x.grams),qty:r0(x.grams)+" g",kcal:r0(x.kcal),p:r1(x.protein_g),c:r1(x.carbs_g),f:r1(x.fat_g)}))}));
   return{meals,tips:String(r.tips||"")};
 }
+// étapes de recette : liste, ou texte « 1. … 2. … » découpé
+function recipeSteps(v){if(!v)return null;if(Array.isArray(v))return v.map(x=>String(x&&x.text||x).trim()).filter(Boolean);
+  const s=String(v).split(/\n+|(?:^|\s)(?=\d{1,2}[.)]\s)/).map(x=>x.replace(/^\s*(?:\d{1,2}[.)]|[-•])\s*/,"").trim()).filter(x=>x.length>2);return s.length?s:null}
+// recette d'un repas déjà généré : demande « recette » du serveur (v23) ; ancien serveur : on redemande le repas avec ses étapes dans « tips »
+async function getRecipe(ml){
+  const n=NU(),list=ml.items.map(x=>`${qtyTxt(x)} ${x.name}`).join(", ");
+  try{const r=await nuRetry(()=>nuCall("recette",{data:{name:ml.name,kcal:ml.kcal,foods:ml.items.map(x=>({food:x.name,grams:x.g||null,quantity:x.qty}))}}),r=>r&&Array.isArray(r.steps)&&r.steps.length);
+    const st=recipeSteps(r.steps);if(st){const t=[r.prep_min?`${L("Préparation")} ${r0(r.prep_min)} min`:"",r.cook_min?`${L("Cuisson")} ${r0(r.cook_min)} min`:""].filter(Boolean).join(" · ");
+      if(t)st.unshift(L("Temps")+" : "+t);if(r.tips)st.push(L("Astuce")+" : "+r.tips);return st}}
+  catch(ex){if(ex.status!==400)throw ex}
+  const r=await nuRetry(()=>nuCall("menu",{data:{meal_type:srvSlot(ml.slot||"lunch"),meals:[{slot:srvSlot(ml.slot||"lunch"),name:ml.name,kcal:ml.kcal}],target_kcal:ml.kcal,protein_g:r0(ml.p),carbs_g:r0(ml.c),fat_g:r0(ml.f),
+    must_include:list,avoid:"",goal:n.profile&&n.profile.goal,want_recipe:true,
+    notes:`RECETTE DEMANDÉE pour ce repas exact : « ${ml.name} » avec ${list}. Garde exactement ces aliments et ces quantités. Écris la préparation pas à pas (4 à 8 étapes numérotées « 1. … », avec temps de cuisson) dans le champ tips, et aussi dans « steps » si possible.`}}),
+    r=>r&&(r.tips||(r.meals&&r.meals[0]&&(r.meals[0].steps||r.meals[0].recipe))));
+  const m=r.meals&&r.meals[0]||{};return recipeSteps(m.steps||m.recipe||m.instructions)||recipeSteps(r.tips)}
 $("nuMenuBtn").addEventListener("click",async()=>{
   if(nuBusy||!nutriAllowed())return;const n=NU(),mp=nuMP();mp.include=$("nuInclude").value.trim();mp.exclude=$("nuExclude").value.trim();
   if(mp.type!=="day")mp.one[mp.type]=Math.max(0,Math.round(numIn($("nuOneKcal").value)))||oneKcal(mp.type);
-  const slots=mp.type==="day"?slotsFor(mp.meals):[mp.type],kcals=mp.type==="day"?mpKcals():[mp.one[mp.type]];
+  const slots=mp.type==="day"?mpSlots():[mp.type],kcals=mp.type==="day"?mpKcals():[mp.one[mp.type]];
   nuBusy="menu";const btn=$("nuMenuBtn");btn.disabled=true;const stop=nuLoading($("nuMenu"),["Préparation du menu…","Choix des recettes…","Calcul des grammages…","Équilibrage des macros…"]);
   try{const g=await genMeals(slots,kcals);
     if(mp.type==="day"||!n.menu||!n.menu.meals)n.menu={meals:g.meals,tips:g.tips,at:new Date().toISOString()};
@@ -4070,26 +4777,38 @@ $("nuMenuBtn").addEventListener("click",async()=>{
     n.upd=Date.now();save();toast("Menu prêt");
   }catch(ex){toast(nuErrMsg(ex))}
   stop();nuBusy="";btn.disabled=false;renderNuMenu();
+  const f=$("nuMenu").querySelector(".dish");if(f)f.scrollIntoView({behavior:"smooth",block:"start"});
 });
-let meEdit=null,meAdd=null;
+let meEdit=null,meAdd=null,meRecipe=null;
 function renderNuMenu(){
   if(nuBusy==="menu")return;
-  const m=NU().menu;if(!m||!m.meals||!m.meals.length){$("nuMenu").innerHTML="";return}
+  const m=NU().menu;if(!m||!m.meals||!m.meals.length){$("nuMenu").innerHTML=`<div class="card"><div class="empty">${L("Choisis tes repas, puis touche « Générer ».")}</div></div>`;return}
   m.meals.forEach(ml=>{const s=sumOf(ml.items);Object.assign(ml,{kcal:r0(s.kcal),p:r1(s.p),c:r1(s.c),f:r1(s.f)})});
-  const T=sumOf(m.meals);
-  $("nuMenu").innerHTML=`<div style="margin-top:12px">`+boxes([[r0(T.kcal),"kcal"],[r1(T.p)+" g","Protéines","--m-p"],[r1(T.c)+" g","Glucides","--m-c"],[r1(T.f)+" g","Lipides","--m-f"]])+`</div>`+
-    m.meals.map((ml,i)=>`<div class="dish"><div class="dish-h"><span class="dish-ic">${ml.em||"🍽️"}</span><span class="dish-t"><b class="notr">${esc(ml.name)}</b><span class="small muted">${L(SLOT[ml.slot]?SLOT[ml.slot][0]:"Repas")}${ml.target?` · ${L("objectif")} ${ml.target} kcal`:""}</span></span><span class="dish-kcal">${ml.kcal}<small>kcal</small></span><button type="button" class="x" data-medel="${i}" aria-label="${L("Retirer ce repas")}">×</button></div>
-      ${macroHtml(ml)}<div class="dish-items">${ml.items.map((x,j)=>`<div class="dish-it"><span class="em">${x.em||"•"}</span><div class="grow"><b class="notr">${esc(x.name)}</b>${meEdit===`${i}:${j}`?`<span class="me-qty"><input type="text" inputmode="decimal" id="meQtyIn" value="${x.g||""}" aria-label="${L("Grammes")}"> g <button type="button" class="mini" data-meqok="${i}:${j}">OK</button></span>`:`<span class="small muted notr">${esc(x.qty)}</span>`}</div><span class="k">${x.kcal} kcal</span>${x.g?`<button class="pen" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${PEN}</button>`:""}<button class="x" data-merm="${i}:${j}" aria-label="${L("Retirer")}">×</button></div>`).join("")}</div>
+  const T=sumOf(m.meals),td=iso(today());
+  $("nuMenu").innerHTML=`<h2 style="margin-top:16px">${L("Ton menu")}</h2>`+boxes([[r0(T.kcal),"kcal"],[r1(T.p)+" g","Protéines","--m-p"],[r1(T.c)+" g","Glucides","--m-c"],[r1(T.f)+" g","Lipides","--m-f"]])+
+    m.meals.map((ml,i)=>`<div class="dish"><div class="dish-h"><span class="dish-ic">${mono(ml.name)}</span><span class="dish-t"><b class="notr">${esc(ml.name)}</b><span class="small muted">${L(slotName(ml.slot))}${ml.target?` · ${L("objectif")} ${ml.target} kcal`:""}</span></span><span class="dish-kcal">${ml.kcal}<small>kcal</small></span><button type="button" class="x" data-medel="${i}" aria-label="${L("Retirer ce repas")}">×</button></div>
+      ${macroHtml(ml)}<div class="dish-items">${ml.items.map((x,j)=>`<div class="dish-it"><span class="em">${x.em||"•"}</span><div class="grow"><b class="notr">${esc(x.name)}</b>${meEdit===`${i}:${j}`?`<span class="me-qty"><input type="text" inputmode="decimal" id="meQtyIn" value="${x.g||""}" aria-label="${L("Grammes")}"> g <button type="button" class="mini" data-meqok="${i}:${j}">OK</button></span>`:x.g?`<button type="button" class="qty-ed notr" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${esc(qtyTxt(x))}</button>`:`<span class="small muted notr">${esc(x.qty)}</span>`}</div><span class="k">${x.kcal} kcal</span>${x.g?`<button class="pen" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${PEN}</button>`:""}<button class="x" data-merm="${i}:${j}" aria-label="${L("Retirer")}">×</button></div>`).join("")}</div>
       ${meAdd===i?`<form class="me-add" data-meaddf="${i}"><input id="meAddIn" placeholder="${L("Ex. 30 g d'amandes")}" autocomplete="off"><button class="btn" type="submit">OK</button></form>`:""}
-      <div class="me-act"><button type="button" class="mini" data-meadd="${i}">+ ${L("Aliment")}</button><button type="button" class="mini" data-meregen="${i}">↻ ${L("Autre idée")}</button><button type="button" class="mini" data-numeal="${i}">✓ ${L("Je l'ai mangé")}</button></div></div>`).join("")+
+      ${meRecipe===i?`<div class="recipe"><b>${IC("book")} ${L("Recette")}</b>${nuBusy==="recipe"?`<div class="small muted" style="margin-top:6px"><span class="spin"></span> ${L("Préparation de la recette…")}</div>`:ml.steps&&ml.steps.length?`<ol class="notr">${ml.steps.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>`:`<div class="small muted">${L("Recette indisponible pour le moment.")}</div>`}</div>`:""}
+      <div class="me-act"><button type="button" class="mini" data-meadd="${i}">+ ${L("Aliment")}</button><button type="button" class="mini" data-merec="${i}">${IC("book")} ${L(meRecipe===i?"Cacher la recette":"Recette")}</button><button type="button" class="mini" data-meregen="${i}">↻ ${L("Autre idée")}</button>
+        ${ml.ate===td?`<span class="me-done">✓ ${L("Dans ta journée")}</span>`:`<button type="button" class="mini" data-numeal="${i}" style="background:var(--accent);color:var(--on-accent)">＋ ${L("Ajouter à ma journée")}</button>`}</div></div>`).join("")+
     (m.tips?`<p class="small muted notr" style="margin:6px 4px">${esc(m.tips)}</p>`:"");
   if(meEdit){const i=$("meQtyIn");if(i){i.focus();i.select()}}if(meAdd!==null){const i=$("meAddIn");if(i)i.focus()}
 }
+// bandeau du menu : ce qu'il reste à manger aujourd'hui
+function renderMenuLeft(){const el=$("nuMenuLeft");if(!el||!NU().plan)return;const t=dayTarget(iso(today())),s=sumOf(dayLog(iso(today()))),left=r0(t.kcal-s.kcal);
+  el.innerHTML=`${IC("target")}<span class="grow">${left>=0?`${L("Il te reste")} <b>${fmtFull(left)} kcal</b> ${L("à manger aujourd'hui")}`:`${L("Objectif dépassé de")} <b>${fmtFull(-left)} kcal</b>`} <span class="muted">(${L("objectif")} ${fmtFull(t.kcal)})</span></span>`}
 // changer la quantité d'un aliment du menu : calories et macros suivent
 function meScale(i,j,g){const it=NU().menu.meals[i].items[j];if(!(g>0)||!it.g)return;const k=g/it.g;
   Object.assign(it,{g:r0(g),qty:r0(g)+" g",kcal:r0(it.kcal*k),p:r1(it.p*k),c:r1(it.c*k),f:r1(it.f*k)});NU().upd=Date.now();save()}
 $("nuMenu").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b)return;const n=NU(),M=n.menu;
-  if(b.dataset.numeal){const ml=M.meals[+b.dataset.numeal];nuAddItems(ml.items,null,{name:ml.name,em:ml.em});renderNutri();toast(`${L("Ajouté à ta journée")} · ${ml.kcal} kcal`);return}
+  if(b.dataset.numeal){const ml=M.meals[+b.dataset.numeal],d0=nuDay;nuDay=iso(today());
+    nuAddItems(ml.items,null,{name:ml.name,em:ml.em});nuDay=d0;ml.ate=iso(today());n.upd=Date.now();save();renderNutri();toast(`${L("Ajouté à ta journée")} · ${ml.kcal} kcal`);return}
+  if(b.dataset.merec){const i=+b.dataset.merec,ml=M.meals[i];if(meRecipe===i){meRecipe=null;renderNuMenu();return}
+    meRecipe=i;if(ml.steps&&ml.steps.length||nuBusy){renderNuMenu();return}
+    nuBusy="recipe";renderNuMenu();
+    try{const st=await getRecipe(ml);if(st){ml.steps=st;n.upd=Date.now();save()}else toast("Recette indisponible pour le moment.")}catch(ex){toast(nuErrMsg(ex))}
+    nuBusy="";renderNuMenu();return}
   if(b.dataset.meq){meEdit=b.dataset.meq;meAdd=null;renderNuMenu();return}
   if(b.dataset.meqok){const[i,j]=b.dataset.meqok.split(":").map(Number);meScale(i,j,numIn($("meQtyIn").value));meEdit=null;renderNuMenu();return}
   if(b.dataset.merm){const[i,j]=b.dataset.merm.split(":").map(Number);M.meals[i].items.splice(j,1);if(!M.meals[i].items.length)M.meals.splice(i,1);n.upd=Date.now();save();renderNuMenu();return}
@@ -4270,10 +4989,10 @@ $("langSel").value=LANG;
 $("langSel").addEventListener("change",e=>setLang(e.target.value));
 // page d'accueil
 function renderHomeSel(){
-  const cur=(data.prefs&&data.prefs.home)||"last";
-  $("homeSel").innerHTML=`<option value="last">${L("Dernière page ouverte")}</option>`+
+  const cur=(data.prefs&&data.prefs.home)||"home";
+  $("homeSel").innerHTML=`<option value="home">${L("Aujourd'hui")}</option><option value="last">${L("Dernière page ouverte")}</option>`+
     [...TABS.filter(([k])=>data.prefs.tabs[k]!==false),["more","Réglages"]].map(([k,l])=>`<option value="${k}">${L(l)}</option>`).join("");
-  $("homeSel").value=[...$("homeSel").options].some(o=>o.value===cur)?cur:"last";
+  $("homeSel").value=[...$("homeSel").options].some(o=>o.value===cur)?cur:"home";
 }
 $("homeSel").addEventListener("change",e=>{data.prefs.home=e.target.value;save();toast("Page d'accueil enregistrée")});
 // présentation au premier lancement
@@ -4289,15 +5008,15 @@ const ONB_DESC={
   docs:"Range tes PDF, scanne des feuilles avec l'appareil photo et retrouve-les en un instant.",
   app:"Les étapes pour installer Sid'note sur ton écran d'accueil."};
 let onbSel={};
-const ONB_GROUP={orga:["🗓️","Organise tes journées","Ton planning, tes tâches et ta concentration au même endroit."],
-  sport:["🏋️","Bouge et mange bien","Tes séances, ta nutrition et tes progrès en graphiques."],
-  perso:["🗂️","Garde tout à l'abri","Tes notes, tes documents et tes mots de passe, protégés par code."]};
+const ONB_GROUP={orga:["g-orga","Organise tes journées","Ton planning, tes tâches et ta concentration au même endroit."],
+  sport:["g-sport","Bouge et mange bien","Tes séances, ta nutrition et tes progrès en graphiques."],
+  perso:["g-perso","Garde tout à l'abri","Tes notes, tes documents et tes mots de passe, protégés par code."]};
 function openOnb(){
   onbSel={};TABS.forEach(([k])=>onbSel[k]=data.prefs.tabs[k]!==false);
   document.querySelectorAll("#onbLang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG));
   const it=([k,l])=>`<label class="onb-it ${onbSel[k]?"":"off"}" data-onb="${k}"><span class="ic">${ICON(k)}</span><span class="grow"><b>${L(l)}</b><span class="small muted">${L(ONB_DESC[k])}</span></span><input type="checkbox" class="switch" data-onbk="${k}" ${onbSel[k]?"checked":""} aria-label="${L("Garder")} ${L(l)}"></label>`;
   $("onbGroups").innerHTML=GROUPS.filter(g=>ONB_GROUP[g.k]).map(g=>{const ts=TABS.filter(([k])=>g.tabs.includes(k)),[em,t,sub]=ONB_GROUP[g.k];
-    return `<section class="onb-slide"><div class="onb-box"><div class="onb-big">${em}</div><div class="onb-grp" style="text-align:center">${L(g.label)}</div><h1 style="font-size:26px">${L(t)}</h1><p class="sub">${L(sub)}</p><div class="onb-list">${ts.map(it).join("")}</div><p class="small muted">${L("Touche une carte pour la garder ou la masquer.")}</p></div></section>`}).join("");
+    return `<section class="onb-slide"><div class="onb-box"><div class="onb-big">${ICON(em)}</div><div class="onb-grp" style="text-align:center">${L(g.label)}</div><h1 style="font-size:26px">${L(t)}</h1><p class="sub">${L(sub)}</p><div class="onb-list">${ts.map(it).join("")}</div><p class="small muted">${L("Touche une carte pour la garder ou la masquer.")}</p></div></section>`}).join("");
   onbLook();$("onb").hidden=false;document.body.style.overflow="hidden";$("onbTrack").scrollLeft=0;onbStep();
 }
 const onbSlides=()=>[...document.querySelectorAll("#onbTrack .onb-slide")];
@@ -4310,7 +5029,9 @@ $("onbNext").addEventListener("click",()=>onbGoTo(onbIdx()+1));$("onbPrev").addE
 // couleurs et style, appliqués tout de suite
 function onbLook(){const acc=data.prefs.accent||"bleu",lk=data.prefs.look||"color",dark=matchMedia("(prefers-color-scheme: dark)").matches&&document.documentElement.dataset.theme!=="light"||document.documentElement.dataset.theme==="dark";
   $("onbAccent").innerHTML=Object.entries(ACCENTS).map(([k,a])=>`<button type="button" data-oacc="${k}" style="--a:${dark?a[3]:a[1]}" aria-pressed="${k===acc}" aria-label="${L(a[0])}">${k===acc?CHECK:""}</button>`).join("");
-  document.querySelectorAll("#onbLook button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.look===lk))}
+  document.querySelectorAll("#onbLook button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.look===lk));
+  const th=data.prefs.theme||"auto";document.querySelectorAll("#onbTheme button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.otheme===th))}
+$("onbTheme").addEventListener("click",e=>{const b=e.target.closest("[data-otheme]");if(!b)return;data.prefs.theme=b.dataset.otheme;applyLook();onbLook()});
 $("onbAccent").addEventListener("click",e=>{const b=e.target.closest("[data-oacc]");if(!b)return;data.prefs.accent=b.dataset.oacc;applyLook();onbLook()});
 $("onbLook").addEventListener("click",e=>{const b=e.target.closest("[data-look]");if(!b)return;data.prefs.look=b.dataset.look;applyLook();onbLook()});
 $("onbGroups").addEventListener("change",e=>{const c=e.target.closest("[data-onbk]");if(!c)return;onbSel[c.dataset.onbk]=c.checked;const card=c.closest(".onb-it");card.classList.toggle("off",!c.checked);card.classList.remove("bump");void card.offsetWidth;card.classList.add("bump");if(navigator.vibrate)navigator.vibrate(8)});
@@ -4319,12 +5040,24 @@ function onbFinish(){
   if(!Object.values(onbSel).some(Boolean)){toast("Garde au moins un onglet");return}
   Object.assign(data.prefs.tabs,onbSel);data.prefs.onboarded=true;delete data.prefs.onbPending;save();
   $("onb").hidden=true;document.body.style.overflow="";applyTabs();renderHomeSel();
-  const first=visibleTabs()[0];show(first);toast("Bienvenue sur Sid'note !");
+  show("home");toast("Bienvenue sur Sid'note");setTimeout(maybeAskNotif,1200);
 }
 $("onbGo").addEventListener("click",onbFinish);$("onbSkip").addEventListener("click",onbFinish);
 $("replayOnb").addEventListener("click",openOnb);
 
+/* ---------- proposition des notifications (v27) : une fois par appareil ---------- */
+function maybeAskNotif(){if(!session||data.ui.notifAsked||!$("onb").hidden)return;
+  const can=pushOK();if(can&&(Notification.permission!=="default"))return;
+  if(!can&&!(isIOS&&!standalone()))return; // navigateur sans notifications : rien à proposer
+  $("naTitle").textContent=L("Ne rate plus rien");
+  $("naText").textContent=L(can?"Active les notifications : Sid'note te prévient avant tes rendez-vous, tes cours et tes échéances. Tu choisis quand, dans Agenda ou Réglages."
+    :"Pour recevoir des rappels avant tes rendez-vous et tes cours, installe d'abord Sid'note sur ton écran d'accueil, puis ouvre-le depuis son icône.");
+  $("naYes").textContent=L(can?"Activer les notifications":"Voir comment l'installer");$("notifAsk").hidden=false}
+const naDone=()=>{data.ui.notifAsked=Date.now();saveUI();$("notifAsk").hidden=true};
+$("naYes").addEventListener("click",async e=>{if(pushOK()){await notifToggle(e.currentTarget);naDone()}else{naDone();show("app")}});
+$("naNo").addEventListener("click",naDone);
 /* ---------- démarrage ---------- */
+hydrateIcons();document.querySelectorAll(".onb-floats [data-fn]").forEach(e=>e.innerHTML=ICON(e.dataset.fn));
 document.addEventListener("focusin",e=>{if(e.target.matches&&e.target.matches('input[list="typeList"]'))typeChipsFor(e.target)});
 typeChipsFor($("fCat"));typeChipsFor($("eCat"));
 if(LANG==="en")startTranslate();
@@ -4345,11 +5078,15 @@ if(ephExpired){
   icalLoadCache();$("icalUrl").value=(data.prefs&&data.prefs.ical)||"";
   renderAll();applyTabs();icalState();icalFetch(false);renderHomeSel();
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)icalFetch(false)});
-  const home=data.prefs.home&&data.prefs.home!=="last"?data.prefs.home:data.ui.view;
-  show(home||"plan");
+  // v25 : l'app s'ouvre sur « Aujourd'hui » (sauf autre choix dans Réglages)
+  show("home"); // v27 : Sid'note s'ouvre toujours sur « Aujourd'hui »
+  setTimeout(maybeAskNotif,1500);
+  // de retour après plus de 10 minutes ailleurs : on revient aussi sur « Aujourd'hui »
+  let hiddenAt=0;document.addEventListener("visibilitychange",()=>{if(document.hidden){hiddenAt=Date.now();return}
+    if(hiddenAt&&Date.now()-hiddenAt>10*60000&&data.ui.view!=="home"&&$("sheet").hidden&&$("pinSheet").hidden&&$("nuSheet").hidden){if(noteOpenId)closeNote();show("home")}hiddenAt=0});
   if(!data.prefs.onboarded)openOnb();
   if(!session.email)token().then(t=>api("/auth/v1/user",{token:t})).then(u=>{if(u&&u.email){session.email=u.email;ls.set(SESSION_KEY,session);renderAccount()}}).catch(()=>{});
-  setSync();pull();renderNotif();refreshSub();docsSyncPending();
+  setSync();pull();renderNotif();refreshSub();docsSyncPending();notesPhotosPending();
   window.addEventListener("online",()=>{setSync();push();pull();docsSyncPending()});
   window.addEventListener("offline",setSync);
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)pull();else if(session&&session.eph&&cache&&cache.dirty){clearTimeout(pushTimer);push()}});

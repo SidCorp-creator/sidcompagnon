@@ -15,8 +15,9 @@ http.createServer((req,res)=>{const ch=[];req.on('data',c=>ch.push(c));req.on('e
   if(url.pathname==='/auth/v1/user'&&req.method==='GET'){const e=Object.keys(users).find(k=>users[k].id===auth);return e?send(res,200,{id:auth,email:e,user_metadata:users[e].meta}):send(res,401,{msg:'no'})}
   if(url.pathname==='/auth/v1/user'&&req.method==='PUT'){const e=Object.keys(users).find(k=>users[k].id===auth);if(!e)return send(res,401,{msg:'no'});
     if(body.email&&body.email!==e){if(users[body.email])return send(res,422,{error_code:'email_exists',msg:'A user with this email address has already been registered'});users[body.email]=users[e];delete users[e]}
-    const em=body.email||e;if(body.data)users[em].meta={...users[em].meta,...body.data};return send(res,200,{id:auth,email:em,user_metadata:users[em].meta})}
+    const em=body.email||e;if(body.data)users[em].meta={...users[em].meta,...body.data};if(body.password)users[em].pw=body.password;return send(res,200,{id:auth,email:em,user_metadata:users[em].meta})}
   if(url.pathname==='/auth/v1/logout')return send(res,204);
+  if(url.pathname==='/auth/v1/recover')return send(res,200,{});
   if(url.pathname==='/rest/v1/user_data'){
     if(req.method==='GET'){const id=url.searchParams.get('user_id').replace('eq.','');if(id!==auth)return send(res,200,[]);return send(res,200,rows[id]?[rows[id]]:[])}
     if(req.method==='POST'){if(body.user_id!==auth)return send(res,403,{message:'rls'});rows[body.user_id]={data:body.data,updated_at:body.updated_at};return send(res,201)}

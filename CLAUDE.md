@@ -1,7 +1,9 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 22.**
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 28.**
+
+> Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
 ## Comment travailler avec Sid
 - Réponds **en français**, simplement et brièvement. Sid n'est pas développeur : explique en mots simples, avec des étapes cliquables.
@@ -94,6 +96,14 @@ assets/               ← logo
   - Notifications : Réglages → Notifications, délais au choix (`LEADS`, `data.prefs.notif.leads`).
   - Vie privée (RGPD) : Réglages → « Tes données et ta vie privée » (explications, export JSON complet, « Supprimer mes données » : fichiers Storage, abonnements, ligne `user_data` remise à zéro avec `data.wipe` — l'effacement gagne dans `mergeData`). La suppression du compte lui-même se fait par Sid dans Supabase → Authentication.
   - Correction mobile : `.form` en `minmax(0,1fr)` (les cartes ne débordent plus).
+- v27 (faite ailleurs, importée) : page « Aujourd'hui », page Espaces, un seul code pour documents et mots de passe, rappels par activité, cours iCal notifiés la veille (`data.icalSoon`), photos dans les notes, recettes…
+- v28 :
+  - Navigation : barre du bas = Aujourd'hui · Organisation · Santé · Coffre · Compte (`DOCK`, `openGroup`). Un espace rouvre sa dernière fonction (`data.ui.glast`) ; pastilles des fonctions de l'espace dans `#vhead` (`.vseg`). Plus de « + » dans la barre : bouton `#homeAdd` sur Aujourd'hui (ajout rapide `openQuickAdd`). La page Espaces existe encore mais n'est plus dans la barre.
+  - Tâches : état de la vue synchronisé avec le compte (`data.prefs.todoView` = {fold, doneOpen, pausedOpen, cat, showFin, doneCal}, via `TV()` / `tvSave()`). Catégorie tapée mais non validée → créée à l'ajout de la tâche (`catMake`). Glisser une tâche (poignée) sur une pastille de catégorie. Réalisées : « Liste » ou « Calendrier » (`doneCal`, intensité selon le nombre de tâches, toucher un jour = sa liste).
+  - Mots de passe : tri « Récents » / « A → Z » (`data.prefs.pwSort`).
+  - iCal : renommé « Calendrier relié » (`ICAL_CAT`), option « + Relier un calendrier » ; l'interrupteur de rappel des événements reliés n'apparaît que si un calendrier est relié (`.nf-ical`).
+  - Connexion : œil sur les mots de passe (`[data-pweyefor]`), blocage après 5 erreurs (30 s puis double, `sidnote-auth-lock` dans localStorage), « Mot de passe oublié ? » (`/auth/v1/recover`, retour par `#access_token…&type=recovery` → `recoveryFromHash` → `#npSheet`), « Changer mon mot de passe » dans Compte (`#chPwBtn`, rechiffre la récupération des codes : `recRewrap`). **Il faut un SMTP personnalisé dans Supabase** pour que les e-mails partent vers d'autres adresses que l'équipe, et Site URL = https://sidnote.netlify.app.
+  - Test : `tests/smoke.js` réécrit pour la v28 (l'ancien est dans `tests/smoke-v22.js`).
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

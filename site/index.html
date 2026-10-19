@@ -997,10 +997,11 @@ html.modal-open body{position:fixed;left:0;right:0;width:100%}
 .pin-host{padding:18px 0 8px}
 .pad button.del{border:0!important;background:none!important;box-shadow:none!important;font-size:15px!important;font-weight:600;color:var(--accent)}
 .pin-host .pin{padding-top:0}
-/* v29 : plus épuré sur téléphone : textes et marges un peu plus petits (les champs restent à 16 px pour éviter le zoom d'iOS) */
-@media (max-width:600px){
+/* v29 : plus épuré (téléphone et ordinateur) : textes et marges un peu plus petits (les champs restent à 16 px pour éviter le zoom d'iOS) */
+@media all{
   html,body{font-size:15px}
   main{padding:8px 14px calc(88px + env(safe-area-inset-bottom,0px))}
+  input,select,textarea{padding:9px 12px}
   .view>h1,#notesList>h1{font-size:27px!important;margin:4px 2px 10px!important}
   h1{font-size:27px}
   .home-hello{font-size:30px!important;margin:4px 2px 14px!important}
@@ -1097,11 +1098,18 @@ main{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
   .side-add .sp-ic{color:var(--on-gold)}
   .side .sp-meta{font-size:12px}
   nav{display:none!important}
-  main{margin-left:264px;max-width:none;padding:28px 48px 60px}
-  main>.view,main>.vhead{max-width:880px;margin-left:auto;margin-right:auto}
+  main{margin-left:236px;max-width:none;padding:22px 40px 48px}
+  main>.view,main>.vhead{max-width:760px;margin-left:auto;margin-right:auto}
+  .side{width:236px;padding:18px 12px}
+  .side-it,.side-add{padding:7px 10px;font-size:13.5px}
+  .side-it .sp-ic,.side-add .sp-ic{width:24px;height:24px}
+  .side-h{margin:16px 10px 4px}
+  .view>h1,#notesList>h1{font-size:28px!important}
+  .card:hover{border-color:color-mix(in srgb,var(--ink) 14%,var(--line))}
   body.locked main{margin-left:0}
-  .toast{bottom:24px;left:calc(50% + 132px)}
-  .home-hello{font-size:44px!important}
+  .toast{bottom:24px;left:calc(50% + 118px)}
+  .home-hello{font-size:34px!important}
+  .home-add{display:none} /* sur ordinateur, « + Ajouter » est dans la barre latérale */
 }
 body.locked .side{display:none!important}
 </style>
@@ -1682,7 +1690,7 @@ body.locked .side{display:none!important}
     <div class="card" id="stats"></div>
       </div>
     </details>
-    <p class="small muted" style="margin:18px 4px">Sid'note · version 29 · une app <b>SidCorp</b></p>
+    <p class="small muted" style="margin:18px 4px">Sid'note · version 30 · une app <b>SidCorp</b></p>
   </section>
 </main>
 
@@ -1977,7 +1985,7 @@ const DICT={
 "Récupérer les données déjà présentes sur ce téléphone":"Bring over the data already on this phone","Réglages":"Settings","Résultats":"Results","Sauvegarde":"Backup",
 "Sauvegarde restaurée":"Backup restored","Scan enregistré dans Documents":"Scan saved to Documents","Scanner un document":"Scan a document","◎ Scanner":"◎ Scan",
 "Se connecter":"Sign in","Se déconnecter":"Sign out","Secondes":"Seconds","Session arrêtée":"Session stopped","Sid'note · une app":"Sid'note · an app by",
-"Sid'note · version 29 · une app":"Sid'note · version 29 · an app by","Simple":"Simple","Statistiques":"Statistics","Supprimer":"Delete","Supprimer ?":"Delete?","Supprimer la séance":"Delete workout",
+"Sid'note · version 30 · une app":"Sid'note · version 30 · an app by","Simple":"Simple","Statistiques":"Statistics","Supprimer":"Delete","Supprimer ?":"Delete?","Supprimer la séance":"Delete workout",
 "Supprimer l'exercice":"Delete exercise","Supprimer la catégorie":"Delete category","Supprimé":"Deleted","Sur cet appareil seulement":"On this device only","Sur l'écran d'accueil":"Add to Home Screen",
 "Sur les 7 derniers jours":"Over the last 7 days","Synchronisé":"Synced","Synchronisation…":"Syncing…","Séance copiée":"Workout copied","Séance copiée : colle-la dans un message":"Workout copied: paste it in a message",
 "Séance créée":"Workout created","Séance remise à zéro":"Workout cleared","Séance supprimée":"Workout deleted","Séries":"Sets","Ta musique":"Your music",

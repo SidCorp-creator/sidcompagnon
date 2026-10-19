@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 29.**
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 30.**
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -112,6 +112,7 @@ assets/               ← logo
   - Documents : le code se tape dans la page avec le grand clavier (`#docPinHost`, `askPin` déplace `.pin` de `#pinSheet` quand la vue est docs ; `psEnd` le remet).
   - Ambiances de couleurs (`PALETTES`, `data.prefs.palette`, attribut `data-palette`) : Noir & or (défaut), Saphir, Émeraude, Bordeaux, Platine ; chacune en clair et en sombre.
   - Téléphone plus épuré : `@media (max-width:600px)` réduit titres, marges, boutons (champs toujours à 16 px).
+- v30 : l'affichage épuré s'applique aussi sur ordinateur (barre latérale 236 px, contenu 760 px max, titres plus petits ; `#homeAdd` caché car « + Ajouter » est dans la barre latérale). Le test fait aussi des captures en écran large (`*-pc-*.png`).
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

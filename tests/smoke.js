@@ -97,6 +97,31 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const notifTxt=await pg.evaluate(()=>{renderLeads();return document.querySelector(".notif-box").textContent});
     if(notifTxt.includes("UMons")||notifTxt.includes("me prévenir 24"))err("l'option des cours reste affichée sans calendrier relié");
 
+    // --- v29 : mois repliables dans l'Agenda
+    await pg.evaluate(()=>{const y=new Date().getFullYear();data.tasks.push({id:"m1",title:"Anniversaire A",date:`${y+1}-01-19`,status:"à faire",cat:"Perso"},{id:"m2",title:"Anniversaire B",date:`${y+1}-03-02`,status:"à faire",cat:"Perso"});save();renderPlan()});
+    await pg.click("#tasks [data-mfold]");await pg.waitForTimeout(150);
+    if(!(await pg.$eval("#tasks [data-mfold]",b=>b.getAttribute("aria-expanded")==="false")))err("le mois ne se replie pas");
+    await pg.click("[data-mfoldall]");await pg.waitForTimeout(150);
+    if(await pg.$$eval("#tasks .card",x=>x.length)!==0)err("« Tout replier » ne replie pas tous les mois");
+    await pg.locator("#tasks").scrollIntoViewIfNeeded();await shot(pg,scheme+"-fr-plan-mois-replies");await pg.click("[data-mfoldall]");
+    // --- v29 : le fond est figé quand une fenêtre est ouverte
+    await pg.click('#navIn [data-dock="home"]');await pg.click("#homeAdd");await pg.waitForTimeout(150);
+    if(!(await pg.evaluate(()=>document.documentElement.classList.contains("modal-open"))))err("le fond n'est pas figé sous l'ajout rapide");
+    await shot(pg,scheme+"-fr-ajout-rapide");await pg.click("#qaClose");await pg.waitForTimeout(150);
+    if(await pg.evaluate(()=>document.documentElement.classList.contains("modal-open")))err("le fond reste figé après fermeture");
+    // --- v29 : chrono de la musculation à sa place
+    await go("muscu");if(await pg.$eval("#rest",e=>getComputedStyle(e).position)==="sticky")err("le chrono reste collé en haut");
+    // --- v29 : code des Documents dans la page, grand clavier
+    await go("docs");await pg.waitForTimeout(300);
+    if(await pg.isVisible("#pinSheet"))err("le code des Documents s'ouvre encore dans une fenêtre");
+    if(!(await pg.isVisible("#docPinHost #psPad")))err("clavier du code absent de la page Documents");
+    await shot(pg,scheme+"-fr-docs-code");
+    // --- v29 : ambiances de couleurs
+    await go("more");if(!(await pg.isVisible("#palSel")))await pg.click('[data-sec="look"] summary');
+    await pg.click('[data-pal="saphir"]');if(await pg.evaluate(()=>document.documentElement.dataset.palette)!=="saphir")err("ambiance Saphir non appliquée");
+    await pg.locator("#palSel").scrollIntoViewIfNeeded();await shot(pg,scheme+"-fr-couleurs-saphir");
+    await pg.click('[data-pal="emeraude"]');await go("todo");await shot(pg,scheme+"-fr-todo-emeraude");
+    await go("more");await pg.click('[data-pal="or"]');if(await pg.evaluate(()=>document.documentElement.dataset.palette))err("retour à Noir & or impossible");
     // --- Compte : changer de mot de passe
     await go("more");await pg.click("#chPwBtn");await pg.fill("#npOld","faux123");await pg.fill("#npPw","secret2");await pg.fill("#npPw2","secret2");await pg.click("#npBtn");await pg.waitForTimeout(400);
     if(!(await pg.isVisible("#npErr")))err("mauvais mot de passe actuel accepté");

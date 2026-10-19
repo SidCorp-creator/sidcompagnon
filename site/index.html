@@ -517,7 +517,7 @@ nav.lots .tab svg{width:21px;height:21px}
 .pad button.blank{visibility:hidden}
 .pad button.del{background:none;box-shadow:none;font-size:16px;font-weight:600;color:var(--accent)}
 .pin-err{min-height:18px;color:var(--late);font-size:14px;font-weight:600;margin:0}
-#v-docs.is-locked>*:not(.brand):not(h1):not(.sub):not(#docLocked){display:none!important}
+#v-docs.is-locked>*:not(.brand):not(h1):not(.sub):not(#docLocked):not(#docPinHost){display:none!important}
 .doc-locked{padding:26px 16px;display:grid;gap:8px;justify-items:center;text-align:center}
 .pin-ic2{font-size:40px}
 .doc .grip{padding:6px 0}
@@ -961,6 +961,70 @@ body.todo-dragging #todoCats{position:sticky;top:calc(env(safe-area-inset-top) +
 .pw-eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;background:none;color:var(--muted);display:grid;place-items:center;cursor:pointer;border-radius:10px}
 .pw-eye svg{width:20px;height:20px}
 .linkbtn{border:0;background:none;color:var(--accent);font:600 14px var(--font);padding:6px;cursor:pointer;justify-self:center}
+/* v29 : ambiances de couleurs (Réglages > Apparence > Couleurs) */
+:root[data-palette="saphir"] body{--gold:#2F5DA8;--g-bg:#E6ECF6;--g-ink:#2B4C85;--on-gold:#ffffff}
+@media (prefers-color-scheme:dark){:root[data-palette="saphir"]:not([data-theme="light"]) body{--g-strong:#8FB3EA;--gold:#8FB3EA;--g-bg:#1A2130;--g-ink:#A9C3EE;--on-gold:#0E0F11}}
+:root[data-palette="saphir"][data-theme="dark"] body{--g-strong:#8FB3EA;--gold:#8FB3EA;--g-bg:#1A2130;--g-ink:#A9C3EE;--on-gold:#0E0F11}
+:root[data-palette="emeraude"] body{--gold:#2F7A5B;--g-bg:#E3EFE8;--g-ink:#245F47;--on-gold:#ffffff}
+@media (prefers-color-scheme:dark){:root[data-palette="emeraude"]:not([data-theme="light"]) body{--g-strong:#86C6A4;--gold:#86C6A4;--g-bg:#18241F;--g-ink:#A3D6BA;--on-gold:#0E0F11}}
+:root[data-palette="emeraude"][data-theme="dark"] body{--g-strong:#86C6A4;--gold:#86C6A4;--g-bg:#18241F;--g-ink:#A3D6BA;--on-gold:#0E0F11}
+:root[data-palette="bordeaux"] body{--gold:#9B3550;--g-bg:#F3E4E8;--g-ink:#7C2A41;--on-gold:#ffffff}
+@media (prefers-color-scheme:dark){:root[data-palette="bordeaux"]:not([data-theme="light"]) body{--g-strong:#E0A3B4;--gold:#E0A3B4;--g-bg:#2A1A1F;--g-ink:#EBBBC8;--on-gold:#0E0F11}}
+:root[data-palette="bordeaux"][data-theme="dark"] body{--g-strong:#E0A3B4;--gold:#E0A3B4;--g-bg:#2A1A1F;--g-ink:#EBBBC8;--on-gold:#0E0F11}
+:root[data-palette="platine"] body{--gold:#55585F;--g-bg:#E9E9E7;--g-ink:#3E4046;--on-gold:#ffffff}
+@media (prefers-color-scheme:dark){:root[data-palette="platine"]:not([data-theme="light"]) body{--g-strong:#C9CCD3;--gold:#C9CCD3;--g-bg:#202226;--g-ink:#D9DBE0;--on-gold:#0E0F11}}
+:root[data-palette="platine"][data-theme="dark"] body{--g-strong:#C9CCD3;--gold:#C9CCD3;--g-bg:#202226;--g-ink:#D9DBE0;--on-gold:#0E0F11}
+.pals{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.pal{border:0;background:none;padding:4px 0;display:grid;justify-items:center;gap:6px;cursor:pointer;color:var(--muted);font:600 11px var(--font)}
+.pal-dot{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--pb) 0 50%,var(--pa) 50% 100%);box-shadow:inset 0 0 0 1px var(--line);display:grid;place-items:center;color:#fff}
+.pal-dot svg{width:18px;height:18px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
+.pal[aria-pressed="true"]{color:var(--ink)}.pal[aria-pressed="true"] .pal-dot{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--pa)}
+.pal-n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+/* v29 : mois repliables dans l'Agenda */
+.mfold{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;padding:0 4px;margin:20px 0 8px;cursor:pointer;color:var(--muted);font:600 12px var(--font);text-transform:uppercase;letter-spacing:.14em;text-align:left}
+.mf-chev{display:grid;place-items:center;width:18px;height:18px;transition:transform .2s;transform:rotate(-90deg)}.mf-chev svg{width:14px;height:14px}
+.mfold[aria-expanded="true"] .mf-chev{transform:none}
+.mf-n{font-variant-numeric:tabular-nums;letter-spacing:0;background:var(--field);border-radius:99px;padding:2px 8px;font-size:11px}
+.mfold-all{display:flex;justify-content:flex-end;margin:6px 0 -12px}
+/* v29 : page figée derrière une fenêtre ouverte */
+html.modal-open,html.modal-open body{overflow:hidden;overscroll-behavior:none}
+html.modal-open body{position:fixed;left:0;right:0;width:100%}
+.sheet-bg{overscroll-behavior:contain}
+.sheet-bg .sheet{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+/* v29 : le chrono / minuteur de la musculation reste à sa place (plus rien ne glisse au-dessus ou dessous) */
+.rest{position:relative;top:auto;box-shadow:none;border:1px solid var(--line)}
+/* v29 : clavier du code des Documents dans la page */
+.pin-host{padding:18px 0 8px}
+.pad button.del{border:0!important;background:none!important;box-shadow:none!important;font-size:15px!important;font-weight:600;color:var(--accent)}
+.pin-host .pin{padding-top:0}
+/* v29 : plus épuré sur téléphone : textes et marges un peu plus petits (les champs restent à 16 px pour éviter le zoom d'iOS) */
+@media (max-width:600px){
+  html,body{font-size:15px}
+  main{padding:8px 14px calc(88px + env(safe-area-inset-bottom,0px))}
+  .view>h1,#notesList>h1{font-size:27px!important;margin:4px 2px 10px!important}
+  h1{font-size:27px}
+  .home-hello{font-size:30px!important;margin:4px 2px 14px!important}
+  h2{font-size:11px;margin:18px 4px 7px}
+  .sub{font-size:14px;margin-bottom:12px}
+  .row{padding:10px 14px;min-height:46px;gap:10px}
+  .btn{padding:10px 15px;font-size:15px}
+  .pill{padding:6px 10px;font-size:13px}
+  .mini{padding:6px 10px;font-size:12px}
+  .sp-row,.qa-it{padding:12px 14px;font-size:15px}
+  .hm-next{padding:14px}.hm-next b{font-size:17px}
+  .hm-tile{padding:10px}.hm-tile b{font-size:19px}
+  .hm-row{padding:11px 14px}
+  .ttl{font-size:15px}
+  .date{font-size:12px}
+  .card{border-radius:14px}
+  nav .tab{padding:5px 0 3px}
+  nav .tab svg{width:20px;height:20px}
+  nav .tab .tab-l{font-size:9.5px}
+  .vseg button{font-size:13px;padding:6px 10px}
+  .eyebrow{font-size:10px}
+  .pad{grid-template-columns:repeat(3,62px);gap:12px 28px}
+  .pad button{width:62px;height:62px;font-size:26px}
+}
 .home-acts{display:flex;align-items:center;gap:10px}
 .home-add{width:38px;height:38px;border-radius:13px;border:0;background:var(--gold);color:var(--on-gold);display:grid;place-items:center;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.18)}
 .home-add svg{width:20px;height:20px}.home-add:active{transform:scale(.94)}
@@ -1445,6 +1509,7 @@ body.locked .side{display:none!important}
     <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
     <h1>Documents</h1>
     <p class="sub">Range tes PDF et scanne tes documents. Ils te suivent sur tous tes appareils.</p>
+    <div class="pin-host" id="docPinHost" hidden></div>
     <div class="card doc-locked" id="docLocked" hidden><div class="pin-ic2"><i class="ic" data-i="lock"></i></div><b>Documents verrouillés</b><span class="small muted">Entre ton code pour voir tes documents.</span><button type="button" class="btn" id="docUnlockBtn">Déverrouiller</button></div>
     <input type="search" class="search" id="docSearch" placeholder="Rechercher dans tous les documents" aria-label="Rechercher dans tous les documents" autocomplete="off">
     <div class="chips" id="docFolders" style="margin-bottom:10px"></div>
@@ -1561,6 +1626,7 @@ body.locked .side{display:none!important}
     <div class="card">
       <div class="row look-old" style="display:block"><div style="margin-bottom:10px">Couleur de Sid'note</div><div class="accents" id="accentSel" role="group" aria-label="Couleur de Sid'note"></div></div>
       <div class="row look-old"><span class="grow">Style</span><div class="seg" id="lookSel" role="group" aria-label="Style" style="grid-template-columns:repeat(3,auto);padding:2px"><button type="button" data-look="soft">Discret</button><button type="button" data-look="color">Coloré</button><button type="button" data-look="vivid">Intense</button></div></div>
+      <div class="row" style="display:block"><div style="margin-bottom:10px">Couleurs</div><div class="pals" id="palSel" role="group" aria-label="Couleurs"></div></div>
       <div class="row"><span class="grow">Thème</span><div class="seg" id="themeSel" role="group" aria-label="Thème" style="grid-template-columns:repeat(3,auto);padding:2px"><button type="button" data-theme="auto">Auto</button><button type="button" data-theme="light">Clair</button><button type="button" data-theme="dark">Sombre</button></div></div>
       <label class="row"><span class="grow">Langue</span><select id="langSel" class="sel"><option value="fr">Français</option><option value="en">English</option></select></label>
       <label class="row look-old"><span class="grow">Page d'accueil</span><select id="homeSel" class="sel"></select></label>
@@ -1616,7 +1682,7 @@ body.locked .side{display:none!important}
     <div class="card" id="stats"></div>
       </div>
     </details>
-    <p class="small muted" style="margin:18px 4px">Sid'note · version 28 · une app <b>SidCorp</b></p>
+    <p class="small muted" style="margin:18px 4px">Sid'note · version 29 · une app <b>SidCorp</b></p>
   </section>
 </main>
 
@@ -1911,7 +1977,7 @@ const DICT={
 "Récupérer les données déjà présentes sur ce téléphone":"Bring over the data already on this phone","Réglages":"Settings","Résultats":"Results","Sauvegarde":"Backup",
 "Sauvegarde restaurée":"Backup restored","Scan enregistré dans Documents":"Scan saved to Documents","Scanner un document":"Scan a document","◎ Scanner":"◎ Scan",
 "Se connecter":"Sign in","Se déconnecter":"Sign out","Secondes":"Seconds","Session arrêtée":"Session stopped","Sid'note · une app":"Sid'note · an app by",
-"Sid'note · version 28 · une app":"Sid'note · version 28 · an app by","Simple":"Simple","Statistiques":"Statistics","Supprimer":"Delete","Supprimer ?":"Delete?","Supprimer la séance":"Delete workout",
+"Sid'note · version 29 · une app":"Sid'note · version 29 · an app by","Simple":"Simple","Statistiques":"Statistics","Supprimer":"Delete","Supprimer ?":"Delete?","Supprimer la séance":"Delete workout",
 "Supprimer l'exercice":"Delete exercise","Supprimer la catégorie":"Delete category","Supprimé":"Deleted","Sur cet appareil seulement":"On this device only","Sur l'écran d'accueil":"Add to Home Screen",
 "Sur les 7 derniers jours":"Over the last 7 days","Synchronisé":"Synced","Synchronisation…":"Syncing…","Séance copiée":"Workout copied","Séance copiée : colle-la dans un message":"Workout copied: paste it in a message",
 "Séance créée":"Workout created","Séance remise à zéro":"Workout cleared","Séance supprimée":"Workout deleted","Séries":"Sets","Ta musique":"Your music",
@@ -2105,6 +2171,15 @@ const DICT={
 };
 // v23
 Object.assign(DICT,{
+// v29
+"Couleurs":"Colors",
+"Noir & or":"Black & gold",
+"Saphir":"Sapphire",
+"Émeraude":"Emerald",
+"Bordeaux":"Burgundy",
+"Platine":"Platinum",
+"Tout replier":"Fold all",
+"Tout déplier":"Unfold all",
 // v28
 
 "Touche « + » en haut pour ajouter ta première activité.":"Tap “+” at the top to add your first event.",
@@ -2473,7 +2548,7 @@ function show(v){
   if(v==="spaces")renderSpaces();
   if(v==="more"){renderStats();renderTabsCard();renderHomeSel();renderLook();if(session)renderNotif()}
   if(v==="docs")docsEnter();
-  if(v!=="docs")dvLock();
+  if(v!=="docs"){dvLock();if(ps&&ps.host)psEnd(null)}
   if(v!=="pwd")pwdLock();else renderPwd();
   if(v==="notes"&&!noteOpenId)renderNotes();
   if(v!=="notes"&&nsKey)nsLock();
@@ -2922,7 +2997,10 @@ function renderPlan(){
   const list=src.filter(t=>(f==="Toutes"||f===ICAL_CAT||norm(t.cat)===norm(f))&&(!q||norm(t.title+" "+(t.cat||"")+" "+(t.note||"")+" "+(t.loc||"")).includes(q))).sort((a,b)=>sk(a).localeCompare(sk(b)));
   if(!list.length){$("tasks").innerHTML=`<div class="card" style="margin-top:10px"><div class="empty">${q?"Aucune activité ne correspond.":"Rien dans cette catégorie."}</div></div>`;return}
   const g={};list.forEach(t=>{const d=parse(t.date);const k=d.getFullYear()*100+d.getMonth();(g[k]=g[k]||[]).push(t)});
-  $("tasks").innerHTML=Object.keys(g).sort().map(k=>`<h2>${MOL[k%100]} ${Math.floor(k/100)}</h2><div class="card">${g[k].map(t=>{
+  // v29 : chaque mois se replie (toucher son nom) ; état gardé dans le compte (data.prefs.planFold)
+  const pf=data.prefs.planFold||{},ks=Object.keys(g).sort(),allF=ks.every(k=>pf[k]);
+  $("tasks").innerHTML=(ks.length>1&&!q?`<div class="mfold-all"><button type="button" class="mini" data-mfoldall="1">${L(allF?"Tout déplier":"Tout replier")}</button></div>`:"")+ks.map(k=>{const shut=!q&&pf[k];
+    return `<button type="button" class="mfold" data-mfold="${k}" aria-expanded="${!shut}"><span class="mf-chev">${CHEV}</span><span class="grow">${L(MOL[k%100])} ${Math.floor(k/100)}</span><span class="mf-n">${g[k].length}</span></button>`+(shut?"":`<div class="card">${g[k].map(t=>{
     if(t.src==="ical")return `<div class="row task ${t.canc?"isfait":""}" style="--c:var(--x4)" data-icalinfo="${esc(t.id)}">
       <div class="grow"><div class="date">${fmt(t.date)}${t.time?" · "+hrs(t):""}${t.canc?'<span class="canc-pill">Annulé</span>':""}</div>
       <div class="ttl">${esc(t.title)}</div>${t.loc?`<div class="small muted">${esc(t.loc)}</div>`:""}</div></div>`;
@@ -2932,12 +3010,15 @@ function renderPlan(){
       <div class="ttl">${esc(t.title)}</div>${t.note||late?`<div class="small muted">${late?'<span class="late">En retard</span> ':""}${esc(t.note||"")}</div>`:""}</div>
       <button class="status" data-st="${t.id}" data-s="${t.status}">${t.status}</button>
       <button class="pen" data-edit="task:${t.id}" aria-label="Modifier">${PEN}</button>
-      <button class="x" data-tdel="${t.id}" aria-label="Supprimer">×</button></div>`}).join("")}</div>`).join("");
+      <button class="x" data-tdel="${t.id}" aria-label="Supprimer">×</button></div>`}).join("")}</div>`)}).join("");
 }
 $("v-plan").addEventListener("click",e=>{
   const ii=e.target.closest(".row[data-icalinfo]");if(ii){icalInfo(ii.dataset.icalinfo);return}
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.f){data.ui.filter=b.dataset.f;saveUI();renderPlan();return}
+  if(b.dataset.mfold){const pf=data.prefs.planFold={...(data.prefs.planFold||{})},k=b.dataset.mfold;if(pf[k])delete pf[k];else pf[k]=1;save();renderPlan();return}
+  if(b.dataset.mfoldall){const ks=[...document.querySelectorAll("#tasks [data-mfold]")].map(x=>x.dataset.mfold),pf={...(data.prefs.planFold||{})},close=ks.some(k=>!pf[k]);
+    ks.forEach(k=>{if(close)pf[k]=1;else delete pf[k]});data.prefs.planFold=pf;save();renderPlan();return}
   const T=data.tasks;
   if(b.dataset.st){const t=T.find(x=>x.id===b.dataset.st);t.status=STATUSES[(STATUSES.indexOf(t.status)+1)%3];save();renderPlan()}
   else if(b.dataset.cf){const t=T.find(x=>x.id===b.dataset.cf);t.tbc=false;save();renderPlan();toast("Date confirmée")}
@@ -4006,7 +4087,7 @@ async function dvMigrate(){
   await docsSecure();toast("C'est fait : un seul code pour tes documents et tes mots de passe");return true;
 }
 // l'onglet Documents s'ouvre avec le code, comme Mots de passe
-function renderDocLock(){const lk=!dvOpen;$("v-docs").classList.toggle("is-locked",lk);$("docLocked").hidden=!lk}
+function renderDocLock(){const lk=!dvOpen;$("v-docs").classList.toggle("is-locked",lk);$("docLocked").hidden=!lk||!!(ps&&ps.host)}
 async function docsEnter(){renderDocLock();if(dvOpen){renderDocs();return}if(await dvUnlock()){renderDocLock();renderDocs();docsSyncPending();docsSecure()}}
 $("docUnlockBtn").addEventListener("click",docsEnter);
 // glisser un document (poignée ⠿) sur un classeur pour l'y ranger ; sur « Tous » pour le sortir de son classeur
@@ -4363,11 +4444,16 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden&&nsKey)nsLo
 /* ---------- fenêtre de code à 5 chiffres (réutilisable) ---------- */
 // askPin({mode:"new"}) → code choisi et confirmé ; askPin({mode:"unlock", verify}) → code vérifié ; null si annulé
 let ps=null;
+// v29 : dans Documents, le clavier s'affiche dans la page (comme pour les mots de passe), pas dans une fenêtre
+const PS_PIN=document.querySelector("#pinSheet .pin");
 function askPin(o){return new Promise(res=>{
-  ps={...o,step:o.mode,buf:"",first:"",fails:0,wait:0,busy:false,resolve:res};
+  if(ps)psEnd(null);
+  const host=data.ui.view==="docs"&&$("docPinHost");
+  ps={...o,step:o.mode,buf:"",first:"",fails:0,wait:0,busy:false,resolve:res,host:host||null};
   if(!$("psPad").children.length)$("psPad").innerHTML=[1,2,3,4,5,6,7,8,9].map(d=>`<button type="button" data-ps="${d}">${d}</button>`).join("")+
     `<button type="button" class="blank" tabindex="-1" aria-hidden="true"></button><button type="button" data-ps="0">0</button><button type="button" class="del" data-ps="del">${L("Effacer")}</button>`;
-  $("psErr").textContent="";psRender();$("pinSheet").hidden=false})}
+  $("psErr").textContent="";psRender();
+  if(host){host.appendChild(PS_PIN);host.hidden=false;$("docLocked").hidden=true}else $("pinSheet").hidden=false})}
 function psRender(){
   if(!ps)return;
   const T={new:["Choisis ton code",ps.sub],confirm:["Confirme ton code","Tape à nouveau les 5 chiffres."],unlock:["Entre ton code",ps.sub]}[ps.step];
@@ -4376,7 +4462,8 @@ function psRender(){
   [...$("psDots").children].forEach((d,i)=>d.classList.toggle("on",i<ps.buf.length));
 }
 function psFail(msg){const d=$("psDots");$("psErr").textContent=L(msg);d.classList.remove("shake");void d.offsetWidth;d.classList.add("shake");if(navigator.vibrate)navigator.vibrate(60);ps.buf="";psRender()}
-function psEnd(v){if(!ps)return;const r=ps.resolve;ps=null;$("pinSheet").hidden=true;const f=$("psForgot");delete f.dataset.armed;f.textContent=L("Code oublié ?");r(v)}
+function psEnd(v){if(!ps)return;const r=ps.resolve,host=ps.host;ps=null;$("pinSheet").hidden=true;
+  if(host){host.hidden=true;$("pinSheet").querySelector(".sheet").appendChild(PS_PIN);renderDocLock()}const f=$("psForgot");delete f.dataset.armed;f.textContent=L("Code oublié ?");r(v)}
 async function psDone(){
   const code=ps.buf;
   if(ps.step==="new"){ps.first=code;ps.buf="";ps.step="confirm";$("psErr").textContent="";psRender();return}
@@ -4394,7 +4481,7 @@ function psPress(k){
 padTap($("psPad"),"ps",psPress);
 $("psClose").addEventListener("click",()=>psEnd(null));
 $("pinSheet").addEventListener("click",e=>{if(e.target.id==="pinSheet")psEnd(null)});
-document.addEventListener("keydown",e=>{if($("pinSheet").hidden)return;if(/^[0-9]$/.test(e.key))psPress(e.key);else if(e.key==="Backspace")psPress("del");else if(e.key==="Escape")psEnd(null)});
+document.addEventListener("keydown",e=>{if(!ps||(!ps.host&&$("pinSheet").hidden))return;if(/^[0-9]$/.test(e.key))psPress(e.key);else if(e.key==="Backspace")psPress("del");else if(e.key==="Escape")psEnd(null)});
 $("psForgot").addEventListener("click",async e=>{const b=e.currentTarget;if(!ps)return;
   if(ps.rec){const cur=ps,code=await recRecover({rec:cur.rec});if(code&&ps===cur&&await cur.verify(code))psEnd(code);return}
   if(!b.dataset.armed){b.dataset.armed="1";b.textContent=L(ps.forgotText||"La récupération n'était pas activée. Effacer toutes les notes secrètes et choisir un nouveau code ? Touche encore pour confirmer.");return}
@@ -4554,8 +4641,13 @@ const ACCENTS={
   violet:["Violet","#6d3fd6","#ece5fb","#a78bfa","#221a3a"],rose:["Rose","#c0306f","#fbe4ee","#f472b6","#3a1a2a"],
   orange:["Orange","#c2410c","#fbe7dc","#fb923c","#3a2214"],rouge:["Rouge","#c62828","#fbe3e3","#f87171","#3a1a1a"],
   turquoise:["Turquoise","#0e7490","#dcf1f6","#22b8cf","#11303a"],graphite:["Graphite","#374151","#e5e7eb","#c9d1d9","#262d36"]};
+// v29 : ambiances (couleur d'accent de toute l'app) ; [nom, accent clair, fond clair, accent sombre, fond sombre]
+const PALETTES={or:["Noir & or","#9C7A3C","#F4F4F2","#C9B48A","#0E0F11"],saphir:["Saphir","#2F5DA8","#F3F5F9","#8FB3EA","#0D1017"],
+  emeraude:["Émeraude","#2F7A5B","#F2F5F3","#86C6A4","#0C110F"],bordeaux:["Bordeaux","#9B3550","#F7F3F4","#E0A3B4","#120D0F"],platine:["Platine","#55585F","#F4F4F4","#C9CCD3","#0F1012"]};
 function applyLook(){
   const p=(session&&data.prefs)||{},look=ls.get("sidnote-look")||{};
+  const pal=PALETTES[p.palette||look.palette]?(p.palette||look.palette):"or";
+  if(pal==="or")document.documentElement.removeAttribute("data-palette");else document.documentElement.setAttribute("data-palette",pal);
   const acc=ACCENTS[p.accent||look.accent]?p.accent||look.accent:"bleu",theme=p.theme||look.theme||"auto";
   // style Graphite (v24) : une seule couleur d'accent ; l'ancien choix couleur/style est gardé dans les données mais n'a plus d'effet
   const lk=p.look||look.look||"color";
@@ -4563,16 +4655,19 @@ function applyLook(){
   if(theme==="auto")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",theme);
   const dark=theme==="dark"||(theme==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);
   document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content",dark?"#0E0F11":"#F4F4F2"));
-  ls.set("sidnote-look",{accent:acc,theme,look:lk}); // pour l'écran de connexion
+  ls.set("sidnote-look",{accent:acc,theme,look:lk,palette:pal}); // pour l'écran de connexion
 }
 function renderLook(){
   const acc=data.prefs.accent||"bleu",th=data.prefs.theme||"auto",dark=document.documentElement.dataset.theme==="dark"||(!document.documentElement.dataset.theme&&matchMedia("(prefers-color-scheme: dark)").matches);
   $("accentSel").innerHTML=Object.entries(ACCENTS).map(([k,a])=>`<button type="button" data-accent="${k}" style="--a:${dark?a[3]:a[1]}" aria-pressed="${k===acc}" aria-label="${L(a[0])}" title="${L(a[0])}">${k===acc?CHECK:""}</button>`).join("");
   document.querySelectorAll("#themeSel button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.theme===th));
+  const pal=data.prefs.palette||"or";
+  $("palSel").innerHTML=Object.entries(PALETTES).map(([k,a])=>`<button type="button" class="pal" data-pal="${k}" aria-pressed="${k===pal}"><span class="pal-dot" style="--pa:${dark?a[3]:a[1]};--pb:${dark?a[4]:a[2]}">${k===pal?CHECK:""}</span><span class="pal-n">${L(a[0])}</span></button>`).join("");
   const lk=data.prefs.look||"color";document.querySelectorAll("#lookSel button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.look===lk));
 }
 $("accentSel").addEventListener("click",e=>{const b=e.target.closest("[data-accent]");if(!b)return;data.prefs.accent=b.dataset.accent;save();applyLook();renderLook()});
 $("lookSel").addEventListener("click",e=>{const b=e.target.closest("[data-look]");if(!b)return;data.prefs.look=b.dataset.look;save();applyLook();renderLook()});
+$("palSel").addEventListener("click",e=>{const b=e.target.closest("[data-pal]");if(!b)return;data.prefs.palette=b.dataset.pal;save();applyLook();renderLook()});
 $("themeSel").addEventListener("click",e=>{const b=e.target.closest("[data-theme]");if(!b)return;data.prefs.theme=b.dataset.theme;save();applyLook();renderLook()});
 applyLook();
 // sections des réglages : on se souvient de celles qui sont ouvertes (sur cet appareil)
@@ -5290,6 +5385,13 @@ function maybeAskNotif(){if(!session||data.ui.notifAsked||!$("onb").hidden)retur
 const naDone=()=>{data.ui.notifAsked=Date.now();saveUI();$("notifAsk").hidden=true};
 $("naYes").addEventListener("click",async e=>{if(pushOK()){await notifToggle(e.currentTarget);naDone()}else{naDone();show("app")}});
 $("naNo").addEventListener("click",naDone);
+/* ---------- v29 : quand une fenêtre (feuille) est ouverte, la page derrière est figée ---------- */
+// sur iPhone, overflow:hidden ne suffit pas : on fige le corps de la page à sa position et on la rétablit à la fermeture
+let lockY=0;
+function syncScrollLock(){const open=[...document.querySelectorAll(".sheet-bg")].some(x=>!x.hidden),on=document.documentElement.classList.contains("modal-open");
+  if(open&&!on){lockY=window.scrollY;document.body.style.top=`-${lockY}px`;document.documentElement.classList.add("modal-open")}
+  else if(!open&&on){document.documentElement.classList.remove("modal-open");document.body.style.top="";window.scrollTo(0,lockY)}}
+{const mo=new MutationObserver(syncScrollLock);document.querySelectorAll(".sheet-bg").forEach(x=>mo.observe(x,{attributes:true,attributeFilter:["hidden"]}))}
 /* ---------- démarrage ---------- */
 hydrateIcons();document.querySelectorAll(".onb-floats [data-fn]").forEach(e=>e.innerHTML=ICON(e.dataset.fn));
 document.addEventListener("focusin",e=>{if(e.target.matches&&e.target.matches('input[list="typeList"]'))typeChipsFor(e.target)});

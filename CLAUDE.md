@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 28.**
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 29.**
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -105,6 +105,13 @@ assets/               ← logo
   - Connexion : œil sur les mots de passe (`[data-pweyefor]`), blocage après 5 erreurs (30 s puis double, `sidnote-auth-lock` dans localStorage), « Mot de passe oublié ? » (`/auth/v1/recover`, retour par `#access_token…&type=recovery` → `recoveryFromHash` → `#npSheet`), « Changer mon mot de passe » dans Compte (`#chPwBtn`, rechiffre la récupération des codes : `recRewrap`). **Il faut un SMTP personnalisé dans Supabase** pour que les e-mails partent vers d'autres adresses que l'équipe, et Site URL = https://sidnote.netlify.app.
   - Fonctions `nutrition` (v23, recette, OMAD) et `rappels` (v23, `t.leads`, `t.remind`, `data.icalSoon`) recopiées depuis Supabase le 14 oct. 2026 : le dépôt correspond à ce qui est en ligne.
   - Test : `tests/smoke.js` réécrit pour la v28 (l'ancien est dans `tests/smoke-v22.js`).
+- v29 :
+  - Agenda : chaque mois de « Toutes les dates » se replie (`data.prefs.planFold`, synchronisé) + « Tout replier ».
+  - Fenêtres : quand une `.sheet-bg` est ouverte, la page derrière est figée (`syncScrollLock`, classe `html.modal-open`, corps en `position:fixed`).
+  - Musculation : le chrono/minuteur (`.rest`) n'est plus collé en haut (plus rien ne glisse au-dessus).
+  - Documents : le code se tape dans la page avec le grand clavier (`#docPinHost`, `askPin` déplace `.pin` de `#pinSheet` quand la vue est docs ; `psEnd` le remet).
+  - Ambiances de couleurs (`PALETTES`, `data.prefs.palette`, attribut `data-palette`) : Noir & or (défaut), Saphir, Émeraude, Bordeaux, Platine ; chacune en clair et en sombre.
+  - Téléphone plus épuré : `@media (max-width:600px)` réduit titres, marges, boutons (champs toujours à 16 px).
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

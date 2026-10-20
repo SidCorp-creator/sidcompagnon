@@ -4,7 +4,7 @@ function send(res,code,obj){res.writeHead(code,{...cors,'Content-Type':'applicat
 // v32 : fonctions réservées dans app_metadata (comme sur Supabase) ; les adresses « sans… » n'ont pas Nutrition
 const appMeta=e=>String(e||'').startsWith('sans')?{}:{features:['nutri']};
 const tok=(u)=>({access_token:'at-'+u.id,refresh_token:'rt-'+u.id,expires_in:3600,expires_at:Math.floor(Date.now()/1000)+3600,user:{id:u.id,email:u.email,user_metadata:u.meta,app_metadata:appMeta(u.email)}});
-const objs={},mem={};
+const objs={},mem={};let failWrites=false;
 http.createServer((req,res)=>{const ch=[];req.on('data',c=>ch.push(c));req.on('end',()=>{const raw=Buffer.concat(ch);const isJ=!(req.url.startsWith('/storage/'));const b=isJ?raw.toString():'';
   if(req.method==='OPTIONS')return send(res,204);
   const url=new URL(req.url,'http://x');const body=b?JSON.parse(b):{};
@@ -20,6 +20,9 @@ http.createServer((req,res)=>{const ch=[];req.on('data',c=>ch.push(c));req.on('e
     const em=body.email||e;if(body.data)users[em].meta={...users[em].meta,...body.data};if(body.password)users[em].pw=body.password;return send(res,200,{id:auth,email:em,user_metadata:users[em].meta,app_metadata:appMeta(em)})}
   if(url.pathname==='/auth/v1/logout')return send(res,204);
   if(url.pathname==='/auth/v1/recover')return send(res,200,{});
+  // v33 : panne simulée du serveur pour les écritures (GET /__fail?on=1 ou 0)
+  if(url.pathname==='/__fail'){failWrites=url.searchParams.get('on')==='1';return send(res,200,{failWrites})}
+  if(url.pathname==='/rest/v1/user_data'&&failWrites&&req.method!=='GET')return send(res,500,{message:'panne simulée'});
   if(url.pathname==='/rest/v1/user_data'){
     if(req.method==='GET'){const id=url.searchParams.get('user_id').replace('eq.','');if(id!==auth)return send(res,200,[]);return send(res,200,rows[id]?[rows[id]]:[])}
     if(req.method==='POST'){if(body.user_id!==auth)return send(res,403,{message:'rls'});rows[body.user_id]={data:body.data,updated_at:body.updated_at};return send(res,201)}

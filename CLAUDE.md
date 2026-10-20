@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 32.**
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 33.**
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -132,6 +132,12 @@ assets/               ← logo
   - `mergeData` : pour vault/docVault/noteVault/phx d'id différents, le plus récent (`at`/`createdAt`) gagne. `renderPwd` ne reste plus sur « Choisis ton code » si un coffre arrive par la synchro.
   - Test : `tests/smoke.js` couvre le compte sans accès Nutrition, la page d'ouverture, la CSP, le passage d'un ancien coffre, le nouvel appareil, le code oublié et la fusion.
   - À faire par Sid dans Supabase (tableau de bord) : Authentication → Sign In / Providers → Email : « Minimum password length » = 8, et activer « Prevent use of leaked passwords ». Netlify : retirer le badge « Powered by Netlify » (script `/.netlify/scripts/hud`) : Site configuration → Build & deploy → Deploy Previews → « Netlify Drawer » sur Disable (chemin à vérifier sur le compte).
+- v33 (audit, lots 5 et 6) :
+  - Sauvegarde complète et versionnée : `bkObj()` = `{app:"sidnote", v:2, exported, data:forServer(data)}` (« Exporter une sauvegarde » et « Télécharger toutes mes données », même format, `saveJSON`). Restauration : `bkParse` (v2, export RGPD, ancien format v1 tâches/agenda), aperçu `#bkSheet` (comptes fichier / maintenant), « Fusionner » (`mergeData`) ou « Remplacer » (2 appuis ; ce qui manque est mis en pierre tombale, documents et classeurs toujours gardés ; en v1 seuls tâches/agenda changent). `bkPrepare` ne reprend jamais `del`/`wipe`/`ui` du fichier et garde les coffres du compte (éléments d'un autre coffre ignorés, signalés).
+  - `data.res = {id: ms}` : éléments restaurés ; dans `mergeData`, une suppression plus ancienne qu'une restauration est annulée (90 jours, comme `del`).
+  - Synchro : `push()` ne se tait plus : `syncErr` (sauf hors connexion), nouvel essai espacé (`retryIn` 4 s → 60 s), `syncRetry()`, boutons `[data-syncretry]`. Affiché dans Compte (`#syncState`, point rouge) et sur Aujourd'hui (`#homeSync`).
+  - Notes modifiées sur deux appareils depuis la dernière synchro (`mergeData(loc,rem,{since})`, `since` = `cache.base`) : la version perdante est gardée en « (copie de conflit) » (id `<id>-c<upd>`, sans les photos).
+  - Faux serveur : `/__fail?on=1|0` simule une panne des écritures. Test : sauvegarde, fusion (et survie à la synchro), remplacer avec confirmation, ancien format, panne + « Réessayer », conflit de notes.
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

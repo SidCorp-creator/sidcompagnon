@@ -272,6 +272,56 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
       return [mergeData({...data,vault:old},data).vault.id===nv.id,mergeData(data,{...data,vault:old}).vault.id===nv.id]});
     if(!st[0]||!st[1])err("la fusion garde l'ancien coffre : "+st);
     await ctx.close()}
+  // --- v33 : sauvegarde complète, restauration (fusionner / remplacer), échecs de synchro visibles, copies de conflit
+  {const ctx=await b.newContext({...devices["iPhone 13"]}),pg=await ctx.newPage(),err=m=>errs.push("sauvegarde : "+m);
+    pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(400);
+    await pg.click("#mSignup");await pg.fill("#aName","Sauve");await pg.fill("#aEmail","sauve@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    const bk=await pg.evaluate(()=>{const now=new Date().toISOString();
+      data.todos.push({id:"tA",title:"Tâche A",createdAt:now,done:false});data.notes.push({id:"nN",title:"Note N",body:"texte",createdAt:now,upd:Date.now()});
+      data.muscu.sessions.push({id:"sM",name:"Push",exercises:[]});save();return JSON.stringify(bkObj())});
+    const o=JSON.parse(bk);if(o.app!=="sidnote"||o.v!==2||!o.data.notes||!o.data.muscu||o.data.ui)err("sauvegarde incomplète : "+Object.keys(o.data).join(","));
+    // après la sauvegarde : la note est supprimée, une tâche B ajoutée
+    await pg.evaluate(()=>{tomb("nN");data.notes=data.notes.filter(n=>n.id!=="nN");data.todos.push({id:"tB",title:"Tâche B",createdAt:new Date().toISOString(),done:false});save()});
+    await pg.waitForTimeout(2500);
+    const file={name:"sauvegarde.json",mimeType:"application/json",buffer:Buffer.from(bk)};
+    await pg.evaluate(()=>show("more"));await pg.setInputFiles("#restoreIn",file);await pg.waitForTimeout(400);
+    if(!(await pg.isVisible("#bkSheet")))err("pas d'aperçu avant la restauration");await shot(pg,"sauvegarde-apercu");
+    await pg.click("#bkMerge");await pg.waitForTimeout(3000);
+    let st=await pg.evaluate(()=>({n:!!data.notes.find(n=>n.id==="nN"),a:!!data.todos.find(t=>t.id==="tA"),b:!!data.todos.find(t=>t.id==="tB")}));
+    if(!st.n||!st.a||!st.b)err("fusion incorrecte : "+JSON.stringify(st));
+    // la note restaurée doit survivre à la synchro (sa suppression est annulée sur le serveur aussi)
+    await pg.evaluate(async()=>{cache.dirty=true;await push();cache.base="";await pull()});await pg.waitForTimeout(500);
+    if(!(await pg.evaluate(()=>!!data.notes.find(n=>n.id==="nN"))))err("la note restaurée disparaît à la synchro");
+    // remplacer : la tâche B (absente de la sauvegarde) part, après confirmation
+    await pg.setInputFiles("#restoreIn",file);await pg.waitForTimeout(300);await pg.click("#bkReplace");
+    if(!(await pg.isVisible("#bkSheet"))||!(await pg.evaluate(()=>!!data.todos.find(t=>t.id==="tB"))))err("« Remplacer » sans confirmation");
+    await pg.click("#bkReplace");await pg.waitForTimeout(500);
+    st=await pg.evaluate(()=>({b:!!data.todos.find(t=>t.id==="tB"),a:!!data.todos.find(t=>t.id==="tA"),m:data.muscu.sessions.length}));
+    if(st.b||!st.a||st.m!==1)err("remplacement incorrect : "+JSON.stringify(st));
+    // ancien format (v1) : seulement tâches et agenda, le reste du compte ne bouge pas
+    await pg.setInputFiles("#restoreIn",{...file,buffer:Buffer.from(JSON.stringify({todos:[{id:"tV",title:"Vieille",createdAt:"2026-01-01",done:false}],tasks:[]}))});await pg.waitForTimeout(300);
+    await pg.click("#bkReplace");await pg.click("#bkReplace");await pg.waitForTimeout(400);
+    st=await pg.evaluate(()=>({v:!!data.todos.find(t=>t.id==="tV"),n:!!data.notes.find(n=>n.id==="nN"),m:data.muscu.sessions.length}));
+    if(!st.v||!st.n||st.m!==1)err("ancien format mal restauré : "+JSON.stringify(st));
+    // échec de synchro : le serveur refuse → message sur Aujourd'hui et dans Compte, puis « Réessayer » quand il revient
+    await pg.evaluate(()=>fetch(SUPABASE_URL+"/__fail?on=1"));
+    await pg.evaluate(()=>{data.todos.push({id:"tF",title:"Pendant la panne",createdAt:new Date().toISOString(),done:false});save();show("home")});await pg.waitForTimeout(3500);
+    if(!(await pg.isVisible("#homeSync")))err("échec de synchro non affiché sur Aujourd'hui");await shot(pg,"synchro-echec");
+    if(!(await pg.evaluate(()=>document.getElementById("syncState").textContent.includes("échec"))))err("échec non affiché dans Compte");
+    await pg.click("#homeSync [data-syncretry]");await pg.waitForTimeout(800); // encore en panne : le message reste
+    if(!(await pg.isVisible("#homeSync")))err("le message d'échec disparaît alors que le serveur refuse encore");
+    await pg.evaluate(()=>fetch(SUPABASE_URL+"/__fail?on=0"));await pg.evaluate(()=>syncRetry());await pg.waitForTimeout(2000);
+    if(await pg.isVisible("#homeSync"))err("le message d'échec reste après un envoi réussi");
+    if(await pg.evaluate(()=>cache.dirty))err("modifications non envoyées après « Réessayer »");
+    // conflit : la même note modifiée sur deux appareils → les deux versions sont gardées
+    st=await pg.evaluate(()=>{const t0=Date.now()-60000,base={id:"c1",title:"Liste",body:"pain",createdAt:"x",upd:t0-1000};
+      const m=mergeData({notes:[{...base,body:"pain, lait",upd:t0+10}]},{notes:[{...base,body:"pain, oeufs",upd:t0+20}]},{since:t0});
+      const m2=mergeData({notes:[{...base,body:"pain, lait",upd:t0+10}]},{notes:[{...base,body:"pain, oeufs",upd:t0+20}]});
+      return {n:m.notes.length,bodies:m.notes.map(x=>x.body).sort().join("|"),n2:m2.notes.length}});
+    if(st.n!==2||st.bodies!=="pain, lait|pain, oeufs"||st.n2!==1)err("conflit de notes mal géré : "+JSON.stringify(st));
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

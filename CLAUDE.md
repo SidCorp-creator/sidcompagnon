@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 34.**
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 35.**
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -18,7 +18,7 @@ site/                 ← exactement ce qui est mis en ligne sur Netlify
   sw.js               ← service worker (réseau d'abord ; cache pdf.js à part)
   _headers            ← en-têtes de sécurité Netlify (CSP…) ; tests/serve.js les applique aussi en local
   manifest.webmanifest, icônes
-supabase/functions/   ← fonctions Edge (Deno) : horaire (relais iCal, ACTIVE), nutrition (relais Claude, v20), rappels (notifications du planning, v22, à déployer)
+supabase/functions/   ← fonctions Edge (Deno) : horaire (relais iCal), nutrition (relais Claude), rappels (notifications), delete-account (v35, suppression du compte)
 supabase/sql/         ← SQL : documents.sql (déjà exécuté), nutrition.sql (v20, compteur d'appels Claude, exécuté), food_memory.sql (v21, mémoire des aliments), notifications.sql (v22, cron 5 min + anti-doublon)
 secrets/              ← clés VAPID, secret cron, version complète de rappels : NE JAMAIS publier ni committer
 tests/                ← serve.js (aperçu local + faux Supabase), smoke.js (test Playwright), mock-supabase.js, memory.test.js (mémoire des aliments, `node tests/memory.test.js`), rappels.test.js (calcul des rappels)
@@ -145,6 +145,11 @@ assets/               ← logo
   - Agenda : plus de formulaire en haut ; « + Activité » (`#taskAdd`) ouvre `#taskSheet` (`openTaskSheet(date)`) : titre, date + heure, type, « Plus d'options » (fin, heure de fin, rappels).
   - Suppressions annulables : `undoable(msg, ids, apply, {after, later, revert})` + `toastAct` (« Annuler » 5 s) pour tâches, activités, catégories, notes, mots de passe, séances, repas, documents, classeurs. Fichiers (documents, photos de notes, vignettes) effacés seulement après le délai (`later`). L'annulation passe par `data.res`. Confirmations gardées seulement pour l'irréversible (tout effacer, coffres).
   - Correction : le bouton 🎤 (`micFor`) est de nouveau à côté du champ (`.mic-field`), il tombait dessous depuis la v28.
+- v35 (audit, lots 9 et 10) :
+  - Confidentialité et conditions d'utilisation : `LEGAL` (privacy / terms, textes FR traduits EN/NL), `openLegal(k)`, fenêtre `#legalSheet`, liens `[data-openlegal]` (inscription `#aLegal`, Réglages > vie privée, accord santé). Contact = « SidCorp (Sid) » faute d'adresse publique (à compléter si Sid en donne une). Textes non relus par un juriste.
+  - Accord pour les données de santé : `nuConsent()` avant tout appel `nuCall` (fenêtre `#consentSheet`), `data.nutri.consent` (date, synchronisé avec `upd`) ; retirable dans Réglages (`#nuConsentRow`, `renderConsent`).
+  - Suppression du compte en libre-service : bouton `#delAccBtn` (mot de passe redemandé par `askAccountPw`) → fonction Edge `delete-account` (v1, Verify JWT OFF, déployée le 20 oct. 2026) : fichiers `documents/<uid>/…`, `push_subscriptions`, `nutrition_usage`, `user_data`, puis `auth.admin.deleteUser`. Refuse le compte test. Caché en mode essai et pour le compte test.
+  - Accessibilité : fenêtres `role="dialog"` + `aria-modal` + `aria-labelledby`, focus mis sur la fenêtre (pas sur un champ, pour ne pas ouvrir le clavier iPhone) et rendu à la fermeture, Tab reste dans la fenêtre, Échap ferme la fenêtre du dessus (`.sheet-head .x` ou `[data-esc]`). `:focus-visible` partout. Or du thème clair foncé (`--gold:#80632F`, contraste ≥ 4,5:1). Barre du bas : `<nav aria-label>` + `aria-current="page"` (plus de `role=tab`), libellés à 11 px. `#toast` en `role=status aria-live=polite`. `#icalUrl` étiqueté.
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

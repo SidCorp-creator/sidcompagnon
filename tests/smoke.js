@@ -140,7 +140,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.click('[data-pal="emeraude"]');await go("todo");await shot(pg,scheme+"-fr-todo-emeraude");
     await go("more");await pg.click('[data-pal="or"]');if(await pg.evaluate(()=>document.documentElement.dataset.palette))err("retour à Noir & or impossible");
     // --- v31 : Nutrition : « à inclure / à éviter » propres à chaque repas ; délai pré-rempli en modifiant le profil
-    await go("nutri");await pg.evaluate(()=>{const n=NU();n.profile={sex:"h",age:24,height:180,weight:72,goal:"gain",target:80,sports:[]};n.plan={kcal:2500,p:150,c:300,f:80,bmr:1800,tdee:2400,text:"",warn:[],wg:{ok:false,wk:.3,weeks:26,advice:"x"}};
+    await go("nutri");await pg.evaluate(()=>{const n=NU();n.consent=new Date().toISOString();n.profile={sex:"h",age:24,height:180,weight:72,goal:"gain",target:80,sports:[]};n.plan={kcal:2500,p:150,c:300,f:80,bmr:1800,tdee:2400,text:"",warn:[],wg:{ok:false,wk:.3,weeks:26,advice:"x"}};
       n.menuPrefs={type:"day",pp:{day:{include:"poulet",exclude:"poisson"}}};save();applySoon();renderNutri();nuGoTab("menu")});await pg.waitForTimeout(200);
     if(await pg.inputValue("#nuInclude")!=="poulet")err("préférences de la journée non affichées");
     await pg.click('[data-mtype="breakfast"]');await pg.waitForTimeout(150);
@@ -367,6 +367,41 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const st=await pg.evaluate(()=>({trial:isTrial(),todos:data.todos.length,dent:data.tasks.some(t=>t.title==="Dentiste"),left:!!localStorage.getItem("sidnote-u-essai")}));
     if(st.trial||st.todos!==2||!st.dent||st.left)err("données de l'essai mal reprises : "+JSON.stringify(st));
     await pg.waitForTimeout(1500);if(await pg.evaluate(()=>cache.dirty))err("données reprises non envoyées en ligne");
+    await ctx.close()}
+  // --- v35 : confidentialité et conditions, consentement santé, suppression du compte, accessibilité
+  {const ctx=await b.newContext({...devices["iPhone 13"]}),pg=await ctx.newPage(),err=m=>errs.push("v35 : "+m);
+    pg.on("pageerror",e=>err(e.message));pg.on("console",m=>{if(/Content Security Policy/i.test(m.text()))err("CSP : "+m.text().slice(0,200))});
+    await pg.goto(U);await pg.waitForTimeout(400);
+    if(!(await pg.isVisible("#aLegal")))err("pas de mention des conditions à l'inscription");
+    await pg.click('#aLegal [data-openlegal="privacy"]');await pg.waitForTimeout(200);
+    if(!(await pg.isVisible("#legalSheet")))err("la politique de confidentialité ne s'ouvre pas depuis l'inscription");
+    if(!(await pg.textContent("#legalBody")).includes("Francfort"))err("politique de confidentialité vide");await shot(pg,"v35-confidentialite");
+    if(await pg.getAttribute("#legalSheet .sheet","role")!=="dialog"||await pg.getAttribute("#legalSheet .sheet","aria-modal")!=="true")err("fenêtre non annoncée comme fenêtre (role=dialog)");
+    await pg.click('#legalSeg [data-legal="terms"]');if(!(await pg.textContent("#legalBody")).includes("droit belge"))err("conditions d'utilisation vides");
+    await pg.keyboard.press("Escape");await pg.waitForTimeout(150);if(await pg.isVisible("#legalSheet"))err("Échap ne ferme pas la fenêtre");
+    // compte : barre du bas accessible, accord santé, suppression du compte
+    await pg.click("#mSignup");await pg.fill("#aName","Adieu");await pg.fill("#aEmail","adieu@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    const nav=await pg.evaluate(()=>({role:document.getElementById("navIn").getAttribute("role"),cur:document.querySelectorAll('nav [aria-current="page"]').length,toast:document.getElementById("toast").getAttribute("aria-live")}));
+    if(nav.role||nav.cur!==1||nav.toast!=="polite")err("accessibilité de la navigation / des messages : "+JSON.stringify(nav));
+    const fs=await pg.$eval("nav .tab .tab-l",e=>parseFloat(getComputedStyle(e).fontSize));if(fs<11)err("libellés de la barre du bas trop petits : "+fs);
+    await pg.evaluate(()=>{show("plan")});await pg.click("#taskAdd");await pg.waitForTimeout(200);
+    for(let i=0;i<30;i++)await pg.keyboard.press("Tab");
+    if(!(await pg.evaluate(()=>document.getElementById("taskSheet").contains(document.activeElement))))err("le focus clavier sort de la fenêtre ouverte");
+    await pg.keyboard.press("Escape");await pg.waitForTimeout(150);if(await pg.isVisible("#taskSheet"))err("Échap ne ferme pas « Nouvelle activité »");
+    // accord santé : demandé avant le premier envoi à l'IA
+    const asked=await pg.evaluate(async()=>{session.feat=["nutri"];const p=nuCall("aliment",{text:"1 pomme"}).then(()=>"ok",e=>"refus");await new Promise(r=>setTimeout(r,200));
+      const vis=!document.getElementById("consentSheet").hidden;document.getElementById("consentNo").click();return [vis,await p]});
+    if(!asked[0]||asked[1]!=="refus")err("pas d'accord demandé avant d'utiliser Nutrition : "+asked);
+    await pg.evaluate(()=>show("more"));if(!(await pg.isVisible("#delAccBtn")))await pg.click('[data-sec="privacy"] summary');
+    await pg.locator("#delAccBtn").scrollIntoViewIfNeeded();await shot(pg,"v35-supprimer-compte");
+    await pg.click("#delAccBtn");await pg.waitForSelector("#recSheet:not([hidden])",{timeout:5000}).catch(()=>err("mot de passe non redemandé avant la suppression"));
+    await pg.fill("#recPw","mauvais");await pg.click("#recOk");await pg.waitForTimeout(400);if(!(await pg.isVisible("#recErr")))err("suppression avec un mauvais mot de passe");
+    await pg.fill("#recPw","motdepasse1");await pg.click("#recOk");await pg.waitForTimeout(2000);
+    if(!(await pg.isVisible("#auth")))err("pas de retour à l'écran de connexion après la suppression");
+    if(!(await pg.textContent("#aErr")).includes("supprimé"))err("pas de message après la suppression du compte");
+    const left=await pg.evaluate(async()=>{const r=await fetch(SUPABASE_URL+"/__dump");const j=await r.json();return j.users.includes("adieu@test.be")});
+    if(left)err("le compte existe encore sur le serveur");
     await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");

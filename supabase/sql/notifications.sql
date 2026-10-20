@@ -10,14 +10,15 @@ create table if not exists public.push_subscriptions (
   created_at timestamptz not null default now()
 );
 alter table public.push_subscriptions enable row level security;
+create index if not exists push_subscriptions_user_id_idx on public.push_subscriptions (user_id); -- v32
 drop policy if exists "voir ses appareils" on public.push_subscriptions;
 drop policy if exists "ajouter ses appareils" on public.push_subscriptions;
 drop policy if exists "modifier ses appareils" on public.push_subscriptions;
 drop policy if exists "retirer ses appareils" on public.push_subscriptions;
-create policy "voir ses appareils" on public.push_subscriptions for select using (auth.uid() = user_id);
-create policy "ajouter ses appareils" on public.push_subscriptions for insert with check (auth.uid() = user_id);
-create policy "modifier ses appareils" on public.push_subscriptions for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
-create policy "retirer ses appareils" on public.push_subscriptions for delete using (auth.uid() = user_id);
+create policy "voir ses appareils" on public.push_subscriptions for select using ((select auth.uid()) = user_id);
+create policy "ajouter ses appareils" on public.push_subscriptions for insert with check ((select auth.uid()) = user_id);
+create policy "modifier ses appareils" on public.push_subscriptions for update using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+create policy "retirer ses appareils" on public.push_subscriptions for delete using ((select auth.uid()) = user_id);
 
 -- 2) Rappels déjà envoyés (pour ne jamais envoyer deux fois le même)
 create table if not exists public.push_sent (

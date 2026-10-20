@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 31.**
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 32.**
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -16,6 +16,7 @@ Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici
 site/                 ← exactement ce qui est mis en ligne sur Netlify
   index.html          ← TOUTE l'app (HTML + CSS + JS, ~2 300 lignes, pas de framework, pas de build)
   sw.js               ← service worker (réseau d'abord ; cache pdf.js à part)
+  _headers            ← en-têtes de sécurité Netlify (CSP…) ; tests/serve.js les applique aussi en local
   manifest.webmanifest, icônes
 supabase/functions/   ← fonctions Edge (Deno) : horaire (relais iCal, ACTIVE), nutrition (relais Claude, v20), rappels (notifications du planning, v22, à déployer)
 supabase/sql/         ← SQL : documents.sql (déjà exécuté), nutrition.sql (v20, compteur d'appels Claude, exécuté), food_memory.sql (v21, mémoire des aliments), notifications.sql (v22, cron 5 min + anti-doublon)
@@ -83,7 +84,7 @@ assets/               ← logo
   - Apparence : styles Discret / Coloré / Intense (`data.prefs.look`, attribut `data-look`), Coloré par défaut.
   - Dictée : bouton 🎤 à côté des principaux champs (`micFor`).
   - Planning : les types existants sont proposés en pastilles sous chaque champ « Type » (`typeChipsFor`).
-  - Nutrition : accès réservé à `NUTRI_ALLOW` (mohamed29082002@gmail.com, test@sidcorp.app) ; les autres voient l'onglet flouté « Bientôt disponible » (`applySoon`). La fonction serveur vérifie aussi (`NUTRITION_EMAILS`). Rythme Drastique / Réaliste / À mon aise, délai facultatif. Photo du plat (envoyée à Claude, vignette gardée sur l'appareil en IndexedDB `thumb:<grp>`). Plats en cartes visuelles (emoji, barre et cases de macros), entrées groupées par `grp`, suppression d'un aliment ou d'un plat. Animations de chargement (`nuLoading`).
+  - Nutrition : accès réservé (depuis la v32, décidé par le serveur : voir « v32 ») ; les autres ne voient ni Nutrition ni Graphiques. Rythme Drastique / Réaliste / À mon aise, délai facultatif. Photo du plat (envoyée à Claude, vignette gardée sur l'appareil en IndexedDB `thumb:<grp>`). Plats en cartes visuelles (emoji, barre et cases de macros), entrées groupées par `grp`, suppression d'un aliment ou d'un plat. Animations de chargement (`nuLoading`).
   - Mémoire des aliments (partagée entre tous les comptes) : la fonction `nutrition` cherche d'abord dans `food_answers` (même phrase normalisée) puis dans `foods` (aliment pour 100 g + poids d'une unité, ex. « 200 g de riz cuit », « 3 oeufs ») ; si trouvé → réponse sans Claude (`source:"memory"`, badge « ⚡ Mémoire Sid'note », hors limite du jour). Sinon Claude répond et la mémoire apprend (`remember`, `learnRows`). Photos : toujours Claude, mais les aliments sont retenus. Fonctions pures testées par `tests/memory.test.js`. La première réponse retenue fait référence pour tout le monde (corriger directement dans la table `foods` si besoin).
   - Graphiques (Sport → Graphiques) : macros par jour, poids (`data.nutri.weights`), calories vs objectif (couleurs d'état + icônes). Palette validée par le script dataviz (P bleu, G orange, L vert d'eau). Commentaire du jour / de la semaine via Claude (`kind:"bilan"`), suivi des semaines dans `data.nutri.weeks`.
 - v22 :
@@ -121,6 +122,16 @@ assets/               ← logo
   - Agenda : une activité passée n'est plus « En retard » mais « Passé » (grisée).
   - Musculation : chrono de nouveau collé en haut, compact une fois collé (`.rest.stuck`, sentinelle `#restSentinel`), rien de visible au-dessus.
   - Nutrition : « à inclure / à éviter » propres à chaque type de repas (`menuPrefs.pp[type]`, `mpPref`/`mpSet`), champs qui s'agrandissent (`textarea.autogrow`), délai conseillé pré-rempli en modifiant le profil, menus toujours en poids crus (consigne client + serveur).
+- v32 (audit, lots 1 à 4) :
+  - Accès aux fonctions réservées décidé par le serveur : `auth.users.raw_app_meta_data.features` contient `"nutri"` (comptes de Sid et test, posé le 20 oct. 2026 ; voir `supabase/sql/features.sql` pour ouvrir/retirer l'accès). Client : `session.feat` (lu à la connexion et relu au lancement via `/auth/v1/user`), `tabAllowed(k)`/`RESERVED` (nutri, graph masqués partout). Fonction `nutrition` v9 : `hasNutri(user)`. Plus aucun e-mail dans le site.
+  - Nettoyage : retirés `LEGACY_COURSES`, migration `mon-m2-data-v1`, textes « UMons », `ACCENTS`/`#accentSel`/`#lookSel`/`data-look`/`#subnav`. Gardés : `EMAIL_DOMAIN` (migration du compte pseudo) et `TEST_EMAILS`.
+  - « Page d'accueil » (Réglages) refonctionne (`data.prefs.home`, "last" = `data.ui.view`) ; plus de retour forcé sur Aujourd'hui après 10 min.
+  - Sécurité : `site/_headers` (CSP, X-Frame-Options…), `esc()` échappe aussi `'`, mot de passe de 8 caractères minimum pour un nouveau compte ou un changement (la connexion accepte encore les anciens plus courts). Supabase : règles RLS en `(select auth.uid())` + index `push_subscriptions(user_id)` (`supabase/sql/securite-v32.sql`, exécuté) ; `pg_net` laissé dans public (le déplacer bloque). Bucket `documents` : accepte aussi `image/jpeg` (photos des notes).
+  - **Coffre renforcé** (option b de l'audit) : phrase secrète ≥ 10 caractères (`data.phx = {id,salt,iter,chk,at,rec?}`, clé maître MK = PBKDF2). Coffres v2 `{id, v:2, wk, chk, at, uni}` : clé aléatoire VK chiffrée par MK. Sur l'appareil, MK est chiffrée par le code à 5 chiffres (`localStorage["sidnote-mk-<uid>"] = {phx, main, notes}` ; main = mots de passe + documents, notes = notes secrètes). Fonctions : `vOpen`, `askPhrase`, `mkNeed`, `devSetup` (nouvel appareil / code oublié), `v2Upgrade` (ancien coffre → v2 au déverrouillage, rechiffre pwds/notes/documents), `vaultsReset` (phrase perdue sans récupération). `phMem` = MK en mémoire tant que l'app est au premier plan. Récupération de la phrase par le mot de passe du compte (`phx.rec`, `phRecOffer`, rechiffrée par `recRewrap`). `askPin({phrase:true})` renvoie `"forgot"` pour « Code oublié ? ».
+  - Documents : la copie IndexedDB est chiffrée aussi quand le coffre est v2 (`sealOn`, `blobIsEnc`, `docBlob(d,key)`). Les photos des notes ne sont pas chiffrées (comme le texte des notes) : textes de confidentialité réécrits honnêtement (FR/EN/NL).
+  - `mergeData` : pour vault/docVault/noteVault/phx d'id différents, le plus récent (`at`/`createdAt`) gagne. `renderPwd` ne reste plus sur « Choisis ton code » si un coffre arrive par la synchro.
+  - Test : `tests/smoke.js` couvre le compte sans accès Nutrition, la page d'ouverture, la CSP, le passage d'un ancien coffre, le nouvel appareil, le code oublié et la fusion.
+  - À faire par Sid dans Supabase (tableau de bord) : Authentication → Sign In / Providers → Email : « Minimum password length » = 8, et activer « Prevent use of leaked passwords ». Netlify : retirer le badge « Powered by Netlify » (script `/.netlify/scripts/hud`) : Site configuration → Build & deploy → Deploy Previews → « Netlify Drawer » sur Disable (chemin à vérifier sur le compte).
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

@@ -1,0 +1,10 @@
+# Sid'note v32 : en-têtes de sécurité lus par Netlify (ne pas renommer ce fichier)
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' data: blob: https://eloeoaidgbkygazwjwiu.supabase.co https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com; frame-src 'self' blob: https://open.spotify.com; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(self), microphone=(self), geolocation=(), payment=(), usb=()
+  Strict-Transport-Security: max-age=31536000
+/sw.js
+  Cache-Control: no-cache

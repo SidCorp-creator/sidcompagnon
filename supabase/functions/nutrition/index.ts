@@ -1,4 +1,4 @@
-// Sid'note : fonction "nutrition" (v31 : néerlandais, poids toujours crus dans les menus)
+// Sid'note : fonction "nutrition" (v32 : accès décidé par le serveur ; v31 : néerlandais, poids toujours crus dans les menus)
 // Relais entre l'app et Claude pour l'onglet Nutrition :
 //   - "profil" : métabolisme de base, besoins du jour et macros à partir du profil
 //   - "aliment" : calories et macros de ce que l'on mange ("150 g de riz cuit", "2 oeufs")
@@ -16,9 +16,9 @@ const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SE
 const claude = new Anthropic({ apiKey: Deno.env.get("ANTHROPIC_API_KEY") });
 const MODEL = "claude-opus-5-5";
 const DAILY_LIMIT = Number(Deno.env.get("NUTRITION_DAILY_LIMIT") || 60); // appels par personne et par jour
-// comptes autorisés (les autres voient « Bientôt disponible » dans l'app)
-const ALLOWED = (Deno.env.get("NUTRITION_EMAILS") || "mohamed29082002@gmail.com,test@sidcorp.app")
-  .split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+// v32 : accès réservé aux comptes marqués côté serveur (auth.users.raw_app_meta_data.features contient "nutri").
+// Les autres voient « Bientôt disponible » dans l'app. Pour ouvrir l'accès à quelqu'un : voir supabase/sql/features.sql.
+const hasNutri = (u: any) => Array.isArray(u?.app_metadata?.features) && u.app_metadata.features.includes("nutri");
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -204,7 +204,7 @@ Deno.serve(async (req) => {
   const jwt = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
   const { data: who, error } = await db.auth.getUser(jwt);
   if (error || !who?.user) return fail("Non connecté", 401);
-  if (!ALLOWED.includes(String(who.user.email || "").toLowerCase())) return fail("Bientôt disponible", 403);
+  if (!hasNutri(who.user)) return fail("Bientôt disponible", 403);
 
   let body: any = {};
   try { body = await req.json(); } catch (_) { /* vide */ }

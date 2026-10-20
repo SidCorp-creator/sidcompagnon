@@ -12,6 +12,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
   for(const scheme of ["light","dark"]){
     const ctx=await b.newContext({...devices["iPhone 13"],colorScheme:scheme}),pg=await ctx.newPage();
     pg.on("pageerror",e=>errs.push(scheme+": "+e.message));
+    pg.on("console",m=>{if(/Content Security Policy/i.test(m.text()))errs.push(scheme+" CSP : "+m.text().slice(0,200))});
     const err=m=>errs.push(scheme+": "+m);
     // navigation v28 : espace dans la barre du bas, puis fonction dans les pastilles du haut
     const closePin=async()=>{if(await pg.isVisible("#pinSheet"))await pg.click("#psClose").catch(()=>{})};
@@ -22,7 +23,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
 
     // --- connexion : œil, blocage après 5 erreurs, mot de passe oublié
     await pg.goto(U);await pg.waitForTimeout(400);
-    await pg.fill("#aPw","secret1");await pg.click('[data-pweyefor="aPw"]');
+    await pg.fill("#aPw","secret11");await pg.click('[data-pweyefor="aPw"]');
     if(await pg.getAttribute("#aPw","type")!=="text")err("l'œil n'affiche pas le mot de passe");
     await pg.click('[data-pweyefor="aPw"]');await shot(pg,scheme+"-01-connexion");
     for(let i=0;i<5;i++){await pg.fill("#aEmail","inconnu@test.be");await pg.fill("#aPw","mauvais"+i);await pg.click("#aBtn");await pg.waitForTimeout(250)}
@@ -34,10 +35,10 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
 
     // --- inscription, présentation passée, tous les onglets affichés
     await pg.click("#mSignup");await pg.fill("#aName","Test");await pg.fill("#aEmail",email);
-    await pg.fill("#aPw","secret1");await pg.fill("#aPw2","secret1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb")){await shot(pg,scheme+"-02-presentation");await pg.click("#onbSkip");await pg.waitForTimeout(400)}
     if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
-    await pg.evaluate(()=>{["plan","todo","pomo","notes","muscu","nutri","graph","docs","pwd","app"].forEach(k=>data.prefs.tabs[k]=true);NUTRI_ALLOW.push(session.email);save();applyTabs()});
+    await pg.evaluate(()=>{["plan","todo","pomo","notes","muscu","nutri","graph","docs","pwd","app"].forEach(k=>data.prefs.tabs[k]=true);save();applyTabs()});
 
     // --- barre du bas : Aujourd'hui, Organisation, Santé, Coffre, Compte (plus de « + » ni d'« Espaces »)
     const dock=await pg.$$eval("#navIn [data-dock]",x=>x.map(e=>e.dataset.dock).join(","));
@@ -77,8 +78,17 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     // --- Mots de passe : classement A → Z ou récents
     await go("pwd");await pg.waitForTimeout(300);await shot(pg,scheme+"-fr-pwd-code");
     if(await pg.isVisible("#pinPad")){const pin=async c=>{for(const d of c)await pg.click(`#pinPad [data-pin="${d}"]`)};
-      await pin("12345");await pg.waitForTimeout(400);if(!(await pg.isVisible("#vault"))){await pin("12345");}
+      await pin("12345");await pg.waitForTimeout(400);if(!(await pg.isVisible("#vault"))&&!(await pg.isVisible("#phSheet"))){await pin("12345");}
+      // v32 : la phrase secrète est demandée à la création du coffre
+      await pg.waitForSelector("#phSheet:not([hidden])",{timeout:8000}).catch(()=>err("phrase secrète non demandée à la création du coffre"));
+      await pg.fill("#phIn","court");await pg.fill("#ph2In","court");await pg.click("#phOk");await pg.waitForTimeout(200);
+      if(!(await pg.isVisible("#phErr")))err("phrase trop courte acceptée");
+      await pg.fill("#phIn","trois mots 42");await pg.fill("#ph2In","trois mots 42");await shot(pg,scheme+"-fr-phrase-secrete");await pg.click("#phOk");
+      await pg.waitForSelector("#recSheet:not([hidden])",{timeout:15000}).catch(()=>err("récupération de la phrase non proposée"));
+      if(await pg.isVisible("#recSheet"))await pg.click("#recLater");
       await pg.waitForSelector("#vault:not([hidden])",{timeout:8000}).catch(()=>err("coffre non ouvert"));await pg.waitForTimeout(400);
+      const vf=await pg.evaluate(()=>({v:data.vault.v,salt:!!data.vault.salt,ph:!!data.phx,dv:data.docVault&&data.docVault.v}));
+      if(vf.v!==2||vf.salt||!vf.ph||vf.dv!==2)err("coffre pas au format renforcé : "+JSON.stringify(vf));
       if(await pg.isVisible("#recSheet"))await pg.click("#recLater")}
     if(await pg.isVisible("#vault")){
       for(const site of ["Zeta","Alpha"]){await pg.click("#pwNew");await pg.fill("#pwSite",site);await pg.fill("#pwPass","x"+site);await pg.click("#pwForm [type=submit]");await pg.waitForTimeout(300)}
@@ -126,7 +136,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.click('[data-pal="emeraude"]');await go("todo");await shot(pg,scheme+"-fr-todo-emeraude");
     await go("more");await pg.click('[data-pal="or"]');if(await pg.evaluate(()=>document.documentElement.dataset.palette))err("retour à Noir & or impossible");
     // --- v31 : Nutrition : « à inclure / à éviter » propres à chaque repas ; délai pré-rempli en modifiant le profil
-    await go("nutri");await pg.evaluate(()=>{if(!nutriAllowed())NUTRI_ALLOW.push(session.email);const n=NU();n.profile={sex:"h",age:24,height:180,weight:72,goal:"gain",target:80,sports:[]};n.plan={kcal:2500,p:150,c:300,f:80,bmr:1800,tdee:2400,text:"",warn:[],wg:{ok:false,wk:.3,weeks:26,advice:"x"}};
+    await go("nutri");await pg.evaluate(()=>{const n=NU();n.profile={sex:"h",age:24,height:180,weight:72,goal:"gain",target:80,sports:[]};n.plan={kcal:2500,p:150,c:300,f:80,bmr:1800,tdee:2400,text:"",warn:[],wg:{ok:false,wk:.3,weeks:26,advice:"x"}};
       n.menuPrefs={type:"day",pp:{day:{include:"poulet",exclude:"poisson"}}};save();applySoon();renderNutri();nuGoTab("menu")});await pg.waitForTimeout(200);
     if(await pg.inputValue("#nuInclude")!=="poulet")err("préférences de la journée non affichées");
     await pg.click('[data-mtype="breakfast"]');await pg.waitForTimeout(150);
@@ -139,17 +149,17 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>{nuGoTab("profile");$("nuEditProfile").click()});await pg.waitForTimeout(200);
     if(await pg.inputValue("#nuDur")!=="6"||await pg.inputValue("#nuDurU")!=="m")err("délai conseillé non pré-rempli ("+await pg.inputValue("#nuDur")+")");
     // --- Compte : changer de mot de passe
-    await go("more");await pg.click("#chPwBtn");await pg.fill("#npOld","faux123");await pg.fill("#npPw","secret2");await pg.fill("#npPw2","secret2");await pg.click("#npBtn");await pg.waitForTimeout(400);
+    await go("more");await pg.click("#chPwBtn");await pg.fill("#npOld","faux123");await pg.fill("#npPw","secret22");await pg.fill("#npPw2","secret22");await pg.click("#npBtn");await pg.waitForTimeout(400);
     if(!(await pg.isVisible("#npErr")))err("mauvais mot de passe actuel accepté");
-    await pg.fill("#npOld","secret1");await pg.click("#npBtn");await pg.waitForSelector("#npSheet",{state:"hidden",timeout:20000}).catch(()=>err("changement de mot de passe bloqué"));
-    const okNew=await pg.evaluate(async e=>{try{await api("/auth/v1/token?grant_type=password",{method:"POST",body:{email:e,password:"secret2"}});return true}catch(x){return false}},email);
+    await pg.fill("#npOld","secret11");await pg.click("#npBtn");await pg.waitForSelector("#npSheet",{state:"hidden",timeout:20000}).catch(()=>err("changement de mot de passe bloqué"));
+    const okNew=await pg.evaluate(async e=>{try{await api("/auth/v1/token?grant_type=password",{method:"POST",body:{email:e,password:"secret22"}});return true}catch(x){return false}},email);
     if(!okNew)err("nouveau mot de passe non enregistré");
     // lien « mot de passe oublié » reçu par e-mail : nouvelle saisie, puis connexion
     const uidv=await pg.evaluate(()=>session.user.id);
     await pg.evaluate(()=>{localStorage.removeItem("sidnote-session")});
     await pg.goto(U+"?lien=1#access_token=at-"+uidv+"&refresh_token=rt-"+uidv+"&type=recovery");await pg.waitForTimeout(800);
     if(!(await pg.isVisible("#npSheet")))err("le lien de récupération n'ouvre pas la saisie du nouveau mot de passe");
-    else{await shot(pg,scheme+"-01-nouveau-mdp");await pg.fill("#npPw","secret3");await pg.fill("#npPw2","secret3");await pg.click("#npBtn");await pg.waitForTimeout(1800);
+    else{await shot(pg,scheme+"-01-nouveau-mdp");await pg.fill("#npPw","secret33");await pg.fill("#npPw2","secret33");await pg.click("#npBtn");await pg.waitForTimeout(1800);
       if(await pg.isVisible("#auth"))err("pas connecté après le nouveau mot de passe");if((await pg.url()).includes("access_token"))err("le jeton reste dans l'adresse")}
     if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
 
@@ -157,7 +167,6 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     for(const v of ["plan","todo","pomo","notes","muscu","nutri","graph","docs","pwd","more"]){await go(v);await pg.waitForTimeout(250);await shot(pg,`${scheme}-fr-${v}`)}
     await go("more");if(!(await pg.isVisible("#langSel")))await pg.click('[data-sec="look"] summary');await pg.selectOption("#langSel","en");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
-    await pg.evaluate(()=>{NUTRI_ALLOW.push(session.email);applySoon&&applySoon()}).catch(()=>{});
     for(const v of ["plan","todo","notes","pwd","more"]){await go(v);await pg.waitForTimeout(250);await shot(pg,`${scheme}-en-${v}`)}
     await pg.click('#navIn [data-dock="home"]');await shot(pg,scheme+"-en-home");
     // v31 : néerlandais
@@ -174,13 +183,95 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const ctx=await b.newContext({viewport:{width:1440,height:900},colorScheme:scheme}),pg=await ctx.newPage();
     pg.on("pageerror",e=>errs.push("pc "+scheme+": "+e.message));
     await pg.goto(U);await pg.waitForTimeout(400);await shot(pg,scheme+"-pc-connexion");
-    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","pc-"+scheme+"@test.be");await pg.fill("#aPw","secret1");await pg.fill("#aPw2","secret1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","pc-"+scheme+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     await pg.evaluate(()=>{["plan","todo","pomo","notes","muscu","nutri","graph","docs","pwd","app"].forEach(k=>data.prefs.tabs[k]=true);
       data.todos.push({id:"a",title:"Préparer la présentation",createdAt:new Date().toISOString(),done:false},{id:"b",title:"Appeler le garage",createdAt:new Date().toISOString(),done:false});save();applyTabs();renderAll()});
     for(const v of ["home","todo","plan","more"]){await pg.evaluate(v=>show(v),v);await pg.waitForTimeout(300);await shot(pg,`${scheme}-pc-${v}`)}
     await ctx.close();
   }
+  // --- v32 : un compte sans accès ne voit ni Nutrition ni Graphiques ; la page d'ouverture choisie est respectée
+  {const ctx=await b.newContext({...devices["iPhone 13"]}),pg=await ctx.newPage(),err=m=>errs.push("sans accès : "+m);
+    pg.on("pageerror",e=>err(e.message));pg.on("console",m=>{if(/Content Security Policy/i.test(m.text()))err("CSP : "+m.text().slice(0,200))});
+    await pg.goto(U);await pg.waitForTimeout(400);
+    await pg.click("#mSignup");await pg.fill("#aName","Proche");await pg.fill("#aEmail","sans@test.be");await pg.fill("#aPw","court1");await pg.fill("#aPw2","court1");await pg.click("#aBtn");await pg.waitForTimeout(500);
+    if(!(await pg.isVisible("#aErr"))||!(await pg.textContent("#aErr")).includes("8 caractères"))err("mot de passe de 6 caractères accepté à l'inscription");
+    await pg.fill("#aPw","assezlong1");await pg.fill("#aPw2","assezlong1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb")){if(await pg.locator('#onbGroups [data-onbk="nutri"],#onbGroups [data-onbk="graph"]').count())err("Nutrition proposée dans la présentation");
+      await shot(pg,"sans-acces-presentation-sport").catch(()=>{});await pg.click("#onbSkip")}
+    if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    const vis=await pg.evaluate(()=>visibleTabs().join(","));if(/nutri|graph/.test(vis))err("onglets réservés visibles : "+vis);
+    await pg.click('#navIn [data-dock="sport"]');await pg.waitForTimeout(300);await shot(pg,"sans-acces-sante");
+    if(await pg.locator('#vhead [data-go="nutri"],#vhead [data-go="graph"]').count())err("pastille Nutrition visible");
+    await pg.evaluate(()=>{show("nutri")});if(await pg.evaluate(()=>data.ui.view)==="nutri")err("Nutrition s'ouvre quand même");
+    await pg.evaluate(()=>{data.prefs.home="todo";save()});await pg.waitForTimeout(1500);await pg.reload();await pg.waitForTimeout(1200);
+    if(await pg.evaluate(()=>data.ui.view)!=="todo")err("la page d'ouverture choisie (Tâches) n'est pas respectée");
+    const opts=await pg.$$eval("#homeSel option",o=>o.map(x=>x.value).join(","));if(/nutri|graph/.test(opts))err("Nutrition proposée comme page d'ouverture");
+    if(await pg.evaluate(()=>esc("l'a")!=="l&#39;a"))err("esc n'échappe pas l'apostrophe");
+    await ctx.close()}
+  // --- v32 : coffre renforcé : passage d'un ancien coffre (code seul), nouvel appareil, code oublié
+  {const ctx=await b.newContext({...devices["iPhone 13"]}),pg=await ctx.newPage(),err=m=>errs.push("coffre : "+m);
+    pg.on("pageerror",e=>err(e.message));pg.on("console",m=>{if(/Content Security Policy/i.test(m.text()))err("CSP : "+m.text().slice(0,200))});
+    const pin=async c=>{for(const d of c)await pg.click(`#pinPad [data-pin="${d}"]`)};
+    const ps=async c=>{for(const d of c)await pg.click(`#psPad [data-ps="${d}"]`);await pg.waitForTimeout(150)};
+    const phrase=async(t,two)=>{await pg.waitForSelector("#phSheet:not([hidden])",{timeout:10000});await pg.fill("#phIn",t);if(two)await pg.fill("#ph2In",t);await pg.click("#phOk")};
+    const later=async()=>{await pg.waitForSelector("#recSheet:not([hidden])",{timeout:15000}).catch(()=>{});if(await pg.isVisible("#recSheet"))await pg.click("#recLater")};
+    const show=v=>pg.evaluate(v=>show(v),v);
+    await pg.goto(U);await pg.waitForTimeout(400);
+    await pg.click("#mSignup");await pg.fill("#aName","Coffre");await pg.fill("#aEmail","coffre@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    // anciens coffres (v31) : mots de passe + documents avec le code 24680, notes secrètes avec 13579
+    await pg.evaluate(async()=>{const mkOld=async(code,ok,id,extra)=>{const salt=b64e(crypto.getRandomValues(new Uint8Array(16))),key=await pinKey(code,salt,PIN_ITER);
+        return {v:{id,salt,iter:PIN_ITER,chk:await encJ(key,{ok}),createdAt:"2026-01-01T00:00:00.000Z",...extra},key}};
+      const v=await mkOld("24680","sidnote","oldv"),d=await mkOld("24680","sidnote-docs","oldd",{uni:true}),n=await mkOld("13579","sidnote-notes","oldn");
+      data.vault=v.v;data.docVault=d.v;data.noteVault=n.v;
+      data.pwds.push({id:"p1",vid:"oldv",...await encJ(v.key,{site:"Banque",user:"sid",pw:"s3cret!"}),upd:1});
+      data.notes.push({id:"n1",secret:true,vid:"oldn",...await encJ(n.key,{title:"Secret",body:"Le code du portail"}),createdAt:new Date().toISOString(),upd:1});
+      const pdf=new Blob(["%PDF-1.4 bail "+"x".repeat(300)],{type:"application/pdf"});
+      const d1={id:"d1",title:"Bail",size:pdf.size,pages:1,createdAt:new Date().toISOString(),up:true,enc:"oldd"};d1.path=docPath(d1);
+      await stor("POST","documents/"+d1.path,await docEncrypt(pdf,d.key)); // en ligne seulement, chiffré avec l'ancienne clé
+      const d2={id:"d2",title:"Scan",size:pdf.size,pages:1,createdAt:new Date().toISOString(),up:false};await idb.put(docKey(d2),pdf); // sur l'appareil, en clair
+      data.docs.push(d1,d2);save()});
+    // 1) mots de passe : ancien code → phrase demandée → coffre renforcé, mêmes données
+    await show("pwd");await pg.waitForTimeout(300);await pin("24680");
+    await phrase("ma phrase secrete 7",true).catch(()=>err("phrase non demandée au passage du coffre"));await shot(pg,"coffre-renforce");await later();
+    await pg.waitForSelector("#vault:not([hidden])",{timeout:15000}).catch(()=>err("coffre non rouvert après le passage"));await pg.waitForTimeout(800);
+    let st=await pg.evaluate(()=>({v:data.vault.v,salt:!!data.vault.salt,vid:data.pwds[0].vid===data.vault.id,item:(vaultItems.get("p1")||{}).pw,mk:Object.keys(JSON.parse(localStorage.getItem("sidnote-mk-"+session.user.id)||"{}"))}));
+    if(st.v!==2||st.salt||!st.vid||st.item!=="s3cret!"||!st.mk.includes("main"))err("passage des mots de passe raté : "+JSON.stringify(st));
+    // 2) documents : même code, passage sans redemander la phrase ; fichiers rechiffrés en ligne et sur l'appareil
+    await show("docs");await pg.waitForTimeout(300);await ps("24680");await pg.waitForTimeout(4000);
+    st=await pg.evaluate(async()=>{const d1=data.docs.find(x=>x.id==="d1"),d2=data.docs.find(x=>x.id==="d2");
+      const r=await stor("GET","authenticated/documents/"+d1.path),u=new Uint8Array(await r.arrayBuffer());let srv=false;try{srv=(await docDecrypt(u)).size>0}catch(e){}
+      return {v:data.docVault.v,open:dvOpen,enc:d1.enc===data.docVault.id,srv,seal1:await blobIsEnc(await idb.get(docKey(d1))),seal2:await blobIsEnc(await idb.get(docKey(d2))),up2:d2.up,read:(await docBlob(d1)).size}});
+    if(st.v!==2||!st.open||!st.enc||!st.srv||!st.seal1||!st.seal2||!st.up2||!(st.read>0))err("passage des documents raté : "+JSON.stringify(st));
+    // 3) notes secrètes : leur propre code, passage sans redemander la phrase
+    await show("notes");await pg.click('[data-note="n1"]');await pg.waitForTimeout(200);await ps("13579");await pg.waitForTimeout(2500);
+    st=await pg.evaluate(()=>({v:data.noteVault.v,vid:data.notes.find(x=>x.id==="n1").vid===data.noteVault.id,txt:document.getElementById("noteBody").value}));
+    if(st.v!==2||!st.vid||st.txt!=="Le code du portail")err("passage des notes secrètes raté : "+JSON.stringify(st));
+    await pg.click("#noteBack");
+    // 4) le serveur ne contient plus rien qu'un code à 5 chiffres suffirait à ouvrir
+    st=await pg.evaluate(()=>JSON.stringify([data.vault,data.docVault,data.noteVault]));if(/"salt"/.test(st))err("un coffre dépend encore du code seul");
+    // 5) nouvel appareil : plus de clé sur l'appareil → phrase (fausse puis bonne) → nouveau code → tout se rouvre
+    await pg.evaluate(()=>{localStorage.removeItem("sidnote-mk-"+session.user.id);phMem=null;pwdLock();dvLock();nsLock()});
+    await show("pwd");await pg.waitForTimeout(300);
+    if(!(await pg.isVisible("#pinDev")))err("pas de bouton « phrase secrète » sur un nouvel appareil");await shot(pg,"coffre-nouvel-appareil");
+    await pg.click("#pinDev");await phrase("mauvaise phrase");await pg.waitForTimeout(1500);
+    if(!(await pg.isVisible("#phErr")))err("fausse phrase acceptée");
+    await phrase("ma phrase secrete 7");await pg.waitForSelector("#pinSheet:not([hidden])",{timeout:15000}).catch(()=>err("code de l'appareil non demandé"));
+    await ps("11111");await ps("11111");await pg.waitForSelector("#vault:not([hidden])",{timeout:15000}).catch(()=>err("coffre non ouvert sur le nouvel appareil"));await pg.waitForTimeout(600);
+    if(await pg.evaluate(()=>(vaultItems.get("p1")||{}).pw)!=="s3cret!")err("mot de passe illisible sur le nouvel appareil");
+    await show("docs");await pg.waitForTimeout(300);await ps("11111");await pg.waitForTimeout(1500);
+    if(!(await pg.evaluate(async()=>dvOpen&&(await docBlob(data.docs.find(x=>x.id==="d1"))).size>0)))err("documents illisibles sur le nouvel appareil");
+    // 6) mauvais code puis code oublié → phrase → nouveau code
+    await pg.evaluate(()=>{phMem=null;pwdLock()});await show("pwd");await pg.waitForTimeout(300);await pin("99999");await pg.waitForTimeout(1500);
+    if(!(await pg.textContent("#pinErr")).includes("incorrect"))err("mauvais code accepté");
+    await pg.click("#pinForgot");await phrase("ma phrase secrete 7");await pg.waitForSelector("#pinSheet:not([hidden])",{timeout:15000}).catch(()=>{});
+    await ps("33333");await ps("33333");await pg.waitForSelector("#vault:not([hidden])",{timeout:15000}).catch(()=>err("code oublié : coffre non rouvert"));
+    // 7) fusion : un appareil resté sur l'ancien coffre n'écrase pas le coffre renforcé
+    st=await pg.evaluate(()=>{const nv=data.vault,old={id:"oldv",salt:"x",chk:{},createdAt:"2026-01-01T00:00:00.000Z"};
+      return [mergeData({...data,vault:old},data).vault.id===nv.id,mergeData(data,{...data,vault:old}).vault.id===nv.id]});
+    if(!st[0]||!st[1])err("la fusion garde l'ancien coffre : "+st);
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

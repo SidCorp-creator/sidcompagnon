@@ -1,7 +1,9 @@
 const http=require('http');const users={};const rows={};let n=0;
 const cors={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'*','Access-Control-Allow-Methods':'GET,POST,PATCH,PUT,DELETE,OPTIONS'};
 function send(res,code,obj){res.writeHead(code,{...cors,'Content-Type':'application/json'});res.end(obj===undefined?'':JSON.stringify(obj))}
-const tok=(u)=>({access_token:'at-'+u.id,refresh_token:'rt-'+u.id,expires_in:3600,expires_at:Math.floor(Date.now()/1000)+3600,user:{id:u.id,email:u.email,user_metadata:u.meta}});
+// v32 : fonctions réservées dans app_metadata (comme sur Supabase) ; les adresses « sans… » n'ont pas Nutrition
+const appMeta=e=>String(e||'').startsWith('sans')?{}:{features:['nutri']};
+const tok=(u)=>({access_token:'at-'+u.id,refresh_token:'rt-'+u.id,expires_in:3600,expires_at:Math.floor(Date.now()/1000)+3600,user:{id:u.id,email:u.email,user_metadata:u.meta,app_metadata:appMeta(u.email)}});
 const objs={},mem={};
 http.createServer((req,res)=>{const ch=[];req.on('data',c=>ch.push(c));req.on('end',()=>{const raw=Buffer.concat(ch);const isJ=!(req.url.startsWith('/storage/'));const b=isJ?raw.toString():'';
   if(req.method==='OPTIONS')return send(res,204);
@@ -12,10 +14,10 @@ http.createServer((req,res)=>{const ch=[];req.on('data',c=>ch.push(c));req.on('e
     const u={id:'u'+(++n),pw:body.password,meta:body.data,email:body.email};users[body.email]=u;return send(res,200,tok(u))}
   if(url.pathname==='/auth/v1/token'){ if(url.searchParams.get('grant_type')==='password'){const u=users[body.email];if(!u||u.pw!==body.password)return send(res,400,{error_code:'invalid_credentials',msg:'Invalid login credentials'});return send(res,200,tok(u))}
     const u=Object.values(users).find(x=>'rt-'+x.id===body.refresh_token);return u?send(res,200,tok(u)):send(res,400,{msg:'bad refresh'})}
-  if(url.pathname==='/auth/v1/user'&&req.method==='GET'){const e=Object.keys(users).find(k=>users[k].id===auth);return e?send(res,200,{id:auth,email:e,user_metadata:users[e].meta}):send(res,401,{msg:'no'})}
+  if(url.pathname==='/auth/v1/user'&&req.method==='GET'){const e=Object.keys(users).find(k=>users[k].id===auth);return e?send(res,200,{id:auth,email:e,user_metadata:users[e].meta,app_metadata:appMeta(e)}):send(res,401,{msg:'no'})}
   if(url.pathname==='/auth/v1/user'&&req.method==='PUT'){const e=Object.keys(users).find(k=>users[k].id===auth);if(!e)return send(res,401,{msg:'no'});
     if(body.email&&body.email!==e){if(users[body.email])return send(res,422,{error_code:'email_exists',msg:'A user with this email address has already been registered'});users[body.email]=users[e];delete users[e]}
-    const em=body.email||e;if(body.data)users[em].meta={...users[em].meta,...body.data};if(body.password)users[em].pw=body.password;return send(res,200,{id:auth,email:em,user_metadata:users[em].meta})}
+    const em=body.email||e;if(body.data)users[em].meta={...users[em].meta,...body.data};if(body.password)users[em].pw=body.password;return send(res,200,{id:auth,email:em,user_metadata:users[em].meta,app_metadata:appMeta(em)})}
   if(url.pathname==='/auth/v1/logout')return send(res,204);
   if(url.pathname==='/auth/v1/recover')return send(res,200,{});
   if(url.pathname==='/rest/v1/user_data'){
@@ -27,6 +29,7 @@ http.createServer((req,res)=>{const ch=[];req.on('data',c=>ch.push(c));req.on('e
   }
   // faux Claude pour l'onglet Nutrition (réponses fixes)
   if(url.pathname==='/functions/v1/nutrition'){if(!auth)return send(res,401,{error:'Non connecté'});
+    {const e=Object.keys(users).find(k=>users[k].id===auth);if(!appMeta(e).features)return send(res,403,{error:'Bientôt disponible'})}
     if(body.kind==='profil')return send(res,200,{result:{bmr_kcal:1780,tdee_kcal:2650,target_kcal:2950,protein_g:150,carbs_g:380,fat_g:90,explanation:'Ton corps brûle environ 1 780 kcal au repos. Avec ton sport, tu dépenses environ 2 650 kcal par jour. Pour prendre du poids, vise 2 950 kcal.',warnings:[],sports_kcal:[{sport:'Musculation',kcal_per_session:420}],weight_goal:body.data&&body.data.target_weight_kg?{realistic:false,weekly_change_kg:0.3,suggested_weeks:27,advice:'Prendre 8 kg en 1 mois ferait surtout du gras. Vise environ 0,3 kg par semaine : ton objectif sera atteint en 6 mois environ.'}:{realistic:true,weekly_change_kg:0,suggested_weeks:0,advice:''}}});
     // mémoire partagée simulée : la même phrase revient sans « Claude »
     if(body.kind==='aliment'&&!body.image){const k=String(body.text||'').trim().toLowerCase();mem[k]=(mem[k]||0)+1;if(mem[k]>1)return send(res,200,{source:'memory',result:{dish:'Barre chocolatée',emoji:'🍫',items:[{name:'Barre chocolatée',emoji:'🍫',quantity:'1 barre (43 g)',grams:43,kcal:246,protein_g:3.7,carbs_g:21.3,fat_g:16}],note:''}})}

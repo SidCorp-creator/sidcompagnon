@@ -23,6 +23,10 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
 
     // --- connexion : œil, blocage après 5 erreurs, mot de passe oublié
     await pg.goto(U);await pg.waitForTimeout(400);
+    // v34 : nouveau visiteur → « Créer un compte » en premier, avec ce que fait l'app
+    if(await pg.getAttribute("#mSignup","aria-pressed")!=="true")err("un nouveau visiteur n'arrive pas sur « Créer un compte »");
+    if(await pg.$$eval("#authFeats li",x=>x.length)<3)err("l'écran d'arrivée n'explique pas l'app");
+    await shot(pg,scheme+"-00-arrivee");await pg.click("#mLogin");
     await pg.fill("#aPw","secret11");await pg.click('[data-pweyefor="aPw"]');
     if(await pg.getAttribute("#aPw","type")!=="text")err("l'œil n'affiche pas le mot de passe");
     await pg.click('[data-pweyefor="aPw"]');await shot(pg,scheme+"-01-connexion");
@@ -321,6 +325,48 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
       const m2=mergeData({notes:[{...base,body:"pain, lait",upd:t0+10}]},{notes:[{...base,body:"pain, oeufs",upd:t0+20}]});
       return {n:m.notes.length,bodies:m.notes.map(x=>x.body).sort().join("|"),n2:m2.notes.length}});
     if(st.n!==2||st.bodies!=="pain, lait|pain, oeufs"||st.n2!==1)err("conflit de notes mal géré : "+JSON.stringify(st));
+    await ctx.close()}
+  // --- v34 : mode essai sans compte, puis compte créé avec les données reprises ; tâches simplifiées ; agenda en fenêtre ; suppressions annulables
+  {const ctx=await b.newContext({...devices["iPhone 13"]}),pg=await ctx.newPage(),err=m=>errs.push("v34 : "+m);
+    pg.on("pageerror",e=>err(e.message));pg.on("console",m=>{if(/Content Security Policy/i.test(m.text()))err("CSP : "+m.text().slice(0,200))});
+    await pg.goto(U);await pg.waitForTimeout(400);await pg.click("#aTrial");await pg.waitForTimeout(1200);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");
+    if(await pg.isVisible("#notifAsk"))err("notifications proposées en mode essai");
+    if(!(await pg.evaluate(()=>isTrial())))err("le mode essai ne démarre pas");
+    await pg.evaluate(()=>show("home"));await pg.waitForTimeout(200);
+    if(!(await pg.isVisible("#homeTrial")))err("pas de message « Mode essai » sur Aujourd'hui");await shot(pg,"essai-aujourdhui");
+    // tâches : ligne simple, « ⋯ » pour le reste, suppression annulable
+    await pg.evaluate(()=>show("todo"));await pg.fill("#todoIn","Acheter du pain");await pg.press("#todoIn","Enter");await pg.waitForTimeout(300);
+    await pg.fill("#todoIn","Appeler maman");await pg.press("#todoIn","Enter");await pg.waitForTimeout(300);
+    const btns=await pg.$$eval("#todoOpen .row:not(.done) button",x=>x.length/Math.max(1,document.querySelectorAll("#todoOpen .row:not(.done)").length));
+    if(btns>4)err("trop de boutons par tâche : "+btns);
+    if(await pg.locator("#todoOpen .realise").count())err("le bouton « Réaliser » en double est encore là");
+    await shot(pg,"v34-taches");
+    const tid=await pg.evaluate(()=>data.todos.find(t=>t.title==="Acheter du pain").id);
+    await pg.click(`[data-tmore="${tid}"]`);await pg.waitForTimeout(200);if(!(await pg.isVisible("#actSheet")))err("le menu « ⋯ » ne s'ouvre pas");await shot(pg,"v34-taches-menu");
+    await pg.click("#actList .act-it.danger");await pg.waitForTimeout(200);
+    if(await pg.evaluate(id=>!!data.todos.find(t=>t.id===id),tid))err("la tâche n'est pas supprimée tout de suite");
+    if(!(await pg.isVisible("#toast .toast-act")))err("pas de bouton « Annuler » après la suppression");await shot(pg,"v34-annuler");
+    await pg.click("#toast .toast-act");await pg.waitForTimeout(300);
+    if(!(await pg.evaluate(id=>!!data.todos.find(t=>t.id===id)&&!(data.del||{})[id],tid)))err("« Annuler » ne remet pas la tâche");
+    // toucher le titre = modifier
+    await pg.click(`#todoOpen [data-edit="todo:${tid}"]`);await pg.waitForTimeout(200);if(!(await pg.isVisible("#sheet")))err("toucher le titre n'ouvre pas la modification");
+    await pg.click("#sheet .x").catch(()=>{});await pg.evaluate(()=>closeEdit&&closeEdit());
+    // agenda : plus de formulaire en haut, « + Activité » ouvre une fenêtre
+    await pg.evaluate(()=>show("plan"));await pg.waitForTimeout(200);
+    if(await pg.isVisible("#fTitle"))err("le formulaire de l'agenda est encore affiché en haut");
+    await pg.click("#taskAdd");await pg.waitForTimeout(250);if(!(await pg.isVisible("#taskSheet")))err("« + Activité » n'ouvre pas la fenêtre");
+    if(await pg.isVisible("#fEnd"))err("les options avancées ne sont pas repliées");await shot(pg,"v34-agenda-ajout");
+    await pg.fill("#fTitle","Dentiste");await pg.fill("#fTime","14:00");await pg.click("#taskForm [type=submit]");await pg.waitForTimeout(300);
+    if(await pg.isVisible("#taskSheet")||!(await pg.evaluate(()=>data.tasks.some(t=>t.title==="Dentiste"&&t.date===iso(today())&&t.time==="14:00"))))err("ajout d'activité raté");
+    // créer un compte depuis l'essai : les données sont reprises
+    await pg.evaluate(()=>show("more"));await pg.click("#trialBanner [data-trialacc]");await pg.waitForTimeout(800);
+    if(await pg.getAttribute("#mSignup","aria-pressed")!=="true")err("« Créer mon compte » n'ouvre pas l'inscription");
+    await pg.fill("#aName","Essai");await pg.fill("#aEmail","essai@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1800);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    const st=await pg.evaluate(()=>({trial:isTrial(),todos:data.todos.length,dent:data.tasks.some(t=>t.title==="Dentiste"),left:!!localStorage.getItem("sidnote-u-essai")}));
+    if(st.trial||st.todos!==2||!st.dent||st.left)err("données de l'essai mal reprises : "+JSON.stringify(st));
+    await pg.waitForTimeout(1500);if(await pg.evaluate(()=>cache.dirty))err("données reprises non envoyées en ligne");
     await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");

@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 33.**
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 34.**
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -138,6 +138,13 @@ assets/               ← logo
   - Synchro : `push()` ne se tait plus : `syncErr` (sauf hors connexion), nouvel essai espacé (`retryIn` 4 s → 60 s), `syncRetry()`, boutons `[data-syncretry]`. Affiché dans Compte (`#syncState`, point rouge) et sur Aujourd'hui (`#homeSync`).
   - Notes modifiées sur deux appareils depuis la dernière synchro (`mergeData(loc,rem,{since})`, `since` = `cache.base`) : la version perdante est gardée en « (copie de conflit) » (id `<id>-c<upd>`, sans les photos).
   - Faux serveur : `/__fail?on=1|0` simule une panne des écritures. Test : sauvegarde, fusion (et survie à la synchro), remplacer avec confirmation, ancien format, panne + « Réessayer », conflit de notes.
+- v34 (audit, lots 7 et 8) :
+  - Écran d'arrivée : ce que fait l'app (`#authFeats`, 4 points), « Créer un compte » en premier si aucun `sidnote-last-user`.
+  - **Mode essai sans compte** : `startTrial()` → session locale `{trial:true, user:{id:"essai"}}` (`isTrial()`, `TRIAL_ID`), données dans `sidnote-u-essai`, rien n'est envoyé (`push`/`pull` ne font rien, `token()` lève une erreur `trial`). Messages `#homeTrial` et `#trialBanner`, « Quitter l'essai » efface. « Créer mon compte » (`trialToAccount`, marqueur `sidnote-trial-carry`) → inscription ou connexion : `finishLogin` reprend les données (fusion si le compte existe déjà, sans ses coffres ni mots de passe/notes secrètes de l'essai), fichiers IndexedDB recopiés (`idbRekey`).
+  - Tâches : ligne = poignée, rond (terminer), titre (toucher = modifier, `.ttl-btn`), « ⋯ » (`data-tmore` → `todoActions` : modifier, suspendre/reprendre, déplacer vers une catégorie, supprimer). Fenêtre d'actions réutilisable `openActions(titre, items)` (`#actSheet`).
+  - Agenda : plus de formulaire en haut ; « + Activité » (`#taskAdd`) ouvre `#taskSheet` (`openTaskSheet(date)`) : titre, date + heure, type, « Plus d'options » (fin, heure de fin, rappels).
+  - Suppressions annulables : `undoable(msg, ids, apply, {after, later, revert})` + `toastAct` (« Annuler » 5 s) pour tâches, activités, catégories, notes, mots de passe, séances, repas, documents, classeurs. Fichiers (documents, photos de notes, vignettes) effacés seulement après le délai (`later`). L'annulation passe par `data.res`. Confirmations gardées seulement pour l'irréversible (tout effacer, coffres).
+  - Correction : le bouton 🎤 (`micFor`) est de nouveau à côté du champ (`.mic-field`), il tombait dessous depuis la v28.
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

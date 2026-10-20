@@ -21,6 +21,9 @@ http.createServer((req,res)=>{const ch=[];req.on('data',c=>ch.push(c));req.on('e
   if(url.pathname==='/rest/v1/user_data'){
     if(req.method==='GET'){const id=url.searchParams.get('user_id').replace('eq.','');if(id!==auth)return send(res,200,[]);return send(res,200,rows[id]?[rows[id]]:[])}
     if(req.method==='POST'){if(body.user_id!==auth)return send(res,403,{message:'rls'});rows[body.user_id]={data:body.data,updated_at:body.updated_at};return send(res,201)}
+    if(req.method==='PATCH'){const id=(url.searchParams.get('user_id')||'').replace('eq.','');if(id!==auth)return send(res,200,[]);
+      const want=(url.searchParams.get('updated_at')||'').replace('eq.','');const r=rows[id];
+      if(!r||r.updated_at!==want)return send(res,200,[]);rows[id]={data:body.data,updated_at:body.updated_at};return send(res,200,[{updated_at:body.updated_at}])}
   }
   // faux Claude pour l'onglet Nutrition (réponses fixes)
   if(url.pathname==='/functions/v1/nutrition'){if(!auth)return send(res,401,{error:'Non connecté'});

@@ -1,4 +1,4 @@
-// Sid'note v23 : fonction "rappels" (notifications du planning + cours UMons 24 h avant)
+// Sid'note v31 : fonction "rappels" (notifications du planning + calendrier relié 24 h avant ; FR, EN, NL)
 // - Appelée toutes les 5 minutes par le cron (en-tête x-cron-secret) : envoie les rappels dont l'heure est arrivée,
 //   selon les délais choisis par chaque personne (Réglages > Notifications : 10 min, 1 h, la veille…).
 // - Appelée par l'app avec { test: true } : envoie une notification de test à la personne connectée.
@@ -29,6 +29,7 @@ const WINDOW = 15 * 60000; // un rappel en retard de moins de 15 min part quand 
 const MOIS = {
   fr: ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."],
   en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+  nl: ["jan.", "feb.", "mrt.", "apr.", "mei", "jun.", "jul.", "aug.", "sep.", "okt.", "nov.", "dec."],
 };
 
 // décalage (ms) entre l'heure de Bruxelles et l'heure UTC à un instant donné
@@ -51,19 +52,19 @@ function cleanLeads(v: unknown): number[] {
   return [...new Set(a)].slice(0, 6);
 }
 function whenText(lead: number, lang: string): string {
-  const en = lang === "en";
-  if (lead < 60) return en ? `In ${lead} min` : `Dans ${lead} min`;
-  if (lead < 1440) { const h = Math.round(lead / 60); return en ? `In ${h} h` : `Dans ${h} h`; }
+  const en = lang === "en", nl = lang === "nl";
+  if (lead < 60) return en ? `In ${lead} min` : nl ? `Over ${lead} min` : `Dans ${lead} min`;
+  if (lead < 1440) { const h = Math.round(lead / 60); return en ? `In ${h} h` : nl ? `Over ${h} u` : `Dans ${h} h`; }
   const d = Math.round(lead / 1440);
-  if (d === 1) return en ? "Tomorrow" : "Demain";
-  return en ? `In ${d} days` : `Dans ${d} jours`;
+  if (d === 1) return en ? "Tomorrow" : nl ? "Morgen" : "Demain";
+  return en ? `In ${d} days` : nl ? `Over ${d} dagen` : `Dans ${d} jours`;
 }
 // les rappels à envoyer maintenant pour une personne
 export function dueReminders(data: any, now: number) {
   const out: { key: string; title: string; body: string; tag: string }[] = [];
   const prefs = data?.prefs || {}, n = prefs.notif || {};
   if (n.on === false) return out;
-  const leads = cleanLeads(n.leads), lang = prefs.lang === "en" ? "en" : "fr";
+  const leads = cleanLeads(n.leads), lang = prefs.lang === "en" ? "en" : prefs.lang === "nl" ? "nl" : "fr";
   for (const t of data?.tasks || []) {
     if (!t || !t.id || !t.title || !/^\d{4}-\d{2}-\d{2}$/.test(t.date || "") || t.status === "fait" || t.canc || t.src === "ical") continue;
     // v23 : chaque activité peut avoir ses propres délais (t.leads) ou aucun rappel (t.remind === false)
@@ -90,7 +91,7 @@ export function dueReminders(data: any, now: number) {
       const [, m, d] = c.date.split("-").map(Number);
       out.push({
         key: `ical|${c.id}|${c.date}|${c.time || ""}`,
-        title: `${lang === "en" ? "Tomorrow" : "Demain"} · ${c.title}`,
+        title: `${whenText(1440, lang)} · ${c.title}`,
         body: `${c.time ? c.time + " · " : ""}${d} ${MOIS[lang][m - 1]}${c.loc ? " · " + String(c.loc).slice(0, 60) : ""}`,
         tag: `ical-${String(c.id).slice(-40)}`,
       });
@@ -143,7 +144,7 @@ Deno.serve(async (req) => {
     if (error || !data?.user) return json({ error: "Non connecté" }, 401);
     const { data: subs } = await db.from("push_subscriptions").select("*").eq("user_id", data.user.id);
     if (!subs?.length) return json({ error: "Aucun appareil abonné aux notifications" }, 404);
-    const sent = await sendTo(subs, [{ title: "Sid'note", body: body.lang === "en" ? "Notifications are working!" : "Les notifications fonctionnent !", tag: "test" }]);
+    const sent = await sendTo(subs, [{ title: "Sid'note", body: body.lang === "en" ? "Notifications are working!" : body.lang === "nl" ? "Meldingen werken!" : "Les notifications fonctionnent !", tag: "test" }]);
     return json({ sent });
   }
 

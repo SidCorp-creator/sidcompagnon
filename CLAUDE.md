@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 30.**
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 31.**
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -113,6 +113,14 @@ assets/               ← logo
   - Ambiances de couleurs (`PALETTES`, `data.prefs.palette`, attribut `data-palette`) : Noir & or (défaut), Saphir, Émeraude, Bordeaux, Platine ; chacune en clair et en sombre.
   - Téléphone plus épuré : `@media (max-width:600px)` réduit titres, marges, boutons (champs toujours à 16 px).
 - v30 : l'affichage épuré s'applique aussi sur ordinateur (barre latérale 236 px, contenu 760 px max, titres plus petits ; `#homeAdd` caché car « + Ajouter » est dans la barre latérale). Le test fait aussi des captures en écran large (`*-pc-*.png`).
+- v31 :
+  - Néerlandais : `DICT_NL` + `PATS_NL` (traduits du français), choisis quand `LANG==="nl"` (le contenu de `DICT`/`PATS` est remplacé au démarrage). `L()` traduit dès que la langue n'est pas le français. Mois/jours en néerlandais dans `startTranslate`. Choix de langue : Réglages, présentation, écran de connexion (3 boutons). Fonctions `nutrition` et `rappels` gèrent aussi `nl` (déployées le 20 oct. 2026). Le texte de version passe par un motif (`PATS`), plus besoin de le retraduire à chaque version. **Tout nouveau texte doit aussi être ajouté à `DICT_NL`** (sinon il reste en français en néerlandais).
+  - Synchro : `push()` écrit « à condition » (PATCH filtré sur `updated_at`) ; si un autre appareil a écrit entre-temps, on relit, on refusionne et on réessaie (fini les suppressions qui reviennent).
+  - Ambiances travaillées : chaque palette a ses fonds/cartes/champs/lignes (clair et sombre) + reflet en haut ; boutons à la couleur de l'ambiance.
+  - Mots de passe : description visible avant le déverrouillage. Tâches : pastilles de catégories sur plusieurs lignes sur ordinateur ; « Réalisées » s'ouvre toujours sur le calendrier.
+  - Agenda : une activité passée n'est plus « En retard » mais « Passé » (grisée).
+  - Musculation : chrono de nouveau collé en haut, compact une fois collé (`.rest.stuck`, sentinelle `#restSentinel`), rien de visible au-dessus.
+  - Nutrition : « à inclure / à éviter » propres à chaque type de repas (`menuPrefs.pp[type]`, `mpPref`/`mpSet`), champs qui s'agrandissent (`textarea.autogrow`), délai conseillé pré-rempli en modifiant le profil, menus toujours en poids crus (consigne client + serveur).
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

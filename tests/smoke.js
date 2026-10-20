@@ -110,7 +110,10 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await shot(pg,scheme+"-fr-ajout-rapide");await pg.click("#qaClose");await pg.waitForTimeout(150);
     if(await pg.evaluate(()=>document.documentElement.classList.contains("modal-open")))err("le fond reste figé après fermeture");
     // --- v29 : chrono de la musculation à sa place
-    await go("muscu");if(await pg.$eval("#rest",e=>getComputedStyle(e).position)==="sticky")err("le chrono reste collé en haut");
+    await go("muscu");if(await pg.$eval("#rest",e=>getComputedStyle(e).position)!=="sticky")err("le chrono ne suit plus la séance");
+    await pg.evaluate(()=>{const sp=document.createElement("div");sp.id="spacer";sp.style.height="2000px";document.getElementById("v-muscu").appendChild(sp);window.scrollTo(0,600)});await pg.waitForTimeout(400);
+    if(!(await pg.$eval("#rest",e=>e.classList.contains("stuck"))))err("le chrono collé ne devient pas compact");
+    await shot(pg,scheme+"-fr-muscu-chrono-compact");await pg.evaluate(()=>{document.getElementById("spacer").remove();window.scrollTo(0,0)});
     // --- v29 : code des Documents dans la page, grand clavier
     await go("docs");await pg.waitForTimeout(300);
     if(await pg.isVisible("#pinSheet"))err("le code des Documents s'ouvre encore dans une fenêtre");
@@ -122,6 +125,19 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.locator("#palSel").scrollIntoViewIfNeeded();await shot(pg,scheme+"-fr-couleurs-saphir");
     await pg.click('[data-pal="emeraude"]');await go("todo");await shot(pg,scheme+"-fr-todo-emeraude");
     await go("more");await pg.click('[data-pal="or"]');if(await pg.evaluate(()=>document.documentElement.dataset.palette))err("retour à Noir & or impossible");
+    // --- v31 : Nutrition : « à inclure / à éviter » propres à chaque repas ; délai pré-rempli en modifiant le profil
+    await go("nutri");await pg.evaluate(()=>{if(!nutriAllowed())NUTRI_ALLOW.push(session.email);const n=NU();n.profile={sex:"h",age:24,height:180,weight:72,goal:"gain",target:80,sports:[]};n.plan={kcal:2500,p:150,c:300,f:80,bmr:1800,tdee:2400,text:"",warn:[],wg:{ok:false,wk:.3,weeks:26,advice:"x"}};
+      n.menuPrefs={type:"day",pp:{day:{include:"poulet",exclude:"poisson"}}};save();applySoon();renderNutri();nuGoTab("menu")});await pg.waitForTimeout(200);
+    if(await pg.inputValue("#nuInclude")!=="poulet")err("préférences de la journée non affichées");
+    await pg.click('[data-mtype="breakfast"]');await pg.waitForTimeout(150);
+    if(await pg.inputValue("#nuInclude")!==""||await pg.inputValue("#nuExclude")!=="")err("les préférences se recopient d'un repas à l'autre");
+    await pg.fill("#nuInclude","flocons d'avoine");await pg.click('[data-mtype="day"]');await pg.waitForTimeout(150);
+    if(await pg.inputValue("#nuInclude")!=="poulet")err("préférences de la journée écrasées par celles du petit-déjeuner");
+    await pg.fill("#nuExclude","je ne veux pas de blanc de dinde au matin, et je veux consommer les aliments entiers, donc par exemple pas que du blanc d'oeuf");await pg.waitForTimeout(100);
+    if((await pg.$eval("#nuExclude",e=>e.offsetHeight))<60)err("le champ « à éviter » ne s'agrandit pas");
+    await pg.locator("#nuExclude").scrollIntoViewIfNeeded();await shot(pg,scheme+"-fr-nutri-menu-prefs");
+    await pg.evaluate(()=>{nuGoTab("profile");$("nuEditProfile").click()});await pg.waitForTimeout(200);
+    if(await pg.inputValue("#nuDur")!=="6"||await pg.inputValue("#nuDurU")!=="m")err("délai conseillé non pré-rempli ("+await pg.inputValue("#nuDur")+")");
     // --- Compte : changer de mot de passe
     await go("more");await pg.click("#chPwBtn");await pg.fill("#npOld","faux123");await pg.fill("#npPw","secret2");await pg.fill("#npPw2","secret2");await pg.click("#npBtn");await pg.waitForTimeout(400);
     if(!(await pg.isVisible("#npErr")))err("mauvais mot de passe actuel accepté");
@@ -144,6 +160,13 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>{NUTRI_ALLOW.push(session.email);applySoon&&applySoon()}).catch(()=>{});
     for(const v of ["plan","todo","notes","pwd","more"]){await go(v);await pg.waitForTimeout(250);await shot(pg,`${scheme}-en-${v}`)}
     await pg.click('#navIn [data-dock="home"]');await shot(pg,scheme+"-en-home");
+    // v31 : néerlandais
+    await go("more");if(!(await pg.isVisible("#langSel")))await pg.click('[data-sec="look"] summary');await pg.selectOption("#langSel","nl");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    if(await pg.evaluate(()=>document.documentElement.lang)!=="nl")err("le néerlandais ne s'active pas");
+    for(const v of ["plan","todo","notes","pwd","more"]){await go(v);await pg.waitForTimeout(250);await shot(pg,`${scheme}-nl-${v}`)}
+    const nlLeft=await pg.evaluate(()=>{show("todo");return document.querySelector("#v-todo h1").textContent});if(nlLeft.trim()==="Tâches")err("titres non traduits en néerlandais");
+    await pg.click('#navIn [data-dock="home"]');await shot(pg,scheme+"-nl-home");
     await ctx.close();
   }
   // --- ordinateur (écran large) : barre latérale et rendu épuré

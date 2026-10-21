@@ -4,7 +4,7 @@ function send(res,code,obj){res.writeHead(code,{...cors,'Content-Type':'applicat
 // v32 : fonctions réservées dans app_metadata (comme sur Supabase) ; les adresses « sans… » n'ont pas Nutrition
 const appMeta=e=>String(e||'').startsWith('sans')?{}:{features:['nutri']};
 const tok=(u)=>({access_token:'at-'+u.id,refresh_token:'rt-'+u.id,expires_in:3600,expires_at:Math.floor(Date.now()/1000)+3600,user:{id:u.id,email:u.email,user_metadata:u.meta,app_metadata:appMeta(u.email)}});
-const objs={},mem={};let failWrites=false;const clientErrors=[];let SL={lists:[],members:[],items:[]};
+const objs={},mem={};let failWrites=false;const clientErrors=[];let SL={lists:[],members:[],items:[]};const MCP={};
 http.createServer((req,res)=>{const ch=[];req.on('data',c=>ch.push(c));req.on('end',()=>{const raw=Buffer.concat(ch);const isJ=!(req.url.startsWith('/storage/'));const b=isJ?raw.toString():'';
   if(req.method==='OPTIONS')return send(res,204);
   const url=new URL(req.url,'http://x');const body=b?JSON.parse(b):{};
@@ -39,6 +39,11 @@ http.createServer((req,res)=>{const ch=[];req.on('data',c=>ch.push(c));req.on('e
       if(req.method==='PATCH'){const i=SL.items.find(x=>x.id===q('id'));if(i&&isMem(i.list_id))Object.assign(i,body);return send(res,204)}
       if(req.method==='DELETE'){const id=q('id'),l=q('list_id'),dn=q('done');SL.items=SL.items.filter(i=>!(isMem(i.list_id)&&(id?i.id===id:(i.list_id===l&&(dn!=='true'||i.done)))));return send(res,204)}}
     return send(res,404,{message:'?'})}}
+  // v38 : adresses du connecteur Claude (chacun ne voit que les siennes)
+  if(url.pathname==='/rest/v1/mcp_tokens'){if(!auth)return send(res,401,{message:'no'});MCP.list=MCP.list||[];
+    if(req.method==='GET')return send(res,200,MCP.list.filter(t=>t.user_id===auth));
+    if(req.method==='POST'){if(body.user_id!==auth||!/^[0-9a-f]{64}$/.test(body.hash))return send(res,403,{message:'rls'});MCP.list.push({...body,created_at:new Date().toISOString(),last_used:null});return send(res,201)}
+    if(req.method==='DELETE'){const h=(url.searchParams.get('hash')||'').replace(/^eq\./,'');MCP.list=MCP.list.filter(t=>!(t.user_id===auth&&t.hash===h));return send(res,204)}}
   // v37 : erreurs envoyées par l'app (gardées en mémoire, lisibles par /__errors)
   if(url.pathname==='/rest/v1/client_errors'&&req.method==='POST'){if(!auth)return send(res,401,{message:'no'});clientErrors.push(body);return send(res,201)}
   if(url.pathname==='/__errors')return send(res,200,clientErrors);

@@ -9,6 +9,8 @@ const G={plan:"orga",todo:"orga",pomo:"orga",muscu:"sport",nutri:"sport",graph:"
 const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,n+".png")});
 (async()=>{
   const b=await chromium.launch(),errs=[];
+  // le lecteur Spotify (iframe) n'est pas testé : sa page réelle a ses propres erreurs, sans rapport avec Sid'note
+  {const nc=b.newContext.bind(b);b.newContext=async o=>{const c=await nc(o);await c.route(/open\.spotify\.com/,r=>r.fulfill({status:200,contentType:"text/html",body:"<!doctype html><title>Spotify</title>"}));return c}}
   for(const scheme of ["light","dark"]){
     const ctx=await b.newContext({...devices["iPhone 13"],colorScheme:scheme}),pg=await ctx.newPage();
     pg.on("pageerror",e=>errs.push(scheme+": "+e.message));
@@ -477,6 +479,59 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await P.evaluate(()=>reportErr("erreur de test v37","pile"));await P.waitForTimeout(800);
     const ce=await P.evaluate(async()=>(await (await fetch(SUPABASE_URL+"/__errors")).json()).map(e=>e.msg));if(!ce.includes("erreur de test v37"))err("erreur non envoyée");
     await A.ctx.close();await B.ctx.close()}
+  // --- v38 : Face ID (capteur simulé avec PRF), adresse du connecteur Claude, note en plein écran
+  {const err=m=>errs.push("v38 : "+m);
+    const ctx=await b.newContext({...devices["iPhone 13"]}),pg=await ctx.newPage();pg.on("pageerror",e=>err(e.message));
+    pg.on("console",m=>{if(/Content Security Policy/i.test(m.text()))err("CSP : "+m.text().slice(0,200))});
+    const cdp=await ctx.newCDPSession(pg);await cdp.send("WebAuthn.enable");
+    await cdp.send("WebAuthn.addVirtualAuthenticator",{options:{protocol:"ctap2",transport:"internal",hasResidentKey:true,hasUserVerification:true,isUserVerified:true,hasPrf:true,automaticPresenceSimulation:true}});
+    const pin=async c=>{for(const d of c)await pg.click(`#pinPad [data-pin="${d}"]`);await pg.waitForTimeout(150)};
+    const ps=async c=>{await pg.waitForSelector("#pinSheet:not([hidden])",{timeout:10000});for(const d of c)await pg.click(`#psPad [data-ps="${d}"]`);await pg.waitForTimeout(150)};
+    await pg.goto(U);await pg.waitForTimeout(400);
+    await pg.click("#mSignup");await pg.fill("#aName","Bio");await pg.fill("#aEmail","bio38@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    // coffre : code 24680 + phrase secrète
+    await pg.evaluate(()=>show("pwd"));await pg.waitForTimeout(300);await pin("24680");await pin("24680");
+    await pg.waitForSelector("#phSheet:not([hidden])",{timeout:10000});await pg.fill("#phIn","trois mots et 7");await pg.fill("#ph2In","trois mots et 7");await pg.click("#phOk");
+    await pg.waitForSelector("#recSheet:not([hidden])",{timeout:15000}).catch(()=>{});if(await pg.isVisible("#recSheet"))await pg.click("#recLater");
+    await pg.waitForFunction(()=>!!vaultKey,null,{timeout:15000}).catch(()=>err("coffre pas créé"));
+    // Face ID activé dans Réglages
+    await pg.evaluate(()=>{show("more");document.querySelector('[data-sec="privacy"]').open=true});await pg.waitForTimeout(300);
+    if(!(await pg.isVisible("#bioCard")))err("réglage Face ID absent");
+    await pg.click("#bioBtn");await ps("24680");await pg.waitForTimeout(800);
+    if(await pg.isVisible("#actSheet"))await pg.click("#actSheet [data-act]");
+    await pg.waitForFunction(()=>bioHas("main"),null,{timeout:10000}).catch(()=>err("Face ID pas activé"));
+    await shot(pg,"v38-faceid-reglage");
+    // déverrouillage par Face ID
+    await pg.evaluate(()=>{pwdLock();show("pwd")});await pg.waitForTimeout(300);
+    if(!(await pg.isVisible("#pinBio")))err("bouton Face ID absent sur le clavier du code");
+    await shot(pg,"v38-faceid-clavier");
+    await pg.click("#pinBio");await pg.waitForFunction(()=>!!vaultKey,null,{timeout:15000}).catch(()=>err("Face ID n'ouvre pas les mots de passe"));
+    // code changé ailleurs : Face ID se retire proprement, le code reste possible
+    await pg.evaluate(async()=>{const s=ls.get(bioLsKey());const k=await bioPrf(s);s.main=await encJ(k,{c:"11111"});ls.set(bioLsKey(),s);pwdLock();show("pwd")});await pg.waitForTimeout(300);
+    await pg.click("#pinBio");await pg.waitForTimeout(2500);
+    if(await pg.evaluate(()=>!!vaultKey||bioHas("main")))err("mauvais code Face ID mal géré");
+    // adresse pour Claude
+    await pg.evaluate(()=>{show("more");document.querySelector('[data-sec="claude"]').open=true});await pg.waitForTimeout(500);
+    await pg.click("#mcpNew");await pg.waitForTimeout(800);
+    const url=await pg.textContent("#mcpUrl");if(!/\/functions\/v1\/mcp\/[A-Za-z0-9_-]{40,}$/.test(url))err("adresse Claude incorrecte : "+url);
+    if(await pg.locator("#mcpList [data-mcpdel]").count()!==1)err("adresse Claude absente de la liste");
+    await shot(pg,"v38-claude");
+    await pg.click("#mcpList [data-mcpdel]");await pg.click("#mcpList [data-mcpdel]");await pg.waitForTimeout(600);
+    if(await pg.locator("#mcpList [data-mcpdel]").count()!==0)err("adresse Claude pas retirée");
+    // note en plein écran
+    await pg.evaluate(()=>show("notes"));await pg.waitForTimeout(300);await pg.click("#noteNew");await pg.fill("#noteTitle","Plein écran");await pg.waitForTimeout(300);
+    const box=await pg.$eval("#noteEdit",e=>{const r=e.getBoundingClientRect();return [r.width,r.height,innerWidth,innerHeight]});
+    if(!(await pg.evaluate(()=>document.body.classList.contains("note-full")))||box[0]<box[2]-2||box[1]<box[3]-2)err("la note ne couvre pas toute la page : "+box);
+    await shot(pg,"v38-note-plein-ecran");
+    await pg.click("#noteBack");await pg.waitForTimeout(300);if(await pg.evaluate(()=>document.body.classList.contains("note-full")))err("plein écran pas retiré en quittant la note");
+    await ctx.close()}
+  {const ctx=await b.newContext({viewport:{width:1280,height:800}}),pg=await ctx.newPage();
+    await pg.goto(U);await pg.waitForTimeout(400);await pg.click("#mSignup");await pg.fill("#aName","Pc");await pg.fill("#aEmail","pc38@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.evaluate(()=>show("notes"));await pg.waitForTimeout(300);await pg.click("#noteNew");await pg.fill("#noteTitle","Sur ordinateur");await pg.fill("#noteBody","Une note qui prend toute la page.");await pg.waitForTimeout(300);
+    const w=await pg.$eval("#noteEdit",e=>e.getBoundingClientRect().width);if(w<1270)errs.push("v38 : note pas en plein écran sur ordinateur ("+w+")");
+    await shot(pg,"v38-note-pc");await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

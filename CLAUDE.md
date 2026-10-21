@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 37.**
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 38.**
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -14,7 +14,10 @@ Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici
 ## Arborescence
 ```
 site/                 ← exactement ce qui est mis en ligne sur Netlify
-  index.html          ← TOUTE l'app (HTML + CSS + JS, ~2 300 lignes, pas de framework, pas de build)
+  index.html          ← la page (HTML seulement) ; depuis la v38 l'app est découpée, toujours sans framework ni build :
+  app.css             ← tous les styles
+  i18n.js             ← traductions DICT/PATS (EN) et DICT_NL/PATS_NL (NL), chargé avant app.js
+  app.js              ← tout le programme (les `const` de i18n.js sont visibles car scripts classiques)
   sw.js               ← service worker (réseau d'abord ; cache pdf.js à part)
   _headers            ← en-têtes de sécurité Netlify (CSP…) ; tests/serve.js les applique aussi en local
   manifest.webmanifest, icônes
@@ -166,6 +169,13 @@ assets/               ← logo
   - Espace avec 4 fonctions : pastilles sous le titre de l'espace (`.vhead.many`).
   - Pas encore fait : Face ID (WebAuthn), découpage de index.html (prévu avec le déploiement par Git), SMTP et adresse de contact (côté Sid).
 - Connecteur Claude (21 oct. 2026) : fonction Edge `mcp` (v1, Verify JWT OFF, déployée) = serveur MCP « Streamable HTTP » sans session, réponses JSON. Adresse `https://eloeoaidgbkygazwjwiu.supabase.co/functions/v1/mcp/<clé>` ; table `mcp_tokens(hash SHA-256, user_id, label, last_used)` (`supabase/sql/mcp.sql`, exécuté). Outils : agenda, ajouter_activite, taches, ajouter_tache, terminer_tache, notes, lire_note, ajouter_note, listes_partagees, ajouter_a_une_liste. Jamais les coffres ni les notes secrètes. Écrit dans `user_data` « à condition » (`updated_at`), l'app récupère au retour au premier plan (`pull`). La clé de Sid a été créée par Claude (gardée seulement dans le scratchpad de la session ; à recréer depuis l'app si perdue).
+- v38 :
+  - Fichiers : `index.html` découpé en `app.css`, `i18n.js`, `app.js` (même ordre d'exécution). CSP : `script-src` sans `'unsafe-inline'` (plus aucun script dans la page ; ne jamais remettre de `onclick=` ni de `<script>` en ligne). `sw.js` met les trois fichiers en cache. Dans ce document, « index.html » désigne désormais l'ensemble de ces fichiers.
+  - Face ID / Touch ID (WebAuthn + extension PRF) : passkey propre à l'appareil, son secret PRF (HKDF → AES-GCM) chiffre le code à 5 chiffres ; `localStorage["sidnote-bio-<uid>"] = {cred, salt, main?, notes?}`, rien sur le serveur. Réglages > vie privée (`#bioCard`, `bioEnable`, `renderBio`), boutons `#pinBio` (mots de passe) et `#psBio` (fenêtre de code, `askPin({ctx})`). Code faux (changé ailleurs) → `bioDrop(ctx)`, le code reste possible. iPhone : iOS 18 ou plus. Testé avec un capteur virtuel CDP (`hasPrf`).
+  - Réglages > « Claude (assistant) » (`#mcpSec`) : créer / retirer ses adresses du connecteur (`mcp_tokens`, empreinte SHA-256 calculée dans le navigateur, clé montrée une seule fois).
+  - Une note ouverte prend toute la page (`body.note-full`, `#noteEdit` en `position:fixed`, z-index 15 : sous les fenêtres et le toast).
+  - Connecteur `mcp` v2 : l'agenda lit aussi le calendrier relié (`data.prefs.ical`, repli sur `data.icalSoon`) et donne le jour de la semaine.
+  - Tests : le lecteur Spotify est remplacé par une page vide (sa vraie page a ses propres erreurs depuis que le réseau est ouvert).
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

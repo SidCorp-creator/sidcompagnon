@@ -61,6 +61,56 @@ async function writeData(user: string, change: (d: Data) => unknown) {
   throw new Error("Les données ont changé pendant l'enregistrement. Réessaie.");
 }
 
+// cours du calendrier relié (lien iCal dans data.prefs.ical) : même lecture que parseICS dans l'app, heure de Bruxelles
+const BXL = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Brussels", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+function icsLocal(v: string) {
+  const m = v.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})?(Z)?)?$/);
+  if (!m) return null;
+  if (!m[4]) return { date: `${m[1]}-${m[2]}-${m[3]}`, time: "" };
+  if (!m[7]) return { date: `${m[1]}-${m[2]}-${m[3]}`, time: `${m[4]}:${m[5]}` }; // heure locale (Bruxelles)
+  const p = Object.fromEntries(BXL.formatToParts(new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]))).map((x) => [x.type, x.value]));
+  return { date: `${p.year}-${p.month}-${p.day}`, time: `${p.hour}:${p.minute}` };
+}
+async function icalEvents(d: Data, from: string, to: string): Promise<Data[] | null> {
+  const raw = d.prefs && d.prefs.ical;
+  if (!raw) return [];
+  let text = "";
+  try {
+    const url = new URL(String(raw).trim().replace(/^webcal:/i, "https:"));
+    if (url.protocol !== "https:") return null;
+    const r = await fetch(url.href, { headers: { "User-Agent": "Sidnote/1.0 (calendrier)" }, signal: AbortSignal.timeout(8000) });
+    if (!r.ok) return null;
+    text = await r.text();
+  } catch { return null; }
+  const unesc = (v: string) => v.replace(/\\n/gi, " ").replace(/\\,/g, ",").replace(/\\;/g, ";").replace(/\\\\/g, "\\");
+  const out: Data[] = [], seen = new Set<string>();
+  let ev: Record<string, string> | null = null;
+  for (const line of text.replace(/\r?\n[ \t]/g, "").split(/\r?\n/)) {
+    if (line === "BEGIN:VEVENT") { ev = {}; continue; }
+    if (line === "END:VEVENT") {
+      const s = ev && ev.DTSTART ? icsLocal(ev.DTSTART) : null;
+      if (ev && s && s.date >= from && s.date <= to) {
+        const title = unesc(ev.SUMMARY || "Cours").trim();
+        const e = ev.DTEND ? icsLocal(ev.DTEND) : null;
+        const key = (ev.UID || title) + ev.DTSTART;
+        if (!seen.has(key)) {
+          seen.add(key);
+          out.push({ src: "ical", title, date: s.date, time: s.time, timeEnd: e && e.date === s.date && e.time > s.time ? e.time : "", loc: ev.LOCATION ? unesc(ev.LOCATION).trim() : "",
+            canc: /CANCELLED/i.test(ev.STATUS || "") || /annul/i.test(title) });
+        }
+      }
+      ev = null; continue;
+    }
+    if (!ev) continue;
+    const i = line.indexOf(":");
+    if (i < 0) continue;
+    ev[line.slice(0, i).split(";")[0].toUpperCase()] = line.slice(i + 1);
+  }
+  return out;
+}
+const DAYS = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+const dayName = (d: string) => DAYS[new Date(d + "T12:00:00Z").getUTCDay()];
+
 const typeName = (d: Data, n: unknown) => {
   const v = String(n || "").trim().replace(/\s+/g, " ");
   if (!v) return "";
@@ -88,7 +138,7 @@ const findOne = (arr: Data[], key: string, label: string) => {
 const TOOLS = [
   {
     name: "agenda",
-    description: "Liste les activités de l'agenda Sid'note entre deux dates (par défaut : aujourd'hui et les 14 jours suivants). Les dates sont au format AAAA-MM-JJ, heure de Bruxelles. Les cours d'un calendrier relié (iCal) n'y figurent pas.",
+    description: "Liste les activités de l'agenda Sid'note entre deux dates (par défaut : aujourd'hui et les 14 jours suivants). Les dates sont au format AAAA-MM-JJ, heure de Bruxelles. Comprend les cours du calendrier relié (iCal) et donne le jour de la semaine.",
     inputSchema: { type: "object", properties: { from: { type: "string", description: "Date de début AAAA-MM-JJ" }, to: { type: "string", description: "Date de fin AAAA-MM-JJ (incluse)" } } },
     annotations: { readOnlyHint: true },
   },
@@ -170,12 +220,21 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
       const from = isDate(a.from) ? a.from : today(), to = isDate(a.to) ? a.to : addDays(from, 14);
       const { data } = await readData(user);
       const del = data.del || {};
+      let cal = await icalEvents(data, from, to);
+      let calNote = "";
+      if (cal === null) { // calendrier injoignable : on reprend la copie des 14 prochains jours faite par l'app
+        cal = (Array.isArray(data.icalSoon) ? data.icalSoon : []).filter((c: Data) => c && c.date >= from && c.date <= to).map((c: Data) => ({ ...c, src: "ical" }));
+        calNote = "\n(Calendrier relié injoignable pour l'instant : cours repris de la dernière copie faite par l'app.)";
+      }
       const list = (Array.isArray(data.tasks) ? data.tasks : [])
         .filter((t: Data) => t && !del[t.id] && t.src !== "ical" && t.date && (t.end || t.date) >= from && t.date <= to)
+        .concat(cal.filter((c: Data) => !c.canc))
         .sort((x: Data, y: Data) => (x.date + (x.time || "")).localeCompare(y.date + (y.time || "")));
-      if (!list.length) return `Aucune activité entre le ${from} et le ${to}.`;
-      return `Aujourd'hui : ${today()}.\n` + list.map((t: Data) =>
-        `- ${t.date}${t.end ? ` → ${t.end}` : ""}${t.time ? ` ${t.time}${t.timeEnd ? `–${t.timeEnd}` : ""}` : ""} · ${t.title}${t.cat ? ` [${t.cat}]` : ""}${t.status && t.status !== "à faire" ? ` (${t.status})` : ""} (id ${t.id})`).join("\n");
+      const head = `Aujourd'hui : ${dayName(today())} ${today()}.`;
+      if (!list.length) return `${head}\nAucune activité ni aucun cours entre le ${from} et le ${to}.${calNote}`;
+      return `${head}\n` + list.map((t: Data) =>
+        `- ${dayName(t.date)} ${t.date}${t.end ? ` → ${t.end}` : ""}${t.time ? ` ${t.time}${t.timeEnd ? `–${t.timeEnd}` : ""}` : ""} · ${t.title}` +
+        (t.src === "ical" ? ` [cours, calendrier relié${t.loc ? `, ${t.loc}` : ""}]` : `${t.cat ? ` [${t.cat}]` : ""}${t.status && t.status !== "à faire" ? ` (${t.status})` : ""} (id ${t.id})`)).join("\n") + calNote;
     }
     case "ajouter_activite": {
       const title = String(a.title || "").trim();

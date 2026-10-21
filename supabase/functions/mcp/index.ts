@@ -1,7 +1,7 @@
-// Sid'note v38-v39 : fonction "mcp" : connecteur Sid'note pour l'IA de chacun (Claude, ChatGPT, Le Chat…) (protocole MCP, transport « Streamable HTTP », réponses JSON).
+// Sid'note v38-v41 : fonction "mcp" : connecteur Sid'note pour l'IA de chacun (Claude, ChatGPT, Le Chat…) (protocole MCP, transport « Streamable HTTP », réponses JSON).
 // Adresse : https://<projet>.supabase.co/functions/v1/mcp/<clé>  — la clé est personnelle (créée dans Réglages > Mon IA),
 // seule son empreinte SHA-256 est gardée (table mcp_tokens, supabase/sql/mcp.sql). Verify JWT : OFF.
-// Accès : agenda, tâches, notes (pas les notes secrètes), listes partagées, nutrition (v39 : c'est l'IA de la personne qui calcule). Jamais les coffres (mots de passe, documents).
+// Accès : agenda (v41 : avec les rappels), tâches, notes (pas les notes secrètes), nutrition (v39 : c'est l'IA de la personne qui calcule), musculation (v41). Plus de listes partagées (retirées en v41). Jamais les coffres (mots de passe, documents).
 // Écriture « à condition » sur user_data (comme push() dans l'app) : si l'app a écrit entre-temps, on relit et on recommence.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -240,6 +240,20 @@ const TOOLS = [
         end_time: { type: "string", description: "Heure de fin HH:MM (facultatif)" },
         end_date: { type: "string", description: "Date de fin AAAA-MM-JJ pour une activité sur plusieurs jours (facultatif)" },
         type: { type: "string", description: "Type ou catégorie (ex. Examen, Sport) ; créé s'il n'existe pas (facultatif)" },
+        reminders: { type: "array", items: { type: "number" }, description: "Rappels en minutes avant le début, ex. [60] pour 1 h avant, [10, 60]. La veille (1440) est toujours envoyée en plus. Sans heure, l'activité compte à 8 h." },
+      },
+    },
+  },
+  {
+    name: "modifier_activite",
+    description: "Modifie une activité de l'agenda (id ou morceau du titre, voir agenda) : titre, date, heure, rappels. Seuls les champs donnés changent.",
+    inputSchema: {
+      type: "object", required: ["activity"],
+      properties: {
+        activity: { type: "string", description: "Id ou morceau du titre" },
+        title: { type: "string" }, date: { type: "string", description: "AAAA-MM-JJ" }, time: { type: "string", description: "HH:MM, ou vide pour retirer l'heure" },
+        end_time: { type: "string" },
+        reminders: { type: "array", items: { type: "number" }, description: "Rappels en minutes avant, ex. [60]. La veille reste toujours active." },
       },
     },
   },
@@ -280,17 +294,6 @@ const TOOLS = [
     name: "ajouter_note",
     description: "Crée une nouvelle note dans Sid'note, éventuellement dans un dossier (chemin « Cours/Finance », créé s'il n'existe pas). Le texte peut contenir des lignes « # Titre », « - puce », « 1. étape » et « [ ] case », et du **gras**.",
     inputSchema: { type: "object", required: ["title", "body"], properties: { title: { type: "string" }, body: { type: "string" }, folder: { type: "string", description: "Dossier, ex. Cours/Finance (facultatif)" } } },
-  },
-  {
-    name: "listes_partagees",
-    description: "Montre les listes partagées (courses, choses à faire ensemble) dont la personne est membre, avec leurs éléments.",
-    inputSchema: { type: "object", properties: {} },
-    annotations: { readOnlyHint: true },
-  },
-  {
-    name: "ajouter_a_une_liste",
-    description: "Ajoute un ou plusieurs éléments à une liste partagée (nom de la liste ou son id).",
-    inputSchema: { type: "object", required: ["list", "items"], properties: { list: { type: "string" }, items: { type: "array", items: { type: "string" } } } },
   },
   {
     name: "nutrition_journee",
@@ -357,16 +360,52 @@ const TOOLS = [
     description: "Note le poids de la personne (kg) pour un jour (par défaut aujourd'hui). Il apparaît dans les graphiques.",
     inputSchema: { type: "object", required: ["kg"], properties: { kg: { type: "number" }, date: { type: "string" } } },
   },
+  {
+    name: "muscu_programme",
+    description: "Programme de musculation de la personne (profil : niveau, objectif, jours, durée, matériel, zones à ménager, muscles prioritaires ; séances et exercices) et ses dernières séances faites (charges et répétitions). À lire avant de proposer ou d'ajuster un programme.",
+    inputSchema: { type: "object", properties: {} },
+    annotations: { readOnlyHint: true },
+  },
+  {
+    name: "enregistrer_programme",
+    description: "Enregistre un programme de musculation que TU as composé ou ajusté (remplace l'actuel). Visible dans Sid'note (Santé → Musculation), avec mode séance et progression des charges. Adapte-le au profil lu avec muscu_programme.",
+    inputSchema: {
+      type: "object", required: ["days"],
+      properties: {
+        goal: { type: "string", enum: ["muscle", "force", "gras", "forme"], description: "Objectif (facultatif : sinon celui du profil)" },
+        days: {
+          type: "array", description: "Une entrée par séance de la semaine (2 à 6)",
+          items: {
+            type: "object", required: ["name", "exercises"],
+            properties: {
+              name: { type: "string", description: "ex. Séance A · Haut du corps" },
+              exercises: { type: "array", items: { type: "object", required: ["name", "sets", "reps"],
+                properties: { name: { type: "string" }, sets: { type: "number" }, reps: { type: "string", description: "ex. 8–10" }, rest_s: { type: "number", description: "Repos en secondes" }, rir: { type: "string", description: "Répétitions en réserve, ex. 1–2" }, note: { type: "string" } } } },
+            },
+          },
+        },
+      },
+    },
+  },
+  {
+    name: "noter_seance",
+    description: "Note une séance de musculation faite (exercices, séries avec kg et répétitions). Elle sert à la progression des charges dans Sid'note.",
+    inputSchema: {
+      type: "object", required: ["exercises"],
+      properties: {
+        name: { type: "string", description: "Nom de la séance" }, date: { type: "string", description: "AAAA-MM-JJ (par défaut aujourd'hui)" }, minutes: { type: "number" },
+        exercises: { type: "array", items: { type: "object", required: ["name", "sets"], properties: { name: { type: "string" }, sets: { type: "array", items: { type: "object", properties: { kg: { type: "number" }, reps: { type: "number" } } } } } } },
+      },
+    },
+  },
 ];
-
-async function myLists(user: string) {
-  const { data: mem, error } = await db.from("shared_members").select("list_id").eq("user_id", user);
-  if (error) throw error;
-  const ids = (mem || []).map((m) => m.list_id);
-  if (!ids.length) return [];
-  const { data: lists } = await db.from("shared_lists").select("id, name").in("id", ids);
-  return lists || [];
-}
+// rappels d'une activité (comme remApply dans l'app) : t.leads = délais choisis, la veille toujours comprise
+const leadsOf = (v: unknown) => {
+  const a = (Array.isArray(v) ? v : [v]).map(Number).filter((n) => Number.isFinite(n) && n > 0 && n <= 10080).map(Math.round);
+  return a.length ? [...new Set([...a, 1440])].sort((x, y) => x - y).slice(0, 6) : null;
+};
+const leadTxt = (m: number) => m === 1440 ? "la veille" : m % 1440 === 0 ? `${m / 1440} jours avant` : m >= 60 ? `${Math.round(m / 6) / 10} h avant`.replace(".", ",") : `${m} min avant`;
+const MU = (d: Data) => { const m = d.muscu || (d.muscu = { sessions: [] }); if (!Array.isArray(m.log)) m.log = []; return m; };
 
 // deno-lint-ignore no-explicit-any
 async function callTool(user: string, name: string, a: any, nameOf: string): Promise<string> {
@@ -405,10 +444,29 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
         if (isTime(a.time)) t.time = a.time;
         if (t.time && isTime(a.end_time) && a.end_time > t.time) t.timeEnd = a.end_time;
         if (isDate(a.end_date) && a.end_date > a.date) t.end = a.end_date;
+        const l = leadsOf(a.reminders);
+        if (l) t.leads = l;
         d.tasks.push(t);
         return t;
       });
-      return `Ajouté à l'agenda : ${t.title}, le ${t.date}${t.time ? ` à ${t.time}` : ""} (id ${t.id}).`;
+      return `Ajouté à l'agenda : ${t.title}, le ${t.date}${t.time ? ` à ${t.time}` : ""} (id ${t.id}).` + (t.leads ? ` Rappels : ${t.leads.map(leadTxt).join(", ")}.` : " Rappel : la veille (et les délais choisis dans Sid'note).");
+    }
+    case "modifier_activite": {
+      if (a.date !== undefined && !isDate(a.date)) throw new Error("Date au format AAAA-MM-JJ.");
+      if (a.time && !isTime(a.time)) throw new Error("Heure au format HH:MM.");
+      const t: Data = await writeData(user, (d) => {
+        const del = d.del || {};
+        const t = findOne((Array.isArray(d.tasks) ? d.tasks : []).filter((x: Data) => x && !del[x.id] && x.src !== "ical"), a.activity, "l'activité");
+        if (String(a.title || "").trim()) t.title = String(a.title).trim();
+        if (isDate(a.date)) t.date = a.date;
+        if (a.time !== undefined) { if (isTime(a.time)) t.time = a.time; else { delete t.time; delete t.timeEnd; } }
+        if (t.time && isTime(a.end_time) && a.end_time > t.time) t.timeEnd = a.end_time;
+        const l = leadsOf(a.reminders);
+        if (l) { t.leads = l; delete t.remind; }
+        t.upd = Date.now();
+        return t;
+      });
+      return `Activité modifiée : ${t.title}, le ${dayName(t.date)} ${t.date}${t.time ? ` à ${t.time}` : ""}.` + (t.leads ? ` Rappels : ${t.leads.map(leadTxt).join(", ")}.` : "");
     }
     case "taches": {
       const { data } = await readData(user);
@@ -567,28 +625,51 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
       });
       return `Poids noté : ${kg} kg le ${day}.`;
     }
-    case "listes_partagees": {
-      const lists = await myLists(user);
-      if (!lists.length) return "Aucune liste partagée. On en crée une dans Sid'note : Organisation → Listes.";
-      const { data: items } = await db.from("shared_items").select("list_id, text, done").in("list_id", lists.map((l) => l.id)).order("created_at");
-      return lists.map((l) => {
-        const it = (items || []).filter((i) => i.list_id === l.id);
-        return `## ${l.name} (id ${l.id})\n` + (it.map((i) => `- [${i.done ? "x" : " "}] ${i.text}`).join("\n") || "(vide)");
-      }).join("\n\n");
+    case "muscu_programme": {
+      const { data } = await readData(user);
+      const m = MU(data), p = m.plan && !m.plan.deleted && Array.isArray(m.plan.days) ? m.plan : null, del = data.del || {};
+      const G: Data = { muscle: "prendre du muscle", force: "gagner en force", gras: "perdre du gras", forme: "être en forme" }, LV: Data = { deb: "débutant", inter: "intermédiaire", conf: "confirmé" };
+      const AV: Data = { shoulder: "épaules", back: "bas du dos", knee: "genoux" }, EQ: Data = { gym: "salle de sport", db: "haltères à la maison", bw: "poids du corps" };
+      let out = "";
+      if (!p) out = "Pas encore de programme. La personne peut en créer un dans Sid'note (Santé → Musculation → Créer mon programme), ou tu peux en composer un avec enregistrer_programme (demande d'abord niveau, objectif, jours par semaine, durée, matériel, douleurs).\n";
+      else {
+        const pr = p.profile || {};
+        out += `Profil : ${LV[pr.level] || pr.level || "?"}, objectif ${G[pr.goal] || pr.goal || "?"}, ${pr.days || p.days.length} séances/semaine de ${pr.dur || "?"} min, ${EQ[pr.equip] || pr.equip || "?"}${(pr.avoid || []).length ? `, à ménager : ${pr.avoid.map((x: string) => AV[x] || x).join(", ")}` : ""}${(pr.prio || []).length ? `, priorités : ${pr.prio.join(", ")}` : ""}.\n`;
+        out += `Programme${p.src === "ia" ? " (ajusté par une IA)" : ""} :\n` + p.days.map((d: Data) => `## ${d.name}\n` + d.ex.map((e: Data) => `- ${e.name} : ${e.sets} × ${e.reps}, repos ${e.rest} s${e.rir ? `, RIR ${e.rir}` : ""}${e.note ? ` (${e.note})` : ""}`).join("\n")).join("\n") + "\n";
+      }
+      const logs = m.log.filter((l: Data) => l && !del[l.id]).sort((x: Data, y: Data) => String(y.date || "").localeCompare(String(x.date || ""))).slice(0, 10);
+      out += logs.length ? "Dernières séances :\n" + logs.map((l: Data) => `- ${l.date} ${l.name || ""}${l.min ? ` (${l.min} min)` : ""} : ` + (l.ex || []).map((e: Data) => `${e.name} ${(e.sets || []).map((s: Data) => `${s.reps || "?"}${s.kg ? `×${s.kg}kg` : ""}`).join(", ")}`).join(" ; ")).join("\n") : "Aucune séance notée.";
+      return out;
     }
-    case "ajouter_a_une_liste": {
-      const lists = await myLists(user);
-      const k = String(a.list || "").trim();
-      const l = lists.find((x) => x.id === k) || (() => {
-        const m = lists.filter((x) => norm(x.name).includes(norm(k)));
-        if (m.length === 1) return m[0];
-        throw new Error(m.length ? `Plusieurs listes correspondent : ${m.map((x) => x.name).join(", ")}.` : `Aucune liste « ${k} ». Listes : ${lists.map((x) => x.name).join(", ") || "aucune"}.`);
-      })();
-      const items = (Array.isArray(a.items) ? a.items : [a.items]).map((s: unknown) => String(s || "").trim().slice(0, 200)).filter(Boolean);
-      if (!items.length) throw new Error("Rien à ajouter.");
-      const { error } = await db.from("shared_items").insert(items.map((text: string) => ({ list_id: l.id, text, by_name: nameOf })));
-      if (error) throw error;
-      return `Ajouté à « ${l.name} » : ${items.join(", ")}.`;
+    case "enregistrer_programme": {
+      const days = (Array.isArray(a.days) ? a.days : []).filter((d: Data) => d && Array.isArray(d.exercises) && d.exercises.length).slice(0, 7).map((d: Data, i: number) => ({
+        id: uid(), name: String(d.name || `Séance ${"ABCDEFG"[i]}`).slice(0, 80),
+        ex: d.exercises.slice(0, 12).filter((e: Data) => e && String(e.name || "").trim()).map((e: Data) => ({
+          name: String(e.name).trim().slice(0, 80), pat: "", sets: Math.min(10, Math.max(1, r0(e.sets) || 3)), reps: String(e.reps || "8–12").slice(0, 12),
+          rest: Math.min(600, Math.max(15, r0(e.rest_s) || 90)), rir: String(e.rir || "").slice(0, 8), note: String(e.note || "").slice(0, 160) })),
+      }));
+      if (!days.length) throw new Error("Le programme est vide.");
+      await writeData(user, (d) => {
+        const m = MU(d), old = m.plan && !m.plan.deleted ? m.plan.profile || {} : {};
+        const profile = { ...old, days: days.length };
+        if (["muscle", "force", "gras", "forme"].includes(a.goal)) profile.goal = a.goal;
+        m.plan = { id: uid(), profile, days, at: new Date().toISOString(), upd: Date.now(), src: "ia" };
+        m.upd = Date.now();
+      });
+      return `Programme enregistré dans Sid'note (Santé → Musculation) : ${days.map((d: Data) => d.name).join(", ")}.`;
+    }
+    case "noter_seance": {
+      const ex = (Array.isArray(a.exercises) ? a.exercises : []).filter((e: Data) => e && String(e.name || "").trim()).slice(0, 20).map((e: Data) => ({
+        name: String(e.name).trim().slice(0, 80), sets: (Array.isArray(e.sets) ? e.sets : []).slice(0, 12).map((s: Data) => ({ kg: s && s.kg ? String(r1n(s.kg)) : "", reps: s && s.reps ? String(r0(s.reps)) : "" })) }));
+      if (!ex.length) throw new Error("Il faut au moins un exercice.");
+      const date = isDate(a.date) ? a.date : today();
+      await writeData(user, (d) => {
+        const m = MU(d), p = m.plan && !m.plan.deleted && Array.isArray(m.plan.days) ? m.plan : null;
+        const day = p && p.days.find((x: Data) => norm(x.name) === norm(a.name));
+        m.log.push({ id: uid(), date, day: day ? day.id : "", name: String(a.name || "Séance").slice(0, 80), min: r0(a.minutes) || undefined, ex, upd: Date.now() });
+        m.upd = Date.now();
+      });
+      return `Séance notée le ${date} : ${ex.map((e: Data) => e.name).join(", ")}.`;
     }
   }
   throw new Error("Outil inconnu : " + name);
@@ -616,8 +697,8 @@ Deno.serve(async (req) => {
       return rpcOk(id, {
         protocolVersion: params?.protocolVersion || "2025-06-18",
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "sidnote", title: "Sid'note", version: "1.0.0" },
-        instructions: "Sid'note est l'application d'organisation de la personne (agenda, cours, tâches, notes, listes partagées, nutrition). Dates en AAAA-MM-JJ, heure de Bruxelles. Quand la personne dit ce qu'elle a mangé ou envoie la photo de son assiette, estime toi-même calories et macros puis note-le avec noter_repas (sans redemander, sauf doute sur la quantité). Pour un menu, lis d'abord nutrition_journee puis enregistre-le avec enregistrer_menu. Quand la personne parle d'une chose à faire un jour précis, ajoute la tâche avec sa date (ajouter_tache) : elle apparaîtra ce jour-là dans son agenda et passera au lendemain si elle n'est pas faite. Pour une note, propose un dossier (folder) si c'est utile. Les mots de passe, documents et notes secrètes sont chiffrés et jamais accessibles.",
+        serverInfo: { name: "sidnote", title: "Sid'note", version: "1.1.0" },
+        instructions: "Sid'note est l'application d'organisation de la personne (agenda, cours, tâches, notes, nutrition, musculation). Dates en AAAA-MM-JJ, heure de Bruxelles. Quand la personne demande un rappel pour une activité (ex. 1 h avant), passe-le dans reminders (en minutes) avec ajouter_activite ou modifier_activite : c'est une notification sur son téléphone. Quand la personne dit ce qu'elle a mangé ou envoie la photo de son assiette, estime toi-même calories et macros puis note-le avec noter_repas (sans redemander, sauf doute sur la quantité). Pour un menu, lis d'abord nutrition_journee puis enregistre-le avec enregistrer_menu. Quand la personne parle d'une chose à faire un jour précis, ajoute la tâche avec sa date (ajouter_tache) : elle apparaîtra ce jour-là dans son agenda et passera au lendemain si elle n'est pas faite. Pour une note, propose un dossier (folder) si c'est utile. Pour la musculation, lis muscu_programme avant d'ajuster, puis enregistre avec enregistrer_programme ; une séance racontée se note avec noter_seance. Les mots de passe, documents et notes secrètes sont chiffrés et jamais accessibles.",
       });
     case "ping":
       return rpcOk(id, {});

@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 40.**
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 41.**
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -21,7 +21,7 @@ site/                 ← exactement ce qui est mis en ligne sur Netlify
   sw.js               ← service worker (réseau d'abord ; cache pdf.js à part)
   _headers            ← en-têtes de sécurité Netlify (CSP…) ; tests/serve.js les applique aussi en local
   manifest.webmanifest, icônes
-supabase/functions/   ← fonctions Edge (Deno) : horaire (relais iCal), nutrition (v39 : mémoire des aliments seulement), rappels (notifications), delete-account (v35, suppression du compte), mcp (v38, connecteur Claude)
+supabase/functions/   ← fonctions Edge (Deno) : horaire (relais iCal), nutrition (v39 : mémoire des aliments seulement), rappels (notifications), delete-account (v35, suppression du compte), mcp (v38, connecteur Claude ; v4 en v41)
 supabase/sql/         ← SQL : v37.sql (sauvegarde quotidienne, erreurs, listes partagées — à exécuter par Sid), documents.sql (déjà exécuté), nutrition.sql (v20, compteur d'appels Claude, exécuté), food_memory.sql (v21, mémoire des aliments), notifications.sql (v22, cron 5 min + anti-doublon)
 secrets/              ← clés VAPID, secret cron, version complète de rappels : NE JAMAIS publier ni committer
 tests/                ← serve.js (aperçu local + faux Supabase), smoke.js (test Playwright), mock-supabase.js, memory.test.js (mémoire des aliments, `node tests/memory.test.js`), rappels.test.js (calcul des rappels)
@@ -189,6 +189,15 @@ assets/               ← logo
   - Tout se referme (`closeAll`) au lancement (sections de Réglages fermées) et au retour après 10 min ailleurs (fenêtres, note ouverte, dossier, vue jour).
   - Tests : bloc v39 de `tests/smoke.js` (+ `/__mcpuse` dans le faux serveur) ; le test « sans accès » vérifie maintenant que Nutrition est ouverte.
 - v40 : l'assistant « Mon IA » pour Claude ouvre la fenêtre « Ajouter un connecteur personnalisé » déjà remplie (lien officiel `https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=…&connectorUrl=…`, `AIS.claude.add`, bouton `[data-aiadd]`) : il ne reste qu'à toucher « Ajouter », puis l'assistant passe tout seul au test. L'adresse reste visible dans « Voir mon adresse ». ChatGPT et Le Chat n'ont pas de lien pré-rempli connu : étapes + adresse copiée.
+- v41 (retours de Sid) :
+  - Listes et Focus retirés de l'app (`OFF_TABS=["lists","pomo"]`, Organisation = plan + todo ; le code reste mais n'est plus affiché). Le connecteur n'a plus les outils de listes.
+  - Coffre : par défaut, mots de passe / documents / notes secrètes restent ouverts jusqu'à la fermeture complète de l'app (`lockDelay()` = `Infinity` si `data.ui.lockDelay` absent ou -1 ; option « À la fermeture de l'app » dans `#lockSel`).
+  - Face ID : si la proposition est impossible, `bio diag: …` est envoyé une fois dans `client_errors` (pkc, plat, secure, standalone) pour comprendre pourquoi.
+  - Notes : dans un dossier, bouton retour `.nf-back` + fil d'Ariane, titre = nom du dossier, « + Sous-dossier ». Glisser-déposer (poignée `data-ngrip` / `data-fgrip`) d'une note ou d'un dossier sur un dossier ou sur le chemin (`#nfPath`, un `div role=navigation` : jamais `<nav>`, stylé comme la barre du bas). Barre façon Word : G I S visibles, le reste en menus (`RT_MENUS`, `rtMenu`, `#rtPop`) : style, surligneur (`mark[data-hl]`), couleur (`span[data-tc]`), listes, insérer, édition.
+  - Musculation : programme sur mesure (`#coachBox`, fiche `#coachSheet`, `coachBuild` : niveau, objectif, jours, durée, matériel, zones à ménager → schéma voisin `FALL`, priorités ; base `EXDB`). `data.muscu.plan` (le plus récent gagne, supprimé = `{deleted,upd}`) et `data.muscu.log` (union). Mode séance `#woSheet` (charges conseillées `coachHint` = double progression, repos automatique, « Changer » d'exercice). « Ajuster avec mon IA ».
+  - Dossier Santé : les demandes Nutrition / Graphiques / Musculation peuvent s'ouvrir dans un projet de l'IA (`data.prefs.aiProj`, étape `proj` de l'assistant, instructions `AI_PROJ`) ; le message est copié, à coller dans une discussion du projet (aucune IA ne permet d'ouvrir un projet avec un message pré-rempli).
+  - Connecteur `mcp` v4 : `ajouter_activite` accepte `reminders` (minutes → `t.leads`, la veille ajoutée), nouvel outil `modifier_activite` ; musculation : `muscu_programme`, `enregistrer_programme` (`src:"ia"`), `noter_seance`. (Le rappel « 1 h avant » demandé à Claude ne pouvait pas être posé avant la v4.)
+  - ChatGPT : pas de lien pré-rempli ; « juste accepter » demanderait une app publiée dans l'annuaire OpenAI (et Claude) avec connexion OAuth. Les autorisations d'outils ne peuvent pas être pré-acceptées : l'utilisateur choisit « Toujours autoriser » une fois.
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

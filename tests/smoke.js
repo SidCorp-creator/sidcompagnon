@@ -413,7 +413,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(!(await pg.isVisible("#onb")))err("présentation absente");
     else{const b1=pg.locator('#onbGroups [data-onball="orga"]');if(!(await b1.count()))err("pas de « Tout décocher » dans la présentation");
       else{await pg.evaluate(()=>onbGoTo(1));await pg.waitForTimeout(1500);await shot(pg,"v36-presentation-tout");await b1.click();
-        const off=await pg.evaluate(()=>["plan","todo","pomo"].every(k=>!onbSel[k]));if(!off)err("« Tout décocher » ne décoche pas tout");
+        const off=await pg.evaluate(()=>["plan","todo"].every(k=>!onbSel[k]));if(!off)err("« Tout décocher » ne décoche pas tout");
         if((await b1.textContent()).trim()!=="Tout cocher")err("le bouton ne devient pas « Tout cocher »");await b1.click()}
       await pg.evaluate(()=>onbGoTo(onbSlides().length-1));await pg.waitForTimeout(700);
       if(await pg.locator("#onbPal [data-opal]").count()!==5)err("couleurs absentes de la diapositive Thème");
@@ -442,25 +442,8 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
       if(await pg.isVisible("#onb"))await pg.click("#onbSkip");await pg.waitForTimeout(300);return {ctx,pg}};
     const A=await mk("Sid","sid37@test.be"),B=await mk("Léa","lea37@test.be");
     if(await A.pg.isVisible("#notifAsk"))err("notifications encore proposées dès l'ouverture");
-    // A crée « Courses » et ajoute du pain
-    await A.pg.evaluate(()=>show("lists"));await A.pg.waitForTimeout(400);
-    if(await A.pg.locator('#vhead [data-go="lists"]').count()!==1)err("« Listes » absent de l'espace Organisation");
-    await A.pg.click("[data-slnew]");await A.pg.fill("#slNewIn","Courses");await A.pg.press("#slNewIn","Enter");await A.pg.waitForTimeout(800);
-    await A.pg.fill("#slIn","Pain");await A.pg.press("#slIn","Enter");await A.pg.waitForTimeout(600);
-    await A.pg.fill("#slIn","Lait");await A.pg.press("#slIn","Enter");await A.pg.waitForTimeout(600);await shot(A.pg,"v37-liste-partagee");
-    const code=(await A.pg.textContent(".sl-code")).trim();if(!/^[A-Z0-9]{6}$/.test(code))err("pas de code d'invitation : "+code);
-    // B rejoint par le lien d'invitation, voit et coche
-    await B.pg.goto(U+"#rejoindre="+code);await B.pg.waitForTimeout(1800);
-    if(!(await B.pg.evaluate(()=>data.ui.view==="lists"&&!!slOpen)))err("le lien d'invitation n'ouvre pas la liste");
-    const bi=await B.pg.$$eval("#slBody .sl-it .ttl",x=>x.map(e=>e.textContent).join(","));if(bi!=="Pain,Lait")err("Léa ne voit pas les éléments : "+bi);
-        await B.pg.click("#slBody .sl-it [data-sltg]");await B.pg.waitForTimeout(600);await shot(B.pg,"v37-liste-coche");
-    await A.pg.evaluate(()=>slLoad());await A.pg.waitForTimeout(600);
-    const ad=await A.pg.$$eval("#slBody .sl-it.done .ttl",x=>x.map(e=>e.textContent).join(","));if(ad!=="Pain")err("Sid ne voit pas ce que Léa a coché : "+ad);
-    if(!(await A.pg.textContent(".sl-share")).includes("Léa"))err("Léa n'apparaît pas parmi les membres");
-    await A.pg.click("[data-slclear]");await A.pg.waitForTimeout(500);
-    if(await A.pg.locator("#slBody .sl-it").count()!==1)err("« Retirer les cochés » ne retire rien");
-    await B.pg.click("[data-slleave]");await B.pg.click("[data-slleave]");await B.pg.waitForTimeout(600);
-    if(await B.pg.evaluate(()=>slLists.length)!==0)err("Léa ne peut pas quitter la liste");
+    // v41 : Listes et Focus retirés de l'app
+    if(await A.pg.evaluate(()=>visibleTabs().some(k=>k==="lists"||k==="pomo")))err("Listes ou Focus encore visibles");
     // ajout rapide en langage courant
     const P=A.pg;await P.evaluate(()=>show("plan"));await P.click("#taskAdd");await P.waitForTimeout(200);
     await P.fill("#fTitle","Dentiste jeudi 14h");await P.waitForTimeout(150);
@@ -565,12 +548,16 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await shot(pg,"v39-notes-dossier");
     await pg.click("#noteNew");await pg.fill("#noteTitle","Séminaire");await pg.click("#noteBody");await pg.keyboard.type("Point important");
     await pg.keyboard.down("Shift");for(let i=0;i<9;i++)await pg.keyboard.press("ArrowLeft");await pg.keyboard.up("Shift");
-    await pg.click('#rtBar [data-rt="bold"]');await pg.keyboard.press("End");await pg.keyboard.press("Enter");await pg.click('#rtBar [data-rt="chk"]');await pg.keyboard.type("Relire le cours");
+    await pg.click('#rtBar [data-rt="bold"]');await pg.keyboard.press("End");await pg.keyboard.press("Enter");await pg.click('#rtBar [data-rtm="ul"]');await pg.click('#rtPop [data-rtc="chk"]');await pg.keyboard.type("Relire le cours");
+    // v41 : surligneur depuis le menu (couleur gardée au nettoyage)
+    await pg.keyboard.down("Shift");for(let i=0;i<7;i++)await pg.keyboard.press("ArrowLeft");await pg.keyboard.up("Shift");
+    await pg.click('#rtBar [data-rtm="hl"]');await shot(pg,"v41-menu-surligneur");await pg.click('#rtPop [data-rtc="hl:g"]');
     await pg.waitForTimeout(900);await shot(pg,"v39-note-word");
     const nv=await pg.evaluate(()=>{const n=data.notes.find(x=>x.title==="Séminaire");return n&&{f:nfOf(n.folder)&&nfOf(n.folder).name,html:n.html||"",body:n.body}});
     if(!nv||nv.f!=="Cours")err("note pas rangée dans le dossier ouvert : "+JSON.stringify(nv));
     if(!nv||!/<b>|<strong>/.test(nv.html))err("gras pas enregistré : "+(nv&&nv.html));
     if(!nv||!/ul class="chk"/.test(nv.html))err("case à cocher pas enregistrée : "+(nv&&nv.html));
+    if(!nv||!/<mark data-hl="g">/.test(nv.html))err("surligneur vert pas enregistré : "+(nv&&nv.html));
     await pg.evaluate(async()=>{data.notes.find(x=>x.title==="Séminaire").html+='<img src=x onerror="window.pwned=1"><script>window.pwned=1</script>';renderNotes();await closeNote();openNote(data.notes.find(x=>x.title==="Séminaire").id)});
     await pg.waitForTimeout(300);if(await pg.evaluate(()=>!!window.pwned||!!document.querySelector("#noteBody img,#noteBody script")))err("contenu dangereux pas nettoyé");
     await pg.click("#noteBack");await pg.waitForTimeout(300);
@@ -599,6 +586,43 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(!(await pg.isVisible("#nuAiCard")))err("carte IA absente de Nutrition");
     // notifications : la veille toujours active
     await pg.evaluate(()=>{data.prefs.notif={leads:[10]};save()});if(!(await pg.evaluate(()=>notifLeads().includes(1440))))err("la veille n'est pas toujours active");
+    await ctx.close()}
+  // --- v41 : programme de musculation sur mesure, glisser notes et dossiers, coffre ouvert jusqu'à la fermeture
+  {const err=m=>errs.push("v41 : "+m);
+    const ctx=await b.newContext({...devices["iPhone 13"]}),pg=await ctx.newPage();pg.on("pageerror",e=>err(e.message+" @ "+String(e.stack).split("\n").slice(1,3).join(" | ")));
+    await pg.goto(U);await pg.waitForTimeout(400);
+    await pg.click("#mSignup");await pg.fill("#aName","Coach");await pg.fill("#aEmail","coach41@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    if(await pg.evaluate(()=>lockDelay()!==Infinity))err("le coffre se reverrouille par défaut");
+    // programme : débutant, 3 séances, haltères, genoux à ménager
+    await pg.evaluate(()=>show("muscu"));await pg.waitForTimeout(200);await shot(pg,"v41-muscu-vide");
+    await pg.click('#coachBox [data-coach="new"]');
+    for(const [k,v] of [["level","deb"],["goal","muscle"],["days","3"],["dur","60"],["equip","db"],["avoid","knee"]])await pg.click(`#coachForm [data-cf="${k}"] [data-v="${v}"]`);
+    await shot(pg,"v41-coach-questions");await pg.click('#coachForm [type="submit"]');await pg.waitForTimeout(300);
+    const pl=await pg.evaluate(()=>PL());
+    if(!pl||pl.days.length!==3)err("programme pas créé : "+JSON.stringify(pl&&pl.days.length));
+    else if(pl.days.some(d=>d.ex.some(e=>/barre|Presse|poulie|Leg /i.test(e.name))))err("exercice de salle avec des haltères seulement");
+    else if(pl.days.some(d=>d.ex.some(e=>/Squat goblet|Fentes|Leg extension/.test(e.name))))err("genoux pas ménagés");
+    await shot(pg,"v41-coach-programme");
+    // séance : 2 séries faites, enregistrée, puis la charge monte
+    await pg.click('#coachBox [data-coach="start"]');await pg.waitForTimeout(300);await shot(pg,"v41-seance");
+    const nm=await pg.evaluate(()=>wo.ex[0].name),top=await pg.evaluate(()=>String(wo.ex[0].reps).split(/[–-]/).pop());
+    await pg.evaluate(t=>{wo.ex[0].sets.forEach(s=>{s.kg="20";s.reps=t;s.done=true});woRender()},top);
+    await pg.click("#woDone");await pg.waitForTimeout(300);
+    const lg=await pg.evaluate(()=>ML().length);if(lg!==1)err("séance pas enregistrée");
+    const h=await pg.evaluate(n=>coachHint(PL().days[0].ex.find(e=>e.name===n)),nm);if(!(+h.kg>20))err("charge pas augmentée après tout réussi : "+JSON.stringify(h));
+    // notes : glisser une note puis un dossier dans un dossier
+    await pg.evaluate(()=>{data.noteFolders=[{id:"fA",name:"Master 2",parent:null},{id:"fB",name:"Cours",parent:null}];data.notes=[{id:"n1",title:"Finance",body:"x",createdAt:new Date().toISOString(),upd:Date.now()}];save();show("notes");noteDir=null;renderNotes()});
+    await pg.waitForTimeout(300);await shot(pg,"v41-notes-glisser");
+    const drag=async(src,dst)=>{const a=await pg.locator(src).boundingBox(),c=await pg.locator(dst).boundingBox();
+      await pg.mouse.move(a.x+a.width/2,a.y+a.height/2);await pg.mouse.down();await pg.mouse.move(c.x+c.width/2,c.y+c.height/2,{steps:8});await pg.mouse.up();await pg.waitForTimeout(250)};
+    await drag('[data-ngrip="n1"]','[data-nfopen="fB"]');
+    if(!(await pg.evaluate(()=>data.notes[0].folder==="fB")))err("note pas glissée dans le dossier");
+    await drag('[data-fgrip="fB"]','[data-nfopen="fA"]');
+    if(!(await pg.evaluate(()=>nfOf("fB").parent==="fA")))err("dossier pas glissé dans le dossier");
+    await pg.click('[data-nfopen="fA"]');await pg.waitForTimeout(200);await shot(pg,"v41-notes-sous-dossier");
+    if(!(await pg.isVisible(".nf-back")))err("pas de bouton retour dans un dossier");
+    await pg.click(".nf-back");await pg.waitForTimeout(200);if(await pg.evaluate(()=>noteDir!==null))err("le retour ne remonte pas");
     await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");

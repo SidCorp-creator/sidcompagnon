@@ -1239,3 +1239,61 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 .spin{width:18px;height:18px;border-radius:50%;border:2.5px solid var(--line);border-top-color:var(--gold);animation:spin .9s linear infinite;flex:none}
 @keyframes spin{to{transform:rotate(360deg)}}
 .ai-more{margin:0 0 10px;padding:0 4px}.ai-more summary{cursor:pointer;color:var(--muted);padding:6px 0}
+/* v41 : programme de musculation */
+.coach-card{display:flex;align-items:center;gap:12px;padding:14px 16px;margin:14px 0 12px}
+.coach-card b{display:block}.coach-on{display:block}
+.coach-top{display:flex;align-items:flex-start;gap:8px}.coach-top b{font-size:17px;margin:2px 0}
+.coach-go{width:100%;margin:12px 0 4px}
+.coach-days{display:grid;gap:6px;margin-top:8px}
+.coach-day{border:1px solid var(--line);border-radius:12px;padding:0 12px}
+.coach-day summary{display:flex;align-items:center;gap:8px;padding:11px 0;cursor:pointer;list-style:none}
+.coach-day summary::-webkit-details-marker{display:none}
+.coach-ex{margin:0 0 8px;padding-left:20px;display:grid;gap:4px}.coach-ex li span.grow{display:block}
+.coach-day .mini{margin:0 0 12px}
+.ms-free-h{margin-top:18px}
+.coach-form{display:grid;gap:16px}.cf-q{display:grid;gap:8px}
+.cf-seg button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 6px;line-height:1.2}
+.cf-seg small{font-size:11px;color:var(--muted);font-weight:400}
+.wo-sheet{max-height:calc(var(--vvh,100vh) - 24px)}
+.wo-ex{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;display:grid;gap:6px}
+.wo-h{display:flex;align-items:center;gap:8px}.wo-h .num{width:24px;height:24px;border-radius:50%;background:var(--field);display:grid;place-items:center;font-size:13px;font-weight:700;flex:none}
+.wo-hint{color:var(--gold)}
+.wo-set{display:grid;grid-template-columns:64px minmax(0,1fr) minmax(0,1fr) 40px;gap:6px;align-items:center}
+.wo-set.done .lbl{color:var(--gold);font-weight:700}
+.wo-rest{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;margin:0 0 10px;border-radius:12px;background:var(--gold);color:var(--bg);font-weight:700;font-size:17px}
+.wo-rest .mini{background:color-mix(in srgb,var(--bg) 20%,transparent);color:inherit}
+
+/* v41 : dossiers de notes plus clairs + glisser-déposer */
+.nf-path{display:block;margin:0 0 12px}
+.nf-back{display:inline-flex;align-items:center;font-size:17px;font-weight:600;padding:6px 10px 6px 2px;border-radius:10px}
+.nf-crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:13px;color:var(--muted);margin-top:4px}
+.note-row{display:flex;align-items:stretch;border-bottom:1px solid var(--line)}.note-row:last-child{border-bottom:0}
+.note-row .note{flex:1;min-width:0;border-bottom:0}
+.ngrip{display:flex;align-items:center;padding:0 2px 0 10px;color:var(--muted);cursor:grab;touch-action:none;flex:none;opacity:.7}
+.nf-row .ngrip{padding-left:10px}.nf-row .nf-open{padding-left:6px}
+.dragging{opacity:.4}
+.drop{background:color-mix(in srgb,var(--gold) 18%,transparent)!important;outline:2px solid var(--gold);outline-offset:-2px;border-radius:12px}
+
+/* v41 : barre façon Word */
+.rt-bar{align-items:center;gap:2px;flex-wrap:wrap}
+.rt-bar button{display:inline-flex;align-items:center;gap:3px;min-width:34px;justify-content:center}
+.rt-bar b,.rt-bar i,.rt-bar u{font-size:17px}.rt-aa{font-size:15px;font-weight:600}
+.rt-ch{opacity:.6}.rt-sep{width:1px;height:22px;background:var(--line);margin:0 4px}
+.rt-hlbar{stroke:#e8c547}.rt-tcbar{stroke:#d64545}
+.rt-pop{position:fixed;z-index:35;min-width:190px;padding:6px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.22);display:grid}
+.rt-pop button{display:flex;align-items:center;gap:10px;padding:11px 12px;border:0;border-radius:10px;background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer;touch-action:manipulation}
+.rt-pop button:hover{background:var(--field)}
+.rt-sw{width:16px;height:16px;border-radius:5px;border:1px solid var(--line);display:inline-block;background:transparent}
+[data-sw="hl:y"] .rt-sw,.note-rt mark[data-hl="y"],.note-rt mark:not([data-hl]){background:#fde68a}
+[data-sw="hl:g"] .rt-sw,.note-rt mark[data-hl="g"]{background:#bbf7d0}
+[data-sw="hl:b"] .rt-sw,.note-rt mark[data-hl="b"]{background:#bfdbfe}
+[data-sw="hl:p"] .rt-sw,.note-rt mark[data-hl="p"]{background:#fbcfe8}
+.note-rt mark{color:#111}
+[data-sw="tc:r"] .rt-sw,.note-rt span[data-tc="r"]{color:#dc2626;background-color:transparent}[data-sw="tc:r"] .rt-sw{background:#dc2626}
+[data-sw="tc:o"] .rt-sw{background:#ea580c}.note-rt span[data-tc="o"]{color:#ea580c}
+[data-sw="tc:g"] .rt-sw{background:#16a34a}.note-rt span[data-tc="g"]{color:#16a34a}
+[data-sw="tc:b"] .rt-sw{background:#2563eb}.note-rt span[data-tc="b"]{color:#2563eb}
+[data-sw="tc:v"] .rt-sw{background:#7c3aed}.note-rt span[data-tc="v"]{color:#7c3aed}
+[data-sw="tc:none"] .rt-sw{background:var(--ink)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .note-rt span[data-tc="r"]{color:#f87171}:root:not([data-theme="light"]) .note-rt span[data-tc="b"]{color:#60a5fa}:root:not([data-theme="light"]) .note-rt span[data-tc="v"]{color:#a78bfa}}
+:root[data-theme="dark"] .note-rt span[data-tc="r"]{color:#f87171}:root[data-theme="dark"] .note-rt span[data-tc="b"]{color:#60a5fa}:root[data-theme="dark"] .note-rt span[data-tc="v"]{color:#a78bfa}

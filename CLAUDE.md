@@ -175,6 +175,7 @@ assets/               ← logo
   - Réglages > « Claude (assistant) » (`#mcpSec`) : créer / retirer ses adresses du connecteur (`mcp_tokens`, empreinte SHA-256 calculée dans le navigateur, clé montrée une seule fois).
   - Une note ouverte prend toute la page (`body.note-full`, `#noteEdit` en `position:fixed`, z-index 15 : sous les fenêtres et le toast).
   - Connecteur `mcp` v2 : l'agenda lit aussi le calendrier relié (`data.prefs.ical`, repli sur `data.icalSoon`) et donne le jour de la semaine.
+  - Mise en ligne le 21 oct. 2026 par Claude : d'abord sur `sidnote-test` (protégé par la connexion Netlify de Sid), fichiers vérifiés avec le vrai Supabase (FR/EN/NL), puis sur `sidnote` ; site vérifié en ligne (version 38, CSP).
   - Tests : le lecteur Spotify est remplacé par une page vide (sa vraie page a ses propres erreurs depuis que le réseau est ouvert).
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 

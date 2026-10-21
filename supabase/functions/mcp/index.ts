@@ -1,7 +1,7 @@
-// Sid'note v38 : fonction "mcp" : connecteur Sid'note pour Claude (protocole MCP, transport « Streamable HTTP », réponses JSON).
-// Adresse : https://<projet>.supabase.co/functions/v1/mcp/<clé>  — la clé est personnelle (créée dans Réglages > Claude),
+// Sid'note v38-v39 : fonction "mcp" : connecteur Sid'note pour l'IA de chacun (Claude, ChatGPT, Le Chat…) (protocole MCP, transport « Streamable HTTP », réponses JSON).
+// Adresse : https://<projet>.supabase.co/functions/v1/mcp/<clé>  — la clé est personnelle (créée dans Réglages > Mon IA),
 // seule son empreinte SHA-256 est gardée (table mcp_tokens, supabase/sql/mcp.sql). Verify JWT : OFF.
-// Accès : agenda, tâches, notes (pas les notes secrètes), listes partagées. Jamais les coffres (mots de passe, documents).
+// Accès : agenda, tâches, notes (pas les notes secrètes), listes partagées, nutrition (v39 : c'est l'IA de la personne qui calcule). Jamais les coffres (mots de passe, documents).
 // Écriture « à condition » sur user_data (comme push() dans l'app) : si l'app a écrit entre-temps, on relit et on recommence.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -19,7 +19,7 @@ const rpcOk = (id: unknown, result: unknown) => json({ jsonrpc: "2.0", id, resul
 const rpcErr = (id: unknown, code: number, message: string) => json({ jsonrpc: "2.0", id, error: { code, message } });
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-const norm = (s: unknown) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+const norm = (s: unknown) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 // date du jour à Bruxelles (YYYY-MM-DD)
 const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Brussels" }).format(new Date());
 const addDays = (d: string, n: number) => {
@@ -111,6 +111,89 @@ async function icalEvents(d: Data, from: string, to: string): Promise<Data[] | n
 const DAYS = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
 const dayName = (d: string) => DAYS[new Date(d + "T12:00:00Z").getUTCDay()];
 
+// ---------- nutrition (mêmes formats que l'app : data.nutri.log, menu, weights) ----------
+// v39 : ce que les IA notent nourrit la mémoire commune des aliments (pour 100 g, comme avant avec Claude) : la première réponse fait référence
+const foldS = (s: string) => String(s || "").replace(/œ/gi, "oe").replace(/æ/gi, "ae").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+const FSTOP = new Set(["de", "du", "des", "d", "la", "le", "les", "l", "un", "une", "au", "aux", "of", "the", "a", "an", "some"]);
+const foodKey = (s: string) => foldS(s).replace(/[^a-z0-9]+/g, " ").trim().split(" ").filter((w) => w && !FSTOP.has(w)).map((w) => (w.length > 3 && /[sx]$/.test(w) && !/ss$/.test(w) ? w.slice(0, -1) : w)).join(" ");
+async function learnFoods(items: Data[], lang: string) {
+  for (const it of items) {
+    const g = Number(it.grams), k = foodKey(it.name);
+    if (!(g > 0) || !k || !(Number(it.kcal) >= 0)) continue;
+    const per = (x: unknown) => Math.round((Number(x) || 0) * 1000 / g) / 10;
+    const key = `${lang}:${k}`;
+    const { data: old } = await db.from("foods").select("key").eq("key", key).maybeSingle();
+    if (!old) await db.from("foods").insert({ key, name: String(it.name).slice(0, 80), emoji: String(it.emoji || "").slice(0, 8), kcal100: per(it.kcal), p100: per(it.protein_g), c100: per(it.carbs_g), f100: per(it.fat_g), unit_g: null, unit_label: null });
+  }
+}
+const r0 = (x: unknown) => Math.round(Number(x) || 0);
+const r1n = (x: unknown) => Math.round((Number(x) || 0) * 10) / 10;
+const NU = (d: Data) => { const n = d.nutri || (d.nutri = {}); for (const k of ["log", "weights", "weeks"]) if (!Array.isArray(n[k])) n[k] = []; return n; };
+const nowBxl = () => { const p = Object.fromEntries(BXL.formatToParts(new Date()).map((x) => [x.type, x.value])); return `${p.hour}:${p.minute}`; };
+// instant ISO d'une heure de Bruxelles (l'app range « at » en ISO)
+function atIso(date: string, time: string) {
+  const [h, m] = time.split(":").map(Number), guess = new Date(Date.UTC(+date.slice(0, 4), +date.slice(5, 7) - 1, +date.slice(8, 10), h, m));
+  const p = Object.fromEntries(BXL.formatToParts(guess).map((x) => [x.type, x.value]));
+  const off = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute) - guess.getTime();
+  return new Date(guess.getTime() - off).toISOString();
+}
+const dayTot = (log: Data[]) => log.reduce((a, x) => ({ kcal: a.kcal + (+x.kcal || 0), p: a.p + (+x.p || 0), c: a.c + (+x.c || 0), f: a.f + (+x.f || 0) }), { kcal: 0, p: 0, c: 0, f: 0 });
+const fmtTot = (t: Data) => `${r0(t.kcal)} kcal · P ${r0(t.p)} g · G ${r0(t.c)} g · L ${r0(t.f)} g`;
+function nutriDay(d: Data, day: string) {
+  const n = NU(d), del = d.del || {}, pl = n.plan || {};
+  const log = n.log.filter((x: Data) => x && x.day === day && !del[x.id]).sort((a: Data, b: Data) => String(a.at || "").localeCompare(String(b.at || "")));
+  const t = dayTot(log), groups = new Map<string, Data[]>();
+  for (const x of log) { const g = x.grp || x.id; groups.set(g, [...(groups.get(g) || []), x]); }
+  let out = `Journée du ${dayName(day)} ${day}.\n`;
+  out += pl.kcal ? `Objectif : ${fmtTot({ kcal: pl.kcal, p: pl.p, c: pl.c, f: pl.f })}.\n` : "Pas encore d'objectif : la personne peut le calculer dans Sid'note (Santé → Nutrition → profil).\n";
+  if (n.profile && n.profile.goal) out += `Profil : ${n.profile.sex === "h" ? "homme" : "femme"}, ${n.profile.age} ans, ${n.profile.height} cm, ${n.profile.weight} kg, objectif ${({ gain: "prendre du poids", lose: "perdre du poids", maintain: "garder son poids" } as Data)[n.profile.goal] || n.profile.goal}${n.profile.notes ? `, notes : ${n.profile.notes}` : ""}.\n`;
+  out += groups.size ? "Repas notés :\n" + [...groups.values()].map((g) => {
+    const tt = dayTot(g), h = g[0].at ? new Intl.DateTimeFormat("fr-BE", { timeZone: "Europe/Brussels", hour: "2-digit", minute: "2-digit" }).format(new Date(g[0].at)) : "";
+    return `- ${h} ${g[0].gem || g[0].em || ""} ${g[0].gname || g[0].name} (${fmtTot(tt)}) : ${g.map((x) => `${x.name}${x.qty ? ` ${x.qty}` : ""}`).join(", ")} (id ${g[0].grp || g[0].id})`;
+  }).join("\n") : "Aucun repas noté.";
+  out += `\nTotal : ${fmtTot(t)}.`;
+  if (pl.kcal) out += `\nReste : ${fmtTot({ kcal: pl.kcal - t.kcal, p: (pl.p || 0) - t.p, c: (pl.c || 0) - t.c, f: (pl.f || 0) - t.f })}.`;
+  return out;
+}
+
+// v39 : dossiers de notes (data.noteFolders = [{id, name, parent}]) et petit texte mis en forme (n.html, mêmes balises que l'éditeur de l'app)
+const escH = (x: string) => x.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+function mdToHtml(md: string) {
+  const out: string[] = []; let list = "";
+  const close = () => { if (list) { out.push(list === "chk" ? "</ul>" : `</${list}>`); list = ""; } };
+  const inl = (x: string) => escH(x).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+  for (const raw of md.split("\n")) {
+    const l = raw.trimEnd();
+    let m;
+    if ((m = l.match(/^\s*\[( |x)\]\s+(.*)$/i))) { if (list !== "chk") { close(); out.push('<ul class="chk">'); list = "chk"; } out.push(`<li data-c="${m[1].trim() ? 1 : 0}">${inl(m[2])}</li>`); continue; }
+    if ((m = l.match(/^\s*[-*•]\s+(.*)$/))) { if (list !== "ul") { close(); out.push("<ul>"); list = "ul"; } out.push(`<li>${inl(m[1])}</li>`); continue; }
+    if ((m = l.match(/^\s*\d+[.)]\s+(.*)$/))) { if (list !== "ol") { close(); out.push("<ol>"); list = "ol"; } out.push(`<li>${inl(m[1])}</li>`); continue; }
+    close();
+    if ((m = l.match(/^(#{1,3})\s+(.*)$/))) { out.push(m[1].length === 1 ? `<h2>${inl(m[2])}</h2>` : `<h3>${inl(m[2])}</h3>`); continue; }
+    out.push(l ? `<div>${inl(l)}</div>` : "<div><br></div>");
+  }
+  close();
+  return out.join("");
+}
+function folderPath(d: Data, path: unknown): string | null {
+  const parts = String(path || "").split("/").map((x) => x.trim().slice(0, 60)).filter(Boolean).slice(0, 6);
+  if (!parts.length) return null;
+  d.noteFolders = Array.isArray(d.noteFolders) ? d.noteFolders : [];
+  let parent: string | null = null;
+  for (const name of parts) {
+    let f = d.noteFolders.find((x: Data) => x && (x.parent || null) === parent && norm(x.name) === norm(name));
+    if (!f) { f = { id: uid(), name, parent, createdAt: new Date().toISOString() }; d.noteFolders.push(f); }
+    parent = f.id;
+  }
+  return parent;
+}
+function folderName(d: Data, id: string) {
+  const fs = Array.isArray(d.noteFolders) ? d.noteFolders : [], p: string[] = [];
+  let f = fs.find((x: Data) => x && x.id === id), g = 0;
+  while (f && g++ < 20) { p.unshift(f.name); const par = f.parent; f = fs.find((x: Data) => x && x.id === par); }
+  return p.join("/");
+}
+
 const typeName = (d: Data, n: unknown) => {
   const v = String(n || "").trim().replace(/\s+/g, " ");
   if (!v) return "";
@@ -123,6 +206,9 @@ const typeName = (d: Data, n: unknown) => {
   d.types.push(nt);
   return nt.name;
 };
+// v39 : tâches planifiées (todo.day) ; pas faite à temps → affichée le jour suivant (comme dans l'app : tDay)
+const tDay = (t: Data) => !t.day ? null : t.done ? t.day : t.day < today() ? today() : t.day;
+const tWhen = (t: Data) => { if (!t.day || t.done) return ""; const d = tDay(t); return t.day < today() ? ` (reportée depuis le ${t.day})` : d === today() ? " (aujourd'hui)" : ` (prévue ${dayName(d!)} ${d})`; };
 const catName = (d: Data, id: unknown) => (Array.isArray(d.todoCats) ? d.todoCats : []).find((c: Data) => c && c.id === id)?.name || "";
 const findOne = (arr: Data[], key: string, label: string) => {
   const k = String(key || "").trim();
@@ -165,8 +251,13 @@ const TOOLS = [
   },
   {
     name: "ajouter_tache",
-    description: "Ajoute une tâche à faire dans Sid'note, éventuellement dans une catégorie (créée si elle n'existe pas).",
-    inputSchema: { type: "object", required: ["title"], properties: { title: { type: "string" }, category: { type: "string", description: "Nom de la catégorie (facultatif)" } } },
+    description: "Ajoute une tâche à faire dans Sid'note, éventuellement pour un jour précis (elle apparaît alors dans l'agenda de ce jour et passe au lendemain si elle n'est pas faite) et dans une catégorie (créée si elle n'existe pas).",
+    inputSchema: { type: "object", required: ["title"], properties: { title: { type: "string" }, date: { type: "string", description: "Jour prévu AAAA-MM-JJ (facultatif)" }, category: { type: "string", description: "Nom de la catégorie (facultatif)" } } },
+  },
+  {
+    name: "planifier_tache",
+    description: "Prévoit une tâche existante pour un jour (AAAA-MM-JJ), ou retire sa date (date vide). Donne son id ou un morceau de son titre.",
+    inputSchema: { type: "object", required: ["task"], properties: { task: { type: "string" }, date: { type: "string" } } },
   },
   {
     name: "terminer_tache",
@@ -187,8 +278,8 @@ const TOOLS = [
   },
   {
     name: "ajouter_note",
-    description: "Crée une nouvelle note dans Sid'note.",
-    inputSchema: { type: "object", required: ["title", "body"], properties: { title: { type: "string" }, body: { type: "string" } } },
+    description: "Crée une nouvelle note dans Sid'note, éventuellement dans un dossier (chemin « Cours/Finance », créé s'il n'existe pas). Le texte peut contenir des lignes « # Titre », « - puce », « 1. étape » et « [ ] case », et du **gras**.",
+    inputSchema: { type: "object", required: ["title", "body"], properties: { title: { type: "string" }, body: { type: "string" }, folder: { type: "string", description: "Dossier, ex. Cours/Finance (facultatif)" } } },
   },
   {
     name: "listes_partagees",
@@ -200,6 +291,71 @@ const TOOLS = [
     name: "ajouter_a_une_liste",
     description: "Ajoute un ou plusieurs éléments à une liste partagée (nom de la liste ou son id).",
     inputSchema: { type: "object", required: ["list", "items"], properties: { list: { type: "string" }, items: { type: "array", items: { type: "string" } } } },
+  },
+  {
+    name: "nutrition_journee",
+    description: "Journée Nutrition d'un jour (par défaut aujourd'hui) : objectif du jour (calories, protéines, glucides, lipides), repas déjà notés, total et ce qu'il reste. À lire avant de proposer un repas ou un menu.",
+    inputSchema: { type: "object", properties: { date: { type: "string", description: "Date AAAA-MM-JJ (facultatif)" } } },
+    annotations: { readOnlyHint: true },
+  },
+  {
+    name: "noter_repas",
+    description: "Note dans Sid'note ce que la personne a mangé (texte, photo d'assiette…). C'est TOI qui estimes les quantités, les calories et les macros de chaque aliment (références USDA/CIQUAL), puis tu appelles cet outil. Un appel = un repas ou un plat.",
+    inputSchema: {
+      type: "object", required: ["meal_name", "items"],
+      properties: {
+        meal_name: { type: "string", description: "Nom court du plat ou du repas (ex. Pâtes bolognaise)" },
+        emoji: { type: "string", description: "Un emoji pour le plat" },
+        date: { type: "string", description: "AAAA-MM-JJ (par défaut aujourd'hui)" },
+        time: { type: "string", description: "HH:MM (par défaut maintenant)" },
+        items: {
+          type: "array",
+          items: {
+            type: "object", required: ["name", "kcal", "protein_g", "carbs_g", "fat_g"],
+            properties: { name: { type: "string" }, emoji: { type: "string" }, quantity: { type: "string", description: "ex. 150 g, 2 œufs" }, grams: { type: "number", description: "Poids estimé en grammes" }, kcal: { type: "number" }, protein_g: { type: "number" }, carbs_g: { type: "number" }, fat_g: { type: "number" } },
+          },
+        },
+      },
+    },
+  },
+  {
+    name: "retirer_repas",
+    description: "Retire un repas noté par erreur (nom du plat ou id, voir nutrition_journee), pour le jour donné.",
+    inputSchema: { type: "object", required: ["meal"], properties: { meal: { type: "string" }, date: { type: "string" } } },
+  },
+  {
+    name: "enregistrer_menu",
+    description: "Enregistre dans Sid'note un menu que TU as composé (journée ou un seul repas), visible dans l'onglet Nutrition. Respecte l'objectif lu avec nutrition_journee. Poids crus, en grammes.",
+    inputSchema: {
+      type: "object", required: ["meals"],
+      properties: {
+        tips: { type: "string" },
+        meals: {
+          type: "array",
+          items: {
+            type: "object", required: ["slot", "name", "items"],
+            properties: {
+              slot: { type: "string", enum: ["breakfast", "lunch", "snack", "dinner", "meal"], description: "meal = repas unique de la journée" },
+              name: { type: "string" }, emoji: { type: "string" },
+              steps: { type: "array", items: { type: "string" }, description: "Recette en étapes courtes (facultatif)" },
+              items: { type: "array", items: { type: "object", required: ["name", "grams", "kcal", "protein_g", "carbs_g", "fat_g"],
+                properties: { name: { type: "string" }, emoji: { type: "string" }, grams: { type: "number" }, kcal: { type: "number" }, protein_g: { type: "number" }, carbs_g: { type: "number" }, fat_g: { type: "number" } } } },
+            },
+          },
+        },
+      },
+    },
+  },
+  {
+    name: "nutrition_semaine",
+    description: "Les 7 derniers jours (ou depuis une date) : calories et macros par jour comparés à l'objectif, et le poids. Sert à faire un bilan.",
+    inputSchema: { type: "object", properties: { to: { type: "string", description: "Dernier jour AAAA-MM-JJ (par défaut aujourd'hui)" } } },
+    annotations: { readOnlyHint: true },
+  },
+  {
+    name: "noter_poids",
+    description: "Note le poids de la personne (kg) pour un jour (par défaut aujourd'hui). Il apparaît dans les graphiques.",
+    inputSchema: { type: "object", required: ["kg"], properties: { kg: { type: "number" }, date: { type: "string" } } },
   },
 ];
 
@@ -231,10 +387,13 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
         .concat(cal.filter((c: Data) => !c.canc))
         .sort((x: Data, y: Data) => (x.date + (x.time || "")).localeCompare(y.date + (y.time || "")));
       const head = `Aujourd'hui : ${dayName(today())} ${today()}.`;
-      if (!list.length) return `${head}\nAucune activité ni aucun cours entre le ${from} et le ${to}.${calNote}`;
+      const todos = (Array.isArray(data.todos) ? data.todos : []).filter((t: Data) => t && !del[t.id] && !t.paused && !t.done && t.day && tDay(t)! >= from && tDay(t)! <= to)
+        .map((t: Data) => `- ${dayName(tDay(t)!)} ${tDay(t)} · tâche : ${t.title}${t.day < today() ? " (reportée)" : ""} (id ${t.id})`);
+      const todoTxt = todos.length ? `\nTâches prévues :\n${todos.join("\n")}` : "";
+      if (!list.length) return `${head}\nAucune activité ni aucun cours entre le ${from} et le ${to}.${todoTxt}${calNote}`;
       return `${head}\n` + list.map((t: Data) =>
         `- ${dayName(t.date)} ${t.date}${t.end ? ` → ${t.end}` : ""}${t.time ? ` ${t.time}${t.timeEnd ? `–${t.timeEnd}` : ""}` : ""} · ${t.title}` +
-        (t.src === "ical" ? ` [cours, calendrier relié${t.loc ? `, ${t.loc}` : ""}]` : `${t.cat ? ` [${t.cat}]` : ""}${t.status && t.status !== "à faire" ? ` (${t.status})` : ""} (id ${t.id})`)).join("\n") + calNote;
+        (t.src === "ical" ? ` [cours, calendrier relié${t.loc ? `, ${t.loc}` : ""}]` : `${t.cat ? ` [${t.cat}]` : ""}${t.status && t.status !== "à faire" ? ` (${t.status})` : ""} (id ${t.id})`)).join("\n") + todoTxt + calNote;
     }
     case "ajouter_activite": {
       const title = String(a.title || "").trim();
@@ -257,7 +416,7 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
       let list = (Array.isArray(data.todos) ? data.todos : []).filter((t: Data) => t && !del[t.id]);
       if (a.category) list = list.filter((t: Data) => norm(catName(data, t.cat)) === norm(a.category));
       const open = list.filter((t: Data) => !t.done);
-      const fmt = (t: Data) => `- ${t.title}${t.cat ? ` [${catName(data, t.cat)}]` : ""}${t.paused ? " (en suspens)" : ""} (id ${t.id})`;
+      const fmt = (t: Data) => `- ${t.title}${t.cat ? ` [${catName(data, t.cat)}]` : ""}${tWhen(t)}${t.paused ? " (en suspens)" : ""} (id ${t.id})`;
       let out = open.length ? `À faire (${open.length}) :\n` + open.map(fmt).join("\n") : "Rien à faire pour l'instant.";
       if (a.include_done) {
         const done = list.filter((t: Data) => t.done).sort((x: Data, y: Data) => String(y.doneAt || "").localeCompare(String(x.doneAt || ""))).slice(0, 30);
@@ -271,6 +430,7 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
       const t: Data = await writeData(user, (d) => {
         d.todos = Array.isArray(d.todos) ? d.todos : [];
         const t: Data = { id: uid(), title, createdAt: new Date().toISOString(), done: false };
+        if (isDate(a.date)) t.day = a.date;
         const c = String(a.category || "").trim().replace(/\s+/g, " ");
         if (c) {
           d.todoCats = Array.isArray(d.todoCats) ? d.todoCats : [];
@@ -281,7 +441,17 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
         d.todos.push(t);
         return t;
       });
-      return `Tâche ajoutée : ${t.title} (id ${t.id}).`;
+      return `Tâche ajoutée : ${t.title}${t.day ? `, prévue le ${dayName(t.day)} ${t.day}` : ""} (id ${t.id}).`;
+    }
+    case "planifier_tache": {
+      const t: Data = await writeData(user, (d) => {
+        const del = d.del || {};
+        const t = findOne((Array.isArray(d.todos) ? d.todos : []).filter((x: Data) => x && !del[x.id] && !x.done), a.task, "la tâche");
+        if (isDate(a.date)) t.day = a.date; else delete t.day;
+        t.upd = Date.now();
+        return t;
+      });
+      return t.day ? `« ${t.title} » est prévue le ${dayName(t.day)} ${t.day}.` : `« ${t.title} » n'a plus de date.`;
     }
     case "terminer_tache": {
       const t: Data = await writeData(user, (d) => {
@@ -290,6 +460,7 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
         const t = findOne(open, a.task, "la tâche");
         t.done = true;
         t.doneAt = new Date().toISOString();
+        if (t.day && t.day < today()) t.day = today();
         return t;
       });
       return `C'est noté : « ${t.title} » est réalisée.`;
@@ -304,7 +475,7 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
       }
       list.sort((x: Data, y: Data) => (y.upd || 0) - (x.upd || 0));
       if (!list.length) return a.search ? `Aucune note ne parle de « ${a.search} ».` : "Aucune note.";
-      return list.slice(0, 40).map((n: Data) => `- ${n.title || "(sans titre)"} — ${String(n.body || "").replace(/\s+/g, " ").slice(0, 120)} (id ${n.id})`).join("\n");
+      return list.slice(0, 40).map((n: Data) => `- ${n.title || "(sans titre)"}${n.folder ? ` [dossier ${folderName(data, n.folder)}]` : ""} — ${String(n.body || "").replace(/\s+/g, " ").slice(0, 120)} (id ${n.id})`).join("\n");
     }
     case "lire_note": {
       const { data } = await readData(user);
@@ -315,11 +486,86 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
     case "ajouter_note": {
       const n: Data = await writeData(user, (d) => {
         d.notes = Array.isArray(d.notes) ? d.notes : [];
-        const n = { id: uid(), title: String(a.title || "").trim(), body: String(a.body || ""), createdAt: new Date().toISOString(), upd: Date.now() };
+        const body = String(a.body || "");
+        const n: Data = { id: uid(), title: String(a.title || "").trim(), body: body.replace(/^#+\s*|^\s*\[[ x]\]\s*/gim, "").replace(/\*\*/g, ""), html: mdToHtml(body), createdAt: new Date().toISOString(), upd: Date.now() };
+        const fid = folderPath(d, a.folder);
+        if (fid) n.folder = fid;
         d.notes.push(n);
         return n;
       });
       return `Note créée : ${n.title || "(sans titre)"} (id ${n.id}).`;
+    }
+    case "nutrition_journee": {
+      const { data } = await readData(user);
+      return nutriDay(data, isDate(a.date) ? a.date : today());
+    }
+    case "noter_repas": {
+      const items = (Array.isArray(a.items) ? a.items : []).filter((x: Data) => x && String(x.name || "").trim()).slice(0, 30);
+      if (!items.length) throw new Error("Il faut au moins un aliment.");
+      const day = isDate(a.date) ? a.date : today(), at = atIso(day, isTime(a.time) ? a.time : nowBxl());
+      const name = String(a.meal_name || items[0].name).trim().slice(0, 80), em = String(a.emoji || "🍽️").slice(0, 8);
+      const out: Data = await writeData(user, (d) => {
+        const n = NU(d), grp = uid(), now = Date.now();
+        for (const x of items) n.log.push({ id: uid(), day, at, grp, gname: name, gem: em, name: String(x.name).trim().slice(0, 80), qty: String(x.quantity || "").slice(0, 40), em: String(x.emoji || "").slice(0, 8),
+          kcal: r0(x.kcal), p: r1n(x.protein_g), c: r1n(x.carbs_g), f: r1n(x.fat_g), upd: now, src: "ia" });
+        return { txt: nutriDay(d, day), lang: d.prefs && ["en", "nl"].includes(d.prefs.lang) ? d.prefs.lang : "fr" };
+      });
+      await learnFoods(items, out.lang).catch(() => {});
+      return `Repas noté dans Sid'note : ${name}.\n\n${out.txt}`;
+    }
+    case "retirer_repas": {
+      const day = isDate(a.date) ? a.date : today(), k = String(a.meal || "").trim();
+      const out: Data = await writeData(user, (d) => {
+        const n = NU(d), del = d.del || (d.del = {});
+        const log = n.log.filter((x: Data) => x && x.day === day && !del[x.id]);
+        const g = log.find((x: Data) => (x.grp || x.id) === k) || (() => {
+          const m = [...new Set(log.filter((x: Data) => norm(x.gname || x.name).includes(norm(k))).map((x: Data) => x.grp || x.id))];
+          if (m.length === 1) return log.find((x: Data) => (x.grp || x.id) === m[0]);
+          throw new Error(m.length ? "Plusieurs repas correspondent : donne l'id (voir nutrition_journee)." : `Aucun repas « ${k} » le ${day}.`);
+        })();
+        const gid = g.grp || g.id, now = Date.now();
+        for (const x of n.log) if ((x.grp || x.id) === gid) del[x.id] = now; // pierres tombales, comme tomb() dans l'app
+        n.log = n.log.filter((x: Data) => (x.grp || x.id) !== gid);
+        return nutriDay(d, day);
+      });
+      return `Repas retiré.\n\n${out}`;
+    }
+    case "enregistrer_menu": {
+      const SL = ["breakfast", "lunch", "snack", "dinner", "meal"];
+      const meals = (Array.isArray(a.meals) ? a.meals : []).filter((m: Data) => m && Array.isArray(m.items) && m.items.length).slice(0, 6).map((m: Data) => ({
+        slot: SL.includes(m.slot) ? m.slot : "lunch", name: String(m.name || "").slice(0, 80), em: String(m.emoji || "🍽️").slice(0, 8),
+        steps: Array.isArray(m.steps) ? m.steps.map((x: unknown) => String(x).slice(0, 300)).slice(0, 12) : null,
+        items: m.items.slice(0, 20).map((x: Data) => ({ name: String(x.name || "").slice(0, 80), em: String(x.emoji || "").slice(0, 8), g: r0(x.grams), qty: r0(x.grams) + " g", kcal: r0(x.kcal), p: r1n(x.protein_g), c: r1n(x.carbs_g), f: r1n(x.fat_g) })),
+      }));
+      if (!meals.length) throw new Error("Le menu est vide.");
+      await writeData(user, (d) => {
+        const n = NU(d), at = new Date().toISOString();
+        if (meals.length > 1 || !n.menu || !Array.isArray(n.menu.meals)) n.menu = { meals, tips: String(a.tips || ""), at };
+        else { const i = n.menu.meals.findIndex((m: Data) => m.slot === meals[0].slot); if (i >= 0) n.menu.meals[i] = meals[0]; else n.menu.meals.push(meals[0]); n.menu.at = at; }
+        n.upd = Date.now();
+      });
+      const t = dayTot(meals.flatMap((m: Data) => m.items));
+      return `Menu enregistré dans Sid'note (onglet Nutrition) : ${meals.map((m: Data) => m.name).join(", ")}. Total : ${fmtTot(t)}.`;
+    }
+    case "nutrition_semaine": {
+      const { data } = await readData(user);
+      const n = NU(data), del = data.del || {}, pl = n.plan || {}, to = isDate(a.to) ? a.to : today();
+      const lines = [];
+      for (let i = 6; i >= 0; i--) {
+        const day = addDays(to, -i), log = n.log.filter((x: Data) => x && x.day === day && !del[x.id]);
+        lines.push(`- ${dayName(day)} ${day} : ${log.length ? fmtTot(dayTot(log)) : "rien de noté"}`);
+      }
+      const w = n.weights.filter((x: Data) => x && x.day >= addDays(to, -30) && x.day <= to && !del[x.id]).sort((x: Data, y: Data) => x.day.localeCompare(y.day));
+      return `Objectif par jour : ${pl.kcal ? fmtTot({ kcal: pl.kcal, p: pl.p, c: pl.c, f: pl.f }) : "pas encore calculé"}.\n${lines.join("\n")}\nPoids (30 derniers jours) : ${w.length ? w.map((x: Data) => `${x.day} ${x.kg} kg`).join(", ") : "aucun"}.`;
+    }
+    case "noter_poids": {
+      const kg = r1n(a.kg), day = isDate(a.date) ? a.date : today();
+      if (!(kg >= 25 && kg <= 300)) throw new Error("Poids invalide (kg).");
+      await writeData(user, (d) => {
+        const n = NU(d), w = n.weights.find((x: Data) => x && x.day === day);
+        if (w) { w.kg = kg; w.upd = Date.now(); } else n.weights.push({ id: uid(), day, kg, upd: Date.now() });
+      });
+      return `Poids noté : ${kg} kg le ${day}.`;
     }
     case "listes_partagees": {
       const lists = await myLists(user);
@@ -351,9 +597,9 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   const key = new URL(req.url).pathname.split("/").filter(Boolean).pop() || "";
-  if (key.length < 32) return json({ error: "Adresse incomplète : copie l'adresse complète depuis Sid'note (Réglages > Claude)." }, 404);
+  if (key.length < 32) return json({ error: "Adresse incomplète : copie l'adresse complète depuis Sid'note (Réglages > Mon IA)." }, 404);
   const { data: tok } = await db.from("mcp_tokens").select("user_id, label").eq("hash", await sha256(key)).maybeSingle();
-  if (!tok) return json({ error: "Clé inconnue ou retirée. Crée une nouvelle adresse dans Sid'note (Réglages > Claude)." }, 401);
+  if (!tok) return json({ error: "Clé inconnue ou retirée. Crée une nouvelle adresse dans Sid'note (Réglages > Mon IA)." }, 401);
   if (req.method === "GET" || req.method === "DELETE") return new Response(null, { status: 405, headers: cors });
   if (req.method !== "POST") return json({ error: "Méthode non permise" }, 405);
 
@@ -371,7 +617,7 @@ Deno.serve(async (req) => {
         protocolVersion: params?.protocolVersion || "2025-06-18",
         capabilities: { tools: { listChanged: false } },
         serverInfo: { name: "sidnote", title: "Sid'note", version: "1.0.0" },
-        instructions: "Sid'note est l'application d'organisation de la personne (agenda, tâches, notes, listes partagées). Dates en AAAA-MM-JJ, heure de Bruxelles. Les mots de passe, documents et notes secrètes sont chiffrés et jamais accessibles.",
+        instructions: "Sid'note est l'application d'organisation de la personne (agenda, cours, tâches, notes, listes partagées, nutrition). Dates en AAAA-MM-JJ, heure de Bruxelles. Quand la personne dit ce qu'elle a mangé ou envoie la photo de son assiette, estime toi-même calories et macros puis note-le avec noter_repas (sans redemander, sauf doute sur la quantité). Pour un menu, lis d'abord nutrition_journee puis enregistre-le avec enregistrer_menu. Quand la personne parle d'une chose à faire un jour précis, ajoute la tâche avec sa date (ajouter_tache) : elle apparaîtra ce jour-là dans son agenda et passera au lendemain si elle n'est pas faite. Pour une note, propose un dossier (folder) si c'est utile. Les mots de passe, documents et notes secrètes sont chiffrés et jamais accessibles.",
       });
     case "ping":
       return rpcOk(id, {});

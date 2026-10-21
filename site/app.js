@@ -95,7 +95,7 @@ async function api(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="38";const errSent=new Set();
+const APP_V="39";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -149,7 +149,7 @@ function mergeData(loc,rem,opt){
     return arr(a,b).map(x=>{const r=rb.get(x.id);return r&&(r.upd||0)>(x.upd||0)?r:x})};
   const out={...rem,...loc,del,res};
   out.todos=arr(loc.todos,rem.todos);out.tasks=arr(loc.tasks,rem.tasks);
-  out.todoCats=arr(loc.todoCats,rem.todoCats);out.docs=arr(loc.docs,rem.docs);out.docFolders=arr(loc.docFolders,rem.docFolders);
+  out.todoCats=arr(loc.todoCats,rem.todoCats);out.docs=arr(loc.docs,rem.docs);out.docFolders=arr(loc.docFolders,rem.docFolders);out.noteFolders=arr(loc.noteFolders,rem.noteFolders);
   out.notes=arrU(loc.notes,rem.notes);out.pwds=arrU(loc.pwds,rem.pwds);
   // v33 : une note modifiée sur les deux appareils depuis la dernière synchro : on garde aussi l'autre version, en copie
   if(since){const ln=new Map((Array.isArray(loc.notes)?loc.notes:[]).map(x=>[x&&x.id,x]));
@@ -235,7 +235,7 @@ function applyRemote(d){
   for(const k of Object.keys(data))if(k!=="ui"&&k!=="pomo")delete data[k];
   for(const k of Object.keys(d))if(k!=="ui"&&k!=="pomo")data[k]=d[k];
   if(d.pomo&&data.pomo&&d.pomo!==data.pomo){const np=JSON.parse(JSON.stringify(d.pomo));for(const k of Object.keys(data.pomo))delete data.pomo[k];Object.assign(data.pomo,np)}
-  ["todos","tasks","courses","types","todoCats","docs","docFolders","notes","pwds"].forEach(k=>{if(!Array.isArray(data[k]))data[k]=[]});
+  ["todos","tasks","courses","types","todoCats","docs","docFolders","noteFolders","notes","pwds"].forEach(k=>{if(!Array.isArray(data[k]))data[k]=[]});
   data.prefs=data.prefs||{};data.prefs.tabs=data.prefs.tabs||{plan:true,todo:true,pomo:true,app:true};
   data.muscu=data.muscu||{sessions:[]};if(!Array.isArray(data.muscu.sessions))data.muscu.sessions=[];
   data.nutri=data.nutri||{};["log","weights","weeks"].forEach(k=>{if(!Array.isArray(data.nutri[k]))data.nutri[k]=[]});
@@ -318,7 +318,7 @@ const SHORT={plan:"Agenda",todo:"Tâches",lists:"Listes",pomo:"Focus",muscu:"Mus
 const ICON=k=>{const e=$("fnIcons").querySelector(`[data-ic="${k}"]`);return e?e.innerHTML:""};
 const groupOf=v=>GROUPS.find(g=>g.tabs.includes(v))||GROUPS[0];
 // v32 : Nutrition et Graphiques n'apparaissent que pour les comptes qui y ont accès (décidé par le serveur)
-const RESERVED={nutri:"nutri",graph:"nutri"};
+const RESERVED={}; // v39 : Nutrition et Graphiques ouverts à tous (le calcul passe par l'IA de chacun, plus par la clé de Sid)
 const tabAllowed=k=>!RESERVED[k]||!!(session&&Array.isArray(session.feat)&&session.feat.includes(RESERVED[k]));
 const visibleTabs=()=>[...TABS.filter(([k])=>tabAllowed(k)&&data.prefs.tabs[k]!==false).map(([k])=>k),"more"];
 const groupTabs=g=>g.tabs.filter(k=>visibleTabs().includes(k));
@@ -349,7 +349,7 @@ function show(v){
   if(v!=="home"&&v!=="spaces"&&!visibleTabs().includes(v))v="home";
   const g=groupOf(v);
   data.ui.view=v;if(GROUPS.some(x=>x.tabs.includes(v))){data.ui.glast=data.ui.glast||{};data.ui.glast[g.k]=v}saveUI();
-  document.body.dataset.g=g.k;document.body.dataset.v=v;if(v!=="notes")document.body.classList.remove("note-full");if(v==="more"){try{renderBio();$("mcpSec").hidden=!session||isTrial()}catch(e){}}
+  document.body.dataset.g=g.k;document.body.dataset.v=v;if(v!=="notes")document.body.classList.remove("note-full");if(v==="more"){try{renderBio();renderAiCards();$("mcpSec").hidden=!session||isTrial()}catch(e){}}
   document.querySelectorAll(".view").forEach(s=>s.hidden=s.id!=="v-"+v);
   const dk=dockOf(v);document.querySelectorAll("nav [data-dock]").forEach(t=>{if(t.dataset.dock===dk)t.setAttribute("aria-current","page");else t.removeAttribute("aria-current")});
   renderVhead(v);renderSide(v);
@@ -360,7 +360,7 @@ function show(v){
   secCheck();for(const k of SEC_K){if(k===v)delete secAway[k];else secLeave(k)}
   if(v==="docs")docsEnter();
   if(v!=="docs"&&ps&&ps.host)psEnd(null);
-  if(v==="pwd")renderPwd();
+  if(v==="pwd"){renderPwd();if(!vaultKey&&pinStep==="unlock")bioAuto("main",()=>$("pinBio").click())}
   if(v==="lists")slEnter();
   if(v==="notes"&&!noteOpenId)renderNotes();
   if(v!=="notes"&&v!=="nutri")dictStop();
@@ -436,19 +436,26 @@ function renderHome(){if(!$("homeBody"))return;
     const when=next.time&&same?inCount(diff):next.time&&iso(tm)===t0?`${L("demain")} · ${next.time}`:`${DOW[s.getDay()]} ${s.getDate()} ${MO[s.getMonth()]}${next.time?" · "+next.time:""}`;
     h+=`<button type="button" class="card hm-next" data-go="plan"><span class="eyebrow">${L("Prochain")} · ${esc(when)}</span><b class="notr">${esc(next.title)}</b><span class="small muted">${next.time?hrs(next):""}${next.loc?` · <span class="notr">${esc(next.loc)}</span>`:next.cat?` · ${esc(next.cat)}`:""}</span></button>`}
   const tiles=[];
-  if(vis.includes("todo")){const n=data.todos.filter(t=>!t.done&&!t.paused).length;tiles.push(["todo",L("Tâches"),String(n),L(n>1?"ouvertes":"ouverte")])}
+  if(vis.includes("todo")){const n=data.todos.filter(t=>!t.done&&!t.paused).length;const d=dayTodos(t0).filter(t=>!t.done).length;tiles.push(["todo",L("Tâches"),String(d),L(d>1?"pour aujourd'hui":"pour aujourd'hui")])}
   if(vis.includes("nutri")&&nutriAllowed()&&NU().plan&&NU().plan.kcal){const l=Math.round(dayTarget(t0).kcal-sumOf(dayLog(t0)).kcal);tiles.push(["nutri",L("Nutrition"),fmtFull(Math.abs(l)),L(l>=0?"kcal restantes":"kcal en trop")])}
   if(vis.includes("plan")){const e7=new Date(today());e7.setDate(e7.getDate()+6);const k7=iso(e7);const w=T.filter(t=>t.date<=k7&&(t.end||t.date)>=t0).length;tiles.push(["plan",L("Cette semaine"),String(w),L(w>1?"activités":"activité")])}
   if(tiles.length)h+=`<div class="hm-tiles" style="grid-template-columns:repeat(${tiles.length},minmax(0,1fr))">${tiles.map(([k,l,v,s])=>`<button type="button" class="card hm-tile" data-go="${k}"><span class="small muted">${l}</span><b>${v}</b><span class="small muted">${s}</span></button>`).join("")}</div>`;
+  if(!isTrial()&&!data.prefs.aiOk&&!data.ui.aiCardOff)h+=`<div class="card ai-card hm-ai"><div class="grow"><b>${L("Nouveau : branche ton IA")}</b><div class="small muted">${L("Claude ou ChatGPT calcule tes repas, crée tes menus et note tes tâches directement dans Sid'note.")}</div></div><div class="ai-card-b"><button type="button" class="btn" data-aiwiz="1">${L("Brancher")}</button><button type="button" class="x" data-aioff="1" aria-label="${L("Masquer")}">×</button></div></div>`;
   if(vis.includes("plan")){const day=allT().filter(t=>onDay(t,t0)).sort((a,b)=>sk(a).localeCompare(sk(b)));
     h+=`<h2>${L("Aujourd'hui")}</h2><div class="card hm-list">${day.length?day.map(t=>`<button type="button" class="hm-row ${t.status==="fait"||t.canc?"is-done":""}" data-go="plan"><span class="hm-time">${t.time||L("Journée")}</span><span class="grow notr">${esc(t.title)}</span><span class="dot" style="background:var(${colorOf(t)})"></span></button>`).join(""):`<div class="empty">${L("Rien de prévu aujourd'hui.")}</div>`}</div>`}
-  if(vis.includes("todo")){const open=data.todos.filter(t=>!t.done&&!t.paused).slice(0,4);
-    if(open.length)h+=`<h2>${L("À faire")}</h2><div class="card hm-list">${open.map(t=>`<button type="button" class="hm-row" data-todo-open="${t.id}"><span class="hm-box"></span><span class="grow notr">${esc(t.title)}</span></button>`).join("")}</div>`}
+  if(vis.includes("todo")){const td=dayTodos(t0),un=data.todos.filter(t=>!t.done&&!t.paused&&!t.day);
+    const row=t=>`<div class="hm-row hm-trow ${t.done?"is-done":""}"><button type="button" class="hm-chk" data-htg="${t.id}" aria-label="${L(t.done?"Remettre à faire":"Terminer")}">${t.done?CHECK:""}</button><button type="button" class="grow notr hm-tt" data-todo-open="${t.id}">${esc(t.title)}${tLate(t)?` <span class="tchip late">↻ ${L("reportée")}</span>`:""}</button></div>`;
+    h+=`<h2>${L("Tâches du jour")}</h2><div class="card hm-list">${td.length?td.map(row).join(""):`<div class="empty">${L(un.length?"Aucune tâche prévue aujourd'hui.":"Aucune tâche prévue aujourd'hui.")}</div>`}`+
+      (un.length?`<div class="hm-plan"><span class="small muted">${un.length} ${L(un.length>1?"tâches à planifier":"tâche à planifier")}</span>${un.slice(0,3).map(t=>`<div class="hm-row"><span class="grow notr">${esc(t.title)}</span><button type="button" class="mini" data-hplan="${t.id}">${L("Aujourd'hui")}</button></div>`).join("")}</div>`:"")+`</div>`}
   if(vis.includes("notes")){const ns=NT().filter(n=>!n.secret).sort((a,b)=>(b.upd||0)-(a.upd||0)).slice(0,2);
     if(ns.length)h+=`<h2>${L("Notes récentes")}</h2><div class="card hm-list">${ns.map(n=>{const t=(n.title||"").trim()||String(n.body||"").trim().split("\n")[0]||L("Nouvelle note");return `<button type="button" class="hm-row" data-note-open="${n.id}"><span class="grow notr">${esc(t)}</span><span class="small muted">${fmtWhen(n.upd||Date.parse(n.createdAt))}</span></button>`}).join("")}</div>`}
   if(!h)h=`<div class="card"><div class="empty">${L("Touche « + » en haut pour ajouter ta première activité.")}</div></div>`;
   $("homeBody").innerHTML=h}
-$("homeBody").addEventListener("click",e=>{const n=e.target.closest("[data-note-open]");if(n){show("notes");openNote(n.dataset.noteOpen);return}
+$("homeBody").addEventListener("click",e=>{
+  if(e.target.closest("[data-aioff]")){data.ui.aiCardOff=1;saveUI();renderHome();return}
+  const hg=e.target.closest("[data-htg]");if(hg){const t=data.todos.find(x=>x.id===hg.dataset.htg);if(t){todoToggle(t);renderHome()}return}
+  const hp=e.target.closest("[data-hplan]");if(hp){const t=data.todos.find(x=>x.id===hp.dataset.hplan);if(t){t.day=iso(today());save();renderTodos();renderHome();toast("Prévue aujourd'hui")}return}
+  const n=e.target.closest("[data-note-open]");if(n){show("notes");openNote(n.dataset.noteOpen);return}
   const td=e.target.closest("[data-todo-open]");if(td){goToTodo(td.dataset.todoOpen);return}const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
 $("homeAvatar").addEventListener("click",()=>show("more"));
 $("homeAdd").addEventListener("click",openQuickAdd);
@@ -468,6 +475,24 @@ $("tabsCard").addEventListener("change",e=>{const c=e.target.closest("[data-tabp
   data.prefs.tabs[c.dataset.tabpref]=c.checked;save();applyTabs();renderHomeSel();toast(c.checked?"Onglet affiché":"Onglet masqué")});
 
 /* ---------- À faire ---------- */
+// v39 : tâches planifiées (todo.day = AAAA-MM-JJ). Une tâche pas faite à temps passe toute seule au jour suivant :
+// le jour affiché devient aujourd'hui (tDay), sans réécrire les données ; tLate = nombre de jours de retard (badge « reportée »).
+const tDay=t=>{if(!t||!t.day)return null;if(t.done)return t.day;const k=iso(today());return t.day<k?k:t.day};
+const tLate=t=>!t.done&&t.day&&t.day<iso(today())?Math.round((parse(iso(today()))-parse(t.day))/864e5):0;
+const doneDay=t=>t.doneAt?iso(new Date(t.doneAt)):null;
+// tâches d'un jour : prévues (ou reportées) ce jour-là, et celles réalisées ce jour-là qui étaient planifiées
+const dayTodos=k=>data.todos.filter(t=>!t.paused&&(t.done?t.day&&doneDay(t)===k:tDay(t)===k)).sort((a,b)=>(a.done-b.done)||ordSort(a,b));
+function dayLbl(k){const t0=iso(today());if(k===t0)return L("Aujourd'hui");const d=parse(k),tm=new Date(today());tm.setDate(tm.getDate()+1);
+  if(k===iso(tm))return L("Demain");return `${DOW[d.getDay()].slice(0,3)}. ${d.getDate()} ${MO[d.getMonth()]}`}
+const planChip=t=>{if(t.done||!t.day)return"";const n=tLate(t);return ` <span class="tchip ${n?"late":tDay(t)===iso(today())?"today":""}">${n?`↻ ${L("reportée")}`:esc(dayLbl(t.day))}</span>`};
+function todoToggle(t){t.done=!t.done;delete t.paused;if(t.done){t.doneAt=new Date().toISOString();if(t.day&&t.day<iso(today()))t.day=iso(today());toast("Tâche réalisée")}else delete t.doneAt;
+  freshId=t.id;save();renderTodos();if(navigator.vibrate)navigator.vibrate(10)}
+// planifier : aujourd'hui, demain, une date, ou retirer la date
+function todoPlan(t,after){const set=k=>{if(k)t.day=k;else delete t.day;t.upd=Date.now();save();renderTodos();if(after)after();toast(k?`${L("Prévue")} : ${dayLbl(k)}`:"Date retirée")};
+  const tm=new Date(today());tm.setDate(tm.getDate()+1);
+  openActions(L("Planifier"),[{l:"Aujourd'hui",on:t.day===iso(today()),fn:()=>set(iso(today()))},{l:"Demain",on:t.day===iso(tm),fn:()=>set(iso(tm))},
+    {l:"Choisir une date…",fn:()=>{const i=$("planPick");i.value=t.day||iso(today());i.onchange=()=>{if(i.value)set(i.value)};try{i.showPicker()}catch(e){i.focus();i.click()}}},
+    ...(t.day?[{l:"Retirer la date",fn:()=>set(null)}]:[])])}
 let freshId=null,todoQ="";
 const PEN=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>`,PAUSE=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6v12M15 6v12"/></svg>`;
 const DOWL=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
@@ -490,7 +515,7 @@ function todoRow(t){
     <button class="resume" data-resume="${t.id}">Reprendre</button>${moreBtn(t)}</div>`;
   return `<div class="row ${t.id===freshId?"fresh":""}" data-tid="${t.id}">
     ${todoQ?"":`<button class="grip" data-grip="1" aria-label="Déplacer" title="Maintenir et glisser pour déplacer">${GRIP}</button>`}
-    <button class="check" data-tg="${t.id}" aria-label="Terminer">${""}</button>${ttlBtn(t)}${moreBtn(t)}</div>`;
+    <button class="check" data-tg="${t.id}" aria-label="Terminer">${""}</button>${ttlBtn(t,planChip(t))}${moreBtn(t)}</div>`;
 }
 // fenêtre d'actions réutilisable : openActions(titre, [{l, fn, danger, on}])
 function openActions(title,items){$("actTitle").textContent=title;
@@ -501,6 +526,7 @@ $("actSheet").addEventListener("click",e=>{if(e.target.id==="actSheet"||e.target
   const b=e.target.closest("[data-act]");if(!b)return;const it=$("actSheet")._items[+b.dataset.act];if(!it.keep)closeActions();it.fn()});
 function todoActions(id){const t=data.todos.find(x=>x.id===id);if(!t)return;
   const it=[{l:"Modifier",fn:()=>openEdit("todo:"+id)}];
+  if(!t.done)it.push({l:t.day?"Changer la date":"Planifier un jour",fn:()=>todoPlan(t)});
   if(!t.done)it.push(t.paused?{l:"Reprendre",fn:()=>{delete t.paused;delete t.pausedAt;freshId=t.id;save();renderTodos();toast("Tâche reprise")}}
     :{l:"Mettre en suspens",fn:()=>{t.paused=true;t.pausedAt=new Date().toISOString();freshId=t.id;save();renderTodos();toast("Tâche mise en suspens")}});
   else it.push({l:"Remettre à faire",fn:()=>{t.done=false;delete t.doneAt;freshId=t.id;save();renderTodos()}});
@@ -612,7 +638,8 @@ $("todoForm").addEventListener("submit",e=>{
   e.preventDefault();const v=$("todoIn").value.trim();if(!v)return;
   // v28 : nom de catégorie tapé mais pas validé → la catégorie est créée et la tâche y est rangée
   if(!$("catForm").hidden&&$("catIn").value.trim()){const r=catMake($("catIn").value);if(r&&r.isNew)toast(`${L("Catégorie créée")} : ${r.c.name}`)}
-  const t={id:uid(),title:v,createdAt:new Date().toISOString(),done:false};
+  const q=parseQuick(v),t={id:uid(),title:q.date&&q.title?q.title:v,createdAt:new Date().toISOString(),done:false};
+  if(q.date&&q.title)t.day=q.date; // v39 : « Appeler maman demain » → prévue demain
   const cc=curCat();if(catOf(cc))t.cat=cc;
   data.todos.push(t);freshId=t.id;save();renderTodos();$("todoIn").value="";
 });
@@ -641,9 +668,7 @@ document.getElementById("v-todo").addEventListener("click",e=>{
   if(b.dataset.catdel){const c=catOf(curCat());if(!c)return;const had=data.todos.filter(t=>t.cat===c.id).map(t=>t.id);
     undoable("Catégorie supprimée, ses tâches sont gardées",[c.id],()=>{tomb(c.id);data.todos.forEach(t=>{if(t.cat===c.id)delete t.cat});data.todoCats=TC().filter(x=>x!==c);TV().cat="all";tvSave()},
       {after:renderTodos,revert:()=>{data.todos.forEach(t=>{if(had.includes(t.id))t.cat=c.id});TV().cat=c.id;tvSave()}});return}
-  if(b.dataset.tg){const t=find(b.dataset.tg);if(!t)return;
-    t.done=!t.done;delete t.paused;if(t.done){t.doneAt=new Date().toISOString();toast("Tâche réalisée")}else{delete t.doneAt}
-    freshId=t.id;save();renderTodos();if(navigator.vibrate)navigator.vibrate(10)}
+  if(b.dataset.tg){const t=find(b.dataset.tg);if(!t)return;todoToggle(t)}
   else if(b.dataset.pause){const t=find(b.dataset.pause);t.paused=true;t.pausedAt=new Date().toISOString();freshId=t.id;save();renderTodos();toast("Tâche mise en suspens")}
   else if(b.dataset.resume){const t=find(b.dataset.resume);delete t.paused;delete t.pausedAt;freshId=t.id;save();renderTodos();toast("Tâche reprise")}
   else if(b.dataset.del)todoDel(b.dataset.del);
@@ -711,6 +736,12 @@ function renderMonth(){
   }
   $("calDays").innerHTML=h;
 }
+// v39 : tâches du jour dans l'agenda (cocher, ajouter pour ce jour) ; les reportées arrivent sur aujourd'hui
+function dayTasksBox(k){if(!visibleTabs().includes("todo"))return"";const list=dayTodos(k),past=k<iso(today());
+  const row=t=>`<div class="dt-row ${t.done?"done":""}"><button type="button" class="check" data-dtg="${t.id}" aria-label="${L(t.done?"Remettre à faire":"Terminer")}">${t.done?CHECK:""}</button><button type="button" class="grow ttl ttl-btn" data-dtmore="${t.id}">${esc(t.title)}${tLate(t)?` <span class="tchip late">↻ ${L("reportée")}</span>`:""}</button></div>`;
+  return `<div class="card dt-box"><div class="dt-h"><b>${IC("check")||""} ${L("Tâches du jour")}</b><span class="small muted">${list.filter(t=>t.done).length}/${list.length}</span></div>
+    ${list.map(row).join("")||`<div class="small muted dt-empty">${L(past?"Aucune tâche ce jour-là.":"Aucune tâche prévue. Ajoute-en une ci-dessous.")}</div>`}
+    ${past?"":`<form class="dt-add" data-dtadd="${k}"><input placeholder="${L("+ Tâche pour ce jour")}" aria-label="${L("Nouvelle tâche pour ce jour")}" autocomplete="off" enterkeyhint="done"></form>`}</div>`}
 function renderDayView(){
   const T=allT(),k=selDay,tIso=iso(today()),sd=parse(k);
   const items=T.filter(t=>onDay(t,k)).sort((a,b)=>sk(a).localeCompare(sk(b)));
@@ -733,6 +764,7 @@ function renderDayView(){
       <button class="cal-nav" data-dayjump="${iso(prev)}" aria-label="Jour précédent">‹</button><button class="cal-nav" data-dayjump="${iso(nxt)}" aria-label="Jour suivant">›</button>
     </div>
     ${allday.length?`<div class="allday">${allday.map(t=>`<div class="chip-ev ${t.canc?"canc":""}" style="--c:var(${colorOf(t)})"><span class="grow ttl" style="${t.status==="fait"?"text-decoration:line-through;color:var(--muted)":""}">${t.time?`<span class="time">${hrs(t)}</span> `:""}${esc(t.title)}${t.end?` <span class="small muted">· ${fmt(t.date)} → ${fmt(t.end)}</span>`:""}</span>${t.src==="ical"?(t.canc?'<span class="canc-pill">Annulé</span>':""):`<button class="pen" data-edit="task:${t.id}" aria-label="Modifier">${PEN}</button><button class="x" data-caldel="${t.id}" aria-label="Supprimer">×</button>`}</div>`).join("")}</div>`:""}
+    ${dayTasksBox(k)}
     ${!items.length?`<p class="small muted" style="margin:0 4px 8px">Rien de prévu ce jour-là.</p>`:""}
     <div class="tline" style="height:${(H1-H0)*PX}px">${hours}${blocks}${now}</div>
     ${qOpen?`<form class="qform" id="qForm">
@@ -780,6 +812,8 @@ $("calDays").addEventListener("click",e=>{const b=e.target.closest(".day[data-da
   $("calDayView").style.setProperty("--zo",`${((r.left+r.width/2-c.left)/c.width*100).toFixed(0)}% ${((r.top-c.top)/c.height*100).toFixed(0)}%`);
   selDay=b.dataset.day;calMode="day";qOpen=false;renderCal();zoom($("calDayView"))});
 $("calDayView").addEventListener("click",e=>{
+  const dg=e.target.closest("[data-dtg]");if(dg){const t=data.todos.find(x=>x.id===dg.dataset.dtg);if(t){todoToggle(t);renderCal();renderHome()}return}
+  const dm=e.target.closest("[data-dtmore]");if(dm){todoActions(dm.dataset.dtmore);return}
   const ii=e.target.closest("[data-icalinfo]");if(ii){icalInfo(ii.dataset.icalinfo);return}
   const d=e.target.closest("[data-caldel]");
   if(d){taskDel(d.dataset.caldel);return}
@@ -789,7 +823,10 @@ $("calDayView").addEventListener("click",e=>{
   else if(e.target.closest("#qCancel")){qOpen=false;renderCal()}
 });
 $("calDayView").addEventListener("submit",e=>{
-  e.preventDefault();const title=$("qTitle").value.trim();if(!title)return;
+  e.preventDefault();
+  const da=e.target.closest("[data-dtadd]");if(da){const i=da.querySelector("input"),v=i.value.trim();if(!v)return;
+    data.todos.push({id:uid(),title:v,createdAt:new Date().toISOString(),done:false,day:da.dataset.dtadd});save();renderTodos();renderCal();
+    const ni=$("calDayView").querySelector("[data-dtadd] input");if(ni)ni.focus();return}const title=$("qTitle").value.trim();if(!title)return;
   const t={id:uid(),title,date:selDay,status:"à faire",tbc:false,cat:ensureType($("qCat").value)};
   if($("qEnd").value&&$("qEnd").value>selDay)t.end=$("qEnd").value;
   if($("qTime").value)t.time=$("qTime").value;
@@ -1043,7 +1080,7 @@ $("wipeBtn").addEventListener("click",async e=>{
   }catch(ex){b.disabled=false;delete b.dataset.armed;b.textContent=L("Supprimer mes données");toast(ex instanceof TypeError?L("Pas de connexion internet"):L("Suppression impossible : ")+(ex.message||""))}
 });
 // restauration : aperçu, puis Fusionner (rien n'est perdu) ou Remplacer (confirmation), sans jamais casser les coffres
-const BK_LISTS=[["todos","Tâches"],["tasks","Activités de l'agenda"],["notes","Notes"],["muscu.sessions","Séances de musculation"],["nutri.log","Repas notés"],["pwds","Mots de passe"],["docs","Documents (la liste)"],["todoCats",null],["docFolders",null],["nutri.weights",null],["nutri.weeks",null]];
+const BK_LISTS=[["todos","Tâches"],["tasks","Activités de l'agenda"],["notes","Notes"],["muscu.sessions","Séances de musculation"],["nutri.log","Repas notés"],["pwds","Mots de passe"],["docs","Documents (la liste)"],["todoCats",null],["docFolders",null],["noteFolders",null],["nutri.weights",null],["nutri.weeks",null]];
 const bkGet=(d,k)=>{const v=k.split(".").reduce((o,x)=>o&&o[x],d);return Array.isArray(v)?v.filter(x=>x&&x.id):[]};
 function bkParse(j){
   if(j&&typeof j==="object"&&j.data&&typeof j.data==="object"&&/^(sidnote|Sid'note)$/.test(j.app||""))return {d:j.data,at:j.exported};
@@ -1580,9 +1617,9 @@ function renderLeads(){
       ${nfState.kind==="na"?"":`<div class="row" style="gap:8px"><button type="button" class="btn ${on?"ghost":""}" data-nf="toggle" style="flex:1">${L(on?"Désactiver":"Activer les notifications")}</button>${on?`<button type="button" class="btn ghost" data-nf="test">${L("Tester")}</button>`:""}</div>`}
     </div>
     <div class="label" style="margin:12px 4px 6px">${L("Me prévenir")}</div>
-    <div class="chips" style="flex-wrap:wrap;margin:0;padding-inline:0">${all.map(m=>`<button type="button" class="pill" data-lead="${m}" aria-pressed="${cur.includes(m)}">${leadLbl(m)}</button>`).join("")}<button type="button" class="pill add" data-nf="custom">+ ${L("Autre délai")}</button></div>
+    <div class="chips" style="flex-wrap:wrap;margin:0;padding-inline:0">${all.map(m=>m===1440?`<span class="pill lock" aria-pressed="true" title="${L("Toujours active")}">${leadLbl(m)} · ${L("toujours")}</span>`:`<button type="button" class="pill" data-lead="${m}" aria-pressed="${cur.includes(m)}">${leadLbl(m)}</button>`).join("")}<button type="button" class="pill add" data-nf="custom">+ ${L("Autre délai")}</button></div>
     ${nfCustom?`<form class="notif-lead-custom" data-nf="customf"><input type="text" inputmode="numeric" maxlength="3" name="n" placeholder="15" aria-label="${L("Durée")}" autocomplete="off"><select class="sel" name="u" aria-label="${L("Unité")}"><option value="1">${L("minutes")}</option><option value="60" selected>${L("heures")}</option><option value="1440">${L("jours")}</option></select><span class="small muted">${L("avant")}</span><button class="btn" type="submit" style="padding:8px 14px">OK</button></form>`:""}
-    ${data.prefs.ical?`<label class="nf-ical"><input type="checkbox" data-nf="ical" ${ical?"checked":""}> <span>${L("Calendrier relié : aussi la veille de chaque événement")}</span></label>`:""}
+    ${data.prefs.ical?`<label class="nf-ical"><input type="checkbox" data-nf="ical" ${ical?"checked":""}> <span>${L("Cours du calendrier relié : mêmes rappels que tes activités")}</span></label>`:""}
     <p class="small muted" style="margin:8px 4px 0">${L("Tu peux en choisir plusieurs. Une activité sans heure compte pour 8 h. Sur iPhone : iOS 16.4 ou plus, et Sid'note ouvert depuis l'écran d'accueil.")}</p>`;
   const ae=document.activeElement,typing=ae&&ae.matches&&ae.matches("input[type=text],select");
   document.querySelectorAll(".notif-box").forEach(b=>{if(!(typing&&b.contains(ae)))b.innerHTML=html});
@@ -1615,7 +1652,8 @@ async function notifToggle(btn){
 }
 // délais choisis (minutes avant l'activité), synchronisés avec le compte : le serveur les lit
 const LEADS=[[10,"10 min"],[30,"30 min"],[60,"1 h"],[120,"2 h"],[1440,"La veille"],[2880,"2 jours"]];
-const notifLeads=()=>{const n=data.prefs.notif;return n&&Array.isArray(n.leads)?n.leads:[1440]};
+// v39 : la veille est toujours active (le serveur l'envoie de toute façon), en plus des délais choisis
+const notifLeads=()=>{const n=data.prefs.notif,a=n&&Array.isArray(n.leads)?n.leads:[];return [...new Set([...a,1440])].sort((x,y)=>x-y)};
 // cours de l'horaire iCal : prévenus 24 h avant (activé par défaut) ; le serveur lit data.icalSoon
 const notifIcal=()=>!(data.prefs.notif&&data.prefs.notif.ical===false);
 function leadLbl(m){const p=LEADS.find(x=>x[0]===m);if(p)return L(p[1]);
@@ -1624,7 +1662,7 @@ const setNotif=o=>{data.prefs.notif={...(data.prefs.notif||{}),...o};save();rend
 document.addEventListener("click",async e=>{const box=e.target.closest(".notif-box");if(!box)return;
   const l=e.target.closest("[data-lead]");
   if(l){const m=+l.dataset.lead;let cur=notifLeads().slice();cur=cur.includes(m)?cur.filter(x=>x!==m):[...cur,m].sort((a,b)=>a-b);
-    if(!cur.length){toast("Garde au moins un délai");return}setNotif({leads:cur});return}
+    if(m===1440)return;setNotif({leads:cur});return}
   const b=e.target.closest("button[data-nf]");if(!b)return;
   if(b.dataset.nf==="toggle")notifToggle(b);
   else if(b.dataset.nf==="custom"){nfCustom=!nfCustom;renderLeads();const i=box.querySelector('[data-nf="customf"] input');if(i)i.focus()}
@@ -1632,20 +1670,20 @@ document.addEventListener("click",async e=>{const box=e.target.closest(".notif-b
     catch(ex){toast("Test impossible : "+(ex.message||"erreur"))}}
 });
 document.addEventListener("change",e=>{const c=e.target.closest('.notif-box [data-nf="ical"]');if(!c)return;setNotif({ical:c.checked});icalSoonSync();
-  toast(c.checked?"Calendrier relié : rappel la veille":"Calendrier relié : plus de rappel")});
+  toast(c.checked?"Cours : rappels activés":"Cours : plus de rappel")});
 document.addEventListener("submit",e=>{const f=e.target.closest('.notif-box [data-nf="customf"]');if(!f)return;e.preventDefault();
   const n=Math.round(numIn(f.elements.n.value)),m=n*(+f.elements.u.value);if(!(m>=5&&m<=20160)){toast("Choisis entre 5 minutes et 14 jours");return}
   document.activeElement&&document.activeElement.blur();nfCustom=false;const cur=notifLeads();setNotif({leads:[...new Set([...cur,m])].sort((a,b)=>a-b)});toast(`${L("Rappel ajouté")} : ${leadLbl(m)}`)});
 // --- rappel propre à une activité (formulaire du planning et fiche « Modifier ») : t.leads = délais choisis, t.remind = false = aucun rappel
 const remSel={f:null,e:null},remCustom={f:false,e:false};
-const remOf=t=>t&&t.remind===false?[]:(t&&Array.isArray(t.leads)&&t.leads.length?t.leads.slice():notifLeads().slice());
+const remOf=t=>[...new Set([...(t&&t.remind!==false&&Array.isArray(t.leads)&&t.leads.length?t.leads:t&&t.remind===false?[]:notifLeads()),1440])].sort((a,b)=>a-b);
 function renderRem(k){const box=$(k==="f"?"fRem":"eRem");if(!box)return;if(!remSel[k])remSel[k]=notifLeads().slice();
   const sel=remSel[k],on=nfState.kind==="on",all=[...new Set([...LEADS.map(x=>x[0]),...sel])].sort((a,b)=>a-b);
   box.innerHTML=`<div class="rem-h">${IC("bell")} ${L("Me prévenir")}</div>
-    <div class="rem-chips"><button type="button" class="pill" data-rnone="1" aria-pressed="${!sel.length}">${L("Aucun rappel")}</button>${all.map(m=>`<button type="button" class="pill" data-rl="${m}" aria-pressed="${sel.includes(m)}">${leadLbl(m)}</button>`).join("")}<button type="button" class="pill add" data-rcustom="1">+ ${L("Autre")}</button></div>
+    <div class="rem-chips">${all.map(m=>m===1440?`<span class="pill lock" aria-pressed="true">${leadLbl(m)} · ${L("toujours")}</span>`:`<button type="button" class="pill" data-rl="${m}" aria-pressed="${sel.includes(m)}">${leadLbl(m)}</button>`).join("")}<button type="button" class="pill add" data-rcustom="1">+ ${L("Autre")}</button></div>
     ${remCustom[k]?`<div class="notif-lead-custom"><input type="text" inputmode="numeric" maxlength="3" data-rn placeholder="15" aria-label="${L("Durée")}" autocomplete="off"><select class="sel" data-ru aria-label="${L("Unité")}"><option value="1">${L("minutes")}</option><option value="60" selected>${L("heures")}</option><option value="1440">${L("jours")}</option></select><span class="small muted">${L("avant")}</span><button type="button" class="btn" data-rok="1" style="padding:8px 14px">OK</button></div>`:""}
     ${on?`<div class="small muted">${L("Sans heure, l'activité compte pour 8 h.")}</div>`:nfState.kind==="na"?`<div class="small muted">${L(nfState.msg)}</div>`:`<button type="button" class="btn ghost rem-on" data-ron="1">${IC("bell")} ${L("Activer les notifications")}</button>`}`}
-const remApply=(t,k)=>{const s=remSel[k]||notifLeads(),d=notifLeads();delete t.leads;delete t.remind;
+const remApply=(t,k)=>{const s=[...new Set([...(remSel[k]||notifLeads()),1440])],d=notifLeads();delete t.leads;delete t.remind;
   if(!s.length)t.remind=false;else if(s.length!==d.length||s.some(x=>!d.includes(x)))t.leads=s.slice().sort((a,b)=>a-b)};
 ["fRem","eRem"].forEach(id=>{const k=id[0];$(id).addEventListener("click",async e=>{const b=e.target.closest("button");if(!b)return;e.preventDefault();
   if(b.dataset.rnone)remSel[k]=[];
@@ -2362,6 +2400,33 @@ function padTap(pad,key,press){
 
 /* ---------- notes libres (+ notes secrètes) ---------- */
 const NT=()=>data.notes||(data.notes=[]);
+/* v39 : notes « façon Word » : texte mis en forme (n.html, nettoyé) + texte brut (n.body, pour la recherche, l'aperçu et le connecteur).
+   Dossiers et sous-dossiers : data.noteFolders = [{id, name, parent}] ; note.folder = id du dossier. */
+const NF=()=>data.noteFolders||(data.noteFolders=[]);
+let noteDir=null,nfRen=null; // dossier ouvert (en mémoire : tout se referme quand on revient), dossier en cours de renommage
+const nfOf=id=>id?NF().find(f=>f.id===id):null;
+const nfPath=id=>{const p=[];let f=nfOf(id),g=0;while(f&&g++<30){p.unshift(f);f=nfOf(f.parent)}return p};
+const nfKids=id=>NF().filter(f=>(nfOf(f.parent)?f.parent:null)===(id||null)).sort((a,b)=>a.name.localeCompare(b.name));
+const noteDirOf=n=>nfOf(n.folder)?n.folder:null;
+const nfSub=id=>{const s=new Set([id]);let add=true;while(add){add=false;for(const f of NF())if(!s.has(f.id)&&s.has(f.parent)){s.add(f.id);add=true}}return s};
+const nfCount=id=>{const s=nfSub(id);return NT().filter(n=>s.has(n.folder)).length};
+const RT_DROP=new Set(["SCRIPT","STYLE","IFRAME","OBJECT","EMBED","SVG","MATH","IMG","PICTURE","VIDEO","AUDIO","CANVAS","TEMPLATE","FORM","INPUT","BUTTON","TEXTAREA","SELECT","LINK","META","TITLE","HEAD"]);
+const RT_KEEP=new Set(["B","STRONG","I","EM","U","S","STRIKE","DEL","MARK","H2","H3","P","DIV","BR","UL","OL","LI","BLOCKQUOTE","HR","A"]);
+// garde seulement la mise en forme autorisée (rien d'exécutable, pas de style) : sert à l'enregistrement et au collage
+function rtClean(html){const t=document.createElement("template");t.innerHTML=String(html||"");
+  const walk=n=>{for(const c of [...n.childNodes]){if(c.nodeType===3)continue;if(c.nodeType!==1){c.remove();continue}
+    let tag=c.tagName;if(RT_DROP.has(tag)){c.remove();continue}
+    if(tag==="H1"||tag==="H4"||tag==="H5"||tag==="H6"){const h=document.createElement(tag==="H1"?"h2":"h3");h.append(...c.childNodes);c.replaceWith(h);walk(h);continue}
+    walk(c);if(!RT_KEEP.has(tag)){c.replaceWith(...c.childNodes);continue}
+    const href=tag==="A"&&/^https?:\/\//i.test(c.getAttribute("href")||"")?c.getAttribute("href"):null,chk=tag==="UL"&&c.classList.contains("chk"),dc=tag==="LI"?c.getAttribute("data-c"):null;
+    for(const a of [...c.attributes])c.removeAttribute(a.name);
+    if(href){c.setAttribute("href",href);c.setAttribute("target","_blank");c.setAttribute("rel","noopener")}else if(tag==="A"){c.replaceWith(...c.childNodes);continue}
+    if(chk)c.className="chk";if(dc==="1"||dc==="0")c.setAttribute("data-c",dc)}};
+  walk(t.content);return t.innerHTML.trim()}
+const rtFromText=b=>String(b||"").split("\n").map(l=>`<div>${l?esc(l):"<br>"}</div>`).join("");
+const rtText=el=>String(el.innerText||"").replace(/\u00a0/g," ").replace(/\n{3,}/g,"\n\n").trim();
+const rtSet=v=>{$("noteBody").innerHTML=v.html?rtClean(v.html):rtFromText(v.body);rtEmpty()};
+const rtEmpty=()=>$("noteBody").classList.toggle("is-empty",!rtText($("noteBody"))&&!$("noteBody").querySelector("li,hr"))
 let noteOpenId=null,noteQ="",noteSaveT=null,notePend=null;
 const noteFind=id=>NT().find(n=>n.id===id);
 const fmtWhen=t=>{const d=new Date(t),n=new Date();
@@ -2386,7 +2451,7 @@ function renderNotes(){
   $("notesList").hidden=!!noteOpenId;$("noteEdit").hidden=!noteOpenId;document.body.classList.toggle("note-full",data.ui.view==="notes"&&!!noteOpenId);if(data.ui.view==="notes")$("vhead").hidden=!!noteOpenId;
   if(noteOpenId){
     if(document.activeElement!==$("noteTitle"))$("noteTitle").value=v.title||"";
-    if(document.activeElement!==$("noteBody"))$("noteBody").value=v.body||"";
+    if(document.activeElement!==$("noteBody"))rtSet(v);
     $("noteWhen").textContent=fmtWhen(n.upd||Date.parse(n.createdAt));
     $("noteSecBar").hidden=!n.secret;
     $("noteLock").setAttribute("aria-label",L(n.secret?"Verrouiller la note":"Rendre la note secrète"));$("noteLock").title=$("noteLock").getAttribute("aria-label");
@@ -2395,13 +2460,19 @@ function renderNotes(){
   $("nsBar").hidden=!(nsKey&&secN);
   $("nsBar").innerHTML=`<span class="grow">${IC("unlock")} ${L("Notes secrètes déverrouillées")}</span><button type="button" class="mini" data-nslock="1">${IC("lock")} ${L("Verrouiller")}</button>`;
   let list=NT().slice().sort((a,b)=>(b.upd||0)-(a.upd||0));
+  if(noteDir&&!nfOf(noteDir))noteDir=null;
+  const path=nfPath(noteDir);$("nfPath").hidden=!!q||!noteDir;
+  $("nfPath").innerHTML=`<button type="button" class="nf-crumb" data-nfgo="">${L("Notes")}</button>`+path.map((f,i)=>`<span aria-hidden="true">›</span>${i===path.length-1?`<b class="notr">${esc(f.name)}</b>`:`<button type="button" class="nf-crumb notr" data-nfgo="${f.id}">${esc(f.name)}</button>`}`).join("");
+  const dirs=q?"":nfKids(noteDir).map(f=>`<div class="nf-row"><button type="button" class="nf-open" data-nfopen="${f.id}"><span class="nf-ic">${IC("folder")}</span><b class="grow notr">${esc(f.name)}</b><span class="small muted">${nfCount(f.id)||""}</span>${CHEVR}</button><button type="button" class="pen" data-nfmore="${f.id}" aria-label="${L("Plus d'actions")}">${MORE}</button></div>`).join("");
+  if(!q)list=list.filter(x=>noteDirOf(x)===noteDir);
   if(q)list=list.filter(x=>noteView(x)).map(x=>{const w=noteView(x);return{x,s:Math.max(fuzzyScore(w.title||"",q),fold(w.body).includes(fold(q))?11:0)}}).filter(o=>o.s>0).sort((a,b)=>b.s-a.s).map(o=>o.x);
-  $("noteList").innerHTML=list.length?list.map(x=>{const w=noteView(x),when=`<span class="when">${fmtWhen(x.upd||Date.parse(x.createdAt))}</span>`;
+  $("noteList").innerHTML=dirs+(list.length?list.map(x=>{const w=noteView(x),when=`<span class="when">${fmtWhen(x.upd||Date.parse(x.createdAt))}</span>`;
     if(!w)return `<button class="note note-lock" data-note="${x.id}"><b>${IC("lock")} ${L("Note secrète")}</b><span class="prev">${L("Touche pour l'ouvrir avec ton code")}</span>${when}</button>`;
     const lines=String(w.body||"").trim().split("\n").filter(Boolean);
     const t=w.title&&w.title.trim()?w.title:(lines.shift()||L("Nouvelle note"));
-    return `<button class="note" data-note="${x.id}"><b class="notr">${x.secret?IC("lock")+" ":""}${esc(t)}</b><span class="prev notr">${esc(lines.join(" · ")||"")}</span>${x.photos&&x.photos.length?`<span class="np-count">${IC("camera")} ${x.photos.length} ${L(x.photos.length>1?"photos":"photo")}</span>`:""}${when}</button>`}).join("")
-    :`<div class="empty">${L(q?"Aucune note ne correspond.":"Aucune note pour l'instant. Touche « + Note » pour écrire.")}</div>`;
+    const fp=q&&noteDirOf(x)?`<span class="small muted nf-in">${IC("folder")} ${esc(nfPath(x.folder).map(f=>f.name).join(" › "))}</span>`:"";
+    return `<button class="note" data-note="${x.id}"><b class="notr">${x.secret?IC("lock")+" ":""}${esc(t)}</b>${fp}<span class="prev notr">${esc(lines.join(" · ")||"")}</span>${x.photos&&x.photos.length?`<span class="np-count">${IC("camera")} ${x.photos.length} ${L(x.photos.length>1?"photos":"photo")}</span>`:""}${when}</button>`}).join("")
+    :dirs?"":`<div class="empty">${L(q?"Aucune note ne correspond.":noteDir?"Ce dossier est vide. Touche « + Note » pour y écrire.":"Aucune note pour l'instant. Touche « + Note » pour écrire.")}</div>`);
 }
 function openNote(id){noteOpenId=id;renderNotes();window.scrollTo(0,0)}
 async function closeNote(){
@@ -2410,8 +2481,33 @@ async function closeNote(){
   if(n&&v&&!String(v.title||"").trim()&&!String(v.body||"").trim()&&!(n.photos&&n.photos.length)){tomb(n.id);data.notes=NT().filter(x=>x!==n);nsPlain.delete(n.id)}
   save();noteOpenId=null;renderNotes();
 }
-$("noteNew").addEventListener("click",()=>{const n={id:uid(),title:"",body:"",createdAt:new Date().toISOString(),upd:Date.now()};NT().push(n);openNote(n.id);$("noteBody").focus()});
-$("noteList").addEventListener("click",async e=>{const b=e.target.closest("[data-note]");if(!b)return;const n=noteFind(b.dataset.note);if(!n)return;
+$("noteNew").addEventListener("click",()=>{const n={id:uid(),title:"",body:"",createdAt:new Date().toISOString(),upd:Date.now()};if(noteDir)n.folder=noteDir;NT().push(n);openNote(n.id);$("noteTitle").focus()});
+// --- dossiers de notes ---
+function nfFormOpen(f){nfRen=f||null;$("nfForm").hidden=false;$("nfIn").value=f?f.name:"";$("nfForm").querySelector("[type=submit]").textContent=L(f?"Renommer":"Créer");setTimeout(()=>$("nfIn").focus(),30)}
+$("nfNew").addEventListener("click",()=>nfFormOpen(null));
+$("nfCancel").addEventListener("click",()=>{$("nfForm").hidden=true;nfRen=null});
+$("nfForm").addEventListener("submit",e=>{e.preventDefault();const v=$("nfIn").value.trim().replace(/\s+/g," ").slice(0,60);if(!v)return;
+  if(nfRen){nfRen.name=v;toast("Dossier renommé")}else{NF().push({id:uid(),name:v,parent:noteDir||null,createdAt:new Date().toISOString()});toast(`${L("Dossier créé")} : ${v}`)}
+  $("nfForm").hidden=true;nfRen=null;save();renderNotes()});
+function nfDelete(f){const kids=NF().filter(x=>x.parent===f.id).map(x=>x.id),ns=NT().filter(n=>n.folder===f.id).map(n=>n.id),up=f.parent||null;
+  undoable("Dossier supprimé, son contenu est gardé",[f.id],()=>{tomb(f.id);NF().forEach(x=>{if(x.parent===f.id)x.parent=up});NT().forEach(n=>{if(n.folder===f.id){if(up)n.folder=up;else delete n.folder}});data.noteFolders=NF().filter(x=>x!==f);if(noteDir===f.id)noteDir=up},
+    {after:renderNotes,revert:()=>{NF().forEach(x=>{if(kids.includes(x.id))x.parent=f.id});NT().forEach(n=>{if(ns.includes(n.id))n.folder=f.id})}})}
+// liste des dossiers (arbre aplati) pour ranger une note ou un dossier
+function nfChoices(cur,skip,set){const out=[{l:L("Notes (aucun dossier)"),on:!cur,fn:()=>set(null)}];
+  const add=(pid,depth)=>nfKids(pid).forEach(f=>{if(skip&&skip.has(f.id))return;out.push({l:`${"   ".repeat(depth)}${depth?"└ ":""}${f.name}`,on:cur===f.id,fn:()=>set(f.id)});add(f.id,depth+1)});
+  add(null,0);return out}
+function nfActions(id){const f=nfOf(id);if(!f)return;
+  openActions(f.name,[{l:"Renommer",fn:()=>nfFormOpen(f)},
+    {l:"Déplacer",fn:()=>openActions(L("Déplacer vers"),nfChoices(f.parent||null,nfSub(f.id),pid=>{f.parent=pid;save();renderNotes();toast("Dossier déplacé")}))},
+    {l:"Supprimer",danger:true,fn:()=>nfDelete(f)}])}
+$("nfPath").addEventListener("click",e=>{const b=e.target.closest("[data-nfgo]");if(b){noteDir=b.dataset.nfgo||null;renderNotes()}});
+$("noteMove").addEventListener("click",()=>{const n=noteFind(noteOpenId);if(!n)return;
+  if(!NF().length){toast("Crée d'abord un dossier dans la liste des notes");return}
+  openActions(L("Ranger dans"),nfChoices(noteDirOf(n),null,fid=>{if(fid)n.folder=fid;else delete n.folder;n.upd=Date.now();save();toast(fid?`${L("Rangée dans")} « ${nfOf(fid).name} »`:"Rangée dans Notes")}))});
+$("noteList").addEventListener("click",async e=>{
+  const fo=e.target.closest("[data-nfopen]");if(fo){noteDir=fo.dataset.nfopen;renderNotes();window.scrollTo(0,0);return}
+  const fm=e.target.closest("[data-nfmore]");if(fm){nfActions(fm.dataset.nfmore);return}
+  const b=e.target.closest("[data-note]");if(!b)return;const n=noteFind(b.dataset.note);if(!n)return;
   if(n.secret&&!noteView(n)){if(!(await nsUnlock()))return;await nsLoad();if(!noteView(n))return}
   openNote(n.id)});
 $("nsBar").addEventListener("click",e=>{if(e.target.closest("[data-nslock]")){nsLock();toast("Notes secrètes verrouillées")}});
@@ -2419,9 +2515,9 @@ $("noteBack").addEventListener("click",closeNote);
 $("noteSearch").addEventListener("input",e=>{noteQ=e.target.value;renderNotes()});
 function noteInput(){
   const n=noteFind(noteOpenId),v=noteView(n);if(!v)return;
-  v.title=$("noteTitle").value;v.body=$("noteBody").value;n.upd=Date.now();$("noteWhen").textContent=fmtWhen(n.upd);
-  if(!n.secret){noteQueue(async()=>save());return}
-  const k=nsKey;noteQueue(async()=>{const e=await encJ(k,{title:v.title,body:v.body});n.iv=e.iv;n.ct=e.ct;v._iv=e.iv;save()});
+  const el=$("noteBody");v.title=$("noteTitle").value;v.body=rtText(el);v.html=el.innerHTML;n.upd=Date.now();$("noteWhen").textContent=fmtWhen(n.upd);rtEmpty();
+  if(!n.secret){noteQueue(async()=>{v.html=rtClean(el.innerHTML);save()});return}
+  const k=nsKey;noteQueue(async()=>{v.html=rtClean(v.html);const e=await encJ(k,{title:v.title,body:v.body,html:v.html});n.iv=e.iv;n.ct=e.ct;v._iv=e.iv;save()});
 }
 $("noteTitle").addEventListener("input",noteInput);$("noteBody").addEventListener("input",noteInput);
 $("noteTitle").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("noteBody").focus()}});
@@ -2432,17 +2528,17 @@ $("noteDel").addEventListener("click",async()=>{await noteFlush();const n=noteFi
 $("noteLock").addEventListener("click",async()=>{
   const n=noteFind(noteOpenId);if(!n)return;dictStop();
   if(n.secret){await noteFlush();nsLock();toast("Note verrouillée");return}
-  const plain={title:$("noteTitle").value,body:$("noteBody").value};
+  const plain={title:$("noteTitle").value,body:rtText($("noteBody")),html:rtClean($("noteBody").innerHTML)};
   if(!plain.title.trim()&&!plain.body.trim()){toast("Écris d'abord quelque chose");return}
   if(!(await nsUnlock()))return;
   await noteFlush();
   const e=await encJ(nsKey,plain);
-  Object.assign(n,{secret:true,vid:nsVid,iv:e.iv,ct:e.ct,upd:Date.now()});delete n.title;delete n.body;
+  Object.assign(n,{secret:true,vid:nsVid,iv:e.iv,ct:e.ct,upd:Date.now()});delete n.title;delete n.body;delete n.html;
   save();nsLock();toast("Note secrète verrouillée");
 });
 $("noteUnsecret").addEventListener("click",async()=>{
   const n=noteFind(noteOpenId),v=noteView(n);if(!n||!v)return;await noteFlush();
-  n.title=v.title||"";n.body=v.body||"";["secret","vid","iv","ct"].forEach(k=>delete n[k]);n.upd=Date.now();nsPlain.delete(n.id);
+  n.title=v.title||"";n.body=v.body||"";if(v.html)n.html=v.html;["secret","vid","iv","ct"].forEach(k=>delete n[k]);n.upd=Date.now();nsPlain.delete(n.id);
   save();renderNotes();toast("La note n'est plus secrète");
 });
 // --- photos dans les notes (v24) : n.photos = [{id, up}] ; l'image (réduite, JPEG) est gardée sur l'appareil (IndexedDB)
@@ -2533,6 +2629,7 @@ function psRender(){
   $("psHead").textContent=L(ps.head||"Code");$("psTitle").textContent=L(T[0]);$("psSub").textContent=L(T[1]||"");
   $("psForgot").hidden=!(ps.step==="unlock"&&(ps.forgot||ps.rec||ps.phrase));
   $("psBio").hidden=!(ps.step==="unlock"&&ps.ctx&&bioHas(ps.ctx));$("psBio").textContent=bioUse();
+  if(ps.step==="unlock"&&ps.ctx&&!ps.autoDone){ps.autoDone=true;bioAuto(ps.ctx,()=>$("psBio").click())}
   [...$("psDots").children].forEach((d,i)=>d.classList.toggle("on",i<ps.buf.length));
 }
 function psFail(msg){const d=$("psDots");$("psErr").textContent=L(msg);d.classList.remove("shake");void d.offsetWidth;d.classList.add("shake");if(navigator.vibrate)navigator.vibrate(60);ps.buf="";psRender()}
@@ -2544,7 +2641,7 @@ async function psDone(){
   if(ps.step==="confirm"){if(code!==ps.first){ps.first="";ps.step="new";psFail("Les deux codes ne sont pas identiques. Recommence.");return}psEnd(code);return}
   if(Date.now()<ps.wait){psFail("Trop d'essais. Attends 30 secondes.");return}
   ps.busy=true;$("psErr").textContent="";const ok=await ps.verify(code);if(!ps)return;ps.busy=false;
-  if(ok){psEnd(code);return}
+  if(ok){const cx=ps.ctx;psEnd(code);if(cx)bioOffer(cx,code);return}
   ps.fails++;if(ps.fails>=5){ps.fails=0;ps.wait=Date.now()+30000;psFail("Trop d'essais. Attends 30 secondes.")}else psFail("Code incorrect.");
 }
 function psPress(k){
@@ -2572,11 +2669,13 @@ async function mcpLoad(){const sec=$("mcpSec");if(!sec)return;sec.hidden=!sessio
   const d=v=>v?new Date(v).toLocaleDateString(LANG==="fr"?"fr-BE":LANG==="nl"?"nl-BE":"en-GB",{day:"numeric",month:"short",year:"numeric"}):"";
   $("mcpList").innerHTML=mcpRows.map(r=>`<div class="row mcp-it"><div class="grow"><b>${esc(L("Adresse du"))} ${esc(d(r.created_at))}</b><span class="small muted">${r.last_used?`${esc(L("Utilisée le"))} ${esc(d(r.last_used))}`:esc(L("Pas encore utilisée"))}</span></div><button type="button" class="mini" data-mcpdel="${esc(r.hash)}">${esc(L("Retirer"))}</button></div>`).join("");
   $("mcpNew").textContent=L(mcpRows.length?"Créer une nouvelle adresse":"Créer mon adresse pour Claude")}
+// nouvelle adresse secrète : seule son empreinte part sur le serveur ; renvoie {url, hash}
+async function mcpCreate(label){const key=b64e(crypto.getRandomValues(new Uint8Array(32))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+  const hash=hex(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(key)));
+  await api("/rest/v1/mcp_tokens",{method:"POST",token:await token(),headers:{Prefer:"return=minimal"},body:{hash,user_id:session.user.id,label:String(label||"IA").slice(0,40)}});
+  return {url:SUPABASE_URL+"/functions/v1/mcp/"+key,hash}}
 $("mcpNew").addEventListener("click",async e=>{const b=e.currentTarget;if(b.disabled)return;b.disabled=true;
-  try{const key=b64e(crypto.getRandomValues(new Uint8Array(32))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
-    const hash=hex(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(key)));
-    await api("/rest/v1/mcp_tokens",{method:"POST",token:await token(),headers:{Prefer:"return=minimal"},body:{hash,user_id:session.user.id,label:"Claude"}});
-    $("mcpUrl").textContent=SUPABASE_URL+"/functions/v1/mcp/"+key;$("mcpOut").hidden=false;await mcpLoad()}
+  try{const r=await mcpCreate("Claude");$("mcpUrl").textContent=r.url;$("mcpOut").hidden=false;await mcpLoad()}
   catch(ex){toast(ex instanceof TypeError?"Pas de connexion internet":"Création impossible pour l'instant")}
   b.disabled=false});
 $("mcpCopy").addEventListener("click",async()=>{toast(await copyTxt($("mcpUrl").textContent)?"Adresse copiée":"Copie impossible : sélectionne-la et copie-la")});
@@ -2586,13 +2685,95 @@ $("mcpList").addEventListener("click",async e=>{const b=e.target.closest("[data-
   catch(ex){toast("Impossible pour l'instant")}});
 $("mcpSec").addEventListener("toggle",e=>{if(e.currentTarget.open)mcpLoad()});
 
+/* ---------- v39 : « Mon IA » : brancher son IA (Claude, ChatGPT, Le Chat) en quelques touches, et lui confier les calculs ---------- */
+// data.prefs.ai = "claude" | "chatgpt" | "mistral" (IA choisie) ; data.prefs.aiOk = date du premier appel reçu de cette IA (branchement vérifié)
+const AIS={
+  claude:{name:"Claude",ask:q=>"https://claude.ai/new?q="+encodeURIComponent(q),conn:"https://claude.ai/settings/connectors",
+    steps:()=>[T3("Touche « Ouvrir Claude » : la page Connecteurs s'ouvre (connecte-toi si besoin).","Tap “Open Claude”: the Connectors page opens (sign in if needed).","Tik op ‘Claude openen’: de pagina Connectoren opent (log in indien nodig)."),
+      T3("Touche « Ajouter un connecteur personnalisé ».","Tap “Add custom connector”.","Tik op ‘Aangepaste connector toevoegen’."),
+      T3("Nom : Sid'note. URL : colle l'adresse (elle est déjà copiée). Authentification : « Aucune connexion ».","Name: Sid'note. URL: paste the address (already copied). Authentication: “None”.","Naam: Sid'note. URL: plak het adres (al gekopieerd). Authenticatie: ‘Geen’."),
+      T3("Touche « Ajouter », puis reviens ici.","Tap “Add”, then come back here.","Tik op ‘Toevoegen’ en kom dan hier terug.")]},
+  chatgpt:{name:"ChatGPT",ask:q=>"https://chatgpt.com/?q="+encodeURIComponent(q),conn:"https://chatgpt.com/#settings/Connectors",
+    steps:()=>[T3("Il faut un abonnement ChatGPT payant (Plus, Pro ou Business).","You need a paid ChatGPT plan (Plus, Pro or Business).","Je hebt een betaald ChatGPT-abonnement nodig (Plus, Pro of Business)."),
+      T3("Touche « Ouvrir ChatGPT » → Paramètres → Applis et connecteurs → Paramètres avancés : active le « Mode développeur ».","Tap “Open ChatGPT” → Settings → Apps & Connectors → Advanced settings: turn on “Developer mode”.","Tik op ‘ChatGPT openen’ → Instellingen → Apps en connectoren → Geavanceerd: zet ‘Ontwikkelaarsmodus’ aan."),
+      T3("Toujours dans Applis et connecteurs, touche « Créer » : Nom : Sid'note, URL : colle l'adresse, Authentification : Aucune. Coche « Je fais confiance à cette application », puis Créer.","Still in Apps & Connectors, tap “Create”: Name: Sid'note, URL: paste the address, Authentication: None. Tick “I trust this application”, then Create.","Nog steeds in Apps en connectoren, tik op ‘Maken’: Naam: Sid'note, URL: plak het adres, Authenticatie: Geen. Vink ‘Ik vertrouw deze app’ aan en maak aan."),
+      T3("Dans une conversation, touche « + » et active Sid'note, puis reviens ici.","In a chat, tap “+” and turn on Sid'note, then come back here.","Tik in een gesprek op ‘+’ en zet Sid'note aan, kom dan hier terug.")]},
+  mistral:{name:"Le Chat (Mistral)",ask:q=>"https://chat.mistral.ai/chat?q="+encodeURIComponent(q),conn:"https://chat.mistral.ai/",
+    steps:()=>[T3("Touche « Ouvrir Le Chat », puis ouvre le menu → Intelligence → Connecteurs.","Tap “Open Le Chat”, then open the menu → Intelligence → Connectors.","Tik op ‘Le Chat openen’ en open dan het menu → Intelligence → Connectoren."),
+      T3("Touche « + Ajouter un connecteur » → « Connecteur MCP personnalisé ».","Tap “+ Add connector” → “Custom MCP connector”.","Tik op ‘+ Connector toevoegen’ → ‘Aangepaste MCP-connector’."),
+      T3("Nom : Sid'note. URL : colle l'adresse. Authentification : aucune. Puis « Connecter ».","Name: Sid'note. URL: paste the address. Authentication: none. Then “Connect”.","Naam: Sid'note. URL: plak het adres. Authenticatie: geen. Dan ‘Verbinden’."),
+      T3("Dans une conversation, active Sid'note dans les outils, puis reviens ici.","In a chat, turn on Sid'note in the tools, then come back here.","Zet Sid'note in een gesprek aan bij de tools en kom dan hier terug.")]}};
+const aiCur=()=>AIS[data.prefs.ai]||null;
+const AI_TEST=()=>T3("Qu'est-ce que j'ai de prévu aujourd'hui dans Sid'note ?","What do I have planned today in Sid'note?","Wat staat er vandaag gepland in Sid'note?");
+const AI_HABIT=()=>T3("À partir de maintenant, quand je te dis ce que j'ai mangé ou que je t'envoie la photo de mon assiette, calcule les calories et note-le toujours dans Sid'note, sans me le redemander.","From now on, whenever I tell you what I ate or send a photo of my plate, work out the calories and always log it in Sid'note without asking me again.","Vanaf nu: als ik je vertel wat ik gegeten heb of een foto van mijn bord stuur, bereken de calorieën en noteer het altijd in Sid'note zonder het opnieuw te vragen.");
+let aiW={step:"pick",url:"",hash:"",poll:null};
+function aiWizard(){aiW={step:data.prefs.ai&&!data.prefs.aiOk?"setup":"pick",url:"",hash:"",poll:null};$("aiSheet").hidden=false;aiRender()}
+function aiStop(){if(aiW.poll){clearInterval(aiW.poll);aiW.poll=null}}
+function aiRender(){const b=$("aiBody"),ai=aiCur();aiStop();
+  if(aiW.step==="pick"){$("aiTitle").textContent=L("Brancher mon IA");
+    b.innerHTML=`<p class="small muted" style="margin:0 0 12px">${L("Ton IA calcule tes repas, crée tes menus et lit ton agenda, puis écrit tout dans Sid'note. Quelle IA utilises-tu ?")}</p>
+      <div class="ai-pick">${Object.entries(AIS).map(([k,a])=>`<button type="button" class="ai-opt" data-aipick="${k}" aria-pressed="${data.prefs.ai===k}"><b>${esc(a.name)}</b>${k==="claude"?`<span class="small muted">${L("Le plus simple")}</span>`:k==="chatgpt"?`<span class="small muted">${L("Abonnement payant")}</span>`:""}</button>`).join("")}
+      <button type="button" class="ai-opt" data-aipick="none"><b>${L("Je n'en ai pas")}</b><span class="small muted">${L("On t'aide à commencer")}</span></button></div>`;return}
+  if(aiW.step==="none"){$("aiTitle").textContent=L("Commencer avec une IA");
+    b.innerHTML=`<p>${L("Le plus simple, c'est Claude : crée un compte (e-mail ou Google), puis reviens ici et choisis Claude.")}</p>
+      <div class="ai-acts"><a class="btn" href="https://claude.ai/login" target="_blank" rel="noopener">${L("Créer mon compte Claude")}</a><button type="button" class="btn ghost" data-aistep="pick">${L("C'est fait, continuer")}</button></div>`;return}
+  if(aiW.step==="setup"){$("aiTitle").textContent=ai.name;
+    b.innerHTML=`<div class="ai-step"><b>1. ${L("Ton adresse Sid'note")}</b><div class="small muted">${L("Personnelle et secrète : elle donne accès à ton agenda, tes tâches, tes notes et ta nutrition.")}</div>
+        <div class="mcp-url notr" id="aiUrl">${aiW.url?esc(aiW.url):L("Création…")}</div><button type="button" class="btn ghost" data-aicopy="1" style="width:100%;margin-top:8px">${L("Copier l'adresse")}</button></div>
+      <div class="ai-step"><b>2. ${L("Ajoute-la dans")} ${esc(ai.name)}</b><ol class="small mcp-steps">${ai.steps().map(x=>`<li>${esc(x)}</li>`).join("")}</ol>
+        <a class="btn" href="${ai.conn}" target="_blank" rel="noopener" style="width:100%;margin-top:8px">${L("Ouvrir")} ${esc(ai.name)}</a></div>
+      <div class="ai-acts"><button type="button" class="btn ghost" data-aistep="pick">${L("Changer d'IA")}</button><button type="button" class="btn" data-aistep="test">${L("C'est fait : tester")}</button></div>`;
+    if(!aiW.url)mcpCreate(ai.name).then(r=>{aiW.url=r.url;aiW.hash=r.hash;const u=$("aiUrl");if(u)u.textContent=r.url;copyTxt(r.url).then(ok=>{if(ok)toast("Adresse copiée")});mcpLoad()})
+      .catch(ex=>{const u=$("aiUrl");if(u)u.textContent=L(ex instanceof TypeError?"Pas de connexion internet":"Création impossible pour l'instant")});
+    return}
+  if(aiW.step==="test"){$("aiTitle").textContent=ai.name;const ok=!!data.prefs.aiOk&&!aiW.hash;
+    b.innerHTML=`<div class="ai-step"><b>3. ${L("Envoie ce message à")} ${esc(ai.name)}</b><div class="ai-prompt notr">${esc(AI_TEST())}</div>
+        <a class="btn" href="${ai.ask(AI_TEST())}" target="_blank" rel="noopener" style="width:100%;margin-top:8px">${L("Envoyer avec")} ${esc(ai.name)}</a></div>
+      <div class="ai-wait" id="aiWait">${ok?`<b class="ok">✓ ${L("C'est branché !")}</b>`:`<span class="spin"></span>${L("En attente de ton IA… (accepte l'accès à Sid'note si elle te le demande)")}`}</div>
+      <div class="ai-step" id="aiHabit" ${ok?"":"hidden"}><b>${L("Dernière astuce")}</b><div class="small muted">${L("Pour que tes repas arrivent tout seuls dans Sid'note, envoie-lui une fois ce message :")}</div>
+        <div class="ai-prompt notr">${esc(AI_HABIT())}</div><a class="btn ghost" href="${ai.ask(AI_HABIT())}" target="_blank" rel="noopener" style="width:100%;margin-top:8px">${L("Envoyer avec")} ${esc(ai.name)}</a></div>
+      <div class="ai-acts"><button type="button" class="btn ghost" data-aistep="setup">${L("Revoir les étapes")}</button><button type="button" class="btn" id="aiDone" ${ok?"":"hidden"}>${L("Terminer")}</button></div>`;
+    if(!ok)aiW.poll=setInterval(aiCheck,3000);return}}
+// le branchement est confirmé dès que l'IA a utilisé l'adresse (mcp_tokens.last_used)
+async function aiCheck(){if($("aiSheet").hidden){aiStop();return}
+  try{const q=aiW.hash?`&hash=eq.${aiW.hash}`:"";const r=await api(`/rest/v1/mcp_tokens?select=last_used${q}&last_used=not.is.null&limit=1`,{token:await token()});
+    if(Array.isArray(r)&&r.length){aiStop();data.prefs.aiOk=new Date().toISOString();save();aiW.hash="";aiRender();renderAiCards();if(navigator.vibrate)navigator.vibrate([20,40,20])}}catch(e){}}
+$("aiBody").addEventListener("click",e=>{const p=e.target.closest("[data-aipick]");
+  if(p){const k=p.dataset.aipick;if(k==="none"){aiW.step="none";aiRender();return}
+    if(data.prefs.ai!==k){data.prefs.ai=k;delete data.prefs.aiOk;save()}aiW.step="setup";aiRender();return}
+  const st=e.target.closest("[data-aistep]");if(st){aiW.step=st.dataset.aistep;aiRender();return}
+  if(e.target.closest("[data-aicopy]")){copyTxt(aiW.url).then(ok=>toast(ok?"Adresse copiée":"Copie impossible : sélectionne-la et copie-la"));return}
+  if(e.target.closest("#aiDone")){$("aiSheet").hidden=true;aiStop();toast("Ton IA est branchée sur Sid'note")}});
+$("aiClose").addEventListener("click",()=>{$("aiSheet").hidden=true;aiStop()});
+$("aiSheet").addEventListener("click",e=>{if(e.target.id==="aiSheet"){$("aiSheet").hidden=true;aiStop()}});
+document.addEventListener("click",e=>{if(e.target.closest("[data-aiwiz]")){$("aiAskSheet").hidden=true;aiWizard()}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&!$("aiSheet").hidden&&aiW.step==="test")aiCheck()});
+// demande confiée à l'IA : message prêt, ouvert dans l'IA d'un toucher (ou copié)
+function aiHandoff(prompt){const ai=aiCur();$("aaPrompt").textContent=prompt;
+  $("aaActs").innerHTML=(ai&&data.prefs.aiOk?"":`<button type="button" class="btn" data-aiwiz="1">${L("Brancher mon IA")}</button>`)+
+    (ai?`<a class="btn ${data.prefs.aiOk?"":"ghost"}" href="${ai.ask(prompt)}" target="_blank" rel="noopener">${L("Envoyer avec")} ${esc(ai.name)}</a>`:"")+
+    `<button type="button" class="btn ghost" id="aaCopy">${L("Copier le message")}</button>`;
+  $("aiAskSheet").hidden=false}
+$("aaActs").addEventListener("click",e=>{if(e.target.closest("#aaCopy"))copyTxt($("aaPrompt").textContent).then(ok=>toast(ok?"Message copié : colle-le dans ton IA":"Copie impossible"));
+  else if(e.target.closest("a"))setTimeout(()=>{$("aiAskSheet").hidden=true},300)});
+$("aaClose").addEventListener("click",()=>$("aiAskSheet").hidden=true);
+$("aiAskSheet").addEventListener("click",e=>{if(e.target.id==="aiAskSheet")$("aiAskSheet").hidden=true});
+// cartes « Mon IA » : Nutrition, Réglages
+function renderAiCards(){const ai=aiCur(),ok=!!(ai&&data.prefs.aiOk);
+  const st=$("aiState");if(st)st.innerHTML=ok?`<b class="ok">✓ ${esc(ai.name)} ${L("est branchée")}</b>`:`<span class="small muted">${L("Aucune IA branchée pour l'instant.")}</span>`;
+  const c=$("nuAiCard");if(!c)return;c.hidden=isTrial();
+  c.innerHTML=ok?`<div class="grow"><b>${IC("sparkle")||""} ${L("Ton IA calcule pour toi")}</b><div class="small muted">${L("Dis-lui ce que tu as mangé ou envoie-lui la photo de ton assiette : tout arrive ici.")}</div></div><a class="btn" href="${ai.ask(T3("J'ai mangé : ","I ate: ","Ik heb gegeten: "))}" target="_blank" rel="noopener">${L("Ouvrir")} ${esc(ai.name)}</a>`
+    :`<div class="grow"><b>${L("Branche ton IA")}</b><div class="small muted">${L("Calories, menus et bilans sont calculés par ton IA (Claude, ChatGPT…), gratuitement avec ton abonnement. 2 minutes, une seule fois.")}</div></div><button type="button" class="btn" data-aiwiz="1">${L("Brancher")}</button>`}
+
 /* ---------- v38 : Face ID / Touch ID (WebAuthn + extension PRF) ---------- */
 // Une clé d'accès (passkey) propre à Sid'note donne, après Face ID, un secret (PRF) qui chiffre le code à 5 chiffres sur cet appareil.
 // Rien ne part sur le serveur : localStorage « sidnote-bio-<uid> » = {cred, salt, main?, notes?} (main = mots de passe + documents).
 // Face ID ne fait que retrouver le code : tout le reste (phrase secrète, coffres) ne change pas, et le code marche toujours.
 const bioLsKey=()=>"sidnote-bio-"+session.user.id;
 const bioStore=()=>session&&ls.get(bioLsKey())||null;
-const bioOk=()=>!!(window.PublicKeyCredential&&navigator.credentials&&window.isSecureContext&&session&&!isTrial());
+// v39 : seulement si l'appareil a vraiment Face ID / Touch ID (capteur de l'appareil, pas une clé USB)
+let bioPlat=false;try{PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(v=>{bioPlat=!!v;try{renderBio()}catch(e){}}).catch(()=>{})}catch(e){}
+const bioOk=()=>!!(window.PublicKeyCredential&&navigator.credentials&&window.isSecureContext&&session&&!isTrial()&&bioPlat);
 const bioHas=ctx=>{const s=bioStore();return !!(s&&s[ctx])};
 const bioName=()=>/iPhone|iPad|Macintosh/.test(navigator.userAgent)?"Face ID":L("l'empreinte");
 const bioUse=()=>`${L("Utiliser")} ${bioName()}`;
@@ -2604,26 +2785,42 @@ async function bioPrf(s){
     allowCredentials:[{type:"public-key",id:b64d(s.cred)}],extensions:{prf:{eval:{first:b64d(s.salt)}}}}});
   const p=r.getClientExtensionResults().prf,first=p&&p.results&&p.results.first;if(!first)throw new Error("noprf");return bioKey(first)}
 // code retrouvé par Face ID (null si annulé ou impossible)
-async function bioCode(ctx){const s=bioStore();if(!s||!s[ctx])return null;try{return (await decJ(await bioPrf(s),s[ctx])).c}catch(e){return null}}
+// v39 : erreurs Face ID relevées (table client_errors) pour comprendre ce qui bloque sur un iPhone donné
+const bioErr=(where,e)=>{try{reportErr(`bio ${where}: ${e&&e.name||""} ${e&&e.message||e}`.slice(0,400),"")}catch(x){}};
+const bioMsg=e=>e&&e.name==="NotAllowedError"?"Face ID annulé":e&&e.message==="noprf"?"Ton appareil ne permet pas Face ID ici (iPhone : iOS 18 ou plus)":`${L("Face ID indisponible")} (${e&&e.name||"?"})`;
+async function bioCode(ctx){const s=bioStore();if(!s||!s[ctx])return null;try{return (await decJ(await bioPrf(s),s[ctx])).c}catch(e){if(!(e&&e.name==="NotAllowedError"))bioErr("get",e);return null}}
 function bioDrop(ctx){const s=bioStore();if(!s)return;delete s[ctx];if(!s.main&&!s.notes)ls.del(bioLsKey());else ls.set(bioLsKey(),s);renderBio()}
 // le code qui ouvre chaque coffre de cet appareil (vérifié avant d'être gardé)
 const bioCtxs=()=>[...((vaultOn()||(data.docVault&&data.docVault.chk))?["main"]:[]),...(nsOn()?["notes"]:[])];
 async function bioCheck(ctx,code){try{const v=ctx==="notes"?data.noteVault:(vaultOn()?data.vault:data.docVault);await vOpen(v,code,ctx);return true}catch(e){return false}}
-async function bioEnable(){
+// ajoute un coffre à Face ID quand la passkey existe déjà (un seul Face ID) ; sinon activation complète
+async function bioAdd(ctx,code){const s=bioStore();
+  if(!(s&&s.cred))return bioEnable({[ctx]:code});
+  try{s[ctx]=await encJ(await bioPrf(s),{c:code});ls.set(bioLsKey(),s);renderBio();toast(`${bioName()} ${L("est activé")}`)}catch(e){bioErr("add",e);toast(bioMsg(e))}}
+// v39 : proposé tout seul juste après avoir tapé (ou choisi) le bon code, une fois ; « Plus tard » → reproposé dans 30 jours
+let bioOffered=new Set();
+function bioOffer(ctx,code){if(!bioOk()||!code||bioHas(ctx)||bioOffered.has(ctx))return;
+  const no=ls.get("sidnote-bio-no-"+session.user.id)||0;if(Date.now()-no<30*864e5)return;bioOffered.add(ctx);
+  setTimeout(()=>openActions(`${L("Ouvrir avec")} ${bioName()} ?`,[{l:`${L("Activer")} ${bioName()}`,fn:()=>bioAdd(ctx,code)},{l:"Plus tard",fn:()=>ls.set("sidnote-bio-no-"+session.user.id,Date.now())}]),350)}
+// v39 : en arrivant sur un coffre verrouillé, Face ID se lance tout seul (pendant le toucher : Safari l'exige)
+const bioAutoAt={};
+function bioAuto(ctx,go){if(!bioHas(ctx)||Date.now()-(bioAutoAt[ctx]||0)<4000)return;bioAutoAt[ctx]=Date.now();go()}
+async function bioEnable(pre){
   if(!bioOk())return toast("Ce navigateur ne permet pas Face ID");
-  const ctxs=bioCtxs();if(!ctxs.length)return toast("Choisis d'abord un code (Mots de passe ou Documents)");
+  const ctxs=pre?Object.keys(pre):bioCtxs();if(!ctxs.length)return toast("Choisis d'abord un code (Mots de passe ou Documents)");
   // 1) la passkey (tout de suite, pendant le toucher : Safari l'exige)
   let cred,first;const salt=crypto.getRandomValues(new Uint8Array(32));
-  try{const c=await navigator.credentials.create({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rp:{name:"Sid'note",id:location.hostname},
+  const opts=ev=>({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rp:{name:"Sid'note",id:location.hostname},
       user:{id:crypto.getRandomValues(new Uint8Array(16)),name:accEmail()||"Sid'note",displayName:"Sid'note"},pubKeyCredParams:[{type:"public-key",alg:-7},{type:"public-key",alg:-257}],
-      authenticatorSelection:{authenticatorAttachment:"platform",residentKey:"preferred",userVerification:"required"},timeout:60000,attestation:"none",extensions:{prf:{eval:{first:salt}}}}});
+      authenticatorSelection:{authenticatorAttachment:"platform",residentKey:"preferred",userVerification:"required"},timeout:60000,attestation:"none",extensions:{prf:ev?{eval:{first:salt}}:{}}}});
+  try{let c;try{c=await navigator.credentials.create(opts(true))}catch(e){if(e&&e.name==="NotAllowedError")throw e;bioErr("create-eval",e);c=await navigator.credentials.create(opts(false))}
     const p=c.getClientExtensionResults().prf||{};if(!p.enabled&&!(p.results&&p.results.first))throw new Error("noprf");
     cred=b64e(c.rawId);first=p.results&&p.results.first}
-  catch(e){toast(e&&e.message==="noprf"?"Ton appareil ne permet pas Face ID ici (iPhone : iOS 18 ou plus)":"Face ID n'a pas été activé");return}
+  catch(e){if(!(e&&e.name==="NotAllowedError"))bioErr("create",e);toast(bioMsg(e));return}
   const s={cred,salt:b64e(salt)};
-  // 2) les codes de cet appareil
-  const codes={};
-  for(const ctx of ctxs){const isN=ctx==="notes";
+  // 2) les codes de cet appareil (déjà connus quand Face ID est proposé juste après le code)
+  const codes={...(pre||{})};
+  for(const ctx of pre?[]:ctxs){const isN=ctx==="notes";
     if(isV2(isN?data.noteVault:(vaultOn()?data.vault:data.docVault))&&!mkHas(ctx))continue; // coffre pas encore ouvert sur cet appareil
     const code=await askPin({mode:"unlock",head:bioName(),sub:isN?"Entre le code de tes notes secrètes.":"Entre ton code (mots de passe et documents).",verify:c=>bioCheck(ctx,c)});
     if(code)codes[ctx]=code}
@@ -2631,7 +2828,7 @@ async function bioEnable(){
   // 3) chiffrés avec le secret de la passkey (si l'appareil ne l'a pas donné à la création, on le redemande par Face ID)
   const fin=async k=>{for(const ctx in codes)s[ctx]=await encJ(k,{c:codes[ctx]});ls.set(bioLsKey(),s);renderBio();toast(`${bioName()} ${L("est activé")}`)};
   if(first)return fin(await bioKey(first));
-  openActions(bioName(),[{l:`${L("Confirmer avec")} ${bioName()}`,fn:async()=>{try{await fin(await bioPrf(s))}catch(e){toast("Face ID n'a pas été activé")}}}]);
+  openActions(bioName(),[{l:`${L("Confirmer avec")} ${bioName()}`,fn:async()=>{try{await fin(await bioPrf(s))}catch(e){if(!(e&&e.name==="NotAllowedError"))bioErr("confirm",e);toast(bioMsg(e))}}}]);
 }
 function renderBio(){const c=$("bioCard");if(!c)return;const on=bioOk()&&bioCtxs().length>0;c.hidden=!on;if(!on)return;
   const s=bioStore(),act=!!(s&&(s.main||s.notes));$("bioT").textContent=bioName();$("bioBtn").textContent=L(act?"Désactiver":"Activer");
@@ -2685,7 +2882,8 @@ async function phDerive(ph,salt,iter){
   const raw=b64e(await crypto.subtle.deriveBits({name:"PBKDF2",salt:b64d(salt),iterations:iter||PIN_ITER,hash:"SHA-256"},base,256));
   return {raw,key:await rawKey(raw)}}
 async function phCheck(ph){const x=data.phx,mk=await phDerive(ph,x.salt,x.iter);await decJ(mk.key,x.chk);return mk} // erreur si la phrase est fausse
-async function mkWrap(ctx,code,mk){const s=mkStore(),salt=rnd(16);s.phx=data.phx.id;s[ctx]={salt,...await encJ(await pinKey(code,salt,PIN_ITER),{k:mk.raw})};ls.set(mkLsKey(),s)}
+async function mkWrap(ctx,code,mk){const s=mkStore(),salt=rnd(16);s.phx=data.phx.id;s[ctx]={salt,...await encJ(await pinKey(code,salt,PIN_ITER),{k:mk.raw})};ls.set(mkLsKey(),s);
+  if(bioHas(ctx))bioDrop(ctx);bioOffer(ctx,code)} // nouveau code sur cet appareil : Face ID est (re)proposé avec ce code
 async function mkUnwrap(ctx,code){const w=mkStore()[ctx];if(!w)throw new Error("nodev");const raw=(await decJ(await pinKey(code,w.salt,PIN_ITER),w)).k;return {raw,key:await rawKey(raw)}}
 async function v2Make(mk,ok,extra){const raw=rnd(32),key=await rawKey(raw),now=Date.now();
   return {v:{id:uid(),v:2,wk:await encJ(mk.key,{k:raw}),chk:await encJ(key,{ok}),createdAt:new Date(now).toISOString(),at:now,...(extra||{})},key}}
@@ -2849,7 +3047,7 @@ async function pinDone(){
   if(Date.now()<pinWait){pinFail("Trop d'essais. Attends 30 secondes.");return}
   pinBusy=true;$("pinErr").textContent="";
   try{const v=data.vault,key=await vOpen(v,code,"main");
-    pinFails=0;vaultKey=key;vaultVid=v.id;pinBuf="";pinStep="";renderPwd();vaultLoad();
+    pinFails=0;vaultKey=key;vaultVid=v.id;pinBuf="";pinStep="";renderPwd();vaultLoad();if(!pinBioRun)bioOffer("main",code);
     if(!isV2(v)){v2Upgrade("pw",code,key).then(nk=>{if(nk&&vaultKey){vaultKey=nk;vaultVid=data.vault.id;vaultItems=new Map();vaultLoad()}})}}
   catch(ex){pinFails++;if(pinFails>=5){pinFails=0;pinWait=Date.now()+30000;pinFail("Trop d'essais. Attends 30 secondes.")}else pinFail("Code incorrect.")}
   pinBusy=false;
@@ -2863,8 +3061,9 @@ function pinPress(k){
 padTap($("pinPad"),"pin",pinPress);
 document.addEventListener("keydown",e=>{if(data.ui.view!=="pwd"||vaultKey||!$("pwSheet").hidden||!$("pinSheet").hidden||document.body.classList.contains("locked"))return;
   if(/^[0-9]$/.test(e.key))pinPress(e.key);else if(e.key==="Backspace")pinPress("del")});
+let pinBioRun=false;
 $("pinBio").addEventListener("click",async()=>{if(pinBusy||vaultKey)return;const code=await bioCode("main");if(!code||vaultKey)return;
-  pinBuf=code;pinStep="unlock";pinWait=0;await pinDone();if(!vaultKey){bioDrop("main");$("pinErr").textContent=L("Ton code a changé : tape-le, puis réactive Face ID dans Réglages.")}});
+  pinBuf=code;pinStep="unlock";pinWait=0;pinBioRun=true;await pinDone();pinBioRun=false;if(!vaultKey){bioDrop("main");$("pinErr").textContent=L("Ton code a changé : tape-le, puis réactive Face ID dans Réglages.")}});
 $("pinForgot").addEventListener("click",async e=>{const b=e.currentTarget;
   if(isV2(data.vault)){const code=await devSetup("main","Mots de passe",true);if(code){pinBuf=code;pinStep="unlock";pinWait=0;pinDone()}return}
   if(data.vault&&data.vault.rec){const code=await recRecover(data.vault);if(code){pinBuf=code;pinStep="unlock";pinWait=0;pinDone()}return}
@@ -2961,8 +3160,19 @@ $("palSel").addEventListener("click",e=>{const b=e.target.closest("[data-pal]");
 $("themeSel").addEventListener("click",e=>{const b=e.target.closest("[data-theme]");if(!b)return;data.prefs.theme=b.dataset.theme;save();applyLook();renderLook()});
 applyLook();
 // sections des réglages : on se souvient de celles qui sont ouvertes (sur cet appareil)
-document.querySelectorAll("#v-more .setsec").forEach(d=>{const o=(data.ui.setOpen||{})[d.dataset.sec];if(o!==undefined)d.open=o;
-  d.addEventListener("toggle",()=>{data.ui.setOpen=data.ui.setOpen||{};data.ui.setOpen[d.dataset.sec]=d.open;saveUI()})});
+// v39 : les sections de Réglages s'ouvrent fermées à chaque lancement (demande de Sid : « quand je reviens, tout est fermé »)
+data.ui.setOpen={};
+/* ---------- v39 : tout se referme quand on revient (lancement, ou retour après 10 min ailleurs) ---------- */
+function closeAll(){
+  document.querySelectorAll(".sheet-bg:not([hidden])").forEach(sb=>{const x=sb.querySelector(".sheet-head .x,[data-esc]");if(x)x.click();else sb.hidden=true});
+  ["viewer","lightbox"].forEach(id=>{const v=$(id);if(v&&!v.hidden){const c=v.querySelector("#vwClose,#lbClose,.x");if(c)c.click();else v.hidden=true}});
+  document.querySelectorAll("details.setsec[open],details[open]").forEach(d=>d.open=false);
+  ["nfForm","catForm"].forEach(id=>{const f=$(id);if(f)f.hidden=true});
+  if(noteOpenId)closeNote();noteDir=null;if(typeof qOpen!=="undefined")qOpen=false;
+  if(calMode==="day"){calMode="month";renderCal()}
+  if(typeof syncScrollLock==="function")syncScrollLock()}
+let awayAt=0;document.addEventListener("visibilitychange",()=>{if(document.hidden){awayAt=Date.now();return}
+  if(awayAt&&Date.now()-awayAt>10*60000&&session)closeAll();awayAt=0});
 
 /* ---------- dictée vocale ---------- */
 // Reconnaissance vocale du navigateur (Safari iOS 14.5+). Sinon, le micro du clavier de l'iPhone marche toujours.
@@ -2982,7 +3192,48 @@ function dictate(btn,field,onChange){
   rec.onend=()=>{if(dict&&dict.rec===rec){btn.classList.remove("on");dict=null}};
   try{rec.start();dict={rec,btn};btn.classList.add("on");toast("Parle, je t'écoute…")}catch(e){toast("Dictée indisponible ici : touche le micro du clavier de l'iPhone.")}
 }
-$("noteMic").addEventListener("click",e=>dictate(e.currentTarget,$("noteBody"),noteInput));
+$("noteMic").addEventListener("click",e=>{const el=$("noteBody");if(dict){dictate(e.currentTarget,null);return}
+  // le texte dicté arrive dans un petit repère posé à l'endroit du curseur (l'éditeur n'est pas un champ texte)
+  el.focus();const sel=getSelection();let r=sel.rangeCount&&el.contains(sel.anchorNode)?sel.getRangeAt(0):null;
+  if(!r){r=document.createRange();r.selectNodeContents(el);r.collapse(false)}
+  const sp=document.createElement("span");sp.className="dict-tmp";r.deleteContents();r.insertNode(sp);
+  const field={get value(){return sp.textContent},set value(x){sp.textContent=x},selectionStart:0,selectionEnd:0,focus(){el.focus()}};
+  dictate(e.currentTarget,field,()=>{noteInput()});
+  const stopWatch=setInterval(()=>{if(!dict||dict.btn!==e.currentTarget){clearInterval(stopWatch);if(sp.isConnected)sp.replaceWith(...sp.childNodes);noteInput()}},500)});
+// --- barre de mise en forme ---
+function rtBlock(){const s=getSelection();let n=s.rangeCount?s.anchorNode:null;while(n&&n!==$("noteBody")){if(n.nodeType===1&&/^(H2|H3|BLOCKQUOTE|LI|DIV|P)$/.test(n.tagName))return n;n=n.parentNode}return null}
+function rtCmd(k){const el=$("noteBody");el.focus();const ex=(c,v)=>document.execCommand(c,false,v===undefined?null:v);
+  const b=rtBlock(),tag=b&&b.tagName;
+  if(k==="h2"||k==="h3")ex("formatBlock",tag===k.toUpperCase()?"div":k);
+  else if(k==="quote")ex("formatBlock",b&&b.closest("blockquote")?"div":"blockquote");
+  else if(k==="ul"||k==="ol")ex(k==="ul"?"insertUnorderedList":"insertOrderedList");
+  else if(k==="chk"){const ul0=b&&b.closest("ul");if(ul0&&ul0.classList.contains("chk")){ul0.classList.remove("chk");ex("insertUnorderedList")}
+    else{if(!ul0)ex("insertUnorderedList");const s=getSelection(),n=s.anchorNode&&(s.anchorNode.nodeType===1?s.anchorNode:s.anchorNode.parentNode),ul=n&&n.closest&&n.closest("ul");
+      if(ul){ul.className="chk";ul.querySelectorAll(":scope>li").forEach(li=>{if(!li.hasAttribute("data-c"))li.setAttribute("data-c","0")})}}}
+  else if(k==="hr")ex("insertHorizontalRule");
+  else if(k==="mark"){const s=getSelection();const n=s.anchorNode&&(s.anchorNode.nodeType===1?s.anchorNode:s.anchorNode.parentNode),m=n&&n.closest&&n.closest("mark");
+    if(m)m.replaceWith(...m.childNodes);else if(s.rangeCount&&!s.isCollapsed){const t=s.toString();ex("insertHTML",`<mark>${esc(t).replace(/\n/g,"<br>")}</mark>`)}else toast("Sélectionne d'abord du texte")}
+  else if(k==="clear"){ex("removeFormat");if(tag&&tag!=="DIV"&&tag!=="LI")ex("formatBlock","div");const m=b&&b.querySelectorAll("mark");if(m)m.forEach(x=>x.replaceWith(...x.childNodes))}
+  else ex(k);
+  noteInput();rtState()}
+function rtState(){const q=c=>{try{return document.queryCommandState(c)}catch(e){return false}},b=rtBlock(),tag=b&&b.tagName;
+  document.querySelectorAll("#rtBar [data-rt]").forEach(x=>{const k=x.dataset.rt;let on=false;
+    if(["bold","italic","underline","strikeThrough"].includes(k))on=q(k);else if(k==="h2"||k==="h3")on=tag===k.toUpperCase();else if(k==="quote")on=!!(b&&b.closest("blockquote"));
+    else if(k==="ul")on=!!(b&&b.closest("ul:not(.chk)"));else if(k==="ol")on=!!(b&&b.closest("ol"));else if(k==="chk")on=!!(b&&b.closest("ul.chk"));
+    x.setAttribute("aria-pressed",String(on))})}
+// les boutons ne prennent pas le focus : la sélection et le clavier restent dans la note
+$("rtBar").addEventListener("pointerdown",e=>{if(e.target.closest("[data-rt]"))e.preventDefault()});
+$("rtBar").addEventListener("mousedown",e=>{if(e.target.closest("[data-rt]"))e.preventDefault()});
+$("rtBar").addEventListener("click",e=>{const b=e.target.closest("[data-rt]");if(b)rtCmd(b.dataset.rt)});
+document.addEventListener("selectionchange",()=>{if(noteOpenId&&$("noteBody").contains(document.activeElement||null)||document.activeElement===$("noteBody"))rtState()});
+// cases à cocher : toucher la case coche ou décoche
+$("noteBody").addEventListener("click",e=>{const li=e.target.closest("ul.chk>li");if(!li)return;const r=li.getBoundingClientRect();
+  if(e.clientX-r.left<30){e.preventDefault();li.setAttribute("data-c",li.getAttribute("data-c")==="1"?"0":"1");noteInput()}});
+// collage : mise en forme nettoyée (rien d'exécutable, pas de couleurs ni de polices)
+$("noteBody").addEventListener("paste",e=>{const cd=e.clipboardData;if(!cd)return;const h=cd.getData("text/html"),t=cd.getData("text/plain");e.preventDefault();
+  document.execCommand("insertHTML",false,h?rtClean(h):rtFromText(t));noteInput()});
+// Entrée sur une case vide d'une liste de cases : nouvelle case non cochée
+$("noteBody").addEventListener("keyup",e=>{if(e.key==="Enter"){const b=rtBlock(),li=b&&b.closest("ul.chk>li");if(li&&li.getAttribute("data-c")==="1"&&!li.textContent.trim())li.setAttribute("data-c","0")}});
 $("nuMic").addEventListener("click",e=>dictate(e.currentTarget,$("nuAsk")));
 document.addEventListener("visibilitychange",()=>{if(document.hidden)dictStop()});
 
@@ -2999,7 +3250,7 @@ function micFor(inp){if(!inp||inp.dataset.mic)return;inp.dataset.mic="1";
 /* ---------- nutrition (calories et macros, calculés par Claude) ---------- */
 // data.nutri = {profile, plan, menuPrefs, menu, upd, rev, log:[{id, day, at, grp, gname, gem, name, qty, em, kcal, p, c, f, upd}], weights:[{id, day, kg, upd}], weeks:[…]}
 // Accès réservé (le reste des comptes voit l'onglet flouté « Bientôt disponible ») ; la fonction serveur vérifie aussi.
-const nutriAllowed=()=>!!session&&Array.isArray(session.feat)&&session.feat.includes("nutri");
+const nutriAllowed=()=>!!session; // v39 : pour tout le monde
 function applySoon(){const on=!nutriAllowed();document.querySelectorAll(".soonable").forEach(sec=>{sec.classList.toggle("is-soon",on);sec.querySelector(".soon").hidden=!on})}
 const NU=()=>{const n=data.nutri||(data.nutri={});if(!Array.isArray(n.log))n.log=[];if(!Array.isArray(n.weights))n.weights=[];if(!Array.isArray(n.weeks))n.weeks=[];return n};
 let nuDay=iso(today()),nuEditing=false,nuDraft=null,nuPending=null,nuBusy="",nuEditId=null,nuPhoto=null;
@@ -3009,13 +3260,55 @@ const numIn=v=>{const n=parseFloat(String(v||"").replace(",",".").replace(/[^0-9
 function parseDur(v){v=String(v||"").toLowerCase().replace(/\s/g,"");if(!v)return 0;let m=v.match(/^(\d+)(?:h|:)(\d{0,2})/);if(m)return +m[1]*60+(+m[2]||0);m=v.match(/^(\d+)/);return m?+m[1]:0}
 const fmtDur=m=>!m?"":m>=60?`${Math.floor(m/60)}h${m%60?two(m%60):""}`:`${m} min`;
 const MAC=[["p","Protéines","--m-p"],["c","Glucides","--m-c"],["f","Lipides","--m-f"]];
-async function nuCall(kind,payload){
-  if(!navigator.onLine)throw new Error(L("Pas de connexion internet"));
+/* v39 : plus de clé Claude de Sid. Le profil est calculé dans l'app ; les aliments déjà connus viennent de la mémoire partagée (gratuite) ;
+   le reste (aliment inconnu, photo, menu, recette, bilan) est confié à l'IA de la personne, branchée par le connecteur (aiHandoff). */
+const T3=(fr,en,nl)=>LANG==="en"?en:LANG==="nl"?nl:fr;
+async function nuCall(kind,payload){payload=payload||{};
   if(!(await nuConsent()))throw new Error(L("Il faut ton accord pour utiliser Nutrition (données de santé)."));
-  const j=await api("/functions/v1/nutrition",{method:"POST",token:await token(),body:{kind,lang:LANG,...payload}});
-  if(j&&j.result&&j.source)j.result._src=j.source; // "memory" = trouvé dans la mémoire partagée, sans Claude
-  return j.result;
-}
+  if(kind==="profil")return nuProfileLocal(payload.data||{});
+  if(kind==="aliment"&&!payload.image&&String(payload.text||"").trim()){
+    if(!navigator.onLine)throw new Error(L("Pas de connexion internet"));
+    const j=await api("/functions/v1/nutrition",{method:"POST",token:await token(),body:{kind,lang:LANG,text:payload.text}});
+    if(j&&j.result){j.result._src="memory";return j.result}}
+  throw aiNeed(kind,payload)}
+function aiNeed(kind,p){aiHandoff(aiPrompt(kind,p));const e=new Error(L("Ton IA s'en charge : suis les étapes à l'écran, le résultat arrivera ici."));e.ai=true;return e}
+// profil : métabolisme (Mifflin-St Jeor), dépense avec le sport, objectif selon le rythme, macros (mêmes règles prudentes qu'avant)
+const SPORT_MET=[[/muscu|fitness|gym|halt|crossfit|weight|kracht/,5.5],[/course|running|jogg|run|lopen|hardlo/,9.8],[/v[eé]lo|cycl|bike|fiets|spinning/,7.5],[/nata|swim|zwem|piscine/,7],
+  [/foot|basket|tennis|padel|hand|volley|rugby|hockey/,7],[/marche|walk|wandel|randon/,3.8],[/boxe|box|mma|judo|karat|combat|lutte/,9],[/yoga|pilates|stretch/,3],[/danse|dance|dans/,5.5]];
+function nuProfileLocal(d){const w=+d.weight_kg||70,h=+d.height_cm||170,a=+d.age||30,male=d.sex==="male",goal=d.goal||"maintain";
+  const bmr=Math.round(10*w+6.25*h-5*a+(male?5:-161));
+  const sports=(d.sports||[]).map(x=>{const n=fold(x.sport||""),met=(SPORT_MET.find(([re])=>re.test(n))||[0,6])[1];return{sport:x.sport,kcal:Math.round(met*w*(+x.minutes_per_session||60)/60),freq:+x.times_per_week||0}});
+  const tdee=Math.round(bmr*1.2+sports.reduce((s,x)=>s+x.kcal*x.freq,0)/7);
+  const pace=d.pace||"realistic",PCT={lose:{drastic:.01,realistic:.006,relaxed:.0035},gain:{drastic:.005,realistic:.003,relaxed:.002}};
+  const pct=goal==="maintain"?0:(PCT[goal]||PCT.lose)[pace]||PCT[goal].realistic,wk=Math.round(pct*w*100)/100,delta=Math.round(wk*7700/7);
+  let target=goal==="lose"?tdee-delta:goal==="gain"?tdee+delta:tdee;if(goal==="lose")target=Math.max(target,bmr,male?1500:1200);target=Math.round(target);
+  const p=Math.round(w*(goal==="lose"?2:goal==="gain"?1.8:1.6)),f=Math.round(Math.max(w*.8,target*.25/9)),c=Math.max(0,Math.round((target-p*4-f*9)/4));
+  const warn=[];if(a<18)warn.push(T3("Moins de 18 ans : demande conseil à un médecin avant de changer ton alimentation.","Under 18: ask a doctor before changing your diet.","Jonger dan 18: vraag een arts om advies voor je je voeding verandert."));
+  if(/enceinte|grossesse|allait|pregnan|breastfeed|zwanger|borstvoed|diab|trouble|anorex|boulim|eating disorder|eetstoornis/i.test(d.notes||""))warn.push(T3("Avec ce que tu indiques dans tes notes, demande l'avis d'un médecin ou d'un diététicien avant de suivre ces chiffres.","Given what you wrote in your notes, check with a doctor or dietitian before following these numbers.","Gezien wat je in je notities schreef: vraag een arts of diëtist om advies voor je deze cijfers volgt."));
+  const tw=+d.target_weight_kg||0;let wg={realistic:true,weekly_change_kg:0,suggested_weeks:0,advice:""};
+  if(tw){const diff=tw-w,dir=goal==="lose"?-1:goal==="gain"?1:0,weeks=wk?Math.ceil(Math.abs(diff)/wk):0,tf=+d.timeframe_weeks||0;
+    if(dir&&Math.sign(diff)!==dir&&diff)wg={realistic:false,weekly_change_kg:dir*wk,suggested_weeks:0,advice:T3("Ce poids visé va dans le sens contraire de ton objectif : vérifie l'un des deux.","This target weight goes against your goal: check one of them.","Dit streefgewicht gaat tegen je doel in: controleer een van beide.")};
+    else{const max=goal==="gain"?.005:.01,ok=!tf||Math.abs(diff)/tf<=max*w+1e-9;
+      wg={realistic:ok,weekly_change_kg:dir*wk,suggested_weeks:weeks,advice:ok?T3(`À ce rythme (environ ${wk} kg par semaine), compte à peu près ${weeks} semaines. Tu peux y arriver !`,`At this pace (about ${wk} kg a week), count roughly ${weeks} weeks. You can do it!`,`In dit tempo (ongeveer ${wk} kg per week) reken je op zo'n ${weeks} weken. Dat lukt je!`)
+        :T3(`En ${tf} semaines, il faudrait changer de plus de ${Math.round(max*w*10)/10} kg par semaine : c'est trop rapide pour rester en bonne santé. Compte plutôt ${weeks} semaines.`,`In ${tf} weeks you would need to change more than ${Math.round(max*w*10)/10} kg a week: too fast to stay healthy. Plan for about ${weeks} weeks instead.`,`In ${tf} weken zou je meer dan ${Math.round(max*w*10)/10} kg per week moeten veranderen: te snel om gezond te blijven. Reken eerder op ${weeks} weken.`)}}}
+  const gl=T3({lose:"perdre du poids",gain:"prendre du poids",maintain:"garder ton poids"}[goal],{lose:"lose weight",gain:"gain weight",maintain:"keep your weight"}[goal],{lose:"af te vallen",gain:"aan te komen",maintain:"je gewicht te behouden"}[goal]);
+  const explanation=T3(`Ton corps brûle environ ${bmr} kcal par jour au repos (formule de Mifflin-St Jeor). Avec ta vie de tous les jours et ton sport, tu dépenses environ ${tdee} kcal par jour. Pour ${gl}, vise ${target} kcal par jour${goal==="maintain"?"":` (environ ${wk} kg par semaine)`}. Protéines ${p} g, glucides ${c} g, lipides ${f} g : de quoi garder tes muscles et ton énergie.`,
+    `Your body burns about ${bmr} kcal a day at rest (Mifflin-St Jeor formula). With daily life and your sport, you spend about ${tdee} kcal a day. To ${gl}, aim for ${target} kcal a day${goal==="maintain"?"":` (about ${wk} kg a week)`}. Protein ${p} g, carbs ${c} g, fat ${f} g: enough to keep your muscles and energy.`,
+    `Je lichaam verbrandt in rust ongeveer ${bmr} kcal per dag (formule van Mifflin-St Jeor). Met je dagelijkse leven en je sport verbruik je ongeveer ${tdee} kcal per dag. Om ${gl}, mik op ${target} kcal per dag${goal==="maintain"?"":` (ongeveer ${wk} kg per week)`}. Eiwitten ${p} g, koolhydraten ${c} g, vetten ${f} g: genoeg om je spieren en energie te behouden.`);
+  return {bmr_kcal:bmr,tdee_kcal:tdee,target_kcal:target,protein_g:p,carbs_g:c,fat_g:f,explanation,warnings:warn,weight_goal:wg,sports_kcal:sports.map(x=>({sport:x.sport,kcal_per_session:x.kcal}))}}
+// ce qu'on demande à l'IA de la personne (elle lit et écrit dans Sid'note grâce au connecteur)
+function aiPrompt(kind,p){const d=(p&&p.data)||{};
+  if(kind==="aliment"&&p.image)return T3("Je t'envoie la photo de mon assiette (je la joins). Estime ce que j'ai mangé et note-le dans Sid'note.","I'm sending you a photo of my plate (attached). Estimate what I ate and log it in Sid'note.","Ik stuur je een foto van mijn bord (bijgevoegd). Schat wat ik gegeten heb en noteer het in Sid'note.");
+  if(kind==="aliment")return T3(`Note dans Sid'note ce que j'ai mangé : ${p.text}`,`Log in Sid'note what I ate: ${p.text}`,`Noteer in Sid'note wat ik gegeten heb: ${p.text}`);
+  if(kind==="menu"){const meals=(d.meals||[]).map(m=>`${m.name} (~${m.kcal} kcal)`).join(", "),inc=d.must_include,exc=d.avoid;
+    return T3(`Avec Sid'note : lis ma journée nutrition, puis compose-moi ${(d.meals||[]).length>1?"un menu pour la journée":"un repas"} : ${meals}.${inc?` À inclure : ${inc}.`:""}${exc?` À éviter : ${exc}.`:""}${d.notes?` ${d.notes}`:""} Poids crus en grammes, puis enregistre le menu dans Sid'note.`,
+      `With Sid'note: read my nutrition day, then make me ${(d.meals||[]).length>1?"a menu for the day":"a meal"}: ${meals}.${inc?` Include: ${inc}.`:""}${exc?` Avoid: ${exc}.`:""}${d.notes?` ${d.notes}`:""} Raw weights in grams, then save the menu in Sid'note.`,
+      `Met Sid'note: lees mijn voedingsdag en stel ${(d.meals||[]).length>1?"een dagmenu":"een maaltijd"} voor me samen: ${meals}.${inc?` Opnemen: ${inc}.`:""}${exc?` Vermijden: ${exc}.`:""}${d.notes?` ${d.notes}`:""} Rauwe gewichten in gram, en sla het menu op in Sid'note.`)}
+  if(kind==="recette"){const f=(d.foods||[]).map(x=>`${x.food}${x.grams?` ${x.grams} g`:""}`).join(", ");
+    return T3(`Avec Sid'note : donne-moi la recette de « ${d.name} » (${f}), avec exactement ces aliments et ces quantités, puis ajoute les étapes à ce repas dans mon menu Sid'note.`,`With Sid'note: give me the recipe for "${d.name}" (${f}) with exactly these foods and amounts, then add the steps to this meal in my Sid'note menu.`,`Met Sid'note: geef me het recept voor "${d.name}" (${f}) met precies deze ingrediënten en hoeveelheden, en voeg de stappen toe aan deze maaltijd in mijn Sid'note-menu.`)}
+  if(kind==="bilan")return p.scope==="week"?T3("Avec Sid'note : fais le bilan nutrition de ma semaine (calories, macros, poids) : ce qui va bien, ce qui peut s'améliorer, et 2 ou 3 conseils concrets.","With Sid'note: review my nutrition week (calories, macros, weight): what went well, what could improve, and 2 or 3 concrete tips.","Met Sid'note: maak een voedingsoverzicht van mijn week (calorieën, macro's, gewicht): wat goed ging, wat beter kan, en 2 of 3 concrete tips.")
+    :T3("Avec Sid'note : commente ma journée nutrition d'aujourd'hui et donne-moi 1 ou 2 conseils pour la suite.","With Sid'note: comment on my nutrition today and give me 1 or 2 tips for the rest of the day.","Met Sid'note: geef commentaar op mijn voedingsdag van vandaag en 1 of 2 tips voor de rest van de dag.");
+  return T3("Avec Sid'note : aide-moi pour ma nutrition.","With Sid'note: help me with my nutrition.","Met Sid'note: help me met mijn voeding.")}
 const nuErrMsg=ex=>ex instanceof TypeError?L("Pas de connexion internet"):ex.status===404?L("La fonction « nutrition » n'est pas encore installée sur Supabase."):ex.message;
 // animation pendant que Claude travaille
 function nuLoading(el,msgs){const EM=[""];let i=0;
@@ -3112,7 +3405,7 @@ function macroHtml(s){const tot=(s.p*4+s.c*4+s.f*9)||1;
 const thumbs=new Map();
 const thumbKey=g=>session.user.id+":thumb:"+g;
 async function loadThumb(g){if(thumbs.has(g))return;thumbs.set(g,null);const b=await idb.get(thumbKey(g));if(b){thumbs.set(g,b);document.querySelectorAll(`[data-thumb="${g}"]`).forEach(el=>el.innerHTML=`<img src="${b}" alt="">`)}}
-function renderNutri(){
+function renderNutri(){try{renderAiCards()}catch(e){}
   if(!$("nuMain"))return;
   applySoon();
   const n=NU(),has=!!(n.plan&&n.plan.kcal);
@@ -3365,7 +3658,7 @@ const qtyTxt=x=>{const m=String(x.qty||"").trim().match(/^(\d+(?:[.,]\d+)?)\s*g$
 const srvSlot=s=>s==="meal"?"lunch":s;
 // la toute première génération peut échouer (serveur qui démarre, réponse vide) : on réessaie une fois tout seul
 async function nuRetry(fn,ok){let last;for(let a=0;a<2;a++){try{const r=await fn();if(!ok||ok(r))return r;last=new Error(L("Réponse vide, réessaie."))}
-  catch(ex){last=ex;if(ex instanceof TypeError||(ex.status&&ex.status<500&&![422,429].includes(ex.status)))throw ex}
+  catch(ex){last=ex;if(ex.ai||ex instanceof TypeError||(ex.status&&ex.status<500&&![422,429].includes(ex.status)))throw ex}
   if(a===0)await new Promise(r=>setTimeout(r,1200))}throw last}
 // demande à Claude un ou plusieurs repas (calories précises par repas)
 async function genMeals(slots,kcals){

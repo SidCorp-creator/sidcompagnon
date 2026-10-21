@@ -86,6 +86,7 @@
     </form>
     <div class="catbar" id="catBar" hidden></div>
     <form class="addbar" id="todoForm">
+      <input type="date" id="planPick" class="vh-input" tabindex="-1" aria-hidden="true">
       <input id="todoIn" placeholder="Nouvelle tâche…" aria-label="Nouvelle tâche" autocomplete="off" enterkeyhint="done">
       <button class="btn" type="submit">Ajouter</button>
     </form>
@@ -267,6 +268,7 @@
     <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
     <h1>Nutrition</h1>
     <!-- profil -->
+      <div class="card ai-card" id="nuAiCard" hidden></div>
     <div id="nuProfile" hidden>
       <p class="sub" id="nuProfSub">Présente-toi en quelques infos : on calcule ton métabolisme, tes besoins du jour et tes macros.</p>
       <form class="nu-form" id="nuForm" novalidate>
@@ -454,16 +456,28 @@
     <div id="notesList">
       <h1>Notes</h1>
       <p class="sub">Écris librement : idées, listes, brouillons. Tout est enregistré au fur et à mesure.</p>
-      <div class="pw-top"><input type="search" class="search" id="noteSearch" placeholder="Rechercher une note" aria-label="Rechercher une note" autocomplete="off"><button type="button" class="btn" id="noteNew">+ Note</button></div>
+      <div class="pw-top"><input type="search" class="search" id="noteSearch" placeholder="Rechercher une note" aria-label="Rechercher une note" autocomplete="off"><button type="button" class="btn ghost" id="nfNew">+ Dossier</button><button type="button" class="btn" id="noteNew">+ Note</button></div>
+      <form id="nfForm" class="nf-form" hidden><input id="nfIn" placeholder="Nom du dossier" aria-label="Nom du dossier" autocomplete="off" enterkeyhint="done"><button class="btn" type="submit">Créer</button><button type="button" class="btn ghost" id="nfCancel">Annuler</button></form>
+      <nav class="nf-path" id="nfPath" aria-label="Dossiers" hidden></nav>
       <div class="ns-bar" id="nsBar" hidden></div>
       <div class="card" id="noteList"></div>
     </div>
     <div id="noteEdit" hidden>
-      <div class="dayv-head"><button type="button" class="back" id="noteBack">‹ Notes</button><span class="grow small muted" id="noteWhen" style="text-align:center"></span><button type="button" class="mini nu-mic" id="noteMic" aria-label="Dicter la note"><i class="ic" data-i="mic"></i></button><label class="mini note-ph-btn" id="notePhotoBtn" aria-label="Ajouter une photo"><input type="file" id="notePhotoIn" accept="image/*" multiple hidden><i class="ic" data-i="camera"></i></label><button type="button" class="mini" id="noteLock" aria-label="Rendre la note secrète"><i class="ic" data-i="lock"></i></button><button type="button" class="x" id="noteDel" aria-label="Supprimer la note">×</button></div>
+      <div class="dayv-head"><button type="button" class="back" id="noteBack">‹ Notes</button><span class="grow small muted" id="noteWhen" style="text-align:center"></span><button type="button" class="mini nu-mic" id="noteMic" aria-label="Dicter la note"><i class="ic" data-i="mic"></i></button><label class="mini note-ph-btn" id="notePhotoBtn" aria-label="Ajouter une photo"><input type="file" id="notePhotoIn" accept="image/*" multiple hidden><i class="ic" data-i="camera"></i></label><button type="button" class="mini" id="noteMove" aria-label="Ranger dans un dossier"><i class="ic" data-i="folder"></i></button><button type="button" class="mini" id="noteLock" aria-label="Rendre la note secrète"><i class="ic" data-i="lock"></i></button><button type="button" class="x" id="noteDel" aria-label="Supprimer la note">×</button></div>
       <div class="ns-bar" id="noteSecBar" hidden><span class="grow"><i class="ic" data-i="lock"></i> <b>Note secrète</b> · <span class="muted">visible seulement avec ton code</span></span><button type="button" class="mini" id="noteUnsecret">Rendre visible</button></div>
+      <div class="rt-bar" id="rtBar" role="toolbar" aria-label="Mise en forme">
+        <button type="button" data-rt="h2" aria-label="Titre">T</button><button type="button" data-rt="h3" aria-label="Sous-titre">t</button>
+        <button type="button" data-rt="bold" aria-label="Gras"><b>G</b></button><button type="button" data-rt="italic" aria-label="Italique"><i>I</i></button>
+        <button type="button" data-rt="underline" aria-label="Souligné"><u>S</u></button><button type="button" data-rt="strikeThrough" aria-label="Barré"><s>B</s></button>
+        <button type="button" data-rt="mark" aria-label="Surligner"><span class="rt-mk">A</span></button>
+        <button type="button" data-rt="ul" aria-label="Liste à puces">•≡</button><button type="button" data-rt="ol" aria-label="Liste numérotée">1≡</button>
+        <button type="button" data-rt="chk" aria-label="Cases à cocher">☑</button><button type="button" data-rt="quote" aria-label="Citation">❝</button>
+        <button type="button" data-rt="hr" aria-label="Séparateur">—</button><button type="button" data-rt="clear" aria-label="Retirer la mise en forme">⌫</button>
+        <button type="button" data-rt="undo" aria-label="Annuler">↶</button><button type="button" data-rt="redo" aria-label="Rétablir">↷</button>
+      </div>
       <div class="note-ed">
         <input id="noteTitle" placeholder="Titre" aria-label="Titre de la note" autocomplete="off">
-        <textarea id="noteBody" placeholder="Écris ta note…" aria-label="Texte de la note"></textarea>
+        <div id="noteBody" class="note-rt" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Texte de la note" data-ph="Écris ta note…"></div>
       </div>
       <div class="note-photos" id="notePhotos"></div>
     </div>
@@ -566,12 +580,15 @@
     </div>
       </div>
     </details>
-    <details class="setsec" data-sec="claude" id="mcpSec"><summary><span>Claude (assistant)</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+    <details class="setsec" data-sec="claude" id="mcpSec"><summary><span>Mon IA (Claude, ChatGPT…)</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
       <div class="setsec-in">
     <div class="card">
-      <div class="row"><div class="grow small muted">Relie Sid'note à Claude : tu pourras lui demander ton agenda et tes cours, ajouter des tâches, des notes ou des courses en lui parlant. Claude ne voit jamais tes mots de passe, tes documents ni tes notes secrètes.</div></div>
+      <div class="row"><div class="grow small muted">Relie Sid'note à ton IA (Claude, ChatGPT ou Le Chat) : elle calcule tes repas, crée tes menus, lit ton agenda et ajoute tâches, notes ou courses, puis tout arrive ici. Elle ne voit jamais tes mots de passe, tes documents ni tes notes secrètes.</div></div>
+      <div class="row"><div class="grow" id="aiState"></div></div>
+      <div class="row"><button type="button" class="btn" data-aiwiz="1" style="width:100%">Brancher mon IA</button></div>
+      <div class="row"><div class="grow small muted">Adresses déjà créées (avancé) :</div></div>
       <div id="mcpList"></div>
-      <div class="row"><button type="button" class="btn" id="mcpNew" style="width:100%">Créer mon adresse pour Claude</button></div>
+      <div class="row"><button type="button" class="btn ghost" id="mcpNew" style="width:100%">Créer mon adresse pour Claude</button></div>
       <div id="mcpOut" hidden>
         <div class="row" style="display:block"><div class="small muted" style="margin-bottom:6px">Ton adresse (affichée une seule fois, garde-la pour toi) :</div>
           <div class="mcp-url notr" id="mcpUrl"></div>
@@ -621,7 +638,7 @@
     <div class="card" id="stats"></div>
       </div>
     </details>
-    <p class="small muted" style="margin:18px 4px">Sid'note · version 38 · une app <b>SidCorp</b></p>
+    <p class="small muted" style="margin:18px 4px">Sid'note · version 39 · une app <b>SidCorp</b></p>
   </section>
 </main>
 
@@ -687,6 +704,20 @@
     <p class="err" id="npErr" role="alert" hidden></p>
     <button class="btn" type="submit" id="npBtn">Enregistrer</button>
   </form>
+</div>
+<div class="sheet-bg" id="aiSheet" hidden>
+  <div class="sheet card">
+    <div class="sheet-head"><b id="aiTitle">Brancher mon IA</b><button type="button" class="x" id="aiClose" aria-label="Fermer">×</button></div>
+    <div id="aiBody"></div>
+  </div>
+</div>
+<div class="sheet-bg" id="aiAskSheet" hidden>
+  <div class="sheet card">
+    <div class="sheet-head"><b id="aaTitle">Demande à ton IA</b><button type="button" class="x" id="aaClose" aria-label="Fermer">×</button></div>
+    <p class="small muted" style="margin:0 0 10px">Sid'note n'utilise plus d'IA payante : c'est ton IA qui calcule, puis elle écrit le résultat directement ici.</p>
+    <div class="ai-prompt notr" id="aaPrompt"></div>
+    <div class="ai-acts" id="aaActs"></div>
+  </div>
 </div>
 <div class="sheet-bg" id="legalSheet" hidden>
   <div class="sheet card legal">

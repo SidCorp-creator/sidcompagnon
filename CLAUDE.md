@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 38.**
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 39.**
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -21,7 +21,7 @@ site/                 ← exactement ce qui est mis en ligne sur Netlify
   sw.js               ← service worker (réseau d'abord ; cache pdf.js à part)
   _headers            ← en-têtes de sécurité Netlify (CSP…) ; tests/serve.js les applique aussi en local
   manifest.webmanifest, icônes
-supabase/functions/   ← fonctions Edge (Deno) : horaire (relais iCal), nutrition (relais Claude), rappels (notifications), delete-account (v35, suppression du compte), mcp (v38, connecteur Claude)
+supabase/functions/   ← fonctions Edge (Deno) : horaire (relais iCal), nutrition (v39 : mémoire des aliments seulement), rappels (notifications), delete-account (v35, suppression du compte), mcp (v38, connecteur Claude)
 supabase/sql/         ← SQL : v37.sql (sauvegarde quotidienne, erreurs, listes partagées — à exécuter par Sid), documents.sql (déjà exécuté), nutrition.sql (v20, compteur d'appels Claude, exécuté), food_memory.sql (v21, mémoire des aliments), notifications.sql (v22, cron 5 min + anti-doublon)
 secrets/              ← clés VAPID, secret cron, version complète de rappels : NE JAMAIS publier ni committer
 tests/                ← serve.js (aperçu local + faux Supabase), smoke.js (test Playwright), mock-supabase.js, memory.test.js (mémoire des aliments, `node tests/memory.test.js`), rappels.test.js (calcul des rappels)
@@ -177,6 +177,17 @@ assets/               ← logo
   - Connecteur `mcp` v2 : l'agenda lit aussi le calendrier relié (`data.prefs.ical`, repli sur `data.icalSoon`) et donne le jour de la semaine.
   - Mise en ligne le 21 oct. 2026 par Claude : d'abord sur `sidnote-test` (protégé par la connexion Netlify de Sid), fichiers vérifiés avec le vrai Supabase (FR/EN/NL), puis sur `sidnote` ; site vérifié en ligne (version 38, CSP).
   - Tests : le lecteur Spotify est remplacé par une page vide (sa vraie page a ses propres erreurs depuis que le réseau est ouvert).
+- v39 (« Mon IA » pour tous, tâches du jour, notes façon Word) :
+  - **Plus aucun appel à la clé Claude de Sid.** Fonction `nutrition` v10 = mémoire des aliments seulement (`{result:null}` si inconnu), ouverte à toute personne connectée. Nutrition et Graphiques ouverts à tous (`RESERVED={}`, `nutriAllowed()` = connecté). Profil calculé dans l'app (`nuProfileLocal` : Mifflin-St Jeor ×1,2 + sports en MET `SPORT_MET`, rythmes en % du poids, macros). Le reste (aliment inconnu, photo, menu, recette, bilan) : `nuCall` lève `aiNeed` → fenêtre `#aiAskSheet` (`aiHandoff(aiPrompt(kind,p))`) avec le message prêt, ouvert dans l'IA (`?q=`) ou copié. Le résultat revient par le connecteur.
+  - « Mon IA » (`AIS` : claude, chatgpt, mistral ; `data.prefs.ai`, `data.prefs.aiOk`) : assistant `#aiSheet` (`aiWizard` → choix → adresse créée et copiée `mcpCreate` → étapes + lien → test : `aiCheck` interroge `mcp_tokens.last_used` toutes les 3 s → « ✓ C'est branché ! » + astuce repas). Cartes `#nuAiCard` (Nutrition), `.hm-ai` (Aujourd'hui, masquable `data.ui.aiCardOff`), Réglages « Mon IA » (`#aiState`, `[data-aiwiz]`).
+  - Connecteur `mcp` v3 : + `nutrition_journee`, `noter_repas` (l'IA calcule ; `grams` → nourrit la mémoire `foods` via `learnFoods`), `retirer_repas`, `enregistrer_menu`, `nutrition_semaine`, `noter_poids`, `planifier_tache` ; `ajouter_tache` accepte `date` ; `agenda` liste aussi les tâches prévues ; `ajouter_note` accepte `folder` (chemin « A/B ») et un petit balisage (# titre, - puce, 1., [ ] case, **gras**) → `n.html` (`mdToHtml`).
+  - Tâches du jour : `todo.day` (AAAA-MM-JJ). Pas faite → affichée le jour suivant sans réécrire (`tDay`, `tLate`, badge « ↻ reportée »), cochée en retard → `day` = aujourd'hui. Agenda (vue jour) : `dayTasksBox` (cocher, « + Tâche pour ce jour »). Aujourd'hui : « Tâches du jour » + « à planifier » (bouton Aujourd'hui). Tâches : pastille de date (`planChip`), « Planifier un jour » dans ⋯ (`todoPlan`, `#planPick`), « Appeler maman demain » → prévue demain (`parseQuick`).
+  - Notes façon Word : `#noteBody` est un `contenteditable` (`.note-rt`) + barre `#rtBar` (titre, sous-titre, gras, italique, souligné, barré, surligné `<mark>`, puces, numéros, cases `ul.chk>li[data-c]`, citation, séparateur, effacer, annuler/rétablir ; `rtCmd`, `rtState`). `n.html` nettoyé par `rtClean` (liste blanche de balises, aucun attribut sauf href http(s), `class="chk"`, `data-c`) + `n.body` texte brut (recherche, aperçu, connecteur). Collage nettoyé. Dictée via un repère `.dict-tmp`. Notes secrètes : `{title, body, html}` chiffrés. Le titre défile avec le texte (seuls l'en-tête et la barre restent collés).
+  - Dossiers de notes : `data.noteFolders=[{id,name,parent}]` (dans `mergeData`, `applyRemote`, `BK_LISTS`), `note.folder`. `noteDir` (en mémoire), fil d'Ariane `#nfPath`, `#nfNew`/`#nfForm`, ⋯ dossier (renommer, déplacer, supprimer : contenu remonté au parent, annulable), bouton `#noteMove` dans l'éditeur.
+  - Face ID : proposé tout seul après le bon code (`bioOffer` : fenêtre de code, clavier des mots de passe, `mkWrap`), « Plus tard » = 30 jours ; lancé tout seul en arrivant sur Mots de passe / Documents (`bioAuto`, pendant le toucher) ; seulement si `isUserVerifyingPlatformAuthenticatorAvailable` (`bioPlat`) ; création réessayée sans `eval` PRF ; erreurs envoyées dans `client_errors` (`bio create/get/...`).
+  - Notifications : la veille toujours active (`notifLeads` ∪ 1440, pastille verrouillée, plus de « Aucun rappel ») ; cours du calendrier relié avec les mêmes délais que les activités (fonction `rappels` v5, clé de la veille inchangée).
+  - Tout se referme (`closeAll`) au lancement (sections de Réglages fermées) et au retour après 10 min ailleurs (fenêtres, note ouverte, dossier, vue jour).
+  - Tests : bloc v39 de `tests/smoke.js` (+ `/__mcpuse` dans le faux serveur) ; le test « sans accès » vérifie maintenant que Nutrition est ouverte.
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

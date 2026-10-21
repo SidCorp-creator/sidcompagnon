@@ -196,23 +196,23 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     for(const v of ["home","todo","plan","more"]){await pg.evaluate(v=>show(v),v);await pg.waitForTimeout(300);await shot(pg,`${scheme}-pc-${v}`)}
     await ctx.close();
   }
-  // --- v32 : un compte sans accès ne voit ni Nutrition ni Graphiques ; la page d'ouverture choisie est respectée
+  // --- v39 : Nutrition et Graphiques ouverts à tous (l'IA de chacun calcule) ; la page d'ouverture choisie est respectée
   {const ctx=await b.newContext({...devices["iPhone 13"]}),pg=await ctx.newPage(),err=m=>errs.push("sans accès : "+m);
     pg.on("pageerror",e=>err(e.message));pg.on("console",m=>{if(/Content Security Policy/i.test(m.text()))err("CSP : "+m.text().slice(0,200))});
     await pg.goto(U);await pg.waitForTimeout(400);
     await pg.click("#mSignup");await pg.fill("#aName","Proche");await pg.fill("#aEmail","sans@test.be");await pg.fill("#aPw","court1");await pg.fill("#aPw2","court1");await pg.click("#aBtn");await pg.waitForTimeout(500);
     if(!(await pg.isVisible("#aErr"))||!(await pg.textContent("#aErr")).includes("8 caractères"))err("mot de passe de 6 caractères accepté à l'inscription");
     await pg.fill("#aPw","assezlong1");await pg.fill("#aPw2","assezlong1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
-    if(await pg.isVisible("#onb")){if(await pg.locator('#onbGroups [data-onbk="nutri"],#onbGroups [data-onbk="graph"]').count())err("Nutrition proposée dans la présentation");
+    if(await pg.isVisible("#onb")){
       await shot(pg,"sans-acces-presentation-sport").catch(()=>{});await pg.click("#onbSkip")}
     if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
-    const vis=await pg.evaluate(()=>visibleTabs().join(","));if(/nutri|graph/.test(vis))err("onglets réservés visibles : "+vis);
+    await pg.evaluate(()=>{data.prefs.tabs.nutri=true;data.prefs.tabs.graph=true;save();applyTabs()});
     await pg.click('#navIn [data-dock="sport"]');await pg.waitForTimeout(300);await shot(pg,"sans-acces-sante");
-    if(await pg.locator('#vhead [data-go="nutri"],#vhead [data-go="graph"]').count())err("pastille Nutrition visible");
-    await pg.evaluate(()=>{show("nutri")});if(await pg.evaluate(()=>data.ui.view)==="nutri")err("Nutrition s'ouvre quand même");
+    if(!(await pg.locator('#vhead [data-go="nutri"]').count()))err("Nutrition absente pour un compte ordinaire");
+    await pg.evaluate(()=>{show("nutri")});if(await pg.evaluate(()=>data.ui.view)!=="nutri")err("Nutrition ne s'ouvre pas");
     await pg.evaluate(()=>{data.prefs.home="todo";data.prefs.homeV=1;save()});await pg.waitForTimeout(1500);await pg.reload();await pg.waitForTimeout(1200);
     if(await pg.evaluate(()=>data.ui.view)!=="todo")err("la page d'ouverture choisie (Tâches) n'est pas respectée");
-    const opts=await pg.$$eval("#homeSel option",o=>o.map(x=>x.value).join(","));if(/nutri|graph/.test(opts))err("Nutrition proposée comme page d'ouverture");
+    
     if(await pg.evaluate(()=>esc("l'a")!=="l&#39;a"))err("esc n'échappe pas l'apostrophe");
     await ctx.close()}
   // --- v32 : coffre renforcé : passage d'un ancien coffre (code seul), nouvel appareil, code oublié
@@ -252,7 +252,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(st.v!==2||!st.open||!st.enc||!st.srv||!st.seal1||!st.seal2||!st.up2||!(st.read>0))err("passage des documents raté : "+JSON.stringify(st));
     // 3) notes secrètes : leur propre code, passage sans redemander la phrase
     await show("notes");await pg.click('[data-note="n1"]');await pg.waitForTimeout(200);await ps("13579");await pg.waitForTimeout(2500);
-    st=await pg.evaluate(()=>({v:data.noteVault.v,vid:data.notes.find(x=>x.id==="n1").vid===data.noteVault.id,txt:document.getElementById("noteBody").value}));
+    st=await pg.evaluate(()=>({v:data.noteVault.v,vid:data.notes.find(x=>x.id==="n1").vid===data.noteVault.id,txt:document.getElementById("noteBody").innerText.trim()}));
     if(st.v!==2||!st.vid||st.txt!=="Le code du portail")err("passage des notes secrètes raté : "+JSON.stringify(st));
     await pg.click("#noteBack");
     // 4) le serveur ne contient plus rien qu'un code à 5 chiffres suffirait à ouvrir
@@ -495,20 +495,25 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.waitForSelector("#phSheet:not([hidden])",{timeout:10000});await pg.fill("#phIn","trois mots et 7");await pg.fill("#ph2In","trois mots et 7");await pg.click("#phOk");
     await pg.waitForSelector("#recSheet:not([hidden])",{timeout:15000}).catch(()=>{});if(await pg.isVisible("#recSheet"))await pg.click("#recLater");
     await pg.waitForFunction(()=>!!vaultKey,null,{timeout:15000}).catch(()=>err("coffre pas créé"));
-    // Face ID activé dans Réglages
-    await pg.evaluate(()=>{show("more");document.querySelector('[data-sec="privacy"]').open=true});await pg.waitForTimeout(300);
-    if(!(await pg.isVisible("#bioCard")))err("réglage Face ID absent");
-    await pg.click("#bioBtn");await ps("24680");await pg.waitForTimeout(800);
+    // v39 : Face ID proposé tout seul juste après le choix du code
+    await pg.waitForSelector("#actSheet:not([hidden])",{timeout:10000}).catch(()=>err("Face ID pas proposé après le choix du code"));
+    await shot(pg,"v39-faceid-propose");
+    if(await pg.isVisible("#actSheet"))await pg.click("#actSheet [data-act='0']");await pg.waitForTimeout(1200);
     if(await pg.isVisible("#actSheet"))await pg.click("#actSheet [data-act]");
     await pg.waitForFunction(()=>bioHas("main"),null,{timeout:10000}).catch(()=>err("Face ID pas activé"));
+    await pg.evaluate(()=>{show("more");document.querySelector('[data-sec="privacy"]').open=true});await pg.waitForTimeout(300);
+    if(!(await pg.isVisible("#bioCard")))err("réglage Face ID absent");
     await shot(pg,"v38-faceid-reglage");
-    // déverrouillage par Face ID
-    await pg.evaluate(()=>{pwdLock();show("pwd")});await pg.waitForTimeout(300);
+    // v39 : en arrivant sur Mots de passe, Face ID s'ouvre tout seul
+    await pg.evaluate(()=>{pwdLock();show("home")});await pg.waitForTimeout(4200);
+    await pg.evaluate(()=>show("pwd"));await pg.waitForFunction(()=>!!vaultKey,null,{timeout:15000}).catch(()=>err("Face ID ne s'ouvre pas tout seul"));
+    // bouton Face ID sous le clavier (si annulé)
+    await pg.evaluate(()=>{pwdLock();bioAutoAt.main=Date.now();show("pwd")});await pg.waitForTimeout(300);
     if(!(await pg.isVisible("#pinBio")))err("bouton Face ID absent sur le clavier du code");
     await shot(pg,"v38-faceid-clavier");
     await pg.click("#pinBio");await pg.waitForFunction(()=>!!vaultKey,null,{timeout:15000}).catch(()=>err("Face ID n'ouvre pas les mots de passe"));
     // code changé ailleurs : Face ID se retire proprement, le code reste possible
-    await pg.evaluate(async()=>{const s=ls.get(bioLsKey());const k=await bioPrf(s);s.main=await encJ(k,{c:"11111"});ls.set(bioLsKey(),s);pwdLock();show("pwd")});await pg.waitForTimeout(300);
+    await pg.evaluate(async()=>{const s=ls.get(bioLsKey());const k=await bioPrf(s);s.main=await encJ(k,{c:"11111"});ls.set(bioLsKey(),s);pwdLock();bioAutoAt.main=Date.now();show("pwd")});await pg.waitForTimeout(300);
     await pg.click("#pinBio");await pg.waitForTimeout(2500);
     if(await pg.evaluate(()=>!!vaultKey||bioHas("main")))err("mauvais code Face ID mal géré");
     // adresse pour Claude
@@ -532,6 +537,67 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>show("notes"));await pg.waitForTimeout(300);await pg.click("#noteNew");await pg.fill("#noteTitle","Sur ordinateur");await pg.fill("#noteBody","Une note qui prend toute la page.");await pg.waitForTimeout(300);
     const w=await pg.$eval("#noteEdit",e=>e.getBoundingClientRect().width);if(w<1270)errs.push("v38 : note pas en plein écran sur ordinateur ("+w+")");
     await shot(pg,"v38-note-pc");await ctx.close()}
+  // --- v39 : tâches du jour (report automatique), notes en dossiers et mises en forme, tout se referme, « Mon IA », nutrition sans clé
+  {const err=m=>errs.push("v39 : "+m);
+    const ctx=await b.newContext({...devices["iPhone 13"]}),pg=await ctx.newPage();pg.on("pageerror",e=>err(e.message));
+    pg.on("console",m=>{if(/Content Security Policy/i.test(m.text()))err("CSP : "+m.text().slice(0,200))});
+    await pg.goto(U);await pg.waitForTimeout(400);
+    await pg.click("#mSignup");await pg.fill("#aName","Neuf");await pg.fill("#aEmail","neuf39@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    // tâches : « demain » compris, report d'hier sur aujourd'hui, cocher depuis Aujourd'hui, ajout depuis l'agenda
+    await pg.evaluate(()=>show("todo"));await pg.fill("#todoIn","Appeler maman demain");await pg.press("#todoIn","Enter");await pg.waitForTimeout(300);
+    const tm=await pg.evaluate(()=>{const t=data.todos.find(x=>x.title==="Appeler maman");const d=new Date();d.setDate(d.getDate()+1);return t&&t.day===iso(d)});if(!tm)err("« Appeler maman demain » pas prévue demain");
+    await pg.evaluate(()=>{const y=new Date();y.setDate(y.getDate()-2);data.todos.push({id:"late1",title:"Payer le loyer",createdAt:new Date().toISOString(),done:false,day:iso(y)});data.todos.push({id:"free1",title:"Ranger la cave",createdAt:new Date().toISOString(),done:false});save();show("home")});
+    await pg.waitForTimeout(300);await shot(pg,"v39-aujourdhui");
+    if(!(await pg.locator('#homeBody [data-htg="late1"]').count()))err("tâche d'hier pas reportée sur aujourd'hui");
+    if(!(await pg.textContent("#homeBody")).includes("reportée"))err("badge « reportée » absent");
+    await pg.click('#homeBody [data-hplan="free1"]');await pg.waitForTimeout(200);if(!(await pg.evaluate(()=>data.todos.find(x=>x.id==="free1").day===iso(today()))))err("« Aujourd'hui » ne planifie pas la tâche");
+    await pg.click('#homeBody [data-htg="late1"]');await pg.waitForTimeout(200);
+    const dn=await pg.evaluate(()=>{const t=data.todos.find(x=>x.id==="late1");return t.done&&t.day===iso(today())});if(!dn)err("tâche reportée mal cochée");
+    await pg.evaluate(()=>{show("plan");selDay=iso(today());calMode="day";renderCal()});await pg.waitForTimeout(300);
+    if(!(await pg.isVisible("#calDayView .dt-box")))err("tâches du jour absentes de l'agenda");
+    await pg.fill("#calDayView [data-dtadd] input","Acheter du pain");await pg.press("#calDayView [data-dtadd] input","Enter");await pg.waitForTimeout(300);
+    if(!(await pg.evaluate(()=>data.todos.some(t=>t.title==="Acheter du pain"&&t.day===iso(today())))))err("ajout de tâche depuis l'agenda raté");
+    await shot(pg,"v39-agenda-taches");
+    // notes : dossier, sous-dossier, note dedans, gras, case à cocher
+    await pg.evaluate(()=>show("notes"));await pg.click("#nfNew");await pg.fill("#nfIn","Cours");await pg.press("#nfIn","Enter");await pg.waitForTimeout(200);
+    await pg.click("[data-nfopen]");await pg.click("#nfNew");await pg.fill("#nfIn","Finance");await pg.press("#nfIn","Enter");await pg.waitForTimeout(200);
+    await shot(pg,"v39-notes-dossier");
+    await pg.click("#noteNew");await pg.fill("#noteTitle","Séminaire");await pg.click("#noteBody");await pg.keyboard.type("Point important");
+    await pg.keyboard.down("Shift");for(let i=0;i<9;i++)await pg.keyboard.press("ArrowLeft");await pg.keyboard.up("Shift");
+    await pg.click('#rtBar [data-rt="bold"]');await pg.keyboard.press("End");await pg.keyboard.press("Enter");await pg.click('#rtBar [data-rt="chk"]');await pg.keyboard.type("Relire le cours");
+    await pg.waitForTimeout(900);await shot(pg,"v39-note-word");
+    const nv=await pg.evaluate(()=>{const n=data.notes.find(x=>x.title==="Séminaire");return n&&{f:nfOf(n.folder)&&nfOf(n.folder).name,html:n.html||"",body:n.body}});
+    if(!nv||nv.f!=="Cours")err("note pas rangée dans le dossier ouvert : "+JSON.stringify(nv));
+    if(!nv||!/<b>|<strong>/.test(nv.html))err("gras pas enregistré : "+(nv&&nv.html));
+    if(!nv||!/ul class="chk"/.test(nv.html))err("case à cocher pas enregistrée : "+(nv&&nv.html));
+    await pg.evaluate(async()=>{data.notes.find(x=>x.title==="Séminaire").html+='<img src=x onerror="window.pwned=1"><script>window.pwned=1</script>';renderNotes();await closeNote();openNote(data.notes.find(x=>x.title==="Séminaire").id)});
+    await pg.waitForTimeout(300);if(await pg.evaluate(()=>!!window.pwned||!!document.querySelector("#noteBody img,#noteBody script")))err("contenu dangereux pas nettoyé");
+    await pg.click("#noteBack");await pg.waitForTimeout(300);
+    // tout se referme au retour
+    await pg.evaluate(()=>{openActions("x",[{l:"y",fn:()=>{}}]);show("more");document.querySelector('[data-sec="privacy"]').open=true;closeAll()});await pg.waitForTimeout(200);
+    if(await pg.evaluate(()=>!$("actSheet").hidden||document.querySelector('[data-sec="privacy"]').open))err("closeAll laisse des choses ouvertes");
+    // Mon IA : choisir Claude, adresse créée et copiée, test confirmé
+    await pg.evaluate(()=>show("home"));await pg.waitForTimeout(200);
+    if(!(await pg.isVisible("#homeBody .hm-ai")))err("carte « branche ton IA » absente d'Aujourd'hui");
+    await pg.click('#homeBody [data-aiwiz]');await pg.waitForTimeout(200);await shot(pg,"v39-ia-choix");
+    await pg.click('[data-aipick="claude"]');await pg.waitForTimeout(900);await shot(pg,"v39-ia-etapes");
+    const au=await pg.textContent("#aiUrl");if(!/\/functions\/v1\/mcp\//.test(au))err("adresse pas créée dans l'assistant : "+au);
+    await pg.click('[data-aistep="test"]');await pg.waitForTimeout(300);await pg.evaluate(async()=>{await fetch(SUPABASE_URL+"/__mcpuse")});
+    await pg.waitForSelector("#aiDone:not([hidden])",{timeout:10000}).catch(()=>err("branchement pas détecté"));await shot(pg,"v39-ia-branchee");
+    if(await pg.isVisible("#aiDone"))await pg.click("#aiDone");
+    if(!(await pg.evaluate(()=>!!data.prefs.aiOk&&data.prefs.ai==="claude")))err("IA branchée pas retenue");
+    // nutrition sans clé : profil calculé dans l'app, menu confié à l'IA
+    await pg.evaluate(()=>{data.prefs.tabs.nutri=true;save();applyTabs();NU().consent=new Date().toISOString();show("nutri")});await pg.waitForTimeout(300);
+    const pr=await pg.evaluate(()=>{const r=nuProfileLocal({sex:"male",age:24,height_cm:180,weight_kg:75,sports:[{sport:"Musculation",times_per_week:4,minutes_per_session:60}],goal:"gain",pace:"realistic",target_weight_kg:80,timeframe_weeks:4});return r});
+    if(!(pr.bmr_kcal===1760&&pr.target_kcal>pr.tdee_kcal&&pr.protein_g===135&&pr.weight_goal.realistic===false&&pr.sports_kcal[0].kcal_per_session>300))err("profil local incorrect : "+JSON.stringify(pr));
+    await pg.evaluate(()=>nuCall("menu",{data:{meals:[{name:"Dîner",kcal:700}],must_include:"poulet"}}).catch(()=>{}));await pg.waitForTimeout(300);
+    if(!(await pg.isVisible("#aiAskSheet"))||!(await pg.textContent("#aaPrompt")).includes("poulet"))err("menu pas confié à l'IA");
+    await shot(pg,"v39-ia-demande");await pg.click("#aaClose");
+    if(!(await pg.isVisible("#nuAiCard")))err("carte IA absente de Nutrition");
+    // notifications : la veille toujours active
+    await pg.evaluate(()=>{data.prefs.notif={leads:[10]};save()});if(!(await pg.evaluate(()=>notifLeads().includes(1440))))err("la veille n'est pas toujours active");
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

@@ -34,4 +34,14 @@ t("anglais", () => {
   const r = dueReminders({ tasks: [task], prefs: { lang: "en", notif: { leads: [2880] } } }, brusselsToUtc("2026-12-08", "14:00"));
   assert.strictEqual(r[0].title, "In 2 days · Examen"); assert.strictEqual(r[0].body, "14:00 · 10 Dec · Cours");
 });
+t("v39 : la veille toujours envoyée, même sans rappel choisi", () => {
+  const r = dueReminders({ tasks: [{ ...task, remind: false }], prefs: { notif: { leads: [30] } } }, brusselsToUtc("2026-12-09", "14:01"));
+  assert.strictEqual(r.length, 1); assert.strictEqual(r[0].title, "Demain · Examen");
+});
+t("v39 : cours du calendrier relié avec les mêmes délais (10 min et la veille)", () => {
+  const data = { icalSoon: [{ id: "c1", title: "Finance", date: "2026-12-10", time: "10:30", loc: "Wa.230" }], prefs: { notif: { leads: [10] } } };
+  const a = dueReminders(data, brusselsToUtc("2026-12-10", "10:21")), b = dueReminders(data, brusselsToUtc("2026-12-09", "10:31"));
+  assert.strictEqual(a.length, 1); assert.strictEqual(a[0].title, "Dans 10 min · Finance");
+  assert.strictEqual(b.length, 1); assert.strictEqual(b[0].key, "ical|c1|2026-12-10|10:30");
+});
 console.log(`OK : rappels, ${ok} tests réussis`);

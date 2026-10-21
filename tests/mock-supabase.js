@@ -41,9 +41,12 @@ http.createServer((req,res)=>{const ch=[];req.on('data',c=>ch.push(c));req.on('e
     return send(res,404,{message:'?'})}}
   // v38 : adresses du connecteur Claude (chacun ne voit que les siennes)
   if(url.pathname==='/rest/v1/mcp_tokens'){if(!auth)return send(res,401,{message:'no'});MCP.list=MCP.list||[];
-    if(req.method==='GET')return send(res,200,MCP.list.filter(t=>t.user_id===auth));
+    if(req.method==='GET'){const h=(url.searchParams.get('hash')||'').replace(/^eq\./,''),used=url.searchParams.get('last_used')==='not.is.null';
+      return send(res,200,MCP.list.filter(t=>t.user_id===auth&&(!h||t.hash===h)&&(!used||t.last_used)))}
     if(req.method==='POST'){if(body.user_id!==auth||!/^[0-9a-f]{64}$/.test(body.hash))return send(res,403,{message:'rls'});MCP.list.push({...body,created_at:new Date().toISOString(),last_used:null});return send(res,201)}
     if(req.method==='DELETE'){const h=(url.searchParams.get('hash')||'').replace(/^eq\./,'');MCP.list=MCP.list.filter(t=>!(t.user_id===auth&&t.hash===h));return send(res,204)}}
+  // v39 : simule le premier appel de l'IA (le connecteur met last_used à jour)
+  if(url.pathname==='/__mcpuse'){(MCP.list||[]).forEach(t=>{t.last_used=new Date().toISOString()});return send(res,200,{ok:true})}
   // v37 : erreurs envoyées par l'app (gardées en mémoire, lisibles par /__errors)
   if(url.pathname==='/rest/v1/client_errors'&&req.method==='POST'){if(!auth)return send(res,401,{message:'no'});clientErrors.push(body);return send(res,201)}
   if(url.pathname==='/__errors')return send(res,200,clientErrors);

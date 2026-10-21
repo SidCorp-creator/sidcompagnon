@@ -1,4 +1,4 @@
-// Sid'note v31 : fonction "rappels" (notifications du planning + calendrier relié 24 h avant ; FR, EN, NL)
+// Sid'note v39 : fonction "rappels" (notifications du planning et des cours du calendrier relié ; la veille toujours active ; FR, EN, NL)
 // - Appelée toutes les 5 minutes par le cron (en-tête x-cron-secret) : envoie les rappels dont l'heure est arrivée,
 //   selon les délais choisis par chaque personne (Réglages > Notifications : 10 min, 1 h, la veille…).
 // - Appelée par l'app avec { test: true } : envoie une notification de test à la personne connectée.
@@ -64,13 +64,14 @@ export function dueReminders(data: any, now: number) {
   const out: { key: string; title: string; body: string; tag: string }[] = [];
   const prefs = data?.prefs || {}, n = prefs.notif || {};
   if (n.on === false) return out;
-  const leads = cleanLeads(n.leads), lang = prefs.lang === "en" ? "en" : prefs.lang === "nl" ? "nl" : "fr";
+  // v39 : la veille est toujours envoyée (demande de Sid), en plus des délais choisis
+  const withEve = (a: number[]) => [...new Set([...a, 1440])];
+  const leads = withEve(cleanLeads(n.leads)), lang = prefs.lang === "en" ? "en" : prefs.lang === "nl" ? "nl" : "fr";
   for (const t of data?.tasks || []) {
     if (!t || !t.id || !t.title || !/^\d{4}-\d{2}-\d{2}$/.test(t.date || "") || t.status === "fait" || t.canc || t.src === "ical") continue;
-    // v23 : chaque activité peut avoir ses propres délais (t.leads) ou aucun rappel (t.remind === false)
-    if (t.remind === false) continue;
+    // v23 : chaque activité peut avoir ses propres délais (t.leads) ; v39 : même « aucun rappel » (t.remind === false) garde la veille
     const start = brusselsToUtc(t.date, t.time || "08:00");
-    for (const lead of Array.isArray(t.leads) && t.leads.length ? cleanLeads(t.leads) : leads) {
+    for (const lead of t.remind === false ? [1440] : Array.isArray(t.leads) && t.leads.length ? withEve(cleanLeads(t.leads)) : leads) {
       const at = start - lead * 60000;
       if (now < at || now - at > WINDOW || now > start) continue;
       const [, m, d] = t.date.split("-").map(Number);
@@ -82,19 +83,22 @@ export function dueReminders(data: any, now: number) {
       });
     }
   }
-  // v23 : cours de l'horaire iCal (UMons), copiés par l'app dans data.icalSoon : rappel 24 h avant, sauf si désactivé
+  // cours du calendrier relié, copiés par l'app dans data.icalSoon (v39 : mêmes délais que les activités, la veille comprise)
   if (n.ical !== false && Array.isArray(data?.icalSoon)) {
     for (const c of data.icalSoon.slice(0, 200)) {
       if (!c || !c.id || !c.title || !/^\d{4}-\d{2}-\d{2}$/.test(c.date || "")) continue;
-      const start = brusselsToUtc(c.date, c.time || "08:00"), at = start - 1440 * 60000;
-      if (now < at || now - at > WINDOW || now > start) continue;
-      const [, m, d] = c.date.split("-").map(Number);
-      out.push({
-        key: `ical|${c.id}|${c.date}|${c.time || ""}`,
-        title: `${whenText(1440, lang)} · ${c.title}`,
-        body: `${c.time ? c.time + " · " : ""}${d} ${MOIS[lang][m - 1]}${c.loc ? " · " + String(c.loc).slice(0, 60) : ""}`,
-        tag: `ical-${String(c.id).slice(-40)}`,
-      });
+      const start = brusselsToUtc(c.date, c.time || "08:00");
+      for (const lead of leads) {
+        const at = start - lead * 60000;
+        if (now < at || now - at > WINDOW || now > start) continue;
+        const [, m, d] = c.date.split("-").map(Number);
+        out.push({
+          key: `ical|${c.id}|${c.date}|${c.time || ""}${lead === 1440 ? "" : "|" + lead}`, // la veille garde l'ancienne clé (pas de doublon)
+          title: `${whenText(lead, lang)} · ${c.title}`,
+          body: `${c.time ? c.time + " · " : ""}${d} ${MOIS[lang][m - 1]}${c.loc ? " · " + String(c.loc).slice(0, 60) : ""}`,
+          tag: `ical-${String(c.id).slice(-36)}-${lead}`,
+        });
+      }
     }
   }
   return out;

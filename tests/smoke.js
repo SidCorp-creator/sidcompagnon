@@ -433,6 +433,50 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>show("plan"));await pg.click("#taskAdd");await pg.waitForTimeout(200);
     const vv=await pg.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue("--vvh"));if(!vv)err("zone visible non suivie (--vvh)");
     await ctx.close()}
+  // --- v37 : listes partagées (2 comptes), ajout rapide en langage courant, délai de reverrouillage, notifications au bon moment, erreurs envoyées
+  {const err=m=>errs.push("v37 : "+m);
+    const mk=async(name,email)=>{const ctx=await b.newContext({...devices["iPhone 13"]}),pg=await ctx.newPage();pg.on("pageerror",e=>err(name+" : "+e.message));
+      await pg.goto(U);await pg.waitForTimeout(400);await pg.click("#mSignup");await pg.fill("#aName",name);await pg.fill("#aEmail",email);await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+      if(await pg.isVisible("#onb"))await pg.click("#onbSkip");await pg.waitForTimeout(300);return {ctx,pg}};
+    const A=await mk("Sid","sid37@test.be"),B=await mk("Léa","lea37@test.be");
+    if(await A.pg.isVisible("#notifAsk"))err("notifications encore proposées dès l'ouverture");
+    // A crée « Courses » et ajoute du pain
+    await A.pg.evaluate(()=>show("lists"));await A.pg.waitForTimeout(400);
+    if(await A.pg.locator('#vhead [data-go="lists"]').count()!==1)err("« Listes » absent de l'espace Organisation");
+    await A.pg.click("[data-slnew]");await A.pg.fill("#slNewIn","Courses");await A.pg.press("#slNewIn","Enter");await A.pg.waitForTimeout(800);
+    await A.pg.fill("#slIn","Pain");await A.pg.press("#slIn","Enter");await A.pg.waitForTimeout(600);
+    await A.pg.fill("#slIn","Lait");await A.pg.press("#slIn","Enter");await A.pg.waitForTimeout(600);await shot(A.pg,"v37-liste-partagee");
+    const code=(await A.pg.textContent(".sl-code")).trim();if(!/^[A-Z0-9]{6}$/.test(code))err("pas de code d'invitation : "+code);
+    // B rejoint par le lien d'invitation, voit et coche
+    await B.pg.goto(U+"#rejoindre="+code);await B.pg.waitForTimeout(1800);
+    if(!(await B.pg.evaluate(()=>data.ui.view==="lists"&&!!slOpen)))err("le lien d'invitation n'ouvre pas la liste");
+    const bi=await B.pg.$$eval("#slBody .sl-it .ttl",x=>x.map(e=>e.textContent).join(","));if(bi!=="Pain,Lait")err("Léa ne voit pas les éléments : "+bi);
+        await B.pg.click("#slBody .sl-it [data-sltg]");await B.pg.waitForTimeout(600);await shot(B.pg,"v37-liste-coche");
+    await A.pg.evaluate(()=>slLoad());await A.pg.waitForTimeout(600);
+    const ad=await A.pg.$$eval("#slBody .sl-it.done .ttl",x=>x.map(e=>e.textContent).join(","));if(ad!=="Pain")err("Sid ne voit pas ce que Léa a coché : "+ad);
+    if(!(await A.pg.textContent(".sl-share")).includes("Léa"))err("Léa n'apparaît pas parmi les membres");
+    await A.pg.click("[data-slclear]");await A.pg.waitForTimeout(500);
+    if(await A.pg.locator("#slBody .sl-it").count()!==1)err("« Retirer les cochés » ne retire rien");
+    await B.pg.click("[data-slleave]");await B.pg.click("[data-slleave]");await B.pg.waitForTimeout(600);
+    if(await B.pg.evaluate(()=>slLists.length)!==0)err("Léa ne peut pas quitter la liste");
+    // ajout rapide en langage courant
+    const P=A.pg;await P.evaluate(()=>show("plan"));await P.click("#taskAdd");await P.waitForTimeout(200);
+    await P.fill("#fTitle","Dentiste jeudi 14h");await P.waitForTimeout(150);
+    if(!(await P.isVisible("#fHint")))err("l'ajout rapide n'affiche pas ce qu'il a compris");
+    const fv=await P.evaluate(()=>[$("fDate").value,$("fTime").value]);await shot(P,"v37-ajout-rapide");
+    await P.click("#taskForm [type=submit]");await P.waitForTimeout(400);
+    const tk=await P.evaluate(()=>{const t=data.tasks.find(x=>x.title==="Dentiste");return t&&[t.date,t.time,new Date(t.date+"T12:00").getDay()]});
+    if(!tk||tk[1]!=="14:00"||tk[2]!==4||tk[0]!==fv[0])err("« Dentiste jeudi 14h » mal compris : "+JSON.stringify(tk));
+    if(!(await P.isVisible("#notifAsk"))&&(await P.evaluate(()=>pushOK()&&Notification.permission==="default")))err("notifications pas proposées après la première activité avec une heure");
+    if(await P.isVisible("#notifAsk"))await P.click("#naNo");
+    // délai avant reverrouillage
+    const lk=await P.evaluate(()=>{const r=[];data.docVault={id:"tv",v:2,wk:{},chk:{}};dvVid="tv";data.ui.lockDelay=0;dvOpen=true;dvKey={};show("docs");show("todo");r.push(dvOpen);
+      data.ui.lockDelay=5;dvOpen=true;dvKey={};show("docs");show("todo");r.push(dvOpen);secAway.docs-=5*60000+1000;secCheck();r.push(dvOpen);return r});
+    if(lk.join()!=="false,true,false")err("délai de reverrouillage incorrect : "+lk);
+    // erreur envoyée
+    await P.evaluate(()=>reportErr("erreur de test v37","pile"));await P.waitForTimeout(800);
+    const ce=await P.evaluate(async()=>(await (await fetch(SUPABASE_URL+"/__errors")).json()).map(e=>e.msg));if(!ce.includes("erreur de test v37"))err("erreur non envoyée");
+    await A.ctx.close();await B.ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

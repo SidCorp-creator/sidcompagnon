@@ -4,7 +4,7 @@ function send(res,code,obj){res.writeHead(code,{...cors,'Content-Type':'applicat
 // v32 : fonctions réservées dans app_metadata (comme sur Supabase) ; les adresses « sans… » n'ont pas Nutrition
 const appMeta=e=>String(e||'').startsWith('sans')?{}:{features:['nutri']};
 const tok=(u)=>({access_token:'at-'+u.id,refresh_token:'rt-'+u.id,expires_in:3600,expires_at:Math.floor(Date.now()/1000)+3600,user:{id:u.id,email:u.email,user_metadata:u.meta,app_metadata:appMeta(u.email)}});
-const objs={},mem={};let failWrites=false;
+const objs={},mem={};let failWrites=false;const clientErrors=[];let SL={lists:[],members:[],items:[]};
 http.createServer((req,res)=>{const ch=[];req.on('data',c=>ch.push(c));req.on('end',()=>{const raw=Buffer.concat(ch);const isJ=!(req.url.startsWith('/storage/'));const b=isJ?raw.toString():'';
   if(req.method==='OPTIONS')return send(res,204);
   const url=new URL(req.url,'http://x');const body=b?JSON.parse(b):{};
@@ -22,6 +22,26 @@ http.createServer((req,res)=>{const ch=[];req.on('data',c=>ch.push(c));req.on('e
   if(url.pathname==='/auth/v1/recover')return send(res,200,{});
   // v33 : panne simulée du serveur pour les écritures (GET /__fail?on=1 ou 0)
   if(url.pathname==='/__fail'){failWrites=url.searchParams.get('on')==='1';return send(res,200,{failWrites})}
+  // v37 : listes partagées (même logique que les règles RLS de supabase/sql/v37.sql)
+  {const q=k=>(url.searchParams.get(k)||'').replace(/^eq\./,''),isMem=l=>SL.members.some(m=>m.list_id===l&&m.user_id===auth),now=()=>new Date().toISOString();
+   if(url.pathname.startsWith('/rest/v1/rpc/')||url.pathname.startsWith('/rest/v1/shared_')){if(!auth)return send(res,401,{message:'no'});
+    if(url.pathname==='/rest/v1/rpc/create_shared_list'){const id='L'+(++n),code=Math.random().toString(36).slice(2,8).toUpperCase();
+      SL.lists.push({id,name:body.p_name,owner:auth,code,created_at:now()});SL.members.push({list_id:id,user_id:auth,name:body.p_member_name});return send(res,200,id)}
+    if(url.pathname==='/rest/v1/rpc/join_shared_list'){const l=SL.lists.find(x=>x.code===String(body.p_code).toUpperCase());if(!l)return send(res,400,{message:'Code inconnu'});
+      if(!isMem(l.id))SL.members.push({list_id:l.id,user_id:auth,name:body.p_member_name});return send(res,200,l.id)}
+    if(url.pathname==='/rest/v1/shared_lists'){
+      if(req.method==='GET')return send(res,200,SL.lists.filter(l=>isMem(l.id)).map(l=>({...l,shared_members:SL.members.filter(m=>m.list_id===l.id).map(m=>({user_id:m.user_id,name:m.name})),shared_items:SL.items.filter(i=>i.list_id===l.id).map(i=>({id:i.id,done:i.done}))})));
+      if(req.method==='DELETE'){const id=q('id');const l=SL.lists.find(x=>x.id===id);if(l&&l.owner===auth){SL.lists=SL.lists.filter(x=>x!==l);SL.members=SL.members.filter(m=>m.list_id!==id);SL.items=SL.items.filter(i=>i.list_id!==id)}return send(res,204)}}
+    if(url.pathname==='/rest/v1/shared_members'&&req.method==='DELETE'){const l=q('list_id'),u=q('user_id');if(u===auth)SL.members=SL.members.filter(m=>!(m.list_id===l&&m.user_id===u));return send(res,204)}
+    if(url.pathname==='/rest/v1/shared_items'){
+      if(req.method==='GET'){const l=q('list_id');return send(res,200,isMem(l)?SL.items.filter(i=>i.list_id===l):[])}
+      if(req.method==='POST'){if(!isMem(body.list_id))return send(res,403,{message:'rls'});SL.items.push({id:'I'+(++n),list_id:body.list_id,text:body.text,done:false,by_name:body.by_name,created_at:now()});return send(res,201)}
+      if(req.method==='PATCH'){const i=SL.items.find(x=>x.id===q('id'));if(i&&isMem(i.list_id))Object.assign(i,body);return send(res,204)}
+      if(req.method==='DELETE'){const id=q('id'),l=q('list_id'),dn=q('done');SL.items=SL.items.filter(i=>!(isMem(i.list_id)&&(id?i.id===id:(i.list_id===l&&(dn!=='true'||i.done)))));return send(res,204)}}
+    return send(res,404,{message:'?'})}}
+  // v37 : erreurs envoyées par l'app (gardées en mémoire, lisibles par /__errors)
+  if(url.pathname==='/rest/v1/client_errors'&&req.method==='POST'){if(!auth)return send(res,401,{message:'no'});clientErrors.push(body);return send(res,201)}
+  if(url.pathname==='/__errors')return send(res,200,clientErrors);
   if(url.pathname==='/rest/v1/user_data'&&failWrites&&req.method!=='GET')return send(res,500,{message:'panne simulée'});
   if(url.pathname==='/rest/v1/user_data'){
     if(req.method==='GET'){const id=url.searchParams.get('user_id').replace('eq.','');if(id!==auth)return send(res,200,[]);return send(res,200,rows[id]?[rows[id]]:[])}

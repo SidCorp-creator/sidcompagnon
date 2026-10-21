@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 36.**
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 37.**
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -19,7 +19,7 @@ site/                 ← exactement ce qui est mis en ligne sur Netlify
   _headers            ← en-têtes de sécurité Netlify (CSP…) ; tests/serve.js les applique aussi en local
   manifest.webmanifest, icônes
 supabase/functions/   ← fonctions Edge (Deno) : horaire (relais iCal), nutrition (relais Claude), rappels (notifications), delete-account (v35, suppression du compte)
-supabase/sql/         ← SQL : documents.sql (déjà exécuté), nutrition.sql (v20, compteur d'appels Claude, exécuté), food_memory.sql (v21, mémoire des aliments), notifications.sql (v22, cron 5 min + anti-doublon)
+supabase/sql/         ← SQL : v37.sql (sauvegarde quotidienne, erreurs, listes partagées — à exécuter par Sid), documents.sql (déjà exécuté), nutrition.sql (v20, compteur d'appels Claude, exécuté), food_memory.sql (v21, mémoire des aliments), notifications.sql (v22, cron 5 min + anti-doublon)
 secrets/              ← clés VAPID, secret cron, version complète de rappels : NE JAMAIS publier ni committer
 tests/                ← serve.js (aperçu local + faux Supabase), smoke.js (test Playwright), mock-supabase.js, memory.test.js (mémoire des aliments, `node tests/memory.test.js`), rappels.test.js (calcul des rappels)
 assets/               ← logo
@@ -156,6 +156,15 @@ assets/               ← logo
   - Plus de glissement de côté : `body{overflow-x:clip}`, carrousels chrono/minuteur et présentation en `overflow-x:hidden` (on passe par les boutons), `.vseg` sans défilement, `.chips` qui passent à la ligne.
   - Ouverture sur Aujourd'hui : un ancien choix de page d'accueil (caché avant la v32) est remis à « Aujourd'hui » une fois (`data.prefs.homeV`).
   - Fenêtres sur iPhone avec le clavier ouvert : `.sheet-bg` suit `visualViewport` (`--vvh`, `--vvt`) ; le focus automatique sur la fenêtre seulement au clavier (`kbUser`).
+- v37 (plan « fiabilité + expérience » de Sid) :
+  - Erreurs de l'app envoyées dans la table `client_errors` (`reportErr`, `APP_V` = numéro de version à changer aussi à chaque version ; 5 par ouverture, jamais en essai). Lisibles seulement dans le tableau de bord.
+  - Sauvegarde quotidienne : `user_data_backup` (14 jours) par `sidnote_daily_backup()` + cron `sidnote-backup` (2 h 17 UTC). **`supabase/sql/v37.sql` doit être exécuté par Sid** (le connecteur MCP expire sur les instructions qui demandent une confirmation : fonctions avec DELETE, cron).
+  - Notifications proposées après la première activité avec une heure (plus au démarrage ni après la présentation).
+  - Ajout rapide en langage courant dans « Nouvelle activité » : `parseQuick(texte)` (FR/EN/NL : demain, jeudi, le 12/11, 3 novembre, 14h, 9h30, 2pm, 14u, ce soir…), aperçu `#fHint`, remplit date/heure sauf si touchées à la main (`fTouched`), titre nettoyé à l'enregistrement.
+  - Délai avant reverrouillage du coffre (Réglages > vie privée, `#lockSel`, `data.ui.lockDelay` en minutes, propre à l'appareil) : `SEC_K`, `secLeave`, `secCheck`, `secAway` remplacent les verrouillages immédiats (changement d'onglet, app en arrière-plan).
+  - **Listes partagées** (fonction « Listes » dans Organisation, `#v-lists`) : tables `shared_lists`, `shared_members`, `shared_items` + RPC `create_shared_list`, `join_shared_list` (RLS : membres seulement). Code d'invitation à 6 caractères, lien `https://sidnote.netlify.app/#rejoindre=CODE` (`slFromHash`, gardé dans `sidnote-join` jusqu'à la connexion). En ligne seulement (pas dans `data`), rechargé toutes les 15 s quand la page est ouverte (`slLoad`). Le propriétaire supprime la liste, les autres la quittent.
+  - Espace avec 4 fonctions : pastilles sous le titre de l'espace (`.vhead.many`).
+  - Pas encore fait : Face ID (WebAuthn), découpage de index.html (prévu avec le déploiement par Git), SMTP et adresse de contact (côté Sid).
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

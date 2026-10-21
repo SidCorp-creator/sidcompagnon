@@ -583,6 +583,8 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.click('#homeBody [data-aiwiz]');await pg.waitForTimeout(200);await shot(pg,"v39-ia-choix");
     await pg.click('[data-aipick="claude"]');await pg.waitForTimeout(900);await shot(pg,"v39-ia-etapes");
     const au=await pg.textContent("#aiUrl");if(!/\/functions\/v1\/mcp\//.test(au))err("adresse pas créée dans l'assistant : "+au);
+    const ah=await pg.getAttribute("[data-aiadd]","href").catch(()=>"");
+    if(!(ah.startsWith("https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=Sid'note")&&ah.includes("connectorUrl="+encodeURIComponent(au))))err("lien Claude pré-rempli incorrect : "+ah);
     await pg.click('[data-aistep="test"]');await pg.waitForTimeout(300);await pg.evaluate(async()=>{await fetch(SUPABASE_URL+"/__mcpuse")});
     await pg.waitForSelector("#aiDone:not([hidden])",{timeout:10000}).catch(()=>err("branchement pas détecté"));await shot(pg,"v39-ia-branchee");
     if(await pg.isVisible("#aiDone"))await pg.click("#aiDone");

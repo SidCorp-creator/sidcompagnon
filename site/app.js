@@ -95,7 +95,7 @@ async function api(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="39";const errSent=new Set();
+const APP_V="40";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -2689,6 +2689,8 @@ $("mcpSec").addEventListener("toggle",e=>{if(e.currentTarget.open)mcpLoad()});
 // data.prefs.ai = "claude" | "chatgpt" | "mistral" (IA choisie) ; data.prefs.aiOk = date du premier appel reçu de cette IA (branchement vérifié)
 const AIS={
   claude:{name:"Claude",ask:q=>"https://claude.ai/new?q="+encodeURIComponent(q),conn:"https://claude.ai/settings/connectors",
+    // v40 : la fenêtre « Ajouter un connecteur personnalisé » s'ouvre déjà remplie (nom + adresse) : il ne reste qu'à toucher « Ajouter »
+    add:u=>"https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName="+encodeURIComponent("Sid'note")+"&connectorUrl="+encodeURIComponent(u),
     steps:()=>[T3("Touche « Ouvrir Claude » : la page Connecteurs s'ouvre (connecte-toi si besoin).","Tap “Open Claude”: the Connectors page opens (sign in if needed).","Tik op ‘Claude openen’: de pagina Connectoren opent (log in indien nodig)."),
       T3("Touche « Ajouter un connecteur personnalisé ».","Tap “Add custom connector”.","Tik op ‘Aangepaste connector toevoegen’."),
       T3("Nom : Sid'note. URL : colle l'adresse (elle est déjà copiée). Authentification : « Aucune connexion ».","Name: Sid'note. URL: paste the address (already copied). Authentication: “None”.","Naam: Sid'note. URL: plak het adres (al gekopieerd). Authenticatie: ‘Geen’."),
@@ -2717,6 +2719,16 @@ function aiRender(){const b=$("aiBody"),ai=aiCur();aiStop();
   if(aiW.step==="none"){$("aiTitle").textContent=L("Commencer avec une IA");
     b.innerHTML=`<p>${L("Le plus simple, c'est Claude : crée un compte (e-mail ou Google), puis reviens ici et choisis Claude.")}</p>
       <div class="ai-acts"><a class="btn" href="https://claude.ai/login" target="_blank" rel="noopener">${L("Créer mon compte Claude")}</a><button type="button" class="btn ghost" data-aistep="pick">${L("C'est fait, continuer")}</button></div>`;return}
+  if(aiW.step==="setup"&&ai.add){$("aiTitle").textContent=ai.name;
+    b.innerHTML=`<div class="ai-step"><b>${L("Tout est prêt")}</b><div class="small muted">${L("Touche le bouton : Claude s'ouvre avec Sid'note déjà rempli. Là-bas, touche simplement « Ajouter », puis reviens ici.")}</div>
+        ${aiW.url?`<a class="btn" href="${esc(ai.add(aiW.url))}" target="_blank" rel="noopener" style="width:100%;margin-top:10px" data-aiadd="1">${L("Ajouter Sid'note à")} ${esc(ai.name)}</a>`:`<button type="button" class="btn" disabled style="width:100%;margin-top:10px">${L("Préparation…")}</button>`}
+        <div class="small muted" style="margin-top:8px">${L("Si Claude te demande de te connecter, fais-le : la fenêtre s'ouvrira ensuite toute seule.")}</div></div>
+      <details class="ai-more"><summary class="small">${L("Voir mon adresse (si besoin)")}</summary><div class="mcp-url notr" id="aiUrl">${aiW.url?esc(aiW.url):L("Création…")}</div>
+        <button type="button" class="btn ghost" data-aicopy="1" style="width:100%;margin-top:8px">${L("Copier l'adresse")}</button></details>
+      <div class="ai-acts"><button type="button" class="btn ghost" data-aistep="pick">${L("Changer d'IA")}</button><button type="button" class="btn" data-aistep="test">${L("C'est fait : tester")}</button></div>`;
+    if(!aiW.url)mcpCreate(ai.name).then(r=>{aiW.url=r.url;aiW.hash=r.hash;mcpLoad();if(aiW.step==="setup")aiRender()})
+      .catch(ex=>{const u=$("aiUrl");if(u)u.textContent=L(ex instanceof TypeError?"Pas de connexion internet":"Création impossible pour l'instant");toast(ex instanceof TypeError?"Pas de connexion internet":"Création impossible pour l'instant")});
+    return}
   if(aiW.step==="setup"){$("aiTitle").textContent=ai.name;
     b.innerHTML=`<div class="ai-step"><b>1. ${L("Ton adresse Sid'note")}</b><div class="small muted">${L("Personnelle et secrète : elle donne accès à ton agenda, tes tâches, tes notes et ta nutrition.")}</div>
         <div class="mcp-url notr" id="aiUrl">${aiW.url?esc(aiW.url):L("Création…")}</div><button type="button" class="btn ghost" data-aicopy="1" style="width:100%;margin-top:8px">${L("Copier l'adresse")}</button></div>
@@ -2742,6 +2754,7 @@ $("aiBody").addEventListener("click",e=>{const p=e.target.closest("[data-aipick]
   if(p){const k=p.dataset.aipick;if(k==="none"){aiW.step="none";aiRender();return}
     if(data.prefs.ai!==k){data.prefs.ai=k;delete data.prefs.aiOk;save()}aiW.step="setup";aiRender();return}
   const st=e.target.closest("[data-aistep]");if(st){aiW.step=st.dataset.aistep;aiRender();return}
+  if(e.target.closest("[data-aiadd]")){setTimeout(()=>{if(aiW.step==="setup"){aiW.step="test";aiRender()}},800);return}
   if(e.target.closest("[data-aicopy]")){copyTxt(aiW.url).then(ok=>toast(ok?"Adresse copiée":"Copie impossible : sélectionne-la et copie-la"));return}
   if(e.target.closest("#aiDone")){$("aiSheet").hidden=true;aiStop();toast("Ton IA est branchée sur Sid'note")}});
 $("aiClose").addEventListener("click",()=>{$("aiSheet").hidden=true;aiStop()});

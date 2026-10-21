@@ -1238,3 +1238,4 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 .ok{color:var(--good,#2e7d32)}
 .spin{width:18px;height:18px;border-radius:50%;border:2.5px solid var(--line);border-top-color:var(--gold);animation:spin .9s linear infinite;flex:none}
 @keyframes spin{to{transform:rotate(360deg)}}
+.ai-more{margin:0 0 10px;padding:0 4px}.ai-more summary{cursor:pointer;color:var(--muted);padding:6px 0}

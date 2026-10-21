@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 39.**
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 40.**
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -188,6 +188,7 @@ assets/               ← logo
   - Notifications : la veille toujours active (`notifLeads` ∪ 1440, pastille verrouillée, plus de « Aucun rappel ») ; cours du calendrier relié avec les mêmes délais que les activités (fonction `rappels` v5, clé de la veille inchangée).
   - Tout se referme (`closeAll`) au lancement (sections de Réglages fermées) et au retour après 10 min ailleurs (fenêtres, note ouverte, dossier, vue jour).
   - Tests : bloc v39 de `tests/smoke.js` (+ `/__mcpuse` dans le faux serveur) ; le test « sans accès » vérifie maintenant que Nutrition est ouverte.
+- v40 : l'assistant « Mon IA » pour Claude ouvre la fenêtre « Ajouter un connecteur personnalisé » déjà remplie (lien officiel `https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=…&connectorUrl=…`, `AIS.claude.add`, bouton `[data-aiadd]`) : il ne reste qu'à toucher « Ajouter », puis l'assistant passe tout seul au test. L'adresse reste visible dans « Voir mon adresse ». ChatGPT et Le Chat n'ont pas de lien pré-rempli connu : étapes + adresse copiée.
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

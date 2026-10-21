@@ -1,4 +1,6 @@
--- Sid'note v37 : à coller dans Supabase > SQL Editor > New query, puis Run (peut être relancé sans risque).
+-- Sid'note v37 : EXÉCUTÉ par Claude le 21 oct. 2026 (via le connecteur Supabase). Gardé pour mémoire.
+-- Différence avec ce qui tourne : la fonction de sauvegarde n'efface pas encore les copies de plus de 14 jours
+-- ni les vieilles erreurs (le connecteur bloque les DELETE) : à ajouter plus tard, la place prise est minime.
 -- (Les tables client_errors et user_data_backup ont déjà été créées le 21 oct. 2026 ; ce script les crée aussi si besoin.)
 
 -- 1) Erreurs envoyées par l'app : on peut les lire dans Table Editor > client_errors, l'app ne peut qu'en ajouter.

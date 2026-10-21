@@ -18,7 +18,7 @@ site/                 ← exactement ce qui est mis en ligne sur Netlify
   sw.js               ← service worker (réseau d'abord ; cache pdf.js à part)
   _headers            ← en-têtes de sécurité Netlify (CSP…) ; tests/serve.js les applique aussi en local
   manifest.webmanifest, icônes
-supabase/functions/   ← fonctions Edge (Deno) : horaire (relais iCal), nutrition (relais Claude), rappels (notifications), delete-account (v35, suppression du compte)
+supabase/functions/   ← fonctions Edge (Deno) : horaire (relais iCal), nutrition (relais Claude), rappels (notifications), delete-account (v35, suppression du compte), mcp (v38, connecteur Claude)
 supabase/sql/         ← SQL : v37.sql (sauvegarde quotidienne, erreurs, listes partagées — à exécuter par Sid), documents.sql (déjà exécuté), nutrition.sql (v20, compteur d'appels Claude, exécuté), food_memory.sql (v21, mémoire des aliments), notifications.sql (v22, cron 5 min + anti-doublon)
 secrets/              ← clés VAPID, secret cron, version complète de rappels : NE JAMAIS publier ni committer
 tests/                ← serve.js (aperçu local + faux Supabase), smoke.js (test Playwright), mock-supabase.js, memory.test.js (mémoire des aliments, `node tests/memory.test.js`), rappels.test.js (calcul des rappels)
@@ -165,6 +165,7 @@ assets/               ← logo
   - **Listes partagées** (fonction « Listes » dans Organisation, `#v-lists`) : tables `shared_lists`, `shared_members`, `shared_items` + RPC `create_shared_list`, `join_shared_list` (RLS : membres seulement). Code d'invitation à 6 caractères, lien `https://sidnote.netlify.app/#rejoindre=CODE` (`slFromHash`, gardé dans `sidnote-join` jusqu'à la connexion). En ligne seulement (pas dans `data`), rechargé toutes les 15 s quand la page est ouverte (`slLoad`). Le propriétaire supprime la liste, les autres la quittent.
   - Espace avec 4 fonctions : pastilles sous le titre de l'espace (`.vhead.many`).
   - Pas encore fait : Face ID (WebAuthn), découpage de index.html (prévu avec le déploiement par Git), SMTP et adresse de contact (côté Sid).
+- Connecteur Claude (21 oct. 2026) : fonction Edge `mcp` (v1, Verify JWT OFF, déployée) = serveur MCP « Streamable HTTP » sans session, réponses JSON. Adresse `https://eloeoaidgbkygazwjwiu.supabase.co/functions/v1/mcp/<clé>` ; table `mcp_tokens(hash SHA-256, user_id, label, last_used)` (`supabase/sql/mcp.sql`, exécuté). Outils : agenda, ajouter_activite, taches, ajouter_tache, terminer_tache, notes, lire_note, ajouter_note, listes_partagees, ajouter_a_une_liste. Jamais les coffres ni les notes secrètes. Écrit dans `user_data` « à condition » (`updated_at`), l'app récupère au retour au premier plan (`pull`). La clé de Sid a été créée par Claude (gardée seulement dans le scratchpad de la session ; à recréer depuis l'app si perdue).
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

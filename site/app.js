@@ -4248,9 +4248,9 @@ if(ephExpired){
   $("aEmail").value=ls.get(LAST_KEY)||"";
   // v34 : nouveau visiteur → « Créer un compte » en premier ; on montre ce que fait l'app
   setMode(ls.get(LAST_KEY)&&!ls.get("sidnote-trial-carry")?"login":"signup");authWait();
-  $("authFeats").innerHTML=[["plan","Organise tes journées","Agenda, tâches et minuteur de concentration, avec des rappels."],
+  $("authFeats").innerHTML=[["plan","Organise tes journées","Agenda et tâches du jour, avec des rappels."],
     ["pwd","Garde tout à l'abri","Notes, documents scannés et mots de passe, chiffrés avec ta phrase secrète."],
-    ["muscu","Suis tes séances","Musculation, chrono et minuteur."],
+    ["muscu","Ta santé","Programme de musculation sur mesure, nutrition et graphiques."],
     ["app","Partout avec toi","Sur iPhone et sur ordinateur, même sans connexion."]].map(([k,t,d])=>`<li><span class="af-ic">${ICON(k)}</span><span><b>${L(t)}</b><span class="small muted">${L(d)}</span></span></li>`).join("");
   $("aTrial").addEventListener("click",startTrial);if(ls.get("sidnote-trial-carry")){$("aTrial").textContent=L("Revenir à l'essai");$("authSub").textContent=L("Crée ton compte : les données de ton essai seront reprises.")}
   if(!CONFIGURED){$("authSub").textContent="L'app n'est pas encore reliée à son serveur.";}

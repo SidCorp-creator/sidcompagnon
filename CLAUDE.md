@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 35.**
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 36.**
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -131,7 +131,7 @@ assets/               ← logo
   - Documents : la copie IndexedDB est chiffrée aussi quand le coffre est v2 (`sealOn`, `blobIsEnc`, `docBlob(d,key)`). Les photos des notes ne sont pas chiffrées (comme le texte des notes) : textes de confidentialité réécrits honnêtement (FR/EN/NL).
   - `mergeData` : pour vault/docVault/noteVault/phx d'id différents, le plus récent (`at`/`createdAt`) gagne. `renderPwd` ne reste plus sur « Choisis ton code » si un coffre arrive par la synchro.
   - Test : `tests/smoke.js` couvre le compte sans accès Nutrition, la page d'ouverture, la CSP, le passage d'un ancien coffre, le nouvel appareil, le code oublié et la fusion.
-  - À faire par Sid dans Supabase (tableau de bord) : Authentication → Sign In / Providers → Email : « Minimum password length » = 8, et activer « Prevent use of leaked passwords ». Netlify : retirer le badge « Powered by Netlify » (script `/.netlify/scripts/hud`) : Site configuration → Build & deploy → Deploy Previews → « Netlify Drawer » sur Disable (chemin à vérifier sur le compte).
+  - Fait par Sid le 21 oct. 2026 : Supabase « Minimum password length » = 8 ; « Prevent use of leaked passwords » impossible (offre Pro seulement) — piste : vérifier soi-même via l'API k-anonymat de Have I Been Pwned (à proposer). Netlify : badge « Powered by Netlify » masqué (Project configuration → General → Powered by Netlify badge).
 - v33 (audit, lots 5 et 6) :
   - Sauvegarde complète et versionnée : `bkObj()` = `{app:"sidnote", v:2, exported, data:forServer(data)}` (« Exporter une sauvegarde » et « Télécharger toutes mes données », même format, `saveJSON`). Restauration : `bkParse` (v2, export RGPD, ancien format v1 tâches/agenda), aperçu `#bkSheet` (comptes fichier / maintenant), « Fusionner » (`mergeData`) ou « Remplacer » (2 appuis ; ce qui manque est mis en pierre tombale, documents et classeurs toujours gardés ; en v1 seuls tâches/agenda changent). `bkPrepare` ne reprend jamais `del`/`wipe`/`ui` du fichier et garde les coffres du compte (éléments d'un autre coffre ignorés, signalés).
   - `data.res = {id: ms}` : éléments restaurés ; dans `mergeData`, une suppression plus ancienne qu'une restauration est annulée (90 jours, comme `del`).
@@ -150,6 +150,12 @@ assets/               ← logo
   - Accord pour les données de santé : `nuConsent()` avant tout appel `nuCall` (fenêtre `#consentSheet`), `data.nutri.consent` (date, synchronisé avec `upd`) ; retirable dans Réglages (`#nuConsentRow`, `renderConsent`).
   - Suppression du compte en libre-service : bouton `#delAccBtn` (mot de passe redemandé par `askAccountPw`) → fonction Edge `delete-account` (v1, Verify JWT OFF, déployée le 20 oct. 2026) : fichiers `documents/<uid>/…`, `push_subscriptions`, `nutrition_usage`, `user_data`, puis `auth.admin.deleteUser`. Refuse le compte test. Caché en mode essai et pour le compte test.
   - Accessibilité : fenêtres `role="dialog"` + `aria-modal` + `aria-labelledby`, focus mis sur la fenêtre (pas sur un champ, pour ne pas ouvrir le clavier iPhone) et rendu à la fermeture, Tab reste dans la fenêtre, Échap ferme la fenêtre du dessus (`.sheet-head .x` ou `[data-esc]`). `:focus-visible` partout. Or du thème clair foncé (`--gold:#80632F`, contraste ≥ 4,5:1). Barre du bas : `<nav aria-label>` + `aria-current="page"` (plus de `role=tab`), libellés à 11 px. `#toast` en `role=status aria-live=polite`. `#icalUrl` étiqueté.
+- v36 (retours de Sid après la v35) :
+  - Présentation : « Tout décocher / Tout cocher » sur chaque diapositive de modules (`[data-onball]`, `onbAllLbl`) ; couleurs (ambiances) choisies sur la diapositive Thème (`#onbPal`, `data-opal`).
+  - Titre « Musculation » n'est plus caché : le cache au-dessus du chrono (`.rest::before`) n'existe que quand le chrono est collé (`.rest.stuck`).
+  - Plus de glissement de côté : `body{overflow-x:clip}`, carrousels chrono/minuteur et présentation en `overflow-x:hidden` (on passe par les boutons), `.vseg` sans défilement, `.chips` qui passent à la ligne.
+  - Ouverture sur Aujourd'hui : un ancien choix de page d'accueil (caché avant la v32) est remis à « Aujourd'hui » une fois (`data.prefs.homeV`).
+  - Fenêtres sur iPhone avec le clavier ouvert : `.sheet-bg` suit `visualViewport` (`--vvh`, `--vvt`) ; le focus automatique sur la fenêtre seulement au clavier (`kbUser`).
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

@@ -208,7 +208,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.click('#navIn [data-dock="sport"]');await pg.waitForTimeout(300);await shot(pg,"sans-acces-sante");
     if(await pg.locator('#vhead [data-go="nutri"],#vhead [data-go="graph"]').count())err("pastille Nutrition visible");
     await pg.evaluate(()=>{show("nutri")});if(await pg.evaluate(()=>data.ui.view)==="nutri")err("Nutrition s'ouvre quand même");
-    await pg.evaluate(()=>{data.prefs.home="todo";save()});await pg.waitForTimeout(1500);await pg.reload();await pg.waitForTimeout(1200);
+    await pg.evaluate(()=>{data.prefs.home="todo";data.prefs.homeV=1;save()});await pg.waitForTimeout(1500);await pg.reload();await pg.waitForTimeout(1200);
     if(await pg.evaluate(()=>data.ui.view)!=="todo")err("la page d'ouverture choisie (Tâches) n'est pas respectée");
     const opts=await pg.$$eval("#homeSel option",o=>o.map(x=>x.value).join(","));if(/nutri|graph/.test(opts))err("Nutrition proposée comme page d'ouverture");
     if(await pg.evaluate(()=>esc("l'a")!=="l&#39;a"))err("esc n'échappe pas l'apostrophe");
@@ -402,6 +402,36 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(!(await pg.textContent("#aErr")).includes("supprimé"))err("pas de message après la suppression du compte");
     const left=await pg.evaluate(async()=>{const r=await fetch(SUPABASE_URL+"/__dump");const j=await r.json();return j.users.includes("adieu@test.be")});
     if(left)err("le compte existe encore sur le serveur");
+    await ctx.close()}
+  // --- v36 : présentation (tout décocher, couleurs), titre Musculation visible, pas de glissement de côté, ouverture sur Aujourd'hui
+  {const ctx=await b.newContext({...devices["iPhone 13"],colorScheme:"dark"}),pg=await ctx.newPage(),err=m=>errs.push("v36 : "+m);
+    pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(400);
+    await pg.click("#mSignup");await pg.fill("#aName","Pres");await pg.fill("#aEmail","pres@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(!(await pg.isVisible("#onb")))err("présentation absente");
+    else{const b1=pg.locator('#onbGroups [data-onball="orga"]');if(!(await b1.count()))err("pas de « Tout décocher » dans la présentation");
+      else{await pg.evaluate(()=>onbGoTo(1));await pg.waitForTimeout(1500);await shot(pg,"v36-presentation-tout");await b1.click();
+        const off=await pg.evaluate(()=>["plan","todo","pomo"].every(k=>!onbSel[k]));if(!off)err("« Tout décocher » ne décoche pas tout");
+        if((await b1.textContent()).trim()!=="Tout cocher")err("le bouton ne devient pas « Tout cocher »");await b1.click()}
+      await pg.evaluate(()=>onbGoTo(onbSlides().length-1));await pg.waitForTimeout(700);
+      if(await pg.locator("#onbPal [data-opal]").count()!==5)err("couleurs absentes de la diapositive Thème");
+      await pg.click('#onbPal [data-opal="emeraude"]');await pg.waitForTimeout(1200);await shot(pg,"v36-presentation-couleurs");
+      if(await pg.evaluate(()=>document.documentElement.dataset.palette)!=="emeraude")err("la couleur choisie n'est pas appliquée");
+      await pg.click("#onbGo");await pg.waitForTimeout(400)}
+    if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    // titre Musculation entièrement visible (le cache du chrono ne le recouvre plus)
+    await pg.evaluate(()=>{data.prefs.tabs.muscu=true;applyTabs();show("muscu");window.scrollTo(0,0)});await pg.waitForTimeout(300);
+    const cov=await pg.evaluate(()=>{const h=document.querySelector("#v-muscu h1"),r=h.getBoundingClientRect(),e=document.elementFromPoint(r.x+20,r.y+r.height*0.8);return e===h||h.contains(e)});
+    if(!cov)err("le titre Musculation est recouvert");await shot(pg,"v36-musculation");
+    // plus de glissement de côté
+    const ox=await pg.evaluate(()=>[getComputedStyle(document.getElementById("restTrack")).overflowX,getComputedStyle(document.body).overflowX,document.documentElement.scrollWidth<=innerWidth]);
+    if(ox[0]!=="hidden"||ox[2]!==true)err("on peut encore glisser de côté : "+ox);
+    // ancien réglage caché « page d'accueil » : l'app s'ouvre quand même sur Aujourd'hui
+    await pg.evaluate(()=>{data.prefs.home="plan";delete data.prefs.homeV;save()});await pg.waitForTimeout(1500);await pg.reload();await pg.waitForTimeout(1200);
+    if(await pg.evaluate(()=>data.ui.view)!=="home")err("l'app ne s'ouvre pas sur Aujourd'hui");
+    // la fenêtre « Nouvelle activité » suit la zone visible de l'écran
+    await pg.evaluate(()=>show("plan"));await pg.click("#taskAdd");await pg.waitForTimeout(200);
+    const vv=await pg.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue("--vvh"));if(!vv)err("zone visible non suivie (--vvh)");
     await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");

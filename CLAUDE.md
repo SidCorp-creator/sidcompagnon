@@ -177,6 +177,7 @@ assets/               ← logo
 ## Déploiement (Netlify)
 - Site Netlify : `sidnote.netlify.app` (équipe à renommer « SidCorp » dans Team settings → General → Team details ; **ne pas changer l'adresse du site**, l'app installée chez les proches casserait).
 - Jusqu'ici, Sid déposait un zip du dossier `site/` par glisser-déposer (Netlify Drop) : 15 crédits par dépôt, 300 crédits par mois (renouvelés vers le 5 du mois).
+- **Depuis le 21 oct. 2026 (v37), Claude publie lui-même** via le connecteur Netlify (Sid a connecté Netlify et donné l'accès réseau complet à l'environnement cloud). Site `sidnote` : id `e7fe294f-7d4e-4c67-a69a-c0f5ae4f5ff2` ; site de test `sidnote-test` : id `5c61415f-50cc-49da-8f96-86c245428f64`. Méthode : copier `site/` dans un dossier vide du scratchpad + `netlify.toml` (`[build] publish = "." command = ""`), appeler l'outil `deploy-site`, lancer la commande `npx -y @netlify/mcp@latest …` qu'il renvoie depuis ce dossier avec `NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt`, puis vérifier `https://sidnote.netlify.app/sw.js`.
 - **À chaque version** :
   1. Changer le numéro dans le texte « Sid'note · version N » (Réglages, en bas de index.html) et la constante `CACHE` dans `sw.js` (`sidnote-vN`). Sans ce second changement, les iPhone gardent l'ancienne version.
   2. Lancer `node tests/smoke.js`.

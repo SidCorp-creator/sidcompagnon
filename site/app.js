@@ -3037,9 +3037,14 @@ const CONV_NAME={nutri:"Nutrition",muscu:"Musculation"};
 function copyNow(t){try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).catch(()=>{});return}}catch(e){}
   const x=document.createElement("textarea");x.value=t;x.setAttribute("readonly","");x.style.position="fixed";x.style.opacity="0";document.body.appendChild(x);x.select();try{document.execCommand("copy")}catch(e){}x.remove()}
 // ouvre Claude pour un sujet : la conversation fixe si elle est réglée (message copié), sinon une nouvelle conversation pré-remplie
-function aiGo(topic,prompt,quiet){const u=topic&&convUrl(topic),ai=aiCur()||AIS.claude;
-  if(u){copyNow(prompt);extOpen(u);if(!quiet)toast("Prompt copié, colle-le dans la conversation");return true}
-  extOpen(ai.ask(prompt));return false}
+// v44 : un lien de projet (claude.ai/project/…) ouvre une nouvelle discussion DANS le projet avec le message déjà écrit
+// (claude.ai/new?project=…&q=…) : rien à coller. Une conversation existante ne peut pas être pré-remplie : message copié.
+const projId=u=>(String(u||"").match(/^https:\/\/claude\.ai\/project\/([\w-]+)/)||[])[1]||"";
+const convKind=t=>{const u=convUrl(t);return !u?"":projId(u)?"proj":"chat"};
+function aiGo(topic,prompt,quiet){const u=topic&&convUrl(topic),ai=aiCur()||AIS.claude,pid=projId(u);
+  if(pid){extOpen(`https://claude.ai/new?project=${encodeURIComponent(pid)}&q=${encodeURIComponent(prompt)}`);return "proj"}
+  if(u){copyNow(prompt);extOpen(u);if(!quiet)toast("Prompt copié, colle-le dans la conversation");return "chat"}
+  extOpen(ai.ask(prompt));return ""}
 function convSettings(){show("more");const d=$("fitSec");if(d){d.open=true;setTimeout(()=>{d.scrollIntoView({block:"start",behavior:"smooth"});const i=$("convNutri");if(i&&!i.value)i.focus({preventScroll:true})},120)}}
 function renderConv(){const c=data.prefs.aiConv||{};for(const[t,id]of[["nutri","convNutri"],["muscu","convMuscu"]]){const i=$(id);if(i&&document.activeElement!==i)i.value=c[t]||""}}
 document.querySelectorAll(".conv-f").forEach(f=>f.addEventListener("submit",e=>{e.preventDefault();const t=f.dataset.conv,v=f.querySelector("input").value.trim();
@@ -3063,7 +3068,7 @@ function aiHandoff(prompt,topic,opt){const ai=aiCur()||AIS.claude,cv=topic&&conv
       <button type="button" class="btn" id="aaShare">${L("Envoyer la photo à Claude")}</button>
       <button type="button" class="btn" id="aaImgCopy" hidden>${L("Copier la photo et ouvrir Claude")}</button>
       <a class="btn ghost" id="aaImgSave" href="${img}" download="assiette.jpg">${L("Enregistrer la photo")}</a>`:"")+
-    (cv&&!img?`<button type="button" class="btn" data-aaconv="1">${L("Ouvrir la conversation")} ${L(CONV_NAME[topic])}</button><div class="small muted" style="text-align:center">${L("Le message sera copié : colle-le dans la conversation.")}</div>`:"")+
+    (cv&&!img?`<button type="button" class="btn" data-aaconv="1">${L(convKind(topic)==="proj"?"Ouvrir dans le projet":"Ouvrir la conversation")} ${L(CONV_NAME[topic])}</button><div class="small muted" style="text-align:center">${L(convKind(topic)==="proj"?"Le message sera déjà écrit dans ton projet : il ne reste qu'à l'envoyer.":"Le message sera copié : colle-le dans la conversation.")}</div>`:"")+
     (ai&&!cv&&!img?`<a class="btn ${data.prefs.aiOk?"":"ghost"}" href="${ai.ask(prompt)}" target="_blank" rel="noopener">${L("Envoyer avec")} ${esc(ai.name)}</a>`:"")+
     `<button type="button" class="btn ghost" id="aaCopy">${L("Copier le message")}</button>`+
     (topic&&!cv&&ai&&data.prefs.aiOk?`<button type="button" class="linkbtn aa-proj" data-convset="1">${L("Toujours utiliser la même conversation")} ${L(CONV_NAME[topic]||"")}</button>`:"");
@@ -3902,8 +3907,8 @@ function nuPhotoSend(q){const ph=nuPhoto;
   // Claude s'ouvre tout de suite, pendant le toucher (une fenêtre vide remplie plus tard reste blanche dans l'app installée sur iPhone) ;
   // la photo finit de partir pendant que Claude s'ouvre (elle est en général déjà déposée depuis la prise de vue)
   // v44 : dans la conversation Nutrition si elle est réglée (le message est copié : il suffit de coller), sinon une nouvelle conversation
-  const conv=aiGo("nutri",msg,true);clear();if(conv)toast("Prompt copié, colle-le dans la conversation");
-  (ph.up||nuPhotoUp()||Promise.reject()).then(()=>nuPhotoMark(ph)).then(()=>toast(conv?"Photo envoyée. Prompt copié, colle-le dans la conversation":"Photo envoyée : Claude note le repas, il arrivera ici"),
+  const conv=aiGo("nutri",msg,true);clear();if(conv==="chat")toast("Prompt copié, colle-le dans la conversation");
+  (ph.up||nuPhotoUp()||Promise.reject()).then(()=>nuPhotoMark(ph)).then(()=>toast(conv==="chat"?"Photo envoyée. Prompt copié, colle-le dans la conversation":"Photo envoyée : Claude note le repas, il arrivera ici"),
     ()=>toast("Envoi de la photo impossible : réessaie"))}
 // un aliment renvoyé par l'IA apparaît-il dans ce que la personne a écrit ? (racine des mots, sans accents)
 const nz=x=>String(x||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
@@ -4483,7 +4488,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v44";
+const BUILD="sidnote-v44-1";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

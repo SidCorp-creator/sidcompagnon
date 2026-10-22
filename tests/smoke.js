@@ -819,7 +819,8 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(!(await pg.isVisible('#aaActs [data-aaconv]')))err("pas de bouton « Ouvrir la conversation Musculation »");
     await pg.click('#aaActs [data-aaconv]');await pg.waitForTimeout(300);
     const o1=await pg.evaluate(()=>({o:window.__open.slice(-1)[0],c:window.__clip.slice(-1)[0]}));
-    if(o1.o!=="https://claude.ai/project/2222-bbbb"||!String(o1.c).includes("plus de dos"))err("musculation : mauvaise conversation ou message pas copié : "+JSON.stringify(o1));
+    // projet : nouvelle discussion dans le projet, message déjà écrit (rien à coller)
+    if(!String(o1.o).startsWith("https://claude.ai/new?project=2222-bbbb&q=")||!decodeURIComponent(o1.o).includes("plus de dos"))err("musculation : pas ouvert dans le projet avec le message : "+JSON.stringify(o1));
     await pg.evaluate(()=>{show("nutri");aiGo("nutri","J'ai mangé : test")});
     const o2=await pg.evaluate(()=>({o:window.__open.slice(-1)[0],c:window.__clip.slice(-1)[0]}));
     if(o2.o!=="https://claude.ai/chat/1111-aaaa"||o2.c!=="J'ai mangé : test")err("nutrition : mauvaise conversation : "+JSON.stringify(o2));

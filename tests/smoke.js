@@ -218,7 +218,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(!(await pg.locator('#navIn [data-go="nutri"]').count()))err("Nutrition absente pour un compte ordinaire");
     await pg.evaluate(()=>{show("nutri")});if(await pg.evaluate(()=>data.ui.view)!=="nutri")err("Nutrition ne s'ouvre pas");
     await pg.evaluate(()=>{data.prefs.home="todo";data.prefs.homeV=1;save()});await pg.waitForTimeout(1500);await pg.reload();await pg.waitForTimeout(1200);
-    if(await pg.evaluate(()=>data.ui.view)!=="todo")err("la page d'ouverture choisie (Tâches) n'est pas respectée");
+    if(await pg.evaluate(()=>data.ui.view)!=="home"||await pg.evaluate(()=>scrollY)!==0)err("v43 : l'app ne s'ouvre pas en haut d'Aujourd'hui (même avec un ancien choix de page)");
     
     if(await pg.evaluate(()=>esc("l'a")!=="l&#39;a"))err("esc n'échappe pas l'apostrophe");
     await ctx.close()}

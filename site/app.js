@@ -1,3 +1,9 @@
+// v43 : l'app s'ouvre toujours en haut d'Aujourd'hui. Le navigateur ne doit pas restaurer l'ancien défilement,
+// et tant que la personne n'a pas touché l'écran, on remet en haut après chaque étape asynchrone (animation, polices, synchro).
+try{history.scrollRestoration="manual"}catch(e){}
+let bootFresh=true;
+["wheel","touchstart","keydown","pointerdown"].forEach(t=>addEventListener(t,()=>{bootFresh=false},{once:true,passive:true}));
+function bootTop(){if(bootFresh&&typeof data!=="undefined"&&data.ui&&data.ui.view==="home")window.scrollTo(0,0)}
 /* ---------- icônes au trait (v24, style Graphite : plus aucun émoji dans l'interface) ---------- */
 const ICS={
   bell:'<path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3H4a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/>',
@@ -321,7 +327,7 @@ let logoN=0;const LOGO=(app,cls)=>{const id="lg"+(++logoN),L0=LOGOS[app]||LOGOS.
 // v42 : animation d'ouverture (2 s) : le logo Sid'home, puis les trois apps ; elle ne bloque jamais les touchers
 if($("authLogo"))$("authLogo").innerHTML=LOGO("home");
 (()=>{const sp=$("splash");if(!sp)return;$("spMark").innerHTML=LOGO("home");$("spApps").innerHTML=["agenda","fit","note"].map(a=>`<span data-app="${a}">${LOGO(a)}</span>`).join("");
-  const quick=matchMedia("(prefers-reduced-motion: reduce)").matches;sp.classList.add("go");setTimeout(()=>sp.remove(),quick?400:2100)})();
+  const quick=matchMedia("(prefers-reduced-motion: reduce)").matches;sp.classList.add("go");setTimeout(()=>{sp.remove();bootTop()},quick?400:2100)})();
 
 /* ---------- onglets, rangés par catégories ---------- */
 // La barre du bas montre des catégories ; dans une catégorie, une barre en haut permet de choisir la fonction.
@@ -1323,14 +1329,19 @@ $("pomoSetup").addEventListener("click",e=>{
 /* son : débloqué au clic sur Démarrer (obligatoire sur iPhone) */
 let actx=null;
 function unlockAudio(){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();if(actx.state==="suspended")actx.resume()}catch(e){}}
-function chime(kind){
+function chime(kind,delay=0,q=null){
   if(!actx)return;try{
   const notes=kind==="w"?[523,659,784]:kind==="b"?[784,659,523]:[523,659,784,1047];
-  notes.forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain(),t=actx.currentTime+i*.22;
+  notes.forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain(),t=actx.currentTime+delay+i*.22;
     o.type="sine";o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.35,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+.5);
-    o.connect(g).connect(actx.destination);o.start(t);o.stop(t+.55)});
+    o.connect(g).connect(actx.destination);o.start(t);o.stop(t+.55);if(q)q.push(o)});
   }catch(e){}
 }
+// v43 : sons programmés à l'avance sur l'horloge audio. En arrière-plan, le navigateur ralentit les minuteries
+// (setInterval peut ne tourner qu'une fois par minute) : le son de fin arrivait en retard. L'horloge audio, elle, reste exacte.
+const CHQ={};
+function chimeCancel(key){(CHQ[key]||[]).forEach(o=>{try{o.stop()}catch(e){}});delete CHQ[key]}
+function chimePlan(key,items){chimeCancel(key);if(!actx||actx.state!=="running")return false;CHQ[key]=[];items.forEach(([kind,ms])=>{if(ms>=0)chime(kind,ms/1000,CHQ[key])});return true}
 let wake=null;
 async function keepAwake(on){
   try{if(on&&"wakeLock" in navigator&&!wake){wake=await navigator.wakeLock.request("screen");wake.addEventListener("release",()=>wake=null)}
@@ -1343,26 +1354,29 @@ function locate(r,el){
   return{i:r.segs.length,into:0,d:0};
 }
 function workDone(r,el){let t=0,w=0;for(const s of r.segs){const d=s.d*MIN;if(s.t==="w")w+=Math.max(0,Math.min(d,el-t));t+=d}return w}
-let lastIdx=null;
+let lastIdx=null,pomoSched=false;
+function pomoPlan(){const r=P.run;if(!r||r.pausedAt){chimeCancel("pomo");pomoSched=false;return}
+  const el=elapsed(r),it=[];let t=0;r.segs.forEach((s,i)=>{if(i&&t>el)it.push([s.t,t-el]);t+=s.d*MIN});it.push(["end",t-el]);pomoSched=chimePlan("pomo",it)}
 function startPomo(){
   unlockAudio();
   const segs=buildSegs(P.cfg);
   P.run={segs,startAt:Date.now(),pausedAt:null,pausedTotal:0};lastIdx=0;
-  save();chime("w");keepAwake(true);renderPomo();
+  save();chime("w");keepAwake(true);pomoPlan();renderPomo();
 }
 function finishPomo(completed){
   const r=P.run;if(!r)return;
   const w=workDone(r,elapsed(r)),k=dayKey(new Date(r.startAt));
   P.log[k]=(P.log[k]||0)+w;P.run=null;lastIdx=null;save();keepAwake(false);
-  if(completed){chime("end");toast(`Bravo ! ${hm(w/MIN)} de travail terminées`)}
+  const pre=pomoSched;if(!completed)chimeCancel("pomo");pomoSched=false;
+  if(completed){if(!pre)chime("end");toast(`Bravo ! ${hm(w/MIN)} de travail terminées`)}
   renderPomo();
 }
 $("pomoStart").addEventListener("click",startPomo);
 $("pomoPause").addEventListener("click",()=>{const r=P.run;if(!r)return;unlockAudio();
   if(r.pausedAt){r.pausedTotal+=Date.now()-r.pausedAt;r.pausedAt=null;keepAwake(true)}else{r.pausedAt=Date.now();keepAwake(false)}
-  save();renderPomo()});
+  save();pomoPlan();renderPomo()});
 $("pomoSkip").addEventListener("click",()=>{const r=P.run;if(!r)return;unlockAudio();
-  const L=locate(r,elapsed(r));r.pausedTotal-=(L.d-L.into);save();tickPomo()});
+  const L=locate(r,elapsed(r));r.pausedTotal-=(L.d-L.into);save();chimeCancel("pomo");pomoSched=false;tickPomo();pomoPlan()});
 $("pomoStop").addEventListener("click",e=>{const b=e.currentTarget;
   if(b.dataset.armed){finishPomo(false);toast("Session arrêtée")}
   else{b.dataset.armed="1";b.textContent="Confirmer ?";setTimeout(()=>{delete b.dataset.armed;b.textContent="Arrêter"},3000)}});
@@ -1372,7 +1386,7 @@ function tickPomo(){
   const el=elapsed(r),L=locate(r,el);
   if(L.i>=r.segs.length){finishPomo(true);return}
   if(lastIdx!==null&&L.i!==lastIdx){
-    const s=r.segs[L.i];chime(s.t);toast(s.t==="w"?"Au travail !":`Pause de ${s.d} min`);
+    const s=r.segs[L.i];if(!pomoSched)chime(s.t);toast(s.t==="w"?"Au travail !":`Pause de ${s.d} min`);
     $("stage").classList.remove("flash");void $("stage").offsetWidth;$("stage").classList.add("flash");
   }
   lastIdx=L.i;
@@ -1405,7 +1419,7 @@ function renderPomoStats(){
     <div class="row"><div class="grow">Sur les 7 derniers jours</div><b>${hm((week+live)/MIN)}</b></div>`;
 }
 setInterval(()=>{if(P.run){tickPomo();if(!$("v-pomo").hidden)renderPomoStats()}},500);
-document.addEventListener("visibilitychange",()=>{if(!document.hidden&&P.run){unlockAudio();if(!P.run.pausedAt)keepAwake(true);tickPomo()}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&P.run){unlockAudio();if(!P.run.pausedAt)keepAwake(true);tickPomo();pomoPlan()}});
 
 function renderAll(){renderTodos();renderPlan();renderStats();renderPomo();renderTypes();renderMuscu();renderDocs();renderNotes();renderPwd();renderNutri();if(data.ui.view==="graph")renderGraph();if(data.ui.view==="home")renderHome();if(data.ui.view==="spaces")renderSpaces();renderSide()}
 
@@ -2096,7 +2110,9 @@ $("restGo").addEventListener("click",()=>{
 });
 $("restLap").addEventListener("click",()=>{if(swStart===null)return;swLaps.push(swNow());if(navigator.vibrate)navigator.vibrate(15);swRenderLaps();swRender()});
 $("restReset").addEventListener("click",()=>{swStart=null;swAcc=0;swLaps=[];clearInterval(swTimer);swRenderLaps();swRender()});
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){swRender();tmTick()}});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden){swRender();tmTick();if(tmRun)tmPlan()}});
+// v43 : au retour de veille, on resynchronise l'affichage et les sons programmés (l'horloge audio a pu être suspendue)
+addEventListener("pageshow",()=>{swRender();tmTick();if(tmRun)tmPlan();if(P.run)pomoPlan()});
 swRender();
 
 /* ---------- minuteur (musculation) : simple ou fractionné ---------- */
@@ -2142,15 +2158,18 @@ function tmRender(){
   $("tfInfo").textContent=`${TMC.rounds} série${TMC.rounds>1?"s":""} · durée totale ${swFmt(tot*1000)}`;
   if(tmRun&&frac){const L=tmLocate();const done=tmRun.segs.slice(0,L.i).reduce((a,x)=>a+x.d,0)+L.into;$("tfInfo").textContent=`Reste ${swFmt(Math.ceil(tot-done)*1000)} au total`}
 }
+let tmSched=false;
+function tmPlan(){if(!tmRun||tmRun.pausedAt){chimeCancel("tm");tmSched=false;return}
+  const el=tmEl()*1000,it=[];let t=0;tmRun.segs.forEach((s,i)=>{if(i&&t>el)it.push([s.t==="r"?"b":"w",t-el]);t+=s.d*1000});it.push(["end",t-el]);tmSched=chimePlan("tm",it)}
 function tmTick(){
   if(!tmRun||tmRun.pausedAt)return;
   const L=tmLocate();
   if(L.i>=tmRun.segs.length){tmRun=null;tmLastSeg=null;clearInterval(tmTimer);keepAwake(false);
     const sl=$("tmSlide");sl.classList.remove("run","rest-ph");sl.classList.add("done");$("tmClock").textContent="0:00";$("tmPhase").textContent="Terminé";$("tmFPhase").textContent="Terminé";$("tmRing").style.strokeDashoffset="326.73";
-    chime("end");if(navigator.vibrate)navigator.vibrate([200,100,200]);toast(TMC.mode==="frac"?"Fractionné terminé, bravo !":"Repos terminé, à toi de jouer !");
+    if(!tmSched)chime("end");tmSched=false;delete CHQ.tm;if(navigator.vibrate)navigator.vibrate([200,100,200]);toast(TMC.mode==="frac"?"Fractionné terminé, bravo !":"Repos terminé, à toi de jouer !");
     setTimeout(()=>{$("tmSlide").classList.remove("done");tmRender()},4000);return}
   if(tmLastSeg!==null&&L.i!==tmLastSeg){const sg=tmRun.segs[L.i];
-    chime(sg.t==="r"?"b":"w");if(navigator.vibrate)navigator.vibrate(sg.t==="r"?[120]:[120,80,120]);
+    if(!tmSched)chime(sg.t==="r"?"b":"w");if(navigator.vibrate)navigator.vibrate(sg.t==="r"?[120]:[120,80,120]);
     toast(sg.t==="r"?`Repos ${swFmt(sg.d*1000)}`:`Série ${sg.n} : go !`)}
   tmLastSeg=L.i;
   tmRender();
@@ -2160,9 +2179,9 @@ $("tmGo").addEventListener("click",()=>{
   if(tmRun&&!tmRun.pausedAt){tmRun.pausedAt=Date.now();clearInterval(tmTimer);keepAwake(false)}
   else if(tmRun){tmRun.pausedTotal+=Date.now()-tmRun.pausedAt;tmRun.pausedAt=null;tmTimer=setInterval(tmTick,250);keepAwake(true)}
   else{tmRun={segs:tmSegs(),startAt:Date.now(),pausedAt:null,pausedTotal:0};tmLastSeg=0;tmCustomOpen=false;clearInterval(tmTimer);tmTimer=setInterval(tmTick,250);keepAwake(true);if(TMC.mode==="frac")chime("w")}
-  tmRender();
+  tmPlan();tmRender();
 });
-$("tmReset").addEventListener("click",()=>{tmRun=null;tmLastSeg=null;clearInterval(tmTimer);keepAwake(false);tmRender()});
+$("tmReset").addEventListener("click",()=>{tmRun=null;tmLastSeg=null;chimeCancel("tm");tmSched=false;clearInterval(tmTimer);keepAwake(false);tmRender()});
 $("tmSlide").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.tmmode){if(tmRun)return;TMC.mode=b.dataset.tmmode;tmSaveCfg();tmRender()}
@@ -2171,7 +2190,7 @@ $("tmSlide").addEventListener("click",e=>{
   else if(b.id==="tmCustomOk"){const v=Math.max(0,+$("tmMin").value||0)*60+Math.max(0,Math.min(59,+$("tmSec").value||0));
     if(v<5){toast("Choisis au moins 5 secondes");return}TMC.dur=Math.min(5999,v);tmCustomOpen=false;tmSaveCfg();$("tmMin").blur();$("tmSec").blur();tmRender()}
   else if(b.dataset.tm){const d=+b.dataset.tm;
-    if(tmRun&&TMC.mode==="simple"){const P0=tmLocate();tmRun.segs[0].d=Math.max(P0.into+1,tmRun.segs[0].d+d)}
+    if(tmRun&&TMC.mode==="simple"){const P0=tmLocate();tmRun.segs[0].d=Math.max(P0.into+1,tmRun.segs[0].d+d);tmPlan()}
     else if(!tmRun){TMC.dur=Math.min(5999,Math.max(5,TMC.dur+d));tmSaveCfg()}
     tmRender()}
 });
@@ -2183,14 +2202,16 @@ $("tmFrac").addEventListener("change",e=>{
 tmRender();
 
 /* défilement chrono <-> minuteur */
-function restGo(i,smooth=true){const tr=$("restTrack");tr.scrollTo({left:i*tr.clientWidth,behavior:smooth?"smooth":"auto"})}
+// v43 : l'onglet affiché ne dépend que de son numéro (variable CSS --i), jamais de la position de défilement :
+// avant, la page cachée au lancement (largeur 0) ou une fenêtre redimensionnée affichait le chrono sous l'onglet « Minuteur ».
+function restGo(i,smooth=true){i=i?1:0;const tr=$("restTrack");tr.classList.toggle("still",!smooth);tr.style.setProperty("--i",i);tr.scrollLeft=0;
+  tr.querySelectorAll(".rest-slide").forEach((s,k)=>{s.inert=k!==i;s.setAttribute("aria-hidden",k!==i)});
+  const u=data.ui||(data.ui={});if(u.restSlide!==i){u.restSlide=i;saveUI()}}
 function restMark(i){document.querySelectorAll(".rest-tabs button").forEach(b=>b.setAttribute("aria-selected",+b.dataset.go===i))}
 document.querySelector(".rest-tabs").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(!b)return;restGo(+b.dataset.go);restMark(+b.dataset.go)});
-let restScrollT=null;
-$("restTrack").addEventListener("scroll",()=>{clearTimeout(restScrollT);restScrollT=setTimeout(()=>{
-  const tr=$("restTrack"),i=Math.round(tr.scrollLeft/Math.max(1,tr.clientWidth));restMark(i);data.ui.restSlide=i;saveUI()},80)});
+$("restTrack").addEventListener("scroll",()=>{if($("restTrack").scrollLeft)$("restTrack").scrollLeft=0}); // jamais de décalage (focus clavier, ancien Safari)
 // revenir sur le dernier choisi
-requestAnimationFrame(()=>{const i=(data.ui&&data.ui.restSlide)||0;restMark(i);if(i)restGo(i,false)});
+{const i=(data.ui&&data.ui.restSlide)?1:0;restMark(i);restGo(i,false)}
 
 /* ---------- musique (Spotify) ---------- */
 const SPOT_DEFAULT="playlist/37i9dQZF1DWZeKCadgRdKQ"; // Deep Focus
@@ -4385,7 +4406,10 @@ if(ephExpired){
   // v32 : page d'ouverture choisie dans Réglages (« Aujourd'hui » par défaut, ou la dernière page ouverte)
   // v36 : un ancien choix caché (d'avant la v32) ne doit plus faire ouvrir l'app ailleurs qu'Aujourd'hui : on repart d'Aujourd'hui une fois
   if(!data.prefs.homeV){data.prefs.home="home";data.prefs.homeV=1;save()}
-  {const h=data.prefs.home||"home";show(h==="last"?(data.ui.view||"home"):h)}
+  // v43 : toujours Aujourd'hui, en haut (demande de Sid) ; l'ancien réglage « Page d'accueil » est gardé dans les données mais n'est plus proposé
+  show("home");bootTop();[120,500,1200,2600].forEach(t=>setTimeout(bootTop,t));
+  try{document.fonts&&document.fonts.ready.then(bootTop)}catch(e){}
+  addEventListener("pageshow",e=>{if(e.persisted){bootFresh=true;bootTop()}});
   if(ls.get("sidnote-join")&&!isTrial())show("lists"); // v37 : arrivé par un lien d'invitation à une liste partagée
   if(!data.prefs.onboarded)openOnb();
   // e-mail et fonctions réservées relus au lancement (un accès ouvert ou retiré s'applique sans se reconnecter)

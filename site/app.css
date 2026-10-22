@@ -1310,3 +1310,8 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 .cf-sel{margin-top:6px}.cf-sel:empty{display:none}
 .cf-chip{display:inline-flex;align-items:center;gap:4px;padding-right:4px}.cf-chip .x{width:24px;height:24px;font-size:16px}
 .co-rest{font-size:inherit;padding:0;text-decoration:underline dotted;text-underline-offset:3px}
+/* v43 : chrono / minuteur affichés selon le numéro de l'onglet (--i), sans défilement */
+.rest-track{overflow:hidden!important;scroll-snap-type:none;--i:0}
+.rest-track>.rest-slide{transform:translateX(calc(var(--i) * -100%));transition:transform .22s ease-out}
+.rest-track.still>.rest-slide{transition:none}
+@media (prefers-reduced-motion:reduce){.rest-track>.rest-slide{transition:none}}

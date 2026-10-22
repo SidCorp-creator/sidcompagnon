@@ -675,3 +675,10 @@ html[data-ds] #nuAddBox .nu-add-h{margin-top:8px}
 html[data-ds] .nu-ai-link{justify-self:center;font-size:14px;color:var(--app)}
 html[data-ds] .aa-img{display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;align-items:center}
 html[data-ds] .aa-img img{width:72px;height:72px;object-fit:cover;border-radius:6px;border:var(--rule) solid var(--line)}
+
+/* ---- v43 : chrono / minuteur collé tout en haut, sans espace (le texte ne passe plus au-dessus) ---- */
+html[data-ds] .rest{top:env(safe-area-inset-top,0px)}
+html[data-ds] .rest.stuck{border-radius:0 0 6px 6px;border-top-color:transparent}
+html[data-ds] .rest::before{left:-24px;right:-24px;height:calc(env(safe-area-inset-top,0px) + 12px)}
+/* trait sous l'onglet actif : droit (avant, l'ombre intérieure suivait l'arrondi du bouton et se recourbait aux bouts) */
+html[data-ds] .rest-tabs button[aria-selected="true"],html[data-ds] .seg button[aria-pressed="true"],html[data-ds] .seg button[aria-selected="true"]{box-shadow:none!important;background-image:linear-gradient(var(--app),var(--app));background-size:calc(100% - 16px) 2px;background-position:50% 100%;background-repeat:no-repeat}

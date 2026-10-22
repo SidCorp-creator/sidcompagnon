@@ -751,6 +751,19 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>coachOpen());await pg.waitForTimeout(150);if(await pg.inputValue("#cfNotes")!==""||await pg.inputValue("#cfAvoidTxt")!=="")err("remarques du programme pré-remplies à la réouverture");
     if(!(await pg.evaluate(()=>PL().profile.remarks.some(r=>r.text==="abdos tous les jours"))))err("la remarque n'est plus gardée pour Claude");
     await ctx.close()}
+  // --- v43 : rien ne défile au-dessus de la barre d'une note ni du chrono collé (iPhone et ordinateur)
+  for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1440,height:900}}]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v43 barres collées "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43bar"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.evaluate(()=>{data.notes=[{id:"lg",title:"Longue",body:Array.from({length:60},(_,i)=>"Ligne "+i).join("\n"),createdAt:new Date().toISOString(),upd:Date.now()}];save();show("notes");openNote("lg")});await pg.waitForTimeout(300);
+    const n=await pg.evaluate(async()=>{$("noteEdit").scrollTop=600;await new Promise(r=>setTimeout(r,250));const el=document.elementFromPoint(innerWidth/2,1);return !!(el&&el.closest("#noteTop"))&&Math.round($("noteTop").getBoundingClientRect().top)===0});
+    if(!n)err("le texte de la note passe au-dessus de la barre");
+    await pg.evaluate(()=>{closeNote();show("muscu");M().plan=coachBuild({level:"inter",goal:"muscle",days:4,dur:75,equip:"gym",avoid:[],prio:[],must:[],never:[]});save();renderCoach();document.querySelectorAll("#coachBox .coach-day").forEach(d=>d.open=true)});
+    await pg.waitForTimeout(200);await pg.evaluate(()=>scrollTo(0,700));await pg.waitForTimeout(400);
+    const c=await pg.evaluate(()=>{const el=document.elementFromPoint(innerWidth>900?innerWidth/2+118:innerWidth/2,1);return {top:Math.round($("rest").getBoundingClientRect().top),ok:!!(el&&(el.closest("#rest")))}});
+    if(c.top!==0||!c.ok)err("espace au-dessus du chrono collé : "+JSON.stringify(c));
+    await ctx.close()}
   // --- v43 lot 5 : RGPD / cookies : aucune ressource de tiers, Spotify seulement après un clic, case des conditions, pages légales
   for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1440,height:900}}],["tablette",{...devices["iPad (gen 7)"]}]]){
     const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v43 RGPD "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));

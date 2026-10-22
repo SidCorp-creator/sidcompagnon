@@ -746,7 +746,9 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const ob=await (await pg.request.get("http://localhost:8790/__objs")).json().catch(()=>({}));
     if(!Object.keys(ob).some(k=>/\/repas-\d+\.jpg$/.test(k)))err("la photo n'est pas déposée dans le dossier privé : "+JSON.stringify(Object.keys(ob)));
     await shot(pg,"v43-photo-direct");await pg.click("#nuAskBtn");await pg.waitForTimeout(500);
-    const op=await pg.evaluate(()=>window.__opened);if(!op||!op.startsWith("https://claude.ai/new")||!decodeURIComponent(op).includes("photo_repas"))err("Claude ne s'ouvre pas avec le message photo_repas : "+op);
+    const op=await pg.evaluate(()=>window.__opened);if(!op||!op.startsWith("https://claude.ai/new")||!decodeURIComponent(op).includes("nutrition_journee"))err("Claude ne s'ouvre pas avec le message nutrition_journee : "+op);
+    const ob2=await (await pg.request.get("http://localhost:8790/__objs")).json();
+    if(!Object.keys(ob2).some(k=>/\/envoi-\d+\.jpg$/.test(k))||Object.keys(ob2).some(k=>/\/repas-\d+\.jpg$/.test(k)))err("la photo envoyée n'est pas marquée « envoi » : "+JSON.stringify(Object.keys(ob2)));
     if(await pg.isVisible("#aiAskSheet"))err("une fenêtre intermédiaire s'ouvre encore pour la photo");
     if(await pg.evaluate(()=>!!nuPhoto||!$("nuPhotoPrev").hidden))err("la photo reste affichée après l'envoi");
     // sans Claude branché : la feuille de partage reste le secours (photo + message)

@@ -4004,15 +4004,22 @@ $("nuPhoto").addEventListener("change",async e=>{const f=e.target.files[0];e.tar
   catch(ex){toast("Photo illisible")}});
 $("nuPhotoPrev").addEventListener("click",e=>{if(e.target.closest("[data-nuphrm]")){nuPhotoDrop(nuPhoto);nuPhoto=null;$("nuPhotoPrev").hidden=true;$("nuPhotoPrev").innerHTML="";nuAskLbl()}});
 // envoi direct : Claude s'ouvre avec le message ; la fenêtre est ouverte pendant le toucher (sinon le navigateur la bloque)
+// « Envoyer à Claude » : la photo déposée (repas-…) est renommée envoi-… ; le connecteur la joint à nutrition_journee, un outil que
+// Claude connaît déjà (sa liste d'outils peut dater d'avant photo_repas), puis l'efface
+function nuPhotoMark(ph){const src=ph.done,dst=src.replace("/repas-","/envoi-"),key=x=>x.replace(/^documents\//,"");
+  return (async()=>{const r=await fetch(SUPABASE_URL+"/storage/v1/object/move",{method:"POST",headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+await token(),"Content-Type":"application/json"},
+    body:JSON.stringify({bucketId:"documents",sourceKey:key(src),destinationKey:key(dst)})});if(!r.ok)throw new Error("move "+r.status)})()
+    .catch(async()=>{await stor("POST",dst,await (await fetch(ph.big)).blob(),"image/jpeg")})}
 function nuPhotoSend(q){const ph=nuPhoto,ai=aiCur()||AIS.claude;
-  const msg=T3(`Avec Sid'note : regarde la photo de mon assiette (outil photo_repas), estime ce que j'ai mangé, puis note-le avec noter_repas.${q?` Précision : ${q}`:""}`,
-    `With Sid'note: look at the photo of my plate (photo_repas tool), estimate what I ate, then log it with noter_repas.${q?` Note: ${q}`:""}`,
-    `Met Sid'note: bekijk de foto van mijn bord (tool photo_repas), schat wat ik gegeten heb en noteer het met noter_repas.${q?` Toelichting: ${q}`:""}`);
+  const msg=T3(`Avec Sid'note : lis ma journée nutrition (nutrition_journee) : la photo de mon assiette que je viens d'envoyer y est jointe. Estime ce que j'ai mangé, puis note-le avec noter_repas.${q?` Précision : ${q}`:""}`,
+    `With Sid'note: read my nutrition day (nutrition_journee): the photo of my plate I just sent is attached to it. Estimate what I ate, then log it with noter_repas.${q?` Note: ${q}`:""}`,
+    `Met Sid'note: lees mijn voedingsdag (nutrition_journee): de foto van mijn bord die ik net stuurde zit erbij. Schat wat ik gegeten heb en noteer het met noter_repas.${q?` Toelichting: ${q}`:""}`);
+  const clear=()=>{nuPhoto=null;$("nuPhotoPrev").hidden=true;$("nuPhotoPrev").innerHTML="";$("nuAsk").value="";grow($("nuAsk"));nuAskLbl()};
   // photo déjà déposée (cas habituel) : Claude s'ouvre tout de suite, pendant le toucher ; sinon fenêtre vide remplie après l'envoi
-  if(ph.done){window.open(ai.ask(msg),"_blank","noopener");nuPhoto=null;$("nuPhotoPrev").hidden=true;$("nuPhotoPrev").innerHTML="";$("nuAsk").value="";grow($("nuAsk"));nuAskLbl();toast("Photo envoyée : Claude note le repas, il arrivera ici");return}
+  if(ph.done){nuPhotoMark(ph).catch(()=>{});window.open(ai.ask(msg),"_blank","noopener");clear();toast("Photo envoyée : Claude note le repas, il arrivera ici");return}
   const w=window.open("","_blank");const go=()=>{const u=ai.ask(msg);if(w&&!w.closed)w.location.href=u;else location.href=u};
-  nuPhoto=null;$("nuPhotoPrev").hidden=true;$("nuPhotoPrev").innerHTML="";$("nuAsk").value="";grow($("nuAsk"));nuAskLbl();
-  (ph.up||nuPhotoUp()||Promise.reject()).then(()=>{toast("Photo envoyée : Claude note le repas, il arrivera ici");go()},
+  clear();
+  (ph.up||nuPhotoUp()||Promise.reject()).then(()=>nuPhotoMark(ph)).then(()=>{toast("Photo envoyée : Claude note le repas, il arrivera ici");go()},
     ()=>{if(w&&!w.closed)w.close();nuPhoto=ph;toast("Envoi de la photo impossible : réessaie");$("nuPhotoPrev").hidden=false;$("nuPhotoPrev").innerHTML=`<img src="${ph.small}" alt="${L("Photo du plat")}"><button type="button" aria-label="${L("Retirer la photo")}" data-nuphrm="1">×</button>`;nuAskLbl()})}
 // un aliment renvoyé par l'IA apparaît-il dans ce que la personne a écrit ? (racine des mots, sans accents)
 const nz=x=>String(x||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();

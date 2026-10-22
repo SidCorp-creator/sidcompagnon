@@ -737,6 +737,15 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>renderNutri());if(await pg.inputValue("#nuInclude")!=="")err("« à inclure » revient après un nouveau rendu");
     await pg.click('[data-nutab="day"]');await pg.evaluate(()=>{nuCall=async(k,p)=>{throw aiNeed(k,p)}});await pg.fill("#nuAsk","zzz plat imaginaire 300 g");await pg.click("#nuAskBtn");await pg.waitForTimeout(800);if(await pg.isVisible("#aaClose"))await pg.click("#aaClose");
     if(await pg.inputValue("#nuAsk")!=="")err("« Ajouter ce que tu manges » reste pré-rempli après l'envoi à Claude");
+    // v43 : une photo de plat part vraiment chez Claude (feuille de partage : photo + message), au lieu d'un lien texte seul
+    await pg.evaluate(()=>{navigator.canShare=()=>true;navigator.share=async d=>{window.__shared={n:(d.files||[]).length,type:d.files&&d.files[0]&&d.files[0].type,text:d.text}}});
+    await pg.evaluate(()=>{const c=document.createElement("canvas");c.width=c.height=40;c.getContext("2d").fillRect(0,0,40,40);const u=c.toDataURL("image/jpeg");nuPhoto={big:u,small:u};$("nuPhotoPrev").hidden=false});
+    await pg.click("#nuAskBtn");await pg.waitForTimeout(800);
+    if(!(await pg.isVisible("#aaShare")))err("pas de bouton « Envoyer la photo à Claude »");
+    if(await pg.locator('#aaActs a[href^="https://claude.ai/new"]').count())err("le lien texte seul est encore proposé pour une photo");
+    await shot(pg,"v43-photo-claude");await pg.click("#aaShare");await pg.waitForTimeout(300);
+    const sh=await pg.evaluate(()=>window.__shared);if(!sh||sh.n!==1||sh.type!=="image/jpeg"||!/photo/i.test(sh.text||""))err("la photo n'est pas partagée avec le message : "+JSON.stringify(sh));
+    if(await pg.isVisible("#aiAskSheet"))await pg.click("#aaClose");
     await pg.evaluate(()=>{show("muscu");coachOpen()});await pg.click("#cfMore summary");await pg.fill("#cfNotes","abdos tous les jours");await pg.fill("#cfAvoidTxt","poignet");
     await pg.click('#coachForm [data-cfgo="ai"]');await pg.waitForTimeout(400);if(await pg.isVisible("#aaClose"))await pg.click("#aaClose");
     await pg.evaluate(()=>coachOpen());await pg.waitForTimeout(150);if(await pg.inputValue("#cfNotes")!==""||await pg.inputValue("#cfAvoidTxt")!=="")err("remarques du programme pré-remplies à la réouverture");

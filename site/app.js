@@ -3176,14 +3176,33 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden&&!$("aiShe
 // demande confiée à l'IA : message prêt, ouvert dans l'IA d'un toucher (ou copié)
 // v41 : demandes Santé (nutrition, graphiques, musculation) → ouvertes dans le dossier « Sid'note Santé » de l'IA (projet), message copié
 const aiProj=()=>/^https:\/\/[\w.-]+\//.test(data.prefs.aiProj||"")?data.prefs.aiProj:"";
-function aiHandoff(prompt,health){const ai=aiCur()||AIS.claude,pj=health&&aiProj();$("aaPrompt").textContent=prompt;
+// v43 : une photo ne passe pas dans un lien (?q= ne prend que du texte). On la partage avec la feuille de partage
+// (iPhone : app Claude, photo + message), sinon on la copie pour la coller dans Claude (ordinateur), ou on l'enregistre.
+let aaImg=null;
+async function aaImgPrep(dataUrl){aaImg={url:dataUrl,file:null,png:null};
+  try{const b=await (await fetch(dataUrl)).blob();aaImg.file=new File([b],"assiette.jpg",{type:"image/jpeg"});
+    const bm=await createImageBitmap(b),c=document.createElement("canvas");c.width=bm.width;c.height=bm.height;c.getContext("2d").drawImage(bm,0,0);
+    aaImg.png=await new Promise(r=>c.toBlob(r,"image/png"))}catch(e){}
+  const can=!!(aaImg.file&&navigator.canShare&&navigator.canShare({files:[aaImg.file]}));
+  const sh=$("aaShare");if(sh)sh.hidden=!can;const cp=$("aaImgCopy");if(cp)cp.hidden=can||!(aaImg.png&&window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write)}
+function aiHandoff(prompt,health,opt){const ai=aiCur()||AIS.claude,pj=health&&aiProj(),img=opt&&opt.img;$("aaPrompt").textContent=prompt;aaImg=null;
   $("aaActs").innerHTML=(ai&&data.prefs.aiOk?"":`<button type="button" class="btn" data-aiwiz="1">${L("Brancher Claude")}</button>`)+
+    (img?`<div class="aa-img"><img src="${img}" alt="${L("Photo de ton plat")}"><span class="small muted">${L("La photo part avec le message : choisis Claude dans la liste de partage.")}</span></div>
+      <button type="button" class="btn" id="aaShare">${L("Envoyer la photo à Claude")}</button>
+      <button type="button" class="btn" id="aaImgCopy" hidden>${L("Copier la photo et ouvrir Claude")}</button>
+      <a class="btn ghost" id="aaImgSave" href="${img}" download="assiette.jpg">${L("Enregistrer la photo")}</a>`:"")+
     (pj?`<a class="btn" href="${esc(pj)}" target="_blank" rel="noopener" data-aaproj="1">${L("Ouvrir mon dossier Santé")}</a><div class="small muted" style="text-align:center">${L("Le message est copié : colle-le dans une nouvelle discussion du dossier.")}</div>`:"")+
-    (ai?`<a class="btn ${data.prefs.aiOk&&!pj?"":"ghost"}" href="${ai.ask(prompt)}" target="_blank" rel="noopener">${L(pj?"Envoyer hors du dossier":"Envoyer avec")} ${pj?"":esc(ai.name)}</a>`:"")+
+    (ai&&!img?`<a class="btn ${data.prefs.aiOk&&!pj?"":"ghost"}" href="${ai.ask(prompt)}" target="_blank" rel="noopener">${L(pj?"Envoyer hors du dossier":"Envoyer avec")} ${pj?"":esc(ai.name)}</a>`:"")+
     `<button type="button" class="btn ghost" id="aaCopy">${L("Copier le message")}</button>`+
     (health&&!pj&&ai&&data.prefs.aiOk?`<button type="button" class="linkbtn aa-proj" data-aiproj="1">${L("Ranger ces discussions dans un dossier Santé")}</button>`:"");
-  $("aiAskSheet").hidden=false}
+  $("aiAskSheet").hidden=false;if(img)aaImgPrep(img)}
 $("aaActs").addEventListener("click",e=>{
+  if(e.target.closest("#aaShare")){if(!aaImg||!aaImg.file){toast("Photo en préparation, réessaie");return}
+    navigator.share({files:[aaImg.file],text:$("aaPrompt").textContent}).then(()=>{$("aiAskSheet").hidden=true}).catch(x=>{if(x&&x.name!=="AbortError")toast("Partage impossible : enregistre la photo puis ajoute-la dans Claude")});return}
+  if(e.target.closest("#aaImgCopy")){const ai=aiCur()||AIS.claude;
+    // la copie d'abord (pendant le clic, sinon le navigateur la refuse), puis Claude s'ouvre avec le message
+    try{navigator.clipboard.write([new ClipboardItem({"image/png":Promise.resolve(aaImg.png)})]).then(()=>toast("Photo copiée : colle-la dans Claude (Ctrl+V ou ⌘V)"),()=>toast("Copie impossible : enregistre la photo"))}catch(x){toast("Copie impossible : enregistre la photo")}
+    window.open(ai.ask($("aaPrompt").textContent),"_blank","noopener");return}
   if(e.target.closest("[data-aaproj]")){try{navigator.clipboard.writeText($("aaPrompt").textContent).catch(()=>{})}catch(x){}toast("Message copié : colle-le dans le dossier");setTimeout(()=>{$("aiAskSheet").hidden=true},300);return}
   if(e.target.closest("[data-aiproj]")){$("aiAskSheet").hidden=true;aiW={step:"proj",url:"",hash:"",poll:null};$("aiSheet").hidden=false;aiRender();return}
   if(e.target.closest("#aaCopy"))copyTxt($("aaPrompt").textContent).then(ok=>toast(ok?"Message copié : colle-le dans Claude":"Copie impossible"));
@@ -3742,7 +3761,7 @@ async function nuCall(kind,payload){payload=payload||{};
     const j=await api("/functions/v1/nutrition",{method:"POST",token:await token(),body:{kind,lang:LANG,text:payload.text}});
     if(j&&j.result){j.result._src="memory";return j.result}}
   throw aiNeed(kind,payload)}
-function aiNeed(kind,p){aiHandoff(aiPrompt(kind,p),true);const e=new Error(L("Claude s'en charge : suis les étapes à l'écran, le résultat arrivera ici."));e.ai=true;return e}
+function aiNeed(kind,p){aiHandoff(aiPrompt(kind,p),true,p&&p.image?{img:"data:image/jpeg;base64,"+p.image}:null);const e=new Error(L("Claude s'en charge : suis les étapes à l'écran, le résultat arrivera ici."));e.ai=true;return e}
 // profil : métabolisme (Mifflin-St Jeor), dépense avec le sport, objectif selon le rythme, macros (mêmes règles prudentes qu'avant)
 const SPORT_MET=[[/muscu|fitness|gym|halt|crossfit|weight|kracht/,5.5],[/course|running|jogg|run|lopen|hardlo/,9.8],[/v[eé]lo|cycl|bike|fiets|spinning/,7.5],[/nata|swim|zwem|piscine/,7],
   [/foot|basket|tennis|padel|hand|volley|rugby|hockey/,7],[/marche|walk|wandel|randon/,3.8],[/boxe|box|mma|judo|karat|combat|lutte/,9],[/yoga|pilates|stretch/,3],[/danse|dance|dans/,5.5]];

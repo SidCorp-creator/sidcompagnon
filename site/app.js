@@ -329,6 +329,38 @@ if($("authLogo"))$("authLogo").innerHTML=LOGO("home");
 (()=>{const sp=$("splash");if(!sp)return;$("spMark").innerHTML=LOGO("home");$("spApps").innerHTML=["agenda","fit","note"].map(a=>`<span data-app="${a}">${LOGO(a)}</span>`).join("");
   const quick=matchMedia("(prefers-reduced-motion: reduce)").matches;sp.classList.add("go");setTimeout(()=>{sp.remove();bootTop()},quick?400:2100)})();
 
+/* ---------- v43 : animation d'ouverture de sid'agenda, sid'fit et sid'note (≈ 2 s) ----------
+   Propre à chaque app (sa couleur, son univers), une variante tirée au hasard à chaque ouverture, avec des réglages
+   aléatoires (rythme, sens, nombre d'éléments). Un clic, une touche ou « Passer » l'arrête. Rien si « réduire les animations ». */
+let introReady=false,introT=null;
+const irnd=(a,b)=>a+Math.random()*(b-a),irint=(a,b)=>Math.floor(irnd(a,b+1)),ipick=a=>a[Math.floor(Math.random()*a.length)];
+const INTRO={
+  agenda:[
+    ()=>{const n=ipick([5,6,7]),rows=ipick([3,4]),dir=Math.random()<.5;let c="";for(let r=0;r<rows;r++)for(let k=0;k<n;k++){const i=r*n+k,d=(dir?i:(rows*n-1-i))*irnd(.025,.04);
+        c+=`<rect x="${k*22}" y="${r*22}" width="18" height="18" rx="3" style="animation-delay:${d.toFixed(2)}s" class="${Math.random()<.18?"hot":""}"/>`}
+      return `<svg class="it-grid" viewBox="-2 -2 ${n*22+2} ${rows*22+2}" aria-hidden="true">${c}</svg>`},
+    ()=>{const t=irnd(.9,1.3).toFixed(2),turns=ipick([1,1.25,1.5]),cw=Math.random()<.5?1:-1;
+      return `<svg class="it-clock" viewBox="0 0 120 120" aria-hidden="true" style="--t:${t}s;--turn:${turns*cw*360}deg"><circle cx="60" cy="60" r="52"/><circle class="arc" cx="60" cy="60" r="52"/>${[...Array(12)].map((_,i)=>`<path d="M60 12v6" transform="rotate(${i*30} 60 60)"/>`).join("")}<path class="hand" d="M60 60V22"/><path class="hand2" d="M60 60h26"/></svg>`},
+    ()=>{const n=irint(4,6);return `<div class="it-pages" aria-hidden="true">${[...Array(n)].map((_,i)=>`<span style="animation-delay:${(i*irnd(.1,.16)).toFixed(2)}s;--r:${irnd(-6,6).toFixed(1)}deg"><b>${new Date(Date.now()+i*864e5).getDate()}</b></span>`).join("")}</div>`}],
+  fit:[
+    ()=>{const amp=irint(18,30),beats=irint(2,3);let d="M0 50",x=0;for(let b=0;b<beats;b++){d+=` L${x+30} 50 L${x+38} ${50-amp} L${x+46} ${50+amp*.7} L${x+54} 50`;x+=70}d+=` L${x+20} 50`;
+      return `<svg class="it-pulse" viewBox="0 0 ${x+20} 100" aria-hidden="true" style="--len:${x*2}"><path d="${d}"/></svg>`},
+    ()=>{const n=irint(5,8),h=[...Array(n)].map(()=>irint(30,100));return `<div class="it-bars" aria-hidden="true">${h.map((v,i)=>`<i style="--h:${v}%;animation-delay:${(i*irnd(.05,.09)).toFixed(2)}s"></i>`).join("")}</div>`},
+    ()=>{const reps=irint(6,10);return `<svg class="it-ring" viewBox="0 0 120 120" aria-hidden="true" style="--t:${irnd(1,1.3).toFixed(2)}s"><circle cx="60" cy="60" r="50"/><circle class="arc" cx="60" cy="60" r="50"/>${[...Array(reps)].map((_,i)=>`<g transform="rotate(${i*360/reps} 60 60)"><circle class="dot" cx="60" cy="10" r="3" style="animation-delay:${(.2+i*1/reps).toFixed(2)}s"/></g>`).join("")}</svg>`}],
+  note:[
+    ()=>{const w=[irint(60,90),irint(70,100),irint(40,80),irint(65,95)];return `<div class="it-lines" aria-hidden="true">${w.map((v,i)=>`<i style="--w:${v}%;animation-delay:${(i*irnd(.18,.26)).toFixed(2)}s"></i>`).join("")}</div>`},
+    ()=>{const k=irnd(.9,1.2).toFixed(2),y=irint(-8,8);return `<svg class="it-sign" viewBox="0 0 200 90" aria-hidden="true" style="--t:${k}s"><path d="M10 ${60+y} C 40 ${10+y}, 60 ${80-y}, 85 45 S 120 ${15+y}, 140 55 S 175 ${70-y}, 190 ${35+y}"/></svg>`},
+    ()=>{const n=irint(3,5);return `<div class="it-stack" aria-hidden="true">${[...Array(n)].map((_,i)=>`<span style="animation-delay:${(i*irnd(.12,.18)).toFixed(2)}s;--x:${irint(-14,14)}px;--r:${irnd(-5,5).toFixed(1)}deg"></span>`).join("")}</div>`}]};
+const INTRO_NAME={agenda:"sid'agenda",fit:"sid'fit",note:"sid'note"};
+function appIntro(app,vv){
+  if(!INTRO[app]||matchMedia("(prefers-reduced-motion: reduce)").matches||window.__noIntro)return;
+  introEnd(true);const el=document.createElement("div");el.className="app-intro";el.id="appIntro";el.dataset.app=app;el.setAttribute("role","presentation");
+  const v=vv!==undefined?vv:Math.floor(Math.random()*INTRO[app].length);el.dataset.variant=v;
+  el.innerHTML=`<div class="ai-art">${INTRO[app][v]()}</div><div class="ai-brand"><span class="ai-logo">${LOGO(app)}</span><span class="ai-name">${INTRO_NAME[app]}</span></div><button type="button" class="ai-skip">${L("Passer")}</button>`;
+  document.body.appendChild(el);el.addEventListener("pointerdown",e=>{e.preventDefault();introEnd()});el.querySelector(".ai-skip").addEventListener("click",()=>introEnd());
+  introT=setTimeout(()=>introEnd(),2000)}
+function introEnd(now){clearTimeout(introT);const el=$("appIntro");if(!el)return;if(now){el.remove();return}el.classList.add("out");setTimeout(()=>el.remove(),180)}
+addEventListener("keydown",e=>{if($("appIntro"))introEnd()},true);
 /* ---------- onglets, rangés par catégories ---------- */
 // La barre du bas montre des catégories ; dans une catégorie, une barre en haut permet de choisir la fonction.
 // v25 : les catégories deviennent des « espaces » (page Espaces + barre latérale sur ordinateur)
@@ -379,6 +411,7 @@ function renderGroupBadges(){GROUPS.forEach(g=>{const el=document.querySelector(
 function show(v){
   if(v!=="home"&&v!=="spaces"&&!visibleTabs().includes(v))v="home";
   const g=groupOf(v);
+  {const was=document.documentElement.dataset.app,nx=appOf(v);if(introReady&&was&&nx!=="home"&&was!==nx)appIntro(nx)}
   data.ui.view=v;if(GROUPS.some(x=>x.tabs.includes(v))){data.ui.glast=data.ui.glast||{};data.ui.glast[g.k]=v}saveUI();
   document.body.dataset.g=g.k;document.body.dataset.v=v;if(v!=="notes")document.body.classList.remove("note-full");if(v==="more"){try{renderBio();renderAiCards();$("mcpSec").hidden=!session||isTrial()}catch(e){}}
   document.querySelectorAll(".view").forEach(s=>s.hidden=s.id!=="v-"+v);
@@ -430,13 +463,24 @@ function renderSpaces(){
     return `<div class="eyebrow sp-h">${L(g.label)}</div><div class="card sp-card">${ts.map(k=>`<button type="button" class="sp-row" data-go="${k}"><span class="sp-ic">${ICON(k)||USERIC}</span><span class="grow">${L(SHORT[k])}</span><span class="sp-meta">${esc(spaceMeta(k))}</span>${CHEVR}</button>`).join("")}</div>`}).join("");
 }
 $("spacesList").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
+// v43 : la barre latérale (ordinateur et tablette) peut être masquée ; le choix est propre à l'appareil (data.ui.sideOff).
+// Par défaut : affichée à partir de 960 px, masquée sur tablette (768–959 px). Masquée, la barre du bas de l'app reprend sa place.
+const SIDEIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M9.5 4.5v15"/></svg>';
+function sideApply(){const wide=matchMedia("(min-width:768px)").matches,u=data.ui||{};
+  const on=wide&&(u.sideOff===undefined?innerWidth>=960:!u.sideOff);
+  document.body.classList.toggle("side-off",wide&&!on);document.body.classList.toggle("side-on",on);
+  const sb=$("sideShow");if(sb){sb.hidden=!(wide&&!on);sb.setAttribute("aria-expanded","false")}}
+function sideToggle(show){data.ui.sideOff=!show;saveUI();sideApply();const f=show?document.querySelector("#side .side-tog"):$("sideShow");if(f)f.focus({preventScroll:true})}
+addEventListener("resize",()=>sideApply());
 function renderSide(v){const el=$("side");if(!el)return;v=v||data.ui.view;
-  el.innerHTML=`<div class="side-brand">${LOGO("home","side-logo")}<span>Sid'home</span></div>
+  el.innerHTML=`<div class="side-brand">${LOGO("home","side-logo")}<span class="grow">Sid'home</span><button type="button" class="side-tog" aria-label="${L("Masquer la barre latérale")}" title="${L("Masquer la barre latérale")}" aria-expanded="true" aria-controls="side">${SIDEIC}</button></div>
     <button type="button" class="side-it" data-go="home" aria-current="${v==="home"}"><span class="sp-ic">${HOMEIC}</span><span class="grow">${L("Aujourd'hui")}</span></button>
     <button type="button" class="side-add" data-sadd="1"><span class="sp-ic">${PLUSIC}</span><span class="grow">${L("Ajouter")}</span></button>`+
     GROUPS.map(g=>{const ts=groupTabs(g);if(!ts.length)return"";
-      return `<div class="eyebrow side-h" data-app="${g.app}">${g.app!=="home"?LOGO(g.app,"side-applogo"):""}${esc(g.label)}</div>`+ts.map(k=>`<button type="button" class="side-it" data-go="${k}" aria-current="${v===k}"><span class="sp-ic">${ICON(k)||USERIC}</span><span class="grow">${L(SHORT[k])}</span><span class="sp-meta">${esc(spaceMeta(k))}</span></button>`).join("")}).join("")}
-$("side").addEventListener("click",e=>{if(e.target.closest("[data-sadd]")){openQuickAdd();return}const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
+      return `<div class="side-grp" data-app="${g.app}"><div class="eyebrow side-h">${g.app!=="home"?LOGO(g.app,"side-applogo"):""}${esc(g.label)}</div>`+ts.map(k=>`<button type="button" class="side-it" data-go="${k}" aria-current="${v===k}"><span class="sp-ic">${ICON(k)||USERIC}</span><span class="grow">${L(SHORT[k])}</span><span class="sp-meta">${esc(spaceMeta(k))}</span></button>`).join("")+`</div>`}).join("");
+  sideApply()}
+$("sideShow").addEventListener("click",()=>sideToggle(true));
+$("side").addEventListener("click",e=>{if(e.target.closest(".side-tog")){sideToggle(false);return}if(e.target.closest("[data-sadd]")){openQuickAdd();return}const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
 // --- ajout rapide (bouton + de la page Aujourd'hui et de la barre latérale) ---
 function openQuickAdd(){const vis=visibleTabs(),acts=[
   ["plan","Une activité","Dans ton agenda",ICON("plan")],["todo","Une tâche","Dans ta liste",ICON("todo")],["notes","Une note","Texte ou photo",ICON("notes")],
@@ -3460,14 +3504,15 @@ function applyLook(){
   // v42 : direction « Éditorial de précision » : clair ivoire ou graphite ; les anciennes ambiances ne sont plus appliquées (le choix reste dans les données)
   const pal=PALETTES[p.palette||look.palette]?(p.palette||look.palette):"or";
   document.documentElement.removeAttribute("data-palette");document.documentElement.dataset.ds="edito";
-  const theme=p.theme||look.theme||"auto";
+  // v43 : clair par défaut pour tout le monde ; seul un choix fait par la personne (prefs.theme) est gardé
+  const theme=p.theme||(session?"light":look.theme)||"light";
   if(theme==="auto")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",theme);
   const dark=theme==="dark"||(theme==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);
   document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content",dark?"#111214":"#F4F0E8"));
   ls.set("sidnote-look",{theme,palette:pal}); // pour l'écran de connexion
 }
 function renderLook(){
-  const th=data.prefs.theme||"auto",dark=document.documentElement.dataset.theme==="dark"||(!document.documentElement.dataset.theme&&matchMedia("(prefers-color-scheme: dark)").matches);
+  const th=data.prefs.theme||"light",dark=document.documentElement.dataset.theme==="dark"||(!document.documentElement.dataset.theme&&matchMedia("(prefers-color-scheme: dark)").matches);
   document.querySelectorAll("#themeSel button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.theme===th));
   const pal=data.prefs.palette||"or";
   $("palSel").innerHTML=Object.entries(PALETTES).map(([k,a])=>`<button type="button" class="pal" data-pal="${k}" aria-pressed="${k===pal}"><span class="pal-dot" style="--pa:${dark?a[3]:a[1]};--pb:${dark?a[4]:a[2]}">${k===pal?CHECK:""}</span><span class="pal-n">${L(a[0])}</span></button>`).join("");
@@ -4298,18 +4343,25 @@ function openOnb(){
   document.querySelectorAll("#onbLang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG));
   const it=([k,l])=>`<label class="onb-it ${onbSel[k]?"":"off"}" data-onb="${k}"><span class="ic">${ICON(k)}</span><span class="grow"><b>${L(l)}</b><span class="small muted">${L(ONB_DESC[k])}</span></span><input type="checkbox" class="switch" data-onbk="${k}" ${onbSel[k]?"checked":""} aria-label="${L("Garder")} ${L(l)}"></label>`;
   $("onbGroups").innerHTML=GROUPS.filter(g=>ONB_GROUP[g.k]).map(g=>{const ts=TABS.filter(([k])=>g.tabs.includes(k)&&tabAllowed(k)),[em,t,sub0]=ONB_GROUP[g.k],sub=g.k==="sport"&&!tabAllowed("nutri")?"Tes séances, ton chrono et ton minuteur.":sub0;
-    return `<section class="onb-slide"><div class="onb-box"><div class="onb-big onb-logo" data-app="${em}">${LOGO(em)}</div><div class="onb-grp" style="text-align:center">${esc(g.label)}</div><h1 style="font-size:26px">${L(t)}</h1><p class="sub">${L(sub)}</p>${ts.length>1?`<button type="button" class="linkbtn onb-all" data-onball="${g.k}"></button>`:""}<div class="onb-list">${ts.map(it).join("")}</div><p class="small muted">${L("Touche une carte pour la garder ou la masquer.")}</p></div></section>`}).join("");
-  onbAllLbl();onbLook();$("onb").hidden=false;document.body.style.overflow="hidden";$("onbTrack").scrollLeft=0;onbStep();
+    // v43 : une diapositive par app, dans sa couleur : à gauche l'app (logo, nom, promesse), à droite ses fonctions à garder
+    return `<section class="onb-slide onb-app" data-app="${em}"><div class="onb-box onb-split">
+      <div class="onb-hero"><div class="onb-logo" data-app="${em}">${LOGO(em)}</div><div class="onb-grp">${esc(g.label)}</div><h1>${L(t)}</h1><p class="sub">${L(sub)}</p>
+        <p class="onb-count">${ts.length} ${L(ts.length>1?"fonctions":"fonction")}</p></div>
+      <div class="onb-pick"><div class="onb-pick-h"><span class="eyebrow">${L("Ce que tu gardes")}</span>${ts.length>1?`<button type="button" class="linkbtn onb-all" data-onball="${g.k}"></button>`:""}</div>
+        <div class="onb-list">${ts.map(it).join("")}</div><p class="small muted onb-hint">${L("Touche une ligne pour la garder ou la masquer. Tout reste modifiable dans Réglages.")}</p></div>
+    </div></section>`}).join("");
+  onbAllLbl();onbLook();$("onb").hidden=false;document.body.style.overflow="hidden";onbGoTo(0);
 }
 const onbSlides=()=>[...document.querySelectorAll("#onbTrack .onb-slide")];
-const onbIdx=()=>Math.round($("onbTrack").scrollLeft/Math.max(1,$("onbTrack").clientWidth));
-function onbStep(){const sl=onbSlides(),i=Math.min(sl.length-1,onbIdx());sl.forEach((x,j)=>x.classList.toggle("on",j===i));
+// v43 : diapositive affichée selon son numéro (comme le chrono), jamais selon la position de défilement
+let onbI=0;const onbIdx=()=>onbI;
+function onbStep(){const sl=onbSlides(),i=Math.min(sl.length-1,onbIdx());sl.forEach((x,j)=>{x.classList.toggle("on",j===i);x.inert=j!==i});const ap=sl[i]&&sl[i].dataset.app;if(ap)$("onb").dataset.app=ap;else delete $("onb").dataset.app;
   $("onbDots").innerHTML=sl.map((_,j)=>`<i class="${j===i?"on":""}"></i>`).join("");$("onbPrev").style.visibility=i?"visible":"hidden";$("onbNext").hidden=i===sl.length-1}
-function onbGoTo(i){const t=$("onbTrack");t.scrollTo({left:i*t.clientWidth,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})}
-$("onbTrack").addEventListener("scroll",()=>{clearTimeout(onbStep.t);onbStep.t=setTimeout(onbStep,60)});
+function onbGoTo(i){const sl=onbSlides();onbI=Math.max(0,Math.min(sl.length-1,i));const t=$("onbTrack");t.scrollLeft=0;t.style.setProperty("--i",onbI);onbStep();const s=sl[onbI];if(s)s.scrollTop=0}
+$("onbTrack").addEventListener("scroll",()=>{if($("onbTrack").scrollLeft)$("onbTrack").scrollLeft=0});
 $("onbNext").addEventListener("click",()=>onbGoTo(onbIdx()+1));$("onbPrev").addEventListener("click",()=>onbGoTo(onbIdx()-1));
 // thème appliqué tout de suite
-function onbLook(){const th=data.prefs.theme||"auto";document.querySelectorAll("#onbTheme button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.otheme===th));
+function onbLook(){const th=data.prefs.theme||"light";document.querySelectorAll("#onbTheme button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.otheme===th));
   // v36 : les couleurs (ambiances) se choisissent aussi ici
   const pal=data.prefs.palette||"or",dark=document.documentElement.dataset.theme==="dark"||(!document.documentElement.dataset.theme&&matchMedia("(prefers-color-scheme: dark)").matches);
   $("onbPal").innerHTML=Object.entries(PALETTES).map(([k,a])=>`<button type="button" class="pal" data-opal="${k}" aria-pressed="${k===pal}"><span class="pal-dot" style="--pa:${dark?a[3]:a[1]};--pb:${dark?a[4]:a[2]}">${k===pal?CHECK:""}</span><span class="pal-n">${L(a[0])}</span></button>`).join("")}
@@ -4407,7 +4459,7 @@ if(ephExpired){
   // v36 : un ancien choix caché (d'avant la v32) ne doit plus faire ouvrir l'app ailleurs qu'Aujourd'hui : on repart d'Aujourd'hui une fois
   if(!data.prefs.homeV){data.prefs.home="home";data.prefs.homeV=1;save()}
   // v43 : toujours Aujourd'hui, en haut (demande de Sid) ; l'ancien réglage « Page d'accueil » est gardé dans les données mais n'est plus proposé
-  show("home");bootTop();[120,500,1200,2600].forEach(t=>setTimeout(bootTop,t));
+  show("home");introReady=true;bootTop();[120,500,1200,2600].forEach(t=>setTimeout(bootTop,t));
   try{document.fonts&&document.fonts.ready.then(bootTop)}catch(e){}
   addEventListener("pageshow",e=>{if(e.persisted){bootFresh=true;bootTop()}});
   if(ls.get("sidnote-join")&&!isTrial())show("lists"); // v37 : arrivé par un lien d'invitation à une liste partagée

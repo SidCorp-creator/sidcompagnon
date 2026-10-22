@@ -10,7 +10,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
 (async()=>{
   const b=await chromium.launch(),errs=[];
   // le lecteur Spotify (iframe) n'est pas testé : sa page réelle a ses propres erreurs, sans rapport avec Sid'note
-  {const nc=b.newContext.bind(b);b.newContext=async o=>{const c=await nc(o);await c.route(/open\.spotify\.com/,r=>r.fulfill({status:200,contentType:"text/html",body:"<!doctype html><title>Spotify</title>"}));return c}}
+  {const nc=b.newContext.bind(b);b.newContext=async o=>{const c=await nc(o);if(!(o&&o.intro))await c.addInitScript(()=>{window.__noIntro=true});await c.route(/open\.spotify\.com/,r=>r.fulfill({status:200,contentType:"text/html",body:"<!doctype html><title>Spotify</title>"}));return c}}
   for(const scheme of ["light","dark"]){
     const ctx=await b.newContext({...devices["iPhone 13"],colorScheme:scheme}),pg=await ctx.newPage();
     pg.on("pageerror",e=>errs.push(scheme+": "+e.message));
@@ -655,6 +655,32 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(!(await pg.isVisible(".nf-back")))err("pas de bouton retour dans un dossier");
     await pg.click(".nf-back");await pg.waitForTimeout(200);if(await pg.evaluate(()=>noteDir!==null))err("le retour ne remonte pas");
     await ctx.close()}
+  // --- v43 lot 2 : thème clair par défaut, barre latérale masquable (ordinateur, tablette), animation d'ouverture des apps
+  for(const [nm,dev] of [["pc",{viewport:{width:1440,height:900},colorScheme:"dark"}],["tablette",{...devices["iPad (gen 7)"]}]]){
+    const ctx=await b.newContext({...dev,intro:true}),pg=await ctx.newPage(),err=m=>errs.push("v43 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(2400);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb")){await pg.click("#onbNext");await pg.waitForTimeout(350);
+      if(await pg.evaluate(()=>$("onb").dataset.app)!=="agenda")err("présentation : la diapositive sid'agenda n'est pas à sa couleur");
+      if(!(await pg.isVisible(".onb-slide.on .onb-hero")))err("présentation : diapositive de l'app invisible");
+      await shot(pg,"v43-"+nm+"-presentation-agenda");await pg.click("#onbSkip")}
+    if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    if(await pg.evaluate(()=>document.documentElement.dataset.theme)!=="light")err("le thème clair n'est pas pré-sélectionné (appareil en sombre)");
+    if(nm==="pc"){if(!(await pg.isVisible("#side")))err("barre latérale absente");
+      await pg.click("#side .side-tog");await pg.waitForTimeout(200);if(await pg.isVisible("#side")||!(await pg.isVisible("#sideShow")))err("la barre latérale ne se masque pas");
+      await pg.reload();await pg.waitForTimeout(2600);if(await pg.isVisible("#side"))err("le choix « barre masquée » n'est pas gardé");
+      await pg.click("#sideShow");await pg.waitForTimeout(200);if(!(await pg.isVisible("#side")))err("la barre latérale ne revient pas")}
+    else{if(await pg.isVisible("#side"))err("tablette : barre latérale ouverte par défaut");
+      await pg.click("#sideShow");await pg.waitForTimeout(200);if(!(await pg.isVisible("#side")))err("tablette : la barre latérale ne s'ouvre pas");await shot(pg,"v43-tablette-barre")}
+    await pg.evaluate(()=>show("home"));await pg.click('#homeBody [data-gapp="sport"]');await pg.waitForTimeout(400);
+    if(!(await pg.isVisible("#appIntro")))err("pas d'animation à l'ouverture de sid'fit");else{await shot(pg,"v43-"+nm+"-animation-fit");
+      await pg.mouse.click(400,300);await pg.waitForTimeout(300);if(await pg.isVisible("#appIntro"))err("un clic ne passe pas l'animation")}
+    if(await pg.evaluate(()=>data.ui.view)!=="muscu")err("sid'fit ne s'ouvre pas après l'animation");
+    await shot(pg,"v43-"+nm+"-muscu");await ctx.close()}
+  {const ctx=await b.newContext({...devices["iPhone 13"],intro:true,reducedMotion:"reduce"}),pg=await ctx.newPage(),err=m=>errs.push("v43 animations réduites : "+m);
+    await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43rm@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.click('#homeBody [data-gapp="perso"]');await pg.waitForTimeout(300);if(await pg.isVisible("#appIntro"))err("animation affichée malgré « réduire les animations »");await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

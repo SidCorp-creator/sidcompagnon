@@ -438,3 +438,160 @@ html[data-ds] .mdot{width:6px;height:6px}
 html[data-ds] input.search{background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238A8378' stroke-width='1.5' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E") no-repeat 12px 50%;padding-left:36px}
 html[data-ds] .auth-logo{display:block;width:76px;height:76px;margin:0 auto;border-radius:0;box-shadow:none;color:var(--c-home)}
 html[data-ds] .auth-logo svg{width:100%;height:100%;display:block}
+
+/* =====================================================================
+   v43 · couleurs des apps bien présentes + barre latérale nette
+   Variables : --c-agenda (rouge), --c-fit (vert), --c-note (noir) ; --app = couleur de l'app ouverte
+   (html[data-app]) ou du groupe (.side-grp[data-app], .hm-sec[data-app]). --app-soft / --app-line = teintes,
+   --on-app = texte posé sur la couleur.
+   ===================================================================== */
+html[data-ds][data-ds][data-ds],html[data-ds][data-ds] body{--on-app:#F4F0E8}
+html[data-ds][data-ds][data-ds][data-theme="dark"],html[data-ds][data-ds][data-theme="dark"] body{--on-app:#111214}
+@media (prefers-color-scheme:dark){html[data-ds][data-ds][data-ds]:not([data-theme="light"]),html[data-ds][data-ds]:not([data-theme="light"]) body{--on-app:#111214}}
+html[data-ds] body,html[data-ds] [data-app]{--app-soft:color-mix(in srgb,var(--app) 9%,var(--bg));--app-line:color-mix(in srgb,var(--app) 35%,var(--line))}
+[data-app="agenda"]:not(html){--app:var(--c-agenda)}
+[data-app="fit"]:not(html){--app:var(--c-fit)}
+[data-app="note"]:not(html){--app:var(--c-note)}
+[data-app="home"]:not(html){--app:var(--c-home)}
+
+/* boutons, états actifs, champs, interrupteurs : couleur de l'app */
+html[data-ds] .btn{background:var(--app)!important;color:var(--on-app)!important}
+html[data-ds] .btn.ghost{color:var(--app)!important;border-color:var(--app-line)}
+html[data-ds] .pill[aria-pressed="true"],html[data-ds] .chip[aria-pressed="true"]{background:var(--app);border-color:var(--app);color:var(--on-app)}
+html[data-ds] .seg button[aria-pressed="true"],html[data-ds] .seg button[aria-selected="true"]{color:var(--app);box-shadow:inset 0 -2px 0 var(--app)!important}
+html[data-ds] .switch:checked{background:var(--app)}
+html[data-ds] input:focus,html[data-ds] select:focus,html[data-ds] textarea:focus{border-color:var(--app)}
+html[data-ds] :focus-visible{outline-color:var(--app)!important}
+html[data-ds] input[type="checkbox"],html[data-ds] input[type="radio"],html[data-ds] input[type="range"]{accent-color:var(--app)}
+html[data-ds] a{color:var(--app)}
+html[data-ds] .sbadge{background:var(--app);color:var(--on-app)}
+html[data-ds] .rest-tabs button[aria-selected="true"]{color:var(--app);box-shadow:inset 0 -2px 0 var(--app)!important}
+html[data-ds] .sw-ring,html[data-ds] .rest-slide.run,html[data-ds] .nu-ring{--pc:var(--app)}
+html[data-ds] .eyebrow.app,html[data-ds] .view>h2{color:var(--app)}
+
+/* en-tête d'app : bandeau à la couleur de l'app */
+html[data-ds] .vhead:not([hidden]){border-bottom:2px solid var(--app);padding-bottom:6px;margin:4px auto 6px}
+html[data-ds] .vhead .eyebrow{color:var(--app);font-weight:500}
+html[data-ds] .ah-home{color:var(--ink)}
+html[data-ds] .view>h1{color:var(--ink)}
+html[data-ds] nav .tab[aria-current="page"]::before{content:"";position:absolute;top:-6px;left:28%;right:28%;height:2px;background:var(--app)}
+html[data-ds] nav{border-top-color:var(--app-line)!important}
+
+/* barre latérale : plate et nette (plus de faux gras ni de relief) */
+@media (min-width:768px){
+  html[data-ds] .side{background:var(--bg);border-right:1px solid var(--line);padding:18px 12px;gap:0}
+  html[data-ds] .side-brand{display:flex;align-items:center;gap:10px;margin:0 4px 14px 8px}
+  html[data-ds] .side-tog{display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:6px;background:none;color:var(--muted);cursor:pointer}
+  html[data-ds] .side-tog:hover{background:var(--surface-2);color:var(--ink)}
+  html[data-ds] .side-tog svg{width:18px;height:18px}
+  html[data-ds] .side-it,html[data-ds] .side-add{font:400 14px/1.2 var(--font);color:var(--ink);border-radius:6px;padding:7px 10px;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  html[data-ds] .side-it .sp-ic{color:var(--muted)}
+  html[data-ds] .side-it:hover{background:var(--surface-2);color:var(--ink)}
+  html[data-ds] .side-it[aria-current="true"]{background:var(--app-soft);color:var(--app);font-weight:500;box-shadow:inset 3px 0 0 var(--app)!important}
+  html[data-ds] .side-it[aria-current="true"] .sp-ic{color:var(--app)}
+  html[data-ds] .side-add{background:var(--ink);color:var(--bg);font-weight:500;margin:6px 0 4px}
+  html[data-ds] .side-add .sp-ic{color:var(--bg)}
+  html[data-ds] .side-grp{margin-top:14px}
+  html[data-ds] .side-grp .side-h{color:var(--app);font-weight:500;margin:0 10px 4px;display:flex;align-items:center}
+  html[data-ds] .side-grp .side-applogo{color:var(--app)}
+  html[data-ds] .side .sp-meta{font:400 12px var(--mono);color:var(--muted)}
+  html[data-ds] .side-grp:not([data-app="home"]) .side-it:hover .sp-ic{color:var(--app)}
+  /* masquée */
+  body.side-off .side{display:none!important}
+  body.side-off main{margin-left:0!important;padding-left:60px!important}
+  body.side-off.has-nav nav{display:flex!important}
+  body.side-off .toast{left:50%!important}
+  body.side-off .home-add{display:inline-flex!important}
+  .side-show{position:fixed;top:14px;left:12px;z-index:9;width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);cursor:pointer}
+  .side-show:hover{border-color:var(--ink-2)}
+  .side-show svg{width:18px;height:18px}
+}
+@media (max-width:767px){.side-show{display:none!important}}
+body.locked .side-show{display:none!important}
+@media (min-width:768px){html[data-ds] .side-grp{display:flex;flex-direction:column}html[data-ds] .side-it,html[data-ds] .side-add{width:100%;box-sizing:border-box}html[data-ds] .side-it .grow{flex:1}}
+
+/* ---- v43 : présentation, une diapositive par app dans sa couleur ---- */
+.onb-track{--i:0;overflow:hidden!important;scroll-snap-type:none!important}
+.onb-track .onb-slide{transform:translateX(calc(var(--i) * -100%));transition:transform .25s ease-out}
+@media (prefers-reduced-motion:reduce){.onb-track .onb-slide{transition:none}}
+html[data-ds] .onb-dots i.on{background:var(--ink)}
+html[data-ds] .onb-app{--app-soft:color-mix(in srgb,var(--app) 8%,var(--bg))}
+html[data-ds] .onb-app .onb-split{max-width:980px;display:grid;gap:18px;text-align:left;align-items:start}
+html[data-ds] .onb-hero{display:grid;gap:8px;justify-items:start;padding:18px 18px 16px;border-left:3px solid var(--app);background:var(--app-soft);border-radius:0 6px 6px 0}
+html[data-ds] .onb-hero .onb-logo{width:56px;height:56px;margin:0;color:var(--app)}
+html[data-ds] .onb-hero .onb-grp{color:var(--app);margin:4px 0 0;text-align:left;font-weight:500}
+html[data-ds] .onb-hero h1{font-size:30px;margin:0;color:var(--ink);text-align:left}
+html[data-ds] .onb-hero .sub{margin:0;color:var(--ink);opacity:.8}
+html[data-ds] .onb-count{margin:2px 0 0;font:400 12px var(--mono);color:var(--app)}
+html[data-ds] .onb-pick{display:grid;gap:8px}
+html[data-ds] .onb-pick-h{display:flex;justify-content:space-between;align-items:baseline;border-bottom:var(--rule) solid var(--line);padding-bottom:6px}
+html[data-ds] .onb-pick .onb-all{margin:0;font-size:13px;color:var(--app);font-weight:500}
+html[data-ds] .onb-app .onb-list{gap:0}
+html[data-ds] .onb-app .onb-it{background:transparent;border:0;border-bottom:var(--rule) solid var(--line);border-radius:0;padding:10px 2px}
+html[data-ds] .onb-app .onb-it .ic{width:34px;height:34px;border-radius:6px;background:var(--app-soft);color:var(--app)}
+html[data-ds] .onb-app .onb-it .ic svg{width:18px;height:18px}
+html[data-ds] .onb-app .onb-it b{font-size:15px;font-weight:500}
+html[data-ds] .onb-app .onb-it .small{display:block;line-height:1.35}
+html[data-ds] .onb-app .onb-it.off{opacity:.5}
+html[data-ds] .onb-app .onb-hint{margin:4px 0 0;text-align:left}
+html[data-ds] .onb-app .switch:checked{background:var(--app)}
+@media (min-width:760px){
+  html[data-ds] .onb-app .onb-split{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:40px;padding-top:6vh}
+  html[data-ds] .onb-hero{padding:28px 26px;position:sticky;top:0}
+  html[data-ds] .onb-hero .onb-logo{width:72px;height:72px}
+  html[data-ds] .onb-hero h1{font-size:40px}
+}
+html[data-ds] .onb-app{padding-top:52px}
+html[data-ds] .onb[data-app] .onb-nav .btn:not(.ghost){background:var(--app)!important;color:var(--on-app)!important}
+html[data-ds] .onb[data-app] .onb-dots i.on{background:var(--app)}
+@media (min-width:760px){html[data-ds] .onb-app{padding-top:12vh}}
+
+/* ---- v43 : animation d'ouverture de chaque app ---- */
+.app-intro{position:fixed;inset:0;z-index:190;display:grid;place-content:center;justify-items:center;gap:22px;background:var(--bg);color:var(--app);cursor:pointer;animation:aiIn .18s ease-out}
+.app-intro.out{animation:aiOut .18s ease-in forwards}
+@keyframes aiIn{from{opacity:0}}
+@keyframes aiOut{to{opacity:0;visibility:hidden}}
+.ai-art{width:min(240px,62vw);height:140px;display:grid;place-items:center}
+.ai-art>*{max-width:100%;max-height:100%}
+.ai-brand{display:flex;align-items:center;gap:10px;opacity:0;animation:aiUp .35s ease-out .9s forwards}
+.ai-logo{width:30px;height:30px;color:var(--app)}
+.ai-name{font:300 30px/1 var(--display,"Fraunces",serif);color:var(--ink);letter-spacing:-.01em}
+.ai-skip{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:14px;border:0;background:none;color:var(--muted);font:400 14px var(--font);padding:10px;cursor:pointer}
+@keyframes aiUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* sid'agenda : calendrier qui se remplit / horloge / pages de jours */
+.it-grid rect{fill:none;stroke:var(--app);stroke-width:1.2;opacity:0;animation:aiCell .3s ease-out forwards}
+.it-grid rect.hot{fill:var(--app)}
+@keyframes aiCell{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+.it-grid rect{transform-box:fill-box;transform-origin:center}
+.it-clock{width:130px;height:130px;fill:none;stroke:var(--app);stroke-width:1.5;stroke-linecap:round}
+.it-clock circle{stroke:var(--line)}.it-clock circle.arc{stroke:var(--app);stroke-dasharray:327;stroke-dashoffset:327;transform:rotate(-90deg);transform-origin:60px 60px;animation:aiArc var(--t) ease-out forwards}
+.it-clock .hand,.it-clock .hand2{transform-origin:60px 60px;animation:aiTurn var(--t) cubic-bezier(.3,.7,.2,1) forwards}
+.it-clock .hand2{animation-duration:calc(var(--t) * 1.4)}
+@keyframes aiArc{to{stroke-dashoffset:0}}
+@keyframes aiTurn{from{transform:rotate(0)}to{transform:rotate(var(--turn))}}
+.it-pages{position:relative;width:110px;height:120px}
+.it-pages span{position:absolute;inset:0;border:1.5px solid var(--app);border-radius:6px;background:var(--bg);display:grid;place-items:center;opacity:0;transform:translateY(16px) rotate(var(--r));animation:aiPage .35s ease-out forwards}
+.it-pages span b{font:300 46px var(--display,serif);color:var(--app)}
+.it-pages span:last-child{background:var(--app)}.it-pages span:last-child b{color:var(--on-app,#fff)}
+@keyframes aiPage{to{opacity:1;transform:rotate(var(--r))}}
+/* sid'fit : battement / barres qui montent / anneau de répétitions */
+.it-pulse{width:100%;height:120px;fill:none;stroke:var(--app);stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.it-pulse path{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:aiDraw 1.1s ease-in-out forwards}
+@keyframes aiDraw{to{stroke-dashoffset:0}}
+.it-bars{display:flex;align-items:flex-end;gap:8px;height:110px}
+.it-bars i{width:14px;height:var(--h);background:var(--app);border-radius:2px;transform:scaleY(0);transform-origin:bottom;animation:aiBar .45s cubic-bezier(.3,1.3,.5,1) forwards}
+@keyframes aiBar{to{transform:none}}
+.it-ring{width:130px;height:130px;fill:none;stroke-width:1.5}
+.it-ring circle{stroke:var(--line)}.it-ring circle.arc{stroke:var(--app);stroke-dasharray:315;stroke-dashoffset:315;transform:rotate(-90deg);transform-origin:60px 60px;animation:aiArc var(--t) ease-out forwards}
+.it-ring circle.dot{fill:var(--app);stroke:none;opacity:0;transform-box:fill-box;transform-origin:center;animation:aiCell .2s ease-out forwards}
+/* sid'note : lignes qui s'écrivent / signature / feuilles empilées */
+.it-lines{display:grid;gap:12px;width:200px}
+.it-lines i{display:block;height:3px;width:var(--w);background:var(--app);transform:scaleX(0);transform-origin:left;animation:aiLine .4s ease-out forwards}
+@keyframes aiLine{to{transform:none}}
+.it-sign{width:220px;height:100px;fill:none;stroke:var(--app);stroke-width:2;stroke-linecap:round}
+.it-sign path{stroke-dasharray:420;stroke-dashoffset:420;animation:aiDraw var(--t) ease-in-out forwards}
+.it-stack{position:relative;width:96px;height:124px}
+.it-stack span{position:absolute;inset:0;border:1.5px solid var(--app);border-radius:4px;background:var(--bg);opacity:0;transform:translate(var(--x),-30px) rotate(var(--r));animation:aiSheet .4s ease-out forwards}
+.it-stack span:last-child{background:var(--app)}
+@keyframes aiSheet{to{opacity:1;transform:translate(calc(var(--x) / 3),0) rotate(var(--r))}}
+@media (prefers-reduced-motion:reduce){.app-intro{display:none!important}}

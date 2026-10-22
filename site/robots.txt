@@ -1,0 +1,12 @@
+# Sid'home (SidCorp) — application personnelle. Les données des personnes sont derrière un compte et ne sont jamais publiques.
+# Pages publiques : l'accueil et les pages légales. Les agents IA peuvent les lire.
+User-agent: *
+Allow: /$
+Allow: /confidentialite.html
+Allow: /conditions.html
+Allow: /cookies.html
+Allow: /llms.txt
+Disallow: /lib/
+Disallow: /fonts/
+
+Sitemap: https://sidnote.netlify.app/sitemap.xml

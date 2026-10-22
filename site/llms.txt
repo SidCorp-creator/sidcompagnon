@@ -1,0 +1,10 @@
+# Sid'home
+
+> Application personnelle (PWA) éditée par SidCorp, en français, anglais et néerlandais. Un seul compte, trois applications : sid'agenda (agenda, tâches du jour, minuteur de concentration), sid'fit (programme de musculation, nutrition, graphiques) et sid'note (notes et dossiers, documents, mots de passe chiffrés).
+
+Les données des personnes sont privées (compte Supabase, Europe) et ne sont pas accessibles publiquement. Un connecteur MCP permet au Claude de chaque personne de lire et écrire dans son propre compte, avec une clé personnelle.
+
+## Pages publiques
+- [Politique de confidentialité](https://sidnote.netlify.app/confidentialite.html)
+- [Conditions d'utilisation](https://sidnote.netlify.app/conditions.html)
+- [Politique des cookies](https://sidnote.netlify.app/cookies.html)

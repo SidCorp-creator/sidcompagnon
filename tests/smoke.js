@@ -45,7 +45,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
 
     // --- inscription, présentation passée, tous les onglets affichés
     await pg.click("#mSignup");await pg.fill("#aName","Test");await pg.fill("#aEmail",email);
-    await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb")){await shot(pg,scheme+"-02-presentation");await pg.click("#onbSkip");await pg.waitForTimeout(400)}
     if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     await pg.evaluate(()=>{["plan","todo","pomo","notes","muscu","nutri","graph","docs","pwd","app"].forEach(k=>data.prefs.tabs[k]=true);save();applyTabs()});
@@ -196,7 +196,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const ctx=await b.newContext({viewport:{width:1440,height:900},colorScheme:scheme}),pg=await ctx.newPage();
     pg.on("pageerror",e=>errs.push("pc "+scheme+": "+e.message));
     await pg.goto(U);await pg.waitForTimeout(400);await shot(pg,scheme+"-pc-connexion");
-    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","pc-"+scheme+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","pc-"+scheme+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     await pg.evaluate(()=>{["plan","todo","pomo","notes","muscu","nutri","graph","docs","pwd","app"].forEach(k=>data.prefs.tabs[k]=true);
       data.todos.push({id:"a",title:"Préparer la présentation",createdAt:new Date().toISOString(),done:false},{id:"b",title:"Appeler le garage",createdAt:new Date().toISOString(),done:false});save();applyTabs();renderAll()});
@@ -207,9 +207,9 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
   {const ctx=await b.newContext({...devices["iPhone 13"]}),pg=await ctx.newPage(),err=m=>errs.push("sans accès : "+m);
     pg.on("pageerror",e=>err(e.message));pg.on("console",m=>{if(/Content Security Policy/i.test(m.text()))err("CSP : "+m.text().slice(0,200))});
     await pg.goto(U);await pg.waitForTimeout(400);
-    await pg.click("#mSignup");await pg.fill("#aName","Proche");await pg.fill("#aEmail","sans@test.be");await pg.fill("#aPw","court1");await pg.fill("#aPw2","court1");await pg.click("#aBtn");await pg.waitForTimeout(500);
+    await pg.click("#mSignup");await pg.fill("#aName","Proche");await pg.fill("#aEmail","sans@test.be");await pg.fill("#aPw","court1");await pg.fill("#aPw2","court1");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(500);
     if(!(await pg.isVisible("#aErr"))||!(await pg.textContent("#aErr")).includes("8 caractères"))err("mot de passe de 6 caractères accepté à l'inscription");
-    await pg.fill("#aPw","assezlong1");await pg.fill("#aPw2","assezlong1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    await pg.fill("#aPw","assezlong1");await pg.fill("#aPw2","assezlong1");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb")){
       await shot(pg,"sans-acces-presentation-sport").catch(()=>{});await pg.click("#onbSkip")}
     if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
@@ -231,7 +231,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const later=async()=>{await pg.waitForSelector("#recSheet:not([hidden])",{timeout:15000}).catch(()=>{});if(await pg.isVisible("#recSheet"))await pg.click("#recLater")};
     const show=v=>pg.evaluate(v=>show(v),v);
     await pg.goto(U);await pg.waitForTimeout(400);
-    await pg.click("#mSignup");await pg.fill("#aName","Coffre");await pg.fill("#aEmail","coffre@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    await pg.click("#mSignup");await pg.fill("#aName","Coffre");await pg.fill("#aEmail","coffre@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     // anciens coffres (v31) : mots de passe + documents avec le code 24680, notes secrètes avec 13579
     await pg.evaluate(async()=>{const mkOld=async(code,ok,id,extra)=>{const salt=b64e(crypto.getRandomValues(new Uint8Array(16))),key=await pinKey(code,salt,PIN_ITER);
@@ -289,7 +289,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
   {const ctx=await b.newContext({...devices["iPhone 13"]}),pg=await ctx.newPage(),err=m=>errs.push("sauvegarde : "+m);
     pg.on("pageerror",e=>err(e.message));
     await pg.goto(U);await pg.waitForTimeout(400);
-    await pg.click("#mSignup");await pg.fill("#aName","Sauve");await pg.fill("#aEmail","sauve@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    await pg.click("#mSignup");await pg.fill("#aName","Sauve");await pg.fill("#aEmail","sauve@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     const bk=await pg.evaluate(()=>{const now=new Date().toISOString();
       data.todos.push({id:"tA",title:"Tâche A",createdAt:now,done:false});data.notes.push({id:"nN",title:"Note N",body:"texte",createdAt:now,upd:Date.now()});
@@ -375,7 +375,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     // créer un compte depuis l'essai : les données sont reprises
     await pg.evaluate(()=>show("more"));await pg.click("#trialBanner [data-trialacc]");await pg.waitForTimeout(800);
     if(await pg.getAttribute("#mSignup","aria-pressed")!=="true")err("« Créer mon compte » n'ouvre pas l'inscription");
-    await pg.fill("#aName","Essai");await pg.fill("#aEmail","essai@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1800);
+    await pg.fill("#aName","Essai");await pg.fill("#aEmail","essai@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1800);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     const st=await pg.evaluate(()=>({trial:isTrial(),todos:data.todos.length,dent:data.tasks.some(t=>t.title==="Dentiste"),left:!!localStorage.getItem("sidnote-u-essai")}));
     if(st.trial||st.todos!==2||!st.dent||st.left)err("données de l'essai mal reprises : "+JSON.stringify(st));
@@ -393,7 +393,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.click('#legalSeg [data-legal="terms"]');if(!(await pg.textContent("#legalBody")).includes("droit belge"))err("conditions d'utilisation vides");
     await pg.keyboard.press("Escape");await pg.waitForTimeout(150);if(await pg.isVisible("#legalSheet"))err("Échap ne ferme pas la fenêtre");
     // compte : barre du bas accessible, accord santé, suppression du compte
-    await pg.click("#mSignup");await pg.fill("#aName","Adieu");await pg.fill("#aEmail","adieu@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    await pg.click("#mSignup");await pg.fill("#aName","Adieu");await pg.fill("#aEmail","adieu@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     const nav=await pg.evaluate(()=>({role:document.getElementById("navIn").getAttribute("role"),cur:document.querySelectorAll('nav [aria-current="page"]').length,toast:document.getElementById("toast").getAttribute("aria-live")}));
     if(nav.role||nav.cur!==1||nav.toast!=="polite")err("accessibilité de la navigation / des messages : "+JSON.stringify(nav));
@@ -420,7 +420,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
   {const ctx=await b.newContext({...devices["iPhone 13"],colorScheme:"dark"}),pg=await ctx.newPage(),err=m=>errs.push("v36 : "+m);
     pg.on("pageerror",e=>err(e.message));
     await pg.goto(U);await pg.waitForTimeout(400);
-    await pg.click("#mSignup");await pg.fill("#aName","Pres");await pg.fill("#aEmail","pres@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    await pg.click("#mSignup");await pg.fill("#aName","Pres");await pg.fill("#aEmail","pres@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(!(await pg.isVisible("#onb")))err("présentation absente");
     else{const b1=pg.locator('#onbGroups [data-onball="orga"]');if(!(await b1.count()))err("pas de « Tout décocher » dans la présentation");
       else{await pg.evaluate(()=>onbGoTo(1));await pg.waitForTimeout(1500);await shot(pg,"v36-presentation-tout");await b1.click();
@@ -450,7 +450,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
   // --- v37 : listes partagées (2 comptes), ajout rapide en langage courant, délai de reverrouillage, notifications au bon moment, erreurs envoyées
   {const err=m=>errs.push("v37 : "+m);
     const mk=async(name,email)=>{const ctx=await b.newContext({...devices["iPhone 13"]}),pg=await ctx.newPage();pg.on("pageerror",e=>err(name+" : "+e.message));
-      await pg.goto(U);await pg.waitForTimeout(400);await pg.click("#mSignup");await pg.fill("#aName",name);await pg.fill("#aEmail",email);await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+      await pg.goto(U);await pg.waitForTimeout(400);await pg.click("#mSignup");await pg.fill("#aName",name);await pg.fill("#aEmail",email);await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
       if(await pg.isVisible("#onb"))await pg.click("#onbSkip");await pg.waitForTimeout(300);return {ctx,pg}};
     const A=await mk("Sid","sid37@test.be"),B=await mk("Léa","lea37@test.be");
     if(await A.pg.isVisible("#notifAsk"))err("notifications encore proposées dès l'ouverture");
@@ -484,7 +484,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const pin=async c=>{for(const d of c)await pg.click(`#pinPad [data-pin="${d}"]`);await pg.waitForTimeout(150)};
     const ps=async c=>{await pg.waitForSelector("#pinSheet:not([hidden])",{timeout:10000});for(const d of c)await pg.click(`#psPad [data-ps="${d}"]`);await pg.waitForTimeout(150)};
     await pg.goto(U);await pg.waitForTimeout(400);
-    await pg.click("#mSignup");await pg.fill("#aName","Bio");await pg.fill("#aEmail","bio38@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    await pg.click("#mSignup");await pg.fill("#aName","Bio");await pg.fill("#aEmail","bio38@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     // coffre : code 24680 + phrase secrète
     await pg.evaluate(()=>show("pwd"));await pg.waitForTimeout(300);await pin("24680");await pin("24680");
@@ -528,7 +528,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.click("#noteBack");await pg.waitForTimeout(300);if(await pg.evaluate(()=>document.body.classList.contains("note-full")))err("plein écran pas retiré en quittant la note");
     await ctx.close()}
   {const ctx=await b.newContext({viewport:{width:1280,height:800}}),pg=await ctx.newPage();
-    await pg.goto(U);await pg.waitForTimeout(400);await pg.click("#mSignup");await pg.fill("#aName","Pc");await pg.fill("#aEmail","pc38@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    await pg.goto(U);await pg.waitForTimeout(400);await pg.click("#mSignup");await pg.fill("#aName","Pc");await pg.fill("#aEmail","pc38@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     await pg.evaluate(()=>show("notes"));await pg.waitForTimeout(300);await pg.click("#noteNew");await pg.fill("#noteTitle","Sur ordinateur");await pg.fill("#noteBody","Une note qui prend toute la page.");await pg.waitForTimeout(300);
     const w=await pg.$eval("#noteEdit",e=>e.getBoundingClientRect().width);if(w<1270)errs.push("v38 : note pas en plein écran sur ordinateur ("+w+")");
@@ -538,7 +538,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const ctx=await b.newContext({...devices["iPhone 13"]}),pg=await ctx.newPage();pg.on("pageerror",e=>err(e.message));
     pg.on("console",m=>{if(/Content Security Policy/i.test(m.text()))err("CSP : "+m.text().slice(0,200))});
     await pg.goto(U);await pg.waitForTimeout(400);
-    await pg.click("#mSignup");await pg.fill("#aName","Neuf");await pg.fill("#aEmail","neuf39@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    await pg.click("#mSignup");await pg.fill("#aName","Neuf");await pg.fill("#aEmail","neuf39@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     // tâches : « demain » compris, report d'hier sur aujourd'hui, cocher depuis Aujourd'hui, ajout depuis l'agenda
     await pg.evaluate(()=>show("todo"));await pg.fill("#todoIn","Appeler maman demain");await pg.press("#todoIn","Enter");await pg.waitForTimeout(300);
@@ -605,7 +605,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
   {const err=m=>errs.push("v41 : "+m);
     const ctx=await b.newContext({...devices["iPhone 13"]}),pg=await ctx.newPage();pg.on("pageerror",e=>err(e.message+" @ "+String(e.stack).split("\n").slice(1,3).join(" | ")));
     await pg.goto(U);await pg.waitForTimeout(400);
-    await pg.click("#mSignup");await pg.fill("#aName","La loutre");await pg.fill("#aEmail","coach41@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    await pg.click("#mSignup");await pg.fill("#aName","La loutre");await pg.fill("#aEmail","coach41@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     if(await pg.evaluate(()=>lockDelay()!==Infinity))err("le coffre se reverrouille par défaut");
     // v42 : surnom complet dans l'en-tête
@@ -678,7 +678,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
   for(const [nm,dev] of [["pc",{viewport:{width:1440,height:900},colorScheme:"dark"}],["tablette",{...devices["iPad (gen 7)"]}]]){
     const ctx=await b.newContext({...dev,intro:true}),pg=await ctx.newPage(),err=m=>errs.push("v43 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
     await pg.goto(U);await pg.waitForTimeout(2400);
-    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb")){await pg.click("#onbNext");await pg.waitForTimeout(350);
       if(await pg.evaluate(()=>$("onb").dataset.app)!=="agenda")err("présentation : la diapositive sid'agenda n'est pas à sa couleur");
       if(!(await pg.isVisible(".onb-slide.on .onb-hero")))err("présentation : diapositive de l'app invisible");
@@ -698,7 +698,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await shot(pg,"v43-"+nm+"-muscu");await ctx.close()}
   // --- v43 lot 3 : Aujourd'hui = une section par app (nom, couleur, « Ouvrir »), dossiers récents dans sid'note
   {const ctx=await b.newContext({...devices["iPhone 13"]}),pg=await ctx.newPage(),err=m=>errs.push("v43 Aujourd'hui : "+m);pg.on("pageerror",e=>err(e.message));
-    await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43home@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43home@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     await pg.evaluate(()=>{data.noteFolders=[{id:"fh1",name:"Cours",createdAt:new Date().toISOString()}];data.notes=[{id:"nh1",title:"Chapitre",body:"x",folder:"fh1",createdAt:new Date().toISOString(),upd:Date.now()}];save();show("home")});await pg.waitForTimeout(200);
     const secs=await pg.$$eval("#homeBody .hm-sec",x=>x.map(e=>e.dataset.app).join(","));if(secs!=="agenda,fit,note")err("sections attendues agenda,fit,note : "+secs);
@@ -711,7 +711,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
   // --- v43 lot 4 : « Créer avec Claude » envoie toutes les réponses + remarques libres ; le programme de l'app sert de base
   for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1440,height:900}}],["tablette",{...devices["iPad (gen 7)"]}]]){
     const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v43 programme "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
-    await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43co"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43co"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     await pg.evaluate(()=>show("muscu"));await pg.click('#coachBox [data-coach="new"]');await pg.waitForTimeout(200);await shot(pg,"v43-"+nm+"-programme-questions");
     await pg.click("#cfMore summary");await pg.fill("#cfNotes","je veux faire abdos tous les jours");await pg.fill("#cfAvoidTxt","poignet droit");
@@ -720,8 +720,28 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const pr=await pg.textContent("#aaPrompt");if(!pr.includes("abdos tous les jours")||!pr.includes("poignet droit")||!pr.includes("enregistrer_programme"))err("message à Claude incomplet : "+pr);
     if(!(await pg.evaluate(()=>!!PL()&&!!PL().aiWait&&PL().profile.avoidTxt==="poignet droit")))err("programme de base / attente / zone libre non gardés");
     await shot(pg,"v43-"+nm+"-programme-claude");await ctx.close()}
+  // --- v43 lot 5 : RGPD / cookies : aucune ressource de tiers, Spotify seulement après un clic, case des conditions, pages légales
+  for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1440,height:900}}],["tablette",{...devices["iPad (gen 7)"]}]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v43 RGPD "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    const hosts=new Set();pg.on("request",r=>{try{hosts.add(new URL(r.url()).host)}catch(e){}});
+    await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43rgpd"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");
+    if(await pg.isChecked("#aAgree"))err("case des conditions pré-cochée");
+    await pg.click("#aBtn");await pg.waitForTimeout(400);if(!(await pg.isVisible("#auth"))||!(await pg.textContent("#aErr")).includes("conditions"))err("inscription possible sans accepter les conditions");
+    await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    for(const v of ["plan","pomo","muscu","nutri","notes","docs","more"]){await pg.evaluate(v=>show(v),v);await pg.waitForTimeout(250)}
+    await pg.evaluate(()=>show("pomo"));await pg.waitForTimeout(300);
+    if(await pg.locator("#spotEmbed iframe").count())err("Spotify chargé sans accord");
+    const third=[...hosts].filter(h=>!/^localhost(:\d+)?$/.test(h));if(third.length)err("ressources de tiers chargées sans action : "+third.join(", "));
+    await pg.click("[data-spotok]");await pg.waitForTimeout(300);if(!(await pg.locator("#spotEmbed iframe").count()))err("Spotify ne se charge pas après l'accord");
+    await pg.click("[data-spotno]");await pg.waitForTimeout(200);if(await pg.locator("#spotEmbed iframe").count())err("l'accord Spotify ne se retire pas");
+    await pg.evaluate(()=>openLegal("cookies"));await pg.waitForTimeout(200);if(!(await pg.textContent("#legalBody")).includes("cookie"))err("onglet Cookies absent");
+    await shot(pg,"v43-"+nm+"-cookies");
+    for(const f of ["confidentialite.html","conditions.html","cookies.html","robots.txt","sitemap.xml","llms.txt","fonts.css","lib/pdfjs/pdf.min.js"]){const r=await pg.request.get(U+f);if(r.status()!==200)err(f+" introuvable ("+r.status()+")")}
+    if(nm==="mobile"){await pg.goto(U+"confidentialite.html");await pg.waitForTimeout(300);if(!(await pg.textContent("main")).includes("Inventaire complet"))err("inventaire absent de la page de confidentialité");await shot(pg,"v43-page-confidentialite")}
+    await ctx.close()}
   {const ctx=await b.newContext({...devices["iPhone 13"],intro:true,reducedMotion:"reduce"}),pg=await ctx.newPage(),err=m=>errs.push("v43 animations réduites : "+m);
-    await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43rm@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43rm@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     await pg.click('#homeBody [data-gapp="perso"]');await pg.waitForTimeout(300);if(await pg.isVisible("#appIntro"))err("animation affichée malgré « réduire les animations »");await ctx.close()}
   const real=errs.filter(Boolean);

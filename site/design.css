@@ -6,7 +6,7 @@
 
 /* ---------- tokens ---------- */
 html[data-ds][data-ds][data-ds],html[data-ds][data-ds] body{
-  --bg:#F4F0E8; --surface:#F4F0E8; --surface-2:#EBE6DC; --field:#EBE6DC; --ink:#1C1A17; --ink-2:#8A8378; --muted:#6E675C; --line:#D6CFC2;
+  --bg:#F4F0E8; --surface:#F4F0E8; --surface-2:#EBE6DC; --field:#EBE6DC; --ink:#1C1A17; --ink-2:#8A8378; --muted:#665F55; --line:#D6CFC2;
   --bar:#F4F0E8; --on-accent:#F4F0E8;
   --c-agenda:#9C3B26; --c-fit:#2F4A3A; --c-note:#1C1A17; --c-home:#1C1A17;
   --app:var(--c-home);
@@ -662,3 +662,12 @@ html[data-ds] .cf-go{position:static;padding:4px 0 0}
 html[data-ds] .cf-more .cf-q{margin-top:14px}
 html[data-ds] .cf-q>label{color:var(--ink)}
 @media (min-width:640px){html[data-ds] .cf-go{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}}
+.spot-gate{display:grid;gap:10px;padding:14px;border:var(--rule,.5px) dashed var(--line);border-radius:6px}
+.spot-gate p{margin:0}
+.spot-off{text-align:right;margin-bottom:4px}
+html[data-ds] label.auth-legal:not([hidden]){display:flex;gap:10px;align-items:flex-start;text-align:left;color:var(--ink);cursor:pointer;line-height:1.45}
+html[data-ds] label.auth-legal input{width:20px;height:20px;flex:none;margin:1px 0 0}
+html[data-ds] .cal-title .yr-ic,html[data-ds] .yr-title .yr-ic{opacity:1;color:var(--muted)}
+.skip-link{position:absolute;left:-9999px;top:8px;z-index:300;background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:6px;font:500 15px var(--font)}
+.skip-link:focus{left:12px}
+main:focus{outline:0}

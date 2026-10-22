@@ -4,6 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Sid'home</title>
+<meta name="description" content="Sid'home réunit trois applications personnelles avec un seul compte : sid'agenda (agenda, tâches, minuteur de concentration), sid'fit (musculation, nutrition, graphiques) et sid'note (notes, documents et mots de passe chiffrés).">
+<meta name="application-name" content="Sid'home">
+<meta name="author" content="SidCorp">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://sidnote.netlify.app/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Sid'home">
+<meta property="og:description" content="Trois applications, un seul compte : sid'agenda, sid'fit et sid'note.">
+<meta property="og:url" content="https://sidnote.netlify.app/">
+<meta property="og:image" content="https://sidnote.netlify.app/logo-512.png">
+<meta property="og:locale" content="fr_BE">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Sid'home">
@@ -13,13 +24,13 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="logo-180.png">
 <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="icon" href="logo-32.png" sizes="32x32"><link rel="icon" href="logo-192.png" sizes="192x192">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400&family=Inter+Tight:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="app.css">
 <link rel="stylesheet" href="design.css">
 </head>
 <body>
+<a class="skip-link" href="#main">Aller au contenu</a>
+<noscript><p style="padding:16px;font-family:sans-serif">Sid'home a besoin de JavaScript pour fonctionner. Sid'home réunit sid'agenda (agenda, tâches), sid'fit (musculation, nutrition) et sid'note (notes, documents, mots de passe). <a href="confidentialite.html">Confidentialité</a> · <a href="conditions.html">Conditions d'utilisation</a> · <a href="cookies.html">Cookies</a></p></noscript>
 <div class="splash" id="splash" aria-hidden="true"><div class="sp-mark" id="spMark"></div><div class="sp-name">Sid'home</div><div class="sp-apps" id="spApps"></div></div>
 <div id="auth" class="auth" hidden>
   <div class="auth-box">
@@ -38,7 +49,7 @@
       <label id="aPw2Wrap" hidden>Confirme le mot de passe<span class="pw-field"><input id="aPw2" type="password" autocomplete="new-password"><button type="button" class="pw-eye" data-pweyefor="aPw2" aria-label="Afficher le mot de passe"></button></span></label>
       <label class="check-row" id="aStayWrap"><input type="checkbox" id="aStay" checked> Rester connecté</label>
       <p class="err" id="aErr" role="alert" hidden></p>
-      <p class="small muted auth-legal" id="aLegal" hidden>En créant un compte, tu acceptes les <button type="button" class="linkbtn" data-openlegal="terms">conditions d'utilisation</button> et la <button type="button" class="linkbtn" data-openlegal="privacy">politique de confidentialité</button>.</p>
+      <label class="auth-legal small" id="aLegal" hidden><input type="checkbox" id="aAgree"> <span>J'accepte les <button type="button" class="linkbtn" data-openlegal="terms">conditions d'utilisation</button> et j'ai lu la <button type="button" class="linkbtn" data-openlegal="privacy">politique de confidentialité</button>.</span></label>
       <button class="btn" id="aBtn" type="submit">Se connecter</button>
       <button type="button" class="linkbtn" id="aForgot">Mot de passe oublié ?</button>
     </form>
@@ -59,7 +70,7 @@
 </div>
 <aside class="side" id="side" aria-label="Navigation"></aside>
 <button type="button" class="side-show" id="sideShow" aria-label="Afficher la barre latérale" title="Afficher la barre latérale" aria-controls="side" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M9.5 4.5v15"/></svg></button>
-<main>
+<main id="main" tabindex="-1">
   <div class="vhead" id="vhead" hidden></div>
   <!-- AUJOURD'HUI (v25) -->
   <section class="view" id="v-home" hidden>
@@ -217,11 +228,11 @@
     <div class="rest-sentinel" id="restSentinel"></div>
     <div class="rest" id="rest">
       <div class="rest-tabs" role="tablist" aria-label="Chrono ou minuteur">
-        <button type="button" data-go="0" aria-selected="true">Chrono<span id="swMini"></span></button>
-        <button type="button" data-go="1" aria-selected="false">Minuteur<span id="tmMini"></span></button>
+        <button type="button" role="tab" id="restTab0" aria-controls="swSlide" data-go="0" aria-selected="true">Chrono<span id="swMini"></span></button>
+        <button type="button" role="tab" id="restTab1" aria-controls="tmSlide" data-go="1" aria-selected="false">Minuteur<span id="tmMini"></span></button>
       </div>
       <div class="rest-track" id="restTrack">
-        <div class="rest-slide" id="swSlide">
+        <div class="rest-slide" id="swSlide" role="tabpanel" aria-labelledby="restTab0">
           <div class="sw-ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="bgc" cx="60" cy="60" r="52" fill="none" stroke-width="9"/><circle class="fgc" id="swRing" cx="60" cy="60" r="52" fill="none" stroke-width="9" stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="326.73"/></svg><div class="sw-txt"><div class="rest-clock" id="restClock">0:00</div></div></div>
           <div class="sw-side">
             <div class="phase" id="swPhase">Chrono</div>
@@ -230,7 +241,7 @@
             <div class="laps" id="swLaps" hidden></div>
           </div>
         </div>
-        <div class="rest-slide" id="tmSlide">
+        <div class="rest-slide" id="tmSlide" role="tabpanel" aria-labelledby="restTab1">
           <div class="sw-ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="bgc" cx="60" cy="60" r="52" fill="none" stroke-width="9"/><circle class="fgc" id="tmRing" cx="60" cy="60" r="52" fill="none" stroke-width="9" stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="326.73"/></svg><div class="sw-txt"><div class="rest-clock" id="tmClock">1:30</div></div></div>
           <div class="sw-side">
             <div class="tm-mode" id="tmMode" role="group" aria-label="Type de minuteur"><button type="button" data-tmmode="simple" aria-pressed="true">Simple</button><button type="button" data-tmmode="frac" aria-pressed="false">Fractionné</button></div>
@@ -622,7 +633,7 @@
     </div>
     <div class="card" style="margin-top:10px">
       <div class="row"><div class="grow">Tes droits : voir, récupérer et effacer tes données à tout moment, et supprimer ton compte toi-même.</div></div>
-      <div class="row"><button type="button" class="btn ghost" data-openlegal="privacy" style="flex:1">Confidentialité</button><button type="button" class="btn ghost" data-openlegal="terms" style="flex:1">Conditions</button></div>
+      <div class="row"><button type="button" class="btn ghost" data-openlegal="privacy" style="flex:1">Confidentialité</button><button type="button" class="btn ghost" data-openlegal="terms" style="flex:1">Conditions</button><button type="button" class="btn ghost" data-openlegal="cookies" style="flex:1">Cookies</button></div>
       <div class="row" id="nuConsentRow" hidden><div class="grow small">Données de santé (Nutrition) : <b id="nuConsentState"></b></div><button type="button" class="mini" id="nuConsentBtn"></button></div>
       <div class="row"><button class="btn" id="exportAllBtn" style="width:100%">Télécharger toutes mes données</button></div>
       <div class="row"><button class="btn stop" id="wipeBtn" style="width:100%">Supprimer mes données</button></div>
@@ -757,15 +768,15 @@
 <div class="sheet-bg" id="legalSheet" hidden>
   <div class="sheet card legal">
     <div class="sheet-head"><b id="legalTitle">Confidentialité et conditions</b><button type="button" class="x" id="legalClose" aria-label="Fermer">×</button></div>
-    <div class="seg" id="legalSeg" role="group" aria-label="Document" style="grid-template-columns:1fr 1fr"><button type="button" data-legal="privacy" aria-pressed="true">Confidentialité</button><button type="button" data-legal="terms" aria-pressed="false">Conditions</button></div>
+    <div class="seg" id="legalSeg" role="group" aria-label="Document" style="grid-template-columns:repeat(3,minmax(0,1fr))"><button type="button" data-legal="privacy" aria-pressed="true">Confidentialité</button><button type="button" data-legal="terms" aria-pressed="false">Conditions</button><button type="button" data-legal="cookies" aria-pressed="false">Cookies</button></div>
     <div id="legalBody" class="legal-body"></div>
   </div>
 </div>
 <div class="sheet-bg" id="consentSheet" hidden>
   <div class="sheet card">
     <div class="sheet-head"><b>Tes données de santé</b><button type="button" class="x" id="consentClose" aria-label="Fermer">×</button></div>
-    <p class="small" style="margin:0">Pour calculer tes besoins et les calories de tes repas, Nutrition utilise ton âge, ton poids, ta taille, ton sport, ce que tu manges et, si tu en envoies, des photos de tes plats. Ce sont des données de santé.</p>
-    <p class="small muted" style="margin:0">Elles sont enregistrées dans ton compte et envoyées au service d'IA d'Anthropic (États-Unis) uniquement pour le calcul ; elles ne servent pas à entraîner l'IA. Tu peux retirer ton accord à tout moment dans Réglages, et supprimer tes données.</p>
+    <p class="small" style="margin:0">Pour la nutrition, les graphiques et ton programme de musculation, Sid'home utilise ton âge, ton poids, ta taille, ton sport, ce que tu manges, tes séances et les zones à ménager. Ce sont des données de santé.</p>
+    <p class="small muted" style="margin:0">Elles restent dans ton compte (Supabase, Europe). Si tu branches Claude, c'est ton propre compte Claude (Anthropic, États-Unis) qui les lit par le connecteur, quand tu le lui demandes. Tu peux retirer ton accord à tout moment dans Réglages, et supprimer tes données.</p>
     <button type="button" class="linkbtn" data-openlegal="privacy">Lire la politique de confidentialité</button>
     <div class="two"><button type="button" class="btn ghost" id="consentNo">Pas maintenant</button><button type="button" class="btn" id="consentYes">J'accepte</button></div>
   </div>

@@ -1223,25 +1223,31 @@ $("bkReplace").addEventListener("click",e=>{const b=e.currentTarget;
   bkApply("replace")});
 
 /* ---------- v35 : confidentialité, conditions d'utilisation, consentement santé, suppression du compte ---------- */
+// v43 : textes légaux mis à jour (connecteur Claude, Spotify à la demande, polices hébergées ici) ; version complète dans les pages publiques
 const LEGAL={privacy:[
-  ["Qui s'occupe de tes données","Sid'home est une application éditée par SidCorp et partagée avec des proches. SidCorp est responsable de tes données. Pas de publicité, aucune donnée n'est vendue ni partagée à des fins commerciales."],
-  ["Ce qui est enregistré","Ton e-mail, ton pseudo et ton mot de passe (gardé chiffré par Supabase) ; ce que tu mets dans l'app : agenda, tâches, notes, séances, nutrition, réglages ; les documents et photos que tu ajoutes."],
-  ["Où","Dans ton compte, sur les serveurs de Supabase en Europe (Francfort, Allemagne). Le site est hébergé par Netlify, qui ne voit pas tes données. Sur ton appareil, l'app garde une copie pour marcher sans connexion (pas de cookie publicitaire, pas de pisteur)."],
+  ["Qui est responsable","Sid'home est édité par SidCorp, qui est responsable du traitement de tes données. Les coordonnées complètes figurent dans la version complète de cette politique. Pas de publicité : aucune donnée n'est vendue ni utilisée à des fins commerciales."],
+  ["Ce qui est enregistré, et pourquoi","Ton e-mail, ton pseudo et ton mot de passe (gardé haché par Supabase), pour ton compte. Ce que tu mets dans l'app (agenda, tâches, notes, documents, séances, nutrition, réglages), pour te rendre le service : c'est la base légale « exécution du contrat ». Des rapports d'erreur techniques (version, message d'erreur, type de navigateur, sans ton contenu), pour corriger les bugs : intérêt légitime. Ton abonnement aux notifications, seulement si tu les actives."],
+  ["Données de santé","Ton poids, tes repas, ton profil (âge, taille, sport), tes séances et les zones à ménager sont des données de santé. Sid'home ne les utilise qu'avec ton accord explicite, que tu peux retirer à tout moment dans Réglages. Sid'home ne les envoie à aucune IA de lui-même : si tu branches Claude, c'est ton propre compte Claude (Anthropic) qui les lit par le connecteur, quand tu le lui demandes, selon les conditions d'Anthropic. Les aliments sont retenus dans une mémoire commune anonyme (jamais ton nom)."],
+  ["Où, et avec qui","Tes données sont dans ton compte chez Supabase, en Europe (Francfort, Allemagne). Le site est hébergé par Netlify, qui garde des journaux techniques (dont ton adresse IP) pour faire tourner le site. Anthropic n'intervient que si tu branches Claude, Spotify seulement si tu charges son lecteur. Plus aucune police ni bibliothèque n'est chargée chez un tiers. Sur ton appareil, l'app garde une copie de tes données pour marcher sans connexion."],
   ["Ce qui est chiffré","Mots de passe, notes secrètes et documents sont chiffrés sur ton appareil avec ta phrase secrète avant d'être envoyés : personne d'autre ne peut les lire, pas même SidCorp. Le reste est protégé par ton compte ; l'administrateur pourrait techniquement y accéder pour l'entretien, mais ne le fait pas."],
-  ["Données de santé (Nutrition)","Si tu utilises Nutrition, ton profil (âge, poids, taille, sport), tes repas et les photos de tes plats sont traités seulement avec ton accord. Ils sont envoyés au service d'IA d'Anthropic (États-Unis) pour le calcul, qui ne s'en sert pas pour entraîner l'IA et les efface après peu de temps. Les aliments sont retenus dans une mémoire commune anonyme (jamais ton nom)."],
-  ["Listes partagées","Une liste partagée est visible par toutes les personnes qui l'ont rejointe avec son code : elles voient son contenu et ton pseudo. Celui qui l'a créée peut la supprimer pour tout le monde."],
-  ["Combien de temps","Tant que ton compte existe. Les éléments supprimés sont effacés de la synchronisation après 90 jours. « Supprimer mon compte » efface tout, tout de suite."],
-  ["Tes droits","Tu peux voir, télécharger, corriger et supprimer tes données à tout moment (Réglages, « Tes données et ta vie privée »), retirer ton accord pour les données de santé, et supprimer ton compte. Tu peux aussi porter plainte auprès de l'Autorité de protection des données (Belgique)."],
-  ["Contact","Pour toute question, contacte SidCorp (Sid), la personne qui t'a invité sur Sid'note."]],
+  ["Combien de temps","Tant que ton compte existe. Les éléments supprimés quittent la synchronisation après 90 jours ; les sauvegardes automatiques sont gardées 14 jours ; les rapports d'erreur 90 jours. « Supprimer mon compte » efface tout de suite ton compte et tes données (les sauvegardes disparaissent dans les 14 jours)."],
+  ["Tes droits","Tu peux voir, télécharger, corriger et supprimer tes données à tout moment (Réglages, « Tes données et ta vie privée »), retirer ton accord pour les données de santé, t'opposer à un traitement et supprimer ton compte. Tu peux aussi porter plainte auprès de l'Autorité de protection des données (Belgique, www.autoriteprotectiondonnees.be)."]],
  terms:[
-  ["Le service","Sid'home est gratuit et fourni tel quel, sans garantie. Il peut évoluer, être interrompu ou s'arrêter ; tu seras prévenu à l'avance si possible."],
+  ["Le service","Sid'home est gratuit, sans achat ni abonnement, et fourni tel quel. Il peut évoluer, être interrompu ou s'arrêter ; tu seras prévenu à l'avance si possible."],
   ["Ton compte","Ton compte est personnel. Garde ton mot de passe et ta phrase secrète pour toi. Si tu perds ta phrase secrète sans avoir activé la récupération, tes coffres ne peuvent pas être rouverts, même par SidCorp."],
   ["Ce que tu y mets","Tu restes propriétaire de ton contenu. N'y mets rien d'illégal. Fais de temps en temps une sauvegarde (Réglages, « Sauvegarde »)."],
-  ["Nutrition","Les calculs et menus sont donnés à titre indicatif, par une IA qui peut se tromper. Ce n'est pas un avis médical : demande conseil à un médecin ou un diététicien, surtout en cas de grossesse, de maladie ou de troubles alimentaires."],
-  ["Fin","Tu peux supprimer ton compte à tout moment. SidCorp peut fermer un compte utilisé de façon abusive. Ces conditions relèvent du droit belge."]]};
-function openLegal(k){k=k==="terms"?"terms":"privacy";
+  ["Santé : nutrition et musculation","Les calculs, menus et programmes sont donnés à titre indicatif, parfois par une IA qui peut se tromper. Ce n'est pas un avis médical : demande conseil à un médecin, un diététicien ou un coach, surtout en cas de douleur, de grossesse, de maladie ou de troubles alimentaires."],
+  ["Claude (facultatif)","Brancher Claude est facultatif. Claude est un service d'Anthropic, utilisé avec ton propre compte et selon ses conditions ; SidCorp n'en est pas responsable. Tu peux débrancher le connecteur à tout moment (Réglages)."],
+  ["Fin et droit applicable","Tu peux supprimer ton compte à tout moment. SidCorp peut fermer un compte utilisé de façon abusive. Ces conditions relèvent du droit belge ; elles ne retirent aucun droit que la loi te donne comme consommateur."]],
+ cookies:[
+  ["Pas de cookie","Sid'home ne dépose aucun cookie : ni publicité, ni mesure d'audience, ni pisteur."],
+  ["Ce qui est gardé sur ton appareil","Seulement ce qui est nécessaire pour faire marcher l'app que tu as demandée : ta session (rester connecté), une copie de tes données pour marcher sans connexion, tes fichiers, tes préférences d'affichage (langue, thème, barre latérale), un compteur anti-essais pour la connexion, et le cache de l'app. Ces éléments sont dispensés de consentement (loi belge du 13 juin 2005, art. 129) car strictement nécessaires."],
+  ["Contenu tiers : Spotify","Le lecteur Spotify (Focus) n'est chargé que si tu touches « Charger le lecteur Spotify ». Spotify reçoit alors ton adresse IP et peut déposer ses propres cookies, selon sa politique. Tu peux retirer ce choix à tout moment sous le lecteur."],
+  ["Pas de bandeau","Comme rien de non nécessaire n'est chargé sans ton action, Sid'home n'affiche pas de bandeau de cookies."]]};
+const LEGAL_PAGE={privacy:"confidentialite.html",terms:"conditions.html",cookies:"cookies.html"};
+function openLegal(k){k=LEGAL[k]?k:"privacy";
   document.querySelectorAll("#legalSeg [data-legal]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.legal===k)));
-  $("legalBody").innerHTML=LEGAL[k].map(([h,t])=>`<h3>${esc(L(h))}</h3><p>${esc(L(t))}</p>`).join("")+`<p class="small muted">${esc(L("Mis à jour en octobre 2026."))}</p>`;
+  $("legalBody").innerHTML=LEGAL[k].map(([h,t])=>`<h3>${esc(L(h))}</h3><p>${esc(L(t))}</p>`).join("")+`<p><a href="${LEGAL_PAGE[k]}" target="_blank" rel="noopener">${L("Lire la version complète")} ↗</a></p><p class="small muted">${esc(L("Mis à jour le 22 octobre 2026."))}</p>`;
   $("legalBody").scrollTop=0;$("legalSheet").hidden=false}
 document.addEventListener("click",e=>{const b=e.target.closest("[data-openlegal]");if(b){e.preventDefault();openLegal(b.dataset.openlegal)}});
 $("legalSeg").addEventListener("click",e=>{const b=e.target.closest("[data-legal]");if(b)openLegal(b.dataset.legal)});
@@ -1575,6 +1581,8 @@ $("authForm").addEventListener("submit",async e=>{
   // v32 : 8 caractères pour un nouveau compte (les anciens mots de passe plus courts marchent toujours pour se connecter)
   if(authMode==="signup"&&pw.length<8)return fail("Le mot de passe doit faire au moins 8 caractères.");
   if(authMode==="signup"&&pw!==$("aPw2").value)return fail("Les deux mots de passe ne sont pas identiques.");
+  // v43 : acceptation explicite des conditions (case non pré-cochée) ; la date et la version sont gardées avec le compte
+  if(authMode==="signup"&&!$("aAgree").checked)return fail("Coche la case pour accepter les conditions d'utilisation.");
   // ancien compte : pseudo à la place de l'e-mail
   const email=ident.includes("@")?ident.toLowerCase():`${slug(ident)}@${EMAIL_DOMAIN}`;
   if(!ident.includes("@")&&!slug(ident))return fail("Écris ton e-mail.");
@@ -1582,7 +1590,7 @@ $("authForm").addEventListener("submit",async e=>{
   try{
     let j;
     if(authMode==="signup"){
-      j=await api("/auth/v1/signup",{method:"POST",body:{email,password:pw,data:{name}}});
+      j=await api("/auth/v1/signup",{method:"POST",body:{email,password:pw,data:{name,terms_at:new Date().toISOString(),terms_v:"2026-10-22"}}});
       if(!j||!j.access_token)throw new Error("La confirmation par e-mail est activée sur le serveur.");
     }else j=await api("/auth/v1/token?grant_type=password",{method:"POST",body:{email,password:pw}});
     ls.del(AUTH_LOCK);
@@ -2314,7 +2322,9 @@ tmRender();
 function restGo(i,smooth=true){i=i?1:0;const tr=$("restTrack");tr.classList.toggle("still",!smooth);tr.style.setProperty("--i",i);tr.scrollLeft=0;
   tr.querySelectorAll(".rest-slide").forEach((s,k)=>{s.inert=k!==i;s.setAttribute("aria-hidden",k!==i)});
   const u=data.ui||(data.ui={});if(u.restSlide!==i){u.restSlide=i;saveUI()}}
-function restMark(i){document.querySelectorAll(".rest-tabs button").forEach(b=>b.setAttribute("aria-selected",+b.dataset.go===i))}
+function restMark(i){document.querySelectorAll(".rest-tabs button").forEach(b=>{const on=+b.dataset.go===i;b.setAttribute("aria-selected",on);b.tabIndex=on?0:-1})}
+// v43 (accessibilité) : flèches gauche / droite entre Chrono et Minuteur, comme des onglets
+document.querySelector(".rest-tabs").addEventListener("keydown",e=>{if(e.key!=="ArrowLeft"&&e.key!=="ArrowRight")return;e.preventDefault();const i=e.key==="ArrowRight"?1:0;restGo(i);restMark(i);const t=document.querySelector(`.rest-tabs [data-go="${i}"]`);if(t)t.focus()});
 document.querySelector(".rest-tabs").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(!b)return;restGo(+b.dataset.go);restMark(+b.dataset.go)});
 $("restTrack").addEventListener("scroll",()=>{if($("restTrack").scrollLeft)$("restTrack").scrollLeft=0}); // jamais de décalage (focus clavier, ancien Safari)
 // revenir sur le dernier choisi
@@ -2329,13 +2339,17 @@ function parseSpot(v){
   if(!m)m=v.match(/^spotify:(playlist|album|track|artist|show|episode):([A-Za-z0-9]+)$/);
   return m?`${m[1]}/${m[2]}`:null;
 }
+// v43 (RGPD / cookies) : le lecteur Spotify est un contenu tiers (Spotify reçoit l'adresse IP et peut déposer ses cookies).
+// Il n'est chargé qu'après un accord donné sur cet appareil (data.ui.spotOk), retirable à tout moment.
 function renderSpotify(){
   const ref=(data.prefs&&data.prefs.spotify)||SPOT_DEFAULT;
+  $("spotOpen").href=`https://open.spotify.com/${ref}`;$("spotName").textContent=ref===SPOT_DEFAULT?"Playlist par défaut : Deep Focus":"Ta musique";
+  if(!data.ui.spotOk){spotShown=null;$("spotEmbed").innerHTML=`<div class="spot-gate"><p class="small">${L("Le lecteur est fourni par Spotify. En le chargeant, Spotify reçoit ton adresse IP et peut déposer ses propres cookies sur cet appareil.")} <button type="button" class="linkbtn" data-openlegal="cookies">${L("En savoir plus")}</button></p><button type="button" class="btn" data-spotok="1">${L("Charger le lecteur Spotify")}</button></div>`;return}
   if(spotShown===ref)return;spotShown=ref;
-  $("spotEmbed").innerHTML=`<iframe title="Lecteur Spotify" src="https://open.spotify.com/embed/${ref}?utm_source=generator" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
-  $("spotOpen").href=`https://open.spotify.com/${ref}`;
-  $("spotName").textContent=ref===SPOT_DEFAULT?"Playlist par défaut : Deep Focus":"Ta musique";
+  $("spotEmbed").innerHTML=`<div class="small spot-off"><button type="button" class="linkbtn" data-spotno="1">${L("Ne plus charger Spotify sur cet appareil")}</button></div><iframe title="Lecteur Spotify" src="https://open.spotify.com/embed/${ref}?utm_source=generator" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
 }
+$("spotEmbed").addEventListener("click",e=>{if(e.target.closest("[data-spotok]")){data.ui.spotOk=Date.now();saveUI();renderSpotify()}
+  else if(e.target.closest("[data-spotno]")){delete data.ui.spotOk;saveUI();renderSpotify();toast("Spotify n'est plus chargé")}});
 $("spotForm").addEventListener("submit",e=>{
   e.preventDefault();const v=$("spotIn").value.trim();
   if(!v){data.prefs.spotify=null;save();spotShown=null;renderSpotify();toast("Playlist par défaut");return}
@@ -2345,7 +2359,7 @@ $("spotForm").addEventListener("submit",e=>{
 });
 
 /* ---------- documents (PDF) ---------- */
-const PDFJS="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+const PDFJS="lib/pdfjs/"; // v43 : pdf.js 3.11.174 hébergé sur le site (vérifié avec les empreintes officielles de cdnjs), plus d'appel à un tiers
 const DOC_MAX=50*1024*1024;
 const docsArr=()=>data.docs||(data.docs=[]);
 let docQ="",docStoreMsg="",docBusy=new Set();
@@ -4270,7 +4284,7 @@ function renderGraph(){
   if(!$("grMacros"))return;applySoon();
   grRange=data.ui.grRange||7;document.querySelectorAll("#grRange button").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.range===grRange));
   const days=grDays(grRange),D=grData(days),n=NU(),pl=n.plan||{};
-  $("grMacroLeg").innerHTML=MAC.map(([k,l,v])=>`<span><i style="--c:var(${v})"></i>${L(l)}${pl[k]?` <span style="opacity:.8">(${L("objectif")} ${pl[k]} g)</span>`:""}</span>`).join("");
+  $("grMacroLeg").innerHTML=MAC.map(([k,l,v])=>`<span><i style="--c:var(${v})"></i>${L(l)}${pl[k]?` <span>(${L("objectif")} ${pl[k]} g)</span>`:""}</span>`).join("");
   lineChart($("grMacros"),days,MAC.map(([k,l,v])=>({label:l,c:v,vals:D.map(d=>d.has?r1(d[k]):null)})),{zero:true,unit:" g",aria:L("Macros par jour")});
   const tw=n.profile&&n.profile.target;$("grWeightSub").textContent=tw?`${L("en kg")} · ${L("objectif")} ${fmtN(tw)} kg`:L("en kg");
   lineChart($("grWeight"),days,[{label:"Poids",c:"--m-p",vals:D.map(d=>d.kg)}],{dots:true,unit:" kg",ref:tw?{v:tw,label:`${L("Objectif")} ${fmtN(tw)} kg`}:null,empty:"Entre ton poids ci-dessus pour suivre son évolution.",aria:L("Poids")});

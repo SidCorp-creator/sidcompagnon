@@ -52,7 +52,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
 
     // --- v42 : Sid'home : les 3 apps en logos, pas de barre du bas ; chaque app a sa barre et un retour à Sid'home
     if(await pg.isVisible("nav"))err("barre du bas affichée sur Sid'home");
-    const apps=await pg.$$eval("#homeBody [data-gapp]",x=>x.map(e=>e.dataset.gapp).join(","));
+    const apps=await pg.$$eval("#homeBody .home-apps [data-gapp]",x=>x.map(e=>e.dataset.gapp).join(","));
     if(apps!=="orga,sport,perso")err("logos des 3 apps absents de Sid'home : "+apps);
     await shot(pg,scheme+"-03-aujourdhui");
     await pg.click("#homeAdd");if(!(await pg.isVisible("#qaSheet")))err("le + de la page Aujourd'hui n'ouvre pas l'ajout rapide");await pg.click("#qaClose");
@@ -677,6 +677,18 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
       await pg.mouse.click(400,300);await pg.waitForTimeout(300);if(await pg.isVisible("#appIntro"))err("un clic ne passe pas l'animation")}
     if(await pg.evaluate(()=>data.ui.view)!=="muscu")err("sid'fit ne s'ouvre pas après l'animation");
     await shot(pg,"v43-"+nm+"-muscu");await ctx.close()}
+  // --- v43 lot 3 : Aujourd'hui = une section par app (nom, couleur, « Ouvrir »), dossiers récents dans sid'note
+  {const ctx=await b.newContext({...devices["iPhone 13"]}),pg=await ctx.newPage(),err=m=>errs.push("v43 Aujourd'hui : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43home@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.evaluate(()=>{data.noteFolders=[{id:"fh1",name:"Cours",createdAt:new Date().toISOString()}];data.notes=[{id:"nh1",title:"Chapitre",body:"x",folder:"fh1",createdAt:new Date().toISOString(),upd:Date.now()}];save();show("home")});await pg.waitForTimeout(200);
+    const secs=await pg.$$eval("#homeBody .hm-sec",x=>x.map(e=>e.dataset.app).join(","));if(secs!=="agenda,fit,note")err("sections attendues agenda,fit,note : "+secs);
+    if((await pg.$$("#homeBody .hm-sec .hm-open")).length!==3)err("lien « Ouvrir » manquant");
+    const t=await pg.textContent("#homeBody");if(!t.includes("Dossiers récents")||t.includes("Notes récentes"))err("« Dossiers récents » attendu à la place des notes récentes");
+    await shot(pg,"v43-aujourdhui");
+    await pg.click('#homeBody [data-folder-open="fh1"]');await pg.waitForTimeout(250);if(await pg.evaluate(()=>data.ui.view+"/"+noteDir)!=="notes/fh1")err("le dossier récent ne s'ouvre pas");
+    await pg.evaluate(()=>show("home"));await pg.click('#homeBody .hm-sec[data-app="fit"] .hm-open');await pg.waitForTimeout(250);if(await pg.evaluate(()=>appOf(data.ui.view))!=="fit")err("« Ouvrir » de sid'fit n'ouvre pas sid'fit");
+    await ctx.close()}
   {const ctx=await b.newContext({...devices["iPhone 13"],intro:true,reducedMotion:"reduce"}),pg=await ctx.newPage(),err=m=>errs.push("v43 animations réduites : "+m);
     await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43rm@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");

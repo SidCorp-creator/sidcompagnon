@@ -506,24 +506,43 @@ function renderHome(){if(!$("homeBody"))return;
   const next=T.filter(t=>t.time&&start(t)>now).sort((a,b)=>start(a)-start(b))[0]||T.filter(t=>!t.time&&t.date>t0).sort((a,b)=>a.date.localeCompare(b.date))[0];
   // v42 : les 3 applications ; toucher un logo ouvre l'app (sa dernière fonction)
   let h=`<div class="home-apps">${APP_GROUPS.filter(g=>groupTabs(g).length).map(g=>`<button type="button" class="home-app" data-gapp="${g.k}">${LOGO(g.app,"home-applogo")}<span>${esc(g.label)}</span></button>`).join("")}</div>`;
-  if(next){const s=start(next),diff=s-now,same=next.date===t0,tm=parse(next.date);tm.setDate(tm.getDate()-1);
-    const when=next.time&&same?inCount(diff):next.time&&iso(tm)===t0?`${L("demain")} · ${next.time}`:`${DOW[s.getDay()]} ${s.getDate()} ${MO[s.getMonth()]}${next.time?" · "+next.time:""}`;
-    h+=`<button type="button" class="card hm-next" data-go="plan"><span class="eyebrow">${L("Prochain")} · ${esc(when)}</span><b class="notr">${esc(next.title)}</b><span class="small muted">${next.time?hrs(next):""}${next.loc?` · <span class="notr">${esc(next.loc)}</span>`:next.cat?` · ${esc(next.cat)}`:""}</span></button>`}
-  const tiles=[];
-  if(vis.includes("todo")){const n=data.todos.filter(t=>!t.done&&!t.paused).length;const d=dayTodos(t0).filter(t=>!t.done).length;tiles.push(["todo",L("Tâches"),String(d),L(d>1?"pour aujourd'hui":"pour aujourd'hui")])}
-  if(vis.includes("nutri")&&nutriAllowed()&&NU().plan&&NU().plan.kcal){const l=Math.round(dayTarget(t0).kcal-sumOf(dayLog(t0)).kcal);tiles.push(["nutri",L("Nutrition"),fmtFull(Math.abs(l)),L(l>=0?"kcal restantes":"kcal en trop")])}
-  if(vis.includes("plan")){const e7=new Date(today());e7.setDate(e7.getDate()+6);const k7=iso(e7);const w=T.filter(t=>t.date<=k7&&(t.end||t.date)>=t0).length;tiles.push(["plan",L("Cette semaine"),String(w),L(w>1?"activités":"activité")])}
-  if(tiles.length)h+=`<div class="hm-tiles" style="grid-template-columns:repeat(${tiles.length},minmax(0,1fr))">${tiles.map(([k,l,v,s])=>`<button type="button" class="card hm-tile" data-go="${k}"><span class="small muted">${l}</span><b>${v}</b><span class="small muted">${s}</span></button>`).join("")}</div>`;
   if(!isTrial()&&!data.prefs.aiOk&&!data.ui.aiCardOff)h+=`<div class="card ai-card hm-ai"><div class="grow"><b>${L("Nouveau : branche Claude")}</b><div class="small muted">${L("Claude calcule tes repas, crée tes menus et note tes tâches directement dans Sid'home.")}</div></div><div class="ai-card-b"><button type="button" class="btn" data-aiwiz="1">${L("Brancher")}</button><button type="button" class="x" data-aioff="1" aria-label="${L("Masquer")}">×</button></div></div>`;
-  if(vis.includes("plan")){const day=allT().filter(t=>onDay(t,t0)).sort((a,b)=>sk(a).localeCompare(sk(b)));
-    h+=`<h2>${L("Aujourd'hui")}</h2><div class="card hm-list">${day.length?day.map(t=>`<button type="button" class="hm-row ${t.status==="fait"||t.canc?"is-done":""}" data-go="plan"><span class="hm-time">${t.time||L("Journée")}</span><span class="grow notr">${esc(t.title)}</span><span class="dot" style="background:var(${colorOf(t)})"></span></button>`).join(""):`<div class="empty">${L("Rien de prévu aujourd'hui.")}</div>`}</div>`}
-  if(vis.includes("todo")){const td=dayTodos(t0),un=data.todos.filter(t=>!t.done&&!t.paused&&!t.day);
-    const row=t=>`<div class="hm-row hm-trow ${t.done?"is-done":""}"><button type="button" class="hm-chk" data-htg="${t.id}" aria-label="${L(t.done?"Remettre à faire":"Terminer")}">${t.done?CHECK:""}</button><button type="button" class="grow notr hm-tt" data-todo-open="${t.id}">${esc(t.title)}${tLate(t)?` <span class="tchip late">↻ ${L("reportée")}</span>`:""}</button></div>`;
-    h+=`<h2>${L("Tâches du jour")}</h2><div class="card hm-list">${td.length?td.map(row).join(""):`<div class="empty">${L(un.length?"Aucune tâche prévue aujourd'hui.":"Aucune tâche prévue aujourd'hui.")}</div>`}`+
-      (un.length?`<div class="hm-plan"><span class="small muted">${un.length} ${L(un.length>1?"tâches à planifier":"tâche à planifier")}</span>${un.slice(0,3).map(t=>`<div class="hm-row"><span class="grow notr">${esc(t.title)}</span><button type="button" class="mini" data-hplan="${t.id}">${L("Aujourd'hui")}</button></div>`).join("")}</div>`:"")+`</div>`}
-  if(vis.includes("notes")){const ns=NT().filter(n=>!n.secret).sort((a,b)=>(b.upd||0)-(a.upd||0)).slice(0,2);
-    if(ns.length)h+=`<h2>${L("Notes récentes")}</h2><div class="card hm-list">${ns.map(n=>{const t=(n.title||"").trim()||String(n.body||"").trim().split("\n")[0]||L("Nouvelle note");return `<button type="button" class="hm-row" data-note-open="${n.id}"><span class="grow notr">${esc(t)}</span><span class="small muted">${fmtWhen(n.upd||Date.parse(n.createdAt))}</span></button>`}).join("")}</div>`}
-  if(!/hm-|<h2/.test(h))h+=`<div class="card"><div class="empty">${L("Touche « + » en haut pour ajouter ta première activité.")}</div></div>`;
+  // v43 : un résumé par app, chacun dans sa section (nom, couleur, lien « Ouvrir »)
+  const G=Object.fromEntries(APP_GROUPS.map(g=>[g.app,g]));
+  const sec=(app,sum,body)=>{const g=G[app];if(!g||!groupTabs(g).length)return"";
+    return `<section class="hm-sec" data-app="${app}" aria-labelledby="hs-${app}"><div class="hm-sec-h"><span class="hm-sec-logo">${LOGO(app)}</span><span class="grow"><h2 id="hs-${app}">${esc(g.label)}</h2><span class="small muted">${sum}</span></span><button type="button" class="hm-open" data-gapp="${g.k}">${L("Ouvrir")}<span aria-hidden="true"> ›</span></button></div>${body}</section>`};
+  // sid'agenda : prochain rendez-vous, la journée, les tâches du jour
+  {let b="",n1=0,n2=0;
+    if(next){const s=start(next),diff=s-now,same=next.date===t0,tm=parse(next.date);tm.setDate(tm.getDate()-1);
+      const when=next.time&&same?inCount(diff):next.time&&iso(tm)===t0?`${L("demain")} · ${next.time}`:`${DOW[s.getDay()]} ${s.getDate()} ${MO[s.getMonth()]}${next.time?" · "+next.time:""}`;
+      b+=`<button type="button" class="hm-next" data-go="plan"><span class="eyebrow">${L("Prochain")} · ${esc(when)}</span><b class="notr">${esc(next.title)}</b><span class="small muted">${next.time?hrs(next):""}${next.loc?` · <span class="notr">${esc(next.loc)}</span>`:next.cat?` · ${esc(next.cat)}`:""}</span></button>`}
+    if(vis.includes("plan")){const day=allT().filter(t=>onDay(t,t0)).sort((a,b)=>sk(a).localeCompare(sk(b)));n1=day.filter(t=>t.status!=="fait"&&!t.canc).length;
+      b+=`<h3 class="hm-h">${L("Aujourd'hui")}</h3><div class="hm-list">${day.length?day.map(t=>`<button type="button" class="hm-row ${t.status==="fait"||t.canc?"is-done":""}" data-go="plan"><span class="hm-time">${t.time||L("Journée")}</span><span class="grow notr">${esc(t.title)}</span><span class="dot" style="background:var(${colorOf(t)})"></span></button>`).join(""):`<div class="empty">${L("Rien de prévu aujourd'hui.")}</div>`}</div>`}
+    if(vis.includes("todo")){const td=dayTodos(t0),un=data.todos.filter(t=>!t.done&&!t.paused&&!t.day);n2=td.filter(t=>!t.done).length;
+      const row=t=>`<div class="hm-row hm-trow ${t.done?"is-done":""}"><button type="button" class="hm-chk" data-htg="${t.id}" aria-label="${L(t.done?"Remettre à faire":"Terminer")}">${t.done?CHECK:""}</button><button type="button" class="grow notr hm-tt" data-todo-open="${t.id}">${esc(t.title)}${tLate(t)?` <span class="tchip late">↻ ${L("reportée")}</span>`:""}</button></div>`;
+      b+=`<h3 class="hm-h">${L("Tâches du jour")}</h3><div class="hm-list">${td.length?td.map(row).join(""):`<div class="empty">${L("Aucune tâche prévue aujourd'hui.")}</div>`}`+
+        (un.length?`<div class="hm-plan"><span class="small muted">${un.length} ${L(un.length>1?"tâches à planifier":"tâche à planifier")}</span>${un.slice(0,3).map(t=>`<div class="hm-row"><span class="grow notr">${esc(t.title)}</span><button type="button" class="mini" data-hplan="${t.id}">${L("Aujourd'hui")}</button></div>`).join("")}</div>`:"")+`</div>`}
+    h+=sec("agenda",`${n1} ${L(n1>1?"activités":"activité")} · ${n2} ${L(n2>1?"tâches":"tâche")} ${L("aujourd'hui")}`,b)}
+  // sid'fit : calories du jour, poids, séance
+  {let b="",sum=[];const rows=[];
+    if(vis.includes("nutri")&&nutriAllowed()&&NU().plan&&NU().plan.kcal){const tg=dayTarget(t0).kcal,eat=sumOf(dayLog(t0)).kcal,l=Math.round(tg-eat);
+      rows.push(["nutri",L("Nutrition"),`${fmtFull(Math.round(eat))} / ${fmtFull(tg)} kcal`,L(l>=0?`${fmtFull(l)} kcal restantes`:`${fmtFull(-l)} kcal en trop`)]);sum.push(`${fmtFull(Math.abs(l))} ${L(l>=0?"kcal restantes":"kcal en trop")}`)}
+    else if(vis.includes("nutri")&&nutriAllowed())rows.push(["nutri",L("Nutrition"),"—",L("Crée ton profil pour suivre tes calories")]);
+    if(vis.includes("nutri")){const w=(NU().weights||[]).slice().sort((a,b)=>b.day.localeCompare(a.day))[0];if(w)rows.push(["graph",L("Poids"),`${String(w.kg).replace(".",LANG==="en"?".":",")} kg`,fmtDay(w.day)])}
+    if(vis.includes("muscu")){const M=data.muscu||{},pl=M.plan&&!M.plan.deleted&&M.plan.days&&M.plan.days.length?M.plan:null,lg=(M.log||[]).slice().sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+      const wk=lg.filter(x=>x.date&&x.date>=iso(new Date(Date.now()-6*864e5))).length+(M.sessions||[]).filter(x=>x.date&&x.date>=iso(new Date(Date.now()-6*864e5))).length;
+      if(pl){const li=lg[0]?pl.days.findIndex(d=>d.id===lg[0].day):-1,nd=pl.days[(li+1)%pl.days.length];rows.push(["muscu",L("Prochaine séance"),nd.name,`${nd.ex.length} ${L(nd.ex.length>1?"exercices":"exercice")}`])}
+      else rows.push(["muscu",L("Musculation"),`${wk}`,L(wk>1?"séances ces 7 derniers jours":"séance ces 7 derniers jours")]);
+      sum.push(`${wk} ${L(wk>1?"séances cette semaine":"séance cette semaine")}`)}
+    b=rows.length?`<div class="hm-list">${rows.map(([k,l,v,d])=>`<button type="button" class="hm-row hm-kv" data-go="${k}"><span class="hm-k">${l}</span><span class="grow"><b class="notr">${esc(v)}</b><span class="small muted"> ${esc(d)}</span></span></button>`).join("")}</div>`:"";
+    h+=sec("fit",sum.join(" · ")||L("Musculation, nutrition et graphiques"),b)}
+  // sid'note : les dossiers récents (v43, à la place des notes récentes)
+  if(vis.includes("notes")||vis.includes("docs")||vis.includes("pwd")){let b="";
+    if(vis.includes("notes")){const last={};NT().forEach(n=>{if(!n.folder||!nfOf(n.folder))return;nfPath(n.folder).forEach(f=>{last[f.id]=Math.max(last[f.id]||0,n.upd||Date.parse(n.createdAt)||0)})});
+      const fs=NF().map(f=>({f,t:last[f.id]||Date.parse(f.createdAt)||0})).sort((a,b)=>b.t-a.t).slice(0,4);
+      b+=`<h3 class="hm-h">${L("Dossiers récents")}</h3><div class="hm-list">${fs.length?fs.map(({f,t})=>`<button type="button" class="hm-row" data-folder-open="${f.id}"><span class="hm-fic">${IC("folder")}</span><span class="grow notr">${esc(nfPath(f.id).map(x=>x.name).join(" › "))}</span><span class="small muted">${nfCount(f.id)} · ${t?fmtWhen(t):""}</span></button>`).join(""):`<div class="empty">${L("Aucun dossier pour l'instant. Crée-en un dans sid'note pour ranger tes notes.")}</div>`}</div>`}
+    const nN=NT().length,nD=(data.docs||[]).length;
+    h+=sec("note",`${nN} ${L(nN>1?"notes":"note")} · ${NF().length} ${L(NF().length>1?"dossiers":"dossier")}${vis.includes("docs")?` · ${nD} ${L(nD>1?"documents":"document")}`:""}`,b)}
   $("homeBody").innerHTML=h}
 $("homeBody").addEventListener("click",e=>{
   const ga=e.target.closest("[data-gapp]");if(ga){openGroup(ga.dataset.gapp);return}
@@ -531,6 +550,7 @@ $("homeBody").addEventListener("click",e=>{
   const hg=e.target.closest("[data-htg]");if(hg){const t=data.todos.find(x=>x.id===hg.dataset.htg);if(t){todoToggle(t);renderHome()}return}
   const hp=e.target.closest("[data-hplan]");if(hp){const t=data.todos.find(x=>x.id===hp.dataset.hplan);if(t){t.day=iso(today());save();renderTodos();renderHome();toast("Prévue aujourd'hui")}return}
   const n=e.target.closest("[data-note-open]");if(n){show("notes");openNote(n.dataset.noteOpen);return}
+  const fo=e.target.closest("[data-folder-open]");if(fo){show("notes");noteDir=fo.dataset.folderOpen;renderNotes();window.scrollTo(0,0);return}
   const td=e.target.closest("[data-todo-open]");if(td){goToTodo(td.dataset.todoOpen);return}const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
 $("homeAvatar").addEventListener("click",()=>show("more"));
 $("homeAdd").addEventListener("click",openQuickAdd);

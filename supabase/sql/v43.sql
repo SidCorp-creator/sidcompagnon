@@ -16,12 +16,7 @@ language sql security definer set search_path = public as $$
 $$;
 revoke all on function public.sidnote_daily_backup() from public, anon, authenticated;
 
--- 2) Copies faites avant la v42 (schéma « sauvegarde ») : déjà inaccessibles depuis l'app (aucun droit pour anon / authenticated),
---    on active quand même la sécurité par ligne, par précaution.
-alter table sauvegarde.user_data_v41 enable row level security;
-alter table sauvegarde.users_v41 enable row level security;
-alter table sauvegarde.mcp_tokens_v41 enable row level security;
-
--- 3) Quand tu es sûr que la v42 / v43 n'a rien perdu (comparer avec la requête de CLAUDE.md), supprime ces copies :
---    elles contiennent les e-mails et les données de tout le monde, et n'ont plus d'utilité ensuite.
--- drop schema sauvegarde cascade;
+-- 2) Copies faites avant la v42 (schéma « sauvegarde ») : vérifié par Claude le 22 oct. 2026, rien n'a été perdu
+--    (les seuls éléments absents viennent du compte test, remis à zéro à chaque connexion, ou d'une suppression volontaire).
+--    La sécurité par ligne y est déjà activée. On supprime ces copies : elles contiennent les e-mails et les données de tout le monde.
+drop schema if exists sauvegarde cascade;

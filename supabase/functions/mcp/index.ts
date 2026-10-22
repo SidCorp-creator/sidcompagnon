@@ -1,6 +1,7 @@
 // Sid'note v38-v41 : fonction "mcp" : connecteur Sid'note pour l'IA de chacun (Claude, ChatGPT, Le Chat…) (protocole MCP, transport « Streamable HTTP », réponses JSON).
 // Adresse : https://<projet>.supabase.co/functions/v1/mcp/<clé>  — la clé est personnelle (créée dans Réglages > Mon IA),
 // seule son empreinte SHA-256 est gardée (table mcp_tokens, supabase/sql/mcp.sql). Verify JWT : OFF.
+// v10 (Sid'home v44) : séances et programmes au même format, liste d'exercices lue dans site/exercices.js.
 // Accès : agenda (v41 : avec les rappels), tâches, notes (pas les notes secrètes), nutrition (v39 : c'est l'IA de la personne qui calcule), musculation (v41), photo d'assiette (v43, outil photo_repas : lue puis effacée). Plus de listes partagées (retirées en v41). Jamais les coffres (mots de passe, documents).
 // Écriture « à condition » sur user_data (comme push() dans l'app) : si l'app a écrit entre-temps, on relit et on recommence.
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -381,13 +382,13 @@ const TOOLS = [
   },
   {
     name: "muscu_programme",
-    description: "Programme de musculation de la personne (profil : niveau, objectif, jours, durée, matériel, zones à ménager, muscles prioritaires ; séances et exercices) et ses dernières séances faites (charges et répétitions). À lire avant de proposer ou d'ajuster un programme.",
+    description: "Programme de musculation de la personne (profil : niveau, objectif, jours, durée, matériel, zones à ménager, muscles prioritaires ; séances et exercices), ses autres séances, la liste des exercices autorisés (avec les prioritaires) et ses dernières séances faites (charges et répétitions). À lire avant de proposer ou d'ajuster un programme.",
     inputSchema: { type: "object", properties: {} },
     annotations: { readOnlyHint: true },
   },
   {
     name: "enregistrer_programme",
-    description: "Enregistre un programme de musculation que TU as composé ou ajusté (remplace l'actuel). Visible dans Sid'note (Santé → Musculation), avec mode séance et progression des charges. Adapte-le au profil lu avec muscu_programme (exercices imposés et exclus compris). Dans une séance, chaque exercice doit apporter quelque chose de différent : jamais deux exercices du même schéma de mouvement pour le même muscle (ex. pecs : un développé horizontal, un incliné, un écarté). Repos : 3 min pour les gros exercices polyarticulaires (jusqu'à 4 min pour les plus lourds), au moins 2 min pour l'isolation. Respecte les remarques de la personne lues avec muscu_programme (ex. abdos tous les jours, pas deux séances jambes) ; pour un ajustement, garde ce qui va bien et ne change que ce qui est demandé.",
+    description: "Enregistre un programme de musculation que TU as composé ou ajusté (remplace l'actuel). Visible dans Sid'note (Santé → Musculation), avec mode séance et progression des charges. Adapte-le au profil lu avec muscu_programme (exercices imposés et exclus compris). N'utilise QUE les exercices autorisés donnés par muscu_programme, avec leur nom exact, en privilégiant ceux marqués (P) dans chaque groupe musculaire. Dans une séance, chaque exercice doit apporter quelque chose de différent : jamais deux exercices du même schéma de mouvement pour le même muscle (ex. pecs : un développé horizontal, un incliné, un écarté). Repos : 3 min pour les gros exercices polyarticulaires (jusqu'à 4 min pour les plus lourds), au moins 2 min pour l'isolation. Respecte les remarques de la personne lues avec muscu_programme (ex. abdos tous les jours, pas deux séances jambes) ; pour un ajustement, garde ce qui va bien et ne change que ce qui est demandé.",
     inputSchema: {
       type: "object", required: ["days"],
       properties: {
@@ -424,7 +425,23 @@ const leadsOf = (v: unknown) => {
   return a.length ? [...new Set([...a, 1440])].sort((x, y) => x - y).slice(0, 6) : null;
 };
 const leadTxt = (m: number) => m === 1440 ? "la veille" : m % 1440 === 0 ? `${m / 1440} jours avant` : m >= 60 ? `${Math.round(m / 6) / 10} h avant`.replace(".", ",") : `${m} min avant`;
-const MU = (d: Data) => { const m = d.muscu || (d.muscu = { sessions: [] }); if (!Array.isArray(m.log)) m.log = []; return m; };
+const MU = (d: Data) => { const m = d.muscu || (d.muscu = { sessions: [] }); if (!Array.isArray(m.log)) m.log = []; if (!Array.isArray(m.sessions)) m.sessions = []; return m; };
+// v10 (Sid'home v44) : les séances libres et les programmes ont le même format (data.muscu.sessions) ; le programme suivi
+// (data.muscu.plan = {id, v:2, profile, …}) regroupe les séances dont grp.id = plan.id. Ancien format (plan.days) encore lu.
+const planSe = (m: Data, p: Data) => p && Array.isArray(p.days) ? p.days.map((d: Data) => ({ id: d.id, name: d.name, exercises: (d.ex || []).map((e: Data) => ({ ...e, sets: Array.from({ length: +e.sets || 3 }, () => ({})) })) }))
+  : m.sessions.filter((s: Data) => s && s.grp && p && s.grp.id === p.id).sort((a: Data, b: Data) => (a.ord || 0) - (b.ord || 0));
+// liste des exercices proposés : site/exercices.js (seule source), relue au plus toutes les 10 minutes
+let exoCache: { at: number; txt: string } = { at: 0, txt: "" };
+async function exoList(): Promise<string> {
+  if (exoCache.txt && Date.now() - exoCache.at < 6e5) return exoCache.txt;
+  try {
+    const r = await fetch("https://sidnote.netlify.app/exercices.js", { signal: AbortSignal.timeout(5000) });
+    const t = await r.text(), j = JSON.parse(t.slice(t.indexOf("{"), t.lastIndexOf("}") + 1));
+    const txt = (j.groupes || []).map((g: Data) => `${g.nom} : ${(g.exercices || []).map((x: Data) => x.nom + (x.p ? " (P)" : "") + (x.note ? ` (${String(x.note).toLowerCase()})` : "")).join(", ")}`).join("\n");
+    if (txt) exoCache = { at: Date.now(), txt };
+  } catch { /* liste injoignable : on garde la dernière lue */ }
+  return exoCache.txt;
+}
 
 // v43 : photos d'assiette (bucket privé documents/<uid>/) : l'app dépose « repas-<ms>.jpg » dès la prise de vue, puis la renomme
 // « envoi-<ms>.jpg » quand la personne touche « Envoyer à Claude ». La photo envoyée est jointe (image) à nutrition_journee, outil que
@@ -696,7 +713,8 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
     }
     case "muscu_programme": {
       const { data } = await readData(user);
-      const m = MU(data), p = m.plan && !m.plan.deleted && Array.isArray(m.plan.days) ? m.plan : null, del = data.del || {};
+      const m = MU(data), del = data.del || {}, p0 = m.plan && !m.plan.deleted && (m.plan.v === 2 || Array.isArray(m.plan.days)) ? m.plan : null;
+      const ses = p0 ? planSe(m, p0).filter((s: Data) => !del[s.id]) : [], p = p0 && ses.length ? p0 : null;
       const G: Data = { muscle: "prendre du muscle", force: "gagner en force", gras: "perdre du gras", forme: "être en forme" }, LV: Data = { deb: "débutant", inter: "intermédiaire", conf: "confirmé" };
       const AV: Data = { shoulder: "épaules", back: "bas du dos", knee: "genoux" }, EQ: Data = { gym: "salle de sport", db: "haltères à la maison", bw: "poids du corps" };
       let out = "";
@@ -709,9 +727,13 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
         const rem = (Array.isArray(pr.remarks) ? pr.remarks : []).slice(-5);
         if (rem.length) out += `Remarques de la personne sur son programme (à respecter, la plus récente compte le plus) :\n` + rem.map((r: Data) => `- ${String(r.at || "").slice(0, 10)} : ${String(r.text || "").slice(0, 600)}`).join("\n") + "\n";
         else if (pr.notes) out += `Remarques de la personne : ${String(pr.notes).slice(0, 600)}\n`;
-        out += `Programme${p.src === "ia" ? " (ajusté par une IA)" : ""} :\n` + p.days.map((d: Data) => `## ${d.name}\n` + d.ex.map((e: Data) => `- ${e.name} : ${e.sets} × ${e.reps}, repos ${e.rest} s${e.rir ? `, RIR ${e.rir}` : ""}${e.note ? ` (${e.note})` : ""}`).join("\n")).join("\n") + "\n";
+        out += `Programme${p.src === "ia" ? " (ajusté par une IA)" : ""} :\n` + ses.map((d: Data) => `## ${d.name}\n` + (d.exercises || []).map((e: Data) => `- ${e.name} : ${(e.sets || []).length} séries${e.reps ? ` × ${e.reps}` : ""}, repos ${e.rest || 120} s${e.rir ? `, RIR ${e.rir}` : ""}${e.note ? ` (${e.note})` : ""}`).join("\n")).join("\n") + "\n";
       }
       const logs = m.log.filter((l: Data) => l && !del[l.id]).sort((x: Data, y: Data) => String(y.date || "").localeCompare(String(x.date || ""))).slice(0, 10);
+      const other = m.sessions.filter((s: Data) => s && !del[s.id] && !(p && s.grp && s.grp.id === p.id));
+      if (other.length) out += `Autres séances de la personne (libres ou importées) : ${other.slice(0, 15).map((s: Data) => s.name).join(", ")}.\n`;
+      const exo = await exoList();
+      if (exo) out += `Exercices autorisés pour un programme (n'utilise QUE ceux-ci, avec leur nom exact ; (P) = à privilégier en premier dans son groupe musculaire ; un autre exercice seulement si la personne le demande elle-même) :\n${exo}\n`;
       out += logs.length ? "Dernières séances :\n" + logs.map((l: Data) => `- ${l.date} ${l.name || ""}${l.min ? ` (${l.min} min)` : ""} : ` + (l.ex || []).map((e: Data) => `${e.name} ${(e.sets || []).map((s: Data) => `${s.reps || "?"}${s.kg ? `×${s.kg}kg` : ""}`).join(", ")}`).join(" ; ")).join("\n") : "Aucune séance notée.";
       return out;
     }
@@ -724,11 +746,18 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
       }));
       if (!days.length) throw new Error("Le programme est vide.");
       await writeData(user, (d) => {
-        const m = MU(d), old = m.plan && !m.plan.deleted ? m.plan.profile || {} : {};
+        const m = MU(d), op = m.plan && !m.plan.deleted ? m.plan : null, old = op ? op.profile || {} : {};
         const profile = { ...old, days: days.length };
         if (["muscle", "force", "gras", "forme"].includes(a.goal)) profile.goal = a.goal;
-        m.plan = { id: uid(), profile, days, at: new Date().toISOString(), upd: Date.now(), src: "ia" };
-        m.upd = Date.now();
+        // les séances de l'ancien programme suivi sont retirées (pierres tombales, comme dans l'app), les nouvelles prennent le format commun
+        const del = d.del || (d.del = {}), now = Date.now();
+        if (op) for (const s of m.sessions) if (s && s.grp && s.grp.id === op.id) del[s.id] = now;
+        if (op) m.sessions = m.sessions.filter((s: Data) => !(s && s.grp && s.grp.id === op.id));
+        const id = uid(), grp = { id, name: "Mon programme", src: "claude" };
+        days.forEach((dy: Data, i: number) => m.sessions.push({ id: dy.id, name: dy.name, grp, ord: i, upd: now,
+          exercises: dy.ex.map((e: Data) => ({ id: uid(), name: e.name, pat: "", reps: e.reps, rest: e.rest, rir: e.rir, note: e.note, sets: Array.from({ length: e.sets }, () => ({ kg: "", reps: "" })) })) }));
+        m.plan = { id, v: 2, profile, at: new Date().toISOString(), upd: now, src: "ia" };
+        m.upd = now;
       });
       return `Programme enregistré dans Sid'note (Santé → Musculation) : ${days.map((d: Data) => d.name).join(", ")}.`;
     }
@@ -738,8 +767,8 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
       if (!ex.length) throw new Error("Il faut au moins un exercice.");
       const date = isDate(a.date) ? a.date : today();
       await writeData(user, (d) => {
-        const m = MU(d), p = m.plan && !m.plan.deleted && Array.isArray(m.plan.days) ? m.plan : null;
-        const day = p && p.days.find((x: Data) => norm(x.name) === norm(a.name));
+        const m = MU(d), p = m.plan && !m.plan.deleted ? m.plan : null;
+        const day = (p ? planSe(m, p) : []).concat(m.sessions).find((x: Data) => x && norm(x.name) === norm(a.name));
         m.log.push({ id: uid(), date, day: day ? day.id : "", name: String(a.name || "Séance").slice(0, 80), min: r0(a.minutes) || undefined, ex, upd: Date.now() });
         m.upd = Date.now();
       });
@@ -771,7 +800,7 @@ Deno.serve(async (req) => {
       return rpcOk(id, {
         protocolVersion: params?.protocolVersion || "2025-06-18",
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "sidnote", title: "Sid'note", version: "1.3.0" },
+        serverInfo: { name: "sidnote", title: "Sid'note", version: "1.4.0" },
         instructions: "Sid'note est l'application d'organisation de la personne (agenda, cours, tâches, notes, nutrition, musculation). Dates en AAAA-MM-JJ, heure de Bruxelles. Quand la personne demande un rappel pour une activité (ex. 1 h avant), passe-le dans reminders (en minutes) avec ajouter_activite ou modifier_activite : c'est une notification sur son téléphone. Quand la personne dit ce qu'elle a mangé ou envoie la photo de son assiette (si elle parle d'une photo envoyée depuis Sid'note, elle est jointe à nutrition_journee, ou lis-la avec photo_repas), estime toi-même calories et macros puis note-le avec noter_repas (sans redemander, sauf doute sur la quantité). Pour un menu, lis d'abord nutrition_journee puis enregistre-le avec enregistrer_menu. Après un bilan ou un commentaire nutrition (jour ou semaine), enregistre-le avec enregistrer_commentaire pour qu'il s'affiche dans l'app. Quand la personne parle d'une chose à faire un jour précis, ajoute la tâche avec sa date (ajouter_tache) : elle apparaîtra ce jour-là dans son agenda et passera au lendemain si elle n'est pas faite. Pour une note, propose un dossier (folder) si c'est utile. Pour la musculation, lis muscu_programme avant d'ajuster, puis enregistre avec enregistrer_programme ; une séance racontée se note avec noter_seance. Les mots de passe, documents et notes secrètes sont chiffrés et jamais accessibles.",
       });
     case "ping":

@@ -134,11 +134,9 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(!(await pg.evaluate(()=>document.documentElement.classList.contains("modal-open"))))err("le fond n'est pas figé sous l'ajout rapide");
     await shot(pg,scheme+"-fr-ajout-rapide");await pg.click("#qaClose");await pg.waitForTimeout(150);
     if(await pg.evaluate(()=>document.documentElement.classList.contains("modal-open")))err("le fond reste figé après fermeture");
-    // --- v29 : chrono de la musculation à sa place
-    await go("muscu");if(await pg.$eval("#rest",e=>getComputedStyle(e).position)!=="sticky")err("le chrono ne suit plus la séance");
-    await pg.evaluate(()=>{const sp=document.createElement("div");sp.id="spacer";sp.style.height="2000px";document.getElementById("v-muscu").appendChild(sp);window.scrollTo(0,600)});await pg.waitForTimeout(400);
-    if(!(await pg.$eval("#rest",e=>e.classList.contains("stuck"))))err("le chrono collé ne devient pas compact");
-    await shot(pg,scheme+"-fr-muscu-chrono-compact");await pg.evaluate(()=>{document.getElementById("spacer").remove();window.scrollTo(0,0)});
+    // --- v44 : plus de chrono ni de minuteur dans la musculation
+    await go("muscu");if(await pg.$("#rest")||await pg.$("#restTrack")||await pg.$("#tmSlide"))err("le chrono ou le minuteur est encore là");
+    await shot(pg,scheme+"-fr-muscu");
     // --- v29 : code des Documents dans la page, grand clavier
     await go("docs");await pg.waitForTimeout(300);
     if(await pg.isVisible("#pinSheet"))err("le code des Documents s'ouvre encore dans une fenêtre");
@@ -438,8 +436,8 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const cov=await pg.evaluate(()=>{const h=document.querySelector("#v-muscu h1"),r=h.getBoundingClientRect(),e=document.elementFromPoint(r.x+20,r.y+r.height*0.8);return e===h||h.contains(e)});
     if(!cov)err("le titre Musculation est recouvert");await shot(pg,"v36-musculation");
     // plus de glissement de côté
-    const ox=await pg.evaluate(()=>[getComputedStyle(document.getElementById("restTrack")).overflowX,getComputedStyle(document.body).overflowX,document.documentElement.scrollWidth<=innerWidth]);
-    if(ox[0]!=="hidden"||ox[2]!==true)err("on peut encore glisser de côté : "+ox);
+    const ox=await pg.evaluate(()=>document.documentElement.scrollWidth<=innerWidth);
+    if(!ox)err("on peut encore glisser de côté");
     // ancien réglage caché « page d'accueil » : l'app s'ouvre quand même sur Aujourd'hui
     await pg.evaluate(()=>{data.prefs.home="plan";delete data.prefs.homeV;save()});await pg.waitForTimeout(1500);await pg.reload();await pg.waitForTimeout(1200);
     if(await pg.evaluate(()=>data.ui.view)!=="home")err("l'app ne s'ouvre pas sur Aujourd'hui");
@@ -619,22 +617,25 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     for(const [k,v] of [["level","deb"],["goal","muscle"],["days","3"],["dur","60"],["equip","db"],["avoid","knee"]])await pg.click(`#coachForm [data-cf="${k}"] [data-v="${v}"]`);
     // v42 : exercices imposés / exclus, avec recherche
     await pg.fill('.cf-pick[data-cfx="must"] input',"marteau");await pg.waitForTimeout(100);await pg.click('.cf-pick[data-cfx="must"] [data-cfadd]');
-    await pg.fill('.cf-pick[data-cfx="never"] input',"rowing halt");await pg.waitForTimeout(100);await pg.click('.cf-pick[data-cfx="never"] [data-cfadd]');
+    await pg.fill('.cf-pick[data-cfx="never"] input',"rowing appui");await pg.waitForTimeout(100);await pg.click('.cf-pick[data-cfx="never"] [data-cfadd]');
     await shot(pg,"v41-coach-questions");await pg.click('#coachForm [data-cfgo="app"]');await pg.waitForTimeout(300);
-    const mn=await pg.evaluate(()=>{const a=PL().days.flatMap(d=>d.ex.map(e=>e.name));return[a.includes("Curl marteau"),a.includes("Rowing haltère un bras")]});
+    const mn=await pg.evaluate(()=>{const a=PLD().flatMap(d=>d.exercises.map(e=>e.name));return[a.includes("Curl marteau"),a.includes("Rowing avec appui")]});
     if(!mn[0])err("exercice imposé absent du programme");if(mn[1])err("exercice exclu présent dans le programme");
-    const dup=await pg.evaluate(()=>PL().days.some(d=>{const s=new Set();return d.ex.some(e=>{const x=EXN(e.name),k=x.m+":"+x.pat;if(s.has(k)||s.has(x.g))return true;s.add(k);s.add(x.g)})}));if(dup)err("doublon dans une séance");
-    if(await pg.evaluate(()=>PL().days.some(d=>d.ex.some(e=>e.rest<120))))err("repos trop court");
-    await pg.click('#coachBox .coach-day summary');await pg.click('#coachBox [data-corest]');await pg.waitForTimeout(150);await pg.click('#actList .act-it:has-text("4 min")');
-    if(await pg.evaluate(()=>PL().days[0].ex[0].rest)!==240)err("repos pas modifiable");
-    const pl=await pg.evaluate(()=>PL());
-    if(!pl||pl.days.length!==3)err("programme pas créé : "+JSON.stringify(pl&&pl.days.length));
-    else if(await pg.evaluate(()=>PL().days.some(d=>d.ex.some(e=>!EXN(e.name).eq.includes("d")))))err("exercice de salle avec des haltères seulement");
-    else if(pl.days.some(d=>d.ex.some(e=>/Squat goblet|Fentes|Leg extension/.test(e.name))))err("genoux pas ménagés");
+    const dup=await pg.evaluate(()=>PLD().some(d=>{const s=new Set();return d.exercises.some(e=>{const x=EXN(e.name),k=x.m+":"+x.pat;if(s.has(k)||s.has(x.g))return true;s.add(k);s.add(x.g)})}));if(dup)err("doublon dans une séance");
+    if(await pg.evaluate(()=>PLD().some(d=>d.exercises.some(e=>e.rest<120))))err("repos trop court");
+    // v44 : les séances du programme sont des cartes comme les autres (repos et séries modifiables sur la carte)
+    const d0=await pg.evaluate(()=>PLD()[0].id);
+    await pg.click(`#msList [data-ms="${d0}"] summary`);await pg.click(`#msList [data-ms="${d0}"] [data-msrest]`);await pg.waitForTimeout(150);await pg.click('#actList .act-it:has-text("4 min")');
+    if(await pg.evaluate(()=>PLD()[0].exercises[0].rest)!==240)err("repos pas modifiable");
+    const pl=await pg.evaluate(()=>PLD().map(d=>d.exercises.map(e=>e.name)));
+    if(pl.length!==3)err("programme pas créé : "+pl.length);
+    else if(await pg.evaluate(()=>PLD().some(d=>d.exercises.length<3||d.exercises.some(e=>!EXN(e.name)))))err("séance trop courte ou exercice hors de la liste");
+    else if(pl.some(d=>d.some(n=>/Presse à cuisses|Leg extension|Hack squat/.test(n))))err("genoux pas ménagés");
     await shot(pg,"v41-coach-programme");
-    // v43 : séries libres dans le programme (+ / −)
-    {const s0=await pg.evaluate(()=>PL().days[0].ex[0].sets);await pg.click(`#coachBox [data-coset="${pl.days[0].id}:0:1"]`);await pg.click(`#coachBox [data-coset="${pl.days[0].id}:0:1"]`);await pg.click(`#coachBox [data-coset="${pl.days[0].id}:0:-1"]`);
-      if(await pg.evaluate(()=>PL().days[0].ex[0].sets)!==s0+1)err("séries du programme pas modifiables")}
+    // v43 : séries libres (+ / −), sur la carte de la séance
+    {const s0=await pg.evaluate(()=>PLD()[0].exercises[0].sets.length),sel=`#msList [data-ms="${d0}"] [data-ex]:first-of-type`;
+      await pg.click(`${sel} [data-msset="1"]`);await pg.click(`${sel} [data-msset="1"]`);await pg.click(`${sel} [data-msset="-1"]`);
+      if(await pg.evaluate(()=>PLD()[0].exercises[0].sets.length)!==s0+1)err("séries du programme pas modifiables")}
     // v43 : remarque → ajustement par Claude (le message part dans son Claude, comme Nutrition)
     await pg.fill("#coRemark","remplace la 2e séance jambes par une séance haut du corps");await pg.click('#coachBox [data-coach="adjust"]');await pg.waitForTimeout(300);
     if(await pg.isVisible("#consentSheet")){await pg.click("#consentYes");await pg.waitForTimeout(300)}
@@ -643,7 +644,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await shot(pg,"v43-coach-ajuster");await pg.click("#aaClose");await pg.waitForTimeout(150);
     if(!(await pg.isVisible("#coachBox .coach-wait")))err("« demande envoyée à Claude » pas affiché");
     // le programme de Claude arrive (comme par le connecteur) : l'attente disparaît
-    await pg.evaluate(()=>{const o=PL();M().plan={id:"ia1",profile:o.profile,days:o.days.map(d=>({...d})),at:new Date().toISOString(),upd:Date.now(),src:"ia"};M().upd=Date.now();renderCoach()});
+    await pg.evaluate(()=>{const o=PL();PLD().forEach(s=>{s.grp={...s.grp,id:"ia1",src:"claude"};s.upd=Date.now()});M().plan={id:"ia1",v:2,profile:o.profile,at:new Date().toISOString(),upd:Date.now(),src:"ia"};M().upd=Date.now();renderMuscu()});
     if(await pg.isVisible("#coachBox .coach-wait"))err("l'attente reste après l'arrivée du programme de Claude");
     // séance : 2 séries faites, enregistrée, puis la charge monte
     await pg.click('#coachBox [data-coach="start"]');await pg.waitForTimeout(300);await shot(pg,"v41-seance");
@@ -657,7 +658,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const cur=await pg.evaluate(()=>{const el=document.activeElement;return [el.selectionStart,el.value.length]});if(cur[0]!==cur[1])err("curseur pas à la fin du nombre : "+cur);
     await pg.click("#woDone");await pg.waitForTimeout(300);
     const lg=await pg.evaluate(()=>ML().length);if(lg!==1)err("séance pas enregistrée");
-    const h=await pg.evaluate(n=>coachHint(PL().days[0].ex.find(e=>e.name===n)),nm);if(!(+h.kg>20))err("charge pas augmentée après tout réussi : "+JSON.stringify(h));
+    const h=await pg.evaluate(n=>coachHint(PLD().flatMap(d=>d.exercises).find(e=>e.name===n)),nm);if(!(+h.kg>20))err("charge pas augmentée après tout réussi : "+JSON.stringify(h));
     // notes : glisser une note puis un dossier dans un dossier
     await pg.evaluate(()=>{data.noteFolders=[{id:"fA",name:"Master 2",parent:null},{id:"fB",name:"Cours",parent:null}];data.notes=[{id:"n1",title:"Finance",body:"x",createdAt:new Date().toISOString(),upd:Date.now()}];save();show("notes");noteDir=null;renderNotes()});
     await pg.waitForTimeout(300);await shot(pg,"v41-notes-glisser");
@@ -771,7 +772,62 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>coachOpen());await pg.waitForTimeout(150);if(await pg.inputValue("#cfNotes")!==""||await pg.inputValue("#cfAvoidTxt")!=="")err("remarques du programme pré-remplies à la réouverture");
     if(!(await pg.evaluate(()=>PL().profile.remarks.some(r=>r.text==="abdos tous les jours"))))err("la remarque n'est plus gardée pour Claude");
     await ctx.close()}
-  // --- v43 : rien ne défile au-dessus de la barre d'une note ni du chrono collé (iPhone et ordinateur)
+  // --- v44 : séances et programmes au même format (migration, cartes, partage, import), liste d'exercices, conversations Claude fixes
+  for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1440,height:900}}]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v44 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v44"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    // ancien programme (plan.days) + séance libre : migrés sans rien perdre, mêmes cartes
+    const mg=await pg.evaluate(()=>{data.muscu={sessions:[{id:"s1",name:"Push libre",exercises:[{id:"e1",name:"Dips",sets:[{kg:"20",reps:"8"},{kg:"22,5",reps:"6"}]}]}],
+      plan:{id:"P1",profile:{level:"inter",goal:"muscle",days:2,dur:60,equip:"gym"},days:[{id:"d1",name:"Séance A",ex:[{name:"Squat barre",pat:"quads:squat",sets:4,reps:"6–10",rest:180,rir:"1–2"}]},{id:"d2",name:"Séance B",ex:[{name:"Tractions",pat:"back:vpull",sets:3,reps:"8–12",rest:120}]}],upd:1,src:"app"},
+      log:[{id:"l1",date:"2026-10-20",day:"d1",name:"Séance A",ex:[{name:"Squat barre",sets:[{kg:"80",reps:"10"}]}]}]};save();show("muscu");renderMuscu();
+      const m=data.muscu;return{days:!!m.plan.days,v:m.plan.v,ses:m.sessions.map(s=>s.name+":"+s.exercises.map(e=>e.sets.length+"/"+(e.reps||"")+"/"+(e.rest||"")).join(",")).join(" | "),next:coachNext()&&coachNext().id,cards:document.querySelectorAll("#msList .ms").length,kg:m.sessions[0].exercises[0].sets[1].kg}});
+    if(mg.days||mg.v!==2||mg.ses!=="Push libre:2// | Séance A:4/6–10/180 | Séance B:3/8–12/120"||mg.next!=="d2"||mg.cards!==3||mg.kg!=="22,5")err("migration : "+JSON.stringify(mg));
+    if(await pg.$("#rest"))err("chrono encore présent");
+    await pg.waitForFunction(()=>{const s=document.getElementById("splash");return !s||s.hidden||getComputedStyle(s).display==="none"||getComputedStyle(s).opacity==="0"},null,{timeout:6000}).catch(()=>{});await pg.waitForTimeout(300);
+    await pg.click('#msList [data-ms="d2"] summary');await pg.evaluate(()=>{const e=document.querySelector("#msList");window.scrollTo(0,e.getBoundingClientRect().top+scrollY-120)});await shot(pg,"v44-"+nm+"-seances");
+    // même carte, mêmes actions pour une séance libre et une séance de programme
+    const act=await pg.evaluate(()=>["s1","d1"].map(id=>{msOpenId=id;renderMuscu();return[...document.querySelectorAll(`#msList [data-ms="${id}"] .ms-actions button`)].map(b=>Object.keys(b.dataset).join()).join("+")}));
+    if(act[0]!==act[1])err("actions différentes : "+act);
+    // partage d'un programme puis import : même format ; texte de Claude accepté ; ancien texte accepté
+    const rt=await pg.evaluate(()=>{const t=shareTxt(PLD(),"Mon programme"),r=parseShared(t);return r&&{prog:r.prog,n:r.ses.length,ex:r.ses[0].exercises.map(e=>e.name+"/"+e.sets.length+"/"+e.reps+"/"+e.rest).join()}});
+    if(!rt||rt.prog!=="Mon programme"||rt.n!==2||rt.ex!=="Squat barre/4/6–10/180")err("partage → import d'un programme : "+JSON.stringify(rt));
+    const cl=await pg.evaluate(()=>{const r=parseShared("## Séance A — Haut du corps\n1. Développé couché haltères — 4 séries de 6 à 10 (repos 3 min)\n2. Pec deck : 3 x 12-15, repos 2 min\n\n## Séance B — Jambes\n- Leg curl assis : 3 séries × 10–12");return r&&r.ses.map(s=>s.name+"|"+s.exercises.map(e=>e.name+"/"+e.sets.length+"/"+(e.reps||"")+"/"+(e.rest||"")).join(";")).join(" || ")});
+    if(cl!=="Séance A — Haut du corps|Développé couché haltères/4/6–10/180;Pec deck/3/12–15/120 || Séance B — Jambes|Leg curl assis/3/10–12/")err("programme écrit par Claude mal lu : "+cl);
+    const old=await pg.evaluate(()=>{const r=parseShared("Séance « Push » (Sid'note)\n1. Développé couché : 4 séries\n2. Dips : 3 séries");return r&&!r.prog&&r.ses[0].name==="Push"&&r.ses[0].exercises.length===2});if(!old)err("ancien texte de séance plus importable");
+    await pg.click("#msImportOpen");await pg.fill("#msPaste",await pg.evaluate(()=>shareTxt(PLD(),"Programme de Léa")));await pg.click("#msImportBtn");await pg.waitForTimeout(200);
+    if(await pg.evaluate(()=>M().sessions.filter(s=>s.grp&&s.grp.name==="Programme de Léa").length)!==2)err("import d'un programme par l'écran d'import");
+    // suivre un programme importé : il devient le programme suivi
+    await pg.evaluate(()=>{const g=M().sessions.find(s=>s.grp&&s.grp.name==="Programme de Léa").grp.id;grpActions(g)});await pg.click('#actList .act-it:has-text("Suivre ce programme")');await pg.waitForTimeout(150);
+    if(!(await pg.evaluate(()=>PLD().length===2&&PLD()[0].grp.name==="Programme de Léa")))err("programme importé pas suivi");
+    // liste d'exercices : seule source des suggestions
+    const sg=await pg.evaluate(()=>{const names=new Set(EXDB.map(e=>e.n));const dl=[...$("exList").options].map(o=>o.value);
+      const box=document.querySelector('.cf-pick[data-cfx="must"]');box.querySelector("input").value="squat";cfSearch(box);const hits=[...box.querySelectorAll("[data-cfadd]")].map(b=>b.dataset.cfadd);
+      return{n:EXDB.length,dl:dl.length===EXDB.length&&dl.every(n=>names.has(n)),hits,prio:EXDB.filter(e=>e.p).length}});
+    if(sg.n!==39||!sg.dl||sg.hits.join()!=="Hack squat amplitude limitée"||sg.prio!==12)err("liste d'exercices : "+JSON.stringify(sg));
+    const pr=await pg.evaluate(()=>{cfDraft={level:"inter",goal:"muscle",days:3,dur:60,equip:"gym"};return coachPrompt("new")});
+    if(!pr.includes("Utilise uniquement ces exercices")||!pr.includes("Face pull (P)")||!pr.includes("Crunch à la poulie (P)"))err("le message de génération n'impose pas la liste");
+    // conversations fixes : réglages (lien public refusé), message copié puis la conversation s'ouvre
+    await pg.evaluate(()=>{window.__open=[];window.__clip=[];window.open=u=>{window.__open.push(u);return null};navigator.clipboard.writeText=t=>{window.__clip.push(t);return Promise.resolve()};convSettings()});await pg.waitForTimeout(300);
+    if(!(await pg.isVisible("#convNutri")))err("réglage des conversations introuvable");
+    await pg.fill("#convNutri","https://claude.ai/share/abc");await pg.click('.conv-f[data-conv="nutri"] button');if(await pg.evaluate(()=>(data.prefs.aiConv||{}).nutri))err("lien de partage public accepté");
+    await pg.fill("#convNutri","https://claude.ai/chat/1111-aaaa");await pg.click('.conv-f[data-conv="nutri"] button');
+    await pg.fill("#convMuscu","https://claude.ai/project/2222-bbbb");await pg.click('.conv-f[data-conv="muscu"] button');await shot(pg,"v44-"+nm+"-conversations");
+    if(await pg.evaluate(()=>JSON.stringify(data.prefs.aiConv))!=='{"nutri":"https://claude.ai/chat/1111-aaaa","muscu":"https://claude.ai/project/2222-bbbb"}')err("liens des conversations pas enregistrés");
+    await pg.evaluate(()=>{data.prefs.aiOk=1;data.prefs.ai="claude";data.nutri.consent=new Date().toISOString();save();show("muscu");renderMuscu()});
+    await pg.fill("#coRemark","plus de dos");await pg.click('#coachBox [data-coach="adjust"]');await pg.waitForTimeout(300);
+    if(!(await pg.isVisible('#aaActs [data-aaconv]')))err("pas de bouton « Ouvrir la conversation Musculation »");
+    await pg.click('#aaActs [data-aaconv]');await pg.waitForTimeout(300);
+    const o1=await pg.evaluate(()=>({o:window.__open.slice(-1)[0],c:window.__clip.slice(-1)[0]}));
+    if(o1.o!=="https://claude.ai/project/2222-bbbb"||!String(o1.c).includes("plus de dos"))err("musculation : mauvaise conversation ou message pas copié : "+JSON.stringify(o1));
+    await pg.evaluate(()=>{show("nutri");aiGo("nutri","J'ai mangé : test")});
+    const o2=await pg.evaluate(()=>({o:window.__open.slice(-1)[0],c:window.__clip.slice(-1)[0]}));
+    if(o2.o!=="https://claude.ai/chat/1111-aaaa"||o2.c!=="J'ai mangé : test")err("nutrition : mauvaise conversation : "+JSON.stringify(o2));
+    if(!(await pg.textContent("#toast")).includes("Prompt copié"))err("pas de message « Prompt copié »");
+    // sans lien réglé : nouvelle conversation pré-remplie, comme avant
+    await pg.evaluate(()=>{data.prefs.aiConv={};aiGo("nutri","bonjour")});if(!(await pg.evaluate(()=>window.__open.slice(-1)[0].startsWith("https://claude.ai/new?q="))))err("sans lien : pas de nouvelle conversation");
+    await ctx.close()}
+  // --- v43 : rien ne défile au-dessus de la barre d'une note (iPhone et ordinateur)
   for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1440,height:900}}]]){
     const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v43 barres collées "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
     await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43bar"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
@@ -779,10 +835,6 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>{data.notes=[{id:"lg",title:"Longue",body:Array.from({length:60},(_,i)=>"Ligne "+i).join("\n"),createdAt:new Date().toISOString(),upd:Date.now()}];save();show("notes");openNote("lg")});await pg.waitForTimeout(300);
     const n=await pg.evaluate(async()=>{$("noteEdit").scrollTop=600;await new Promise(r=>setTimeout(r,250));const el=document.elementFromPoint(innerWidth/2,1);return !!(el&&el.closest("#noteTop"))&&Math.round($("noteTop").getBoundingClientRect().top)===0});
     if(!n)err("le texte de la note passe au-dessus de la barre");
-    await pg.evaluate(()=>{closeNote();show("muscu");M().plan=coachBuild({level:"inter",goal:"muscle",days:4,dur:75,equip:"gym",avoid:[],prio:[],must:[],never:[]});save();renderCoach();document.querySelectorAll("#coachBox .coach-day").forEach(d=>d.open=true)});
-    await pg.waitForTimeout(200);await pg.evaluate(()=>scrollTo(0,700));await pg.waitForTimeout(400);
-    const c=await pg.evaluate(()=>{const el=document.elementFromPoint(innerWidth>900?innerWidth/2+118:innerWidth/2,1);return {top:Math.round($("rest").getBoundingClientRect().top),ok:!!(el&&(el.closest("#rest")))}});
-    if(c.top!==0||!c.ok)err("espace au-dessus du chrono collé : "+JSON.stringify(c));
     await ctx.close()}
   // --- v43 lot 5 : RGPD / cookies : aucune ressource de tiers, Spotify seulement après un clic, case des conditions, pages légales
   for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1440,height:900}}],["tablette",{...devices["iPad (gen 7)"]}]]){

@@ -224,57 +224,19 @@
   <section class="view" id="v-muscu" hidden>
     <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
     <h1>Musculation</h1>
-    <p class="sub">Crée tes séances, note tes charges et tes répétitions série par série.</p>
-    <div class="rest-sentinel" id="restSentinel"></div>
-    <div class="rest" id="rest">
-      <div class="rest-tabs" role="tablist" aria-label="Chrono ou minuteur">
-        <button type="button" role="tab" id="restTab0" aria-controls="swSlide" data-go="0" aria-selected="true">Chrono<span id="swMini"></span></button>
-        <button type="button" role="tab" id="restTab1" aria-controls="tmSlide" data-go="1" aria-selected="false">Minuteur<span id="tmMini"></span></button>
-      </div>
-      <div class="rest-track" id="restTrack">
-        <div class="rest-slide" id="swSlide" role="tabpanel" aria-labelledby="restTab0">
-          <div class="sw-ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="bgc" cx="60" cy="60" r="52" fill="none" stroke-width="9"/><circle class="fgc" id="swRing" cx="60" cy="60" r="52" fill="none" stroke-width="9" stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="326.73"/></svg><div class="sw-txt"><div class="rest-clock" id="restClock">0:00</div></div></div>
-          <div class="sw-side">
-            <div class="phase" id="swPhase">Chrono</div>
-            <div class="small muted" id="swSub">Compte jusqu'à ce que tu l'arrêtes.</div>
-            <div class="rest-btns"><button type="button" class="btn ghost" id="restReset" hidden>Remettre à 0</button><button type="button" class="btn ghost" id="restLap" hidden>Tour</button><button type="button" class="btn" id="restGo">Démarrer</button></div>
-            <div class="laps" id="swLaps" hidden></div>
-          </div>
-        </div>
-        <div class="rest-slide" id="tmSlide" role="tabpanel" aria-labelledby="restTab1">
-          <div class="sw-ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="bgc" cx="60" cy="60" r="52" fill="none" stroke-width="9"/><circle class="fgc" id="tmRing" cx="60" cy="60" r="52" fill="none" stroke-width="9" stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="326.73"/></svg><div class="sw-txt"><div class="rest-clock" id="tmClock">1:30</div></div></div>
-          <div class="sw-side">
-            <div class="tm-mode" id="tmMode" role="group" aria-label="Type de minuteur"><button type="button" data-tmmode="simple" aria-pressed="true">Simple</button><button type="button" data-tmmode="frac" aria-pressed="false">Fractionné</button></div>
-            <div id="tmSimple" class="tm-cfg">
-              <div class="tm-adj"><button type="button" class="mini" data-tm="-15" aria-label="Moins 15 secondes">−15 s</button><span class="phase" id="tmPhase">Minuteur</span><button type="button" class="mini" data-tm="15" aria-label="Plus 15 secondes">+15 s</button></div>
-              <div class="tm-presets" id="tmPresets"></div>
-              <div class="tm-custom" id="tmCustom" hidden><input id="tmMin" type="text" inputmode="numeric" min="0" max="99" aria-label="Minutes"><span>min</span><input id="tmSec" type="text" inputmode="numeric" min="0" max="59" aria-label="Secondes"><span>s</span><button type="button" class="mini" id="tmCustomOk">OK</button></div>
-            </div>
-            <div id="tmFrac" class="tm-cfg" hidden>
-              <div class="phase" id="tmFPhase">Fractionné</div>
-              <div class="tm-frac">
-                <label>Effort<span><input id="tfWork" type="text" inputmode="numeric" min="5" max="3600"><i>s</i></span></label>
-                <label>Repos<span><input id="tfRest" type="text" inputmode="numeric" min="0" max="3600"><i>s</i></span></label>
-                <label>Séries<span><input id="tfRounds" type="text" inputmode="numeric" min="1" max="99"><i>×</i></span></label>
-              </div>
-              <div class="small muted" id="tfInfo"></div>
-            </div>
-            <div class="rest-btns"><button type="button" class="btn ghost" id="tmReset" hidden>Remettre à 0</button><button type="button" class="btn" id="tmGo">Démarrer</button></div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <p class="sub">Tes programmes et tes séances, au même endroit : commence une séance, tes charges progressent d'une fois à l'autre.</p>
     <div id="coachBox"></div>
-    <h2 class="ms-free-h">Séances libres</h2>
+    <h2 class="ms-free-h">Mes séances</h2>
+    <div id="msList"></div>
+    <datalist id="exList"></datalist>
     <form class="addbar" id="msForm">
-      <input id="msName" placeholder="Nom de la séance, ex. Push" aria-label="Nom de la séance" autocomplete="off">
+      <input id="msName" placeholder="Nouvelle séance, ex. Push" aria-label="Nom de la nouvelle séance" autocomplete="off">
       <button class="btn" type="submit">Créer</button>
     </form>
-    <div id="msList"></div>
-    <button type="button" class="qbtn" id="msImportOpen" style="margin-top:4px">⇩ Importer une séance reçue</button>
+    <button type="button" class="qbtn" id="msImportOpen" style="margin-top:4px">Importer une séance ou un programme</button>
     <div class="card form" id="msImport" hidden style="margin-top:10px">
-      <div class="small muted">Colle ici une séance copiée depuis Sid'note par un proche.</div>
-      <textarea id="msPaste" placeholder="Séance « Push » (Sid'note)&#10;1. Développé couché : 4 séries&#10;2. Dips : 3 séries"></textarea>
+      <div class="small muted">Colle ici une séance ou un programme partagé depuis Sid'home, ou écrit par Claude.</div>
+      <textarea id="msPaste" placeholder="Programme « Push Pull » (Sid'home)&#10;Séance « Push »&#10;1. Développé couché haltères : 4 séries × 6–10, repos 3 min&#10;2. Pec deck : 3 séries × 10–15, repos 2 min"></textarea>
       <div class="two"><button class="btn ghost" type="button" id="msImportCancel">Annuler</button><button class="btn" type="button" id="msImportBtn">Importer</button></div>
     </div>
   </section>
@@ -600,6 +562,17 @@
     </div>
       </div>
     </details>
+    <details class="setsec" data-sec="sidfit" id="fitSec"><summary><span>Sid'fit : conversations Claude</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+      <div class="setsec-in">
+    <div class="card">
+      <div class="row"><div class="grow small muted">Pour garder ton historique Claude propre, toutes les demandes Nutrition passent par une seule conversation, et toutes les demandes Musculation par une autre. Sid'home copie le message puis ouvre la conversation : tu n'as plus qu'à coller.</div></div>
+      <form class="conv-f" data-conv="nutri"><label for="convNutri" class="eyebrow">Lien de la conversation Nutrition</label>
+        <div class="conv-row"><input id="convNutri" type="url" inputmode="url" placeholder="https://claude.ai/chat/…" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div></form>
+      <form class="conv-f" data-conv="muscu"><label for="convMuscu" class="eyebrow">Lien de la conversation Musculation</label>
+        <div class="conv-row"><input id="convMuscu" type="url" inputmode="url" placeholder="https://claude.ai/chat/…" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div></form>
+      <div class="row"><div class="grow small muted">Pour trouver le lien : ouvre la conversation sur claude.ai (dans Safari ou sur ordinateur) et copie l'adresse de la page, qui commence par https://claude.ai/chat/. Un lien de projet Claude (https://claude.ai/project/…) fonctionne aussi. N'utilise pas « Partager » dans Claude : ce lien-là est public. Laisse vide pour ouvrir une nouvelle conversation à chaque fois.</div></div>
+    </div>
+      </div></details>
     <details class="setsec" data-sec="claude" id="mcpSec"><summary><span>Claude</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
       <div class="setsec-in">
     <div class="card">
@@ -658,7 +631,7 @@
     <div class="card" id="stats"></div>
       </div>
     </details>
-    <p class="small muted" style="margin:18px 4px">Sid'home · version 43.11 · une app <b>SidCorp</b></p>
+    <p class="small muted" style="margin:18px 4px">Sid'home · version 44 · une app <b>SidCorp</b></p>
   </section>
 </main>
 
@@ -921,6 +894,7 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="i18n.js"></script>
+<script src="exercices.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

@@ -101,7 +101,7 @@ async function api(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="43";const errSent=new Set();
+const APP_V="44";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -171,7 +171,7 @@ function mergeData(loc,rem,opt){
   const tn=new Set((loc.types||[]).map(t=>norm(t.name)));
   out.types=[...(loc.types||[]),...(rem.types||[]).filter(t=>!tn.has(norm(t.name)))];
   {const lm=loc.muscu||{},rm=rem.muscu||{},pu=x=>(x&&x.plan&&x.plan.upd)||0;
-    out.muscu={...rm,...lm,sessions:arr(lm.sessions,rm.sessions),log:arr(lm.log,rm.log),plan:pu(rm)>pu(lm)?rm.plan:(lm.plan!==undefined?lm.plan:rm.plan)}}
+    out.muscu={...rm,...lm,sessions:arrU(lm.sessions,rm.sessions),log:arr(lm.log,rm.log),plan:pu(rm)>pu(lm)?rm.plan:(lm.plan!==undefined?lm.plan:rm.plan)}}
   out.prefs={...(rem.prefs||{}),...(loc.prefs||{})};
   // v32 : coffres et phrase secrète : si les deux appareils en ont un différent, le plus récent gagne
   // (sinon un appareil resté sur l'ancien coffre écraserait le coffre renforcé, et les éléments rechiffrés deviendraient illisibles)
@@ -530,9 +530,9 @@ function renderHome(){if(!$("homeBody"))return;
       rows.push(["nutri",L("Nutrition"),`${fmtFull(Math.round(eat))} / ${fmtFull(tg)} kcal`,L(l>=0?`${fmtFull(l)} kcal restantes`:`${fmtFull(-l)} kcal en trop`)]);sum.push(`${fmtFull(Math.abs(l))} ${L(l>=0?"kcal restantes":"kcal en trop")}`)}
     else if(vis.includes("nutri")&&nutriAllowed())rows.push(["nutri",L("Nutrition"),"—",L("Crée ton profil pour suivre tes calories")]);
     if(vis.includes("nutri")){const w=(NU().weights||[]).slice().sort((a,b)=>b.day.localeCompare(a.day))[0];if(w)rows.push(["graph",L("Poids"),`${String(w.kg).replace(".",LANG==="en"?".":",")} kg`,fmtDay(w.day)])}
-    if(vis.includes("muscu")){const M=data.muscu||{},pl=M.plan&&!M.plan.deleted&&M.plan.days&&M.plan.days.length?M.plan:null,lg=(M.log||[]).slice().sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+    if(vis.includes("muscu")){const M=data.muscu||{},nd=coachNext(),lg=(M.log||[]).slice().sort((a,b)=>(b.date||"").localeCompare(a.date||""));
       const wk=lg.filter(x=>x.date&&x.date>=iso(new Date(Date.now()-6*864e5))).length+(M.sessions||[]).filter(x=>x.date&&x.date>=iso(new Date(Date.now()-6*864e5))).length;
-      if(pl){const li=lg[0]?pl.days.findIndex(d=>d.id===lg[0].day):-1,nd=pl.days[(li+1)%pl.days.length];rows.push(["muscu",L("Prochaine séance"),nd.name,`${nd.ex.length} ${L(nd.ex.length>1?"exercices":"exercice")}`])}
+      if(nd)rows.push(["muscu",L("Prochaine séance"),nd.name,`${nd.exercises.length} ${L(nd.exercises.length>1?"exercices":"exercice")}`]);
       else rows.push(["muscu",L("Musculation"),`${wk}`,L(wk>1?"séances ces 7 derniers jours":"séance ces 7 derniers jours")]);
       sum.push(`${wk} ${L(wk>1?"séances cette semaine":"séance cette semaine")}`)}
     b=rows.length?`<div class="hm-list">${rows.map(([k,l,v,d])=>`<button type="button" class="hm-row hm-kv" data-go="${k}"><span class="hm-k">${l}</span><span class="grow"><b class="notr">${esc(v)}</b><span class="small muted"> ${esc(d)}</span></span></button>`).join("")}</div>`:"";
@@ -1854,84 +1854,147 @@ $("eDelete").addEventListener("click",e=>{
 });
 
 /* ---------- musculation ---------- */
+// v44 : un seul format pour les séances libres, les programmes de Sid'home, ceux de Claude et ceux importés.
+// data.muscu.sessions = [{id, name, upd, grp?:{id, name, src:"app"|"claude"|"import"}, ord?, exercises:[{id, name, sets:[{kg, reps}], reps?, rest?, rir?, note?, pat?}]}]
+//   une séance sans grp est une séance libre ; un programme = les séances d'un même grp (ordre : ord).
+// data.muscu.plan = {id, v:2, profile, at, upd, src, aiWait?} : le programme suivi (ses séances ont grp.id === plan.id) ; supprimé = {deleted, upd}.
+// data.muscu.log = séances faites (day = id de la séance) : sert à la progression, quel que soit le type de séance.
 data.muscu=data.muscu||{sessions:[]};
+// v44 : chrono et minuteur retirés : leurs réglages enregistrés sur l'appareil aussi
+if(data.ui&&["tmCfg","tmDur","restSlide"].some(k=>k in data.ui)){["tmCfg","tmDur","restSlide"].forEach(k=>delete data.ui[k]);saveUI()}
 let msOpenId=null,msTimer=null;
 const M=()=>data.muscu||(data.muscu={sessions:[]});
 const msFind=id=>M().sessions.find(x=>x.id===id);
 const newSet=()=>({reps:"",kg:""});
 const newEx=(name="",n=3)=>({id:uid(),name,sets:Array.from({length:n},newSet)});
-function exBlock(se,ex,i){
-  return `<div class="ex" data-ex="${ex.id}">
-    <div class="ex-head"><span class="num">${i+1}</span><input data-f="exname" value="${esc(ex.name)}" placeholder="Nom de l'exercice" aria-label="Nom de l'exercice" autocomplete="off">
-      <button class="x" data-msdelex="${ex.id}" aria-label="Supprimer l'exercice">×</button></div>
-    ${ex.sets.map((st,j)=>`<div class="set" data-set="${j}"><span class="lbl">Série ${j+1}</span>
-      <div class="unit"><input type="text" data-f="kg" inputmode="decimal" enterkeyhint="next" autocomplete="off" value="${esc(st.kg)}" aria-label="Charge série ${j+1}"><span>kg</span></div>
-      <div class="unit"><input type="text" data-f="reps" inputmode="numeric" enterkeyhint="next" autocomplete="off" value="${esc(st.reps)}" aria-label="Répétitions série ${j+1}"><span>reps</span></div></div>`).join("")}
-    <div class="ex-actions"><button class="mini" data-msset="-1">− Série</button><button class="mini" data-msset="1">+ Série</button></div>
-  </div>`;
-}
-function renderMuscu(){try{renderCoach()}catch(e){}
-  const S=M().sessions;
-  $("msList").innerHTML=S.length?S.map(se=>`<details class="ms" data-ms="${se.id}" ${se.id===msOpenId?"open":""}>
-    <summary><span class="chev">›</span><span class="grow"><span class="ms-name">${esc(se.name)}</span><br><span class="small muted">${se.exercises.length} exercice${se.exercises.length>1?"s":""} · ${se.exercises.reduce((a,e)=>a+e.sets.length,0)} séries</span></span></summary>
+const seTouch=se=>{se.upd=Date.now();M().upd=Date.now()};
+const GSRC={app:"Créé par Sid'home",claude:"Créé par Claude",import:"Importé"};
+// ancien programme (avant la v44 : plan.days, exercices avec un nombre de séries) → séances au format commun, sans rien perdre
+function muMigrate(){const m=M(),p=m.plan;if(!Array.isArray(m.sessions))m.sessions=[];let ch=false;
+  if(p&&!p.deleted&&Array.isArray(p.days)){const grp={id:p.id,name:L("Mon programme"),src:p.src==="ia"?"claude":"app"};
+    p.days.forEach((d,i)=>{if(m.sessions.some(s=>s.id===d.id))return;
+      m.sessions.push({id:d.id,name:d.name||`${L("Séance")} ${"ABCDEFG"[i]||i+1}`,grp,ord:i,upd:Date.now(),
+        exercises:(d.ex||[]).map(e=>({id:uid(),name:e.name||"",pat:e.pat||"",reps:e.reps||"",rest:+e.rest||120,rir:e.rir||"",note:e.note||"",sets:Array.from({length:Math.max(1,Math.min(20,+e.sets||3))},newSet)}))})});
+    delete p.days;p.v=2;p.upd=Date.now();ch=true}
+  for(const se of m.sessions)if(se&&!Array.isArray(se.exercises)){se.exercises=[];ch=true}
+  if(ch){m.upd=Date.now();save()}}
+const PL=()=>{const p=M().plan;return p&&!p.deleted&&(p.v===2||Array.isArray(p.days))?p:null}; // supprimé = {deleted, upd} pour que la suppression gagne à la fusion
+const grpSe=id=>M().sessions.filter(s=>s&&s.grp&&s.grp.id===id).sort((a,b)=>(a.ord||0)-(b.ord||0));
+const PLD=()=>{const p=PL();return p?grpSe(p.id):[]}; // séances du programme suivi
+// texte de partage commun (séance seule, ou programme entier) : c'est aussi le format d'import (et celui que Claude peut donner)
+const exLine=(e,i)=>`${i+1}. ${e.name||L("Exercice")} : ${e.sets.length} ${e.sets.length>1?"séries":"série"}${e.reps?` × ${e.reps}`:""}${e.rest?`, repos ${restLbl(e.rest)}`:""}${e.note?` (${e.note})`:""}`;
+const seTxt=se=>`Séance « ${se.name||"Séance"} »\n${se.exercises.map(exLine).join("\n")}`;
+const shareTxt=(list,prog)=>prog?`Programme « ${prog} » (Sid'home)\n\n${list.map(seTxt).join("\n\n")}`:`${seTxt(list[0]).replace(/\n/," (Sid'home)\n")}`;
+// lecture tolérante : texte de Sid'home (ancien et nouveau), ou programme écrit par Claude (titres « ## Séance … », puces, « 4 × 8–10 »)
+function parseShared(txt){
+  const lines=String(txt||"").split(/\r?\n/).map(l=>l.replace(/\*\*/g,"").trim()).filter(Boolean);if(!lines.length)return null;
+  let prog="",cur=null;const out=[];
+  // titre « Séance « Push » » (format de Sid'home : le nom est entre guillemets) ou « ## Séance A — Haut du corps » (on garde tout le titre)
+  const head=(l,w)=>{const t=l.replace(/^#{1,4}\s*/,"").replace(/\s*\((?:sid'?(?:note|home))\)\s*:?\s*$/i,"").replace(/\s*:\s*$/,"");
+    if(!new RegExp(`^(?:${w})\\b`,"i").test(t))return null;const q=t.match(/[«"“]\s*(.+?)\s*[»"”]/);return q?q[1]:t};
+  for(const l of lines){
+    const pg=head(l,"programme|program|schema|schéma");if(pg!==null&&!/^\d/.test(l)){prog=pg||L("Programme importé");continue}
+    const sh=head(l,"s[ée]ance|session|workout|training|jour|day|dag");
+    if(sh!==null&&!/^(?:\d+\s*[.)-]|[-•*])/.test(l)){cur={id:uid(),name:sh||`${L("Séance")} ${out.length+1}`,exercises:[]};out.push(cur);continue}
+    const r=l.match(/^(?:\d+\s*[.)-]|[-•*])\s*(.+?)(?:\s*:\s*|\s+[—–-]\s+)(\d+)\s*(?:s[ée]ries?|sets?|x|×)(.*)$/i);if(!r)continue;
+    const rest=r[3]||"",rp=rest.match(/^\s*(?:[x×]|de|of)?\s*(\d+\s*(?:[–-]|à|to)\s*\d+|\d+)/i),rs=rest.match(/repos\s*:?\s*(\d+(?:[.,]\d+)?)\s*(min|s)/i)||rest.match(/rest\s*:?\s*(\d+(?:[.,]\d+)?)\s*(min|s)/i);
+    const ex=newEx(r[1].replace(/\s*\(.*\)\s*$/,"").trim(),Math.min(20,Math.max(1,+r[2])));
+    if(rp)ex.reps=rp[1].replace(/\s*(?:à|to|-)\s*/,"–").replace(/\s+/g,"");
+    if(rs)ex.rest=Math.round(parseFloat(rs[1].replace(",","."))*(/min/i.test(rs[2])?60:1));
+    const nt=rest.match(/\(([^)]+)\)\s*$/);if(nt&&!/repos|rest/i.test(nt[1]))ex.note=nt[1].slice(0,160);
+    if(!cur){cur={id:uid(),name:L("Séance importée"),exercises:[]};out.push(cur)}cur.exercises.push(ex)}
+  const ses=out.filter(s=>s.exercises.length);if(!ses.length)return null;
+  return{prog:prog||(ses.length>1?L("Programme importé"):""),ses}}
+// une carte par séance, la même pour toutes (libre, programme de Sid'home, de Claude ou importé)
+function seCard(se,next){const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0);
+  return `<details class="ms" data-ms="${se.id}" ${se.id===msOpenId?"open":""}>
+    <summary><span class="chev">›</span><span class="grow"><span class="ms-name notr">${esc(se.name||L("Séance"))}</span><br><span class="small muted">${se.exercises.length} ${L(se.exercises.length>1?"exercices":"exercice")} · ${nS} ${L(nS>1?"séries":"série")}</span></span>${next?`<span class="ms-next">${L("Prochaine")}</span>`:""}</summary>
     <div class="ms-body">
-      <label class="small muted" style="display:grid;gap:4px">Nom de la séance<input data-f="msname" value="${esc(se.name)}" autocomplete="off"></label>
-      ${se.exercises.map((ex,i)=>exBlock(se,ex,i)).join("")}
-      <button class="qbtn" data-msaddex="1">+ Ajouter un exercice</button>
+      <label class="small muted" style="display:grid;gap:4px">${L("Nom de la séance")}<input data-f="msname" value="${esc(se.name)}" autocomplete="off"></label>
+      ${se.exercises.map((ex,i)=>{const kg=ex.sets.map(s=>s.kg).filter(Boolean);
+        return `<div class="ex" data-ex="${ex.id}">
+        <div class="ex-head"><span class="num">${i+1}</span><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">×</button></div>
+        <div class="ex-meta"><span class="co-sets" role="group" aria-label="${L("Séries")}"><button type="button" class="co-step" data-msset="-1" aria-label="${L("Retirer une série")}" ${ex.sets.length<=1?"disabled":""}>−</button><span class="num">${ex.sets.length}</span><button type="button" class="co-step" data-msset="1" aria-label="${L("Ajouter une série")}" ${ex.sets.length>=20?"disabled":""}>+</button></span>
+          <span class="small muted">${L(ex.sets.length>1?"séries":"série")} ×</span><input class="ex-reps" data-f="exreps" value="${esc(ex.reps||"")}" placeholder="8–12" aria-label="${L("Répétitions visées")}" autocomplete="off" inputmode="text">
+          <button type="button" class="linkbtn co-rest" data-msrest="${ex.id}">${L("repos")} ${restLbl(ex.rest||120)}</button></div>
+        ${ex.note||kg.length?`<div class="small muted ex-last">${ex.note?`<span class="notr">${esc(ex.note)}</span>`:""}${ex.note&&kg.length?" · ":""}${kg.length?`${L("Dernières charges")} : ${kg.map(k=>String(k).replace(".",LANG==="en"?".":",")).join(" · ")} kg`:""}</div>`:""}
+      </div>`}).join("")}
+      <button type="button" class="qbtn" data-msaddex="1">+ ${L("Ajouter un exercice")}</button>
       <div class="ms-actions">
-        <button class="btn ghost" data-mscopy="1">Copier la séance</button>
-        <button class="btn ghost" data-msclear="1">Vider reps et kg</button>
-        <button class="btn stop wide" data-msdel="1">Supprimer la séance</button>
+        <button type="button" class="btn wide" data-msstart="1">${L("Commencer cette séance")}</button>
+        <button type="button" class="btn ghost" data-msshare="1">${L("Partager")}</button>
+        <button type="button" class="btn stop" data-msdel="1">${L("Supprimer")}</button>
       </div>
-    </div></details>`).join(""):`<div class="card"><div class="empty">Aucune séance pour l'instant. Crée ta première séance ci-dessus.</div></div>`;
-}
-function msSaveSoon(){clearTimeout(msTimer);msTimer=setTimeout(save,500)}
+    </div></details>`}
+function renderMuscu(){muMigrate();try{renderCoach()}catch(e){}
+  let nx=null;try{nx=coachNext()}catch(e){}const S=M().sessions.filter(Boolean),pl=PL();
+  const groups=[];const seen=new Set();
+  if(pl){groups.push({id:pl.id,name:L("Mon programme"),src:pl.src==="ia"?"claude":(pl.src||"app"),ses:PLD(),plan:true});seen.add(pl.id)}
+  for(const s of S)if(s.grp&&!seen.has(s.grp.id)){seen.add(s.grp.id);groups.push({id:s.grp.id,name:s.grp.name||L("Programme"),src:s.grp.src||"import",ses:grpSe(s.grp.id)})}
+  const free=S.filter(s=>!s.grp||!seen.has(s.grp.id));
+  const gHtml=g=>`<section class="ms-grp" data-msgrp="${g.id}"><div class="ms-grp-h"><div class="grow"><span class="eyebrow notr">${esc(g.name)}</span><span class="small muted">${L(GSRC[g.src]||"Importé")} · ${g.ses.length} ${L(g.ses.length>1?"séances":"séance")}${g.plan?` · ${L("suivi")}`:""}</span></div><button type="button" class="pen" data-msgact="${g.id}" aria-label="${L("Actions du programme")}">${MORE}</button></div>
+    ${g.ses.map(se=>seCard(se,nx&&nx.id===se.id)).join("")||`<div class="small muted">${L("Aucune séance dans ce programme.")}</div>`}</section>`;
+  $("msList").innerHTML=groups.map(gHtml).join("")+
+    `<section class="ms-grp" data-msgrp=""><div class="ms-grp-h"><div class="grow"><span class="eyebrow">${L("Séances libres")}</span><span class="small muted">${free.length} ${L(free.length>1?"séances":"séance")}</span></div>${free.length?`<button type="button" class="pen" data-msgact="" aria-label="${L("Actions des séances libres")}">${MORE}</button>`:""}</div>
+    ${free.map(se=>seCard(se,false)).join("")||`<div class="small muted">${L("Aucune séance libre. Crée-en une ci-dessous.")}</div>`}</section>`;
+  const dl=$("exList");if(dl&&!dl.childElementCount)dl.innerHTML=EXDB.map(e=>`<option value="${esc(e.n)}"></option>`).join("")}
+function msSaveSoon(se){if(se)seTouch(se);clearTimeout(msTimer);msTimer=setTimeout(save,500)}
 $("msForm").addEventListener("submit",e=>{e.preventDefault();const n=$("msName").value.trim();if(!n)return;
-  const se={id:uid(),name:n,exercises:[newEx()]};M().sessions.push(se);msOpenId=se.id;save();renderMuscu();$("msName").value="";toast("Séance créée")});
+  const se={id:uid(),name:n,exercises:[newEx()],upd:Date.now()};M().sessions.push(se);msOpenId=se.id;save();renderMuscu();$("msName").value="";toast("Séance créée")});
 $("msList").addEventListener("toggle",e=>{const d=e.target.closest("[data-ms]");if(d&&d.open)msOpenId=d.dataset.ms},true);
 $("msList").addEventListener("input",e=>{
   const inp=e.target,f=inp.dataset.f;if(!f)return;
   const se=msFind(inp.closest("[data-ms]").dataset.ms);if(!se)return;
-  if(f==="msname"){se.name=inp.value;const n=inp.closest("[data-ms]").querySelector(".ms-name");if(n)n.textContent=inp.value||"Séance"}
-  else{const ex=se.exercises.find(x=>x.id===inp.closest("[data-ex]").dataset.ex);
-    if(f==="exname")ex.name=inp.value;
-    else{const st=ex.sets[+inp.closest("[data-set]").dataset.set];st[f]=inp.value.replace(",",".").replace(/[^0-9.]/g,"")}}
-  msSaveSoon();
-});
-async function copyText(txt){
-  try{await navigator.clipboard.writeText(txt);toast("Séance copiée : colle-la dans un message");return}catch(e){}
+  if(f==="msname"){se.name=inp.value;const n=inp.closest("[data-ms]").querySelector(".ms-name");if(n)n.textContent=inp.value||L("Séance")}
+  else{const ex=se.exercises.find(x=>x.id===inp.closest("[data-ex]").dataset.ex);if(!ex)return;
+    if(f==="exname")ex.name=inp.value;else if(f==="exreps")ex.reps=inp.value.slice(0,12)}
+  msSaveSoon(se)});
+async function copyText(txt,what){
+  const ok=what==="prog"?"Programme copié : colle-le dans un message":"Séance copiée : colle-la dans un message";
+  try{await navigator.clipboard.writeText(txt);toast(ok);return}catch(e){}
   try{if(navigator.share){await navigator.share({text:txt});return}}catch(e){if(e.name==="AbortError")return}
   const t=document.createElement("textarea");t.value=txt;document.body.appendChild(t);t.select();
-  try{document.execCommand("copy");toast("Séance copiée")}catch(e){toast("Copie impossible")}t.remove();
-}
+  try{document.execCommand("copy");toast(ok)}catch(e){toast("Copie impossible")}t.remove()}
+const REST_CHOICES=[60,90,120,150,180,210,240,300];
 $("msList").addEventListener("click",e=>{
+  const ga=e.target.closest("[data-msgact]");if(ga){grpActions(ga.dataset.msgact);return}
   const b=e.target.closest("button");if(!b)return;
   const box=b.closest("[data-ms]");if(!box)return;const se=msFind(box.dataset.ms);if(!se)return;msOpenId=se.id;
-  if(b.dataset.msaddex){se.exercises.push(newEx());save();renderMuscu();const ins=$("msList").querySelectorAll(`[data-ms="${se.id}"] [data-f=exname]`);ins[ins.length-1]?.focus()}
-  else if(b.dataset.msdelex){armDelete(b,()=>{se.exercises=se.exercises.filter(x=>x.id!==b.dataset.msdelex);save();renderMuscu()})}
-  else if(b.dataset.msset){const ex=se.exercises.find(x=>x.id===b.closest("[data-ex]").dataset.ex);
-    if(+b.dataset.msset>0){if(ex.sets.length<20)ex.sets.push(newSet())}else if(ex.sets.length>1)ex.sets.pop();save();renderMuscu()}
-  else if(b.dataset.mscopy){
-    const lines=se.exercises.map((ex,i)=>`${i+1}. ${ex.name||"Exercice"} : ${ex.sets.length} série${ex.sets.length>1?"s":""}`);
-    copyText(`Séance « ${se.name} » (Sid'note)\n${lines.join("\n")}`)}
-  else if(b.dataset.msclear){if(!b.dataset.armed){b.dataset.armed="1";b.textContent="Confirmer ?";setTimeout(()=>{delete b.dataset.armed;b.textContent="Vider reps et kg"},3000);return}
-    se.exercises.forEach(ex=>ex.sets.forEach(st=>{st.reps="";st.kg=""}));save();renderMuscu();toast("Séance remise à zéro")}
+  const exOf=()=>se.exercises.find(x=>x.id===b.closest("[data-ex]").dataset.ex);
+  if(b.dataset.msaddex){se.exercises.push(newEx());seTouch(se);save();renderMuscu();const ins=$("msList").querySelectorAll(`[data-ms="${se.id}"] [data-f=exname]`);ins[ins.length-1]?.focus()}
+  else if(b.dataset.msdelex){armDelete(b,()=>{se.exercises=se.exercises.filter(x=>x.id!==b.dataset.msdelex);seTouch(se);save();renderMuscu()})}
+  else if(b.dataset.msset){const ex=exOf();if(!ex)return;
+    if(+b.dataset.msset>0){if(ex.sets.length<20)ex.sets.push({...newSet(),kg:(ex.sets[ex.sets.length-1]||{}).kg||""})}else if(ex.sets.length>1)ex.sets.pop();
+    seTouch(se);save();renderMuscu();const nb=document.querySelector(`#msList [data-ex="${ex.id}"] [data-msset="${b.dataset.msset}"]`);if(nb&&!nb.disabled)nb.focus()}
+  else if(b.dataset.msrest){const ex=exOf();if(!ex)return;
+    openActions(`${L("Repos")} · ${ex.name||L("Exercice")}`,REST_CHOICES.map(r=>({l:restLbl(r),on:(ex.rest||120)===r,fn:()=>{ex.rest=r;seTouch(se);save();renderMuscu();toast(`${L("Repos")} : ${restLbl(r)}`)}})))}
+  else if(b.dataset.msstart)woStart(se.id);
+  else if(b.dataset.msshare)copyText(shareTxt([se]),"se");
   else if(b.dataset.msdel&&c2ok(b))undoable("Séance supprimée",[se.id],()=>{tomb(se.id);M().sessions=M().sessions.filter(x=>x!==se)},{after:renderMuscu});
 });
-// importer une séance copiée par un proche
-function parseSession(txt){
-  const lines=String(txt||"").split(/\r?\n/).map(l=>l.trim()).filter(Boolean);if(!lines.length)return null;
-  let name="Séance importée";const m=lines[0].match(/s[ée]ance\s*[«"“]\s*(.+?)\s*[»"”]/i);if(m)name=m[1];
-  const ex=[];for(const l of lines){const r=l.match(/^\d+\s*[.)-]\s*(.+?)\s*[:—–-]\s*(\d+)\s*s[ée]ries?/i);if(r)ex.push(newEx(r[1],Math.min(20,Math.max(1,+r[2]))))}
-  return ex.length?{id:uid(),name,exercises:ex}:null;
-}
+// actions d'un programme (ou des séances libres) : partager, suivre, renommer, supprimer
+function grpActions(id){
+  if(!id){const free=M().sessions.filter(s=>s&&!s.grp);
+    openActions(L("Séances libres"),[{l:"Partager toutes les séances libres",fn:()=>copyText(shareTxt(free,L("Séances libres")),"prog")}]);return}
+  const ses=grpSe(id),pl=PL(),isPlan=pl&&pl.id===id,name=(ses[0]&&ses[0].grp&&ses[0].grp.name)||L("Mon programme");
+  const it=[{l:"Partager le programme",fn:()=>copyText(shareTxt(ses,isPlan?L("Mon programme"):name),"prog")}];
+  if(!isPlan&&ses.length)it.push({l:"Suivre ce programme",fn:()=>{const old=M().plan;M().plan={id,v:2,profile:(old&&!old.deleted&&old.profile)||{},at:new Date().toISOString(),upd:Date.now(),src:ses[0].grp.src==="claude"?"ia":ses[0].grp.src||"import"};M().upd=Date.now();save();renderMuscu();toast("Programme suivi : la prochaine séance est proposée en haut")}});
+  if(!isPlan)it.push({l:"Renommer",fn:()=>{const n=prompt(L("Nom du programme"),name);if(!n||!n.trim())return;ses.forEach(s=>{s.grp={...s.grp,name:n.trim().slice(0,80)};seTouch(s)});save();renderMuscu()}});
+  it.push({l:"Supprimer le programme",danger:true,fn:()=>{const ids=ses.map(s=>s.id),oldPlan=M().plan;
+    undoable("Programme supprimé",ids,()=>{ids.forEach(tomb);M().sessions=M().sessions.filter(s=>!ids.includes(s.id));if(isPlan)M().plan={deleted:true,upd:Date.now()}},
+      {after:renderMuscu,revert:isPlan?()=>{M().plan={...oldPlan,upd:Date.now()}}:undefined})}});
+  openActions(isPlan?L("Mon programme"):name,it)}
+// importer une séance ou un programme (texte partagé depuis Sid'home, ou programme écrit par Claude) : même chemin pour tout
+function importShared(txt){const r=parseShared(txt);if(!r)return null;
+  const grp=r.prog?{id:uid(),name:r.prog.slice(0,80),src:"import"}:null;
+  r.ses.forEach((s,i)=>{s.upd=Date.now();if(grp){s.grp=grp;s.ord=i}M().sessions.push(s)});M().upd=Date.now();return r}
 $("msImportOpen").addEventListener("click",()=>{$("msImport").hidden=false;$("msImportOpen").hidden=true;$("msPaste").focus()});
 $("msImportCancel").addEventListener("click",()=>{$("msImport").hidden=true;$("msImportOpen").hidden=false});
 $("msImportBtn").addEventListener("click",()=>{
-  const se=parseSession($("msPaste").value);
-  if(!se){toast("Texte non reconnu. Colle une séance copiée depuis Sid'note.");return}
-  M().sessions.push(se);msOpenId=se.id;save();$("msPaste").value="";$("msImport").hidden=true;$("msImportOpen").hidden=false;renderMuscu();toast(`Séance « ${se.name} » importée`);
-});
+  const r=importShared($("msPaste").value);
+  if(!r){toast("Texte non reconnu. Colle une séance ou un programme partagé depuis Sid'home.");return}
+  msOpenId=r.ses[0].id;save();$("msPaste").value="";$("msImport").hidden=true;$("msImportOpen").hidden=false;renderMuscu();
+  toast(r.prog?`${L("Programme importé")} : ${r.ses.length} ${L(r.ses.length>1?"séances":"séance")}`:`${L("Séance importée")} : ${r.ses[0].name}`)});
 
 /* ---------- v41 : programme de musculation sur mesure ---------- */
 // data.muscu.plan = {id, profile, days:[{id, name, ex:[{name, pat, sets, reps, rest, rir, note?}]}], at, upd, src:"app"|"ia"}
@@ -1943,98 +2006,27 @@ $("msImportBtn").addEventListener("click",()=>{
 // res résistance · eq matériel (g salle, d haltères, b poids du corps) · z zones sollicitées (s épaules, b bas du dos, k genoux) ·
 // t type : H polyarticulaire très lourd, C polyarticulaire chargé, L polyarticulaire léger (poids du corps), I isolation
 const EX=(n,m,pat,part,res,eq,z,t,g)=>({n,m,pat,part,res,eq,z,t,g:g||m+":"+pat});
-const EXDB=[
-  // pectoraux : développé horizontal (milieu), incliné (haut), écarté (étirement, isolation), bas des pecs
-  EX("Développé couché","chest","hpress","milieu des pectoraux","barre","g","s","H"),
-  EX("Développé couché haltères","chest","hpress","milieu des pectoraux","haltères","gd","s","C"),
-  EX("Pompes","chest","hpress","milieu des pectoraux","poids du corps","b","s","L"),
-  EX("Développé incliné haltères","chest","ipress","haut des pectoraux","haltères","gd","s","C"),
-  EX("Développé incliné barre","chest","ipress","haut des pectoraux","barre","g","s","C"),
-  EX("Développé incliné machine","chest","ipress","haut des pectoraux","machine","g","","C"),
-  EX("Pompes pieds surélevés","chest","ipress","haut des pectoraux","poids du corps","b","s","L"),
-  EX("Écarté poulie","chest","fly","pectoraux en étirement","poulie","g","","I","ouverture"),
-  EX("Pec deck","chest","fly","pectoraux en contraction","machine","g","","I","ouverture"),
-  EX("Écarté haltères","chest","fly","pectoraux en étirement","haltères","d","s","I","ouverture"),
-  EX("Dips","chest","low","bas des pectoraux","poids du corps","gb","s","C"),
-  EX("Pompes mains surélevées","chest","low","bas des pectoraux","poids du corps","b","","L"),
-  // dos : tirage vertical (largeur), rowing (épaisseur), bras tendus (grand dorsal isolé)
-  EX("Tractions","back","vpull","largeur du dos","poids du corps","gb","s","C"),
-  EX("Tirage vertical","back","vpull","largeur du dos","poulie","g","","C"),
-  EX("Tirage élastique","back","vpull","largeur du dos","élastique","db","","L"),
-  EX("Rowing barre","back","hrow","épaisseur du dos","barre","g","b","C"),
-  EX("Rowing haltère un bras","back","hrow","épaisseur du dos","haltères","gd","","C"),
-  EX("Tirage horizontal poulie","back","hrow","épaisseur du dos","poulie","g","","C"),
-  EX("Rowing inversé sous une table","back","hrow","épaisseur du dos","poids du corps","b","","L"),
-  EX("Pull-over poulie","back","pullover","grand dorsal bras tendus","poulie","g","s","I"),
-  EX("Pull-over haltère","back","pullover","grand dorsal bras tendus","haltères","d","s","I"),
-  // épaules : développé (avant), élévations latérales (côté), arrière d'épaule
-  EX("Développé militaire","shoulders","ohp","avant des épaules","barre","g","sb","C"),
-  EX("Développé épaules haltères","shoulders","ohp","avant des épaules","haltères","gd","s","C"),
-  EX("Pompes piquées","shoulders","ohp","avant des épaules","poids du corps","b","s","L"),
-  EX("Élévations latérales","shoulders","lat","côté des épaules","haltères","gd","","I","ouverture"),
-  EX("Élévations latérales poulie","shoulders","lat","côté des épaules","poulie","g","","I","ouverture"),
-  EX("Face pull","shoulders","rear","arrière des épaules","poulie","g","","I"),
-  EX("Oiseau haltères","shoulders","rear","arrière des épaules","haltères","gd","","I"),
-  EX("Y-T-W au sol","shoulders","rear","arrière des épaules","poids du corps","b","","I"),
-  // triceps : bras au-dessus de la tête (longue portion étirée), extension bras le long du corps, développé serré
-  EX("Extension nuque haltère","triceps","oh","longue portion (étirement)","haltères","gd","s","I"),
-  EX("Extension triceps poulie au-dessus de la tête","triceps","oh","longue portion (étirement)","poulie","g","s","I"),
-  EX("Extension triceps poulie","triceps","push","portions latérales","poulie","g","","I"),
-  EX("Barre au front haltères","triceps","push","portions latérales","haltères","gd","","I"),
-  EX("Dips sur banc","triceps","push","portions latérales","poids du corps","b","s","L"),
-  EX("Pompes serrées","triceps","close","triceps en charge lourde","poids du corps","b","s","L"),
-  // biceps : curl (supination), marteau (brachial), curl incliné (étirement)
-  EX("Curl barre EZ","biceps","curl","biceps","barre","g","","I"),
-  EX("Curl haltères","biceps","curl","biceps","haltères","gd","","I"),
-  EX("Curl poulie","biceps","curl","biceps","poulie","g","","I"),
-  EX("Curl marteau","biceps","hammer","brachial et avant-bras","haltères","gd","","I"),
-  EX("Curl incliné haltères","biceps","stretch","biceps en étirement","haltères","gd","s","I"),
-  EX("Tractions supination","biceps","chin","biceps et dos","poids du corps","b","s","L"),
-  // quadriceps : squat (bilatéral), fente (unilatéral), isolation
-  EX("Squat barre","quads","squat","quadriceps et fessiers","barre","g","kb","H"),
-  EX("Presse à cuisses","quads","squat","quadriceps","machine","g","k","C"),
-  EX("Hack squat","quads","squat","quadriceps","machine","g","k","C"),
-  EX("Squat goblet","quads","squat","quadriceps et fessiers","haltères","gd","k","C"),
-  EX("Squat au poids du corps","quads","squat","quadriceps et fessiers","poids du corps","b","k","L"),
-  EX("Fentes bulgares","quads","lunge","quadriceps et fessiers (une jambe)","haltères","gdb","k","C"),
-  EX("Fentes marchées","quads","lunge","quadriceps et fessiers (une jambe)","haltères","gd","k","C"),
-  EX("Step-up","quads","lunge","quadriceps et fessiers (une jambe)","haltères","gdb","","C"),
-  EX("Leg extension","quads","iso","quadriceps (contraction)","machine","g","k","I"),
-  EX("Chaise contre le mur","quads","iso","quadriceps (isométrie)","poids du corps","db","k","I"),
-  // ischios : charnière de hanche (étirement), flexion du genou (contraction)
-  EX("Soulevé de terre","hams","hinge","ischios, fessiers et dos","barre","g","b","H"),
-  EX("Soulevé de terre roumain","hams","hinge","ischios en étirement","barre","g","b","H"),
-  EX("Soulevé de terre roumain haltères","hams","hinge","ischios en étirement","haltères","gd","b","C"),
-  EX("Leg curl","hams","curl","ischios en contraction","machine","g","","I"),
-  EX("Nordic curl","hams","curl","ischios en contraction","poids du corps","b","","I"),
-  EX("Leg curl glissé au sol","hams","curl","ischios en contraction","poids du corps","db","","I"),
-  // fessiers
-  EX("Hip thrust","glutes","thrust","fessiers (contraction)","barre","gd","","C"),
-  EX("Pont fessier","glutes","thrust","fessiers (contraction)","poids du corps","b","","L"),
-  EX("Abduction machine","glutes","abd","moyen fessier","machine","g","","I"),
-  // mollets et abdos
-  EX("Mollets debout","calves","calf","mollets","haltères","gdb","","I"),
-  EX("Mollets assis","calves","seated","soléaire","machine","g","","I"),
-  EX("Gainage","abs","anti","sangle abdominale (stabilité)","poids du corps","gdb","","I"),
-  EX("Dead bug","abs","anti","sangle abdominale (stabilité)","poids du corps","db","","I"),
-  EX("Relevés de jambes","abs","flex","bas des abdos","poids du corps","gb","b","I"),
-  EX("Crunch poulie","abs","flex","grand droit","poulie","g","","I"),
-  EX("Crunch au sol","abs","flex","grand droit","poids du corps","db","","I")];
+// v44 : la liste vient de exercices.js (seule source, facile à modifier) ; p = prioritaire (P), proposé en premier dans son groupe.
+// Les autres exercices restent possibles tapés à la main, mais ne sont jamais suggérés ni mis dans un programme.
+const EXDB=((window.SIDFIT_EXERCICES&&window.SIDFIT_EXERCICES.groupes)||[]).flatMap(g=>(g.exercices||[]).map(x=>({...EX(x.nom,g.muscle,x.schema,g.nom,"",x.materiel||"g",x.zones||"",x.type||"I"),p:!!x.p,note:x.note||"",grp:g.nom})));
+// texte de la liste pour Claude (groupes, P = à privilégier)
+const exListTxt=()=>((window.SIDFIT_EXERCICES&&window.SIDFIT_EXERCICES.groupes)||[]).map(g=>`${g.nom} : ${g.exercices.map(x=>x.nom+(x.p?" (P)":"")+(x.note?` (${x.note.toLowerCase()})`:"")).join(", ")}`).join(" ; ");
 const EXN=n=>EXDB.find(e=>e.n===n);
-const MUS={chest:"Pectoraux",back:"Dos",shoulders:"Épaules",triceps:"Triceps",biceps:"Biceps",quads:"Quadriceps",hams:"Ischios",glutes:"Fessiers",calves:"Mollets",abs:"Abdos"};
-const PRIO={chest:["chest"],back:["back"],shoulders:["shoulders"],arms:["biceps","triceps"],legs:["quads","hams","calves"],glutes:["glutes"],abs:["abs"]};
+const MUS={chest:"Pectoraux",back:"Dos",traps:"Trapèzes",shoulders:"Épaules",triceps:"Triceps",biceps:"Biceps",quads:"Quadriceps",hams:"Ischios",glutes:"Fessiers",adductors:"Adducteurs",calves:"Mollets",abs:"Abdos"};
+const PRIO={chest:["chest"],back:["back","traps"],shoulders:["shoulders"],arms:["biceps","triceps"],legs:["quads","hams","calves","adductors"],glutes:["glutes"],abs:["abs"]};
 // séances types : chaque ligne = un rôle « muscle:schéma », dans l'ordre de priorité
+// v44 : rôles adaptés à la liste d'exercices de exercices.js
 const DAYT={
-  full1:["quads:squat","chest:hpress","back:hrow","hams:hinge","shoulders:lat","abs:anti","biceps:curl"],
-  full2:["hams:hinge","shoulders:ohp","back:vpull","quads:lunge","chest:fly","triceps:oh","calves:calf"],
-  full3:["quads:squat","chest:ipress","back:hrow","hams:curl","shoulders:rear","biceps:hammer","abs:flex"],
-  push:["chest:hpress","chest:ipress","shoulders:ohp","chest:fly","triceps:oh","triceps:push","shoulders:lat"],
-  pull:["back:vpull","back:hrow","shoulders:lat","shoulders:rear","biceps:curl","biceps:hammer","back:pullover"],
-  legs:["quads:squat","hams:hinge","quads:lunge","hams:curl","quads:iso","calves:calf","abs:anti"],
-  upper1:["chest:hpress","back:vpull","shoulders:ohp","back:hrow","shoulders:lat","triceps:push","biceps:curl"],
-  upper2:["chest:ipress","back:hrow","back:vpull","chest:fly","shoulders:rear","biceps:stretch","triceps:oh"],
-  lower1:["quads:squat","hams:hinge","quads:lunge","hams:curl","calves:calf","abs:anti","quads:iso"],
-  lower2:["hams:hinge","quads:squat","glutes:thrust","hams:curl","quads:iso","calves:seated","abs:flex"]};
+  full1:["quads:squat","chest:hpress","back:hrow","hams:curl","shoulders:lat","abs:flex","biceps:curl"],
+  full2:["back:vpull","shoulders:ohp","quads:iso","chest:ipress","triceps:oh","calves:seated","shoulders:rear"],
+  full3:["quads:squat","chest:fly","back:hrow","hams:curl","shoulders:rear","biceps:stretch","triceps:push"],
+  push:["chest:hpress","chest:ipress","shoulders:ohp","shoulders:lat","chest:fly","triceps:oh","triceps:push"],
+  pull:["back:vpull","back:hrow","shoulders:rear","biceps:curl","biceps:stretch","back:pullover","traps:shrug"],
+  legs:["quads:squat","hams:curl","quads:iso","glutes:thrust","calves:seated","adductors:add","abs:flex"],
+  upper1:["chest:hpress","back:vpull","shoulders:lat","back:hrow","shoulders:ohp","triceps:push","biceps:curl"],
+  upper2:["chest:ipress","back:vpull","back:hrow","chest:fly","shoulders:rear","biceps:stretch","triceps:oh"],
+  lower1:["quads:squat","hams:curl","quads:iso","calves:seated","glutes:abd","abs:flex","adductors:add"],
+  lower2:["hams:curl","quads:squat","glutes:thrust","quads:iso","calves:calf","abs:flex","glutes:abd"]};
 const DAYN={full1:"Corps complet A",full2:"Corps complet B",full3:"Corps complet C",push:"Poussée (pecs, épaules, triceps)",pull:"Tirage (dos, biceps)",legs:"Jambes",
   upper1:"Haut du corps",upper2:"Haut du corps",lower1:"Bas du corps",lower2:"Bas du corps",upper:"Haut du corps",lower:"Bas du corps"};
 // repos par défaut (demande de Sid : bien récupérer) : très lourd 4 min, polyarticulaire 3 min, le reste 2 min ; modifiable ensuite
@@ -2045,25 +2037,30 @@ function coachBuild(p){const split={2:["full1","full2"],3:p.level==="deb"?["full
   const nEx={45:4,60:5,75:6,90:7}[p.dur]||5,eq=p.equip==="gym"?"g":p.equip==="db"?"d":"b",av=(p.avoid||[]).map(x=>({shoulder:"s",back:"b",knee:"k"}[x])).filter(Boolean);
   const never=new Set(p.never||[]),R={muscle:["6–10","10–15"],force:["3–6","8–12"],gras:["8–12","12–15"],forme:["8–12","12–15"]}[p.goal]||["8–12","10–15"];
   const rir={deb:"2–3",inter:"1–2",conf:"0–1"}[p.level]||"2",prio=new Set((p.prio||[]).flatMap(k=>PRIO[k]||[])),turn={};
-  const ok=e=>e.eq.includes(eq)&&!never.has(e.n)&&!av.some(z=>e.z.includes(z));
+  let relax=false; // v44 : la liste d'exercices est surtout faite pour la salle : si le matériel laisse une séance presque vide, on l'ignore pour cette séance
+  const ok=e=>(relax||e.eq.includes(eq))&&!never.has(e.n)&&!av.some(z=>e.z.includes(z));
   const mk=e=>{let sets=p.level==="deb"?3:EXHEAVY(e)?4:3;if(prio.has(e.m))sets++;if(p.level==="conf"&&EXHEAVY(e))sets=Math.max(sets,4);
-    return{name:e.n,pat:e.m+":"+e.pat,sets,reps:EXHEAVY(e)?R[0]:R[1],rest:REST[e.t]||120,rir,note:p.level==="conf"&&!EXHEAVY(e)?"Dernière série au plus près de l'échec":""}};
+    return{name:e.n,pat:e.m+":"+e.pat,sets,reps:EXHEAVY(e)?R[0]:R[1],rest:REST[e.t]||120,rir,note:[e.note,p.level==="conf"&&!EXHEAVY(e)?"Dernière série au plus près de l'échec":""].filter(Boolean).join(". ")}};
   // exercices imposés : chacun va dans la séance qui travaille déjà ce muscle (la moins chargée en imposés)
   const forced=split.map(()=>[]);
   for(const n of p.must||[]){const e=EXN(n);if(!e||never.has(n))continue;
     const fit=split.map((t,i)=>({i,score:(DAYT[t].includes(e.m+":"+e.pat)?2:DAYT[t].some(r=>r.startsWith(e.m+":"))?1:0)-forced[i].length*0.1})).sort((a,b)=>b.score-a.score);
     forced[fit[0].i].push(e)}
-  const days=split.map((t,di)=>{const ex=[...forced[di]],gest=new Set(ex.map(e=>e.g)),pats=new Set(ex.map(e=>e.m+":"+e.pat)),names=new Set(ex.map(e=>e.n));
+  const days=split.map((t,di)=>{relax=false;let d=buildDay(t,di);if(d.ex.length<3){relax=true;d=buildDay(t,di)}relax=false;return d});
+  function buildDay(t,di){const ex=[...forced[di]],gest=new Set(ex.map(e=>e.g)),pats=new Set(ex.map(e=>e.m+":"+e.pat)),names=new Set(ex.map(e=>e.n));
     const free=e=>ok(e)&&!names.has(e.n)&&!gest.has(e.g)&&!pats.has(e.m+":"+e.pat);
     const add=e=>{ex.push(e);gest.add(e.g);pats.add(e.m+":"+e.pat);names.add(e.n)};
     for(const role of DAYT[t]){if(ex.length>=Math.max(nEx,forced[di].length))break;const[m,pat]=role.split(":");
       // zone à ménager ou matériel absent : on prend un autre schéma pour le même muscle, jamais un exercice qui la sollicite
       let c=EXDB.filter(e=>e.m===m&&e.pat===pat&&free(e));if(!c.length)c=EXDB.filter(e=>e.m===m&&free(e));if(!c.length)continue;
+      if(c.some(e=>e.p))c=c.filter(e=>e.p); // v44 : exercices prioritaires (P) d'abord
       const k=turn[role]=(turn[role]||0)+1;add(c[(k-1+di)%c.length])}
     ex.sort((a,b)=>"HCLI".indexOf(a.t)-"HCLI".indexOf(b.t));
-    return{id:uid(),name:`${L("Séance")} ${"ABCDEF"[di]} · ${L(DAYN[t])}`,ex:ex.map(mk)}});
+    return{id:uid(),name:`${L("Séance")} ${"ABCDEF"[di]} · ${L(DAYN[t])}`,ex:ex.map(mk)}}
   return{id:uid(),profile:p,days,at:new Date().toISOString(),upd:Date.now(),src:"app"}}
-const PL=()=>{const p=M().plan;return p&&!p.deleted&&Array.isArray(p.days)?p:null}; // supprimé = {deleted, upd} pour que la suppression gagne à la fusion
+// v44 : le programme devient le programme suivi : ses séances passent au format commun, celles de l'ancien programme suivi sont retirées
+function planApply(pl){const m=M(),old=PL();if(old)for(const s of grpSe(old.id)){tomb(s.id);m.sessions=m.sessions.filter(x=>x!==s)}
+  m.plan=pl;muMigrate();m.upd=Date.now()}
 const ML=()=>{const m=M();if(!Array.isArray(m.log))m.log=[];return m.log};
 const lastOf=name=>ML().filter(l=>l.ex&&l.ex.some(x=>x.name===name)).sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0];
 // charge conseillée : double progression (toutes les séries en haut de la fourchette → on monte la charge)
@@ -2075,27 +2072,21 @@ function coachHint(ex){const l=lastOf(ex.name);if(!l)return{kg:"",txt:L("Premiè
   if(allTop&&kg)return{kg:String(kg+step),txt:`${L("Dernière fois")} : ${prev}. ${L("Tu as tout réussi : on monte à")} ${kg+step} kg.`};
   if(allTop&&!kg)return{kg:"",txt:`${L("Dernière fois")} : ${prev}. ${L("Tout réussi : ajoute 1 à 2 répétitions ou ralentis la descente.")}`};
   return{kg:kg?String(kg):"",txt:`${L("Dernière fois")} : ${prev}. ${L("Garde la même charge et vise plus de répétitions.")}`}}
-const coachNext=()=>{const pl=PL();if(!pl||!pl.days.length)return null;const last=ML().filter(l=>pl.days.some(d=>d.id===l.day)).sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0];
-  const i=last?pl.days.findIndex(d=>d.id===last.day):-1;return pl.days[(i+1)%pl.days.length]};
-function renderCoach(){const box=$("coachBox");if(!box)return;const pl=PL(),nx=coachNext();
-  const opn=new Set([...box.querySelectorAll(".coach-day[open]")].map(x=>x.dataset.day)),rmk=$("coRemark")?$("coRemark").value:""; // v43 : le rendu garde les séances dépliées et la remarque en cours
+const coachNext=()=>{const ds=PLD();if(!ds.length)return null;const last=ML().filter(l=>ds.some(d=>d.id===l.day)).sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0];
+  const i=last?ds.findIndex(d=>d.id===last.day):-1;return ds[(i+1)%ds.length]};
+function renderCoach(){const box=$("coachBox");if(!box)return;const pl=PL(),ds=PLD(),nx=coachNext();
+  const rmk=$("coRemark")?$("coRemark").value:""; // v43 : le rendu garde la remarque en cours
   if(!pl){box.innerHTML=`<div class="card coach-card"><div class="grow"><b>${L("Ton programme sur mesure")}</b><div class="small muted">${L("Quelques questions (niveau, objectif, jours, matériel) et Sid'home crée tes séances, avec les charges qui progressent d'une fois à l'autre.")}</div></div><button type="button" class="btn" data-coach="new">${L("Créer mon programme")}</button></div>`;return}
   const p=pl.profile||{},G={muscle:"Prendre du muscle",force:"Gagner en force",gras:"Perdre du gras",forme:"Être en forme"},LV={deb:"Débutant",inter:"Intermédiaire",conf:"Confirmé"};
-  const wk=ML().filter(l=>l.date>=iso(mondayOf(new Date()))).length;
-  box.innerHTML=`<div class="card coach-card coach-on"><div class="coach-top"><div class="grow"><span class="eyebrow">${L("Mon programme")}</span><b>${esc(L(G[p.goal]||"Sur mesure"))}${pl.src==="ia"?` · ${L("ajusté par Claude")}`:""}</b><div class="small muted">${esc(L(LV[p.level]||""))} · ${p.days||pl.days.length} ${L("séances par semaine")} · ${wk}/${pl.days.length} ${L("faites cette semaine")}</div></div><button type="button" class="pen" data-coach="more" aria-label="${L("Plus d'actions")}">${MORE}</button></div>
-    ${nx?`<button type="button" class="btn coach-go" data-coach="start" data-day="${nx.id}">${IC("play")||"▶"} ${L("Commencer")} : ${esc(nx.name)}</button>`:""}
-    <div class="coach-days">${pl.days.map(d=>`<details class="coach-day" data-day="${d.id}" ${opn.has(d.id)?"open":""}><summary><b class="grow notr">${esc(d.name)}</b><span class="small muted">${d.ex.length} ${L("exercices")}</span></summary>
-      <ol class="coach-ex">${d.ex.map((e,i)=>`<li><span class="grow notr">${esc(e.name)}</span><span class="co-sets" role="group" aria-label="${L("Séries")} · ${esc(e.name)}"><button type="button" class="co-step" data-coset="${d.id}:${i}:-1" aria-label="${L("Retirer une série")}" ${e.sets<=1?"disabled":""}>−</button><span class="num">${e.sets}</span><button type="button" class="co-step" data-coset="${d.id}:${i}:1" aria-label="${L("Ajouter une série")}" ${e.sets>=10?"disabled":""}>+</button></span><span class="small muted">× ${esc(e.reps)} · <button type="button" class="linkbtn co-rest" data-corest="${d.id}:${i}" aria-label="${L("Modifier le repos")}">${L("repos")} ${restLbl(e.rest)}</button></span></li>`).join("")}</ol>
-      <button type="button" class="mini" data-coach="start" data-day="${d.id}">${L("Faire cette séance")}</button></details>`).join("")}</div>
+  const wk=ML().filter(l=>l.date>=iso(mondayOf(new Date()))&&ds.some(d=>d.id===l.day)).length;
+  box.innerHTML=`<div class="card coach-card coach-on"><div class="coach-top"><div class="grow"><span class="eyebrow">${L("Mon programme")}</span><b>${esc(L(G[p.goal]||"Sur mesure"))}${pl.src==="ia"?` · ${L("ajusté par Claude")}`:""}</b><div class="small muted">${p.level?esc(L(LV[p.level]||""))+" · ":""}${ds.length} ${L(ds.length>1?"séances":"séance")} · ${wk}/${ds.length} ${L("faites cette semaine")}</div></div><button type="button" class="pen" data-coach="more" aria-label="${L("Plus d'actions")}">${MORE}</button></div>
+    ${nx?`<button type="button" class="btn coach-go" data-coach="start" data-day="${nx.id}">${IC("play")||""} ${L("Commencer")} : <span class="notr">${esc(nx.name)}</span></button>`:""}
     ${pl.aiWait?`<div class="coach-wait" role="status"><span class="grow">${L("Demande envoyée à Claude : le programme ajusté arrivera ici tout seul.")}</span><button type="button" class="linkbtn" data-coach="resend">${L("Renvoyer")}</button><button type="button" class="x" data-coach="unwait" aria-label="${L("Masquer")}">×</button></div>`:""}
     <div class="coach-adj"><label for="coRemark" class="eyebrow">${L("Ta remarque sur ce programme")}</label><textarea id="coRemark" class="autogrow" rows="2" maxlength="600" placeholder="${L("Ex. remplace la 2e séance jambes par une séance haut du corps")}">${esc(pl.aiWait?"":rmk)}</textarea>
       <div class="coach-adj-b"><button type="button" class="btn" data-coach="adjust">${L("Ajuster avec Claude")}</button></div>
       ${(p.remarks||[]).length?`<details class="coach-rem"><summary class="small muted">${(p.remarks||[]).length} ${L((p.remarks||[]).length>1?"remarques envoyées":"remarque envoyée")}</summary><ul>${p.remarks.slice().reverse().map(r=>`<li class="small"><span class="notr">${esc(r.text)}</span> <span class="muted">· ${fmtWhen(Date.parse(r.at))}</span></li>`).join("")}</ul></details>`:""}</div></div>`}
 let cfDraft={};
 const restLbl=r=>r>=60?String(Math.round(r/60*10)/10).replace(".",",")+" min":r+" s";
-// v42 : repos modifiable exercice par exercice (le mode séance utilise cette valeur)
-function coachRest(dayId,i){const pl=PL(),d=pl&&pl.days.find(x=>x.id===dayId),e=d&&d.ex[i];if(!e)return;
-  openActions(`${L("Repos")} · ${e.name}`,[60,90,120,150,180,210,240,300].map(r=>({l:restLbl(r),on:e.rest===r,fn:()=>{e.rest=r;pl.upd=Date.now();M().upd=Date.now();save();renderCoach();toast(`${L("Repos")} : ${restLbl(r)}`)}})))}
 function coachOpen(){const p=(PL()&&PL().profile)||{level:"deb",goal:"muscle",days:3,dur:60,equip:"gym",avoid:[],prio:[],must:[],never:[]};cfDraft=JSON.parse(JSON.stringify(p));
   document.querySelectorAll("#coachForm .cf-pick input").forEach(i=>i.value="");cfDraft.notes="";cfDraft.avoidTxt="";$("cfNotes").value="";$("cfAvoidTxt").value=""; // v43 : textes libres envoyés à Claude, jamais pré-remplis ensuite
   $("cfMore").open=cfOptN()>0;cfRender();$("coachErr").hidden=true;$("coachSheet").hidden=false}
@@ -2110,7 +2101,7 @@ const cfFold=x=>String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").to
 function cfSearch(box){const q=cfFold(box.querySelector("input").value).trim(),k=box.dataset.cfx,a=cfDraft[k]||[],res=box.querySelector(".cf-res");
   if(!q){res.innerHTML="";return}const w=q.split(/\s+/);
   const hits=EXDB.filter(e=>!a.includes(e.n)&&w.every(x=>cfFold(e.n+" "+MUS[e.m]+" "+e.part).includes(x))).slice(0,8);
-  res.innerHTML=hits.length?hits.map(e=>`<button type="button" class="cf-hit" data-cfadd="${esc(e.n)}"><span class="notr">${esc(e.n)}</span><small>${esc(L(MUS[e.m]))} · ${esc(L(e.part))}</small></button>`).join(""):`<div class="small muted">${L("Aucun exercice trouvé")}</div>`}
+  res.innerHTML=hits.length?hits.map(e=>`<button type="button" class="cf-hit" data-cfadd="${esc(e.n)}"><span class="notr">${esc(e.n)}</span><small>${esc(L(e.grp))}${e.p?` · ${L("prioritaire")}`:""}</small></button>`).join(""):`<div class="small muted">${L("Aucun exercice trouvé")}</div>`}
 $("coachForm").addEventListener("input",e=>{const box=e.target.closest(".cf-pick");if(box)cfSearch(box);
   if(e.target.id==="cfNotes"||e.target.id==="cfAvoidTxt"){cfDraft[e.target.id==="cfNotes"?"notes":"avoidTxt"]=e.target.value.slice(0,600);const n=cfOptN();$("cfMoreSum").textContent=n?`${n} ${L(n>1?"précisions":"précision")}`:L("facultatif")}});
 $("coachForm").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.closest(".cf-pick")){e.preventDefault();const f=e.target.closest(".cf-pick").querySelector("[data-cfadd]");if(f)f.click()}});
@@ -2124,10 +2115,10 @@ $("coachForm").addEventListener("submit",async e=>{e.preventDefault();const p=cf
   p.notes=String(p.notes||"").trim();p.avoidTxt=String(p.avoidTxt||"").trim();
   const old=PL();p.remarks=(old&&old.profile&&old.profile.remarks)||[];if(p.notes&&!p.remarks.some(r=>r.text===p.notes))p.remarks=[...p.remarks,{at:new Date().toISOString(),text:p.notes}].slice(-10);
   // v43 : le programme de l'app est toujours créé (il sert de base, et de secours si Claude ne répond pas)
-  M().plan=coachBuild(p);M().upd=Date.now();
-  if(withAi){if(!(await nuConsent())){save();$("coachSheet").hidden=true;renderCoach();toast("Ton programme est prêt (sans Claude)");return}
-    M().plan.aiWait=Date.now();save();$("coachSheet").hidden=true;renderCoach();aiHandoff(coachPrompt("new"),true)}
-  else{save();$("coachSheet").hidden=true;renderCoach();toast("Ton programme est prêt")}});
+  planApply(coachBuild(p));
+  if(withAi){if(!(await nuConsent())){save();$("coachSheet").hidden=true;renderMuscu();toast("Ton programme est prêt (sans Claude)");return}
+    M().plan.aiWait=Date.now();save();$("coachSheet").hidden=true;renderMuscu();aiHandoff(coachPrompt("new"),"muscu")}
+  else{save();$("coachSheet").hidden=true;renderMuscu();toast("Ton programme est prêt")}});
 // v43 : demandes envoyées au Claude de la personne (même principe que Nutrition) : il lit le profil et les remarques
 // avec muscu_programme, puis enregistre le programme avec enregistrer_programme ; le résultat revient ici tout seul.
 const GOALS={muscle:["prendre du muscle","build muscle","spiermassa opbouwen"],force:["gagner en force","get stronger","sterker worden"],gras:["perdre du gras","lose fat","vet verliezen"],forme:["être en forme","get fit","fit worden"]};
@@ -2135,39 +2126,44 @@ function coachPrompt(kind,remark){const p=(PL()&&PL().profile)||cfDraft||{},li=L
   const AV={shoulder:["épaules","shoulders","schouders"],back:["bas du dos","lower back","onderrug"],knee:["genoux","knees","knieën"]};
   const av=[...(p.avoid||[]).map(x=>(AV[x]||[x,x,x])[li]),p.avoidTxt].filter(Boolean).join(", ");
   const extra=[p.notes&&T3(`Mes remarques : ${p.notes}`,`My wishes: ${p.notes}`,`Mijn wensen: ${p.notes}`),av&&T3(`À ménager : ${av}`,`Go easy on: ${av}`,`Ontzien: ${av}`),(p.must||[]).length&&T3(`Exercices voulus : ${p.must.join(", ")}`,`Exercises I want: ${p.must.join(", ")}`,`Oefeningen die ik wil: ${p.must.join(", ")}`),(p.never||[]).length&&T3(`Exercices exclus : ${p.never.join(", ")}`,`Exercises to avoid: ${p.never.join(", ")}`,`Oefeningen om te vermijden: ${p.never.join(", ")}`)].filter(Boolean).join(". ");
+  // v44 : seulement les exercices de exercices.js, les prioritaires (P) en premier dans leur groupe (noms gardés en français : ce sont ceux de l'app)
+  const only=T3(`Utilise uniquement ces exercices, avec leur nom exact ; ceux marqués (P) sont à privilégier en premier dans leur groupe musculaire : ${exListTxt()}. N'ajoute aucun autre exercice, sauf un exercice que je demande moi-même.`,
+    `Use only these exercises, with their exact names; those marked (P) come first in their muscle group: ${exListTxt()}. Do not add any other exercise, unless I ask for it myself.`,
+    `Gebruik alleen deze oefeningen, met hun exacte naam; die met (P) krijgen voorrang in hun spiergroep: ${exListTxt()}. Voeg geen andere oefening toe, tenzij ik er zelf om vraag.`);
+  if(kind==="improve")return T3("Avec Sid'note : lis mon programme de musculation et mon historique (muscu_programme), puis améliore-le pour moi (choix des exercices, volume, progression). Enregistre la nouvelle version avec enregistrer_programme.","With Sid'note: read my workout program and history (muscu_programme), then improve it for me (exercise choice, volume, progression). Save the new version with enregistrer_programme.","Met Sid'note: lees mijn trainingsschema en geschiedenis (muscu_programme) en verbeter het (oefeningen, volume, progressie). Sla de nieuwe versie op met enregistrer_programme.")+" "+only;
   if(kind==="adjust")return T3(`Avec Sid'note : lis mon programme de musculation (muscu_programme) et ajuste-le selon ma remarque, sans tout recommencer : « ${remark} ». Garde ce qui va bien, puis enregistre la nouvelle version avec enregistrer_programme.`,
     `With Sid'note: read my workout program (muscu_programme) and adjust it to my remark without starting over: "${remark}". Keep what works, then save the new version with enregistrer_programme.`,
-    `Met Sid'note: lees mijn trainingsschema (muscu_programme) en pas het aan volgens mijn opmerking, zonder opnieuw te beginnen: "${remark}". Houd wat goed is en sla de nieuwe versie op met enregistrer_programme.`);
+    `Met Sid'note: lees mijn trainingsschema (muscu_programme) en pas het aan volgens mijn opmerking, zonder opnieuw te beginnen: "${remark}". Houd wat goed is en sla de nieuwe versie op met enregistrer_programme.`)+" "+only;
   return T3(`Avec Sid'note : compose mon programme de musculation. Objectif ${g}, ${p.days} séances par semaine de ${p.dur} min. Lis d'abord mon profil complet avec muscu_programme.${extra?" "+extra+".":""} Enregistre-le ensuite avec enregistrer_programme.`,
     `With Sid'note: build my workout program. Goal: ${g}, ${p.days} sessions a week of ${p.dur} min. First read my full profile with muscu_programme.${extra?" "+extra+".":""} Then save it with enregistrer_programme.`,
-    `Met Sid'note: stel mijn trainingsschema samen. Doel: ${g}, ${p.days} trainingen per week van ${p.dur} min. Lees eerst mijn volledige profiel met muscu_programme.${extra?" "+extra+".":""} Sla het daarna op met enregistrer_programme.`)}
+    `Met Sid'note: stel mijn trainingsschema samen. Doel: ${g}, ${p.days} trainingen per week van ${p.dur} min. Lees eerst mijn volledige profiel met muscu_programme.${extra?" "+extra+".":""} Sla het daarna op met enregistrer_programme.`)+" "+only}
 async function coachAdjust(text){text=String(text||"").trim();if(!text){toast("Écris d'abord ta remarque");return}const pl=PL();if(!pl)return;
   if(!(await nuConsent()))return;
-  const pr=pl.profile||(pl.profile={});pr.remarks=[...(pr.remarks||[]),{at:new Date().toISOString(),text:text.slice(0,600)}].slice(-10);pl.aiWait=Date.now();pl.upd=Date.now();M().upd=Date.now();save();renderCoach();
-  aiHandoff(coachPrompt("adjust",text.slice(0,600)),true)}
+  const pr=pl.profile||(pl.profile={});pr.remarks=[...(pr.remarks||[]),{at:new Date().toISOString(),text:text.slice(0,600)}].slice(-10);pl.aiWait=Date.now();pl.upd=Date.now();M().upd=Date.now();save();renderMuscu();
+  aiHandoff(coachPrompt("adjust",text.slice(0,600)),"muscu")}
 $("coachClose").addEventListener("click",()=>$("coachSheet").hidden=true);
 $("coachSheet").addEventListener("click",e=>{if(e.target.id==="coachSheet")$("coachSheet").hidden=true});
-$("coachBox").addEventListener("click",e=>{const r=e.target.closest("[data-corest]");if(r){const[d,i]=r.dataset.corest.split(":");coachRest(d,+i);return}
-  // v43 : séries libres (demande de Sid) : + / − sur chaque exercice du programme, de 1 à 10
-  const cs=e.target.closest("[data-coset]");if(cs){const[d,i,k]=cs.dataset.coset.split(":"),pl=PL(),day=pl&&pl.days.find(x=>x.id===d),ex=day&&day.ex[+i];if(!ex)return;
-    ex.sets=Math.max(1,Math.min(10,(+ex.sets||3)+(+k)));pl.upd=Date.now();M().upd=Date.now();save();renderCoach();const nb=document.querySelector(`#coachBox [data-coset="${d}:${i}:${k}"]`);if(nb&&!nb.disabled)nb.focus();return}
+$("coachBox").addEventListener("click",e=>{
   const b=e.target.closest("[data-coach]");if(!b)return;const k=b.dataset.coach;
   if(k==="new")coachOpen();else if(k==="start")woStart(b.dataset.day);
   else if(k==="adjust")coachAdjust($("coRemark").value);
-  else if(k==="resend"){const pl=PL(),rm=pl&&pl.profile&&(pl.profile.remarks||[]).slice(-1)[0];aiHandoff(rm&&rm.text!==pl.profile.notes?coachPrompt("adjust",rm.text):coachPrompt("new"),true)}
-  else if(k==="unwait"){const pl=PL();if(pl){delete pl.aiWait;pl.upd=Date.now();save();renderCoach()}}
+  else if(k==="resend"){const pl=PL(),rm=pl&&pl.profile&&(pl.profile.remarks||[]).slice(-1)[0];aiHandoff(rm&&rm.text!==pl.profile.notes?coachPrompt("adjust",rm.text):coachPrompt("new"),"muscu")}
+  else if(k==="unwait"){const pl=PL();if(pl){delete pl.aiWait;pl.upd=Date.now();save();renderMuscu()}}
   else if(k==="more")openActions(L("Mon programme"),[{l:"Modifier mes réponses",fn:coachOpen},
-    {l:"Ajuster avec Claude",fn:async()=>{if(!(await nuConsent()))return;aiHandoff(T3("Avec Sid'note : lis mon programme de musculation et mon historique, puis améliore-le pour moi (choix des exercices, volume, progression). Enregistre la nouvelle version dans Sid'note.","With Sid'note: read my workout program and history, then improve it for me (exercise choice, volume, progression). Save the new version in Sid'note.","Met Sid'note: lees mijn trainingsschema en geschiedenis en verbeter het (oefeningen, volume, progressie). Sla de nieuwe versie op in Sid'note."),true)}},
-    {l:"Supprimer le programme",danger:true,fn:()=>{const old=M().plan;undoable("Programme supprimé",[],()=>{M().plan={deleted:true,upd:Date.now()}},{after:renderCoach,revert:()=>{M().plan={...old,upd:Date.now()}}})}}])});
+    {l:"Ajuster avec Claude",fn:async()=>{if(!(await nuConsent()))return;aiHandoff(coachPrompt("improve"),"muscu")}},
+    {l:"Partager le programme",fn:()=>copyText(shareTxt(PLD(),L("Mon programme")),"prog")},
+    {l:"Supprimer le programme",danger:true,fn:()=>grpActions(PL().id)}])});
 // --- mode séance : charges conseillées, séries à cocher, repos qui se lance tout seul ---
 let wo=null,woT=null;
-function woStart(dayId){const pl=PL(),d=pl&&pl.days.find(x=>x.id===dayId);if(!d)return;
-  wo={day:d.id,name:d.name,start:Date.now(),ex:d.ex.map(e=>{const h=coachHint(e);return{...e,hint:h.txt,sets:Array.from({length:e.sets},()=>({kg:h.kg,reps:"",done:false}))}})};
+function woStart(seId){const d=msFind(seId);if(!d)return;
+  wo={day:d.id,name:d.name,start:Date.now(),ex:d.exercises.filter(e=>String(e.name||"").trim()).map(e=>{const h=coachHint(e);
+    return{id:e.id,name:e.name,pat:e.pat||"",reps:e.reps||"",rest:+e.rest||120,rir:e.rir||"",note:e.note||"",hint:h.txt,sets:e.sets.map(s=>({kg:h.kg||s.kg||"",reps:"",last:s.reps||"",done:false}))}})};
+  if(!wo.ex.length){wo=null;toast("Ajoute d'abord un exercice à cette séance");return}
   $("woTitle").textContent=d.name;woRender();$("woSheet").hidden=false}
 function woRender(){$("woBody").innerHTML=wo.ex.map((e,i)=>`<div class="wo-ex"><div class="wo-h"><span class="num">${i+1}</span><b class="grow notr">${esc(e.name)}</b><button type="button" class="mini" data-woswap="${i}">${L("Changer")}</button></div>
-  <div class="small muted">${e.sets.length} × ${esc(e.reps)} ${L("reps")} · ${L("repos")} ${restLbl(e.rest)} · ${L("garde")} ${esc(e.rir)} ${L("rép. en réserve")}${e.note?` · ${esc(L(e.note))}`:""}</div>
+  <div class="small muted">${e.sets.length} ${L(e.sets.length>1?"séries":"série")}${e.reps?` × ${esc(e.reps)} ${L("reps")}`:""} · ${L("repos")} ${restLbl(e.rest)}${e.rir?` · ${L("garde")} ${esc(e.rir)} ${L("rép. en réserve")}`:""}${e.note?` · <span class="notr">${esc(e.note)}</span>`:""}</div>
   <div class="small wo-hint">${esc(e.hint||"")}</div>
-  ${e.sets.map((s,j)=>`<div class="wo-set ${s.done?"done":""}"><button type="button" class="wo-del" data-wodel="${i}:${j}" aria-label="${L("Retirer la série")} ${j+1}" ${e.sets.length<=1?"disabled":""}>×</button><span class="lbl">${L("Série")} ${j+1}</span><div class="unit"><input type="text" inputmode="decimal" data-wok="${i}:${j}" value="${esc(s.kg)}" aria-label="kg"><span>kg</span></div><div class="unit"><input type="text" inputmode="numeric" data-wor="${i}:${j}" value="${esc(s.reps)}" placeholder="${esc(String(e.reps).split(/[–-]/).pop())}" aria-label="reps"><span>reps</span></div><button type="button" class="check" data-wodone="${i}:${j}" aria-label="${L("Série faite")}">${s.done?CHECK:""}</button></div>`).join("")}<button type="button" class="mini wo-add" data-woadd="${i}" ${e.sets.length>=12?"disabled":""}>+ ${L("Ajouter une série")}</button></div>`).join("")}
+  ${e.sets.map((s,j)=>`<div class="wo-set ${s.done?"done":""}"><button type="button" class="wo-del" data-wodel="${i}:${j}" aria-label="${L("Retirer la série")} ${j+1}" ${e.sets.length<=1?"disabled":""}>×</button><span class="lbl">${L("Série")} ${j+1}</span><div class="unit"><input type="text" inputmode="decimal" data-wok="${i}:${j}" value="${esc(s.kg)}" aria-label="kg"><span>kg</span></div><div class="unit"><input type="text" inputmode="numeric" data-wor="${i}:${j}" value="${esc(s.reps)}" placeholder="${esc(String(e.reps||s.last||"").split(/[–-]/).pop())}" aria-label="reps"><span>reps</span></div><button type="button" class="check" data-wodone="${i}:${j}" aria-label="${L("Série faite")}">${s.done?CHECK:""}</button></div>`).join("")}<button type="button" class="mini wo-add" data-woadd="${i}" ${e.sets.length>=12?"disabled":""}>+ ${L("Ajouter une série")}</button></div>`).join("")}
 function woRest(sec){clearInterval(woT);const end=Date.now()+sec*1000,box=$("woRest");box.hidden=false;
   const tick=()=>{const r=Math.max(0,Math.round((end-Date.now())/1000));$("woRestTxt").textContent=`${L("Repos")} ${Math.floor(r/60)}:${two(r%60)}`;if(!r){clearInterval(woT);box.hidden=true;if(navigator.vibrate)navigator.vibrate([200,100,200]);try{beep&&beep()}catch(e){}toast("C'est reparti !")}};tick();woT=setInterval(tick,500)}
 $("woRestSkip").addEventListener("click",()=>{clearInterval(woT);$("woRest").hidden=true});
@@ -2177,159 +2173,31 @@ $("woBody").addEventListener("click",e=>{
   const wa=e.target.closest("[data-woadd]");if(wa){const ex=wo.ex[+wa.dataset.woadd],last=ex.sets[ex.sets.length-1]||{};if(ex.sets.length<12)ex.sets.push({kg:last.kg||"",reps:"",done:false});woRender();const nb=document.querySelector(`#woBody [data-woadd="${wa.dataset.woadd}"]`);if(nb)nb.focus();return}
   const wd=e.target.closest("[data-wodel]");if(wd){const[i,j]=wd.dataset.wodel.split(":").map(Number);if(wo.ex[i].sets.length>1){wo.ex[i].sets.splice(j,1);woRender()}return}
   const d=e.target.closest("[data-wodone]");
-  if(d){const[i,j]=d.dataset.wodone.split(":").map(Number),s=wo.ex[i].sets[j];s.done=!s.done;if(s.done&&!s.reps)s.reps=String(wo.ex[i].reps).split(/[–-]/).pop();woRender();if(s.done)woRest(wo.ex[i].rest);return}
-  const w=e.target.closest("[data-woswap]");if(w){const i=+w.dataset.woswap,cur=wo.ex[i],p=(PL().profile||{}),eq=p.equip==="gym"?"g":p.equip==="db"?"d":"b";
+  if(d){const[i,j]=d.dataset.wodone.split(":").map(Number),s=wo.ex[i].sets[j];s.done=!s.done;if(s.done&&!s.reps)s.reps=String(wo.ex[i].reps||s.last||"").split(/[–-]/).pop();woRender();if(s.done)woRest(wo.ex[i].rest);return}
+  const w=e.target.closest("[data-woswap]");if(w){const i=+w.dataset.woswap,cur=wo.ex[i],p=((PL()||{}).profile||{}),eq=p.equip==="gym"?"g":p.equip==="db"?"d":"b";
     // v42 : remplaçants = même muscle (même schéma d'abord), compatibles avec le matériel, les zones à ménager, les exclusions et le reste de la séance
     const role=String(cur.pat||"").includes(":")?cur.pat:(OLDPAT[cur.pat]||""),me=EXN(cur.name),m=me?me.m:role.split(":")[0],pat=me?me.pat:role.split(":")[1];
+    if(!m){toast("Exercice tapé à la main : change-le directement dans la séance");return}
     const av=(p.avoid||[]).map(x=>({shoulder:"s",back:"b",knee:"k"}[x])).filter(Boolean),never=new Set(p.never||[]);
     const others=wo.ex.filter(x=>x!==cur).map(x=>EXN(x.name)).filter(Boolean);
     const alts=EXDB.filter(x=>x.m===m&&x.n!==cur.name&&x.eq.includes(eq)&&!never.has(x.n)&&!av.some(z=>x.z.includes(z))&&!others.some(o=>o.n===x.n||o.g===x.g||(o.m===x.m&&o.pat===x.pat)))
-      .sort((x,y)=>(y.pat===pat)-(x.pat===pat));
+      .sort((x,y)=>(y.pat===pat)-(x.pat===pat)||(y.p-x.p));
     if(!alts.length){toast("Pas d'autre exercice de ce type avec ton matériel");return}
     openActions(L("Remplacer par"),alts.map(a=>({l:a.n,fn:()=>{const old=cur.name;cur.name=a.n;cur.pat=a.m+":"+a.pat;const h=coachHint(cur);cur.hint=h.txt;cur.sets.forEach(s=>{if(!s.done)s.kg=h.kg});
-      const day=PL().days.find(x=>x.id===wo.day),pe=day&&day.ex[wo.ex.indexOf(cur)];if(pe&&pe.name===old){pe.name=a.n;pe.pat=cur.pat;PL().upd=Date.now();save()}woRender()}})))}});
+      const se=msFind(wo.day),pe=se&&se.exercises.find(x=>x.id===cur.id);if(pe&&pe.name===old){pe.name=a.n;pe.pat=cur.pat;seTouch(se);save()}woRender()}})))}});
 // anciens programmes (avant la v42) : schéma sans muscle
 const OLDPAT={squat:"quads:squat",hinge:"hams:hinge",lunge:"quads:lunge",hpush:"chest:hpress",vpush:"shoulders:ohp",vpull:"back:vpull",hpull:"back:hrow",fly:"chest:fly",lat:"shoulders:lat",rear:"shoulders:rear",bic:"biceps:curl",tri:"triceps:push",quad:"quads:iso",ham:"hams:curl",calf:"calves:calf",core:"abs:anti"};
 $("woDone").addEventListener("click",()=>{const done=wo.ex.map(e=>({name:e.name,sets:e.sets.filter(s=>s.done).map(s=>({kg:s.kg,reps:s.reps}))})).filter(e=>e.sets.length);
   if(!done.length){toast("Coche au moins une série");return}
-  ML().push({id:uid(),date:iso(today()),day:wo.day,name:wo.name,min:Math.round((Date.now()-wo.start)/60000),ex:done,upd:Date.now()});M().upd=Date.now();save();
-  clearInterval(woT);$("woRest").hidden=true;$("woSheet").hidden=true;wo=null;renderCoach();toast("Bravo, séance enregistrée !")});
+  ML().push({id:uid(),date:iso(today()),day:wo.day,name:wo.name,min:Math.round((Date.now()-wo.start)/60000),ex:done,upd:Date.now()});M().upd=Date.now();
+  // v44 : les charges et répétitions faites restent affichées dans la séance (pour toutes les séances, libres ou de programme)
+  const se=msFind(wo.day);if(se){for(const w of wo.ex){const pe=se.exercises.find(x=>x.id===w.id);if(!pe)continue;w.sets.forEach((s,j)=>{if(s.done&&pe.sets[j])pe.sets[j]={kg:s.kg,reps:s.reps}})}seTouch(se)}
+  save();clearInterval(woT);$("woRest").hidden=true;$("woSheet").hidden=true;wo=null;renderMuscu();toast("Bravo, séance enregistrée !")});
 const woQuit=()=>{clearInterval(woT);$("woRest").hidden=true;$("woSheet").hidden=true;wo=null};
 $("woCancel").addEventListener("click",woQuit);$("woClose").addEventListener("click",woQuit);
 
-/* ---------- chrono (musculation) ---------- */
-let swStart=null,swAcc=0,swTimer=null,swLaps=[];
-const swFmt=ms=>{const t=Math.floor(ms/1000),h=Math.floor(t/3600),m=Math.floor(t%3600/60),sec=t%60;
-  return h?`${h}:${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`:`${m}:${String(sec).padStart(2,"0")}`};
-const swNow=()=>swAcc+(swStart!==null?Date.now()-swStart:0);
-function swRender(){
-  const run=swStart!==null,t=swNow();
-  $("restClock").textContent=swFmt(t);
-  $("swSlide").classList.toggle("run",run);$("swSlide").classList.toggle("paused",!run&&t>0);
-  $("swMini").textContent=run?swFmt(t):"";
-  // l'anneau fait un tour par minute
-  $("swRing").style.strokeDashoffset=(326.73*(1-(t%60000)/60000)).toFixed(2);
-  $("swPhase").textContent=run?(swLaps.length?`Tour ${swLaps.length+1}`:"En cours"):t>0?"Arrêté":"Chrono";
-  const lastLap=swLaps.length?swLaps[swLaps.length-1]:0;
-  $("swSub").textContent=run?(swLaps.length?`Ce tour : ${swFmt(t-lastLap)}`:t>=60000?`${Math.floor(t/60000)} min écoulée${t>=120000?"s":""}`:"Repos en cours…"):t>0?"Reprends ou remets à zéro.":"Compte jusqu'à ce que tu l'arrêtes.";
-  $("restGo").textContent=run?"Arrêter":t>0?"Reprendre":"Démarrer";
-  $("restReset").hidden=run||t===0;$("restLap").hidden=!run;
-}
-function swRenderLaps(){
-  const el=$("swLaps");el.hidden=!swLaps.length;
-  el.innerHTML=swLaps.map((v,i)=>`<div><span>Tour ${i+1}</span><span>+${swFmt(v-(i?swLaps[i-1]:0))}</span><span>${swFmt(v)}</span></div>`).reverse().join("");
-}
-$("restGo").addEventListener("click",()=>{
-  if(swStart!==null){swAcc+=Date.now()-swStart;swStart=null;clearInterval(swTimer)}
-  else{swStart=Date.now();clearInterval(swTimer);swTimer=setInterval(swRender,250)}
-  swRender();
-});
-$("restLap").addEventListener("click",()=>{if(swStart===null)return;swLaps.push(swNow());if(navigator.vibrate)navigator.vibrate(15);swRenderLaps();swRender()});
-$("restReset").addEventListener("click",()=>{swStart=null;swAcc=0;swLaps=[];clearInterval(swTimer);swRenderLaps();swRender()});
-document.addEventListener("visibilitychange",()=>{if(!document.hidden){swRender();tmTick();if(tmRun)tmPlan()}});
-// v43 : au retour de veille, on resynchronise l'affichage et les sons programmés (l'horloge audio a pu être suspendue)
-addEventListener("pageshow",()=>{swRender();tmTick();if(tmRun)tmPlan();if(P.run)pomoPlan()});
-swRender();
-
-/* ---------- minuteur (musculation) : simple ou fractionné ---------- */
-const TM_PRESETS=[60,90,120,180];
-const TMC=Object.assign({mode:"simple",dur:(data.ui&&data.ui.tmDur)||90,work:40,rest:20,rounds:8},(data.ui&&data.ui.tmCfg)||{});
-let tmRun=null,tmTimer=null,tmLastSeg=null,tmCustomOpen=false;
-const tmSaveCfg=()=>{data.ui.tmCfg=TMC;saveUI()};
-// séquence : simple = 1 bloc ; fractionné = effort / repos × séries (pas de repos après la dernière série)
-function tmSegs(){
-  if(TMC.mode!=="frac")return[{t:"s",d:TMC.dur}];
-  const out=[];for(let i=0;i<TMC.rounds;i++){out.push({t:"e",d:TMC.work,n:i+1});if(TMC.rest>0&&i<TMC.rounds-1)out.push({t:"r",d:TMC.rest,n:i+1})}
-  return out;
-}
-const tmTotal=segs=>segs.reduce((a,x)=>a+x.d,0);
-const tmEl=()=>tmRun?((tmRun.pausedAt||Date.now())-tmRun.startAt-tmRun.pausedTotal)/1000:0;
-function tmLocate(){const el=tmEl();let t=0;for(let i=0;i<tmRun.segs.length;i++){const d=tmRun.segs[i].d;if(el<t+d)return{i,into:el-t,d};t+=d}return{i:tmRun.segs.length,into:0,d:0}}
-function tmRender(){
-  const run=!!tmRun&&!tmRun.pausedAt,paused=!!tmRun&&!!tmRun.pausedAt,frac=TMC.mode==="frac";
-  const sl=$("tmSlide");sl.classList.toggle("run",run);sl.classList.toggle("paused",paused);
-  document.querySelectorAll("#tmMode button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.tmmode===TMC.mode));
-  $("tmMode").hidden=!!tmRun;$("tmSimple").hidden=frac;$("tmFrac").hidden=!frac;
-  let left,frac01=0,label;
-  if(tmRun){const L=tmLocate();if(L.i>=tmRun.segs.length){left=0;frac01=1}else{const sg=tmRun.segs[L.i];left=sg.d-L.into;frac01=L.into/sg.d;
-      sl.classList.toggle("rest-ph",sg.t==="r");
-      label=sg.t==="e"?`Effort ${sg.n}/${TMC.rounds}`:sg.t==="r"?`Repos · puis série ${sg.n+1}`:null}}
-  else{sl.classList.remove("rest-ph");left=frac?TMC.work:TMC.dur}
-  $("tmClock").textContent=swFmt(Math.ceil(Math.max(0,left))*1000);
-  $("tmRing").style.strokeDashoffset=(326.73*(tmRun?frac01:0)).toFixed(2);
-  $("tmPhase").textContent=paused?"En pause":run?"En cours":"Minuteur";
-  $("tmFPhase").textContent=paused?"En pause":label||"Fractionné";
-  $("tmGo").textContent=run?"Pause":paused?"Reprendre":"Démarrer";
-  $("tmReset").hidden=!paused;
-  $("tmMini").textContent=run?swFmt(Math.ceil(Math.max(0,left))*1000):"";
-  const custom=!TM_PRESETS.includes(TMC.dur);
-  $("tmPresets").innerHTML=TM_PRESETS.map(p=>`<button type="button" class="mini" data-tmp="${p}" aria-pressed="${p===TMC.dur}">${swFmt(p*1000)}</button>`).join("")+
-    `<button type="button" class="mini" data-tmcustom="1" aria-pressed="${custom||tmCustomOpen}">${custom?"✎ "+swFmt(TMC.dur*1000):"✎ Perso"}</button>`;
-  $("tmCustom").hidden=!tmCustomOpen||!!tmRun;
-  document.querySelectorAll("#tmFrac input").forEach(i=>{i.disabled=!!tmRun});
-  if(document.activeElement!==$("tfWork"))$("tfWork").value=TMC.work;
-  if(document.activeElement!==$("tfRest"))$("tfRest").value=TMC.rest;
-  if(document.activeElement!==$("tfRounds"))$("tfRounds").value=TMC.rounds;
-  const tot=tmTotal(tmSegs());
-  $("tfInfo").textContent=`${TMC.rounds} série${TMC.rounds>1?"s":""} · durée totale ${swFmt(tot*1000)}`;
-  if(tmRun&&frac){const L=tmLocate();const done=tmRun.segs.slice(0,L.i).reduce((a,x)=>a+x.d,0)+L.into;$("tfInfo").textContent=`Reste ${swFmt(Math.ceil(tot-done)*1000)} au total`}
-}
-let tmSched=false;
-function tmPlan(){if(!tmRun||tmRun.pausedAt){chimeCancel("tm");tmSched=false;return}
-  const el=tmEl()*1000,it=[];let t=0;tmRun.segs.forEach((s,i)=>{if(i&&t>el)it.push([s.t==="r"?"b":"w",t-el]);t+=s.d*1000});it.push(["end",t-el]);tmSched=chimePlan("tm",it)}
-function tmTick(){
-  if(!tmRun||tmRun.pausedAt)return;
-  const L=tmLocate();
-  if(L.i>=tmRun.segs.length){tmRun=null;tmLastSeg=null;clearInterval(tmTimer);keepAwake(false);
-    const sl=$("tmSlide");sl.classList.remove("run","rest-ph");sl.classList.add("done");$("tmClock").textContent="0:00";$("tmPhase").textContent="Terminé";$("tmFPhase").textContent="Terminé";$("tmRing").style.strokeDashoffset="326.73";
-    if(!tmSched)chime("end");tmSched=false;delete CHQ.tm;if(navigator.vibrate)navigator.vibrate([200,100,200]);toast(TMC.mode==="frac"?"Fractionné terminé, bravo !":"Repos terminé, à toi de jouer !");
-    setTimeout(()=>{$("tmSlide").classList.remove("done");tmRender()},4000);return}
-  if(tmLastSeg!==null&&L.i!==tmLastSeg){const sg=tmRun.segs[L.i];
-    if(!tmSched)chime(sg.t==="r"?"b":"w");if(navigator.vibrate)navigator.vibrate(sg.t==="r"?[120]:[120,80,120]);
-    toast(sg.t==="r"?`Repos ${swFmt(sg.d*1000)}`:`Série ${sg.n} : go !`)}
-  tmLastSeg=L.i;
-  tmRender();
-}
-$("tmGo").addEventListener("click",()=>{
-  unlockAudio();$("tmSlide").classList.remove("done");
-  if(tmRun&&!tmRun.pausedAt){tmRun.pausedAt=Date.now();clearInterval(tmTimer);keepAwake(false)}
-  else if(tmRun){tmRun.pausedTotal+=Date.now()-tmRun.pausedAt;tmRun.pausedAt=null;tmTimer=setInterval(tmTick,250);keepAwake(true)}
-  else{tmRun={segs:tmSegs(),startAt:Date.now(),pausedAt:null,pausedTotal:0};tmLastSeg=0;tmCustomOpen=false;clearInterval(tmTimer);tmTimer=setInterval(tmTick,250);keepAwake(true);if(TMC.mode==="frac")chime("w")}
-  tmPlan();tmRender();
-});
-$("tmReset").addEventListener("click",()=>{tmRun=null;tmLastSeg=null;chimeCancel("tm");tmSched=false;clearInterval(tmTimer);keepAwake(false);tmRender()});
-$("tmSlide").addEventListener("click",e=>{
-  const b=e.target.closest("button");if(!b)return;
-  if(b.dataset.tmmode){if(tmRun)return;TMC.mode=b.dataset.tmmode;tmSaveCfg();tmRender()}
-  else if(b.dataset.tmp){TMC.dur=+b.dataset.tmp;tmCustomOpen=false;tmSaveCfg();tmRender()}
-  else if(b.dataset.tmcustom){tmCustomOpen=!tmCustomOpen;$("tmMin").value=Math.floor(TMC.dur/60);$("tmSec").value=TMC.dur%60;tmRender();if(tmCustomOpen)$("tmMin").focus()}
-  else if(b.id==="tmCustomOk"){const v=Math.max(0,+$("tmMin").value||0)*60+Math.max(0,Math.min(59,+$("tmSec").value||0));
-    if(v<5){toast("Choisis au moins 5 secondes");return}TMC.dur=Math.min(5999,v);tmCustomOpen=false;tmSaveCfg();$("tmMin").blur();$("tmSec").blur();tmRender()}
-  else if(b.dataset.tm){const d=+b.dataset.tm;
-    if(tmRun&&TMC.mode==="simple"){const P0=tmLocate();tmRun.segs[0].d=Math.max(P0.into+1,tmRun.segs[0].d+d);tmPlan()}
-    else if(!tmRun){TMC.dur=Math.min(5999,Math.max(5,TMC.dur+d));tmSaveCfg()}
-    tmRender()}
-});
-$("tmCustom").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("tmCustomOk").click()}});
-$("tmFrac").addEventListener("change",e=>{
-  const lim={tfWork:["work",5,3600],tfRest:["rest",0,3600],tfRounds:["rounds",1,99]}[e.target.id];if(!lim)return;
-  TMC[lim[0]]=Math.min(lim[2],Math.max(lim[1],Math.round(+e.target.value||0)));tmSaveCfg();tmRender();
-});
-tmRender();
-
-/* défilement chrono <-> minuteur */
-// v43 : l'onglet affiché ne dépend que de son numéro (variable CSS --i), jamais de la position de défilement :
-// avant, la page cachée au lancement (largeur 0) ou une fenêtre redimensionnée affichait le chrono sous l'onglet « Minuteur ».
-function restGo(i,smooth=true){i=i?1:0;const tr=$("restTrack");tr.classList.toggle("still",!smooth);tr.style.setProperty("--i",i);tr.scrollLeft=0;
-  tr.querySelectorAll(".rest-slide").forEach((s,k)=>{s.inert=k!==i;s.setAttribute("aria-hidden",k!==i)});
-  const u=data.ui||(data.ui={});if(u.restSlide!==i){u.restSlide=i;saveUI()}}
-function restMark(i){document.querySelectorAll(".rest-tabs button").forEach(b=>{const on=+b.dataset.go===i;b.setAttribute("aria-selected",on);b.tabIndex=on?0:-1})}
-// v43 (accessibilité) : flèches gauche / droite entre Chrono et Minuteur, comme des onglets
-document.querySelector(".rest-tabs").addEventListener("keydown",e=>{if(e.key!=="ArrowLeft"&&e.key!=="ArrowRight")return;e.preventDefault();const i=e.key==="ArrowRight"?1:0;restGo(i);restMark(i);const t=document.querySelector(`.rest-tabs [data-go="${i}"]`);if(t)t.focus()});
-document.querySelector(".rest-tabs").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(!b)return;restGo(+b.dataset.go);restMark(+b.dataset.go)});
-$("restTrack").addEventListener("scroll",()=>{if($("restTrack").scrollLeft)$("restTrack").scrollLeft=0}); // jamais de décalage (focus clavier, ancien Safari)
-// revenir sur le dernier choisi
-{const i=(data.ui&&data.ui.restSlide)?1:0;restMark(i);restGo(i,false)}
+// v43 : au retour de veille, on resynchronise les sons programmés du Focus (l'horloge audio a pu être suspendue)
+addEventListener("pageshow",()=>{if(P.run)pomoPlan()});
 
 /* ---------- musique (Spotify) ---------- */
 const SPOT_DEFAULT="playlist/37i9dQZF1DWZeKCadgRdKQ"; // Deep Focus
@@ -3116,9 +2984,6 @@ const AIS={
       T3("Touche « Ajouter », puis reviens ici.","Tap “Add”, then come back here.","Tik op ‘Toevoegen’ en kom dan hier terug.")]}};
 const aiCur=()=>data.prefs.ai==="claude"?AIS.claude:null; // v42 : Claude seulement (un ancien choix ChatGPT / Le Chat = pas encore branché)
 const AI_TEST=()=>T3("Qu'est-ce que j'ai de prévu aujourd'hui dans Sid'note ?","What do I have planned today in Sid'note?","Wat staat er vandaag gepland in Sid'note?");
-const AI_PROJ=()=>T3("Tu es mon coach nutrition et musculation. Utilise toujours le connecteur Sid'note : avant de répondre, lis ma journée (nutrition_journee) ou mon programme (muscu_programme). Note mes repas avec noter_repas, enregistre mes menus et mes programmes dans Sid'note. Réponds simplement, en français, avec des chiffres précis.",
-  "You are my nutrition and training coach. Always use the Sid'note connector: before answering, read my day (nutrition_journee) or my program (muscu_programme). Log my meals with noter_repas, save my menus and programs in Sid'note. Answer simply, with precise numbers.",
-  "Je bent mijn voedings- en trainingscoach. Gebruik altijd de Sid'note-connector: lees eerst mijn dag (nutrition_journee) of mijn schema (muscu_programme). Noteer mijn maaltijden met noter_repas en sla menu's en schema's op in Sid'note. Antwoord eenvoudig, in het Nederlands, met precieze cijfers.");
 const AI_HABIT=()=>T3("À partir de maintenant, quand je te dis ce que j'ai mangé ou que je t'envoie la photo de mon assiette, calcule les calories et note-le toujours dans Sid'note, sans me le redemander.","From now on, whenever I tell you what I ate or send a photo of my plate, work out the calories and always log it in Sid'note without asking me again.","Vanaf nu: als ik je vertel wat ik gegeten heb of een foto van mijn bord stuur, bereken de calorieën en noteer het altijd in Sid'note zonder het opnieuw te vragen.");
 let aiW={step:"pick",url:"",hash:"",poll:null};
 function aiWizard(){if(data.prefs.ai!=="claude"){data.prefs.ai="claude";delete data.prefs.aiOk;save()}aiW={step:data.prefs.aiOk?"test":"setup",url:"",hash:"",poll:null};$("aiSheet").hidden=false;aiRender()}
@@ -3137,21 +3002,13 @@ function aiRender(){const b=$("aiBody"),ai=aiCur()||AIS.claude;aiStop();
     if(!aiW.url)mcpCreate(ai.name).then(r=>{aiW.url=r.url;aiW.hash=r.hash;mcpLoad();if(aiW.step==="setup")aiRender()})
       .catch(ex=>{const u=$("aiUrl");if(u)u.textContent=L(ex instanceof TypeError?"Pas de connexion internet":"Création impossible pour l'instant");toast(ex instanceof TypeError?"Pas de connexion internet":"Création impossible pour l'instant")});
     return}
-  if(aiW.step==="proj"){const ai=aiCur()||AIS.claude;$("aiTitle").textContent=L("Dossier Santé");
-    b.innerHTML=`<p class="small muted" style="margin:0 0 10px">${L("Toutes les discussions ouvertes depuis Nutrition, Graphiques et Musculation iront dans ce projet Claude : tout est rangé au même endroit, et Claude y garde tes consignes.")}</p>
-      <div class="ai-step"><b>1. ${L("Crée le dossier")}</b><ol class="small mcp-steps"><li>${esc(T3(`Touche « Ouvrir ${ai.name} » puis crée un nouveau projet nommé « Sid'note Santé ».`,`Tap “Open ${ai.name}”, then create a new project called “Sid'note Santé”.`,`Tik op ‘${ai.name} openen’ en maak een nieuw project ‘Sid'note Santé’.`))}</li>
-        <li>${L("Dans ses instructions, colle ce texte :")}</li></ol><div class="ai-prompt notr" id="aiProjTxt">${esc(AI_PROJ())}</div>
-        <div class="ai-acts"><button type="button" class="btn ghost" data-aiprojcopy="1">${L("Copier les instructions")}</button><a class="btn" href="${"https://claude.ai/projects"}" target="_blank" rel="noopener">${L("Ouvrir")} ${esc(ai.name)}</a></div></div>
-      <div class="ai-step"><b>2. ${L("Colle ici le lien du dossier")}</b><div class="small muted">${L("Dans le projet, copie l'adresse de la page (bouton Partager du navigateur → Copier).")}</div>
-        <form id="aiProjForm" style="display:flex;gap:8px;margin-top:8px"><input id="aiProjIn" type="url" inputmode="url" placeholder="https://…" value="${esc(data.prefs.aiProj||"")}" aria-label="${L("Lien du dossier")}" autocomplete="off" style="flex:1;min-width:0"><button class="btn" type="submit">${L("Enregistrer")}</button></form>
-        ${data.prefs.aiProj?`<button type="button" class="linkbtn" data-aiprojdel="1" style="margin-top:8px">${L("Ne plus utiliser de dossier")}</button>`:""}</div>`;return}
   if(aiW.step==="test"){$("aiTitle").textContent=ai.name;const ok=!!data.prefs.aiOk&&!aiW.hash;
     b.innerHTML=`<div class="ai-step"><b>3. ${L("Envoie ce message à")} ${esc(ai.name)}</b><div class="ai-prompt notr">${esc(AI_TEST())}</div>
         <a class="btn" href="${ai.ask(AI_TEST())}" target="_blank" rel="noopener" style="width:100%;margin-top:8px">${L("Envoyer avec")} ${esc(ai.name)}</a></div>
       <div class="ai-wait" id="aiWait">${ok?`<b class="ok">✓ ${L("C'est branché !")}</b>`:`<span class="spin"></span>${L("En attente de Claude… (accepte l'accès à Sid'note s'il te le demande)")}`}</div>
       <div class="ai-step" id="aiHabit" ${ok?"":"hidden"}><b>${L("Dernière astuce")}</b><div class="small muted">${L("Pour que tes repas arrivent tout seuls dans Sid'note, envoie-lui une fois ce message :")}</div>
         <div class="ai-prompt notr">${esc(AI_HABIT())}</div><a class="btn ghost" href="${ai.ask(AI_HABIT())}" target="_blank" rel="noopener" style="width:100%;margin-top:8px">${L("Envoyer avec")} ${esc(ai.name)}</a>
-        <button type="button" class="btn ghost" data-aistep="proj" style="width:100%;margin-top:8px">${L("Ranger mes discussions Santé dans un dossier")}</button></div>
+        <button type="button" class="btn ghost" data-convset="1" style="width:100%;margin-top:8px">${L("Toujours utiliser la même conversation")}</button></div>
       <div class="ai-acts"><button type="button" class="btn ghost" data-aistep="setup">${L("Revoir les étapes")}</button><button type="button" class="btn" id="aiDone" ${ok?"":"hidden"}>${L("Terminer")}</button></div>`;
     if(!ok)aiW.poll=setInterval(aiCheck,3000);return}}
 // le branchement est confirmé dès que l'IA a utilisé l'adresse (mcp_tokens.last_used)
@@ -3163,20 +3020,33 @@ $("aiBody").addEventListener("click",e=>{const p=e.target.closest("[data-aipick]
   const st=e.target.closest("[data-aistep]");if(st){aiW.step=st.dataset.aistep;aiRender();return}
   if(e.target.closest("[data-aiadd]")){setTimeout(()=>{if(aiW.step==="setup"){aiW.step="test";aiRender()}},800);return}
   if(e.target.closest("[data-aicopy]")){copyTxt(aiW.url).then(ok=>toast(ok?"Adresse copiée":"Copie impossible : sélectionne-la et copie-la"));return}
-  if(e.target.closest("[data-aiprojcopy]")){copyTxt(AI_PROJ()).then(ok=>toast(ok?"Instructions copiées":"Copie impossible"));return}
-  if(e.target.closest("[data-aiprojdel]")){delete data.prefs.aiProj;save();aiRender();renderAiCards();toast("Dossier retiré");return}
   if(e.target.closest("#aiDone")){$("aiSheet").hidden=true;aiStop();toast("Claude est branché sur Sid'note")}});
 $("aiClose").addEventListener("click",()=>{$("aiSheet").hidden=true;aiStop()});
-$("aiBody").addEventListener("submit",e=>{if(e.target.id!=="aiProjForm")return;e.preventDefault();const v=$("aiProjIn").value.trim();
-  if(!/^https:\/\/[\w.-]+\/\S+$/.test(v)){toast("Colle le lien complet du dossier (il commence par https://)");return}
-  data.prefs.aiProj=v;save();$("aiSheet").hidden=true;renderAiCards();toast("Dossier Santé enregistré")});
 $("aiSheet").addEventListener("click",e=>{if(e.target.id==="aiSheet"){$("aiSheet").hidden=true;aiStop()}});
 document.addEventListener("click",e=>{if(e.target.closest("[data-aiwiz]")){$("aiAskSheet").hidden=true;aiWizard()}
-  else if(e.target.closest("#aiState [data-aiproj]")){aiW={step:"proj",url:"",hash:"",poll:null};$("aiSheet").hidden=false;aiRender()}});
+  else if(e.target.closest("[data-convset]")){$("aiAskSheet").hidden=true;$("aiSheet").hidden=true;aiStop();convSettings()}});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&!$("aiSheet").hidden&&aiW.step==="test")aiCheck()});
-// demande confiée à l'IA : message prêt, ouvert dans l'IA d'un toucher (ou copié)
-// v41 : demandes Santé (nutrition, graphiques, musculation) → ouvertes dans le dossier « Sid'note Santé » de l'IA (projet), message copié
-const aiProj=()=>/^https:\/\/[\w.-]+\//.test(data.prefs.aiProj||"")?data.prefs.aiProj:"";
+// demande confiée à Claude : message prêt, ouvert dans Claude d'un toucher (ou copié)
+// v44 : une conversation fixe par sujet (data.prefs.aiConv = {nutri, muscu}, liens claude.ai/chat/… ou claude.ai/project/…) pour ne pas
+// ouvrir une nouvelle conversation à chaque demande : une conversation existante ne peut pas être pré-remplie, donc le message est copié
+// puis la conversation s'ouvre, il n'y a plus qu'à coller. Ancien « Dossier Santé » (data.prefs.aiProj) : sert de repli pour les deux sujets.
+const CONV_OK=u=>/^https:\/\/claude\.ai\/(?:chat|project)\/[\w-]+/.test(u||"");
+const convUrl=t=>{const c=(data.prefs.aiConv||{})[t];return CONV_OK(c)?c:CONV_OK(data.prefs.aiProj)?data.prefs.aiProj:""};
+const CONV_NAME={nutri:"Nutrition",muscu:"Musculation"};
+// copie pendant le toucher (sinon l'iPhone la refuse), avec un repli sans l'API du presse-papiers
+function copyNow(t){try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).catch(()=>{});return}}catch(e){}
+  const x=document.createElement("textarea");x.value=t;x.setAttribute("readonly","");x.style.position="fixed";x.style.opacity="0";document.body.appendChild(x);x.select();try{document.execCommand("copy")}catch(e){}x.remove()}
+// ouvre Claude pour un sujet : la conversation fixe si elle est réglée (message copié), sinon une nouvelle conversation pré-remplie
+function aiGo(topic,prompt,quiet){const u=topic&&convUrl(topic),ai=aiCur()||AIS.claude;
+  if(u){copyNow(prompt);extOpen(u);if(!quiet)toast("Prompt copié, colle-le dans la conversation");return true}
+  extOpen(ai.ask(prompt));return false}
+function convSettings(){show("more");const d=$("fitSec");if(d){d.open=true;setTimeout(()=>{d.scrollIntoView({block:"start",behavior:"smooth"});const i=$("convNutri");if(i&&!i.value)i.focus({preventScroll:true})},120)}}
+function renderConv(){const c=data.prefs.aiConv||{};for(const[t,id]of[["nutri","convNutri"],["muscu","convMuscu"]]){const i=$(id);if(i&&document.activeElement!==i)i.value=c[t]||""}}
+document.querySelectorAll(".conv-f").forEach(f=>f.addEventListener("submit",e=>{e.preventDefault();const t=f.dataset.conv,v=f.querySelector("input").value.trim();
+  if(v&&/^https:\/\/claude\.ai\/share\//.test(v)){toast("Ce lien de partage est public : copie plutôt l'adresse de la conversation (https://claude.ai/chat/…)");return}
+  if(v&&!CONV_OK(v)){toast("Colle le lien complet de la conversation (https://claude.ai/chat/…)");return}
+  const c=data.prefs.aiConv=data.prefs.aiConv||{};if(v)c[t]=v;else delete c[t];save();renderAiCards();
+  toast(v?`${L("Conversation")} ${L(CONV_NAME[t])} ${L("enregistrée")}`:`${L("Conversation")} ${L(CONV_NAME[t])} ${L("retirée : une nouvelle conversation s'ouvrira à chaque fois")}`)}));
 // v43 : une photo ne passe pas dans un lien (?q= ne prend que du texte). On la partage avec la feuille de partage
 // (iPhone : app Claude, photo + message), sinon on la copie pour la coller dans Claude (ordinateur), ou on l'enregistre.
 let aaImg=null;
@@ -3186,16 +3056,17 @@ async function aaImgPrep(dataUrl){aaImg={url:dataUrl,file:null,png:null};
     aaImg.png=await new Promise(r=>c.toBlob(r,"image/png"))}catch(e){}
   const can=!!(aaImg.file&&navigator.canShare&&navigator.canShare({files:[aaImg.file]}));
   const sh=$("aaShare");if(sh)sh.hidden=!can;const cp=$("aaImgCopy");if(cp)cp.hidden=can||!(aaImg.png&&window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write)}
-function aiHandoff(prompt,health,opt){const ai=aiCur()||AIS.claude,pj=health&&aiProj(),img=opt&&opt.img;$("aaPrompt").textContent=prompt;aaImg=null;
+function aiHandoff(prompt,topic,opt){const ai=aiCur()||AIS.claude,cv=topic&&convUrl(topic),img=opt&&opt.img;$("aaPrompt").textContent=prompt;aaImg=null;
+  $("aaActs").dataset.topic=topic||"";
   $("aaActs").innerHTML=(ai&&data.prefs.aiOk?"":`<button type="button" class="btn" data-aiwiz="1">${L("Brancher Claude")}</button>`)+
     (img?`<div class="aa-img"><img src="${img}" alt="${L("Photo de ton plat")}"><span class="small muted">${L("La photo part avec le message : choisis Claude dans la liste de partage.")}</span></div>
       <button type="button" class="btn" id="aaShare">${L("Envoyer la photo à Claude")}</button>
       <button type="button" class="btn" id="aaImgCopy" hidden>${L("Copier la photo et ouvrir Claude")}</button>
       <a class="btn ghost" id="aaImgSave" href="${img}" download="assiette.jpg">${L("Enregistrer la photo")}</a>`:"")+
-    (pj?`<a class="btn" href="${esc(pj)}" target="_blank" rel="noopener" data-aaproj="1">${L("Ouvrir mon dossier Santé")}</a><div class="small muted" style="text-align:center">${L("Le message est copié : colle-le dans une nouvelle discussion du dossier.")}</div>`:"")+
-    (ai&&!img?`<a class="btn ${data.prefs.aiOk&&!pj?"":"ghost"}" href="${ai.ask(prompt)}" target="_blank" rel="noopener">${L(pj?"Envoyer hors du dossier":"Envoyer avec")} ${pj?"":esc(ai.name)}</a>`:"")+
+    (cv&&!img?`<button type="button" class="btn" data-aaconv="1">${L("Ouvrir la conversation")} ${L(CONV_NAME[topic])}</button><div class="small muted" style="text-align:center">${L("Le message sera copié : colle-le dans la conversation.")}</div>`:"")+
+    (ai&&!cv&&!img?`<a class="btn ${data.prefs.aiOk?"":"ghost"}" href="${ai.ask(prompt)}" target="_blank" rel="noopener">${L("Envoyer avec")} ${esc(ai.name)}</a>`:"")+
     `<button type="button" class="btn ghost" id="aaCopy">${L("Copier le message")}</button>`+
-    (health&&!pj&&ai&&data.prefs.aiOk?`<button type="button" class="linkbtn aa-proj" data-aiproj="1">${L("Ranger ces discussions dans un dossier Santé")}</button>`:"");
+    (topic&&!cv&&ai&&data.prefs.aiOk?`<button type="button" class="linkbtn aa-proj" data-convset="1">${L("Toujours utiliser la même conversation")} ${L(CONV_NAME[topic]||"")}</button>`:"");
   $("aiAskSheet").hidden=false;if(img)aaImgPrep(img)}
 $("aaActs").addEventListener("click",e=>{
   if(e.target.closest("#aaShare")){if(!aaImg||!aaImg.file){toast("Photo en préparation, réessaie");return}
@@ -3204,17 +3075,16 @@ $("aaActs").addEventListener("click",e=>{
     // la copie d'abord (pendant le clic, sinon le navigateur la refuse), puis Claude s'ouvre avec le message
     try{navigator.clipboard.write([new ClipboardItem({"image/png":Promise.resolve(aaImg.png)})]).then(()=>toast("Photo copiée : colle-la dans Claude (Ctrl+V ou ⌘V)"),()=>toast("Copie impossible : enregistre la photo"))}catch(x){toast("Copie impossible : enregistre la photo")}
     extOpen(ai.ask($("aaPrompt").textContent));return}
-  if(e.target.closest("[data-aaproj]")){try{navigator.clipboard.writeText($("aaPrompt").textContent).catch(()=>{})}catch(x){}toast("Message copié : colle-le dans le dossier");setTimeout(()=>{$("aiAskSheet").hidden=true},300);return}
-  if(e.target.closest("[data-aiproj]")){$("aiAskSheet").hidden=true;aiW={step:"proj",url:"",hash:"",poll:null};$("aiSheet").hidden=false;aiRender();return}
+  if(e.target.closest("[data-aaconv]")){aiGo($("aaActs").dataset.topic,$("aaPrompt").textContent);setTimeout(()=>{$("aiAskSheet").hidden=true},300);return}
   if(e.target.closest("#aaCopy"))copyTxt($("aaPrompt").textContent).then(ok=>toast(ok?"Message copié : colle-le dans Claude":"Copie impossible"));
   else if(e.target.closest("a"))setTimeout(()=>{$("aiAskSheet").hidden=true},300)});
 $("aaClose").addEventListener("click",()=>$("aiAskSheet").hidden=true);
 $("aiAskSheet").addEventListener("click",e=>{if(e.target.id==="aiAskSheet")$("aiAskSheet").hidden=true});
 // cartes « Mon IA » : Nutrition, Réglages
 function renderAiCards(){const ai=aiCur(),ok=!!(ai&&data.prefs.aiOk);
-  const st=$("aiState");if(st)st.innerHTML=ok?`<b class="ok">✓ ${esc(ai.name)} ${L("est branché")}</b><div class="small muted">${aiProj()?L("Dossier Santé : configuré"):L("Dossier Santé : pas encore")} · <button type="button" class="linkbtn" data-aiproj="1">${L(aiProj()?"Modifier":"Configurer")}</button></div>`:`<span class="small muted">${L("Claude n'est pas encore branché.")}</span>`;
+  const st=$("aiState");if(st)st.innerHTML=ok?`<b class="ok">✓ ${esc(ai.name)} ${L("est branché")}</b><div class="small muted">${L("Conversations sid'fit")} : ${convUrl("nutri")||convUrl("muscu")?L("réglées"):L("pas encore")} · <button type="button" class="linkbtn" data-convset="1">${L(convUrl("nutri")||convUrl("muscu")?"Modifier":"Configurer")}</button></div>`:`<span class="small muted">${L("Claude n'est pas encore branché.")}</span>`;
   const c=$("nuAiCard");if(!c)return;c.hidden=isTrial()||ok; // v43 : Claude branché → la carte cède la place à « Ajouter ce que tu manges » (en haut)
-  const lk=$("nuAiLink");if(lk){lk.hidden=!ok||isTrial();if(ok)lk.href=ai.ask(T3("J'ai mangé : ","I ate: ","Ik heb gegeten: "))}
+  const lk=$("nuAiLink");if(lk){lk.hidden=!ok||isTrial();if(ok)lk.href=convUrl("nutri")||ai.ask(T3("J'ai mangé : ","I ate: ","Ik heb gegeten: "))}renderConv();
   c.innerHTML=ok?`<div class="grow"><b>${IC("sparkle")||""} ${L("Claude calcule pour toi")}</b><div class="small muted">${L("Dis-lui ce que tu as mangé ou envoie-lui la photo de ton assiette : tout arrive ici.")}</div></div><a class="btn" href="${ai.ask(T3("J'ai mangé : ","I ate: ","Ik heb gegeten: "))}" target="_blank" rel="noopener">${L("Ouvrir")} ${esc(ai.name)}</a>`
     :`<div class="grow"><b>${L("Branche Claude")}</b><div class="small muted">${L("Calories, menus et bilans sont calculés par Claude, même avec la version gratuite. 2 minutes, une seule fois.")}</div></div><button type="button" class="btn" data-aiwiz="1">${L("Brancher")}</button>`}
 
@@ -3762,7 +3632,7 @@ async function nuCall(kind,payload){payload=payload||{};
     const j=await api("/functions/v1/nutrition",{method:"POST",token:await token(),body:{kind,lang:LANG,text:payload.text}});
     if(j&&j.result){j.result._src="memory";return j.result}}
   throw aiNeed(kind,payload)}
-function aiNeed(kind,p){aiHandoff(aiPrompt(kind,p),true,p&&p.image?{img:"data:image/jpeg;base64,"+p.image}:null);const e=new Error(L("Claude s'en charge : suis les étapes à l'écran, le résultat arrivera ici."));e.ai=true;return e}
+function aiNeed(kind,p){aiHandoff(aiPrompt(kind,p),"nutri",p&&p.image?{img:"data:image/jpeg;base64,"+p.image}:null);const e=new Error(L("Claude s'en charge : suis les étapes à l'écran, le résultat arrivera ici."));e.ai=true;return e}
 // profil : métabolisme (Mifflin-St Jeor), dépense avec le sport, objectif selon le rythme, macros (mêmes règles prudentes qu'avant)
 const SPORT_MET=[[/muscu|fitness|gym|halt|crossfit|weight|kracht/,5.5],[/course|running|jogg|run|lopen|hardlo/,9.8],[/v[eé]lo|cycl|bike|fiets|spinning/,7.5],[/nata|swim|zwem|piscine/,7],
   [/foot|basket|tennis|padel|hand|volley|rugby|hockey/,7],[/marche|walk|wandel|randon/,3.8],[/boxe|box|mma|judo|karat|combat|lutte/,9],[/yoga|pilates|stretch/,3],[/danse|dance|dans/,5.5]];
@@ -4016,6 +3886,7 @@ function extOpen(u){
     location.href="claude://"+u.slice(8);setTimeout(()=>{if(!document.hidden)location.href=u},1600);return null}
   const w=window.open(u,"_blank");if(w){try{w.opener=null}catch(e){}extWin=w}return w}
 document.addEventListener("visibilitychange",()=>{if(document.hidden||!extWin)return;const w=extWin;extWin=null;setTimeout(()=>{try{if(!w.closed)w.close()}catch(e){}},250)});
+$("nuAiLink").addEventListener("click",e=>{e.preventDefault();aiGo("nutri",T3("J'ai mangé : ","I ate: ","Ik heb gegeten: "))});
 document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest('a[target="_blank"][href^="https://claude.ai/"]');if(!a||e.defaultPrevented)return;e.preventDefault();extOpen(a.href)});
 // « Envoyer à Claude » : la photo déposée (repas-…) est renommée envoi-… ; le connecteur la joint à nutrition_journee, un outil que
 // Claude connaît déjà (sa liste d'outils peut dater d'avant photo_repas), puis l'efface
@@ -4023,15 +3894,16 @@ function nuPhotoMark(ph){const src=ph.done,dst=src.replace("/repas-","/envoi-"),
   return (async()=>{const r=await fetch(SUPABASE_URL+"/storage/v1/object/move",{method:"POST",headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+await token(),"Content-Type":"application/json"},
     body:JSON.stringify({bucketId:"documents",sourceKey:key(src),destinationKey:key(dst)})});if(!r.ok)throw new Error("move "+r.status)})()
     .catch(async()=>{await stor("POST",dst,await (await fetch(ph.big)).blob(),"image/jpeg")})}
-function nuPhotoSend(q){const ph=nuPhoto,ai=aiCur()||AIS.claude;
+function nuPhotoSend(q){const ph=nuPhoto;
   const msg=T3(`Avec Sid'note : lis ma journée nutrition (nutrition_journee) : la photo de mon assiette que je viens d'envoyer y est jointe. Estime ce que j'ai mangé, puis note-le avec noter_repas.${q?` Précision : ${q}`:""}`,
     `With Sid'note: read my nutrition day (nutrition_journee): the photo of my plate I just sent is attached to it. Estimate what I ate, then log it with noter_repas.${q?` Note: ${q}`:""}`,
     `Met Sid'note: lees mijn voedingsdag (nutrition_journee): de foto van mijn bord die ik net stuurde zit erbij. Schat wat ik gegeten heb en noteer het met noter_repas.${q?` Toelichting: ${q}`:""}`);
   const clear=()=>{nuPhoto=null;$("nuPhotoPrev").hidden=true;$("nuPhotoPrev").innerHTML="";$("nuAsk").value="";grow($("nuAsk"));nuAskLbl()};
   // Claude s'ouvre tout de suite, pendant le toucher (une fenêtre vide remplie plus tard reste blanche dans l'app installée sur iPhone) ;
   // la photo finit de partir pendant que Claude s'ouvre (elle est en général déjà déposée depuis la prise de vue)
-  extOpen(ai.ask(msg));clear();
-  (ph.up||nuPhotoUp()||Promise.reject()).then(()=>nuPhotoMark(ph)).then(()=>toast("Photo envoyée : Claude note le repas, il arrivera ici"),
+  // v44 : dans la conversation Nutrition si elle est réglée (le message est copié : il suffit de coller), sinon une nouvelle conversation
+  const conv=aiGo("nutri",msg,true);clear();if(conv)toast("Prompt copié, colle-le dans la conversation");
+  (ph.up||nuPhotoUp()||Promise.reject()).then(()=>nuPhotoMark(ph)).then(()=>toast(conv?"Photo envoyée. Prompt copié, colle-le dans la conversation":"Photo envoyée : Claude note le repas, il arrivera ici"),
     ()=>toast("Envoi de la photo impossible : réessaie"))}
 // un aliment renvoyé par l'IA apparaît-il dans ce que la personne a écrit ? (racine des mots, sans accents)
 const nz=x=>String(x||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
@@ -4469,7 +4341,7 @@ const ONB_DESC={
   pomo:"Travaille concentré : sessions et pauses s'enchaînent toutes seules, avec ta musique.",
   graph:"Tes macros, ton poids et tes calories en graphiques, avec un bilan du jour et de la semaine.",
   nutri:"Tes calories et tes macros du jour, et des menus faits pour toi.",
-  muscu:"Tes séances, tes charges et tes répétitions, avec chrono, tours et minuteur fractionné.",
+  muscu:"Tes séances et tes programmes, tes charges et tes répétitions, avec la progression d'une fois à l'autre.",
   docs:"Range tes PDF, scanne des feuilles avec l'appareil photo et retrouve-les en un instant.",
   app:"Les étapes pour installer Sid'home sur ton écran d'accueil."};
 let onbSel={};
@@ -4491,7 +4363,7 @@ function openOnb(){
   onbAllLbl();onbLook();$("onb").hidden=false;document.body.style.overflow="hidden";onbGoTo(0);
 }
 const onbSlides=()=>[...document.querySelectorAll("#onbTrack .onb-slide")];
-// v43 : diapositive affichée selon son numéro (comme le chrono), jamais selon la position de défilement
+// v43 : diapositive affichée selon son numéro, jamais selon la position de défilement
 let onbI=0;const onbIdx=()=>onbI;
 function onbStep(){const sl=onbSlides(),i=Math.min(sl.length-1,onbIdx());sl.forEach((x,j)=>{x.classList.toggle("on",j===i);x.inert=j!==i});const ap=sl[i]&&sl[i].dataset.app;if(ap)$("onb").dataset.app=ap;else delete $("onb").dataset.app;
   $("onbDots").innerHTML=sl.map((_,j)=>`<i class="${j===i?"on":""}"></i>`).join("");$("onbPrev").style.visibility=i?"visible":"hidden";$("onbNext").hidden=i===sl.length-1}
@@ -4560,10 +4432,6 @@ if(window.visualViewport){const vv=visualViewport,st=document.documentElement.st
     if(e.key==="Tab"){const f=[...bg.querySelectorAll(FOC)].filter(vis);if(!f.length)return;const a=f[0],z=f[f.length-1];
       if(!bg.contains(document.activeElement)){e.preventDefault();a.focus();return}
       if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}},true)}
-// v31 : chrono compact quand il est collé en haut pendant la séance
-if(window.IntersectionObserver&&$("restSentinel")){new IntersectionObserver(es=>{const e=es[0];{const r=$("rest"),on=!e.isIntersecting&&e.boundingClientRect.top<0;if(on===r.classList.contains("stuck"))return;
-    // v42 : la hauteur perdue en devenant compact est gardée en marge : la page ne saute plus (sinon le chrono pouvait se coller et se décoller sans fin)
-    r.style.marginBottom="";const h0=r.offsetHeight;r.classList.toggle("stuck",on);if(on)r.style.marginBottom=(12+h0-r.offsetHeight)+"px"}},{threshold:0}).observe($("restSentinel"))}
 /* ---------- démarrage ---------- */
 hydrateIcons();document.querySelectorAll(".onb-floats [data-fn]").forEach(e=>e.innerHTML=ICON(e.dataset.fn));
 document.addEventListener("focusin",e=>{if(e.target.matches&&e.target.matches('input[list="typeList"]'))typeChipsFor(e.target)});
@@ -4615,9 +4483,9 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v43-11";
+const BUILD="sidnote-v44";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
-  if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||swTimer||tmRun||(P&&P.run)||nuBusy||
+  if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;
   if(busy||sessionStorage.getItem("sidnote-upd")===m[1])return; // une seule fois par version : jamais de boucle
   sessionStorage.setItem("sidnote-upd",m[1]);if(data&&cache&&cache.dirty)await push().catch(()=>{});location.reload()}catch(e){}}

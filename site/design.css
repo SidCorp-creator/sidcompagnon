@@ -61,15 +61,11 @@ html[data-ds] .sheet{border-radius:6px 6px 0 0}
 html[data-ds] .resume{border-radius:6px}
 html[data-ds] .switch{border-radius:6px}
 html[data-ds] .spot iframe{border-radius:6px}
-html[data-ds] .rest{border-radius:6px}
-html[data-ds] .rest-tabs{border-radius:6px}
-html[data-ds] .rest-tabs button{border-radius:6px}
-html[data-ds] .rest.run .ms{border-radius:6px}
+
 html[data-ds] .ex{border-radius:6px}
 html[data-ds] .mini{border-radius:6px}
 html[data-ds] textarea{border-radius:6px}
-html[data-ds] .tm-mode{border-radius:6px}
-html[data-ds] .tm-mode button{border-radius:6px}
+
 html[data-ds] .catbar{border-radius:6px}
 html[data-ds] .cat-prog{border-radius:6px}
 html[data-ds] .onb-dots i{border-radius:6px}
@@ -138,7 +134,7 @@ html[data-ds] .na-ic{border-radius:6px}
 html[data-ds] .dc-d{border-radius:6px}
 html[data-ds] .pw-eye{border-radius:6px}
 html[data-ds] .mf-n{border-radius:6px}
-html[data-ds] .rest.stuck{border-radius:6px}
+
 html[data-ds] .card{border-radius:6px}
 html[data-ds] .home-add{border-radius:6px}
 html[data-ds] .vseg{border-radius:6px}
@@ -204,15 +200,13 @@ html[data-ds] .back{font-weight:500}
 html[data-ds] .dayv-title{font-weight:500}
 html[data-ds] .blk b{font-weight:500}
 html[data-ds] .linkbtn{font-weight:500}
-html[data-ds] .rest-tabs button{font-weight:500}
+
 html[data-ds] .ms-name{font-weight:500}
 html[data-ds] .ex-head input{font-weight:500}
 html[data-ds] .set .lbl{font-weight:500}
 html[data-ds] .mini{font-weight:500}
 html[data-ds] .more-opts>summary{font-weight:500}
-html[data-ds] .tm-mode button{font-weight:500}
-html[data-ds] .tm-frac label{font-weight:500}
-html[data-ds] .laps div:first-child{font-weight:500}
+
 html[data-ds] .doc-open b{font-weight:500}
 html[data-ds] .onb-skip{font-weight:500}
 html[data-ds] .onb-tag{font-weight:500}
@@ -320,7 +314,7 @@ html[data-ds] .x{color:var(--muted)}
 html[data-ds] [data-c2]{background:var(--late)!important;color:#fff!important;border-radius:4px!important}
 
 /* ---------- chiffres, heures, mesures : IBM Plex Mono ---------- */
-html[data-ds] .hm-time,html[data-ds] .task .date,html[data-ds] .time,html[data-ds] .dish-kcal,html[data-ds] .num,html[data-ds] .sbadge,html[data-ds] .clock,html[data-ds] .pomo-time,html[data-ds] .rest-time,html[data-ds] .wo-set input,html[data-ds] .hm-tile b,html[data-ds] .nu-big,html[data-ds] .kpi{font-family:var(--mono)!important;font-variant-numeric:tabular-nums;font-weight:400}
+html[data-ds] .hm-time,html[data-ds] .task .date,html[data-ds] .time,html[data-ds] .dish-kcal,html[data-ds] .num,html[data-ds] .sbadge,html[data-ds] .clock,html[data-ds] .pomo-time,html[data-ds] .wo-set input,html[data-ds] .hm-tile b,html[data-ds] .nu-big,html[data-ds] .kpi{font-family:var(--mono)!important;font-variant-numeric:tabular-nums;font-weight:400}
 
 /* ---------- fenêtres, toast ---------- */
 html[data-ds] .sheet{background:var(--bg)!important;border-radius:8px 8px 0 0;border-top:var(--rule) solid var(--line)}
@@ -423,8 +417,7 @@ html[data-ds] .note-rt:focus-visible,html[data-ds] #noteTitle:focus-visible{outl
 html[data-ds] .nu-sum{gap:22px;padding:18px 0}
 html[data-ds] .nu-ring{width:132px;height:132px;--pc:var(--app)}
 html[data-ds] .nu-ring.over{--pc:var(--late)}
-html[data-ds] .sw-ring circle{stroke-width:1.5px;stroke-linecap:butt}
-html[data-ds] .sw-ring .bgc{stroke:var(--line)}
+
 html[data-ds] .nu-big{font-size:26px}
 html[data-ds] .nu-ring .small{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 html[data-ds] .nu-macros{gap:0}
@@ -465,8 +458,8 @@ html[data-ds] :focus-visible{outline-color:var(--app)!important}
 html[data-ds] input[type="checkbox"],html[data-ds] input[type="radio"],html[data-ds] input[type="range"]{accent-color:var(--app)}
 html[data-ds] a{color:var(--app)}
 html[data-ds] .sbadge{background:var(--app);color:var(--on-app)}
-html[data-ds] .rest-tabs button[aria-selected="true"]{color:var(--app);box-shadow:inset 0 -2px 0 var(--app)!important}
-html[data-ds] .sw-ring,html[data-ds] .rest-slide.run,html[data-ds] .nu-ring{--pc:var(--app)}
+
+html[data-ds] .nu-ring{--pc:var(--app)}
 html[data-ds] .eyebrow.app,html[data-ds] .view>h2{color:var(--app)}
 
 /* en-tête d'app : bandeau à la couleur de l'app */
@@ -676,9 +669,26 @@ html[data-ds] .nu-ai-link{justify-self:center;font-size:14px;color:var(--app)}
 html[data-ds] .aa-img{display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;align-items:center}
 html[data-ds] .aa-img img{width:72px;height:72px;object-fit:cover;border-radius:6px;border:var(--rule) solid var(--line)}
 
-/* ---- v43 : chrono / minuteur collé tout en haut, sans espace (le texte ne passe plus au-dessus) ---- */
-html[data-ds] .rest{top:env(safe-area-inset-top,0px)}
-html[data-ds] .rest.stuck{border-radius:0 0 6px 6px;border-top-color:transparent}
-html[data-ds] .rest::before{left:-24px;right:-24px;height:calc(env(safe-area-inset-top,0px) + 12px)}
 /* trait sous l'onglet actif : droit (avant, l'ombre intérieure suivait l'arrondi du bouton et se recourbait aux bouts) */
-html[data-ds] .rest-tabs button[aria-selected="true"],html[data-ds] .seg button[aria-pressed="true"],html[data-ds] .seg button[aria-selected="true"]{box-shadow:none!important;background-image:linear-gradient(var(--app),var(--app));background-size:calc(100% - 16px) 2px;background-position:50% 100%;background-repeat:no-repeat}
+html[data-ds] .seg button[aria-pressed="true"],html[data-ds] .seg button[aria-selected="true"]{box-shadow:none!important;background-image:linear-gradient(var(--app),var(--app));background-size:calc(100% - 16px) 2px;background-position:50% 100%;background-repeat:no-repeat}
+
+/* ---- v44 : séances et programmes au même format : mêmes cartes, mêmes actions ---- */
+.ms{background:var(--surface);border:var(--rule,1px) solid var(--line);border-radius:6px;margin-bottom:8px;overflow:hidden}
+.ms-grp{margin:0 0 18px}
+.ms-grp-h{display:flex;align-items:center;gap:10px;padding:2px 0 8px;border-bottom:var(--rule,1px) solid var(--line);margin-bottom:10px}
+.ms-grp-h .eyebrow{display:block}
+.ms-grp-h .small{display:block}
+.ms-next{font:500 11px var(--font);letter-spacing:.06em;text-transform:uppercase;color:var(--app);border:var(--rule,1px) solid var(--app);border-radius:4px;padding:3px 6px;flex:none}
+.ex-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ex-meta .co-sets{display:inline-flex;align-items:center;gap:2px}
+.ex-meta .co-step{width:32px;height:32px;border:var(--rule,1px) solid var(--line);border-radius:6px;background:transparent;color:var(--app);font:500 17px/1 var(--font);cursor:pointer}
+.ex-meta .co-step:disabled{opacity:.35;cursor:default}
+.ex-meta .co-sets .num{min-width:22px;text-align:center;font:400 14px var(--mono)}
+.ex-reps{width:84px;flex:none;padding:6px 8px;font-size:16px;text-align:center}
+.ex-meta .co-rest{margin-left:auto}
+.ex-last{line-height:1.4}
+.ms-actions{grid-template-columns:1fr 1fr}
+/* v44 : liens des conversations Claude de sid'fit (Réglages) */
+.conv-f{display:grid;gap:6px;margin:12px 0 0}
+.conv-row{display:flex;gap:8px}
+.conv-row input{flex:1;min-width:0}

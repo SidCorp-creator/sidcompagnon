@@ -33,7 +33,7 @@ body{--accent:var(--g-ink);--accent-soft:var(--g-bg)}
 [hidden]{display:none!important}
 /* v36 : sur téléphone on ne glisse que de haut en bas : plus de carrousels à faire défiler de côté (on passe par les boutons) */
 html,body{overflow-x:clip}
-.rest-track,.onb-track{overflow-x:hidden!important;touch-action:pan-y}
+.onb-track{overflow-x:hidden!important;touch-action:pan-y}
 .vseg{overflow-x:hidden!important}
 .vhead.many{flex-direction:column;align-items:stretch;gap:6px}.vhead.many .vseg{margin-top:0}.vhead.many .vseg button{flex:1 1 0;min-width:0;padding-inline:6px}
 .sl-name{font-size:24px;font-weight:700;text-transform:none;letter-spacing:-.01em;color:var(--ink)}
@@ -338,33 +338,8 @@ body.locked main,body.locked nav{display:none}
 .linkbtn{color:var(--accent);font-weight:600;text-decoration:none}
 
 /* musculation */
-.rest{position:sticky;top:calc(env(safe-area-inset-top,0px) + 6px);z-index:6;background:var(--surface);border-radius:20px;padding:10px 0 12px;margin-bottom:12px;box-shadow:0 4px 16px rgba(0,0,0,.12)}
-.rest-tabs{display:flex;gap:4px;margin:0 14px 8px;background:var(--bg);border-radius:99px;padding:3px}
-.rest-tabs button{flex:1;border:0;background:none;border-radius:99px;padding:6px 8px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
-.rest-tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1)}
-.rest-tabs span{font:600 12px var(--mono);color:var(--accent);margin-left:6px}
-.rest-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
-.rest-track::-webkit-scrollbar{display:none}
-.rest-slide{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;gap:14px;align-items:center;padding:0 14px;box-sizing:border-box;--pc:var(--muted)}
-.tm-adj{display:flex;align-items:center;justify-content:space-between;gap:6px}
-.tm-presets{display:flex;gap:4px;flex-wrap:wrap}
-.tm-presets .mini{padding:4px 9px;font-size:12px}
-.tm-presets .mini[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
-.rest-slide.done{--pc:var(--ok)}
-.rest-slide.run{--pc:var(--accent)}
-.rest-slide.paused{--pc:var(--warn)}
-.sw-ring{position:relative;width:112px;height:112px;flex:none}
-.sw-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
-.sw-ring .bgc{stroke:var(--line)}
-.sw-ring .fgc{stroke:var(--pc);transition:stroke-dashoffset .25s linear,stroke .2s}
-.sw-txt{position:absolute;inset:0;display:grid;place-items:center}
-.rest-clock{font:600 26px/1 var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--ink)}
-.sw-side{flex:1;min-width:0;display:grid;gap:6px}
-.sw-side .phase{color:var(--pc)}
-.rest-btns{display:flex;gap:8px;flex-wrap:wrap}
-.rest-btns .btn{flex:1 1 auto;padding:10px 12px}
-@media (prefers-reduced-motion:reduce){.sw-ring .fgc{transition:none}}
-.rest.run .ms{background:var(--surface);border-radius:14px;margin-bottom:12px;overflow:hidden}
+
+
 .ms>summary{list-style:none;display:flex;align-items:center;gap:10px;padding:14px;cursor:pointer}
 .ms>summary::-webkit-details-marker{display:none}
 .ms>summary .chev{transition:transform .2s;color:var(--muted)}
@@ -397,22 +372,6 @@ textarea{font:15px var(--font);color:var(--ink);background:var(--bg);border:1px 
 .canc-pill{font:600 11px var(--font);color:var(--late);border:1px solid currentColor;border-radius:4px;padding:0 4px;margin-left:4px;text-decoration:none;display:inline-block}
 .blk .loc{display:block;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-/* v18 : minuteur fractionné, tours */
-.tm-mode{display:flex;gap:2px;background:var(--bg);border-radius:99px;padding:2px;align-self:start}
-.tm-mode button{border:0;background:none;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer}
-.tm-mode button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.1)}
-.tm-cfg{display:grid;gap:6px}
-.tm-custom{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted)}
-.tm-custom input{width:52px;padding:5px 6px;text-align:center;font-size:16px}
-.tm-frac{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
-.tm-frac label{display:grid;gap:2px;font-size:11px;font-weight:600;color:var(--muted)}
-.tm-frac span{position:relative;display:block}
-.tm-frac input{padding:5px 16px 5px 6px;font-size:16px;text-align:center;font-variant-numeric:tabular-nums}
-.tm-frac i{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-style:normal;font-size:11px;color:var(--muted)}
-.rest-slide.rest-ph{--pc:var(--ok)}
-.laps{max-height:66px;overflow:auto;display:grid;gap:2px;font:500 12px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
-.laps div{display:flex;justify-content:space-between;gap:6px}
-.laps div:first-child{color:var(--ink);font-weight:600}
 /* à faire : catégories + ordre */
 .catbar{background:var(--surface);border-radius:14px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .catbar .grow b{font-size:16px}
@@ -865,7 +824,7 @@ nav{border-top:1px solid var(--line)}
 .yr-title .yr-ic{border-color:var(--line)!important;color:var(--muted)}
 .nowline,.nowline::before{background:var(--gold)}
 /* chiffres */
-.big,.rest-clock,.pomo-meta b,.stepper output,.nu-big,.dish-kcal,.nu-plan b,.time,.date,.ects,.donetime,.dish-time{font-family:var(--font);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.big,.pomo-meta b,.stepper output,.nu-big,.dish-kcal,.nu-plan b,.time,.date,.ects,.donetime,.dish-time{font-family:var(--font);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .nu-big{font-size:34px;font-weight:600}
 .dish-kcal{font-weight:700}
 .nu-ring{--pc:var(--gold)}
@@ -1027,18 +986,7 @@ html.modal-open body{position:fixed;left:0;right:0;width:100%}
 .sheet-bg{overscroll-behavior:contain;top:var(--vvt,0px);bottom:auto;height:var(--vvh,100%)}
 .sheet-bg .sheet{max-height:calc(var(--vvh,100vh) - 16px)}
 .sheet-bg .sheet{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
-/* v31 : le chrono / minuteur suit la séance (collé en haut), sans rien laisser voir au-dessus ;
-   une fois collé, il devient compact (petit anneau, sans texte d'aide) pour laisser la place aux séries */
-.rest{position:sticky;top:calc(env(safe-area-inset-top,0px) + 6px);z-index:6;border:1px solid var(--line);box-shadow:0 10px 24px -14px rgba(0,0,0,.45)}
-.rest:not(.stuck)::before{display:none}
-.rest::before{content:"";position:absolute;left:-18px;right:-18px;bottom:calc(100% + 1px);height:calc(env(safe-area-inset-top,0px) + 48px);background:var(--bg);pointer-events:none}
-.rest-sentinel{height:1px;margin-bottom:-1px}
-.rest.stuck{padding:6px 0 8px;border-radius:16px}
-.rest.stuck .rest-tabs{margin-bottom:6px}
-.rest.stuck .sw-ring{width:60px;height:60px}
-.rest.stuck .rest-clock{font-size:18px}
-.rest.stuck .laps,.rest.stuck .phase,.rest.stuck .tm-mode,.rest.stuck .tm-cfg,.rest.stuck .rest-slide .small,.rest.stuck .rest-slide p,.rest.stuck .rest-slide .eyebrow,.rest.stuck .tm-modes,.rest.stuck .tm-frac{display:none}
-.rest.stuck .rest-btns .btn{padding:7px 12px;font-size:14px}
+
 /* v29 : clavier du code des Documents dans la page */
 .pin-host{padding:18px 0 8px}
 .pad button.del{border:0!important;background:none!important;box-shadow:none!important;font-size:15px!important;font-weight:600;color:var(--accent)}
@@ -1315,8 +1263,4 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 .cf-sel{margin-top:6px}.cf-sel:empty{display:none}
 .cf-chip{display:inline-flex;align-items:center;gap:4px;padding-right:4px}.cf-chip .x{width:24px;height:24px;font-size:16px}
 .co-rest{font-size:inherit;padding:0;text-decoration:underline dotted;text-underline-offset:3px}
-/* v43 : chrono / minuteur affichés selon le numéro de l'onglet (--i), sans défilement */
-.rest-track{overflow:hidden!important;scroll-snap-type:none;--i:0}
-.rest-track>.rest-slide{transform:translateX(calc(var(--i) * -100%));transition:transform .22s ease-out}
-.rest-track.still>.rest-slide{transition:none}
-@media (prefers-reduced-motion:reduce){.rest-track>.rest-slide{transition:none}}
+

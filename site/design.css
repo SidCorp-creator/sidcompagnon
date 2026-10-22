@@ -692,3 +692,5 @@ html[data-ds] .seg button[aria-pressed="true"],html[data-ds] .seg button[aria-se
 .conv-f{display:grid;gap:6px;margin:12px 0 0}
 .conv-row{display:flex;gap:8px}
 .conv-row input{flex:1;min-width:0}
+html[data-ds] .nu-ring circle{stroke-width:1.5px;stroke-linecap:butt}
+html[data-ds] .nu-ring .bgc{stroke:var(--line)}

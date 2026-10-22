@@ -727,6 +727,9 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     await pg.evaluate(()=>{data.prefs.aiOk=1;data.prefs.ai="claude";data.nutri={consent:new Date().toISOString(),profile:{sex:"h",age:24,height:180,weight:80,goal:"maintain",sports:[]},plan:{kcal:2000,p:150,c:200,f:70,bmr:1800,tdee:2000,text:"",warn:[]},upd:Date.now(),log:[],weights:[],weeks:[]};save();show("nutri")});await pg.waitForTimeout(300);
     if(await pg.isVisible("#nuAiCard"))err("la carte « Claude calcule pour toi » est encore affichée");
+    // v44.2 : l'anneau des calories garde sa taille (il partageait les styles de l'ancien chrono)
+    {const rg=await pg.evaluate(()=>{const b=document.querySelector(".nu-ring").getBoundingClientRect(),t=document.querySelector(".nu-ring-txt").getBoundingClientRect();return [b.width,b.height,t.height]});
+      if(rg[0]<100||rg[1]<100||rg[2]>rg[1]+1)err("anneau des calories mal affiché : "+rg)}
     const top=await pg.evaluate(()=>{const a=$("nuAddBox").getBoundingClientRect().top,t=$("nuTabs").getBoundingClientRect().top;return a<t});if(!top)err("« Ajouter ce que tu manges » n'est pas en haut");
     if(!(await pg.isVisible("#nuAiLink")))err("lien « Ou dis-le à Claude » absent");
     for(const t of ["menu","profile"]){await pg.click(`[data-nutab="${t}"]`);await pg.waitForTimeout(150)}await pg.click('[data-nutab="day"]');

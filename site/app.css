@@ -1264,3 +1264,10 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 .cf-chip{display:inline-flex;align-items:center;gap:4px;padding-right:4px}.cf-chip .x{width:24px;height:24px;font-size:16px}
 .co-rest{font-size:inherit;padding:0;text-decoration:underline dotted;text-underline-offset:3px}
 
+/* v44.2 : anneau des calories (Nutrition) ; il partageait les styles de l'ancien chrono, retirés en v44 */
+.nu-ring{position:relative;flex:none}
+.nu-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.nu-ring .bgc{stroke:var(--line)}
+.nu-ring .fgc{stroke:var(--pc);transition:stroke-dashoffset .25s linear,stroke .2s}
+.nu-ring-txt{position:absolute;inset:0;display:grid;place-items:center}
+@media (prefers-reduced-motion:reduce){.nu-ring .fgc{transition:none}}

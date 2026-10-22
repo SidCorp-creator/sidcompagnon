@@ -217,6 +217,11 @@ assets/               ← logo
   3. Mettre en ligne le dossier `site/`, et rien d'autre.
 - Piste d'amélioration (à proposer à Sid) : passer par Git, un dépôt GitHub privé et Netlify CLI ou un déploiement automatique, plus un site de prévisualisation (`sidnote-test`) pour tester avant les proches. Vérifier le coût en crédits avant.
 
+## Projet : séparer l'app en 4 noms (décidé par Sid le 22 oct. 2026, pas encore fait)
+- Application mère : **Sid'home** (garde l'adresse `sidnote.netlify.app`).
+- **Sid'agenda** = Organisation (agenda, tâches) · **Sid'fit** = Santé (musculation, nutrition, graphiques) · **Sid'note** = Coffre (notes, documents, mots de passe).
+- Conseillé à Sid : d'abord une seule app avec Sid'home en accueil et 3 tuiles (option 1), avant d'éventuelles apps installables séparées. En attente de sa réponse.
+
 ## État et prochaines étapes
 - La v18 a été livrée le 9 oct. 2026 et le SQL Storage a été exécuté avec succès.
 - v19 préparée : phrase d'accueil, onglets Notes et Mots de passe, tri des documents, catégories repliables, scanner plus net.

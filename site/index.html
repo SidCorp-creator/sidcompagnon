@@ -6,13 +6,13 @@
 <title>Sid'home</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="sid'note">
+<meta name="apple-mobile-web-app-title" content="Sid'home">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#F4F4F2" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0E0F11" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F4F0E8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111214" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="logo-180.png">
-<link rel="icon" href="logo-32.png" sizes="32x32"><link rel="icon" href="logo-192.png" sizes="192x192">
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="icon" href="logo-32.png" sizes="32x32"><link rel="icon" href="logo-192.png" sizes="192x192">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400&family=Inter+Tight:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -23,7 +23,7 @@
 <div class="splash" id="splash" aria-hidden="true"><div class="sp-mark" id="spMark"></div><div class="sp-name">Sid'home</div><div class="sp-apps" id="spApps"></div></div>
 <div id="auth" class="auth" hidden>
   <div class="auth-box">
-    <img src="logo-192.png" alt="" class="auth-logo">
+    <span class="auth-logo" id="authLogo" aria-hidden="true"></span>
     <h1>Sid'home</h1>
     <p class="sub" id="authSub">Ton agenda, tes tâches, tes notes et tes documents, réunis dans une seule app.</p>
     <ul class="auth-feats card" id="authFeats"></ul>
@@ -44,7 +44,7 @@
     </form>
     <div class="auth-trial"><button type="button" class="btn ghost" id="aTrial">Essayer sans compte</button>
       <p class="small muted">Tes données restent sur cet appareil. Tu pourras créer ton compte ensuite pour tout garder et synchroniser.</p></div>
-    <details class="install" id="authInstall"><summary>Comment installer Sid'note sur iPhone ?</summary>
+    <details class="install" id="authInstall"><summary>Comment installer Sid'home sur iPhone ?</summary>
       <ol class="steps card">
         <li><span>Dans Safari, appuie sur les <b>3 petits points</b> en bas à droite.</span></li>
         <li><span>Appuie sur <b>Partager</b>.</span></li>
@@ -54,7 +54,7 @@
       </ol>
     </details>
     <p class="small muted" id="authHint">Tu as créé ton compte avec un pseudo, avant l'arrivée de l'e-mail ? Tape ton pseudo à la place de l'e-mail pour te connecter.</p>
-    <div class="auth-foot"><button type="button" class="linkbtn" id="authLang" style="background:none;border:0;cursor:pointer;font-size:14px">English</button><span class="small muted">Sid'note · une app <b>SidCorp</b></span></div>
+    <div class="auth-foot"><button type="button" class="linkbtn" id="authLang" style="background:none;border:0;cursor:pointer;font-size:14px">English</button><span class="small muted">Sid'home · une app <b>SidCorp</b></span></div>
   </div>
 </div>
 <aside class="side" id="side" aria-label="Navigation"></aside>
@@ -458,11 +458,11 @@
   <section class="view" id="v-notes" hidden>
     <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
     <div id="notesList">
+      <div class="nf-path" id="nfPath" role="navigation" aria-label="Dossiers" hidden></div>
       <h1>Notes</h1>
       <p class="sub">Écris librement : idées, listes, brouillons. Tout est enregistré au fur et à mesure.</p>
       <div class="pw-top"><input type="search" class="search" id="noteSearch" placeholder="Rechercher une note" aria-label="Rechercher une note" autocomplete="off"><button type="button" class="btn ghost" id="nfNew">+ Dossier</button><button type="button" class="btn" id="noteNew">+ Note</button></div>
       <form id="nfForm" class="nf-form" hidden><input id="nfIn" placeholder="Nom du dossier" aria-label="Nom du dossier" autocomplete="off" enterkeyhint="done"><button class="btn" type="submit">Créer</button><button type="button" class="btn ghost" id="nfCancel">Annuler</button></form>
-      <div class="nf-path" id="nfPath" role="navigation" aria-label="Dossiers" hidden></div>
       <div class="ns-bar" id="nsBar" hidden></div>
       <div class="card" id="noteList"></div>
     </div>
@@ -513,7 +513,7 @@
   <section class="view" id="v-app" hidden>
     <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
     <h1>Application</h1>
-    <p class="sub">Installe Sid'note sur ton iPhone pour l'ouvrir comme une vraie app, en plein écran.</p>
+    <p class="sub">Installe Sid'home sur ton iPhone pour l'ouvrir comme une vraie app, en plein écran.</p>
     <div class="card"><div class="row okline" id="appStatus"></div></div>
     <h2>Installer sur iPhone</h2>
     <ol class="steps card">
@@ -586,7 +586,7 @@
     <details class="setsec" data-sec="claude" id="mcpSec"><summary><span>Claude</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
       <div class="setsec-in">
     <div class="card">
-      <div class="row"><div class="grow small muted">Relie Sid'note à Claude : il calcule tes repas, crée tes menus et tes programmes, lit ton agenda et ajoute tâches et notes, puis tout arrive ici. Il ne voit jamais tes mots de passe, tes documents ni tes notes secrètes.</div></div>
+      <div class="row"><div class="grow small muted">Relie Sid'home à Claude : il calcule tes repas, crée tes menus et tes programmes, lit ton agenda et ajoute tâches et notes, puis tout arrive ici. Il ne voit jamais tes mots de passe, tes documents ni tes notes secrètes.</div></div>
       <div class="row"><div class="grow" id="aiState"></div></div>
       <div class="row"><button type="button" class="btn" data-aiwiz="1" style="width:100%">Brancher Claude</button></div>
       <div class="row"><div class="grow small muted">Adresses déjà créées (avancé) :</div></div>
@@ -612,10 +612,10 @@
       <div class="small muted" style="margin-top:8px">Par défaut, mots de passe, documents et notes secrètes restent ouverts jusqu'à ce que tu fermes complètement l'app. Propre à cet appareil.</div></div></div>
     <div class="card" id="bioCard" style="margin-bottom:10px" hidden><div class="row"><div class="grow"><b id="bioT">Face ID</b><div class="small muted" id="bioS"></div></div><button type="button" class="btn" id="bioBtn">Activer</button></div></div>
     <div class="card priv">
-      <div class="row"><span class="priv-ic"><i class="ic" data-i="database"></i></span><div class="grow"><b>Ce que tu écris</b><div class="small muted">Planning, tâches, notes, séances, nutrition et réglages sont enregistrés dans ton compte, sur les serveurs de Supabase, en Europe (Francfort, Allemagne). Les autres utilisateurs ne peuvent pas les voir. L'administrateur de Sid'note (SidCorp) peut techniquement y accéder pour l'entretien, mais ne les consulte pas.</div></div></div>
+      <div class="row"><span class="priv-ic"><i class="ic" data-i="database"></i></span><div class="grow"><b>Ce que tu écris</b><div class="small muted">Planning, tâches, notes, séances, nutrition et réglages sont enregistrés dans ton compte, sur les serveurs de Supabase, en Europe (Francfort, Allemagne). Les autres utilisateurs ne peuvent pas les voir. L'administrateur de Sid'home (SidCorp) peut techniquement y accéder pour l'entretien, mais ne les consulte pas.</div></div></div>
       <div class="row"><span class="priv-ic"><i class="ic" data-i="shield"></i></span><div class="grow"><b>Mots de passe et notes secrètes</b><div class="small muted">Chiffrés sur ton appareil avant d'être envoyés, avec une clé tirée de ta phrase secrète, que le serveur ne connaît pas. Ton code à 5 chiffres sert seulement à les déverrouiller sur ton appareil. Un coffre encore protégé par le code seul (avant la protection renforcée) pourrait être deviné par quelqu'un qui aurait accès au serveur : ouvre-le une fois pour le renforcer.</div></div></div>
       <div class="row"><span class="priv-ic"><i class="ic" data-i="file"></i></span><div class="grow"><b>Documents (PDF, scans)</b><div class="small muted">Chiffrés sur ton appareil avec la clé de ta phrase secrète (la copie gardée sur l'appareil aussi), puis copiés dans ton espace privé (Supabase Storage), où ce n'est que du contenu illisible. Les photos des notes, elles, ne sont pas chiffrées : comme le texte des notes, elles restent privées dans ton compte.</div></div></div>
-      <div class="row"><span class="priv-ic"><i class="ic" data-i="camera"></i></span><div class="grow"><b>Photos de tes plats</b><div class="small muted">Envoyées une seule fois pour être analysées : elles passent par le serveur Sid'note puis par le service d'IA d'Anthropic, qui calcule les calories. Elles ne sont pas enregistrées dans ton compte, ne servent pas à entraîner l'IA et ne sont gardées que peu de temps par Anthropic (sécurité) avant d'être effacées. Seule une petite vignette reste sur ton téléphone.</div></div></div>
+      <div class="row"><span class="priv-ic"><i class="ic" data-i="camera"></i></span><div class="grow"><b>Photos de tes plats</b><div class="small muted">Envoyées une seule fois pour être analysées : elles passent par le serveur Sid'home puis par le service d'IA d'Anthropic, qui calcule les calories. Elles ne sont pas enregistrées dans ton compte, ne servent pas à entraîner l'IA et ne sont gardées que peu de temps par Anthropic (sécurité) avant d'être effacées. Seule une petite vignette reste sur ton téléphone.</div></div></div>
       <div class="row"><span class="priv-ic"><i class="ic" data-i="apple"></i></span><div class="grow"><b>Textes de nutrition</b><div class="small muted">Ce que tu tapes (aliments, profil) est envoyé à l'IA pour le calcul. Les aliments sont retenus dans une mémoire commune et anonyme (juste « 100 g de riz = 130 kcal », jamais ton nom).</div></div></div>
       <div class="row"><span class="priv-ic"><i class="ic" data-i="globe"></i></span><div class="grow"><b>Le site</b><div class="small muted">Netlify héberge seulement l'application. Il ne voit pas tes données. Pas de publicité, pas de pisteur, rien n'est vendu.</div></div></div>
     </div>
@@ -817,7 +817,7 @@
   <form class="sheet card" id="recForm" novalidate>
     <div class="sheet-head"><b id="recTitle"></b><button type="button" class="x" id="recClose" aria-label="Fermer">×</button></div>
     <p class="small muted" id="recText" style="margin:0"></p>
-    <label>Mot de passe de ton compte Sid'note<input id="recPw" type="password" autocomplete="current-password"></label>
+    <label>Mot de passe de ton compte Sid'home<input id="recPw" type="password" autocomplete="current-password"></label>
     <p class="err" id="recErr" role="alert" hidden></p>
     <div class="two"><button type="button" class="btn ghost" id="recLater">Plus tard</button><button class="btn" type="submit" id="recOk">Valider</button></div>
   </form>
@@ -891,7 +891,7 @@
   <div class="sheet card na-box">
     <div class="na-ic"><i class="ic" data-i="bell"></i></div>
     <b class="na-t" id="naTitle">Ne rate plus rien</b>
-    <p class="small muted" id="naText" style="margin:0">Active les notifications : Sid'note te prévient avant tes rendez-vous, tes cours et tes échéances. Tu choisis quand, dans Agenda ou Réglages.</p>
+    <p class="small muted" id="naText" style="margin:0">Active les notifications : Sid'home te prévient avant tes rendez-vous, tes cours et tes échéances. Tu choisis quand, dans Agenda ou Réglages.</p>
     <button type="button" class="btn" id="naYes">Activer les notifications</button>
     <button type="button" class="btn ghost" id="naNo" data-esc="1">Plus tard</button>
   </div>

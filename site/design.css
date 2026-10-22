@@ -337,7 +337,7 @@ html[data-ds] nav .tab .sbadge{position:absolute;top:2px;left:calc(50% + 8px)}
 html[data-ds] body:not(.has-nav) main{padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}
 
 /* ---------- en-tête d'une app : logo + nom, retour à Sid'home ---------- */
-html[data-ds] .vhead{display:flex!important;align-items:center;justify-content:space-between;gap:12px;min-height:36px;margin:4px 0 0;background:none;border:0;padding:0}
+html[data-ds] .vhead:not([hidden]){display:flex!important;align-items:center;justify-content:space-between;gap:12px;min-height:36px;margin:4px 0 0;background:none;border:0;padding:0}
 html[data-ds] .ah-brand{display:flex;align-items:center;gap:8px}
 html[data-ds] .ah-logo{width:22px;height:22px;color:var(--app)}
 html[data-ds] .ah-home{display:flex;align-items:center;gap:6px;border:0;background:none;color:var(--muted);font:400 13px var(--font);padding:8px 0 8px 8px;min-height:44px;cursor:pointer}
@@ -393,3 +393,48 @@ html[data-ds] .side-it[aria-current="true"]{background:var(--surface-2);border-r
 
 /* ---------- icônes fines ---------- */
 html[data-ds] svg.i,html[data-ds] .ic svg,html[data-ds] .sp-ic svg,html[data-ds] .tabicon svg{stroke-width:1.5}
+
+/* ---- sid'note : dossiers en tuiles, notes en filets ---- */
+html[data-ds] #noteList.card{border:0}
+html[data-ds] .nl-h{font:500 11px var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:18px 0 10px}
+html[data-ds] .nl-h:first-child{margin-top:6px}
+html[data-ds] .nf-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+html[data-ds] .nf-tile{position:relative;border:var(--rule) solid var(--line);border-radius:6px;background:var(--surface-2);min-width:0}
+html[data-ds] .nf-tile .nf-open{padding:12px 4px 12px 2px;gap:8px;min-width:0}
+html[data-ds] .nf-tile .nf-open b{font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+html[data-ds] .nf-tile .ngrip{padding:0 0 0 6px}
+html[data-ds] .nf-tile .pen{padding:0 6px;min-width:0;width:auto}
+html[data-ds] .nf-ic{color:var(--ink)}html[data-ds] .nf-ic .i{width:18px;height:18px}
+html[data-ds] .nf-n{font:400 12px var(--mono);color:var(--muted);flex:none}
+html[data-ds] .nl-notes{border-top:var(--rule) solid var(--line)}
+html[data-ds] .nl-notes .note-row{border-bottom:var(--rule) solid var(--line)}
+html[data-ds] .nl-notes .note-row:last-child{border-bottom:var(--rule) solid var(--line)}
+html[data-ds] .note{padding:14px 4px}
+html[data-ds] .note b{font:400 19px/1.25 var(--display);letter-spacing:-.005em}
+html[data-ds] .note .when{font:400 12px var(--mono);color:var(--muted)}
+@media (min-width:700px){html[data-ds] .nf-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+html[data-ds] #notesList .pw-top{flex-wrap:wrap}
+html[data-ds] #notesList .pw-top .search{flex:1 1 100%}
+html[data-ds] #notesList .pw-top .btn{flex:1}
+html[data-ds] #notesList.in-dir > .sub{display:none}
+html[data-ds] .note-rt:focus-visible,html[data-ds] #noteTitle:focus-visible{outline:0!important}
+
+/* ---- sid'fit : piste B « instrument de mesure » ---- */
+html[data-ds] .nu-sum{gap:22px;padding:18px 0}
+html[data-ds] .nu-ring{width:132px;height:132px;--pc:var(--app)}
+html[data-ds] .nu-ring.over{--pc:var(--late)}
+html[data-ds] .sw-ring circle{stroke-width:1.5px;stroke-linecap:butt}
+html[data-ds] .sw-ring .bgc{stroke:var(--line)}
+html[data-ds] .nu-big{font-size:26px}
+html[data-ds] .nu-ring .small{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+html[data-ds] .nu-macros{gap:0}
+html[data-ds] .nu-m{gap:0;padding:8px 0;border-bottom:var(--rule) solid var(--line)}
+html[data-ds] .nu-m:last-child{border-bottom:0}
+html[data-ds] .nu-m .top b{font:500 11px var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+html[data-ds] .nu-m .top span{font:400 14px var(--mono);color:var(--ink)}
+html[data-ds] .nu-m .bar{height:1px;border-radius:0;margin-top:6px}
+html[data-ds] .nu-m .bar i{border-radius:0}
+html[data-ds] .mdot{width:6px;height:6px}
+html[data-ds] input.search{background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238A8378' stroke-width='1.5' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E") no-repeat 12px 50%;padding-left:36px}
+html[data-ds] .auth-logo{display:block;width:76px;height:76px;margin:0 auto;border-radius:0;box-shadow:none;color:var(--c-home)}
+html[data-ds] .auth-logo svg{width:100%;height:100%;display:block}

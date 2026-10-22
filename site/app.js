@@ -95,7 +95,7 @@ async function api(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="41";const errSent=new Set();
+const APP_V="42";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -319,6 +319,7 @@ const LOGOS={"home":{"s":"<path d=\"M32 14.5 L48 27.5 V49 H16 V27.5 Z\" fill=\"c
 let logoN=0;const LOGO=(app,cls)=>{const id="lg"+(++logoN),L0=LOGOS[app]||LOGOS.home;return `<svg class="logo ${cls||""}" viewBox="0 0 64 64" aria-hidden="true"><defs><mask id="${id}"><rect width="64" height="64" fill="white"/>${L0.c}</mask></defs><g mask="url(#${id})">${L0.s}</g></svg>`};
 
 // v42 : animation d'ouverture (2 s) : le logo Sid'home, puis les trois apps ; elle ne bloque jamais les touchers
+if($("authLogo"))$("authLogo").innerHTML=LOGO("home");
 (()=>{const sp=$("splash");if(!sp)return;$("spMark").innerHTML=LOGO("home");$("spApps").innerHTML=["agenda","fit","note"].map(a=>`<span data-app="${a}">${LOGO(a)}</span>`).join("");
   const quick=matchMedia("(prefers-reduced-motion: reduce)").matches;sp.classList.add("go");setTimeout(()=>sp.remove(),quick?400:2100)})();
 
@@ -463,7 +464,7 @@ function renderHome(){if(!$("homeBody"))return;
   if(vis.includes("nutri")&&nutriAllowed()&&NU().plan&&NU().plan.kcal){const l=Math.round(dayTarget(t0).kcal-sumOf(dayLog(t0)).kcal);tiles.push(["nutri",L("Nutrition"),fmtFull(Math.abs(l)),L(l>=0?"kcal restantes":"kcal en trop")])}
   if(vis.includes("plan")){const e7=new Date(today());e7.setDate(e7.getDate()+6);const k7=iso(e7);const w=T.filter(t=>t.date<=k7&&(t.end||t.date)>=t0).length;tiles.push(["plan",L("Cette semaine"),String(w),L(w>1?"activités":"activité")])}
   if(tiles.length)h+=`<div class="hm-tiles" style="grid-template-columns:repeat(${tiles.length},minmax(0,1fr))">${tiles.map(([k,l,v,s])=>`<button type="button" class="card hm-tile" data-go="${k}"><span class="small muted">${l}</span><b>${v}</b><span class="small muted">${s}</span></button>`).join("")}</div>`;
-  if(!isTrial()&&!data.prefs.aiOk&&!data.ui.aiCardOff)h+=`<div class="card ai-card hm-ai"><div class="grow"><b>${L("Nouveau : branche Claude")}</b><div class="small muted">${L("Claude calcule tes repas, crée tes menus et note tes tâches directement dans Sid'note.")}</div></div><div class="ai-card-b"><button type="button" class="btn" data-aiwiz="1">${L("Brancher")}</button><button type="button" class="x" data-aioff="1" aria-label="${L("Masquer")}">×</button></div></div>`;
+  if(!isTrial()&&!data.prefs.aiOk&&!data.ui.aiCardOff)h+=`<div class="card ai-card hm-ai"><div class="grow"><b>${L("Nouveau : branche Claude")}</b><div class="small muted">${L("Claude calcule tes repas, crée tes menus et note tes tâches directement dans Sid'home.")}</div></div><div class="ai-card-b"><button type="button" class="btn" data-aiwiz="1">${L("Brancher")}</button><button type="button" class="x" data-aioff="1" aria-label="${L("Masquer")}">×</button></div></div>`;
   if(vis.includes("plan")){const day=allT().filter(t=>onDay(t,t0)).sort((a,b)=>sk(a).localeCompare(sk(b)));
     h+=`<h2>${L("Aujourd'hui")}</h2><div class="card hm-list">${day.length?day.map(t=>`<button type="button" class="hm-row ${t.status==="fait"||t.canc?"is-done":""}" data-go="plan"><span class="hm-time">${t.time||L("Journée")}</span><span class="grow notr">${esc(t.title)}</span><span class="dot" style="background:var(${colorOf(t)})"></span></button>`).join(""):`<div class="empty">${L("Rien de prévu aujourd'hui.")}</div>`}</div>`}
   if(vis.includes("todo")){const td=dayTodos(t0),un=data.todos.filter(t=>!t.done&&!t.paused&&!t.day);
@@ -1087,11 +1088,11 @@ async function saveJSON(obj,name,title){
 const bkObj=extra=>({app:"sidnote",v:2,exported:new Date().toISOString(),...(extra||{}),data:forServer(data)});
 $("backupBtn").addEventListener("click",()=>saveJSON(bkObj(),`sidnote-sauvegarde-${new Date().toISOString().slice(0,10)}.json`,L("Sauvegarde Sid'note")));
 // RGPD : export complet (JSON) et suppression des données du compte
-$("exportAllBtn").addEventListener("click",()=>saveJSON(bkObj({account:{email:session&&session.email,id:session&&session.user.id}}),`sidnote-mes-donnees-${new Date().toISOString().slice(0,10)}.json`,L("Mes données Sid'note")));
+$("exportAllBtn").addEventListener("click",()=>saveJSON(bkObj({account:{email:session&&session.email,id:session&&session.user.id}}),`sidnote-mes-donnees-${new Date().toISOString().slice(0,10)}.json`,L("Mes données Sid'home")));
 $("wipeBtn").addEventListener("click",async e=>{
   const b=e.currentTarget;
   if(!b.dataset.armed){b.dataset.armed="1";b.textContent=L("Tout effacer ? Toucher encore pour confirmer");setTimeout(()=>{delete b.dataset.armed;b.textContent=L("Supprimer mes données")},4000);return}
-  if(!confirm(L("Tout ce que tu as mis dans Sid'note sera effacé, sur tous tes appareils. C'est définitif. Continuer ?")))return;
+  if(!confirm(L("Tout ce que tu as mis dans Sid'home sera effacé, sur tous tes appareils. C'est définitif. Continuer ?")))return;
   b.disabled=true;b.textContent="…";
   try{
     const t=await token(),u=session.user.id;
@@ -1153,7 +1154,7 @@ $("bkReplace").addEventListener("click",e=>{const b=e.currentTarget;
 
 /* ---------- v35 : confidentialité, conditions d'utilisation, consentement santé, suppression du compte ---------- */
 const LEGAL={privacy:[
-  ["Qui s'occupe de tes données","Sid'note est une application éditée par SidCorp et partagée avec des proches. SidCorp est responsable de tes données. Pas de publicité, aucune donnée n'est vendue ni partagée à des fins commerciales."],
+  ["Qui s'occupe de tes données","Sid'home est une application éditée par SidCorp et partagée avec des proches. SidCorp est responsable de tes données. Pas de publicité, aucune donnée n'est vendue ni partagée à des fins commerciales."],
   ["Ce qui est enregistré","Ton e-mail, ton pseudo et ton mot de passe (gardé chiffré par Supabase) ; ce que tu mets dans l'app : agenda, tâches, notes, séances, nutrition, réglages ; les documents et photos que tu ajoutes."],
   ["Où","Dans ton compte, sur les serveurs de Supabase en Europe (Francfort, Allemagne). Le site est hébergé par Netlify, qui ne voit pas tes données. Sur ton appareil, l'app garde une copie pour marcher sans connexion (pas de cookie publicitaire, pas de pisteur)."],
   ["Ce qui est chiffré","Mots de passe, notes secrètes et documents sont chiffrés sur ton appareil avec ta phrase secrète avant d'être envoyés : personne d'autre ne peut les lire, pas même SidCorp. Le reste est protégé par ton compte ; l'administrateur pourrait techniquement y accéder pour l'entretien, mais ne le fait pas."],
@@ -1163,7 +1164,7 @@ const LEGAL={privacy:[
   ["Tes droits","Tu peux voir, télécharger, corriger et supprimer tes données à tout moment (Réglages, « Tes données et ta vie privée »), retirer ton accord pour les données de santé, et supprimer ton compte. Tu peux aussi porter plainte auprès de l'Autorité de protection des données (Belgique)."],
   ["Contact","Pour toute question, contacte SidCorp (Sid), la personne qui t'a invité sur Sid'note."]],
  terms:[
-  ["Le service","Sid'note est gratuit et fourni tel quel, sans garantie. Il peut évoluer, être interrompu ou s'arrêter ; tu seras prévenu à l'avance si possible."],
+  ["Le service","Sid'home est gratuit et fourni tel quel, sans garantie. Il peut évoluer, être interrompu ou s'arrêter ; tu seras prévenu à l'avance si possible."],
   ["Ton compte","Ton compte est personnel. Garde ton mot de passe et ta phrase secrète pour toi. Si tu perds ta phrase secrète sans avoir activé la récupération, tes coffres ne peuvent pas être rouverts, même par SidCorp."],
   ["Ce que tu y mets","Tu restes propriétaire de ton contenu. N'y mets rien d'illégal. Fais de temps en temps une sauvegarde (Réglages, « Sauvegarde »)."],
   ["Nutrition","Les calculs et menus sont donnés à titre indicatif, par une IA qui peut se tromper. Ce n'est pas un avis médical : demande conseil à un médecin ou un diététicien, surtout en cas de grossesse, de maladie ou de troubles alimentaires."],
@@ -1200,7 +1201,7 @@ $("delAccBtn").addEventListener("click",async()=>{
   try{const u=session.user.id;await dropSub().catch(()=>{});
     await api("/functions/v1/delete-account",{method:"POST",token:await token(),body:{}});
     await idbClearUser(u);["sidnote-ical-"+u,cacheKey(u),"sidnote-mk-"+u,"sidnote-bio-"+u,LAST_KEY].forEach(k=>ls.del(k));
-    endSession(L("Ton compte a été supprimé. Merci d'avoir utilisé Sid'note."),true);
+    endSession(L("Ton compte a été supprimé. Merci d'avoir utilisé Sid'home."),true);
   }catch(ex){b.disabled=false;b.textContent=L("Supprimer mon compte");toast(ex instanceof TypeError?L("Pas de connexion internet"):(ex.message||L("Suppression impossible")))}});
 
 /* ---------- v37 : listes partagées entre proches ---------- */
@@ -1631,7 +1632,7 @@ async function currentSub(){if(!pushOK())return null;const r=await navigator.ser
 // le bloc « notifications » existe à deux endroits (Réglages et Planning) : même contenu, mêmes réglages
 let nfState={kind:"off",msg:""},nfCustom=false;
 async function renderNotif(){
-  if(!pushOK())nfState={kind:"na",msg:isIOS&&!standalone()?"Pour activer les notifications, ouvre Sid'note depuis l'icône de ton écran d'accueil.":"Ce navigateur ne gère pas les notifications."};
+  if(!pushOK())nfState={kind:"na",msg:isIOS&&!standalone()?"Pour activer les notifications, ouvre Sid'home depuis l'icône de ton écran d'accueil.":"Ce navigateur ne gère pas les notifications."};
   else if(Notification.permission==="denied")nfState={kind:"na",msg:"Notifications bloquées. Autorise-les dans Réglages > Notifications > Sid'note."};
   else{const sub=await currentSub().catch(()=>null);nfState=sub&&Notification.permission==="granted"?{kind:"on"}:{kind:"off"}}
   renderLeads();
@@ -1990,7 +1991,7 @@ function coachHint(ex){const l=lastOf(ex.name);if(!l)return{kg:"",txt:L("Premiè
 const coachNext=()=>{const pl=PL();if(!pl||!pl.days.length)return null;const last=ML().filter(l=>pl.days.some(d=>d.id===l.day)).sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0];
   const i=last?pl.days.findIndex(d=>d.id===last.day):-1;return pl.days[(i+1)%pl.days.length]};
 function renderCoach(){const box=$("coachBox");if(!box)return;const pl=PL(),nx=coachNext();
-  if(!pl){box.innerHTML=`<div class="card coach-card"><div class="grow"><b>${L("Ton programme sur mesure")}</b><div class="small muted">${L("Quelques questions (niveau, objectif, jours, matériel) et Sid'note crée tes séances, avec les charges qui progressent d'une fois à l'autre.")}</div></div><button type="button" class="btn" data-coach="new">${L("Créer mon programme")}</button></div>`;return}
+  if(!pl){box.innerHTML=`<div class="card coach-card"><div class="grow"><b>${L("Ton programme sur mesure")}</b><div class="small muted">${L("Quelques questions (niveau, objectif, jours, matériel) et Sid'home crée tes séances, avec les charges qui progressent d'une fois à l'autre.")}</div></div><button type="button" class="btn" data-coach="new">${L("Créer mon programme")}</button></div>`;return}
   const p=pl.profile||{},G={muscle:"Prendre du muscle",force:"Gagner en force",gras:"Perdre du gras",forme:"Être en forme"},LV={deb:"Débutant",inter:"Intermédiaire",conf:"Confirmé"};
   const wk=ML().filter(l=>l.date>=iso(mondayOf(new Date()))).length;
   box.innerHTML=`<div class="card coach-card coach-on"><div class="coach-top"><div class="grow"><span class="eyebrow">${L("Mon programme")}</span><b>${esc(L(G[p.goal]||"Sur mesure"))}${pl.src==="ia"?` · ${L("ajusté par Claude")}`:""}</b><div class="small muted">${esc(L(LV[p.level]||""))} · ${p.days||pl.days.length} ${L("séances par semaine")} · ${wk}/${pl.days.length} ${L("faites cette semaine")}</div></div><button type="button" class="pen" data-coach="more" aria-label="${L("Plus d'actions")}">${MORE}</button></div>
@@ -2387,7 +2388,7 @@ async function dvUnlock(){
   if(dvOpen)return true;
   const hasV=vaultOn(),hasD=!!(data.docVault&&data.docVault.chk);
   // aucun code encore : on choisit le code unique (documents + mots de passe), puis la phrase secrète (v32)
-  if(!hasD&&!hasV){const code=await askPin({mode:"new",head:"Ton code Sid'note",sub:"Choisis ton code à 5 chiffres : il ouvre tes documents et tes mots de passe sur cet appareil."});if(!code)return false;
+  if(!hasD&&!hasV){const code=await askPin({mode:"new",head:"Ton code Sid'home",sub:"Choisis ton code à 5 chiffres : il ouvre tes documents et tes mots de passe sur cet appareil."});if(!code)return false;
     const mk=await mkNeed();if(!mk)return false;
     const d=await v2Make(mk,"sidnote-docs",{uni:true}),w=await v2Make(mk,"sidnote",{uni:true});
     data.docVault=d.v;data.vault=w.v;dvKey=d.key;dvVid=d.v.id;dvOpen=true;await mkWrap("main",code,mk);save();toast("Code enregistré");return true}
@@ -2624,7 +2625,7 @@ const accEmail=()=>session.email||`${slug(session.name||"")}@${EMAIL_DOMAIN}`;
 // active la récupération pour un coffre (après création du code, ou plus tard)
 async function recEnable(v,code){
   if(v&&v.id)recAsked.add(v.id); // une seule proposition par session, même si on répond « Plus tard »
-  const pw=await askAccountPw("Ne perds jamais ton code","Entre le mot de passe de ton compte Sid'note : si tu oublies ce code un jour, il te suffira de ce mot de passe pour le retrouver.",
+  const pw=await askAccountPw("Ne perds jamais ton code","Entre le mot de passe de ton compte Sid'home : si tu oublies ce code un jour, il te suffira de ce mot de passe pour le retrouver.",
     async pw=>{try{await api("/auth/v1/token?grant_type=password",{method:"POST",body:{email:accEmail(),password:pw}});return null}
       catch(ex){return ex instanceof TypeError?"Pas de connexion internet. Réessaie quand tu es connecté.":"Mot de passe incorrect."}},"Plus tard");
   if(!pw)return false;
@@ -2634,7 +2635,7 @@ async function recEnable(v,code){
 function recOffer(v,code){if(v&&!isV2(v)&&!v.rec&&!recAsked.has(v.id)){recAsked.add(v.id);recEnable(v,code)}}
 // retrouve le code oublié (null si annulé)
 async function recRecover(v){let code=null;
-  await askAccountPw("Code oublié","Entre le mot de passe de ton compte Sid'note pour retrouver ton code.",
+  await askAccountPw("Code oublié","Entre le mot de passe de ton compte Sid'home pour retrouver ton code.",
     async pw=>{try{const key=await pinKey(pw,v.rec.salt,PIN_ITER);code=(await decJ(key,v.rec)).pin;return null}catch(e){return "Mot de passe incorrect."}});
   if(code)toast(`${L("Ton code est")} ${code}`,6000);return code}
 
@@ -2717,16 +2718,18 @@ function renderNotes(){
   const up=path.length>1?path[path.length-2]:null;
   $("nfPath").innerHTML=noteDir?`<button type="button" class="back nf-back" data-nfgo="${up?up.id:""}">‹ ${esc(up?up.name:L("Notes"))}</button>
     <div class="nf-crumbs"><button type="button" class="nf-crumb" data-nfgo="">${L("Notes")}</button>`+path.map((f,i)=>`<span aria-hidden="true">›</span>${i===path.length-1?`<b class="notr">${esc(f.name)}</b>`:`<button type="button" class="nf-crumb notr" data-nfgo="${f.id}">${esc(f.name)}</button>`}`).join("")+`</div>`:"";
-  const h1=$("notesList").querySelector("h1");if(h1){h1.textContent=noteDir&&!q?path[path.length-1].name:L("Notes");h1.classList.toggle("notr",!!noteDir)}
-  const dirs=q?"":nfKids(noteDir).map(f=>`<div class="nf-row"><span class="ngrip" data-fgrip="${f.id}" aria-hidden="true" title="${L("Maintenir et glisser")}">${GRIP}</span><button type="button" class="nf-open" data-nfopen="${f.id}"><span class="nf-ic">${IC("folder")}</span><b class="grow notr">${esc(f.name)}</b><span class="small muted">${nfCount(f.id)||""}</span>${CHEVR}</button><button type="button" class="pen" data-nfmore="${f.id}" aria-label="${L("Plus d'actions")}">${MORE}</button></div>`).join("");
+  $("notesList").classList.toggle("in-dir",!!noteDir&&!q);const h1=$("notesList").querySelector("h1");if(h1){h1.textContent=noteDir&&!q?path[path.length-1].name:L("Notes");h1.classList.toggle("notr",!!noteDir)}
+  // v42 : les dossiers en tuiles (section « Dossiers »), bien distincts des notes en lignes (section « Notes »)
+  const kids=q?[]:nfKids(noteDir);
+  const dirs=kids.length?`<h2 class="nl-h">${L(noteDir?"Sous-dossiers":"Dossiers")}</h2><div class="nf-grid">`+kids.map(f=>`<div class="nf-row nf-tile"><span class="ngrip" data-fgrip="${f.id}" aria-hidden="true" title="${L("Maintenir et glisser")}">${GRIP}</span><button type="button" class="nf-open" data-nfopen="${f.id}"><span class="nf-ic">${IC("folder")}</span><b class="grow notr">${esc(f.name)}</b><span class="nf-n">${nfCount(f.id)||"0"}</span></button><button type="button" class="pen" data-nfmore="${f.id}" aria-label="${L("Plus d'actions")}">${MORE}</button></div>`).join("")+`</div>`:"";
   if(!q)list=list.filter(x=>noteDirOf(x)===noteDir);
   if(q)list=list.filter(x=>noteView(x)).map(x=>{const w=noteView(x);return{x,s:Math.max(fuzzyScore(w.title||"",q),fold(w.body).includes(fold(q))?11:0)}}).filter(o=>o.s>0).sort((a,b)=>b.s-a.s).map(o=>o.x);
-  $("noteList").innerHTML=dirs+(list.length?list.map(x=>{const w=noteView(x),when=`<span class="when">${fmtWhen(x.upd||Date.parse(x.createdAt))}</span>`;
+  $("noteList").innerHTML=dirs+(list.length&&dirs?`<h2 class="nl-h">${L("Notes")}</h2>`:"")+(list.length?`<div class="nl-notes">`+list.map(x=>{const w=noteView(x),when=`<span class="when">${fmtWhen(x.upd||Date.parse(x.createdAt))}</span>`;
     if(!w)return `<button class="note note-lock" data-note="${x.id}"><b>${IC("lock")} ${L("Note secrète")}</b><span class="prev">${L("Touche pour l'ouvrir avec ton code")}</span>${when}</button>`;
     const lines=String(w.body||"").trim().split("\n").filter(Boolean);
     const t=w.title&&w.title.trim()?w.title:(lines.shift()||L("Nouvelle note"));
     const fp=q&&noteDirOf(x)?`<span class="small muted nf-in">${IC("folder")} ${esc(nfPath(x.folder).map(f=>f.name).join(" › "))}</span>`:"";
-    return `<div class="note-row"><span class="ngrip" data-ngrip="${x.id}" aria-hidden="true" title="${L("Maintenir et glisser")}">${GRIP}</span><button class="note" data-note="${x.id}"><b class="notr">${x.secret?IC("lock")+" ":""}${esc(t)}</b>${fp}<span class="prev notr">${esc(lines.join(" · ")||"")}</span>${x.photos&&x.photos.length?`<span class="np-count">${IC("camera")} ${x.photos.length} ${L(x.photos.length>1?"photos":"photo")}</span>`:""}${when}</button></div>`}).join("")
+    return `<div class="note-row"><span class="ngrip" data-ngrip="${x.id}" aria-hidden="true" title="${L("Maintenir et glisser")}">${GRIP}</span><button class="note" data-note="${x.id}"><b class="notr">${x.secret?IC("lock")+" ":""}${esc(t)}</b>${fp}<span class="prev notr">${esc(lines.join(" · ")||"")}</span>${x.photos&&x.photos.length?`<span class="np-count">${IC("camera")} ${x.photos.length} ${L(x.photos.length>1?"photos":"photo")}</span>`:""}${when}</button></div>`}).join("")+`</div>`
     :dirs?"":`<div class="empty">${L(q?"Aucune note ne correspond.":noteDir?"Ce dossier est vide. Touche « + Note » pour y écrire.":"Aucune note pour l'instant. Touche « + Note » pour écrire.")}</div>`);
 }
 function openNote(id){noteOpenId=id;renderNotes();window.scrollTo(0,0)}
@@ -2983,7 +2986,7 @@ function aiRender(){const b=$("aiBody"),ai=aiCur()||AIS.claude;aiStop();
       <div class="ai-acts"><a class="btn" href="https://claude.ai/login" target="_blank" rel="noopener">${L("Créer mon compte Claude")}</a><button type="button" class="btn ghost" data-aistep="setup">${L("C'est fait, continuer")}</button></div>`;return}
   if(aiW.step==="setup"){$("aiTitle").textContent=ai.name;
     b.innerHTML=`<div class="ai-step"><b>${L("Tout est prêt")}</b><div class="small muted">${L("Touche le bouton : Claude s'ouvre avec Sid'note déjà rempli. Là-bas, touche simplement « Ajouter », puis reviens ici.")}</div>
-        ${aiW.url?`<a class="btn" href="${esc(ai.add(aiW.url))}" target="_blank" rel="noopener" style="width:100%;margin-top:10px" data-aiadd="1">${L("Ajouter Sid'note à")} ${esc(ai.name)}</a>`:`<button type="button" class="btn" disabled style="width:100%;margin-top:10px">${L("Préparation…")}</button>`}
+        ${aiW.url?`<a class="btn" href="${esc(ai.add(aiW.url))}" target="_blank" rel="noopener" style="width:100%;margin-top:10px" data-aiadd="1">${L("Ajouter Sid'home à")} ${esc(ai.name)}</a>`:`<button type="button" class="btn" disabled style="width:100%;margin-top:10px">${L("Préparation…")}</button>`}
         <div class="small muted" style="margin-top:8px">${L("Si Claude te demande de te connecter, fais-le : la fenêtre s'ouvrira ensuite toute seule.")}</div></div>
       <details class="ai-more"><summary class="small">${L("Voir mon adresse (si besoin)")}</summary><div class="mcp-url notr" id="aiUrl">${aiW.url?esc(aiW.url):L("Création…")}</div>
         <button type="button" class="btn ghost" data-aicopy="1" style="width:100%;margin-top:8px">${L("Copier l'adresse")}</button></details>
@@ -3222,13 +3225,13 @@ $("phForgot").addEventListener("click",async()=>{if(!phRes||!phOn())return;const
     if(!b.dataset.armed){b.dataset.armed="1";phFail("La récupération par le mot de passe du compte n'était pas activée : sans ta phrase, tes coffres ne peuvent pas être rouverts.");
       b.textContent=L("Tout effacer et recommencer ? Touche encore pour confirmer");return}
     phEnd(null);vaultsReset();return}
-  let ph=null;await askAccountPw("Phrase oubliée","Entre le mot de passe de ton compte Sid'note pour retrouver ta phrase secrète.",
+  let ph=null;await askAccountPw("Phrase oubliée","Entre le mot de passe de ton compte Sid'home pour retrouver ta phrase secrète.",
     async pw=>{try{ph=(await decJ(await pinKey(pw,x.rec.salt,PIN_ITER),x.rec)).ph;return ph?null:"Mot de passe incorrect."}catch(e){return "Mot de passe incorrect."}});
   if(!ph)return;
   try{const mk=await phCheck(ph);phMem=mk;toast(`${L("Ta phrase secrète est")} « ${ph} »`,8000);phEnd({mk,ph})}catch(e){phFail("Phrase incorrecte.")}});
 // récupération de la phrase grâce au mot de passe du compte (proposée quand la phrase est choisie)
 async function phRecOffer(ph){if(!data.phx||data.phx.rec||isTrial())return;
-  const pw=await askAccountPw("Ne perds jamais ta phrase","Entre le mot de passe de ton compte Sid'note : si tu oublies ta phrase secrète un jour, ce mot de passe suffira pour la retrouver.",
+  const pw=await askAccountPw("Ne perds jamais ta phrase","Entre le mot de passe de ton compte Sid'home : si tu oublies ta phrase secrète un jour, ce mot de passe suffira pour la retrouver.",
     async pw=>{try{await api("/auth/v1/token?grant_type=password",{method:"POST",body:{email:accEmail(),password:pw}});return null}
       catch(ex){return ex instanceof TypeError?"Pas de connexion internet. Réessaie quand tu es connecté.":"Mot de passe incorrect."}},"Plus tard");
   if(!pw||!data.phx)return;const salt=rnd(16);
@@ -4264,7 +4267,7 @@ const ONB_DESC={
   nutri:"Tes calories et tes macros du jour, et des menus faits pour toi.",
   muscu:"Tes séances, tes charges et tes répétitions, avec chrono, tours et minuteur fractionné.",
   docs:"Range tes PDF, scanne des feuilles avec l'appareil photo et retrouve-les en un instant.",
-  app:"Les étapes pour installer Sid'note sur ton écran d'accueil."};
+  app:"Les étapes pour installer Sid'home sur ton écran d'accueil."};
 let onbSel={};
 const ONB_GROUP={orga:["agenda","Organise tes journées","Ton agenda, tes tâches du jour et un minuteur de concentration."],
   sport:["fit","Bouge et mange bien","Ton programme de musculation, ta nutrition et tes progrès en graphiques."],
@@ -4313,7 +4316,7 @@ function maybeAskNotif(){if(!session||isTrial()||data.ui.notifAsked||!$("onb").h
   const can=pushOK();if(can&&(Notification.permission!=="default"))return;
   if(!can&&!(isIOS&&!standalone()))return; // navigateur sans notifications : rien à proposer
   $("naTitle").textContent=L("Ne rate plus rien");
-  $("naText").textContent=L(can?"Active les notifications : Sid'note te prévient avant tes rendez-vous, tes cours et tes échéances. Tu choisis quand, dans Agenda ou Réglages."
+  $("naText").textContent=L(can?"Active les notifications : Sid'home te prévient avant tes rendez-vous, tes cours et tes échéances. Tu choisis quand, dans Agenda ou Réglages."
     :"Pour recevoir des rappels avant tes rendez-vous et tes cours, installe d'abord Sid'note sur ton écran d'accueil, puis ouvre-le depuis son icône.");
   $("naYes").textContent=L(can?"Activer les notifications":"Voir comment l'installer");$("notifAsk").hidden=false}
 const naDone=()=>{data.ui.notifAsked=Date.now();saveUI();$("notifAsk").hidden=true};

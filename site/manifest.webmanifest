@@ -1,16 +1,17 @@
 {
-  "name": "sid'note",
-  "short_name": "sid'note",
-  "description": "Tâches, planning, documents et plus — par SidCorp",
+  "name": "Sid'home",
+  "short_name": "Sid'home",
+  "description": "sid'agenda, sid'fit et sid'note réunis — par SidCorp",
   "lang": "fr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0E0F11",
-  "theme_color": "#0E0F11",
+  "background_color": "#F4F0E8",
+  "theme_color": "#F4F0E8",
   "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" },
     { "src": "logo-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "logo-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "logo-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

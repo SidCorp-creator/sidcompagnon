@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 41.**
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 42.** Depuis la v42, l'app s'appelle **Sid'home** (adresse inchangée : sidnote.netlify.app).
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -16,6 +16,8 @@ Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici
 site/                 ← exactement ce qui est mis en ligne sur Netlify
   index.html          ← la page (HTML seulement) ; depuis la v38 l'app est découpée, toujours sans framework ni build :
   app.css             ← tous les styles
+  design.css          ← v42 : direction « Éditorial de précision » (jetons, polices, surcharges), chargé après app.css
+  favicon.svg, maskable-512.png ← v42 : logo Sid'home
   i18n.js             ← traductions DICT/PATS (EN) et DICT_NL/PATS_NL (NL), chargé avant app.js
   app.js              ← tout le programme (les `const` de i18n.js sont visibles car scripts classiques)
   sw.js               ← service worker (réseau d'abord ; cache pdf.js à part)
@@ -198,6 +200,17 @@ assets/               ← logo
   - Dossier Santé : les demandes Nutrition / Graphiques / Musculation peuvent s'ouvrir dans un projet de l'IA (`data.prefs.aiProj`, étape `proj` de l'assistant, instructions `AI_PROJ`) ; le message est copié, à coller dans une discussion du projet (aucune IA ne permet d'ouvrir un projet avec un message pré-rempli).
   - Connecteur `mcp` v4 : `ajouter_activite` accepte `reminders` (minutes → `t.leads`, la veille ajoutée), nouvel outil `modifier_activite` ; musculation : `muscu_programme`, `enregistrer_programme` (`src:"ia"`), `noter_seance`. (Le rappel « 1 h avant » demandé à Claude ne pouvait pas être posé avant la v4.)
   - ChatGPT : pas de lien pré-rempli ; « juste accepter » demanderait une app publiée dans l'annuaire OpenAI (et Claude) avec connexion OAuth. Les autorisations d'outils ne peuvent pas être pré-acceptées : l'utilisateur choisit « Toujours autoriser » une fois.
+- v42 (Sid'home, 22 oct. 2026) :
+  - **Sauvegarde avant la v42** : branche git `sauvegarde-v41` + schéma Supabase `sauvegarde` (`user_data_v41`, `users_v41`, `mcp_tokens_v41`). Comparer les comptes (todos, notes, tasks, noteFolders, pwds) avant de supprimer quoi que ce soit.
+  - Structure : `GROUPS` = orga « sid'agenda » (plan, todo, pomo), sport « sid'fit » (muscu, nutri, graph), perso « sid'note » (notes, docs, pwd), more « Sid'home » (more, app). `appOf(v)` → `html[data-app]` (accent de l'app). Sid'home = page `home` (Aujourd'hui + 3 logos `[data-gapp]`), sans barre du bas ; Réglages par l'avatar `#homeAvatar`. Dans une app : en-tête `#vhead` (logo + nom + bouton « Sid'home ») et barre du bas `#navIn` avec les fonctions de l'app. Focus (pomo) revenu, Listes toujours retirées (`OFF_TABS=["lists"]`).
+  - Animation d'ouverture 2 s (`#splash`, `#spMark`, `#spApps`), présentation des 3 apps la première fois (`ONB_GROUP`, relançable depuis Réglages).
+  - Logos : `LOGOS`/`LOGO(app,cls)` (SVG en ligne, S de Fraunces découpé par un masque, `currentColor`). Sources dans le scratchpad de la session (`logos6/`, `gen6.py`) ; icônes PNG sur fond ivoire.
+  - Direction artistique `design.css` (activée par `html[data-ds="edito"]` dans `applyLook`) : ivoire #F4F0E8 / graphite #111214, encre #1C1A17, filets #D6CFC2, petit gris #6E675C ; accents agenda #9C3B26, fit #2F4A3A, note = encre (clair) ; Fraunces (titres), Inter Tight, IBM Plex Mono (chiffres) ; pas d'ombres ni de dégradés ; rayons 4–8 px. Les ambiances (`PALETTES`) ne sont plus proposées (réglage caché, données gardées). **Ne jamais mettre `display:…!important` sans `:not([hidden])`** (bug de l'en-tête corrigé).
+  - Notes : dossiers en tuiles (section « Dossiers », `.nf-grid`), notes en filets (titre Fraunces), dans un dossier : retour + chemin au-dessus du titre.
+  - Nutrition (piste B) : anneau fin, macros en lignes. Suppressions en un appui → icône poubelle + confirmation en 2 temps (`confirm2`, 3 s). Curseur en fin de champ numérique. Surnom en entier.
+  - Musculation : base d'exercices classée (`EX`, `EXN`, `DAYT`), pas de doublons dans une séance, exercices voulus / exclus avec recherche, repos 4 min (lourd) / 3 min (poly) / 2 min (isolation), modifiables (`coachRest`). Programmes existants intacts.
+  - Claude seulement (`AIS={claude}`). Connecteur `mcp` v6 : `enregistrer_commentaire` (commentaire du jour / de la semaine, corrige le bug du commentaire quotidien).
+  - Les textes où « Sid'note » désignait toute l'app disent « Sid'home » ; le connecteur Claude s'appelle toujours « Sid'note » (ne pas renommer : il est déjà ajouté chez les gens).
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés
@@ -212,15 +225,15 @@ assets/               ← logo
 - Jusqu'ici, Sid déposait un zip du dossier `site/` par glisser-déposer (Netlify Drop) : 15 crédits par dépôt, 300 crédits par mois (renouvelés vers le 5 du mois).
 - **Depuis le 21 oct. 2026 (v37), Claude publie lui-même** via le connecteur Netlify (Sid a connecté Netlify et donné l'accès réseau complet à l'environnement cloud). Site `sidnote` : id `e7fe294f-7d4e-4c67-a69a-c0f5ae4f5ff2` ; site de test `sidnote-test` : id `5c61415f-50cc-49da-8f96-86c245428f64`. Méthode : copier `site/` dans un dossier vide du scratchpad + `netlify.toml` (`[build] publish = "." command = ""`), appeler l'outil `deploy-site`, lancer la commande `npx -y @netlify/mcp@latest …` qu'il renvoie depuis ce dossier avec `NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt`, puis vérifier `https://sidnote.netlify.app/sw.js`.
 - **À chaque version** :
-  1. Changer le numéro dans le texte « Sid'note · version N » (Réglages, en bas de index.html) et la constante `CACHE` dans `sw.js` (`sidnote-vN`). Sans ce second changement, les iPhone gardent l'ancienne version.
+  1. Changer le numéro dans le texte « Sid'home · version N » et `APP_V` dans app.js (Réglages, en bas de index.html) et la constante `CACHE` dans `sw.js` (`sidnote-vN`). Sans ce second changement, les iPhone gardent l'ancienne version.
   2. Lancer `node tests/smoke.js`.
   3. Mettre en ligne le dossier `site/`, et rien d'autre.
 - Piste d'amélioration (à proposer à Sid) : passer par Git, un dépôt GitHub privé et Netlify CLI ou un déploiement automatique, plus un site de prévisualisation (`sidnote-test`) pour tester avant les proches. Vérifier le coût en crédits avant.
 
-## Projet : séparer l'app en 4 noms (décidé par Sid le 22 oct. 2026, pas encore fait)
+## Sid'home et ses 3 apps (fait en v42, 22 oct. 2026)
 - Application mère : **Sid'home** (garde l'adresse `sidnote.netlify.app`).
 - **Sid'agenda** = Organisation (agenda, tâches) · **Sid'fit** = Santé (musculation, nutrition, graphiques) · **Sid'note** = Coffre (notes, documents, mots de passe).
-- Conseillé à Sid : d'abord une seule app avec Sid'home en accueil et 3 tuiles (option 1), avant d'éventuelles apps installables séparées. En attente de sa réponse.
+- Une seule app (option 1) : Sid'home en accueil avec les 3 logos ; voir « v42 ».
 
 ## État et prochaines étapes
 - La v18 a été livrée le 9 oct. 2026 et le SQL Storage a été exécuté avec succès.

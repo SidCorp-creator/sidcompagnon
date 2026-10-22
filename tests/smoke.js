@@ -63,6 +63,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(await pg.isVisible('#homeBody'))err("Sid'home encore visible dans une app");
     await go("notes");await go("muscu");await home();await pg.click('#homeBody [data-gapp="perso"]');await pg.waitForTimeout(200);await closePin();
     if(await cur()!=="notes")err("l'app ne rouvre pas la dernière fonction ouverte");
+    await home();if(await pg.isVisible("#vhead"))err("en-tête d'app affiché sur Sid'home");
     await go("plan");if((await pg.$$eval("#navIn [data-go]",x=>x.map(e=>e.dataset.go).join(",")))!=="plan,todo,pomo")err("barre de sid'agenda : Agenda, Tâches, Focus attendus");
 
     // --- Tâches : catégorie tapée mais pas validée → créée et utilisée
@@ -648,6 +649,9 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await drag('[data-fgrip="fB"]','[data-nfopen="fA"]');
     if(!(await pg.evaluate(()=>nfOf("fB").parent==="fA")))err("dossier pas glissé dans le dossier");
     await pg.click('[data-nfopen="fA"]');await pg.waitForTimeout(200);await shot(pg,"v41-notes-sous-dossier");
+    // v42 : dossiers en tuiles (section à part), titre = nom du dossier, bouton retour
+    if(!(await pg.isVisible(".nf-grid .nf-tile")))err("dossiers : pas de tuiles");
+    if(!(await pg.isVisible("#nfPath .nf-back")))err("dossier : pas de bouton retour");
     if(!(await pg.isVisible(".nf-back")))err("pas de bouton retour dans un dossier");
     await pg.click(".nf-back");await pg.waitForTimeout(200);if(await pg.evaluate(()=>noteDir!==null))err("le retour ne remonte pas");
     await ctx.close()}

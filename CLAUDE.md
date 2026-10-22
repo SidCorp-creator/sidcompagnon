@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 42.** Depuis la v42, l'app s'appelle **Sid'home** (adresse inchangée : sidnote.netlify.app).
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 43.** Depuis la v42, l'app s'appelle **Sid'home** (adresse inchangée : sidnote.netlify.app).
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -18,12 +18,15 @@ site/                 ← exactement ce qui est mis en ligne sur Netlify
   app.css             ← tous les styles
   design.css          ← v42 : direction « Éditorial de précision » (jetons, polices, surcharges), chargé après app.css
   favicon.svg, maskable-512.png ← v42 : logo Sid'home
+  fonts.css + fonts/  ← v43 : polices hébergées ici (plus de Google Fonts) ; lib/pdfjs/ : pdf.js 3.11.174 hébergé ici (plus de cdnjs)
+  confidentialite.html, conditions.html, cookies.html, legal.css ← v43 : pages légales publiques (FR, champs [À COMPLÉTER])
+  robots.txt, sitemap.xml, llms.txt ← v43
   i18n.js             ← traductions DICT/PATS (EN) et DICT_NL/PATS_NL (NL), chargé avant app.js
   app.js              ← tout le programme (les `const` de i18n.js sont visibles car scripts classiques)
   sw.js               ← service worker (réseau d'abord ; cache pdf.js à part)
   _headers            ← en-têtes de sécurité Netlify (CSP…) ; tests/serve.js les applique aussi en local
   manifest.webmanifest, icônes
-supabase/functions/   ← fonctions Edge (Deno) : horaire (relais iCal), nutrition (v39 : mémoire des aliments seulement), rappels (notifications), delete-account (v35, suppression du compte), mcp (v38, connecteur Claude ; v4 en v41)
+supabase/functions/   ← fonctions Edge (Deno) : horaire (relais iCal), nutrition (v39 : mémoire des aliments seulement), rappels (notifications), delete-account (v35, suppression du compte), mcp (v38, connecteur Claude ; v7 en v43)
 supabase/sql/         ← SQL : v37.sql (sauvegarde quotidienne, erreurs, listes partagées — à exécuter par Sid), documents.sql (déjà exécuté), nutrition.sql (v20, compteur d'appels Claude, exécuté), food_memory.sql (v21, mémoire des aliments), notifications.sql (v22, cron 5 min + anti-doublon)
 secrets/              ← clés VAPID, secret cron, version complète de rappels : NE JAMAIS publier ni committer
 tests/                ← serve.js (aperçu local + faux Supabase), smoke.js (test Playwright), mock-supabase.js, memory.test.js (mémoire des aliments, `node tests/memory.test.js`), rappels.test.js (calcul des rappels)
@@ -211,6 +214,12 @@ assets/               ← logo
   - Musculation : base d'exercices classée (`EX`, `EXN`, `DAYT`), pas de doublons dans une séance, exercices voulus / exclus avec recherche, repos 4 min (lourd) / 3 min (poly) / 2 min (isolation), modifiables (`coachRest`). Programmes existants intacts.
   - Claude seulement (`AIS={claude}`). Connecteur `mcp` v6 : `enregistrer_commentaire` (commentaire du jour / de la semaine, corrige le bug du commentaire quotidien).
   - Les textes où « Sid'note » désignait toute l'app disent « Sid'home » ; le connecteur Claude s'appelle toujours « Sid'note » (ne pas renommer : il est déjà ajouté chez les gens).
+- v43 (lots demandés par Sid le 22 oct. 2026, rapport complet : `docs/conformite-v43.md`) :
+  - Lot 1 : chrono / minuteur affichés selon le numéro d'onglet (`restGo` pose `--i`, plus de position de défilement : le bug « onglet Minuteur mais chrono affiché » venait d'un calcul fait quand la page était cachée) ; sons de fin programmés sur l'horloge audio (`chimePlan`, `tmPlan`, `pomoPlan`, exacts même onglet en arrière-plan, replanifiés au retour). Ouverture toujours en haut d'Aujourd'hui (`history.scrollRestoration="manual"`, `bootTop`, réglage « Page d'accueil » masqué, données gardées). La présentation utilise aussi un numéro (`onbGoTo`).
+  - Lot 2 : thème clair par défaut (`data.prefs.theme` absent = clair, `<html data-theme="light">` d'emblée). Couleurs des apps en variables (`--c-agenda`, `--c-fit`, `--c-note`, `--app`, `--app-soft`, `--app-line`, `--on-app`) sur boutons, pastilles, onglets, en-têtes. Barre latérale plate (le « flou » venait d'un faux gras 600 alors que la police n'est chargée qu'en 300-500), dès 768 px, masquable (`data.ui.sideOff`, `sideApply`, `#sideShow`, par défaut masquée sur tablette). Présentation : une diapositive par app en deux colonnes, dans sa couleur. Animation d'ouverture propre à chaque app (`appIntro`, `INTRO` : 3 variantes par app, réglages aléatoires ; clic/touche = passer ; rien si « réduire les animations » ; `window.__noIntro` dans les tests).
+  - Lot 3 : Aujourd'hui = 3 sections `.hm-sec[data-app]` (nom, couleur, « Ouvrir »), « Dossiers récents » (`data-folder-open`) au lieu des notes récentes.
+  - Lot 4 : programme de musculation **par le Claude de chacun** (comme Nutrition, décision de Sid : pas de clé API) : « Créer avec Claude » crée d'abord le programme de l'app (base et secours) puis envoie toutes les réponses + remarques (`coachPrompt`, `plan.aiWait`) ; remarques gardées (`profile.remarks`, `notes`, `avoidTxt`) et lues par le connecteur `mcp` v7 ; « Ta remarque sur ce programme » → `coachAdjust`. Formulaire : l'essentiel puis « Tes précisions » repliées. Séries libres : + / − dans le programme (`data-coset`, 1 à 10), « + Ajouter une série » et × pendant la séance (`data-woadd`, `data-wodel`).
+  - Lot 5 : polices et pdf.js hébergés ici (CSP sans tiers), Spotify chargé seulement après un clic (`data.ui.spotOk`), textes légaux réécrits (`LEGAL` privacy/terms/cookies, source `scratchpad/legal/legal.py` recopiée dans le code) + pages publiques, case d'acceptation non pré-cochée à l'inscription (`#aAgree`, `terms_at`/`terms_v` dans les métadonnées du compte), contrastes (`--muted:#665F55`), onglets accessibles, lien « Aller au contenu », audit axe-core sans violation. **À faire par Sid** : compléter `[À COMPLÉTER]`, exécuter `supabase/sql/v43.sql`, supprimer le schéma `sauvegarde` après validation, accepter les DPA Supabase/Netlify.
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

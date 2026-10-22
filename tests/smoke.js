@@ -729,7 +729,19 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const top=await pg.evaluate(()=>{const a=$("nuAddBox").getBoundingClientRect().top,t=$("nuTabs").getBoundingClientRect().top;return a<t});if(!top)err("« Ajouter ce que tu manges » n'est pas en haut");
     if(!(await pg.isVisible("#nuAiLink")))err("lien « Ou dis-le à Claude » absent");
     for(const t of ["menu","profile"]){await pg.click(`[data-nutab="${t}"]`);await pg.waitForTimeout(150)}await pg.click('[data-nutab="day"]');
-    await shot(pg,"v43-nutrition-ajouter");await ctx.close()}
+    await shot(pg,"v43-nutrition-ajouter");
+    // v43 : ce qui part chez Claude ne reste pas pré-rempli (menu, ajout d'aliment, remarques du programme)
+    await pg.click('[data-nutab="menu"]');await pg.waitForTimeout(150);await pg.fill("#nuInclude","poulet");await pg.fill("#nuExclude","blanc de dinde");
+    await pg.click("#nuMenuBtn");await pg.waitForTimeout(500);if(await pg.isVisible("#aaClose"))await pg.click("#aaClose");
+    if(await pg.inputValue("#nuInclude")!==""||await pg.inputValue("#nuExclude")!=="")err("« à inclure / à éviter » restent pré-remplis après l'envoi à Claude");
+    await pg.evaluate(()=>renderNutri());if(await pg.inputValue("#nuInclude")!=="")err("« à inclure » revient après un nouveau rendu");
+    await pg.click('[data-nutab="day"]');await pg.evaluate(()=>{nuCall=async(k,p)=>{throw aiNeed(k,p)}});await pg.fill("#nuAsk","zzz plat imaginaire 300 g");await pg.click("#nuAskBtn");await pg.waitForTimeout(800);if(await pg.isVisible("#aaClose"))await pg.click("#aaClose");
+    if(await pg.inputValue("#nuAsk")!=="")err("« Ajouter ce que tu manges » reste pré-rempli après l'envoi à Claude");
+    await pg.evaluate(()=>{show("muscu");coachOpen()});await pg.click("#cfMore summary");await pg.fill("#cfNotes","abdos tous les jours");await pg.fill("#cfAvoidTxt","poignet");
+    await pg.click('#coachForm [data-cfgo="ai"]');await pg.waitForTimeout(400);if(await pg.isVisible("#aaClose"))await pg.click("#aaClose");
+    await pg.evaluate(()=>coachOpen());await pg.waitForTimeout(150);if(await pg.inputValue("#cfNotes")!==""||await pg.inputValue("#cfAvoidTxt")!=="")err("remarques du programme pré-remplies à la réouverture");
+    if(!(await pg.evaluate(()=>PL().profile.remarks.some(r=>r.text==="abdos tous les jours"))))err("la remarque n'est plus gardée pour Claude");
+    await ctx.close()}
   // --- v43 lot 5 : RGPD / cookies : aucune ressource de tiers, Spotify seulement après un clic, case des conditions, pages légales
   for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1440,height:900}}],["tablette",{...devices["iPad (gen 7)"]}]]){
     const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v43 RGPD "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));

@@ -2096,7 +2096,7 @@ const restLbl=r=>r>=60?String(Math.round(r/60*10)/10).replace(".",",")+" min":r+
 function coachRest(dayId,i){const pl=PL(),d=pl&&pl.days.find(x=>x.id===dayId),e=d&&d.ex[i];if(!e)return;
   openActions(`${L("Repos")} · ${e.name}`,[60,90,120,150,180,210,240,300].map(r=>({l:restLbl(r),on:e.rest===r,fn:()=>{e.rest=r;pl.upd=Date.now();M().upd=Date.now();save();renderCoach();toast(`${L("Repos")} : ${restLbl(r)}`)}})))}
 function coachOpen(){const p=(PL()&&PL().profile)||{level:"deb",goal:"muscle",days:3,dur:60,equip:"gym",avoid:[],prio:[],must:[],never:[]};cfDraft=JSON.parse(JSON.stringify(p));
-  document.querySelectorAll("#coachForm .cf-pick input").forEach(i=>i.value="");$("cfNotes").value=cfDraft.notes||"";$("cfAvoidTxt").value=cfDraft.avoidTxt||"";
+  document.querySelectorAll("#coachForm .cf-pick input").forEach(i=>i.value="");cfDraft.notes="";cfDraft.avoidTxt="";$("cfNotes").value="";$("cfAvoidTxt").value=""; // v43 : textes libres envoyés à Claude, jamais pré-remplis ensuite
   $("cfMore").open=cfOptN()>0;cfRender();$("coachErr").hidden=true;$("coachSheet").hidden=false}
 // v43 : nombre de précisions facultatives remplies (résumé du bloc replié)
 const cfOptN=()=>["prio","avoid","must","never"].reduce((n,k)=>n+((cfDraft[k]||[]).length?1:0),0)+(String(cfDraft.notes||"").trim()?1:0)+(String(cfDraft.avoidTxt||"").trim()?1:0);
@@ -3991,7 +3991,7 @@ $("nuAskForm").addEventListener("submit",async e=>{
       items:(r.items||[]).map(x=>({name:String(x.name||q),qty:String(x.quantity||""),em:String(x.emoji||""),kcal:r0(x.kcal),p:r1(x.protein_g),c:r1(x.carbs_g),f:r1(x.fat_g)}))};
     if(!photo&&nuPending.items.length>1)nuPending.items.forEach(x=>x.extra=!mentioned(q,x.name));
     if(!nuPending.items.length){nuPending=null;toast("Aliment non reconnu, précise un peu")}
-  }catch(ex){toast(nuErrMsg(ex))}
+  }catch(ex){toast(nuErrMsg(ex));if(ex.ai){nuPhoto=null;$("nuPhotoPrev").hidden=true;$("nuPhotoPrev").innerHTML="";$("nuAsk").value="";grow($("nuAsk"))}} // v43 : demande partie chez Claude → rien ne reste pré-rempli
   stop();nuBusy="";btn.disabled=false;renderNuResult();
 });
 function renderNuResult(){
@@ -4166,11 +4166,13 @@ $("nuMenuBtn").addEventListener("click",async()=>{
   if(mp.type!=="day")mp.one[mp.type]=Math.max(0,Math.round(numIn($("nuOneKcal").value)))||oneKcal(mp.type);
   const slots=mp.type==="day"?mpSlots():[mp.type],kcals=mp.type==="day"?mpKcals():[mp.one[mp.type]];
   nuBusy="menu";const btn=$("nuMenuBtn");btn.disabled=true;const stop=nuLoading($("nuMenu"),["Préparation du menu…","Choix des recettes…","Calcul des grammages…","Équilibrage des macros…"]);
-  try{const g=await genMeals(slots,kcals);
+  // v43 (demande de Sid) : « à inclure » / « à éviter » ne servent qu'à cette demande ; ils repartent vides ensuite
+  const mpClear=()=>{mpSet(mp,mp.type,"include","");mpSet(mp,mp.type,"exclude","");if(mp.type==="day"){delete mp.include;delete mp.exclude}$("nuInclude").value="";$("nuExclude").value="";autoGrow($("nuInclude"));autoGrow($("nuExclude"));n.upd=Date.now();save()};
+  try{const g=await genMeals(slots,kcals);mpClear();
     if(mp.type==="day"||!n.menu||!n.menu.meals)n.menu={meals:g.meals,tips:g.tips,at:new Date().toISOString()};
     else{const i=n.menu.meals.findIndex(m=>m.slot===mp.type);if(i>=0)n.menu.meals[i]=g.meals[0];else n.menu.meals.push(g.meals[0]);n.menu.at=new Date().toISOString()}
     n.upd=Date.now();save();toast("Menu prêt");
-  }catch(ex){toast(nuErrMsg(ex))}
+  }catch(ex){toast(nuErrMsg(ex));if(ex.ai)mpClear()}
   stop();nuBusy="";btn.disabled=false;renderNuMenu();
   const f=$("nuMenu").querySelector(".dish");if(f)f.scrollIntoView({behavior:"smooth",block:"start"});
 });

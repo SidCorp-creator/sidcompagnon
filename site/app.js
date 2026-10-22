@@ -3202,7 +3202,7 @@ $("aaActs").addEventListener("click",e=>{
   if(e.target.closest("#aaImgCopy")){const ai=aiCur()||AIS.claude;
     // la copie d'abord (pendant le clic, sinon le navigateur la refuse), puis Claude s'ouvre avec le message
     try{navigator.clipboard.write([new ClipboardItem({"image/png":Promise.resolve(aaImg.png)})]).then(()=>toast("Photo copiée : colle-la dans Claude (Ctrl+V ou ⌘V)"),()=>toast("Copie impossible : enregistre la photo"))}catch(x){toast("Copie impossible : enregistre la photo")}
-    window.open(ai.ask($("aaPrompt").textContent),"_blank","noopener");return}
+    extOpen(ai.ask($("aaPrompt").textContent));return}
   if(e.target.closest("[data-aaproj]")){try{navigator.clipboard.writeText($("aaPrompt").textContent).catch(()=>{})}catch(x){}toast("Message copié : colle-le dans le dossier");setTimeout(()=>{$("aiAskSheet").hidden=true},300);return}
   if(e.target.closest("[data-aiproj]")){$("aiAskSheet").hidden=true;aiW={step:"proj",url:"",hash:"",poll:null};$("aiSheet").hidden=false;aiRender();return}
   if(e.target.closest("#aaCopy"))copyTxt($("aaPrompt").textContent).then(ok=>toast(ok?"Message copié : colle-le dans Claude":"Copie impossible"));
@@ -4004,6 +4004,12 @@ $("nuPhoto").addEventListener("change",async e=>{const f=e.target.files[0];e.tar
   catch(ex){toast("Photo illisible")}});
 $("nuPhotoPrev").addEventListener("click",e=>{if(e.target.closest("[data-nuphrm]")){nuPhotoDrop(nuPhoto);nuPhoto=null;$("nuPhotoPrev").hidden=true;$("nuPhotoPrev").innerHTML="";nuAskLbl()}});
 // envoi direct : Claude s'ouvre avec le message ; la fenêtre est ouverte pendant le toucher (sinon le navigateur la bloque)
+// Sur iPhone (app installée), un lien vers Claude ouvre une petite fenêtre de navigateur qui passe la main à l'app Claude,
+// puis reste vide derrière : on la garde sous la main et on la ferme dès que la personne revient dans Sid'home
+let extWin=null;
+function extOpen(u){const w=window.open(u,"_blank");if(w){try{w.opener=null}catch(e){}extWin=w}return w}
+document.addEventListener("visibilitychange",()=>{if(document.hidden||!extWin)return;const w=extWin;extWin=null;setTimeout(()=>{try{if(!w.closed)w.close()}catch(e){}},250)});
+document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest('a[target="_blank"][href^="https://claude.ai/"]');if(!a||e.defaultPrevented)return;e.preventDefault();extOpen(a.href)});
 // « Envoyer à Claude » : la photo déposée (repas-…) est renommée envoi-… ; le connecteur la joint à nutrition_journee, un outil que
 // Claude connaît déjà (sa liste d'outils peut dater d'avant photo_repas), puis l'efface
 function nuPhotoMark(ph){const src=ph.done,dst=src.replace("/repas-","/envoi-"),key=x=>x.replace(/^documents\//,"");
@@ -4017,7 +4023,7 @@ function nuPhotoSend(q){const ph=nuPhoto,ai=aiCur()||AIS.claude;
   const clear=()=>{nuPhoto=null;$("nuPhotoPrev").hidden=true;$("nuPhotoPrev").innerHTML="";$("nuAsk").value="";grow($("nuAsk"));nuAskLbl()};
   // Claude s'ouvre tout de suite, pendant le toucher (une fenêtre vide remplie plus tard reste blanche dans l'app installée sur iPhone) ;
   // la photo finit de partir pendant que Claude s'ouvre (elle est en général déjà déposée depuis la prise de vue)
-  window.open(ai.ask(msg),"_blank","noopener");clear();
+  extOpen(ai.ask(msg));clear();
   (ph.up||nuPhotoUp()||Promise.reject()).then(()=>nuPhotoMark(ph)).then(()=>toast("Photo envoyée : Claude note le repas, il arrivera ici"),
     ()=>toast("Envoi de la photo impossible : réessaie"))}
 // un aliment renvoyé par l'IA apparaît-il dans ce que la personne a écrit ? (racine des mots, sans accents)
@@ -4602,7 +4608,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v43-8";
+const BUILD="sidnote-v43-9";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||swTimer||tmRun||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

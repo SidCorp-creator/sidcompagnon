@@ -750,6 +750,10 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const ob2=await (await pg.request.get("http://localhost:8790/__objs")).json();
     if(!Object.keys(ob2).some(k=>/\/envoi-\d+\.jpg$/.test(k))||Object.keys(ob2).some(k=>/\/repas-\d+\.jpg$/.test(k)))err("la photo envoyée n'est pas marquée « envoi » : "+JSON.stringify(Object.keys(ob2)));
     if(await pg.isVisible("#aiAskSheet"))err("une fenêtre intermédiaire s'ouvre encore pour la photo");
+    // la petite fenêtre ouverte pour Claude est refermée au retour dans Sid'home (sur iPhone, elle restait blanche)
+    const closed=await pg.evaluate(async()=>{const fw={closed:false,close(){this.closed=true}};window.open=()=>fw;extOpen("https://claude.ai/new?q=x");
+      document.dispatchEvent(new Event("visibilitychange"));await new Promise(r=>setTimeout(r,400));return fw.closed});
+    if(!closed)err("la fenêtre de Claude n'est pas refermée au retour");
     if(await pg.evaluate(()=>!!nuPhoto||!$("nuPhotoPrev").hidden))err("la photo reste affichée après l'envoi");
     // sans Claude branché : la feuille de partage reste le secours (photo + message)
     await pg.evaluate(()=>{data.prefs.aiOk=0;navigator.canShare=()=>true;navigator.share=async d=>{window.__shared={n:(d.files||[]).length,type:d.files&&d.files[0]&&d.files[0].type,text:d.text}}});

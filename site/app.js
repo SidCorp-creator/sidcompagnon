@@ -4015,12 +4015,11 @@ function nuPhotoSend(q){const ph=nuPhoto,ai=aiCur()||AIS.claude;
     `With Sid'note: read my nutrition day (nutrition_journee): the photo of my plate I just sent is attached to it. Estimate what I ate, then log it with noter_repas.${q?` Note: ${q}`:""}`,
     `Met Sid'note: lees mijn voedingsdag (nutrition_journee): de foto van mijn bord die ik net stuurde zit erbij. Schat wat ik gegeten heb en noteer het met noter_repas.${q?` Toelichting: ${q}`:""}`);
   const clear=()=>{nuPhoto=null;$("nuPhotoPrev").hidden=true;$("nuPhotoPrev").innerHTML="";$("nuAsk").value="";grow($("nuAsk"));nuAskLbl()};
-  // photo déjà déposée (cas habituel) : Claude s'ouvre tout de suite, pendant le toucher ; sinon fenêtre vide remplie après l'envoi
-  if(ph.done){nuPhotoMark(ph).catch(()=>{});window.open(ai.ask(msg),"_blank","noopener");clear();toast("Photo envoyée : Claude note le repas, il arrivera ici");return}
-  const w=window.open("","_blank");const go=()=>{const u=ai.ask(msg);if(w&&!w.closed)w.location.href=u;else location.href=u};
-  clear();
-  (ph.up||nuPhotoUp()||Promise.reject()).then(()=>nuPhotoMark(ph)).then(()=>{toast("Photo envoyée : Claude note le repas, il arrivera ici");go()},
-    ()=>{if(w&&!w.closed)w.close();nuPhoto=ph;toast("Envoi de la photo impossible : réessaie");$("nuPhotoPrev").hidden=false;$("nuPhotoPrev").innerHTML=`<img src="${ph.small}" alt="${L("Photo du plat")}"><button type="button" aria-label="${L("Retirer la photo")}" data-nuphrm="1">×</button>`;nuAskLbl()})}
+  // Claude s'ouvre tout de suite, pendant le toucher (une fenêtre vide remplie plus tard reste blanche dans l'app installée sur iPhone) ;
+  // la photo finit de partir pendant que Claude s'ouvre (elle est en général déjà déposée depuis la prise de vue)
+  window.open(ai.ask(msg),"_blank","noopener");clear();
+  (ph.up||nuPhotoUp()||Promise.reject()).then(()=>nuPhotoMark(ph)).then(()=>toast("Photo envoyée : Claude note le repas, il arrivera ici"),
+    ()=>toast("Envoi de la photo impossible : réessaie"))}
 // un aliment renvoyé par l'IA apparaît-il dans ce que la personne a écrit ? (racine des mots, sans accents)
 const nz=x=>String(x||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
 function mentioned(q,name){const Q=nz(q),stems=nz(name).split(/[^a-z0-9]+/).filter(w=>w.length>=3&&!/^(les|des|une|avec|sans|aux|the|and|with|cuit|cuite|nature|frais|fraiche|maison)$/.test(w));
@@ -4601,3 +4600,13 @@ if(ephExpired){
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPlan();renderStats()}});
 
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+// une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
+// (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
+const BUILD="sidnote-v43-8";
+async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
+  if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||swTimer||tmRun||(P&&P.run)||nuBusy||
+    (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;
+  if(busy||sessionStorage.getItem("sidnote-upd")===m[1])return; // une seule fois par version : jamais de boucle
+  sessionStorage.setItem("sidnote-upd",m[1]);if(data&&cache&&cache.dirty)await push().catch(()=>{});location.reload()}catch(e){}}
+if(!window.__noIntro)setTimeout(updCheck,3000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)updCheck()});

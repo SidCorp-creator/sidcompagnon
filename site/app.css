@@ -1297,3 +1297,8 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 [data-sw="tc:none"] .rt-sw{background:var(--ink)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .note-rt span[data-tc="r"]{color:#f87171}:root:not([data-theme="light"]) .note-rt span[data-tc="b"]{color:#60a5fa}:root:not([data-theme="light"]) .note-rt span[data-tc="v"]{color:#a78bfa}}
 :root[data-theme="dark"] .note-rt span[data-tc="r"]{color:#f87171}:root[data-theme="dark"] .note-rt span[data-tc="b"]{color:#60a5fa}:root[data-theme="dark"] .note-rt span[data-tc="v"]{color:#a78bfa}
+
+/* v42 : suppression en deux temps (1er appui → « Confirmer ? » en rouge, 3 s) */
+[data-c2]{background:var(--late)!important;color:#fff!important;border-color:var(--late)!important;width:auto!important;min-width:0!important;padding-inline:12px!important;border-radius:999px!important;font-size:13px!important;font-weight:700!important;white-space:nowrap}
+.act-it[data-c2]{border-radius:12px!important;font-size:16px!important}
+.x.trash .i{width:20px;height:20px}

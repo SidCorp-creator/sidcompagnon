@@ -361,6 +361,20 @@ const TOOLS = [
     inputSchema: { type: "object", required: ["kg"], properties: { kg: { type: "number" }, date: { type: "string" } } },
   },
   {
+    name: "enregistrer_commentaire",
+    description: "Enregistre dans Sid'note le commentaire nutrition que TU as écrit (du jour ou de la semaine), pour qu'il s'affiche dans l'app (Graphiques). À appeler après avoir fait un bilan avec nutrition_journee ou nutrition_semaine.",
+    inputSchema: {
+      type: "object", required: ["scope", "summary"],
+      properties: {
+        scope: { type: "string", enum: ["day", "week"], description: "day = commentaire du jour, week = de la semaine" },
+        summary: { type: "string", description: "Résumé en 2 ou 3 phrases" },
+        good: { type: "array", items: { type: "string" }, description: "Ce qui va bien" },
+        improve: { type: "array", items: { type: "string" }, description: "Ce qui peut s'améliorer" },
+        tips: { type: "array", items: { type: "string" }, description: "Conseils concrets" },
+      },
+    },
+  },
+  {
     name: "muscu_programme",
     description: "Programme de musculation de la personne (profil : niveau, objectif, jours, durée, matériel, zones à ménager, muscles prioritaires ; séances et exercices) et ses dernières séances faites (charges et répétitions). À lire avant de proposer ou d'ajuster un programme.",
     inputSchema: { type: "object", properties: {} },
@@ -625,6 +639,22 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
       });
       return `Poids noté : ${kg} kg le ${day}.`;
     }
+    case "enregistrer_commentaire": {
+      const scope = a.scope === "week" ? "week" : "day", summary = String(a.summary || "").trim().slice(0, 1500);
+      if (!summary) throw new Error("Le commentaire est vide.");
+      const list = (v: unknown) => (Array.isArray(v) ? v : []).map((x) => String(x).trim().slice(0, 300)).filter(Boolean).slice(0, 6);
+      // même format que l'app (data.nutri.rev, et data.nutri.weeks pour garder chaque semaine) ; clé = jour ou lundi de la semaine
+      const monday = () => { const d = new Date(today() + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); return d.toISOString().slice(0, 10); };
+      const rec = { key: scope === "day" ? today() : monday(), summary, good: list(a.good), improve: list(a.improve), tips: list(a.tips), at: new Date().toISOString() };
+      await writeData(user, (d) => {
+        const n = NU(d);
+        n.rev = n.rev || {};
+        n.rev[scope] = rec;
+        if (scope === "week") { const w = n.weeks.find((x: Data) => x && x.id === rec.key); if (w) Object.assign(w, rec, { upd: Date.now() }); else n.weeks.push({ id: rec.key, ...rec, upd: Date.now() }); }
+        n.upd = Date.now();
+      });
+      return `Commentaire ${scope === "day" ? "du jour" : "de la semaine"} enregistré : il s'affiche dans Sid'note (Graphiques).`;
+    }
     case "muscu_programme": {
       const { data } = await readData(user);
       const m = MU(data), p = m.plan && !m.plan.deleted && Array.isArray(m.plan.days) ? m.plan : null, del = data.del || {};
@@ -698,7 +728,7 @@ Deno.serve(async (req) => {
         protocolVersion: params?.protocolVersion || "2025-06-18",
         capabilities: { tools: { listChanged: false } },
         serverInfo: { name: "sidnote", title: "Sid'note", version: "1.1.0" },
-        instructions: "Sid'note est l'application d'organisation de la personne (agenda, cours, tâches, notes, nutrition, musculation). Dates en AAAA-MM-JJ, heure de Bruxelles. Quand la personne demande un rappel pour une activité (ex. 1 h avant), passe-le dans reminders (en minutes) avec ajouter_activite ou modifier_activite : c'est une notification sur son téléphone. Quand la personne dit ce qu'elle a mangé ou envoie la photo de son assiette, estime toi-même calories et macros puis note-le avec noter_repas (sans redemander, sauf doute sur la quantité). Pour un menu, lis d'abord nutrition_journee puis enregistre-le avec enregistrer_menu. Quand la personne parle d'une chose à faire un jour précis, ajoute la tâche avec sa date (ajouter_tache) : elle apparaîtra ce jour-là dans son agenda et passera au lendemain si elle n'est pas faite. Pour une note, propose un dossier (folder) si c'est utile. Pour la musculation, lis muscu_programme avant d'ajuster, puis enregistre avec enregistrer_programme ; une séance racontée se note avec noter_seance. Les mots de passe, documents et notes secrètes sont chiffrés et jamais accessibles.",
+        instructions: "Sid'note est l'application d'organisation de la personne (agenda, cours, tâches, notes, nutrition, musculation). Dates en AAAA-MM-JJ, heure de Bruxelles. Quand la personne demande un rappel pour une activité (ex. 1 h avant), passe-le dans reminders (en minutes) avec ajouter_activite ou modifier_activite : c'est une notification sur son téléphone. Quand la personne dit ce qu'elle a mangé ou envoie la photo de son assiette, estime toi-même calories et macros puis note-le avec noter_repas (sans redemander, sauf doute sur la quantité). Pour un menu, lis d'abord nutrition_journee puis enregistre-le avec enregistrer_menu. Après un bilan ou un commentaire nutrition (jour ou semaine), enregistre-le avec enregistrer_commentaire pour qu'il s'affiche dans l'app. Quand la personne parle d'une chose à faire un jour précis, ajoute la tâche avec sa date (ajouter_tache) : elle apparaîtra ce jour-là dans son agenda et passera au lendemain si elle n'est pas faite. Pour une note, propose un dossier (folder) si c'est utile. Pour la musculation, lis muscu_programme avant d'ajuster, puis enregistre avec enregistrer_programme ; une séance racontée se note avec noter_seance. Les mots de passe, documents et notes secrètes sont chiffrés et jamais accessibles.",
       });
     case "ping":
       return rpcOk(id, {});

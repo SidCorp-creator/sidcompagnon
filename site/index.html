@@ -234,14 +234,14 @@
             <div id="tmSimple" class="tm-cfg">
               <div class="tm-adj"><button type="button" class="mini" data-tm="-15" aria-label="Moins 15 secondes">−15 s</button><span class="phase" id="tmPhase">Minuteur</span><button type="button" class="mini" data-tm="15" aria-label="Plus 15 secondes">+15 s</button></div>
               <div class="tm-presets" id="tmPresets"></div>
-              <div class="tm-custom" id="tmCustom" hidden><input id="tmMin" type="number" inputmode="numeric" min="0" max="99" aria-label="Minutes"><span>min</span><input id="tmSec" type="number" inputmode="numeric" min="0" max="59" aria-label="Secondes"><span>s</span><button type="button" class="mini" id="tmCustomOk">OK</button></div>
+              <div class="tm-custom" id="tmCustom" hidden><input id="tmMin" type="text" inputmode="numeric" min="0" max="99" aria-label="Minutes"><span>min</span><input id="tmSec" type="text" inputmode="numeric" min="0" max="59" aria-label="Secondes"><span>s</span><button type="button" class="mini" id="tmCustomOk">OK</button></div>
             </div>
             <div id="tmFrac" class="tm-cfg" hidden>
               <div class="phase" id="tmFPhase">Fractionné</div>
               <div class="tm-frac">
-                <label>Effort<span><input id="tfWork" type="number" inputmode="numeric" min="5" max="3600"><i>s</i></span></label>
-                <label>Repos<span><input id="tfRest" type="number" inputmode="numeric" min="0" max="3600"><i>s</i></span></label>
-                <label>Séries<span><input id="tfRounds" type="number" inputmode="numeric" min="1" max="99"><i>×</i></span></label>
+                <label>Effort<span><input id="tfWork" type="text" inputmode="numeric" min="5" max="3600"><i>s</i></span></label>
+                <label>Repos<span><input id="tfRest" type="text" inputmode="numeric" min="0" max="3600"><i>s</i></span></label>
+                <label>Séries<span><input id="tfRounds" type="text" inputmode="numeric" min="1" max="99"><i>×</i></span></label>
               </div>
               <div class="small muted" id="tfInfo"></div>
             </div>
@@ -465,7 +465,7 @@
       <div class="card" id="noteList"></div>
     </div>
     <div id="noteEdit" hidden>
-      <div class="dayv-head"><button type="button" class="back" id="noteBack">‹ Notes</button><span class="grow small muted" id="noteWhen" style="text-align:center"></span><button type="button" class="mini nu-mic" id="noteMic" aria-label="Dicter la note"><i class="ic" data-i="mic"></i></button><label class="mini note-ph-btn" id="notePhotoBtn" aria-label="Ajouter une photo"><input type="file" id="notePhotoIn" accept="image/*" multiple hidden><i class="ic" data-i="camera"></i></label><button type="button" class="mini" id="noteMove" aria-label="Ranger dans un dossier"><i class="ic" data-i="folder"></i></button><button type="button" class="mini" id="noteLock" aria-label="Rendre la note secrète"><i class="ic" data-i="lock"></i></button><button type="button" class="x" id="noteDel" aria-label="Supprimer la note">×</button></div>
+      <div class="dayv-head"><button type="button" class="back" id="noteBack">‹ Notes</button><span class="grow small muted" id="noteWhen" style="text-align:center"></span><button type="button" class="mini nu-mic" id="noteMic" aria-label="Dicter la note"><i class="ic" data-i="mic"></i></button><label class="mini note-ph-btn" id="notePhotoBtn" aria-label="Ajouter une photo"><input type="file" id="notePhotoIn" accept="image/*" multiple hidden><i class="ic" data-i="camera"></i></label><button type="button" class="mini" id="noteMove" aria-label="Ranger dans un dossier"><i class="ic" data-i="folder"></i></button><button type="button" class="mini" id="noteLock" aria-label="Rendre la note secrète"><i class="ic" data-i="lock"></i></button><button type="button" class="x trash" id="noteDel" aria-label="Supprimer la note"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></button></div>
       <div class="ns-bar" id="noteSecBar" hidden><span class="grow"><i class="ic" data-i="lock"></i> <b>Note secrète</b> · <span class="muted">visible seulement avec ton code</span></span><button type="button" class="mini" id="noteUnsecret">Rendre visible</button></div>
       <div class="rt-bar" id="rtBar" role="toolbar" aria-label="Mise en forme">
         <button type="button" data-rt="bold" aria-label="Gras"><b>G</b></button><button type="button" data-rt="italic" aria-label="Italique"><i>I</i></button><button type="button" data-rt="underline" aria-label="Souligné"><u>S</u></button>
@@ -666,8 +666,8 @@
     <label>Aliment<input id="nuEName" autocomplete="off"></label>
     <div class="two"><label>Quantité<input id="nuEQty" placeholder="Ex. 150 g, 1 barre" autocomplete="off"></label><label>Heure<input id="nuETime" type="time"></label></div>
     <div class="nu-ehint" id="nuEHint" hidden></div>
-    <div class="two"><label>Calories (kcal)<input id="nuEKcal" type="number" inputmode="decimal" min="0"></label><label>Protéines (g)<input id="nuEP" type="number" inputmode="decimal" min="0" step="0.1"></label></div>
-    <div class="two"><label>Glucides (g)<input id="nuEC" type="number" inputmode="decimal" min="0" step="0.1"></label><label>Lipides (g)<input id="nuEF" type="number" inputmode="decimal" min="0" step="0.1"></label></div>
+    <div class="two"><label>Calories (kcal)<input id="nuEKcal" type="text" inputmode="decimal" min="0"></label><label>Protéines (g)<input id="nuEP" type="text" inputmode="decimal" min="0" step="0.1"></label></div>
+    <div class="two"><label>Glucides (g)<input id="nuEC" type="text" inputmode="decimal" min="0" step="0.1"></label><label>Lipides (g)<input id="nuEF" type="text" inputmode="decimal" min="0" step="0.1"></label></div>
     <div class="two"><button type="button" class="btn stop" id="nuEDel">Supprimer</button><button class="btn" type="submit">Enregistrer</button></div>
   </form>
 </div>

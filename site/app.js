@@ -301,11 +301,18 @@ function undoable(msg,ids,apply,o){o=o||{};
     const now=Date.now();data.res=data.res||{};ids.forEach(id=>{data.res[id]=now;if(data.del)delete data.del[id]});
     applyRemote(mergeData(data,snap));if(o.revert)o.revert();save();renderAll();if(o.after)o.after();toast("Annulé")},5000)}
 const CHECK='<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-function armDelete(btn,fn){
-  if(btn.classList.contains("armed")){fn();return}
-  btn.classList.add("armed");btn.textContent="Supprimer ?";
-  setTimeout(()=>{btn.classList.remove("armed");btn.textContent="×"},3000);
+// suppression en deux temps : 1er appui → bouton rouge « Confirmer ? », 2e appui dans les 3 s → suppression ; sinon le bouton revient
+function confirm2(btn,fn,txt){
+  if(btn.dataset.c2){clearTimeout(btn._c2);delete btn.dataset.c2;btn.classList.remove("armed");btn.innerHTML=btn._c2h;fn();return}
+  btn._c2h=btn.innerHTML;btn.dataset.c2="1";btn.classList.add("armed");btn.textContent=L(txt||"Confirmer ?");
+  btn._c2=setTimeout(()=>{delete btn.dataset.c2;btn.classList.remove("armed");btn.innerHTML=btn._c2h},3000);
 }
+const armDelete=confirm2;
+// champs de nombres : au toucher, le curseur va à la fin du nombre (pour effacer et retaper directement)
+document.addEventListener("focusin",e=>{const el=e.target;if(!(el instanceof HTMLInputElement)||!/^(numeric|decimal)$/.test(el.inputMode||""))return;
+  const end=()=>{try{const n=el.value.length;el.setSelectionRange(n,n)}catch(x){}};end();setTimeout(end,0);setTimeout(end,60)});
+// même chose pour un gestionnaire de clic : faux au 1er appui (bouton armé), vrai au 2e
+const c2ok=b=>{if(b.dataset.c2){clearTimeout(b._c2);delete b.dataset.c2;b.classList.remove("armed");b.innerHTML=b._c2h;return true}confirm2(b,()=>{});return false};
 
 /* ---------- onglets, rangés par catégories ---------- */
 // La barre du bas montre des catégories ; dans une catégorie, une barre en haut permet de choisir la fonction.
@@ -525,7 +532,9 @@ function openActions(title,items){$("actTitle").textContent=title;
   $("actSheet")._items=items;$("actSheet").hidden=false}
 const closeActions=()=>{$("actSheet").hidden=true};
 $("actSheet").addEventListener("click",e=>{if(e.target.id==="actSheet"||e.target.closest("#actClose")){closeActions();return}
-  const b=e.target.closest("[data-act]");if(!b)return;const it=$("actSheet")._items[+b.dataset.act];if(!it.keep)closeActions();it.fn()});
+  const b=e.target.closest("[data-act]");if(!b)return;const it=$("actSheet")._items[+b.dataset.act];
+  if(it.danger){confirm2(b,()=>{if(!it.keep)closeActions();it.fn()});return}
+  if(!it.keep)closeActions();it.fn()});
 function todoActions(id){const t=data.todos.find(x=>x.id===id);if(!t)return;
   const it=[{l:"Modifier",fn:()=>openEdit("todo:"+id)}];
   if(!t.done)it.push({l:t.day?"Changer la date":"Planifier un jour",fn:()=>todoPlan(t)});
@@ -667,7 +676,7 @@ document.getElementById("v-todo").addEventListener("click",e=>{
   if(b.dataset.tcatfin){const v=TV();v.showFin=!v.showFin;tvSave();renderTodos();return}
   if(b.dataset.tcatnew){const f=$("catForm");f.hidden=!f.hidden;if(!f.hidden)$("catIn").focus();return}
   if(b.dataset.catren){catEditing=true;renderTodos();const i=$("catRenIn");i.focus();i.select();return}
-  if(b.dataset.catdel){const c=catOf(curCat());if(!c)return;const had=data.todos.filter(t=>t.cat===c.id).map(t=>t.id);
+  if(b.dataset.catdel){const c=catOf(curCat());if(!c||!c2ok(b))return;const had=data.todos.filter(t=>t.cat===c.id).map(t=>t.id);
     undoable("Catégorie supprimée, ses tâches sont gardées",[c.id],()=>{tomb(c.id);data.todos.forEach(t=>{if(t.cat===c.id)delete t.cat});data.todoCats=TC().filter(x=>x!==c);TV().cat="all";tvSave()},
       {after:renderTodos,revert:()=>{data.todos.forEach(t=>{if(had.includes(t.id))t.cat=c.id});TV().cat=c.id;tvSave()}});return}
   if(b.dataset.tg){const t=find(b.dataset.tg);if(!t)return;todoToggle(t)}
@@ -884,7 +893,7 @@ $("v-plan").addEventListener("click",e=>{
   const T=data.tasks;
   if(b.dataset.st){const t=T.find(x=>x.id===b.dataset.st);t.status=STATUSES[(STATUSES.indexOf(t.status)+1)%3];save();renderPlan()}
   else if(b.dataset.cf){const t=T.find(x=>x.id===b.dataset.cf);t.tbc=false;save();renderPlan();toast("Date confirmée")}
-  else if(b.dataset.tdel)taskDel(b.dataset.tdel);
+  else if(b.dataset.tdel){if(c2ok(b))taskDel(b.dataset.tdel)}
 });
 // v34 : le formulaire n'occupe plus le haut de l'Agenda : il s'ouvre dans une fenêtre (« + Activité »)
 // v37 : ajout rapide en langage courant : « Dentiste jeudi 14h », « Réunion demain à 9h30 », « Anniv le 12/11 »
@@ -1571,7 +1580,7 @@ $("nameForm").addEventListener("submit",async e=>{
 const isTestAcc=()=>!!session&&TEST_EMAILS.includes(String(session.email||"").toLowerCase());
 const isLegacyAcc=()=>!session.email||session.email.endsWith("@"+EMAIL_DOMAIN);
 function renderAccount(){
-  $("accName").textContent=session.name;$("hello").textContent=`Salut ${session.name.split(" ")[0]} !`;
+  $("accName").textContent=session.name;$("hello").textContent=`Salut ${session.name} !`;
   $("accEmail").textContent=isLegacyAcc()?"Compte sans e-mail (ancien système)":session.email;
   $("migrateSec").hidden=!isLegacyAcc();
   $("testBanner").hidden=!isTestAcc();$("delAccRow").hidden=$("delAccNote").hidden=isTrial()||isTestAcc();if(typeof renderConsent==="function")renderConsent();
@@ -1804,7 +1813,7 @@ $("msList").addEventListener("click",e=>{
     copyText(`Séance « ${se.name} » (Sid'note)\n${lines.join("\n")}`)}
   else if(b.dataset.msclear){if(!b.dataset.armed){b.dataset.armed="1";b.textContent="Confirmer ?";setTimeout(()=>{delete b.dataset.armed;b.textContent="Vider reps et kg"},3000);return}
     se.exercises.forEach(ex=>ex.sets.forEach(st=>{st.reps="";st.kg=""}));save();renderMuscu();toast("Séance remise à zéro")}
-  else if(b.dataset.msdel)undoable("Séance supprimée",[se.id],()=>{tomb(se.id);M().sessions=M().sessions.filter(x=>x!==se)},{after:renderMuscu});
+  else if(b.dataset.msdel&&c2ok(b))undoable("Séance supprimée",[se.id],()=>{tomb(se.id);M().sessions=M().sessions.filter(x=>x!==se)},{after:renderMuscu});
 });
 // importer une séance copiée par un proche
 function parseSession(txt){
@@ -2337,7 +2346,7 @@ $("folderBar").addEventListener("input",e=>{if(e.target.id==="folderSearch"){dfQ
 $("folderBar").addEventListener("submit",e=>{e.preventDefault();const f=curFolder(),v=$("folderRenIn").value.trim();if(f&&v){f.name=v;save()}dfEditing=false;renderDocs()});
 $("folderBar").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b)return;const f=curFolder();if(!f)return;
   if(b.dataset.dfren){dfEditing=true;renderDocs();const i=$("folderRenIn");i.focus();i.select()}
-  else if(b.dataset.dfdel){const had=docsArr().filter(d=>d.folder===f.id).map(d=>d.id);
+  else if(b.dataset.dfdel){if(!c2ok(b))return;const had=docsArr().filter(d=>d.folder===f.id).map(d=>d.id);
     undoable("Classeur supprimé, ses documents sont gardés",[f.id],()=>{tomb(f.id);docsArr().forEach(d=>{if(d.folder===f.id)delete d.folder});data.docFolders=DF().filter(x=>x!==f);data.ui.docFolder="all";saveUI()},
       {after:renderDocs,revert:()=>{docsArr().forEach(d=>{if(had.includes(d.id))d.folder=f.id});data.ui.docFolder=f.id;saveUI()}})}
 });
@@ -2656,7 +2665,7 @@ function noteInput(){
 }
 $("noteTitle").addEventListener("input",noteInput);$("noteBody").addEventListener("input",noteInput);
 $("noteTitle").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("noteBody").focus()}});
-$("noteDel").addEventListener("click",async()=>{await noteFlush();const n=noteFind(noteOpenId);noteOpenId=null;if(!n){renderNotes();return}
+$("noteDel").addEventListener("click",async()=>{if(!c2ok($("noteDel")))return;await noteFlush();const n=noteFind(noteOpenId);noteOpenId=null;if(!n){renderNotes();return}
   // les photos ne sont effacées qu'une fois l'annulation impossible
   undoable("Note supprimée",[n.id],()=>{tomb(n.id);data.notes=NT().filter(x=>x!==n)},{after:renderNotes,later:()=>{if(!noteFind(n.id)){npDropAll(n);nsPlain.delete(n.id)}}})});
 // cadenas : rend la note secrète (ou la verrouille si elle l'est déjà), puis la ferme
@@ -3515,8 +3524,8 @@ function aiPrompt(kind,p){const d=(p&&p.data)||{};
       `Met Sid'note: lees mijn voedingsdag en stel ${(d.meals||[]).length>1?"een dagmenu":"een maaltijd"} voor me samen: ${meals}.${inc?` Opnemen: ${inc}.`:""}${exc?` Vermijden: ${exc}.`:""}${d.notes?` ${d.notes}`:""} Rauwe gewichten in gram, en sla het menu op in Sid'note.`)}
   if(kind==="recette"){const f=(d.foods||[]).map(x=>`${x.food}${x.grams?` ${x.grams} g`:""}`).join(", ");
     return T3(`Avec Sid'note : donne-moi la recette de « ${d.name} » (${f}), avec exactement ces aliments et ces quantités, puis ajoute les étapes à ce repas dans mon menu Sid'note.`,`With Sid'note: give me the recipe for "${d.name}" (${f}) with exactly these foods and amounts, then add the steps to this meal in my Sid'note menu.`,`Met Sid'note: geef me het recept voor "${d.name}" (${f}) met precies deze ingrediënten en hoeveelheden, en voeg de stappen toe aan deze maaltijd in mijn Sid'note-menu.`)}
-  if(kind==="bilan")return p.scope==="week"?T3("Avec Sid'note : fais le bilan nutrition de ma semaine (calories, macros, poids) : ce qui va bien, ce qui peut s'améliorer, et 2 ou 3 conseils concrets.","With Sid'note: review my nutrition week (calories, macros, weight): what went well, what could improve, and 2 or 3 concrete tips.","Met Sid'note: maak een voedingsoverzicht van mijn week (calorieën, macro's, gewicht): wat goed ging, wat beter kan, en 2 of 3 concrete tips.")
-    :T3("Avec Sid'note : commente ma journée nutrition d'aujourd'hui et donne-moi 1 ou 2 conseils pour la suite.","With Sid'note: comment on my nutrition today and give me 1 or 2 tips for the rest of the day.","Met Sid'note: geef commentaar op mijn voedingsdag van vandaag en 1 of 2 tips voor de rest van de dag.");
+  if(kind==="bilan")return p.scope==="week"?T3("Avec Sid'note : fais le bilan nutrition de ma semaine (calories, macros, poids) : ce qui va bien, ce qui peut s'améliorer, et 2 ou 3 conseils concrets. Puis enregistre ce commentaire dans Sid'note pour que je le voie dans l'app.","With Sid'note: review my nutrition week (calories, macros, weight): what went well, what could improve, and 2 or 3 concrete tips. Then save this review in Sid'note so I can see it in the app.","Met Sid'note: maak een voedingsoverzicht van mijn week (calorieën, macro's, gewicht): wat goed ging, wat beter kan, en 2 of 3 concrete tips. Sla dit overzicht daarna op in Sid'note zodat ik het in de app zie.")
+    :T3("Avec Sid'note : commente ma journée nutrition d'aujourd'hui et donne-moi 1 ou 2 conseils pour la suite. Puis enregistre ce commentaire dans Sid'note pour que je le voie dans l'app.","With Sid'note: comment on my nutrition today and give me 1 or 2 tips for the rest of the day. Then save this comment in Sid'note so I can see it in the app.","Met Sid'note: geef commentaar op mijn voedingsdag van vandaag en 1 of 2 tips voor de rest van de dag. Sla dit commentaar daarna op in Sid'note zodat ik het in de app zie.");
   return T3("Avec Sid'note : aide-moi pour ma nutrition.","With Sid'note: help me with my nutrition.","Met Sid'note: help me met mijn voeding.")}
 const nuErrMsg=ex=>ex instanceof TypeError?L("Pas de connexion internet"):ex.status===404?L("La fonction « nutrition » n'est pas encore installée sur Supabase."):ex.message;
 // animation pendant que Claude travaille
@@ -3753,8 +3762,8 @@ function nuAddItems(items,time,meta){const at=nuAt(time),grp=uid();
 // supprimer un aliment, ou tout un plat
 $("nuLog").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
   if(b.dataset.nuedit){e.preventDefault();nuOpenSheet(b.dataset.nuedit)}
-  else if(b.dataset.nudel){e.preventDefault();const id=b.dataset.nudel;undoable("Supprimé",[id],()=>{tomb(id);NU().log=NU().log.filter(x=>x.id!==id)},{after:renderNutri})}
-  else if(b.dataset.nudelg){e.preventDefault();e.stopPropagation();const g=b.dataset.nudelg,ids=NU().log.filter(x=>(x.grp||x.id)===g).map(x=>x.id);
+  else if(b.dataset.nudel){e.preventDefault();if(!c2ok(b))return;const id=b.dataset.nudel;undoable("Supprimé",[id],()=>{tomb(id);NU().log=NU().log.filter(x=>x.id!==id)},{after:renderNutri})}
+  else if(b.dataset.nudelg){e.preventDefault();e.stopPropagation();if(!c2ok(b))return;const g=b.dataset.nudelg,ids=NU().log.filter(x=>(x.grp||x.id)===g).map(x=>x.id);
     undoable("Plat supprimé",ids,()=>{ids.forEach(tomb);NU().log=NU().log.filter(x=>(x.grp||x.id)!==g)},{after:renderNutri,later:()=>{if(!NU().log.some(x=>(x.grp||x.id)===g))idb.del(thumbKey(g))}})}
 });
 // saisie ou correction à la main

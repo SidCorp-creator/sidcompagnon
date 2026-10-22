@@ -346,6 +346,10 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await shot(pg,"v34-taches");
     const tid=await pg.evaluate(()=>data.todos.find(t=>t.title==="Acheter du pain").id);
     await pg.click(`[data-tmore="${tid}"]`);await pg.waitForTimeout(200);if(!(await pg.isVisible("#actSheet")))err("le menu « ⋯ » ne s'ouvre pas");await shot(pg,"v34-taches-menu");
+    // v42 : suppression en deux temps (1er appui = « Confirmer ? », rien n'est supprimé)
+    await pg.click("#actList .act-it.danger");await pg.waitForTimeout(150);
+    if(!(await pg.evaluate(id=>!!data.todos.find(t=>t.id===id),tid))||!/Confirmer/.test(await pg.textContent("#actList .act-it.danger")))err("le 1er appui sur Supprimer ne demande pas de confirmation");
+    await shot(pg,"v42-confirmer");
     await pg.click("#actList .act-it.danger");await pg.waitForTimeout(200);
     if(await pg.evaluate(id=>!!data.todos.find(t=>t.id===id),tid))err("la tâche n'est pas supprimée tout de suite");
     if(!(await pg.isVisible("#toast .toast-act")))err("pas de bouton « Annuler » après la suppression");await shot(pg,"v34-annuler");
@@ -591,9 +595,11 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
   {const err=m=>errs.push("v41 : "+m);
     const ctx=await b.newContext({...devices["iPhone 13"]}),pg=await ctx.newPage();pg.on("pageerror",e=>err(e.message+" @ "+String(e.stack).split("\n").slice(1,3).join(" | ")));
     await pg.goto(U);await pg.waitForTimeout(400);
-    await pg.click("#mSignup");await pg.fill("#aName","Coach");await pg.fill("#aEmail","coach41@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    await pg.click("#mSignup");await pg.fill("#aName","La loutre");await pg.fill("#aEmail","coach41@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     if(await pg.evaluate(()=>lockDelay()!==Infinity))err("le coffre se reverrouille par défaut");
+    // v42 : surnom complet dans l'en-tête
+    if(!(await pg.textContent("#hello")).includes("La loutre"))err("surnom coupé : "+await pg.textContent("#hello"));
     // programme : débutant, 3 séances, haltères, genoux à ménager
     await pg.evaluate(()=>show("muscu"));await pg.waitForTimeout(200);await shot(pg,"v41-muscu-vide");
     await pg.click('#coachBox [data-coach="new"]');
@@ -608,6 +614,9 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.click('#coachBox [data-coach="start"]');await pg.waitForTimeout(300);await shot(pg,"v41-seance");
     const nm=await pg.evaluate(()=>wo.ex[0].name),top=await pg.evaluate(()=>String(wo.ex[0].reps).split(/[–-]/).pop());
     await pg.evaluate(t=>{wo.ex[0].sets.forEach(s=>{s.kg="20";s.reps=t;s.done=true});woRender()},top);
+    // v42 : en touchant un champ de nombre, le curseur va à la fin
+    await pg.click('[data-wok="0:0"]',{position:{x:8,y:10}});await pg.waitForTimeout(120);
+    const cur=await pg.evaluate(()=>{const el=document.activeElement;return [el.selectionStart,el.value.length]});if(cur[0]!==cur[1])err("curseur pas à la fin du nombre : "+cur);
     await pg.click("#woDone");await pg.waitForTimeout(300);
     const lg=await pg.evaluate(()=>ML().length);if(lg!==1)err("séance pas enregistrée");
     const h=await pg.evaluate(n=>coachHint(PL().days[0].ex.find(e=>e.name===n)),nm);if(!(+h.kg>20))err("charge pas augmentée après tout réussi : "+JSON.stringify(h));

@@ -671,3 +671,5 @@ html[data-ds] .cal-title .yr-ic,html[data-ds] .yr-title .yr-ic{opacity:1;color:v
 .skip-link{position:absolute;left:-9999px;top:8px;z-index:300;background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:6px;font:500 15px var(--font)}
 .skip-link:focus{left:12px}
 main:focus{outline:0}
+html[data-ds] #nuAddBox .nu-add-h{margin-top:8px}
+html[data-ds] .nu-ai-link{justify-self:center;font-size:14px;color:var(--app)}

@@ -3193,7 +3193,8 @@ $("aiAskSheet").addEventListener("click",e=>{if(e.target.id==="aiAskSheet")$("ai
 // cartes « Mon IA » : Nutrition, Réglages
 function renderAiCards(){const ai=aiCur(),ok=!!(ai&&data.prefs.aiOk);
   const st=$("aiState");if(st)st.innerHTML=ok?`<b class="ok">✓ ${esc(ai.name)} ${L("est branché")}</b><div class="small muted">${aiProj()?L("Dossier Santé : configuré"):L("Dossier Santé : pas encore")} · <button type="button" class="linkbtn" data-aiproj="1">${L(aiProj()?"Modifier":"Configurer")}</button></div>`:`<span class="small muted">${L("Claude n'est pas encore branché.")}</span>`;
-  const c=$("nuAiCard");if(!c)return;c.hidden=isTrial();
+  const c=$("nuAiCard");if(!c)return;c.hidden=isTrial()||ok; // v43 : Claude branché → la carte cède la place à « Ajouter ce que tu manges » (en haut)
+  const lk=$("nuAiLink");if(lk){lk.hidden=!ok||isTrial();if(ok)lk.href=ai.ask(T3("J'ai mangé : ","I ate: ","Ik heb gegeten: "))}
   c.innerHTML=ok?`<div class="grow"><b>${IC("sparkle")||""} ${L("Claude calcule pour toi")}</b><div class="small muted">${L("Dis-lui ce que tu as mangé ou envoie-lui la photo de ton assiette : tout arrive ici.")}</div></div><a class="btn" href="${ai.ask(T3("J'ai mangé : ","I ate: ","Ik heb gegeten: "))}" target="_blank" rel="noopener">${L("Ouvrir")} ${esc(ai.name)}</a>`
     :`<div class="grow"><b>${L("Branche Claude")}</b><div class="small muted">${L("Calories, menus et bilans sont calculés par Claude, même avec la version gratuite. 2 minutes, une seule fois.")}</div></div><button type="button" class="btn" data-aiwiz="1">${L("Brancher")}</button>`}
 

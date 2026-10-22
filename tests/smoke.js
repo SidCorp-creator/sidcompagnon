@@ -597,7 +597,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>nuCall("menu",{data:{meals:[{name:"Dîner",kcal:700}],must_include:"poulet"}}).catch(()=>{}));await pg.waitForTimeout(300);
     if(!(await pg.isVisible("#aiAskSheet"))||!(await pg.textContent("#aaPrompt")).includes("poulet"))err("menu pas confié à l'IA");
     await shot(pg,"v39-ia-demande");await pg.click("#aaClose");
-    if(!(await pg.isVisible("#nuAiCard")))err("carte IA absente de Nutrition");
+    if(await pg.evaluate(()=>!!data.prefs.aiOk)?!(await pg.evaluate(()=>!$("nuAiLink").hidden&&$("nuAiLink").href.includes("claude"))):!(await pg.isVisible("#nuAiCard")))err("ni carte IA ni lien Claude dans Nutrition");
     // notifications : la veille toujours active
     await pg.evaluate(()=>{data.prefs.notif={leads:[10]};save()});if(!(await pg.evaluate(()=>notifLeads().includes(1440))))err("la veille n'est pas toujours active");
     await ctx.close()}
@@ -720,6 +720,16 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const pr=await pg.textContent("#aaPrompt");if(!pr.includes("abdos tous les jours")||!pr.includes("poignet droit")||!pr.includes("enregistrer_programme"))err("message à Claude incomplet : "+pr);
     if(!(await pg.evaluate(()=>!!PL()&&!!PL().aiWait&&PL().profile.avoidTxt==="poignet droit")))err("programme de base / attente / zone libre non gardés");
     await shot(pg,"v43-"+nm+"-programme-claude");await ctx.close()}
+  // --- v43 : Nutrition commence par « Ajouter ce que tu manges » ; Claude branché → plus de carte Claude au-dessus
+  {const ctx=await b.newContext({...devices["iPhone 13"]}),pg=await ctx.newPage(),err=m=>errs.push("v43 Nutrition : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43nu@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.evaluate(()=>{data.prefs.aiOk=1;data.prefs.ai="claude";data.nutri={consent:new Date().toISOString(),profile:{sex:"h",age:24,height:180,weight:80,goal:"maintain",sports:[]},plan:{kcal:2000,p:150,c:200,f:70,bmr:1800,tdee:2000,text:"",warn:[]},upd:Date.now(),log:[],weights:[],weeks:[]};save();show("nutri")});await pg.waitForTimeout(300);
+    if(await pg.isVisible("#nuAiCard"))err("la carte « Claude calcule pour toi » est encore affichée");
+    const top=await pg.evaluate(()=>{const a=$("nuAddBox").getBoundingClientRect().top,t=$("nuTabs").getBoundingClientRect().top;return a<t});if(!top)err("« Ajouter ce que tu manges » n'est pas en haut");
+    if(!(await pg.isVisible("#nuAiLink")))err("lien « Ou dis-le à Claude » absent");
+    for(const t of ["menu","profile"]){await pg.click(`[data-nutab="${t}"]`);await pg.waitForTimeout(150)}await pg.click('[data-nutab="day"]');
+    await shot(pg,"v43-nutrition-ajouter");await ctx.close()}
   // --- v43 lot 5 : RGPD / cookies : aucune ressource de tiers, Spotify seulement après un clic, case des conditions, pages légales
   for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1440,height:900}}],["tablette",{...devices["iPad (gen 7)"]}]]){
     const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v43 RGPD "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));

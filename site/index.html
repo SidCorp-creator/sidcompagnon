@@ -335,6 +335,21 @@
     </div>
     <!-- journée -->
     <div id="nuMain" hidden>
+      <div id="nuAddBox">
+      <h2 class="nu-add-h">Ajouter ce que tu manges</h2>
+      <form class="card form nu-ask" id="nuAskForm">
+        <textarea id="nuAsk" rows="2" placeholder="Ce que tu manges, avec la quantité" aria-label="Ce que tu manges" enterkeyhint="send"></textarea>
+        <div class="nu-photo" id="nuPhotoPrev" hidden></div>
+        <div class="nu-ask-row">
+          <label class="mini nu-tool"><input type="file" id="nuPhoto" accept="image/*" capture="environment" hidden><i class="ic" data-i="camera"></i> Photo</label>
+          <button type="button" class="mini nu-mic nu-tool" id="nuMic" aria-label="Dicter"><i class="ic" data-i="mic"></i></button>
+          <button class="btn" type="submit" id="nuAskBtn">Analyser</button>
+        </div>
+        <a class="linkbtn nu-ai-link" id="nuAiLink" href="#" target="_blank" rel="noopener" hidden>Ou dis-le à Claude ↗</a>
+        <div id="nuResult"></div>
+        <button type="button" class="linkbtn" id="nuManual" style="background:none;border:0;cursor:pointer;font-size:14px;justify-self:center">Saisir les valeurs à la main</button>
+      </form>
+      </div>
       <div class="nu-tabs" id="nuTabs" role="group" aria-label="Nutrition">
         <button type="button" data-nutab="day"><i class="ic" data-i="calendar"></i>Ma journée</button>
         <button type="button" data-nutab="menu"><i class="ic" data-i="utensils"></i>Menus</button>
@@ -349,18 +364,6 @@
         <div class="nu-macros" id="nuMacros"></div>
       </div>
       <div class="card nu-week" id="nuWeek" hidden></div>
-      <h2>Ajouter ce que tu manges</h2>
-      <form class="card form nu-ask" id="nuAskForm">
-        <textarea id="nuAsk" rows="2" placeholder="Ce que tu manges, avec la quantité" aria-label="Ce que tu manges" enterkeyhint="send"></textarea>
-        <div class="nu-photo" id="nuPhotoPrev" hidden></div>
-        <div class="nu-ask-row">
-          <label class="mini nu-tool"><input type="file" id="nuPhoto" accept="image/*" capture="environment" hidden><i class="ic" data-i="camera"></i> Photo</label>
-          <button type="button" class="mini nu-mic nu-tool" id="nuMic" aria-label="Dicter"><i class="ic" data-i="mic"></i></button>
-          <button class="btn" type="submit" id="nuAskBtn">Analyser</button>
-        </div>
-        <div id="nuResult"></div>
-        <button type="button" class="linkbtn" id="nuManual" style="background:none;border:0;cursor:pointer;font-size:14px;justify-self:center">Saisir les valeurs à la main</button>
-      </form>
       <h2 id="nuLogH">Ma journée</h2>
       <div id="nuLog"></div>
       <button type="button" class="qbtn" data-nugo="menu" style="margin-top:10px"><i class="ic" data-i="utensils"></i> Pas d'idée ? Génère un menu</button>

@@ -4008,7 +4008,13 @@ $("nuPhotoPrev").addEventListener("click",e=>{if(e.target.closest("[data-nuphrm]
 // Sur iPhone (app installée), un lien vers Claude ouvre une petite fenêtre de navigateur qui passe la main à l'app Claude,
 // puis reste vide derrière : on la garde sous la main et on la ferme dès que la personne revient dans Sid'home
 let extWin=null;
-function extOpen(u){const w=window.open(u,"_blank");if(w){try{w.opener=null}catch(e){}extWin=w}return w}
+function extOpen(u){
+  // app installée sur iPhone : on ouvre directement l'app Claude (adresse claude://…), sans fenêtre de navigateur qui resterait blanche ;
+  // le message est aussi copié (au cas où l'app ne le pré-remplit pas) ; si l'app Claude ne s'ouvre pas, repli sur le lien web
+  if(navigator.standalone&&/^https:\/\/claude\.ai\//.test(u)){
+    try{const q=new URL(u).searchParams.get("q");if(q&&navigator.clipboard)navigator.clipboard.writeText(q).catch(()=>{})}catch(e){}
+    location.href="claude://"+u.slice(8);setTimeout(()=>{if(!document.hidden)location.href=u},1600);return null}
+  const w=window.open(u,"_blank");if(w){try{w.opener=null}catch(e){}extWin=w}return w}
 document.addEventListener("visibilitychange",()=>{if(document.hidden||!extWin)return;const w=extWin;extWin=null;setTimeout(()=>{try{if(!w.closed)w.close()}catch(e){}},250)});
 document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest('a[target="_blank"][href^="https://claude.ai/"]');if(!a||e.defaultPrevented)return;e.preventDefault();extOpen(a.href)});
 // « Envoyer à Claude » : la photo déposée (repas-…) est renommée envoi-… ; le connecteur la joint à nutrition_journee, un outil que
@@ -4609,7 +4615,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v43-10";
+const BUILD="sidnote-v43-11";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||swTimer||tmRun||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

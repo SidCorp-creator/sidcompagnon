@@ -1834,44 +1834,131 @@ $("msImportBtn").addEventListener("click",()=>{
 // data.muscu.plan = {id, profile, days:[{id, name, ex:[{name, pat, sets, reps, rest, rir, note?}]}], at, upd, src:"app"|"ia"}
 // data.muscu.log = [{id, date, day, name, ex:[{name, sets:[{kg, reps}]}], upd}] : séances faites (sert à la progression)
 // Le programme est calculé dans l'app (règles simples, prudentes) ; l'IA de la personne peut l'affiner par le connecteur.
-// Exercices : [nom, schéma, matériel (g salle, d haltères, b poids du corps), zones sollicitées (s épaules, b bas du dos, k genoux), muscles prioritaires]
+// v42 : chaque exercice est classé (muscle principal, portion ciblée, schéma de mouvement, geste, résistance) pour qu'une séance
+// travaille le muscle dans son ensemble sans doublon : jamais deux exercices du même schéma pour le même muscle, ni du même geste.
+// Champs : n nom · m muscle · pat schéma · part portion ciblée · g geste (deux exercices du même geste ne vont pas ensemble) ·
+// res résistance · eq matériel (g salle, d haltères, b poids du corps) · z zones sollicitées (s épaules, b bas du dos, k genoux) ·
+// t type : H polyarticulaire très lourd, C polyarticulaire chargé, L polyarticulaire léger (poids du corps), I isolation
+const EX=(n,m,pat,part,res,eq,z,t,g)=>({n,m,pat,part,res,eq,z,t,g:g||m+":"+pat});
 const EXDB=[
-  ["Squat barre","squat","g","kb","legs glutes"],["Presse à cuisses","squat","g","k","legs glutes"],["Squat goblet","squat","gd","k","legs glutes"],["Squat au poids du corps","squat","b","k","legs glutes"],
-  ["Soulevé de terre roumain","hinge","g","b","legs glutes back"],["Soulevé de terre roumain haltères","hinge","gd","b","legs glutes"],["Hip thrust","hinge","gd","","glutes legs"],["Pont fessier","hinge","b","","glutes"],
-  ["Fentes bulgares","lunge","gdb","k","legs glutes"],["Fentes marchées","lunge","gd","k","legs glutes"],["Step-up","lunge","gdb","","legs glutes"],
-  ["Développé couché","hpush","g","s","chest arms"],["Développé couché haltères","hpush","gd","s","chest"],["Développé incliné haltères","hpush","gd","s","chest shoulders"],["Pompes","hpush","b","s","chest arms"],["Pompes surélevées","hpush","b","","chest"],
-  ["Développé militaire","vpush","g","sb","shoulders"],["Développé épaules haltères","vpush","gd","s","shoulders"],["Pompes piquées","vpush","b","s","shoulders"],
-  ["Tractions","vpull","gb","s","back arms"],["Tirage vertical","vpull","g","","back"],["Tirage élastique","vpull","db","","back"],
-  ["Rowing barre","hpull","g","b","back"],["Rowing haltère un bras","hpull","gd","","back"],["Tirage horizontal poulie","hpull","g","","back"],["Rowing inversé sous une table","hpull","b","","back arms"],
-  ["Écarté poulie","fly","g","","chest"],["Écarté haltères","fly","d","s","chest"],
-  ["Élévations latérales","lat","gd","","shoulders"],["Élévations latérales poulie","lat","g","","shoulders"],
-  ["Face pull","rear","g","","shoulders back"],["Oiseau haltères","rear","d","","shoulders back"],["Y-T-W au sol","rear","b","","shoulders back"],
-  ["Curl haltères","bic","gd","","arms"],["Curl barre EZ","bic","g","","arms"],["Curl marteau","bic","gd","","arms"],["Tractions supination","bic","b","s","arms back"],
-  ["Extension triceps poulie","tri","g","","arms"],["Barre au front haltères","tri","gd","","arms"],["Extension nuque haltère","tri","d","s","arms"],["Dips sur banc","tri","b","s","arms chest"],
-  ["Leg extension","quad","g","k","legs"],["Chaise contre le mur","quad","db","k","legs"],
-  ["Leg curl","ham","g","","legs"],["Nordic curl","ham","b","","legs"],["Soulevé de terre jambes tendues haltères","ham","d","b","legs"],
-  ["Mollets debout","calf","gdb","","legs"],
-  ["Gainage","core","gdb","","abs"],["Relevés de jambes","core","gb","b","abs"],["Crunch poulie","core","g","","abs"],["Dead bug","core","db","","abs"]];
-const EXPAT={squat:1,hinge:1,lunge:1,hpush:1,vpush:1,vpull:1,hpull:1}; // exercices de base (plus lourds, en premier)
-const DAYT={full1:["squat","hpush","hpull","hinge","lat","core","bic"],full2:["hinge","vpush","vpull","lunge","fly","tri","calf"],full3:["squat","hpush","hpull","ham","rear","bic","core"],
-  push:["hpush","vpush","hpush","lat","fly","tri","tri"],pull:["vpull","hpull","hpull","rear","bic","bic","core"],legs:["squat","hinge","lunge","quad","ham","calf","core"],
-  upper:["hpush","hpull","vpush","vpull","lat","bic","tri"],lower:["squat","hinge","lunge","ham","quad","calf","core"]};
-const DAYN={full1:"Corps complet A",full2:"Corps complet B",full3:"Corps complet C",push:"Poussée (pecs, épaules, triceps)",pull:"Tirage (dos, biceps)",legs:"Jambes",upper:"Haut du corps",lower:"Bas du corps"};
-function coachBuild(p){const split={2:["full1","full2"],3:p.level==="deb"?["full1","full2","full3"]:["push","pull","legs"],4:["upper","lower","upper","lower"],5:["push","pull","legs","upper","lower"],6:["push","pull","legs","push","pull","legs"]}[p.days]||["full1","full2"];
-  const nEx={45:4,60:5,75:6,90:7}[p.dur]||5,eq=p.equip==="gym"?"g":p.equip==="db"?"d":"b",av=(p.avoid||[]).map(x=>({shoulder:"s",back:"b",knee:"k"}[x]));
-  const R={muscle:["6–10","10–15",120,75],force:["3–6","8–12",180,90],gras:["8–12","12–15",75,45],forme:["8–12","12–15",90,60]}[p.goal]||["8–12","10–15",90,60];
-  const rir={deb:"2–3",inter:"1–2",conf:"0–1"}[p.level]||"2";const used={};
-  // zone à ménager : si aucun exercice du même schéma ne l'épargne, on prend un schéma voisin (ex. squat → charnière de hanche)
-  const FALL={squat:"hinge",lunge:"hinge",quad:"ham",vpush:"lat",hpush:"fly",hinge:"ham"};
-  const safe=p2=>EXDB.filter(e=>e[1]===p2&&e[2].includes(eq)&&!av.some(z=>z&&e[3].includes(z)));
-  const pick=(pat,k)=>{let c=safe(pat);if(!c.length&&FALL[pat])c=safe(FALL[pat]);if(!c.length)c=EXDB.filter(e=>e[1]===pat&&e[2].includes(eq));if(!c.length)return null;
-    const n=used[pat]||0;used[pat]=n+1;return c[(n+k)%c.length]};
-  const days=split.map((t,di)=>{const seen=new Set(),ex=[];
-    for(const pat of DAYT[t]){if(ex.length>=nEx)break;let e=pick(pat,di);let g=0;while(e&&seen.has(e[0])&&g++<4)e=pick(pat,di+g);if(!e||seen.has(e[0]))continue;seen.add(e[0]);
-      const base=!!EXPAT[pat],prio=(p.prio||[]).some(m=>e[4].split(" ").includes(m));
-      let sets=p.level==="deb"?3:base?4:3;if(prio)sets++;if(p.level==="conf"&&base)sets=Math.max(sets,4);
-      ex.push({name:e[0],pat:e[1],sets,reps:base?R[0]:R[1],rest:base?R[2]:R[3],rir,note:p.level==="conf"&&!base?"Dernière série au plus près de l'échec":""})}
-    return{id:uid(),name:`${L("Séance")} ${"ABCDEF"[di]} · ${L(DAYN[t])}`,ex}});
+  // pectoraux : développé horizontal (milieu), incliné (haut), écarté (étirement, isolation), bas des pecs
+  EX("Développé couché","chest","hpress","milieu des pectoraux","barre","g","s","H"),
+  EX("Développé couché haltères","chest","hpress","milieu des pectoraux","haltères","gd","s","C"),
+  EX("Pompes","chest","hpress","milieu des pectoraux","poids du corps","b","s","L"),
+  EX("Développé incliné haltères","chest","ipress","haut des pectoraux","haltères","gd","s","C"),
+  EX("Développé incliné barre","chest","ipress","haut des pectoraux","barre","g","s","C"),
+  EX("Développé incliné machine","chest","ipress","haut des pectoraux","machine","g","","C"),
+  EX("Pompes pieds surélevés","chest","ipress","haut des pectoraux","poids du corps","b","s","L"),
+  EX("Écarté poulie","chest","fly","pectoraux en étirement","poulie","g","","I","ouverture"),
+  EX("Pec deck","chest","fly","pectoraux en contraction","machine","g","","I","ouverture"),
+  EX("Écarté haltères","chest","fly","pectoraux en étirement","haltères","d","s","I","ouverture"),
+  EX("Dips","chest","low","bas des pectoraux","poids du corps","gb","s","C"),
+  EX("Pompes mains surélevées","chest","low","bas des pectoraux","poids du corps","b","","L"),
+  // dos : tirage vertical (largeur), rowing (épaisseur), bras tendus (grand dorsal isolé)
+  EX("Tractions","back","vpull","largeur du dos","poids du corps","gb","s","C"),
+  EX("Tirage vertical","back","vpull","largeur du dos","poulie","g","","C"),
+  EX("Tirage élastique","back","vpull","largeur du dos","élastique","db","","L"),
+  EX("Rowing barre","back","hrow","épaisseur du dos","barre","g","b","C"),
+  EX("Rowing haltère un bras","back","hrow","épaisseur du dos","haltères","gd","","C"),
+  EX("Tirage horizontal poulie","back","hrow","épaisseur du dos","poulie","g","","C"),
+  EX("Rowing inversé sous une table","back","hrow","épaisseur du dos","poids du corps","b","","L"),
+  EX("Pull-over poulie","back","pullover","grand dorsal bras tendus","poulie","g","s","I"),
+  EX("Pull-over haltère","back","pullover","grand dorsal bras tendus","haltères","d","s","I"),
+  // épaules : développé (avant), élévations latérales (côté), arrière d'épaule
+  EX("Développé militaire","shoulders","ohp","avant des épaules","barre","g","sb","C"),
+  EX("Développé épaules haltères","shoulders","ohp","avant des épaules","haltères","gd","s","C"),
+  EX("Pompes piquées","shoulders","ohp","avant des épaules","poids du corps","b","s","L"),
+  EX("Élévations latérales","shoulders","lat","côté des épaules","haltères","gd","","I","ouverture"),
+  EX("Élévations latérales poulie","shoulders","lat","côté des épaules","poulie","g","","I","ouverture"),
+  EX("Face pull","shoulders","rear","arrière des épaules","poulie","g","","I"),
+  EX("Oiseau haltères","shoulders","rear","arrière des épaules","haltères","gd","","I"),
+  EX("Y-T-W au sol","shoulders","rear","arrière des épaules","poids du corps","b","","I"),
+  // triceps : bras au-dessus de la tête (longue portion étirée), extension bras le long du corps, développé serré
+  EX("Extension nuque haltère","triceps","oh","longue portion (étirement)","haltères","gd","s","I"),
+  EX("Extension triceps poulie au-dessus de la tête","triceps","oh","longue portion (étirement)","poulie","g","s","I"),
+  EX("Extension triceps poulie","triceps","push","portions latérales","poulie","g","","I"),
+  EX("Barre au front haltères","triceps","push","portions latérales","haltères","gd","","I"),
+  EX("Dips sur banc","triceps","push","portions latérales","poids du corps","b","s","L"),
+  EX("Pompes serrées","triceps","close","triceps en charge lourde","poids du corps","b","s","L"),
+  // biceps : curl (supination), marteau (brachial), curl incliné (étirement)
+  EX("Curl barre EZ","biceps","curl","biceps","barre","g","","I"),
+  EX("Curl haltères","biceps","curl","biceps","haltères","gd","","I"),
+  EX("Curl poulie","biceps","curl","biceps","poulie","g","","I"),
+  EX("Curl marteau","biceps","hammer","brachial et avant-bras","haltères","gd","","I"),
+  EX("Curl incliné haltères","biceps","stretch","biceps en étirement","haltères","gd","s","I"),
+  EX("Tractions supination","biceps","chin","biceps et dos","poids du corps","b","s","L"),
+  // quadriceps : squat (bilatéral), fente (unilatéral), isolation
+  EX("Squat barre","quads","squat","quadriceps et fessiers","barre","g","kb","H"),
+  EX("Presse à cuisses","quads","squat","quadriceps","machine","g","k","C"),
+  EX("Hack squat","quads","squat","quadriceps","machine","g","k","C"),
+  EX("Squat goblet","quads","squat","quadriceps et fessiers","haltères","gd","k","C"),
+  EX("Squat au poids du corps","quads","squat","quadriceps et fessiers","poids du corps","b","k","L"),
+  EX("Fentes bulgares","quads","lunge","quadriceps et fessiers (une jambe)","haltères","gdb","k","C"),
+  EX("Fentes marchées","quads","lunge","quadriceps et fessiers (une jambe)","haltères","gd","k","C"),
+  EX("Step-up","quads","lunge","quadriceps et fessiers (une jambe)","haltères","gdb","","C"),
+  EX("Leg extension","quads","iso","quadriceps (contraction)","machine","g","k","I"),
+  EX("Chaise contre le mur","quads","iso","quadriceps (isométrie)","poids du corps","db","k","I"),
+  // ischios : charnière de hanche (étirement), flexion du genou (contraction)
+  EX("Soulevé de terre","hams","hinge","ischios, fessiers et dos","barre","g","b","H"),
+  EX("Soulevé de terre roumain","hams","hinge","ischios en étirement","barre","g","b","H"),
+  EX("Soulevé de terre roumain haltères","hams","hinge","ischios en étirement","haltères","gd","b","C"),
+  EX("Leg curl","hams","curl","ischios en contraction","machine","g","","I"),
+  EX("Nordic curl","hams","curl","ischios en contraction","poids du corps","b","","I"),
+  EX("Leg curl glissé au sol","hams","curl","ischios en contraction","poids du corps","db","","I"),
+  // fessiers
+  EX("Hip thrust","glutes","thrust","fessiers (contraction)","barre","gd","","C"),
+  EX("Pont fessier","glutes","thrust","fessiers (contraction)","poids du corps","b","","L"),
+  EX("Abduction machine","glutes","abd","moyen fessier","machine","g","","I"),
+  // mollets et abdos
+  EX("Mollets debout","calves","calf","mollets","haltères","gdb","","I"),
+  EX("Mollets assis","calves","seated","soléaire","machine","g","","I"),
+  EX("Gainage","abs","anti","sangle abdominale (stabilité)","poids du corps","gdb","","I"),
+  EX("Dead bug","abs","anti","sangle abdominale (stabilité)","poids du corps","db","","I"),
+  EX("Relevés de jambes","abs","flex","bas des abdos","poids du corps","gb","b","I"),
+  EX("Crunch poulie","abs","flex","grand droit","poulie","g","","I"),
+  EX("Crunch au sol","abs","flex","grand droit","poids du corps","db","","I")];
+const EXN=n=>EXDB.find(e=>e.n===n);
+const MUS={chest:"Pectoraux",back:"Dos",shoulders:"Épaules",triceps:"Triceps",biceps:"Biceps",quads:"Quadriceps",hams:"Ischios",glutes:"Fessiers",calves:"Mollets",abs:"Abdos"};
+const PRIO={chest:["chest"],back:["back"],shoulders:["shoulders"],arms:["biceps","triceps"],legs:["quads","hams","calves"],glutes:["glutes"],abs:["abs"]};
+// séances types : chaque ligne = un rôle « muscle:schéma », dans l'ordre de priorité
+const DAYT={
+  full1:["quads:squat","chest:hpress","back:hrow","hams:hinge","shoulders:lat","abs:anti","biceps:curl"],
+  full2:["hams:hinge","shoulders:ohp","back:vpull","quads:lunge","chest:fly","triceps:oh","calves:calf"],
+  full3:["quads:squat","chest:ipress","back:hrow","hams:curl","shoulders:rear","biceps:hammer","abs:flex"],
+  push:["chest:hpress","chest:ipress","shoulders:ohp","chest:fly","triceps:oh","triceps:push","shoulders:lat"],
+  pull:["back:vpull","back:hrow","shoulders:lat","shoulders:rear","biceps:curl","biceps:hammer","back:pullover"],
+  legs:["quads:squat","hams:hinge","quads:lunge","hams:curl","quads:iso","calves:calf","abs:anti"],
+  upper1:["chest:hpress","back:vpull","shoulders:ohp","back:hrow","shoulders:lat","triceps:push","biceps:curl"],
+  upper2:["chest:ipress","back:hrow","back:vpull","chest:fly","shoulders:rear","biceps:stretch","triceps:oh"],
+  lower1:["quads:squat","hams:hinge","quads:lunge","hams:curl","calves:calf","abs:anti","quads:iso"],
+  lower2:["hams:hinge","quads:squat","glutes:thrust","hams:curl","quads:iso","calves:seated","abs:flex"]};
+const DAYN={full1:"Corps complet A",full2:"Corps complet B",full3:"Corps complet C",push:"Poussée (pecs, épaules, triceps)",pull:"Tirage (dos, biceps)",legs:"Jambes",
+  upper1:"Haut du corps",upper2:"Haut du corps",lower1:"Bas du corps",lower2:"Bas du corps",upper:"Haut du corps",lower:"Bas du corps"};
+// repos par défaut (demande de Sid : bien récupérer) : très lourd 4 min, polyarticulaire 3 min, le reste 2 min ; modifiable ensuite
+const REST={H:240,C:180,L:120,I:120};
+const EXHEAVY=e=>e.t!=="I";
+function coachBuild(p){const split={2:["full1","full2"],3:p.level==="deb"?["full1","full2","full3"]:["push","pull","legs"],4:["upper1","lower1","upper2","lower2"],
+    5:["push","pull","legs","upper1","lower2"],6:["push","pull","legs","push","pull","legs"]}[p.days]||["full1","full2"];
+  const nEx={45:4,60:5,75:6,90:7}[p.dur]||5,eq=p.equip==="gym"?"g":p.equip==="db"?"d":"b",av=(p.avoid||[]).map(x=>({shoulder:"s",back:"b",knee:"k"}[x])).filter(Boolean);
+  const never=new Set(p.never||[]),R={muscle:["6–10","10–15"],force:["3–6","8–12"],gras:["8–12","12–15"],forme:["8–12","12–15"]}[p.goal]||["8–12","10–15"];
+  const rir={deb:"2–3",inter:"1–2",conf:"0–1"}[p.level]||"2",prio=new Set((p.prio||[]).flatMap(k=>PRIO[k]||[])),turn={};
+  const ok=e=>e.eq.includes(eq)&&!never.has(e.n)&&!av.some(z=>e.z.includes(z));
+  const mk=e=>{let sets=p.level==="deb"?3:EXHEAVY(e)?4:3;if(prio.has(e.m))sets++;if(p.level==="conf"&&EXHEAVY(e))sets=Math.max(sets,4);
+    return{name:e.n,pat:e.m+":"+e.pat,sets,reps:EXHEAVY(e)?R[0]:R[1],rest:REST[e.t]||120,rir,note:p.level==="conf"&&!EXHEAVY(e)?"Dernière série au plus près de l'échec":""}};
+  // exercices imposés : chacun va dans la séance qui travaille déjà ce muscle (la moins chargée en imposés)
+  const forced=split.map(()=>[]);
+  for(const n of p.must||[]){const e=EXN(n);if(!e||never.has(n))continue;
+    const fit=split.map((t,i)=>({i,score:(DAYT[t].includes(e.m+":"+e.pat)?2:DAYT[t].some(r=>r.startsWith(e.m+":"))?1:0)-forced[i].length*0.1})).sort((a,b)=>b.score-a.score);
+    forced[fit[0].i].push(e)}
+  const days=split.map((t,di)=>{const ex=[...forced[di]],gest=new Set(ex.map(e=>e.g)),pats=new Set(ex.map(e=>e.m+":"+e.pat)),names=new Set(ex.map(e=>e.n));
+    const free=e=>ok(e)&&!names.has(e.n)&&!gest.has(e.g)&&!pats.has(e.m+":"+e.pat);
+    const add=e=>{ex.push(e);gest.add(e.g);pats.add(e.m+":"+e.pat);names.add(e.n)};
+    for(const role of DAYT[t]){if(ex.length>=Math.max(nEx,forced[di].length))break;const[m,pat]=role.split(":");
+      // zone à ménager ou matériel absent : on prend un autre schéma pour le même muscle, jamais un exercice qui la sollicite
+      let c=EXDB.filter(e=>e.m===m&&e.pat===pat&&free(e));if(!c.length)c=EXDB.filter(e=>e.m===m&&free(e));if(!c.length)continue;
+      const k=turn[role]=(turn[role]||0)+1;add(c[(k-1+di)%c.length])}
+    ex.sort((a,b)=>"HCLI".indexOf(a.t)-"HCLI".indexOf(b.t));
+    return{id:uid(),name:`${L("Séance")} ${"ABCDEF"[di]} · ${L(DAYN[t])}`,ex:ex.map(mk)}});
   return{id:uid(),profile:p,days,at:new Date().toISOString(),upd:Date.now(),src:"app"}}
 const PL=()=>{const p=M().plan;return p&&!p.deleted&&Array.isArray(p.days)?p:null}; // supprimé = {deleted, upd} pour que la suppression gagne à la fusion
 const ML=()=>{const m=M();if(!Array.isArray(m.log))m.log=[];return m.log};
@@ -1894,19 +1981,38 @@ function renderCoach(){const box=$("coachBox");if(!box)return;const pl=PL(),nx=c
   box.innerHTML=`<div class="card coach-card coach-on"><div class="coach-top"><div class="grow"><span class="eyebrow">${L("Mon programme")}</span><b>${esc(L(G[p.goal]||"Sur mesure"))}${pl.src==="ia"?` · ${L("ajusté par ton IA")}`:""}</b><div class="small muted">${esc(L(LV[p.level]||""))} · ${p.days||pl.days.length} ${L("séances par semaine")} · ${wk}/${pl.days.length} ${L("faites cette semaine")}</div></div><button type="button" class="pen" data-coach="more" aria-label="${L("Plus d'actions")}">${MORE}</button></div>
     ${nx?`<button type="button" class="btn coach-go" data-coach="start" data-day="${nx.id}">${IC("play")||"▶"} ${L("Commencer")} : ${esc(nx.name)}</button>`:""}
     <div class="coach-days">${pl.days.map(d=>`<details class="coach-day"><summary><b class="grow notr">${esc(d.name)}</b><span class="small muted">${d.ex.length} ${L("exercices")}</span></summary>
-      <ol class="coach-ex">${d.ex.map(e=>`<li><span class="grow notr">${esc(e.name)}</span><span class="small muted">${e.sets} × ${esc(e.reps)} · ${L("repos")} ${e.rest>=60?Math.round(e.rest/60*10)/10+" min":e.rest+" s"}</span></li>`).join("")}</ol>
+      <ol class="coach-ex">${d.ex.map((e,i)=>`<li><span class="grow notr">${esc(e.name)}</span><span class="small muted">${e.sets} × ${esc(e.reps)} · <button type="button" class="linkbtn co-rest" data-corest="${d.id}:${i}" aria-label="${L("Modifier le repos")}">${L("repos")} ${restLbl(e.rest)}</button></span></li>`).join("")}</ol>
       <button type="button" class="mini" data-coach="start" data-day="${d.id}">${L("Faire cette séance")}</button></details>`).join("")}</div></div>`}
 let cfDraft={};
-function coachOpen(){const p=(PL()&&PL().profile)||{level:"deb",goal:"muscle",days:3,dur:60,equip:"gym",avoid:[],prio:[]};cfDraft=JSON.parse(JSON.stringify(p));cfRender();$("coachErr").hidden=true;$("coachSheet").hidden=false}
-function cfRender(){document.querySelectorAll("#coachForm [data-cf]").forEach(g=>{const k=g.dataset.cf,v=cfDraft[k];g.querySelectorAll("[data-v]").forEach(b=>b.setAttribute("aria-pressed",String(Array.isArray(v)?v.includes(b.dataset.v):String(v)===b.dataset.v)))})}
-$("coachForm").addEventListener("click",e=>{const b=e.target.closest("[data-cf] [data-v]");if(!b)return;const g=b.closest("[data-cf]"),k=g.dataset.cf,v=b.dataset.v;
+const restLbl=r=>r>=60?String(Math.round(r/60*10)/10).replace(".",",")+" min":r+" s";
+// v42 : repos modifiable exercice par exercice (le mode séance utilise cette valeur)
+function coachRest(dayId,i){const pl=PL(),d=pl&&pl.days.find(x=>x.id===dayId),e=d&&d.ex[i];if(!e)return;
+  openActions(`${L("Repos")} · ${e.name}`,[60,90,120,150,180,210,240,300].map(r=>({l:restLbl(r),on:e.rest===r,fn:()=>{e.rest=r;pl.upd=Date.now();M().upd=Date.now();save();renderCoach();toast(`${L("Repos")} : ${restLbl(r)}`)}})))}
+function coachOpen(){const p=(PL()&&PL().profile)||{level:"deb",goal:"muscle",days:3,dur:60,equip:"gym",avoid:[],prio:[],must:[],never:[]};cfDraft=JSON.parse(JSON.stringify(p));
+  document.querySelectorAll("#coachForm .cf-pick input").forEach(i=>i.value="");cfRender();$("coachErr").hidden=true;$("coachSheet").hidden=false}
+function cfRender(){document.querySelectorAll("#coachForm [data-cf]").forEach(g=>{const k=g.dataset.cf,v=cfDraft[k];g.querySelectorAll("[data-v]").forEach(b=>b.setAttribute("aria-pressed",String(Array.isArray(v)?v.includes(b.dataset.v):String(v)===b.dataset.v)))});
+  document.querySelectorAll("#coachForm .cf-pick").forEach(box=>{const k=box.dataset.cfx,a=cfDraft[k]||[];
+    box.querySelector(".cf-sel").innerHTML=a.map(n=>`<span class="pill on cf-chip"><span class="notr">${esc(n)}</span><button type="button" class="x" data-cfrm="${esc(n)}" aria-label="${L("Retirer")}">×</button></span>`).join("");cfSearch(box)})}
+// v42 : recherche d'exercices (sans accents, un morceau de mot suffit) pour « je veux absolument » / « je ne veux pas du tout »
+const cfFold=x=>String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+function cfSearch(box){const q=cfFold(box.querySelector("input").value).trim(),k=box.dataset.cfx,a=cfDraft[k]||[],res=box.querySelector(".cf-res");
+  if(!q){res.innerHTML="";return}const w=q.split(/\s+/);
+  const hits=EXDB.filter(e=>!a.includes(e.n)&&w.every(x=>cfFold(e.n+" "+MUS[e.m]+" "+e.part).includes(x))).slice(0,8);
+  res.innerHTML=hits.length?hits.map(e=>`<button type="button" class="cf-hit" data-cfadd="${esc(e.n)}"><span class="notr">${esc(e.n)}</span><small>${esc(L(MUS[e.m]))} · ${esc(L(e.part))}</small></button>`).join(""):`<div class="small muted">${L("Aucun exercice trouvé")}</div>`}
+$("coachForm").addEventListener("input",e=>{const box=e.target.closest(".cf-pick");if(box)cfSearch(box)});
+$("coachForm").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.closest(".cf-pick")){e.preventDefault();const f=e.target.closest(".cf-pick").querySelector("[data-cfadd]");if(f)f.click()}});
+$("coachForm").addEventListener("click",e=>{const ad=e.target.closest("[data-cfadd]"),rm=e.target.closest("[data-cfrm]");
+  if(ad){const box=ad.closest(".cf-pick"),k=box.dataset.cfx,o=k==="must"?"never":"must",n=ad.dataset.cfadd;cfDraft[k]=[...new Set([...(cfDraft[k]||[]),n])];cfDraft[o]=(cfDraft[o]||[]).filter(x=>x!==n);box.querySelector("input").value="";cfRender();return}
+  if(rm){const k=rm.closest(".cf-pick").dataset.cfx;cfDraft[k]=(cfDraft[k]||[]).filter(x=>x!==rm.dataset.cfrm);cfRender();return}
+  const b=e.target.closest("[data-cf] [data-v]");if(!b)return;const g=b.closest("[data-cf]"),k=g.dataset.cf,v=b.dataset.v;
   if(g.classList.contains("cf-multi")){const a=cfDraft[k]||(cfDraft[k]=[]);cfDraft[k]=a.includes(v)?a.filter(x=>x!==v):[...a,v]}else cfDraft[k]=/^\d+$/.test(v)?+v:v;cfRender()});
 $("coachForm").addEventListener("submit",e=>{e.preventDefault();const p=cfDraft;
   if(!p.level||!p.goal||!p.days||!p.dur||!p.equip){$("coachErr").textContent=L("Réponds aux cinq premières questions.");$("coachErr").hidden=false;return}
   M().plan=coachBuild(p);M().upd=Date.now();save();$("coachSheet").hidden=true;renderCoach();toast("Ton programme est prêt")});
 $("coachClose").addEventListener("click",()=>$("coachSheet").hidden=true);
 $("coachSheet").addEventListener("click",e=>{if(e.target.id==="coachSheet")$("coachSheet").hidden=true});
-$("coachBox").addEventListener("click",e=>{const b=e.target.closest("[data-coach]");if(!b)return;const k=b.dataset.coach;
+$("coachBox").addEventListener("click",e=>{const r=e.target.closest("[data-corest]");if(r){const[d,i]=r.dataset.corest.split(":");coachRest(d,+i);return}
+  const b=e.target.closest("[data-coach]");if(!b)return;const k=b.dataset.coach;
   if(k==="new")coachOpen();else if(k==="start")woStart(b.dataset.day);
   else if(k==="more")openActions(L("Mon programme"),[{l:"Modifier mes réponses",fn:coachOpen},
     {l:"Ajuster avec mon IA",fn:()=>aiHandoff(T3("Avec Sid'note : lis mon programme de musculation et mon historique, puis améliore-le pour moi (choix des exercices, volume, progression). Enregistre la nouvelle version dans Sid'note.","With Sid'note: read my workout program and history, then improve it for me (exercise choice, volume, progression). Save the new version in Sid'note.","Met Sid'note: lees mijn trainingsschema en geschiedenis en verbeter het (oefeningen, volume, progressie). Sla de nieuwe versie op in Sid'note."),true)},
@@ -1917,7 +2023,7 @@ function woStart(dayId){const pl=PL(),d=pl&&pl.days.find(x=>x.id===dayId);if(!d)
   wo={day:d.id,name:d.name,start:Date.now(),ex:d.ex.map(e=>{const h=coachHint(e);return{...e,hint:h.txt,sets:Array.from({length:e.sets},()=>({kg:h.kg,reps:"",done:false}))}})};
   $("woTitle").textContent=d.name;woRender();$("woSheet").hidden=false}
 function woRender(){$("woBody").innerHTML=wo.ex.map((e,i)=>`<div class="wo-ex"><div class="wo-h"><span class="num">${i+1}</span><b class="grow notr">${esc(e.name)}</b><button type="button" class="mini" data-woswap="${i}">${L("Changer")}</button></div>
-  <div class="small muted">${e.sets.length} × ${esc(e.reps)} ${L("reps")} · ${L("repos")} ${e.rest} s · ${L("garde")} ${esc(e.rir)} ${L("rép. en réserve")}${e.note?` · ${esc(L(e.note))}`:""}</div>
+  <div class="small muted">${e.sets.length} × ${esc(e.reps)} ${L("reps")} · ${L("repos")} ${restLbl(e.rest)} · ${L("garde")} ${esc(e.rir)} ${L("rép. en réserve")}${e.note?` · ${esc(L(e.note))}`:""}</div>
   <div class="small wo-hint">${esc(e.hint||"")}</div>
   ${e.sets.map((s,j)=>`<div class="wo-set ${s.done?"done":""}"><span class="lbl">${L("Série")} ${j+1}</span><div class="unit"><input type="text" inputmode="decimal" data-wok="${i}:${j}" value="${esc(s.kg)}" aria-label="kg"><span>kg</span></div><div class="unit"><input type="text" inputmode="numeric" data-wor="${i}:${j}" value="${esc(s.reps)}" placeholder="${esc(String(e.reps).split(/[–-]/).pop())}" aria-label="reps"><span>reps</span></div><button type="button" class="check" data-wodone="${i}:${j}" aria-label="${L("Série faite")}">${s.done?CHECK:""}</button></div>`).join("")}</div>`).join("")}
 function woRest(sec){clearInterval(woT);const end=Date.now()+sec*1000,box=$("woRest");box.hidden=false;
@@ -1927,9 +2033,17 @@ $("woBody").addEventListener("input",e=>{const k=e.target.dataset.wok||e.target.
 $("woBody").addEventListener("click",e=>{const d=e.target.closest("[data-wodone]");
   if(d){const[i,j]=d.dataset.wodone.split(":").map(Number),s=wo.ex[i].sets[j];s.done=!s.done;if(s.done&&!s.reps)s.reps=String(wo.ex[i].reps).split(/[–-]/).pop();woRender();if(s.done)woRest(wo.ex[i].rest);return}
   const w=e.target.closest("[data-woswap]");if(w){const i=+w.dataset.woswap,cur=wo.ex[i],p=(PL().profile||{}),eq=p.equip==="gym"?"g":p.equip==="db"?"d":"b";
-    const alts=EXDB.filter(x=>x[1]===cur.pat&&x[0]!==cur.name&&x[2].includes(eq));if(!alts.length){toast("Pas d'autre exercice de ce type avec ton matériel");return}
-    openActions(L("Remplacer par"),alts.map(a=>({l:a[0],fn:()=>{cur.name=a[0];const h=coachHint(cur);cur.hint=h.txt;cur.sets.forEach(s=>{if(!s.done)s.kg=h.kg});
-      const day=PL().days.find(x=>x.id===wo.day),pe=day&&day.ex.find(x=>x.pat===cur.pat&&wo.ex.indexOf(cur)===day.ex.indexOf(x));if(pe){pe.name=a[0];PL().upd=Date.now();save()}woRender()}})))}});
+    // v42 : remplaçants = même muscle (même schéma d'abord), compatibles avec le matériel, les zones à ménager, les exclusions et le reste de la séance
+    const role=String(cur.pat||"").includes(":")?cur.pat:(OLDPAT[cur.pat]||""),me=EXN(cur.name),m=me?me.m:role.split(":")[0],pat=me?me.pat:role.split(":")[1];
+    const av=(p.avoid||[]).map(x=>({shoulder:"s",back:"b",knee:"k"}[x])).filter(Boolean),never=new Set(p.never||[]);
+    const others=wo.ex.filter(x=>x!==cur).map(x=>EXN(x.name)).filter(Boolean);
+    const alts=EXDB.filter(x=>x.m===m&&x.n!==cur.name&&x.eq.includes(eq)&&!never.has(x.n)&&!av.some(z=>x.z.includes(z))&&!others.some(o=>o.n===x.n||o.g===x.g||(o.m===x.m&&o.pat===x.pat)))
+      .sort((x,y)=>(y.pat===pat)-(x.pat===pat));
+    if(!alts.length){toast("Pas d'autre exercice de ce type avec ton matériel");return}
+    openActions(L("Remplacer par"),alts.map(a=>({l:a.n,fn:()=>{const old=cur.name;cur.name=a.n;cur.pat=a.m+":"+a.pat;const h=coachHint(cur);cur.hint=h.txt;cur.sets.forEach(s=>{if(!s.done)s.kg=h.kg});
+      const day=PL().days.find(x=>x.id===wo.day),pe=day&&day.ex[wo.ex.indexOf(cur)];if(pe&&pe.name===old){pe.name=a.n;pe.pat=cur.pat;PL().upd=Date.now();save()}woRender()}})))}});
+// anciens programmes (avant la v42) : schéma sans muscle
+const OLDPAT={squat:"quads:squat",hinge:"hams:hinge",lunge:"quads:lunge",hpush:"chest:hpress",vpush:"shoulders:ohp",vpull:"back:vpull",hpull:"back:hrow",fly:"chest:fly",lat:"shoulders:lat",rear:"shoulders:rear",bic:"biceps:curl",tri:"triceps:push",quad:"quads:iso",ham:"hams:curl",calf:"calves:calf",core:"abs:anti"};
 $("woDone").addEventListener("click",()=>{const done=wo.ex.map(e=>({name:e.name,sets:e.sets.filter(s=>s.done).map(s=>({kg:s.kg,reps:s.reps}))})).filter(e=>e.sets.length);
   if(!done.length){toast("Coche au moins une série");return}
   ML().push({id:uid(),date:iso(today()),day:wo.day,name:wo.name,min:Math.round((Date.now()-wo.start)/60000),ex:done,upd:Date.now()});M().upd=Date.now();save();

@@ -604,10 +604,19 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>show("muscu"));await pg.waitForTimeout(200);await shot(pg,"v41-muscu-vide");
     await pg.click('#coachBox [data-coach="new"]');
     for(const [k,v] of [["level","deb"],["goal","muscle"],["days","3"],["dur","60"],["equip","db"],["avoid","knee"]])await pg.click(`#coachForm [data-cf="${k}"] [data-v="${v}"]`);
+    // v42 : exercices imposés / exclus, avec recherche
+    await pg.fill('.cf-pick[data-cfx="must"] input',"marteau");await pg.waitForTimeout(100);await pg.click('.cf-pick[data-cfx="must"] [data-cfadd]');
+    await pg.fill('.cf-pick[data-cfx="never"] input',"rowing halt");await pg.waitForTimeout(100);await pg.click('.cf-pick[data-cfx="never"] [data-cfadd]');
     await shot(pg,"v41-coach-questions");await pg.click('#coachForm [type="submit"]');await pg.waitForTimeout(300);
+    const mn=await pg.evaluate(()=>{const a=PL().days.flatMap(d=>d.ex.map(e=>e.name));return[a.includes("Curl marteau"),a.includes("Rowing haltère un bras")]});
+    if(!mn[0])err("exercice imposé absent du programme");if(mn[1])err("exercice exclu présent dans le programme");
+    const dup=await pg.evaluate(()=>PL().days.some(d=>{const s=new Set();return d.ex.some(e=>{const x=EXN(e.name),k=x.m+":"+x.pat;if(s.has(k)||s.has(x.g))return true;s.add(k);s.add(x.g)})}));if(dup)err("doublon dans une séance");
+    if(await pg.evaluate(()=>PL().days.some(d=>d.ex.some(e=>e.rest<120))))err("repos trop court");
+    await pg.click('#coachBox .coach-day summary');await pg.click('#coachBox [data-corest]');await pg.waitForTimeout(150);await pg.click('#actList .act-it:has-text("4 min")');
+    if(await pg.evaluate(()=>PL().days[0].ex[0].rest)!==240)err("repos pas modifiable");
     const pl=await pg.evaluate(()=>PL());
     if(!pl||pl.days.length!==3)err("programme pas créé : "+JSON.stringify(pl&&pl.days.length));
-    else if(pl.days.some(d=>d.ex.some(e=>/barre|Presse|poulie|Leg /i.test(e.name))))err("exercice de salle avec des haltères seulement");
+    else if(await pg.evaluate(()=>PL().days.some(d=>d.ex.some(e=>!EXN(e.name).eq.includes("d")))))err("exercice de salle avec des haltères seulement");
     else if(pl.days.some(d=>d.ex.some(e=>/Squat goblet|Fentes|Leg extension/.test(e.name))))err("genoux pas ménagés");
     await shot(pg,"v41-coach-programme");
     // séance : 2 séries faites, enregistrée, puis la charge monte

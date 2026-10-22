@@ -1302,3 +1302,11 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 [data-c2]{background:var(--late)!important;color:#fff!important;border-color:var(--late)!important;width:auto!important;min-width:0!important;padding-inline:12px!important;border-radius:999px!important;font-size:13px!important;font-weight:700!important;white-space:nowrap}
 .act-it[data-c2]{border-radius:12px!important;font-size:16px!important}
 .x.trash .i{width:20px;height:20px}
+/* v42 : questionnaire musculation, recherche d'exercices imposés / exclus, repos modifiable */
+.cf-pick .search{width:100%;margin-top:8px}
+.cf-res{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.cf-hit{display:flex;flex-direction:column;align-items:flex-start;text-align:left;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
+.cf-hit small{color:var(--muted);font-size:12px;margin-top:2px}
+.cf-sel{margin-top:6px}.cf-sel:empty{display:none}
+.cf-chip{display:inline-flex;align-items:center;gap:4px;padding-right:4px}.cf-chip .x{width:24px;height:24px;font-size:16px}
+.co-rest{font-size:inherit;padding:0;text-decoration:underline dotted;text-underline-offset:3px}

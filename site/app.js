@@ -449,7 +449,7 @@ function renderHome(){if(!$("homeBody"))return;
   if(vis.includes("nutri")&&nutriAllowed()&&NU().plan&&NU().plan.kcal){const l=Math.round(dayTarget(t0).kcal-sumOf(dayLog(t0)).kcal);tiles.push(["nutri",L("Nutrition"),fmtFull(Math.abs(l)),L(l>=0?"kcal restantes":"kcal en trop")])}
   if(vis.includes("plan")){const e7=new Date(today());e7.setDate(e7.getDate()+6);const k7=iso(e7);const w=T.filter(t=>t.date<=k7&&(t.end||t.date)>=t0).length;tiles.push(["plan",L("Cette semaine"),String(w),L(w>1?"activités":"activité")])}
   if(tiles.length)h+=`<div class="hm-tiles" style="grid-template-columns:repeat(${tiles.length},minmax(0,1fr))">${tiles.map(([k,l,v,s])=>`<button type="button" class="card hm-tile" data-go="${k}"><span class="small muted">${l}</span><b>${v}</b><span class="small muted">${s}</span></button>`).join("")}</div>`;
-  if(!isTrial()&&!data.prefs.aiOk&&!data.ui.aiCardOff)h+=`<div class="card ai-card hm-ai"><div class="grow"><b>${L("Nouveau : branche ton IA")}</b><div class="small muted">${L("Claude ou ChatGPT calcule tes repas, crée tes menus et note tes tâches directement dans Sid'note.")}</div></div><div class="ai-card-b"><button type="button" class="btn" data-aiwiz="1">${L("Brancher")}</button><button type="button" class="x" data-aioff="1" aria-label="${L("Masquer")}">×</button></div></div>`;
+  if(!isTrial()&&!data.prefs.aiOk&&!data.ui.aiCardOff)h+=`<div class="card ai-card hm-ai"><div class="grow"><b>${L("Nouveau : branche Claude")}</b><div class="small muted">${L("Claude calcule tes repas, crée tes menus et note tes tâches directement dans Sid'note.")}</div></div><div class="ai-card-b"><button type="button" class="btn" data-aiwiz="1">${L("Brancher")}</button><button type="button" class="x" data-aioff="1" aria-label="${L("Masquer")}">×</button></div></div>`;
   if(vis.includes("plan")){const day=allT().filter(t=>onDay(t,t0)).sort((a,b)=>sk(a).localeCompare(sk(b)));
     h+=`<h2>${L("Aujourd'hui")}</h2><div class="card hm-list">${day.length?day.map(t=>`<button type="button" class="hm-row ${t.status==="fait"||t.canc?"is-done":""}" data-go="plan"><span class="hm-time">${t.time||L("Journée")}</span><span class="grow notr">${esc(t.title)}</span><span class="dot" style="background:var(${colorOf(t)})"></span></button>`).join(""):`<div class="empty">${L("Rien de prévu aujourd'hui.")}</div>`}</div>`}
   if(vis.includes("todo")){const td=dayTodos(t0),un=data.todos.filter(t=>!t.done&&!t.paused&&!t.day);
@@ -1978,7 +1978,7 @@ function renderCoach(){const box=$("coachBox");if(!box)return;const pl=PL(),nx=c
   if(!pl){box.innerHTML=`<div class="card coach-card"><div class="grow"><b>${L("Ton programme sur mesure")}</b><div class="small muted">${L("Quelques questions (niveau, objectif, jours, matériel) et Sid'note crée tes séances, avec les charges qui progressent d'une fois à l'autre.")}</div></div><button type="button" class="btn" data-coach="new">${L("Créer mon programme")}</button></div>`;return}
   const p=pl.profile||{},G={muscle:"Prendre du muscle",force:"Gagner en force",gras:"Perdre du gras",forme:"Être en forme"},LV={deb:"Débutant",inter:"Intermédiaire",conf:"Confirmé"};
   const wk=ML().filter(l=>l.date>=iso(mondayOf(new Date()))).length;
-  box.innerHTML=`<div class="card coach-card coach-on"><div class="coach-top"><div class="grow"><span class="eyebrow">${L("Mon programme")}</span><b>${esc(L(G[p.goal]||"Sur mesure"))}${pl.src==="ia"?` · ${L("ajusté par ton IA")}`:""}</b><div class="small muted">${esc(L(LV[p.level]||""))} · ${p.days||pl.days.length} ${L("séances par semaine")} · ${wk}/${pl.days.length} ${L("faites cette semaine")}</div></div><button type="button" class="pen" data-coach="more" aria-label="${L("Plus d'actions")}">${MORE}</button></div>
+  box.innerHTML=`<div class="card coach-card coach-on"><div class="coach-top"><div class="grow"><span class="eyebrow">${L("Mon programme")}</span><b>${esc(L(G[p.goal]||"Sur mesure"))}${pl.src==="ia"?` · ${L("ajusté par Claude")}`:""}</b><div class="small muted">${esc(L(LV[p.level]||""))} · ${p.days||pl.days.length} ${L("séances par semaine")} · ${wk}/${pl.days.length} ${L("faites cette semaine")}</div></div><button type="button" class="pen" data-coach="more" aria-label="${L("Plus d'actions")}">${MORE}</button></div>
     ${nx?`<button type="button" class="btn coach-go" data-coach="start" data-day="${nx.id}">${IC("play")||"▶"} ${L("Commencer")} : ${esc(nx.name)}</button>`:""}
     <div class="coach-days">${pl.days.map(d=>`<details class="coach-day"><summary><b class="grow notr">${esc(d.name)}</b><span class="small muted">${d.ex.length} ${L("exercices")}</span></summary>
       <ol class="coach-ex">${d.ex.map((e,i)=>`<li><span class="grow notr">${esc(e.name)}</span><span class="small muted">${e.sets} × ${esc(e.reps)} · <button type="button" class="linkbtn co-rest" data-corest="${d.id}:${i}" aria-label="${L("Modifier le repos")}">${L("repos")} ${restLbl(e.rest)}</button></span></li>`).join("")}</ol>
@@ -2015,7 +2015,7 @@ $("coachBox").addEventListener("click",e=>{const r=e.target.closest("[data-cores
   const b=e.target.closest("[data-coach]");if(!b)return;const k=b.dataset.coach;
   if(k==="new")coachOpen();else if(k==="start")woStart(b.dataset.day);
   else if(k==="more")openActions(L("Mon programme"),[{l:"Modifier mes réponses",fn:coachOpen},
-    {l:"Ajuster avec mon IA",fn:()=>aiHandoff(T3("Avec Sid'note : lis mon programme de musculation et mon historique, puis améliore-le pour moi (choix des exercices, volume, progression). Enregistre la nouvelle version dans Sid'note.","With Sid'note: read my workout program and history, then improve it for me (exercise choice, volume, progression). Save the new version in Sid'note.","Met Sid'note: lees mijn trainingsschema en geschiedenis en verbeter het (oefeningen, volume, progressie). Sla de nieuwe versie op in Sid'note."),true)},
+    {l:"Ajuster avec Claude",fn:()=>aiHandoff(T3("Avec Sid'note : lis mon programme de musculation et mon historique, puis améliore-le pour moi (choix des exercices, volume, progression). Enregistre la nouvelle version dans Sid'note.","With Sid'note: read my workout program and history, then improve it for me (exercise choice, volume, progression). Save the new version in Sid'note.","Met Sid'note: lees mijn trainingsschema en geschiedenis en verbeter het (oefeningen, volume, progressie). Sla de nieuwe versie op in Sid'note."),true)},
     {l:"Supprimer le programme",danger:true,fn:()=>{const old=M().plan;undoable("Programme supprimé",[],()=>{M().plan={deleted:true,upd:Date.now()}},{after:renderCoach,revert:()=>{M().plan={...old,upd:Date.now()}}})}}])});
 // --- mode séance : charges conseillées, séries à cocher, repos qui se lance tout seul ---
 let wo=null,woT=null;
@@ -2943,8 +2943,8 @@ $("mcpList").addEventListener("click",async e=>{const b=e.target.closest("[data-
   catch(ex){toast("Impossible pour l'instant")}});
 $("mcpSec").addEventListener("toggle",e=>{if(e.currentTarget.open)mcpLoad()});
 
-/* ---------- v39 : « Mon IA » : brancher son IA (Claude, ChatGPT, Le Chat) en quelques touches, et lui confier les calculs ---------- */
-// data.prefs.ai = "claude" | "chatgpt" | "mistral" (IA choisie) ; data.prefs.aiOk = date du premier appel reçu de cette IA (branchement vérifié)
+/* ---------- v39 : brancher Claude en quelques touches et lui confier les calculs (v42 : Claude seulement) ---------- */
+// data.prefs.ai = "claude" (v42 : seule IA proposée ; une ancienne valeur "chatgpt"/"mistral" compte comme non branchée) ; data.prefs.aiOk = date du premier appel reçu de cette IA (branchement vérifié)
 const AIS={
   claude:{name:"Claude",ask:q=>"https://claude.ai/new?q="+encodeURIComponent(q),conn:"https://claude.ai/settings/connectors",
     // v40 : la fenêtre « Ajouter un connecteur personnalisé » s'ouvre déjà remplie (nom + adresse) : il ne reste qu'à toucher « Ajouter »
@@ -2952,65 +2952,42 @@ const AIS={
     steps:()=>[T3("Touche « Ouvrir Claude » : la page Connecteurs s'ouvre (connecte-toi si besoin).","Tap “Open Claude”: the Connectors page opens (sign in if needed).","Tik op ‘Claude openen’: de pagina Connectoren opent (log in indien nodig)."),
       T3("Touche « Ajouter un connecteur personnalisé ».","Tap “Add custom connector”.","Tik op ‘Aangepaste connector toevoegen’."),
       T3("Nom : Sid'note. URL : colle l'adresse (elle est déjà copiée). Authentification : « Aucune connexion ».","Name: Sid'note. URL: paste the address (already copied). Authentication: “None”.","Naam: Sid'note. URL: plak het adres (al gekopieerd). Authenticatie: ‘Geen’."),
-      T3("Touche « Ajouter », puis reviens ici.","Tap “Add”, then come back here.","Tik op ‘Toevoegen’ en kom dan hier terug.")]},
-  chatgpt:{name:"ChatGPT",ask:q=>"https://chatgpt.com/?q="+encodeURIComponent(q),conn:"https://chatgpt.com/#settings/Connectors",
-    steps:()=>[T3("Il faut un abonnement ChatGPT payant (Plus, Pro ou Business).","You need a paid ChatGPT plan (Plus, Pro or Business).","Je hebt een betaald ChatGPT-abonnement nodig (Plus, Pro of Business)."),
-      T3("Touche « Ouvrir ChatGPT » → Paramètres → Applis et connecteurs → Paramètres avancés : active le « Mode développeur ».","Tap “Open ChatGPT” → Settings → Apps & Connectors → Advanced settings: turn on “Developer mode”.","Tik op ‘ChatGPT openen’ → Instellingen → Apps en connectoren → Geavanceerd: zet ‘Ontwikkelaarsmodus’ aan."),
-      T3("Toujours dans Applis et connecteurs, touche « Créer » : Nom : Sid'note, URL : colle l'adresse, Authentification : Aucune. Coche « Je fais confiance à cette application », puis Créer.","Still in Apps & Connectors, tap “Create”: Name: Sid'note, URL: paste the address, Authentication: None. Tick “I trust this application”, then Create.","Nog steeds in Apps en connectoren, tik op ‘Maken’: Naam: Sid'note, URL: plak het adres, Authenticatie: Geen. Vink ‘Ik vertrouw deze app’ aan en maak aan."),
-      T3("Dans une conversation, touche « + » et active Sid'note, puis reviens ici.","In a chat, tap “+” and turn on Sid'note, then come back here.","Tik in een gesprek op ‘+’ en zet Sid'note aan, kom dan hier terug.")]},
-  mistral:{name:"Le Chat (Mistral)",ask:q=>"https://chat.mistral.ai/chat?q="+encodeURIComponent(q),conn:"https://chat.mistral.ai/",
-    steps:()=>[T3("Touche « Ouvrir Le Chat », puis ouvre le menu → Intelligence → Connecteurs.","Tap “Open Le Chat”, then open the menu → Intelligence → Connectors.","Tik op ‘Le Chat openen’ en open dan het menu → Intelligence → Connectoren."),
-      T3("Touche « + Ajouter un connecteur » → « Connecteur MCP personnalisé ».","Tap “+ Add connector” → “Custom MCP connector”.","Tik op ‘+ Connector toevoegen’ → ‘Aangepaste MCP-connector’."),
-      T3("Nom : Sid'note. URL : colle l'adresse. Authentification : aucune. Puis « Connecter ».","Name: Sid'note. URL: paste the address. Authentication: none. Then “Connect”.","Naam: Sid'note. URL: plak het adres. Authenticatie: geen. Dan ‘Verbinden’."),
-      T3("Dans une conversation, active Sid'note dans les outils, puis reviens ici.","In a chat, turn on Sid'note in the tools, then come back here.","Zet Sid'note in een gesprek aan bij de tools en kom dan hier terug.")]}};
-const aiCur=()=>AIS[data.prefs.ai]||null;
+      T3("Touche « Ajouter », puis reviens ici.","Tap “Add”, then come back here.","Tik op ‘Toevoegen’ en kom dan hier terug.")]}};
+const aiCur=()=>data.prefs.ai==="claude"?AIS.claude:null; // v42 : Claude seulement (un ancien choix ChatGPT / Le Chat = pas encore branché)
 const AI_TEST=()=>T3("Qu'est-ce que j'ai de prévu aujourd'hui dans Sid'note ?","What do I have planned today in Sid'note?","Wat staat er vandaag gepland in Sid'note?");
 const AI_PROJ=()=>T3("Tu es mon coach nutrition et musculation. Utilise toujours le connecteur Sid'note : avant de répondre, lis ma journée (nutrition_journee) ou mon programme (muscu_programme). Note mes repas avec noter_repas, enregistre mes menus et mes programmes dans Sid'note. Réponds simplement, en français, avec des chiffres précis.",
   "You are my nutrition and training coach. Always use the Sid'note connector: before answering, read my day (nutrition_journee) or my program (muscu_programme). Log my meals with noter_repas, save my menus and programs in Sid'note. Answer simply, with precise numbers.",
   "Je bent mijn voedings- en trainingscoach. Gebruik altijd de Sid'note-connector: lees eerst mijn dag (nutrition_journee) of mijn schema (muscu_programme). Noteer mijn maaltijden met noter_repas en sla menu's en schema's op in Sid'note. Antwoord eenvoudig, in het Nederlands, met precieze cijfers.");
 const AI_HABIT=()=>T3("À partir de maintenant, quand je te dis ce que j'ai mangé ou que je t'envoie la photo de mon assiette, calcule les calories et note-le toujours dans Sid'note, sans me le redemander.","From now on, whenever I tell you what I ate or send a photo of my plate, work out the calories and always log it in Sid'note without asking me again.","Vanaf nu: als ik je vertel wat ik gegeten heb of een foto van mijn bord stuur, bereken de calorieën en noteer het altijd in Sid'note zonder het opnieuw te vragen.");
 let aiW={step:"pick",url:"",hash:"",poll:null};
-function aiWizard(){aiW={step:data.prefs.ai&&!data.prefs.aiOk?"setup":"pick",url:"",hash:"",poll:null};$("aiSheet").hidden=false;aiRender()}
+function aiWizard(){if(data.prefs.ai!=="claude"){data.prefs.ai="claude";delete data.prefs.aiOk;save()}aiW={step:data.prefs.aiOk?"test":"setup",url:"",hash:"",poll:null};$("aiSheet").hidden=false;aiRender()}
 function aiStop(){if(aiW.poll){clearInterval(aiW.poll);aiW.poll=null}}
-function aiRender(){const b=$("aiBody"),ai=aiCur();aiStop();
-  if(aiW.step==="pick"){$("aiTitle").textContent=L("Brancher mon IA");
-    b.innerHTML=`<p class="small muted" style="margin:0 0 12px">${L("Ton IA calcule tes repas, crée tes menus et lit ton agenda, puis écrit tout dans Sid'note. Quelle IA utilises-tu ?")}</p>
-      <div class="ai-pick">${Object.entries(AIS).map(([k,a])=>`<button type="button" class="ai-opt" data-aipick="${k}" aria-pressed="${data.prefs.ai===k}"><b>${esc(a.name)}</b>${k==="claude"?`<span class="small muted">${L("Le plus simple")}</span>`:k==="chatgpt"?`<span class="small muted">${L("Abonnement payant")}</span>`:""}</button>`).join("")}
-      <button type="button" class="ai-opt" data-aipick="none"><b>${L("Je n'en ai pas")}</b><span class="small muted">${L("On t'aide à commencer")}</span></button></div>`;return}
-  if(aiW.step==="none"){$("aiTitle").textContent=L("Commencer avec une IA");
-    b.innerHTML=`<p>${L("Le plus simple, c'est Claude : crée un compte (e-mail ou Google), puis reviens ici et choisis Claude.")}</p>
-      <div class="ai-acts"><a class="btn" href="https://claude.ai/login" target="_blank" rel="noopener">${L("Créer mon compte Claude")}</a><button type="button" class="btn ghost" data-aistep="pick">${L("C'est fait, continuer")}</button></div>`;return}
-  if(aiW.step==="setup"&&ai.add){$("aiTitle").textContent=ai.name;
+function aiRender(){const b=$("aiBody"),ai=aiCur()||AIS.claude;aiStop();
+  if(aiW.step==="none"){$("aiTitle").textContent=L("Créer un compte Claude");
+    b.innerHTML=`<p>${L("Crée un compte Claude gratuit (e-mail ou Google), puis reviens ici pour continuer.")}</p>
+      <div class="ai-acts"><a class="btn" href="https://claude.ai/login" target="_blank" rel="noopener">${L("Créer mon compte Claude")}</a><button type="button" class="btn ghost" data-aistep="setup">${L("C'est fait, continuer")}</button></div>`;return}
+  if(aiW.step==="setup"){$("aiTitle").textContent=ai.name;
     b.innerHTML=`<div class="ai-step"><b>${L("Tout est prêt")}</b><div class="small muted">${L("Touche le bouton : Claude s'ouvre avec Sid'note déjà rempli. Là-bas, touche simplement « Ajouter », puis reviens ici.")}</div>
         ${aiW.url?`<a class="btn" href="${esc(ai.add(aiW.url))}" target="_blank" rel="noopener" style="width:100%;margin-top:10px" data-aiadd="1">${L("Ajouter Sid'note à")} ${esc(ai.name)}</a>`:`<button type="button" class="btn" disabled style="width:100%;margin-top:10px">${L("Préparation…")}</button>`}
         <div class="small muted" style="margin-top:8px">${L("Si Claude te demande de te connecter, fais-le : la fenêtre s'ouvrira ensuite toute seule.")}</div></div>
       <details class="ai-more"><summary class="small">${L("Voir mon adresse (si besoin)")}</summary><div class="mcp-url notr" id="aiUrl">${aiW.url?esc(aiW.url):L("Création…")}</div>
         <button type="button" class="btn ghost" data-aicopy="1" style="width:100%;margin-top:8px">${L("Copier l'adresse")}</button></details>
-      <div class="ai-acts"><button type="button" class="btn ghost" data-aistep="pick">${L("Changer d'IA")}</button><button type="button" class="btn" data-aistep="test">${L("C'est fait : tester")}</button></div>`;
+      <div class="ai-acts"><button type="button" class="btn ghost" data-aistep="none">${L("Pas encore de compte Claude ?")}</button><button type="button" class="btn" data-aistep="test">${L("C'est fait : tester")}</button></div>`;
     if(!aiW.url)mcpCreate(ai.name).then(r=>{aiW.url=r.url;aiW.hash=r.hash;mcpLoad();if(aiW.step==="setup")aiRender()})
       .catch(ex=>{const u=$("aiUrl");if(u)u.textContent=L(ex instanceof TypeError?"Pas de connexion internet":"Création impossible pour l'instant");toast(ex instanceof TypeError?"Pas de connexion internet":"Création impossible pour l'instant")});
     return}
-  if(aiW.step==="setup"){$("aiTitle").textContent=ai.name;
-    b.innerHTML=`<div class="ai-step"><b>1. ${L("Ton adresse Sid'note")}</b><div class="small muted">${L("Personnelle et secrète : elle donne accès à ton agenda, tes tâches, tes notes et ta nutrition.")}</div>
-        <div class="mcp-url notr" id="aiUrl">${aiW.url?esc(aiW.url):L("Création…")}</div><button type="button" class="btn ghost" data-aicopy="1" style="width:100%;margin-top:8px">${L("Copier l'adresse")}</button></div>
-      <div class="ai-step"><b>2. ${L("Ajoute-la dans")} ${esc(ai.name)}</b><ol class="small mcp-steps">${ai.steps().map(x=>`<li>${esc(x)}</li>`).join("")}</ol>
-        <a class="btn" href="${ai.conn}" target="_blank" rel="noopener" style="width:100%;margin-top:8px">${L("Ouvrir")} ${esc(ai.name)}</a></div>
-      <div class="ai-acts"><button type="button" class="btn ghost" data-aistep="pick">${L("Changer d'IA")}</button><button type="button" class="btn" data-aistep="test">${L("C'est fait : tester")}</button></div>`;
-    if(!aiW.url)mcpCreate(ai.name).then(r=>{aiW.url=r.url;aiW.hash=r.hash;const u=$("aiUrl");if(u)u.textContent=r.url;copyTxt(r.url).then(ok=>{if(ok)toast("Adresse copiée")});mcpLoad()})
-      .catch(ex=>{const u=$("aiUrl");if(u)u.textContent=L(ex instanceof TypeError?"Pas de connexion internet":"Création impossible pour l'instant")});
-    return}
   if(aiW.step==="proj"){const ai=aiCur()||AIS.claude;$("aiTitle").textContent=L("Dossier Santé");
-    b.innerHTML=`<p class="small muted" style="margin:0 0 10px">${L("Toutes les discussions ouvertes depuis Nutrition, Graphiques et Musculation iront dans ce dossier de ton IA : tout est rangé au même endroit, et ton IA y garde tes consignes.")}</p>
+    b.innerHTML=`<p class="small muted" style="margin:0 0 10px">${L("Toutes les discussions ouvertes depuis Nutrition, Graphiques et Musculation iront dans ce projet Claude : tout est rangé au même endroit, et Claude y garde tes consignes.")}</p>
       <div class="ai-step"><b>1. ${L("Crée le dossier")}</b><ol class="small mcp-steps"><li>${esc(T3(`Touche « Ouvrir ${ai.name} » puis crée un nouveau projet nommé « Sid'note Santé ».`,`Tap “Open ${ai.name}”, then create a new project called “Sid'note Santé”.`,`Tik op ‘${ai.name} openen’ en maak een nieuw project ‘Sid'note Santé’.`))}</li>
         <li>${L("Dans ses instructions, colle ce texte :")}</li></ol><div class="ai-prompt notr" id="aiProjTxt">${esc(AI_PROJ())}</div>
-        <div class="ai-acts"><button type="button" class="btn ghost" data-aiprojcopy="1">${L("Copier les instructions")}</button><a class="btn" href="${data.prefs.ai==="chatgpt"?"https://chatgpt.com/":data.prefs.ai==="mistral"?"https://chat.mistral.ai/":"https://claude.ai/projects"}" target="_blank" rel="noopener">${L("Ouvrir")} ${esc(ai.name)}</a></div></div>
+        <div class="ai-acts"><button type="button" class="btn ghost" data-aiprojcopy="1">${L("Copier les instructions")}</button><a class="btn" href="${"https://claude.ai/projects"}" target="_blank" rel="noopener">${L("Ouvrir")} ${esc(ai.name)}</a></div></div>
       <div class="ai-step"><b>2. ${L("Colle ici le lien du dossier")}</b><div class="small muted">${L("Dans le projet, copie l'adresse de la page (bouton Partager du navigateur → Copier).")}</div>
         <form id="aiProjForm" style="display:flex;gap:8px;margin-top:8px"><input id="aiProjIn" type="url" inputmode="url" placeholder="https://…" value="${esc(data.prefs.aiProj||"")}" aria-label="${L("Lien du dossier")}" autocomplete="off" style="flex:1;min-width:0"><button class="btn" type="submit">${L("Enregistrer")}</button></form>
         ${data.prefs.aiProj?`<button type="button" class="linkbtn" data-aiprojdel="1" style="margin-top:8px">${L("Ne plus utiliser de dossier")}</button>`:""}</div>`;return}
   if(aiW.step==="test"){$("aiTitle").textContent=ai.name;const ok=!!data.prefs.aiOk&&!aiW.hash;
     b.innerHTML=`<div class="ai-step"><b>3. ${L("Envoie ce message à")} ${esc(ai.name)}</b><div class="ai-prompt notr">${esc(AI_TEST())}</div>
         <a class="btn" href="${ai.ask(AI_TEST())}" target="_blank" rel="noopener" style="width:100%;margin-top:8px">${L("Envoyer avec")} ${esc(ai.name)}</a></div>
-      <div class="ai-wait" id="aiWait">${ok?`<b class="ok">✓ ${L("C'est branché !")}</b>`:`<span class="spin"></span>${L("En attente de ton IA… (accepte l'accès à Sid'note si elle te le demande)")}`}</div>
+      <div class="ai-wait" id="aiWait">${ok?`<b class="ok">✓ ${L("C'est branché !")}</b>`:`<span class="spin"></span>${L("En attente de Claude… (accepte l'accès à Sid'note s'il te le demande)")}`}</div>
       <div class="ai-step" id="aiHabit" ${ok?"":"hidden"}><b>${L("Dernière astuce")}</b><div class="small muted">${L("Pour que tes repas arrivent tout seuls dans Sid'note, envoie-lui une fois ce message :")}</div>
         <div class="ai-prompt notr">${esc(AI_HABIT())}</div><a class="btn ghost" href="${ai.ask(AI_HABIT())}" target="_blank" rel="noopener" style="width:100%;margin-top:8px">${L("Envoyer avec")} ${esc(ai.name)}</a>
         <button type="button" class="btn ghost" data-aistep="proj" style="width:100%;margin-top:8px">${L("Ranger mes discussions Santé dans un dossier")}</button></div>
@@ -3021,14 +2998,13 @@ async function aiCheck(){if($("aiSheet").hidden){aiStop();return}
   try{const q=aiW.hash?`&hash=eq.${aiW.hash}`:"";const r=await api(`/rest/v1/mcp_tokens?select=last_used${q}&last_used=not.is.null&limit=1`,{token:await token()});
     if(Array.isArray(r)&&r.length){aiStop();data.prefs.aiOk=new Date().toISOString();save();aiW.hash="";aiRender();renderAiCards();if(navigator.vibrate)navigator.vibrate([20,40,20])}}catch(e){}}
 $("aiBody").addEventListener("click",e=>{const p=e.target.closest("[data-aipick]");
-  if(p){const k=p.dataset.aipick;if(k==="none"){aiW.step="none";aiRender();return}
-    if(data.prefs.ai!==k){data.prefs.ai=k;delete data.prefs.aiOk;save()}aiW.step="setup";aiRender();return}
+  if(p){aiW.step="setup";aiRender();return}
   const st=e.target.closest("[data-aistep]");if(st){aiW.step=st.dataset.aistep;aiRender();return}
   if(e.target.closest("[data-aiadd]")){setTimeout(()=>{if(aiW.step==="setup"){aiW.step="test";aiRender()}},800);return}
   if(e.target.closest("[data-aicopy]")){copyTxt(aiW.url).then(ok=>toast(ok?"Adresse copiée":"Copie impossible : sélectionne-la et copie-la"));return}
   if(e.target.closest("[data-aiprojcopy]")){copyTxt(AI_PROJ()).then(ok=>toast(ok?"Instructions copiées":"Copie impossible"));return}
   if(e.target.closest("[data-aiprojdel]")){delete data.prefs.aiProj;save();aiRender();renderAiCards();toast("Dossier retiré");return}
-  if(e.target.closest("#aiDone")){$("aiSheet").hidden=true;aiStop();toast("Ton IA est branchée sur Sid'note")}});
+  if(e.target.closest("#aiDone")){$("aiSheet").hidden=true;aiStop();toast("Claude est branché sur Sid'note")}});
 $("aiClose").addEventListener("click",()=>{$("aiSheet").hidden=true;aiStop()});
 $("aiBody").addEventListener("submit",e=>{if(e.target.id!=="aiProjForm")return;e.preventDefault();const v=$("aiProjIn").value.trim();
   if(!/^https:\/\/[\w.-]+\/\S+$/.test(v)){toast("Colle le lien complet du dossier (il commence par https://)");return}
@@ -3040,8 +3016,8 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden&&!$("aiShe
 // demande confiée à l'IA : message prêt, ouvert dans l'IA d'un toucher (ou copié)
 // v41 : demandes Santé (nutrition, graphiques, musculation) → ouvertes dans le dossier « Sid'note Santé » de l'IA (projet), message copié
 const aiProj=()=>/^https:\/\/[\w.-]+\//.test(data.prefs.aiProj||"")?data.prefs.aiProj:"";
-function aiHandoff(prompt,health){const ai=aiCur(),pj=health&&aiProj();$("aaPrompt").textContent=prompt;
-  $("aaActs").innerHTML=(ai&&data.prefs.aiOk?"":`<button type="button" class="btn" data-aiwiz="1">${L("Brancher mon IA")}</button>`)+
+function aiHandoff(prompt,health){const ai=aiCur()||AIS.claude,pj=health&&aiProj();$("aaPrompt").textContent=prompt;
+  $("aaActs").innerHTML=(ai&&data.prefs.aiOk?"":`<button type="button" class="btn" data-aiwiz="1">${L("Brancher Claude")}</button>`)+
     (pj?`<a class="btn" href="${esc(pj)}" target="_blank" rel="noopener" data-aaproj="1">${L("Ouvrir mon dossier Santé")}</a><div class="small muted" style="text-align:center">${L("Le message est copié : colle-le dans une nouvelle discussion du dossier.")}</div>`:"")+
     (ai?`<a class="btn ${data.prefs.aiOk&&!pj?"":"ghost"}" href="${ai.ask(prompt)}" target="_blank" rel="noopener">${L(pj?"Envoyer hors du dossier":"Envoyer avec")} ${pj?"":esc(ai.name)}</a>`:"")+
     `<button type="button" class="btn ghost" id="aaCopy">${L("Copier le message")}</button>`+
@@ -3050,16 +3026,16 @@ function aiHandoff(prompt,health){const ai=aiCur(),pj=health&&aiProj();$("aaProm
 $("aaActs").addEventListener("click",e=>{
   if(e.target.closest("[data-aaproj]")){try{navigator.clipboard.writeText($("aaPrompt").textContent).catch(()=>{})}catch(x){}toast("Message copié : colle-le dans le dossier");setTimeout(()=>{$("aiAskSheet").hidden=true},300);return}
   if(e.target.closest("[data-aiproj]")){$("aiAskSheet").hidden=true;aiW={step:"proj",url:"",hash:"",poll:null};$("aiSheet").hidden=false;aiRender();return}
-  if(e.target.closest("#aaCopy"))copyTxt($("aaPrompt").textContent).then(ok=>toast(ok?"Message copié : colle-le dans ton IA":"Copie impossible"));
+  if(e.target.closest("#aaCopy"))copyTxt($("aaPrompt").textContent).then(ok=>toast(ok?"Message copié : colle-le dans Claude":"Copie impossible"));
   else if(e.target.closest("a"))setTimeout(()=>{$("aiAskSheet").hidden=true},300)});
 $("aaClose").addEventListener("click",()=>$("aiAskSheet").hidden=true);
 $("aiAskSheet").addEventListener("click",e=>{if(e.target.id==="aiAskSheet")$("aiAskSheet").hidden=true});
 // cartes « Mon IA » : Nutrition, Réglages
 function renderAiCards(){const ai=aiCur(),ok=!!(ai&&data.prefs.aiOk);
-  const st=$("aiState");if(st)st.innerHTML=ok?`<b class="ok">✓ ${esc(ai.name)} ${L("est branchée")}</b><div class="small muted">${aiProj()?L("Dossier Santé : configuré"):L("Dossier Santé : pas encore")} · <button type="button" class="linkbtn" data-aiproj="1">${L(aiProj()?"Modifier":"Configurer")}</button></div>`:`<span class="small muted">${L("Aucune IA branchée pour l'instant.")}</span>`;
+  const st=$("aiState");if(st)st.innerHTML=ok?`<b class="ok">✓ ${esc(ai.name)} ${L("est branché")}</b><div class="small muted">${aiProj()?L("Dossier Santé : configuré"):L("Dossier Santé : pas encore")} · <button type="button" class="linkbtn" data-aiproj="1">${L(aiProj()?"Modifier":"Configurer")}</button></div>`:`<span class="small muted">${L("Claude n'est pas encore branché.")}</span>`;
   const c=$("nuAiCard");if(!c)return;c.hidden=isTrial();
-  c.innerHTML=ok?`<div class="grow"><b>${IC("sparkle")||""} ${L("Ton IA calcule pour toi")}</b><div class="small muted">${L("Dis-lui ce que tu as mangé ou envoie-lui la photo de ton assiette : tout arrive ici.")}</div></div><a class="btn" href="${ai.ask(T3("J'ai mangé : ","I ate: ","Ik heb gegeten: "))}" target="_blank" rel="noopener">${L("Ouvrir")} ${esc(ai.name)}</a>`
-    :`<div class="grow"><b>${L("Branche ton IA")}</b><div class="small muted">${L("Calories, menus et bilans sont calculés par ton IA (Claude, ChatGPT…), gratuitement avec ton abonnement. 2 minutes, une seule fois.")}</div></div><button type="button" class="btn" data-aiwiz="1">${L("Brancher")}</button>`}
+  c.innerHTML=ok?`<div class="grow"><b>${IC("sparkle")||""} ${L("Claude calcule pour toi")}</b><div class="small muted">${L("Dis-lui ce que tu as mangé ou envoie-lui la photo de ton assiette : tout arrive ici.")}</div></div><a class="btn" href="${ai.ask(T3("J'ai mangé : ","I ate: ","Ik heb gegeten: "))}" target="_blank" rel="noopener">${L("Ouvrir")} ${esc(ai.name)}</a>`
+    :`<div class="grow"><b>${L("Branche Claude")}</b><div class="small muted">${L("Calories, menus et bilans sont calculés par Claude, même avec la version gratuite. 2 minutes, une seule fois.")}</div></div><button type="button" class="btn" data-aiwiz="1">${L("Brancher")}</button>`}
 
 /* ---------- v38 : Face ID / Touch ID (WebAuthn + extension PRF) ---------- */
 // Une clé d'accès (passkey) propre à Sid'note donne, après Face ID, un secret (PRF) qui chiffre le code à 5 chiffres sur cet appareil.
@@ -3603,7 +3579,7 @@ async function nuCall(kind,payload){payload=payload||{};
     const j=await api("/functions/v1/nutrition",{method:"POST",token:await token(),body:{kind,lang:LANG,text:payload.text}});
     if(j&&j.result){j.result._src="memory";return j.result}}
   throw aiNeed(kind,payload)}
-function aiNeed(kind,p){aiHandoff(aiPrompt(kind,p),true);const e=new Error(L("Ton IA s'en charge : suis les étapes à l'écran, le résultat arrivera ici."));e.ai=true;return e}
+function aiNeed(kind,p){aiHandoff(aiPrompt(kind,p),true);const e=new Error(L("Claude s'en charge : suis les étapes à l'écran, le résultat arrivera ici."));e.ai=true;return e}
 // profil : métabolisme (Mifflin-St Jeor), dépense avec le sport, objectif selon le rythme, macros (mêmes règles prudentes qu'avant)
 const SPORT_MET=[[/muscu|fitness|gym|halt|crossfit|weight|kracht/,5.5],[/course|running|jogg|run|lopen|hardlo/,9.8],[/v[eé]lo|cycl|bike|fiets|spinning/,7.5],[/nata|swim|zwem|piscine/,7],
   [/foot|basket|tennis|padel|hand|volley|rugby|hockey/,7],[/marche|walk|wandel|randon/,3.8],[/boxe|box|mma|judo|karat|combat|lutte/,9],[/yoga|pilates|stretch/,3],[/danse|dance|dans/,5.5]];

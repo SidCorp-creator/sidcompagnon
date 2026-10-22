@@ -571,8 +571,9 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     // Mon IA : choisir Claude, adresse créée et copiée, test confirmé
     await pg.evaluate(()=>show("home"));await pg.waitForTimeout(200);
     if(!(await pg.isVisible("#homeBody .hm-ai")))err("carte « branche ton IA » absente d'Aujourd'hui");
-    await pg.click('#homeBody [data-aiwiz]');await pg.waitForTimeout(200);await shot(pg,"v39-ia-choix");
-    await pg.click('[data-aipick="claude"]');await pg.waitForTimeout(900);await shot(pg,"v39-ia-etapes");
+    // v42 : Claude seulement, l'assistant va directement aux étapes de Claude
+    await pg.click('#homeBody [data-aiwiz]');await pg.waitForTimeout(900);await shot(pg,"v39-ia-etapes");
+    if(await pg.locator("[data-aipick]").count())err("le choix d'une autre IA est encore proposé");
     const au=await pg.textContent("#aiUrl");if(!/\/functions\/v1\/mcp\//.test(au))err("adresse pas créée dans l'assistant : "+au);
     const ah=await pg.getAttribute("[data-aiadd]","href").catch(()=>"");
     if(!(ah.startsWith("https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=Sid'note")&&ah.includes("connectorUrl="+encodeURIComponent(au))))err("lien Claude pré-rempli incorrect : "+ah);

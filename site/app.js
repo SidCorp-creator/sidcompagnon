@@ -1227,7 +1227,7 @@ $("bkReplace").addEventListener("click",e=>{const b=e.currentTarget;
 const LEGAL={privacy:[
   ["Qui est responsable","Sid'home est édité par SidCorp, qui est responsable du traitement de tes données. Les coordonnées complètes figurent dans la version complète de cette politique. Pas de publicité : aucune donnée n'est vendue ni utilisée à des fins commerciales."],
   ["Ce qui est enregistré, et pourquoi","Ton e-mail, ton pseudo et ton mot de passe (gardé haché par Supabase), pour ton compte. Ce que tu mets dans l'app (agenda, tâches, notes, documents, séances, nutrition, réglages), pour te rendre le service : c'est la base légale « exécution du contrat ». Des rapports d'erreur techniques (version, message d'erreur, type de navigateur, sans ton contenu), pour corriger les bugs : intérêt légitime. Ton abonnement aux notifications, seulement si tu les actives."],
-  ["Données de santé","Ton poids, tes repas, ton profil (âge, taille, sport), tes séances et les zones à ménager sont des données de santé. Sid'home ne les utilise qu'avec ton accord explicite, que tu peux retirer à tout moment dans Réglages. Sid'home ne les envoie à aucune IA de lui-même : si tu branches Claude, c'est ton propre compte Claude (Anthropic) qui les lit par le connecteur, quand tu le lui demandes, selon les conditions d'Anthropic. Les aliments sont retenus dans une mémoire commune anonyme (jamais ton nom)."],
+  ["Données de santé","Ton poids, tes repas, ton profil (âge, taille, sport), tes séances et les zones à ménager sont des données de santé. Sid'home ne les utilise qu'avec ton accord explicite, que tu peux retirer à tout moment dans Réglages. Sid'home ne les envoie à aucune IA de lui-même : si tu branches Claude, c'est ton propre compte Claude (Anthropic) qui les lit par le connecteur, quand tu le lui demandes, selon les conditions d'Anthropic. La photo d'assiette que tu envoies à Claude est déposée dans ton dossier privé, lue une seule fois par ton Claude, puis effacée (au plus tard après 24 h). Les aliments sont retenus dans une mémoire commune anonyme (jamais ton nom)."],
   ["Où, et avec qui","Tes données sont dans ton compte chez Supabase, en Europe (Francfort, Allemagne). Le site est hébergé par Netlify, qui garde des journaux techniques (dont ton adresse IP) pour faire tourner le site. Anthropic n'intervient que si tu branches Claude, Spotify seulement si tu charges son lecteur. Plus aucune police ni bibliothèque n'est chargée chez un tiers. Sur ton appareil, l'app garde une copie de tes données pour marcher sans connexion."],
   ["Ce qui est chiffré","Mots de passe, notes secrètes et documents sont chiffrés sur ton appareil avec ta phrase secrète avant d'être envoyés : personne d'autre ne peut les lire, pas même SidCorp. Le reste est protégé par ton compte ; l'administrateur pourrait techniquement y accéder pour l'entretien, mais ne le fait pas."],
   ["Combien de temps","Tant que ton compte existe. Les éléments supprimés quittent la synchronisation après 90 jours ; les sauvegardes automatiques sont gardées 14 jours ; les rapports d'erreur 90 jours. « Supprimer mon compte » efface tout de suite ton compte et tes données (les sauvegardes disparaissent dans les 14 jours)."],
@@ -3989,18 +3989,38 @@ function shrink(file,max,q){return new Promise((res,rej)=>{const u=URL.createObj
   im.onload=()=>{const k=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement("canvas");c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);
     const g=c.getContext("2d");g.imageSmoothingQuality="high";g.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL("image/jpeg",q))};
   im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error("image"))};im.src=u})}
+// v43 (demande de Sid) : photo du plat → « Envoyer à Claude », et c'est tout. La photo est déposée tout de suite dans le
+// dossier privé de la personne (Storage, documents/<uid>/repas-<horodatage>.jpg) ; son Claude la lit par le connecteur
+// (outil photo_repas), estime le repas et le note ; la photo est effacée dès qu'elle a été lue (au plus tard après 24 h).
+const nuDirect=()=>!!(session&&!isTrial()&&data.prefs.aiOk&&(aiCur()||AIS.claude)&&navigator.onLine);
+function nuPhotoUp(){if(!nuPhoto||!nuDirect())return;const ph=nuPhoto,path=`documents/${session.user.id}/repas-${Date.now()}.jpg`;
+  ph.up=(async()=>{const b=await (await fetch(ph.big)).blob();await stor("POST",path,b,"image/jpeg");ph.done=path;return path})();ph.up.catch(()=>{});return ph.up}
+const nuPhotoDrop=ph=>{if(ph&&ph.up)ph.up.then(p=>stor("DELETE",p)).catch(()=>{})}
+function nuAskLbl(){$("nuAskBtn").textContent=L(nuPhoto&&nuDirect()?"Envoyer à Claude":"Analyser")}
 $("nuPhoto").addEventListener("change",async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
   try{nuPhoto={big:await shrink(f,1280,.8),small:await shrink(f,240,.7)};
     $("nuPhotoPrev").hidden=false;$("nuPhotoPrev").innerHTML=`<img src="${nuPhoto.small}" alt="${L("Photo du plat")}"><button type="button" aria-label="${L("Retirer la photo")}" data-nuphrm="1">×</button>`;
-    if(!$("nuAsk").value.trim())$("nuAskForm").requestSubmit()}
+    if(nuDirect()){if(await nuConsent())nuPhotoUp()}nuAskLbl()}
   catch(ex){toast("Photo illisible")}});
-$("nuPhotoPrev").addEventListener("click",e=>{if(e.target.closest("[data-nuphrm]")){nuPhoto=null;$("nuPhotoPrev").hidden=true;$("nuPhotoPrev").innerHTML=""}});
+$("nuPhotoPrev").addEventListener("click",e=>{if(e.target.closest("[data-nuphrm]")){nuPhotoDrop(nuPhoto);nuPhoto=null;$("nuPhotoPrev").hidden=true;$("nuPhotoPrev").innerHTML="";nuAskLbl()}});
+// envoi direct : Claude s'ouvre avec le message ; la fenêtre est ouverte pendant le toucher (sinon le navigateur la bloque)
+function nuPhotoSend(q){const ph=nuPhoto,ai=aiCur()||AIS.claude;
+  const msg=T3(`Avec Sid'note : regarde la photo de mon assiette (outil photo_repas), estime ce que j'ai mangé, puis note-le avec noter_repas.${q?` Précision : ${q}`:""}`,
+    `With Sid'note: look at the photo of my plate (photo_repas tool), estimate what I ate, then log it with noter_repas.${q?` Note: ${q}`:""}`,
+    `Met Sid'note: bekijk de foto van mijn bord (tool photo_repas), schat wat ik gegeten heb en noteer het met noter_repas.${q?` Toelichting: ${q}`:""}`);
+  // photo déjà déposée (cas habituel) : Claude s'ouvre tout de suite, pendant le toucher ; sinon fenêtre vide remplie après l'envoi
+  if(ph.done){window.open(ai.ask(msg),"_blank","noopener");nuPhoto=null;$("nuPhotoPrev").hidden=true;$("nuPhotoPrev").innerHTML="";$("nuAsk").value="";grow($("nuAsk"));nuAskLbl();toast("Photo envoyée : Claude note le repas, il arrivera ici");return}
+  const w=window.open("","_blank");const go=()=>{const u=ai.ask(msg);if(w&&!w.closed)w.location.href=u;else location.href=u};
+  nuPhoto=null;$("nuPhotoPrev").hidden=true;$("nuPhotoPrev").innerHTML="";$("nuAsk").value="";grow($("nuAsk"));nuAskLbl();
+  (ph.up||nuPhotoUp()||Promise.reject()).then(()=>{toast("Photo envoyée : Claude note le repas, il arrivera ici");go()},
+    ()=>{if(w&&!w.closed)w.close();nuPhoto=ph;toast("Envoi de la photo impossible : réessaie");$("nuPhotoPrev").hidden=false;$("nuPhotoPrev").innerHTML=`<img src="${ph.small}" alt="${L("Photo du plat")}"><button type="button" aria-label="${L("Retirer la photo")}" data-nuphrm="1">×</button>`;nuAskLbl()})}
 // un aliment renvoyé par l'IA apparaît-il dans ce que la personne a écrit ? (racine des mots, sans accents)
 const nz=x=>String(x||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
 function mentioned(q,name){const Q=nz(q),stems=nz(name).split(/[^a-z0-9]+/).filter(w=>w.length>=3&&!/^(les|des|une|avec|sans|aux|the|and|with|cuit|cuite|nature|frais|fraiche|maison)$/.test(w));
   return !stems.length||stems.some(w=>Q.includes(w.length>5?w.slice(0,5):w.replace(/[sx]$/,"")))}
 $("nuAskForm").addEventListener("submit",async e=>{
   e.preventDefault();const q=$("nuAsk").value.trim();if((!q&&!nuPhoto)||nuBusy||!nutriAllowed())return;dictStop();
+  if(nuPhoto&&nuDirect()){if(NU().consent)return nuPhotoSend(q);if(!(await nuConsent()))return;nuPhotoUp();return nuPhotoSend(q)}
   nuBusy="aliment";const btn=$("nuAskBtn");btn.disabled=true;nuPending=null;
   const stop=nuLoading($("nuResult"),nuPhoto?["Analyse de la photo…","Reconnaissance des aliments…","Estimation des portions…","Calcul des calories…"]:["Analyse du plat…","Calcul des calories…","Estimation des macros…"]);
   const photo=nuPhoto;

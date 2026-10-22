@@ -737,8 +737,20 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>renderNutri());if(await pg.inputValue("#nuInclude")!=="")err("« à inclure » revient après un nouveau rendu");
     await pg.click('[data-nutab="day"]');await pg.evaluate(()=>{nuCall=async(k,p)=>{throw aiNeed(k,p)}});await pg.fill("#nuAsk","zzz plat imaginaire 300 g");await pg.click("#nuAskBtn");await pg.waitForTimeout(800);if(await pg.isVisible("#aaClose"))await pg.click("#aaClose");
     if(await pg.inputValue("#nuAsk")!=="")err("« Ajouter ce que tu manges » reste pré-rempli après l'envoi à Claude");
-    // v43 : une photo de plat part vraiment chez Claude (feuille de partage : photo + message), au lieu d'un lien texte seul
-    await pg.evaluate(()=>{navigator.canShare=()=>true;navigator.share=async d=>{window.__shared={n:(d.files||[]).length,type:d.files&&d.files[0]&&d.files[0].type,text:d.text}}});
+    // v43 : Claude branché → photo prise = déposée dans le dossier privé ; « Envoyer à Claude » ouvre Claude, rien d'autre à faire
+    await pg.evaluate(async()=>{const c=document.createElement("canvas");c.width=c.height=60;c.getContext("2d").fillRect(0,0,60,60);
+      const b=await new Promise(r=>c.toBlob(r,"image/jpeg"));const dt=new DataTransfer();dt.items.add(new File([b],"plat.jpg",{type:"image/jpeg"}));
+      const i=$("nuPhoto");i.files=dt.files;i.dispatchEvent(new Event("change"));window.open=(u)=>{window.__opened=u||"";return null}});
+    await pg.waitForTimeout(1200);
+    if((await pg.textContent("#nuAskBtn")).trim()!=="Envoyer à Claude")err("le bouton ne dit pas « Envoyer à Claude » : "+await pg.textContent("#nuAskBtn"));
+    const ob=await (await pg.request.get("http://localhost:8790/__objs")).json().catch(()=>({}));
+    if(!Object.keys(ob).some(k=>/\/repas-\d+\.jpg$/.test(k)))err("la photo n'est pas déposée dans le dossier privé : "+JSON.stringify(Object.keys(ob)));
+    await shot(pg,"v43-photo-direct");await pg.click("#nuAskBtn");await pg.waitForTimeout(500);
+    const op=await pg.evaluate(()=>window.__opened);if(!op||!op.startsWith("https://claude.ai/new")||!decodeURIComponent(op).includes("photo_repas"))err("Claude ne s'ouvre pas avec le message photo_repas : "+op);
+    if(await pg.isVisible("#aiAskSheet"))err("une fenêtre intermédiaire s'ouvre encore pour la photo");
+    if(await pg.evaluate(()=>!!nuPhoto||!$("nuPhotoPrev").hidden))err("la photo reste affichée après l'envoi");
+    // sans Claude branché : la feuille de partage reste le secours (photo + message)
+    await pg.evaluate(()=>{data.prefs.aiOk=0;navigator.canShare=()=>true;navigator.share=async d=>{window.__shared={n:(d.files||[]).length,type:d.files&&d.files[0]&&d.files[0].type,text:d.text}}});
     await pg.evaluate(()=>{const c=document.createElement("canvas");c.width=c.height=40;c.getContext("2d").fillRect(0,0,40,40);const u=c.toDataURL("image/jpeg");nuPhoto={big:u,small:u};$("nuPhotoPrev").hidden=false});
     await pg.click("#nuAskBtn");await pg.waitForTimeout(800);
     if(!(await pg.isVisible("#aaShare")))err("pas de bouton « Envoyer la photo à Claude »");

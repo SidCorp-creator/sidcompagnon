@@ -1,7 +1,7 @@
 // Sid'note v38-v41 : fonction "mcp" : connecteur Sid'note pour l'IA de chacun (Claude, ChatGPT, Le Chat…) (protocole MCP, transport « Streamable HTTP », réponses JSON).
 // Adresse : https://<projet>.supabase.co/functions/v1/mcp/<clé>  — la clé est personnelle (créée dans Réglages > Mon IA),
 // seule son empreinte SHA-256 est gardée (table mcp_tokens, supabase/sql/mcp.sql). Verify JWT : OFF.
-// Accès : agenda (v41 : avec les rappels), tâches, notes (pas les notes secrètes), nutrition (v39 : c'est l'IA de la personne qui calcule), musculation (v41). Plus de listes partagées (retirées en v41). Jamais les coffres (mots de passe, documents).
+// Accès : agenda (v41 : avec les rappels), tâches, notes (pas les notes secrètes), nutrition (v39 : c'est l'IA de la personne qui calcule), musculation (v41), photo d'assiette (v43, outil photo_repas : lue puis effacée). Plus de listes partagées (retirées en v41). Jamais les coffres (mots de passe, documents).
 // Écriture « à condition » sur user_data (comme push() dans l'app) : si l'app a écrit entre-temps, on relit et on recommence.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -302,6 +302,11 @@ const TOOLS = [
     annotations: { readOnlyHint: true },
   },
   {
+    name: "photo_repas",
+    description: "Donne la dernière photo d'assiette que la personne vient d'envoyer depuis Sid'note (bouton « Envoyer à Claude »). Regarde-la, estime toi-même aliments, quantités, calories et macros, puis note le repas avec noter_repas (date et heure fournies). La photo est effacée de Sid'note dès qu'elle a été lue.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
     name: "noter_repas",
     description: "Note dans Sid'note ce que la personne a mangé (texte, photo d'assiette…). C'est TOI qui estimes les quantités, les calories et les macros de chaque aliment (références USDA/CIQUAL), puis tu appelles cet outil. Un appel = un repas ou un plat.",
     inputSchema: {
@@ -420,6 +425,28 @@ const leadsOf = (v: unknown) => {
 };
 const leadTxt = (m: number) => m === 1440 ? "la veille" : m % 1440 === 0 ? `${m / 1440} jours avant` : m >= 60 ? `${Math.round(m / 6) / 10} h avant`.replace(".", ",") : `${m} min avant`;
 const MU = (d: Data) => { const m = d.muscu || (d.muscu = { sessions: [] }); if (!Array.isArray(m.log)) m.log = []; return m; };
+
+// v43 : photos d'assiette déposées par l'app dans documents/<uid>/repas-<ms>.jpg (bucket privé). On renvoie la plus récente
+// (moins de 24 h) en image, puis on efface toutes les photos de repas de la personne : rien n'est gardé après lecture.
+const b64 = (u: Uint8Array) => { let s = ""; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode(...u.subarray(i, i + 0x8000)); return btoa(s); };
+async function photoRepas(user: string): Promise<unknown[]> {
+  const { data: files, error } = await db.storage.from("documents").list(user, { search: "repas-", limit: 100 });
+  if (error) throw new Error("Photos illisibles pour l'instant : réessaie.");
+  const all = (files || []).map((f: Data) => ({ name: f.name as string, at: Number(/^repas-(\d+)\.jpg$/.exec(f.name)?.[1]) })).filter((f) => f.at);
+  const last = all.filter((f) => Date.now() - f.at < 864e5).sort((a, b) => b.at - a.at)[0];
+  const out: unknown[] = [];
+  if (last) {
+    const { data: blob } = await db.storage.from("documents").download(`${user}/${last.name}`);
+    if (blob) {
+      const d = new Date(last.at), p = Object.fromEntries(BXL.formatToParts(d).map((x) => [x.type, x.value]));
+      out.push({ type: "image", data: b64(new Uint8Array(await blob.arrayBuffer())), mimeType: "image/jpeg" });
+      out.push({ type: "text", text: `Photo de l'assiette prise le ${p.year}-${p.month}-${p.day} à ${p.hour}:${p.minute} (heure de Bruxelles). Estime le repas puis appelle noter_repas avec date ${p.year}-${p.month}-${p.day} et time ${p.hour}:${p.minute}.` });
+    }
+  }
+  if (all.length) await db.storage.from("documents").remove(all.map((f) => `${user}/${f.name}`));
+  if (!out.length) out.push({ type: "text", text: "Aucune photo d'assiette en attente (elle a peut-être déjà été lue). Demande à la personne de la renvoyer depuis Sid'note (Nutrition → photo → Envoyer à Claude) ou de décrire son repas." });
+  return out;
+}
 
 // deno-lint-ignore no-explicit-any
 async function callTool(user: string, name: string, a: any, nameOf: string): Promise<string> {
@@ -732,8 +759,8 @@ Deno.serve(async (req) => {
       return rpcOk(id, {
         protocolVersion: params?.protocolVersion || "2025-06-18",
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "sidnote", title: "Sid'note", version: "1.1.0" },
-        instructions: "Sid'note est l'application d'organisation de la personne (agenda, cours, tâches, notes, nutrition, musculation). Dates en AAAA-MM-JJ, heure de Bruxelles. Quand la personne demande un rappel pour une activité (ex. 1 h avant), passe-le dans reminders (en minutes) avec ajouter_activite ou modifier_activite : c'est une notification sur son téléphone. Quand la personne dit ce qu'elle a mangé ou envoie la photo de son assiette, estime toi-même calories et macros puis note-le avec noter_repas (sans redemander, sauf doute sur la quantité). Pour un menu, lis d'abord nutrition_journee puis enregistre-le avec enregistrer_menu. Après un bilan ou un commentaire nutrition (jour ou semaine), enregistre-le avec enregistrer_commentaire pour qu'il s'affiche dans l'app. Quand la personne parle d'une chose à faire un jour précis, ajoute la tâche avec sa date (ajouter_tache) : elle apparaîtra ce jour-là dans son agenda et passera au lendemain si elle n'est pas faite. Pour une note, propose un dossier (folder) si c'est utile. Pour la musculation, lis muscu_programme avant d'ajuster, puis enregistre avec enregistrer_programme ; une séance racontée se note avec noter_seance. Les mots de passe, documents et notes secrètes sont chiffrés et jamais accessibles.",
+        serverInfo: { name: "sidnote", title: "Sid'note", version: "1.2.0" },
+        instructions: "Sid'note est l'application d'organisation de la personne (agenda, cours, tâches, notes, nutrition, musculation). Dates en AAAA-MM-JJ, heure de Bruxelles. Quand la personne demande un rappel pour une activité (ex. 1 h avant), passe-le dans reminders (en minutes) avec ajouter_activite ou modifier_activite : c'est une notification sur son téléphone. Quand la personne dit ce qu'elle a mangé ou envoie la photo de son assiette (si elle parle d'une photo envoyée depuis Sid'note, lis-la avec photo_repas), estime toi-même calories et macros puis note-le avec noter_repas (sans redemander, sauf doute sur la quantité). Pour un menu, lis d'abord nutrition_journee puis enregistre-le avec enregistrer_menu. Après un bilan ou un commentaire nutrition (jour ou semaine), enregistre-le avec enregistrer_commentaire pour qu'il s'affiche dans l'app. Quand la personne parle d'une chose à faire un jour précis, ajoute la tâche avec sa date (ajouter_tache) : elle apparaîtra ce jour-là dans son agenda et passera au lendemain si elle n'est pas faite. Pour une note, propose un dossier (folder) si c'est utile. Pour la musculation, lis muscu_programme avant d'ajuster, puis enregistre avec enregistrer_programme ; une séance racontée se note avec noter_seance. Les mots de passe, documents et notes secrètes sont chiffrés et jamais accessibles.",
       });
     case "ping":
       return rpcOk(id, {});
@@ -741,6 +768,7 @@ Deno.serve(async (req) => {
       return rpcOk(id, { tools: TOOLS });
     case "tools/call": {
       try {
+        if (params?.name === "photo_repas") return rpcOk(id, { content: await photoRepas(tok.user_id) });
         const text = await callTool(tok.user_id, params?.name, params?.arguments, tok.label || "Claude");
         return rpcOk(id, { content: [{ type: "text", text }] });
       } catch (e) {

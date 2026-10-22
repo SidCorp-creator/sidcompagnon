@@ -314,21 +314,32 @@ document.addEventListener("focusin",e=>{const el=e.target;if(!(el instanceof HTM
 // même chose pour un gestionnaire de clic : faux au 1er appui (bouton armé), vrai au 2e
 const c2ok=b=>{if(b.dataset.c2){clearTimeout(b._c2);delete b.dataset.c2;b.classList.remove("armed");b.innerHTML=b._c2h;return true}confirm2(b,()=>{});return false};
 
+// v42 : logos (S signature gravé dans la silhouette de chaque app) ; couleur = currentColor, la découpe laisse voir le fond
+const LOGOS={"home":{"s":"<path d=\"M32 14.5 L48 27.5 V49 H16 V27.5 Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"5\" stroke-linejoin=\"round\"/>","c":"<path d=\"M0.029 0.498Q-0.036 0.498 -0.078 0.479Q-0.12 0.461 -0.143 0.442Q-0.166 0.423 -0.175 0.423Q-0.18 0.423 -0.189 0.435Q-0.198 0.446 -0.209 0.462Q-0.22 0.477 -0.23 0.488Q-0.239 0.5 -0.245 0.5Q-0.248 0.5 -0.252 0.497Q-0.256 0.494 -0.257 0.49L-0.311 0.203Q-0.312 0.199 -0.311 0.197Q-0.311 0.195 -0.31 0.194Q-0.308 0.192 -0.306 0.194Q-0.304 0.195 -0.302 0.198Q-0.249 0.31 -0.196 0.372Q-0.143 0.435 -0.09 0.46Q-0.037 0.485 0.017 0.485Q0.094 0.485 0.14 0.443Q0.186 0.4 0.186 0.319Q0.186 0.27 0.166 0.228Q0.145 0.187 0.096 0.15Q0.046 0.114 -0.04 0.083Q-0.147 0.044 -0.211 -0.002Q-0.275 -0.047 -0.303 -0.103Q-0.331 -0.158 -0.331 -0.226Q-0.331 -0.307 -0.291 -0.368Q-0.25 -0.43 -0.18 -0.464Q-0.11 -0.498 -0.021 -0.498Q0.039 -0.498 0.079 -0.483Q0.118 -0.468 0.14 -0.453Q0.162 -0.438 0.172 -0.438Q0.181 -0.438 0.197 -0.453Q0.213 -0.469 0.228 -0.484Q0.243 -0.5 0.249 -0.5Q0.252 -0.5 0.255 -0.498Q0.257 -0.497 0.258 -0.492L0.331 -0.203Q0.331 -0.199 0.331 -0.197Q0.331 -0.195 0.329 -0.194Q0.328 -0.193 0.326 -0.194Q0.323 -0.196 0.322 -0.198Q0.265 -0.31 0.211 -0.372Q0.157 -0.435 0.102 -0.46Q0.047 -0.485 -0.011 -0.485Q-0.087 -0.485 -0.137 -0.437Q-0.186 -0.389 -0.186 -0.304Q-0.186 -0.253 -0.166 -0.21Q-0.146 -0.167 -0.099 -0.131Q-0.051 -0.094 0.032 -0.063Q0.143 -0.022 0.208 0.023Q0.272 0.069 0.299 0.122Q0.326 0.175 0.326 0.238Q0.326 0.311 0.291 0.37Q0.256 0.428 0.189 0.463Q0.123 0.498 0.029 0.498Z\" transform=\"translate(32 39) scale(15.5)\" fill=\"black\"/>"},"agenda":{"s":"<path d=\"M18 22 H46 V47 H18 Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"6\" stroke-linejoin=\"round\"/><path d=\"M24.5 12 V16 M39.5 12 V16\" stroke=\"currentColor\" stroke-width=\"4.5\" stroke-linecap=\"round\"/>","c":"<path d=\"M0.029 0.498Q-0.036 0.498 -0.078 0.479Q-0.12 0.461 -0.143 0.442Q-0.166 0.423 -0.175 0.423Q-0.18 0.423 -0.189 0.435Q-0.198 0.446 -0.209 0.462Q-0.22 0.477 -0.23 0.488Q-0.239 0.5 -0.245 0.5Q-0.248 0.5 -0.252 0.497Q-0.256 0.494 -0.257 0.49L-0.311 0.203Q-0.312 0.199 -0.311 0.197Q-0.311 0.195 -0.31 0.194Q-0.308 0.192 -0.306 0.194Q-0.304 0.195 -0.302 0.198Q-0.249 0.31 -0.196 0.372Q-0.143 0.435 -0.09 0.46Q-0.037 0.485 0.017 0.485Q0.094 0.485 0.14 0.443Q0.186 0.4 0.186 0.319Q0.186 0.27 0.166 0.228Q0.145 0.187 0.096 0.15Q0.046 0.114 -0.04 0.083Q-0.147 0.044 -0.211 -0.002Q-0.275 -0.047 -0.303 -0.103Q-0.331 -0.158 -0.331 -0.226Q-0.331 -0.307 -0.291 -0.368Q-0.25 -0.43 -0.18 -0.464Q-0.11 -0.498 -0.021 -0.498Q0.039 -0.498 0.079 -0.483Q0.118 -0.468 0.14 -0.453Q0.162 -0.438 0.172 -0.438Q0.181 -0.438 0.197 -0.453Q0.213 -0.469 0.228 -0.484Q0.243 -0.5 0.249 -0.5Q0.252 -0.5 0.255 -0.498Q0.257 -0.497 0.258 -0.492L0.331 -0.203Q0.331 -0.199 0.331 -0.197Q0.331 -0.195 0.329 -0.194Q0.328 -0.193 0.326 -0.194Q0.323 -0.196 0.322 -0.198Q0.265 -0.31 0.211 -0.372Q0.157 -0.435 0.102 -0.46Q0.047 -0.485 -0.011 -0.485Q-0.087 -0.485 -0.137 -0.437Q-0.186 -0.389 -0.186 -0.304Q-0.186 -0.253 -0.166 -0.21Q-0.146 -0.167 -0.099 -0.131Q-0.051 -0.094 0.032 -0.063Q0.143 -0.022 0.208 0.023Q0.272 0.069 0.299 0.122Q0.326 0.175 0.326 0.238Q0.326 0.311 0.291 0.37Q0.256 0.428 0.189 0.463Q0.123 0.498 0.029 0.498Z\" transform=\"translate(32 35.5) scale(15.5)\" fill=\"black\"/><path d=\"M17 19.2 H47\" stroke=\"black\" stroke-width=\"1.2\"/>"},"fit":{"s":"<path d=\"M21.5 31 C20.2 27 19.8 23.5 19.8 21 A6 6 0 0 1 25.8 15 H38.2 A6 6 0 0 1 44.2 21 C44.2 23.5 43.8 27 42.5 31\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M32 24 C42.5 24 49 30.5 49 38.5 C49 44 46.6 48 44.5 50 C43.8 50.7 43 51 42 51 H22 C21 51 20.2 50.7 19.5 50 C17.4 48 15 44 15 38.5 C15 30.5 21.5 24 32 24 Z\" fill=\"currentColor\"/>","c":"<path d=\"M0.029 0.498Q-0.036 0.498 -0.078 0.479Q-0.12 0.461 -0.143 0.442Q-0.166 0.423 -0.175 0.423Q-0.18 0.423 -0.189 0.435Q-0.198 0.446 -0.209 0.462Q-0.22 0.477 -0.23 0.488Q-0.239 0.5 -0.245 0.5Q-0.248 0.5 -0.252 0.497Q-0.256 0.494 -0.257 0.49L-0.311 0.203Q-0.312 0.199 -0.311 0.197Q-0.311 0.195 -0.31 0.194Q-0.308 0.192 -0.306 0.194Q-0.304 0.195 -0.302 0.198Q-0.249 0.31 -0.196 0.372Q-0.143 0.435 -0.09 0.46Q-0.037 0.485 0.017 0.485Q0.094 0.485 0.14 0.443Q0.186 0.4 0.186 0.319Q0.186 0.27 0.166 0.228Q0.145 0.187 0.096 0.15Q0.046 0.114 -0.04 0.083Q-0.147 0.044 -0.211 -0.002Q-0.275 -0.047 -0.303 -0.103Q-0.331 -0.158 -0.331 -0.226Q-0.331 -0.307 -0.291 -0.368Q-0.25 -0.43 -0.18 -0.464Q-0.11 -0.498 -0.021 -0.498Q0.039 -0.498 0.079 -0.483Q0.118 -0.468 0.14 -0.453Q0.162 -0.438 0.172 -0.438Q0.181 -0.438 0.197 -0.453Q0.213 -0.469 0.228 -0.484Q0.243 -0.5 0.249 -0.5Q0.252 -0.5 0.255 -0.498Q0.257 -0.497 0.258 -0.492L0.331 -0.203Q0.331 -0.199 0.331 -0.197Q0.331 -0.195 0.329 -0.194Q0.328 -0.193 0.326 -0.194Q0.323 -0.196 0.322 -0.198Q0.265 -0.31 0.211 -0.372Q0.157 -0.435 0.102 -0.46Q0.047 -0.485 -0.011 -0.485Q-0.087 -0.485 -0.137 -0.437Q-0.186 -0.389 -0.186 -0.304Q-0.186 -0.253 -0.166 -0.21Q-0.146 -0.167 -0.099 -0.131Q-0.051 -0.094 0.032 -0.063Q0.143 -0.022 0.208 0.023Q0.272 0.069 0.299 0.122Q0.326 0.175 0.326 0.238Q0.326 0.311 0.291 0.37Q0.256 0.428 0.189 0.463Q0.123 0.498 0.029 0.498Z\" transform=\"translate(32 39) scale(15.5)\" fill=\"black\"/>"},"note":{"s":"<path d=\"M17 13 H39 L47 21 V51 H17 Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linejoin=\"round\"/><path d=\"M39 13 V21 H47 Z\" fill=\"currentColor\"/>","c":"<path d=\"M0.029 0.498Q-0.036 0.498 -0.078 0.479Q-0.12 0.461 -0.143 0.442Q-0.166 0.423 -0.175 0.423Q-0.18 0.423 -0.189 0.435Q-0.198 0.446 -0.209 0.462Q-0.22 0.477 -0.23 0.488Q-0.239 0.5 -0.245 0.5Q-0.248 0.5 -0.252 0.497Q-0.256 0.494 -0.257 0.49L-0.311 0.203Q-0.312 0.199 -0.311 0.197Q-0.311 0.195 -0.31 0.194Q-0.308 0.192 -0.306 0.194Q-0.304 0.195 -0.302 0.198Q-0.249 0.31 -0.196 0.372Q-0.143 0.435 -0.09 0.46Q-0.037 0.485 0.017 0.485Q0.094 0.485 0.14 0.443Q0.186 0.4 0.186 0.319Q0.186 0.27 0.166 0.228Q0.145 0.187 0.096 0.15Q0.046 0.114 -0.04 0.083Q-0.147 0.044 -0.211 -0.002Q-0.275 -0.047 -0.303 -0.103Q-0.331 -0.158 -0.331 -0.226Q-0.331 -0.307 -0.291 -0.368Q-0.25 -0.43 -0.18 -0.464Q-0.11 -0.498 -0.021 -0.498Q0.039 -0.498 0.079 -0.483Q0.118 -0.468 0.14 -0.453Q0.162 -0.438 0.172 -0.438Q0.181 -0.438 0.197 -0.453Q0.213 -0.469 0.228 -0.484Q0.243 -0.5 0.249 -0.5Q0.252 -0.5 0.255 -0.498Q0.257 -0.497 0.258 -0.492L0.331 -0.203Q0.331 -0.199 0.331 -0.197Q0.331 -0.195 0.329 -0.194Q0.328 -0.193 0.326 -0.194Q0.323 -0.196 0.322 -0.198Q0.265 -0.31 0.211 -0.372Q0.157 -0.435 0.102 -0.46Q0.047 -0.485 -0.011 -0.485Q-0.087 -0.485 -0.137 -0.437Q-0.186 -0.389 -0.186 -0.304Q-0.186 -0.253 -0.166 -0.21Q-0.146 -0.167 -0.099 -0.131Q-0.051 -0.094 0.032 -0.063Q0.143 -0.022 0.208 0.023Q0.272 0.069 0.299 0.122Q0.326 0.175 0.326 0.238Q0.326 0.311 0.291 0.37Q0.256 0.428 0.189 0.463Q0.123 0.498 0.029 0.498Z\" transform=\"translate(32 34.5) scale(15.5)\" fill=\"black\"/><path d=\"M39 11.5 V21 H48.5\" fill=\"none\" stroke=\"black\" stroke-width=\"1.4\" stroke-linejoin=\"round\"/>"}};
+let logoN=0;const LOGO=(app,cls)=>{const id="lg"+(++logoN),L0=LOGOS[app]||LOGOS.home;return `<svg class="logo ${cls||""}" viewBox="0 0 64 64" aria-hidden="true"><defs><mask id="${id}"><rect width="64" height="64" fill="white"/>${L0.c}</mask></defs><g mask="url(#${id})">${L0.s}</g></svg>`};
+
+// v42 : animation d'ouverture (2 s) : le logo Sid'home, puis les trois apps ; elle ne bloque jamais les touchers
+(()=>{const sp=$("splash");if(!sp)return;$("spMark").innerHTML=LOGO("home");$("spApps").innerHTML=["agenda","fit","note"].map(a=>`<span data-app="${a}">${LOGO(a)}</span>`).join("");
+  const quick=matchMedia("(prefers-reduced-motion: reduce)").matches;sp.classList.add("go");setTimeout(()=>sp.remove(),quick?400:2100)})();
+
 /* ---------- onglets, rangés par catégories ---------- */
 // La barre du bas montre des catégories ; dans une catégorie, une barre en haut permet de choisir la fonction.
 // v25 : les catégories deviennent des « espaces » (page Espaces + barre latérale sur ordinateur)
+// v42 : trois applications dans l'application mère Sid'home (même compte, mêmes données) ; Réglages et Compte sont dans Sid'home
 const GROUPS=[
-  {k:"orga",label:"Organisation",tabs:["plan","todo"]}, // v41 : Listes et Focus retirés (demande de Sid), leur code reste
-  {k:"sport",label:"Santé",tabs:["muscu","nutri","graph"]},
-  {k:"perso",label:"Coffre",tabs:["notes","docs","pwd"]},
-  {k:"more",label:"Compte",tabs:["more","app"]}];
+  {k:"orga",label:"sid'agenda",app:"agenda",tabs:["plan","todo","pomo"]}, // v41 : Listes retirées ; v42 : Focus (pomodoro) revient
+  {k:"sport",label:"sid'fit",app:"fit",tabs:["muscu","nutri","graph"]},
+  {k:"perso",label:"sid'note",app:"note",tabs:["notes","docs","pwd"]},
+  {k:"more",label:"Sid'home",app:"home",tabs:["more","app"]}];
+const APP_GROUPS=GROUPS.slice(0,3);
+const appOf=v=>v==="home"||v==="spaces"?"home":groupOf(v).app;
 const SHORT={plan:"Agenda",todo:"Tâches",lists:"Listes",pomo:"Focus",muscu:"Musculation",nutri:"Nutrition",graph:"Graphiques",notes:"Notes",docs:"Documents",pwd:"Mots de passe",more:"Réglages",app:"Installer l'app"};
 const ICON=k=>{const e=$("fnIcons").querySelector(`[data-ic="${k}"]`);return e?e.innerHTML:""};
 const groupOf=v=>GROUPS.find(g=>g.tabs.includes(v))||GROUPS[0];
 // v32 : Nutrition et Graphiques n'apparaissent que pour les comptes qui y ont accès (décidé par le serveur)
 const RESERVED={}; // v39 : Nutrition et Graphiques ouverts à tous (le calcul passe par l'IA de chacun, plus par la clé de Sid)
 const tabAllowed=k=>!RESERVED[k]||!!(session&&Array.isArray(session.feat)&&session.feat.includes(RESERVED[k]));
-const OFF_TABS=["lists","pomo"];
+const OFF_TABS=["lists"];
 const visibleTabs=()=>[...TABS.filter(([k])=>!OFF_TABS.includes(k)&&tabAllowed(k)&&data.prefs.tabs[k]!==false).map(([k])=>k),"more"];
 const groupTabs=g=>g.tabs.filter(k=>visibleTabs().includes(k));
 // icônes du dock et de la barre latérale
@@ -339,7 +350,11 @@ const PLUSIC=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 // v28 : la barre du bas montre directement les 3 espaces (demande de Sid) : Aujourd'hui, Organisation, Santé, Coffre, Compte.
 // Toucher un espace rouvre sa dernière fonction ; en haut, des pastilles passent d'une fonction à l'autre. Le « + » est sur la page Aujourd'hui.
 const DOCK=[["home","Aujourd'hui",HOMEIC],["orga","Organisation",null],["sport","Santé",null],["perso","Coffre",null],["more","Compte",USERIC]];
-$("navIn").innerHTML=DOCK.map(([k,l,ic])=>`<button type="button" class="tab" data-dock="${k}" aria-label="${L(l)}"><span class="tabicon">${ic||ICON("g-"+k)}</span><span class="tab-l">${L(l)}</span></button>`).join("");
+// v42 : la barre du bas montre les fonctions de l'app ouverte (sid'agenda : Agenda, Tâches, Focus…) ; dans Sid'home, pas de barre
+function renderNav(v){const nav=document.querySelector("nav"),a=appOf(v);
+  if(a==="home"){nav.hidden=true;document.body.classList.remove("has-nav");return}
+  const ts=groupTabs(groupOf(v));nav.hidden=false;document.body.classList.add("has-nav");$("navIn").style.gridTemplateColumns=`repeat(${ts.length},minmax(0,1fr))`;
+  $("navIn").innerHTML=ts.map(k=>`<button type="button" class="tab" data-go="${k}"${k===v?' aria-current="page"':""}><span class="tabicon">${ICON(k)}</span><span class="tab-l">${L(SHORT[k])}</span>${badgeHtml(k)}</button>`).join("")}
 // page affichée → bouton du dock allumé
 const dockOf=v=>v==="home"?"home":v==="more"||v==="app"?"more":v==="spaces"?"":groupOf(v).k;
 // espace touché → dernière fonction ouverte dans cet espace (sinon la première affichée)
@@ -349,7 +364,7 @@ function openGroup(k){const g=GROUPS.find(x=>x.k===k);if(!g)return;const ts=grou
 const BADGES={};
 const badgeHtml=k=>{const b=BADGES[k];return !b?"":b==="dot"?`<i class="sbadge dot" aria-label="${L("En cours")}"></i>`:`<i class="sbadge">${b>99?"99+":b}</i>`};
 function setBadge(k,v){if(BADGES[k]===v)return;BADGES[k]=v;
-  const sb=document.querySelector(`#vhead [data-go="${k}"]`);if(sb)sb.querySelector(".sbadge")?.remove(),sb.insertAdjacentHTML("beforeend",badgeHtml(k));
+  const sb=document.querySelector(`#navIn [data-go="${k}"]`);if(sb)sb.querySelector(".sbadge")?.remove(),sb.insertAdjacentHTML("beforeend",badgeHtml(k));
   renderGroupBadges()}
 // en bas : seulement si la catégorie n'a qu'une fonction affichée (sinon la pastille est en haut)
 function renderGroupBadges(){GROUPS.forEach(g=>{const el=document.querySelector(`[data-gbadge="${g.k}"]`);if(!el)return;const ts=groupTabs(g),b=ts.length===1?BADGES[ts[0]]:0;
@@ -360,8 +375,7 @@ function show(v){
   data.ui.view=v;if(GROUPS.some(x=>x.tabs.includes(v))){data.ui.glast=data.ui.glast||{};data.ui.glast[g.k]=v}saveUI();
   document.body.dataset.g=g.k;document.body.dataset.v=v;if(v!=="notes")document.body.classList.remove("note-full");if(v==="more"){try{renderBio();renderAiCards();$("mcpSec").hidden=!session||isTrial()}catch(e){}}
   document.querySelectorAll(".view").forEach(s=>s.hidden=s.id!=="v-"+v);
-  const dk=dockOf(v);document.querySelectorAll("nav [data-dock]").forEach(t=>{if(t.dataset.dock===dk)t.setAttribute("aria-current","page");else t.removeAttribute("aria-current")});
-  renderVhead(v);renderSide(v);
+  document.documentElement.dataset.app=appOf(v);renderNav(v);renderVhead(v);renderSide(v);
   if(v==="home")renderHome();
   if(v==="spaces")renderSpaces();
   if(v==="more"){renderStats();renderTabsCard();renderHomeSel();renderLook();if(session)renderNotif()}
@@ -380,19 +394,18 @@ function show(v){
   if(v==="pomo")renderSpotify();
   window.scrollTo(0,0);
 }
-$("navIn").addEventListener("click",e=>{const t=e.target.closest("[data-dock]");if(!t)return;
-  const k=t.dataset.dock;if(k==="home"||k==="more")show(k);else openGroup(k)});
+$("navIn").addEventListener("click",e=>{const t=e.target.closest("[data-go]");if(t)show(t.dataset.go)});
 function applyTabs(){
   const vis=visibleTabs();
-  GROUPS.forEach(g=>{const t=document.querySelector(`nav [data-dock="${g.k}"]`);if(t&&g.k!=="more")t.hidden=!groupTabs(g).length});
-  const v=data.ui.view;if(v&&v!=="home"&&v!=="spaces"&&!vis.includes(v))show("home");else renderSide(v);
+  const v=data.ui.view;if(v&&v!=="home"&&v!=="spaces"&&!vis.includes(v))show("home");else{renderSide(v);if(v)renderNav(v);if(v==="home")renderHome()}
 }
 // --- en-tête d'un module : nom de l'espace + pastilles de ses fonctions ---
 // v28 : nom de l'espace + pastilles des fonctions de cet espace (Agenda · Tâches · Focus…)
+// v42 : en-tête d'une app : son logo et son nom, et le retour à Sid'home (les fonctions sont dans la barre du bas)
 function renderVhead(v){const el=$("vhead");
   if(v==="home"||v==="spaces"){el.hidden=true;return}
-  const g=groupOf(v),ts=groupTabs(g);el.hidden=false;el.classList.toggle("many",ts.length>3); // v37 : 4 fonctions → les pastilles passent sous le titre de l'espace
-  el.innerHTML=`<span class="eyebrow">${L(g.label)}</span>${ts.length>1?`<div class="vseg" role="tablist">${ts.map(k=>`<button type="button" role="tab" data-go="${k}" aria-selected="${k===v}">${L(SHORT[k])}${badgeHtml(k)}</button>`).join("")}</div>`:""}`}
+  const g=groupOf(v);el.hidden=false;el.classList.remove("many");
+  el.innerHTML=`<span class="ah-brand">${LOGO(g.app,"ah-logo")}<span class="eyebrow">${esc(g.label)}</span></span><button type="button" class="ah-home" data-go="home" aria-label="${L("Retour à Sid'home")}">${GRIDIC}<span>Sid'home</span></button>`}
 $("vhead").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
 // --- page Espaces et barre latérale (ordinateur) : tous les modules, rangés par espace, avec un chiffre utile ---
 function spaceMeta(k){try{
@@ -411,11 +424,11 @@ function renderSpaces(){
 }
 $("spacesList").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
 function renderSide(v){const el=$("side");if(!el)return;v=v||data.ui.view;
-  el.innerHTML=`<div class="side-brand"><img src="logo-192.png" alt=""><span>Sid'note</span></div>
+  el.innerHTML=`<div class="side-brand">${LOGO("home","side-logo")}<span>Sid'home</span></div>
     <button type="button" class="side-it" data-go="home" aria-current="${v==="home"}"><span class="sp-ic">${HOMEIC}</span><span class="grow">${L("Aujourd'hui")}</span></button>
     <button type="button" class="side-add" data-sadd="1"><span class="sp-ic">${PLUSIC}</span><span class="grow">${L("Ajouter")}</span></button>`+
     GROUPS.map(g=>{const ts=groupTabs(g);if(!ts.length)return"";
-      return `<div class="eyebrow side-h">${L(g.label)}</div>`+ts.map(k=>`<button type="button" class="side-it" data-go="${k}" aria-current="${v===k}"><span class="sp-ic">${ICON(k)||USERIC}</span><span class="grow">${L(SHORT[k])}</span><span class="sp-meta">${esc(spaceMeta(k))}</span></button>`).join("")}).join("")}
+      return `<div class="eyebrow side-h" data-app="${g.app}">${g.app!=="home"?LOGO(g.app,"side-applogo"):""}${esc(g.label)}</div>`+ts.map(k=>`<button type="button" class="side-it" data-go="${k}" aria-current="${v===k}"><span class="sp-ic">${ICON(k)||USERIC}</span><span class="grow">${L(SHORT[k])}</span><span class="sp-meta">${esc(spaceMeta(k))}</span></button>`).join("")}).join("")}
 $("side").addEventListener("click",e=>{if(e.target.closest("[data-sadd]")){openQuickAdd();return}const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
 // --- ajout rapide (bouton + de la page Aujourd'hui et de la barre latérale) ---
 function openQuickAdd(){const vis=visibleTabs(),acts=[
@@ -433,14 +446,15 @@ $("qaSheet").addEventListener("click",e=>{if(e.target.id==="qaSheet"){$("qaSheet
 // --- page Aujourd'hui : la journée en un coup d'œil ---
 function inCount(ms){const m=Math.round(ms/60000);if(m<60)return `${L("dans")} ${m} min`;const h=Math.floor(m/60),r=m%60;return `${L("dans")} ${h} h${r?" "+two(r):""}`}
 function renderHome(){if(!$("homeBody"))return;
-  const now=new Date(),t0=iso(today()),nm=(session&&session.name||"").split(" ")[0];
+  const now=new Date(),t0=iso(today()),nm=(session&&session.name||"").trim(); // v42 : surnom complet
   $("homeDate").textContent=`${DOW[now.getDay()]} ${now.getDate()} ${MOL[now.getMonth()]}`;
   $("homeHello").textContent=`${L(now.getHours()>=18?"Bonsoir":"Bonjour")}${nm?" "+nm:""}.`;
   $("homeAvatar").textContent=(nm||"S").slice(0,2).toUpperCase();
   const vis=visibleTabs(),T=vis.includes("plan")?allT().filter(t=>t.status!=="fait"&&!t.canc):[];
   const start=t=>{const d=parse(t.date);const[h,m]=(t.time||"08:00").split(":").map(Number);d.setHours(h,m);return d};
   const next=T.filter(t=>t.time&&start(t)>now).sort((a,b)=>start(a)-start(b))[0]||T.filter(t=>!t.time&&t.date>t0).sort((a,b)=>a.date.localeCompare(b.date))[0];
-  let h="";
+  // v42 : les 3 applications ; toucher un logo ouvre l'app (sa dernière fonction)
+  let h=`<div class="home-apps">${APP_GROUPS.filter(g=>groupTabs(g).length).map(g=>`<button type="button" class="home-app" data-gapp="${g.k}">${LOGO(g.app,"home-applogo")}<span>${esc(g.label)}</span></button>`).join("")}</div>`;
   if(next){const s=start(next),diff=s-now,same=next.date===t0,tm=parse(next.date);tm.setDate(tm.getDate()-1);
     const when=next.time&&same?inCount(diff):next.time&&iso(tm)===t0?`${L("demain")} · ${next.time}`:`${DOW[s.getDay()]} ${s.getDate()} ${MO[s.getMonth()]}${next.time?" · "+next.time:""}`;
     h+=`<button type="button" class="card hm-next" data-go="plan"><span class="eyebrow">${L("Prochain")} · ${esc(when)}</span><b class="notr">${esc(next.title)}</b><span class="small muted">${next.time?hrs(next):""}${next.loc?` · <span class="notr">${esc(next.loc)}</span>`:next.cat?` · ${esc(next.cat)}`:""}</span></button>`}
@@ -458,9 +472,10 @@ function renderHome(){if(!$("homeBody"))return;
       (un.length?`<div class="hm-plan"><span class="small muted">${un.length} ${L(un.length>1?"tâches à planifier":"tâche à planifier")}</span>${un.slice(0,3).map(t=>`<div class="hm-row"><span class="grow notr">${esc(t.title)}</span><button type="button" class="mini" data-hplan="${t.id}">${L("Aujourd'hui")}</button></div>`).join("")}</div>`:"")+`</div>`}
   if(vis.includes("notes")){const ns=NT().filter(n=>!n.secret).sort((a,b)=>(b.upd||0)-(a.upd||0)).slice(0,2);
     if(ns.length)h+=`<h2>${L("Notes récentes")}</h2><div class="card hm-list">${ns.map(n=>{const t=(n.title||"").trim()||String(n.body||"").trim().split("\n")[0]||L("Nouvelle note");return `<button type="button" class="hm-row" data-note-open="${n.id}"><span class="grow notr">${esc(t)}</span><span class="small muted">${fmtWhen(n.upd||Date.parse(n.createdAt))}</span></button>`}).join("")}</div>`}
-  if(!h)h=`<div class="card"><div class="empty">${L("Touche « + » en haut pour ajouter ta première activité.")}</div></div>`;
+  if(!/hm-|<h2/.test(h))h+=`<div class="card"><div class="empty">${L("Touche « + » en haut pour ajouter ta première activité.")}</div></div>`;
   $("homeBody").innerHTML=h}
 $("homeBody").addEventListener("click",e=>{
+  const ga=e.target.closest("[data-gapp]");if(ga){openGroup(ga.dataset.gapp);return}
   if(e.target.closest("[data-aioff]")){data.ui.aiCardOff=1;saveUI();renderHome();return}
   const hg=e.target.closest("[data-htg]");if(hg){const t=data.todos.find(x=>x.id===hg.dataset.htg);if(t){todoToggle(t);renderHome()}return}
   const hp=e.target.closest("[data-hplan]");if(hp){const t=data.todos.find(x=>x.id===hp.dataset.hplan);if(t){t.day=iso(today());save();renderTodos();renderHome();toast("Prévue aujourd'hui")}return}
@@ -2745,7 +2760,7 @@ $("nfPath").addEventListener("click",e=>{const b=e.target.closest("[data-nfgo]")
 $("noteList").addEventListener("pointerdown",e=>{const g=e.target.closest("[data-ngrip],[data-fgrip]");if(!g)return;e.preventDefault();
   const isF=!!g.dataset.fgrip,id=g.dataset.ngrip||g.dataset.fgrip,item=isF?nfOf(id):noteFind(id);if(!item)return;
   const w=noteView(item)||{},label=isF?item.name:(w.title||String(w.body||"").split("\n")[0]||L("Note secrète"));
-  const row=g.closest(".nf-row,.note-row"),ghost=document.createElement("div");ghost.className="doc-ghost";ghost.textContent=(isF?"📁 ":"")+label;document.body.appendChild(ghost);row.classList.add("dragging");
+  const row=g.closest(".nf-row,.note-row"),ghost=document.createElement("div");ghost.className="doc-ghost";ghost.textContent=label;document.body.appendChild(ghost);row.classList.add("dragging");
   try{g.setPointerCapture(e.pointerId)}catch(x){}if(navigator.vibrate)navigator.vibrate(10);
   const bad=isF?nfSub(id):new Set();let over=null;
   const pos=ev=>{ghost.style.left=(ev.clientX+12)+"px";ghost.style.top=(ev.clientY-20)+"px";
@@ -3418,12 +3433,13 @@ const PALETTES={or:["Noir & or","#9C7A3C","#F4F4F2","#C9B48A","#0E0F11"],saphir:
   emeraude:["Émeraude","#2F7A5B","#F2F5F3","#86C6A4","#0C110F"],bordeaux:["Bordeaux","#9B3550","#F7F3F4","#E0A3B4","#120D0F"],platine:["Platine","#55585F","#F4F4F4","#C9CCD3","#0F1012"]};
 function applyLook(){
   const p=(session&&data.prefs)||{},look=ls.get("sidnote-look")||{};
+  // v42 : direction « Éditorial de précision » : clair ivoire ou graphite ; les anciennes ambiances ne sont plus appliquées (le choix reste dans les données)
   const pal=PALETTES[p.palette||look.palette]?(p.palette||look.palette):"or";
-  if(pal==="or")document.documentElement.removeAttribute("data-palette");else document.documentElement.setAttribute("data-palette",pal);
+  document.documentElement.removeAttribute("data-palette");document.documentElement.dataset.ds="edito";
   const theme=p.theme||look.theme||"auto";
   if(theme==="auto")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",theme);
   const dark=theme==="dark"||(theme==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);
-  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content",dark?"#0E0F11":"#F4F4F2"));
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content",dark?"#111214":"#F4F0E8"));
   ls.set("sidnote-look",{theme,palette:pal}); // pour l'écran de connexion
 }
 function renderLook(){
@@ -3735,7 +3751,7 @@ function renderNutri(){try{renderAiCards()}catch(e){}
     return `<details class="dish" open><summary class="dish-h"><span class="dish-ic" data-thumb="${G.g}">${mono(G.name)}</span>
       <span class="dish-t"><b class="notr">${esc(G.name)}</b><span class="dish-time">${two(d.getHours())}:${two(d.getMinutes())}</span>${G.items.length>1?` <span class="small muted">· ${G.items.length} ${L("aliments")}</span>`:""}</span>
       <span class="dish-kcal">${r0(t.kcal)}<small>kcal</small></span>${G.items.length===1?`<button class="pen" data-nuedit="${G.items[0].id}" aria-label="${L("Modifier")}">${PEN}</button>`:""}<button type="button" class="x" data-nudelg="${G.g}" aria-label="${L("Supprimer ce plat")}">×</button></summary>
-      ${macroHtml(t)}${G.items.length===1?`<div class="dish-note">${qtyCell("log:"+G.items[0].id,G.items[0])}</div>`:`<div class="dish-items">${G.items.map(x=>`<div class="dish-it"><span class="em">${x.em||"•"}</span><div class="grow"><b class="notr">${esc(x.name)}</b>${qtyCell("log:"+x.id,x)}</div><span class="k">${r0(x.kcal)} kcal</span><button class="pen" data-nuedit="${x.id}" aria-label="${L("Modifier")}">${PEN}</button><button class="x" data-nudel="${x.id}" aria-label="${L("Supprimer")}">×</button></div>`).join("")}</div>`}</details>`}).join("")
+      ${macroHtml(t)}${G.items.length===1?`<div class="dish-note">${qtyCell("log:"+G.items[0].id,G.items[0])}</div>`:`<div class="dish-items">${G.items.map(x=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${qtyCell("log:"+x.id,x)}</div><span class="k">${r0(x.kcal)} kcal</span><button class="pen" data-nuedit="${x.id}" aria-label="${L("Modifier")}">${PEN}</button><button class="x" data-nudel="${x.id}" aria-label="${L("Supprimer")}">×</button></div>`).join("")}</div>`}</details>`}).join("")
     :`<div class="card"><div class="empty">${L(nuDay===iso(today())?"Rien pour l'instant. Écris ce que tu manges ci-dessus, ou prends ton plat en photo.":"Rien d'enregistré ce jour-là. Tu peux encore le compléter.")}</div></div>`;
   groups.forEach(G=>loadThumb(G.g));
   renderNuResult();renderNuPlan();renderNuMenu();renderMenuForm();renderNuWeek();renderMenuLeft();nuShowTab();
@@ -3835,7 +3851,7 @@ function renderNuResult(){
   const p=nuPending;if(!p){if(!nuBusy)$("nuResult").innerHTML="";return}
   const s=sumOf(p.items);
   $("nuResult").innerHTML=`<div class="dish"><div class="dish-h"><span class="dish-ic">${p.photo?`<img src="${p.photo}" alt="">`:mono(p.title)}</span><span class="dish-t"><b class="notr">${esc(p.title)}</b><span class="small muted">${p.items.length} ${L(p.items.length>1?"aliments":"aliment")}</span>${p.mem?`<span class="memtag">${IC("bolt")} ${L("Mémoire Sid'note")}</span>`:""}</span><span class="dish-kcal">${r0(s.kcal)}<small>kcal</small></span></div>
-    ${macroHtml(s)}<div class="dish-items">${p.items.map((x,i)=>`<div class="dish-it"><span class="em">${x.em||"•"}</span><div class="grow"><b class="notr">${esc(x.name)}</b>${x.extra?`<span class="notmention">${L("pas dans ta description")}</span>`:""}${qtyCell("res:"+i,x)}</div><span class="k">${x.kcal} kcal</span><button type="button" class="x" data-nurm="${i}" aria-label="${L("Retirer")}">×</button></div>`).join("")}</div>
+    ${macroHtml(s)}<div class="dish-items">${p.items.map((x,i)=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${x.extra?`<span class="notmention">${L("pas dans ta description")}</span>`:""}${qtyCell("res:"+i,x)}</div><span class="k">${x.kcal} kcal</span><button type="button" class="x" data-nurm="${i}" aria-label="${L("Retirer")}">×</button></div>`).join("")}</div>
     ${p.note?`<div class="dish-note notr" style="padding-top:8px">${esc(p.note)}</div>`:""}
     <div class="dish-act"><button type="button" class="btn ghost" data-nucancel="1">${L("Annuler")}</button><button type="button" class="btn" data-nuadd="1">${L("Ajouter")} · ${r0(s.kcal)} kcal</button></div></div>`;
 }
@@ -4019,7 +4035,7 @@ function renderNuMenu(){
   const T=sumOf(m.meals),td=iso(today());
   $("nuMenu").innerHTML=`<h2 style="margin-top:16px">${L("Ton menu")}</h2>`+boxes([[r0(T.kcal),"kcal"],[r1(T.p)+" g","Protéines","--m-p"],[r1(T.c)+" g","Glucides","--m-c"],[r1(T.f)+" g","Lipides","--m-f"]])+
     m.meals.map((ml,i)=>`<div class="dish"><div class="dish-h"><span class="dish-ic">${mono(ml.name)}</span><span class="dish-t"><b class="notr">${esc(ml.name)}</b><span class="small muted">${L(slotName(ml.slot))}${ml.target?` · ${L("objectif")} ${ml.target} kcal`:""}</span></span><span class="dish-kcal">${ml.kcal}<small>kcal</small></span><button type="button" class="x" data-medel="${i}" aria-label="${L("Retirer ce repas")}">×</button></div>
-      ${macroHtml(ml)}<div class="dish-items">${ml.items.map((x,j)=>`<div class="dish-it"><span class="em">${x.em||"•"}</span><div class="grow"><b class="notr">${esc(x.name)}</b>${meEdit===`${i}:${j}`?`<span class="me-qty"><input type="text" inputmode="decimal" id="meQtyIn" value="${x.g||""}" aria-label="${L("Grammes")}"> g <button type="button" class="mini" data-meqok="${i}:${j}">OK</button></span>`:x.g?`<button type="button" class="qty-ed notr" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${esc(qtyTxt(x))}</button>`:`<span class="small muted notr">${esc(x.qty)}</span>`}</div><span class="k">${x.kcal} kcal</span>${x.g?`<button class="pen" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${PEN}</button>`:""}<button class="x" data-merm="${i}:${j}" aria-label="${L("Retirer")}">×</button></div>`).join("")}</div>
+      ${macroHtml(ml)}<div class="dish-items">${ml.items.map((x,j)=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${meEdit===`${i}:${j}`?`<span class="me-qty"><input type="text" inputmode="decimal" id="meQtyIn" value="${x.g||""}" aria-label="${L("Grammes")}"> g <button type="button" class="mini" data-meqok="${i}:${j}">OK</button></span>`:x.g?`<button type="button" class="qty-ed notr" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${esc(qtyTxt(x))}</button>`:`<span class="small muted notr">${esc(x.qty)}</span>`}</div><span class="k">${x.kcal} kcal</span>${x.g?`<button class="pen" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${PEN}</button>`:""}<button class="x" data-merm="${i}:${j}" aria-label="${L("Retirer")}">×</button></div>`).join("")}</div>
       ${meAdd===i?`<form class="me-add" data-meaddf="${i}"><input id="meAddIn" placeholder="${L("Ex. 30 g d'amandes")}" autocomplete="off"><button class="btn" type="submit">OK</button></form>`:""}
       ${meRecipe===i?`<div class="recipe"><b>${IC("book")} ${L("Recette")}</b>${nuBusy==="recipe"?`<div class="small muted" style="margin-top:6px"><span class="spin"></span> ${L("Préparation de la recette…")}</div>`:ml.steps&&ml.steps.length?`<ol class="notr">${ml.steps.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>`:`<div class="small muted">${L("Recette indisponible pour le moment.")}</div>`}</div>`:""}
       <div class="me-act"><button type="button" class="mini" data-meadd="${i}">+ ${L("Aliment")}</button><button type="button" class="mini" data-merec="${i}">${IC("book")} ${L(meRecipe===i?"Cacher la recette":"Recette")}</button><button type="button" class="mini" data-meregen="${i}">↻ ${L("Autre idée")}</button>
@@ -4250,15 +4266,15 @@ const ONB_DESC={
   docs:"Range tes PDF, scanne des feuilles avec l'appareil photo et retrouve-les en un instant.",
   app:"Les étapes pour installer Sid'note sur ton écran d'accueil."};
 let onbSel={};
-const ONB_GROUP={orga:["g-orga","Organise tes journées","Ton agenda et tes tâches du jour au même endroit."],
-  sport:["g-sport","Bouge et mange bien","Tes séances, ta nutrition et tes progrès en graphiques."],
-  perso:["g-perso","Garde tout à l'abri","Tes notes, tes documents et tes mots de passe, protégés par ton code et ta phrase secrète."]};
+const ONB_GROUP={orga:["agenda","Organise tes journées","Ton agenda, tes tâches du jour et un minuteur de concentration."],
+  sport:["fit","Bouge et mange bien","Ton programme de musculation, ta nutrition et tes progrès en graphiques."],
+  perso:["note","Garde tout à l'abri","Tes notes, tes documents et tes mots de passe, protégés par ton code et ta phrase secrète."]};
 function openOnb(){
   onbSel={};TABS.forEach(([k])=>{if(!OFF_TABS.includes(k))onbSel[k]=data.prefs.tabs[k]!==false});
   document.querySelectorAll("#onbLang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG));
   const it=([k,l])=>`<label class="onb-it ${onbSel[k]?"":"off"}" data-onb="${k}"><span class="ic">${ICON(k)}</span><span class="grow"><b>${L(l)}</b><span class="small muted">${L(ONB_DESC[k])}</span></span><input type="checkbox" class="switch" data-onbk="${k}" ${onbSel[k]?"checked":""} aria-label="${L("Garder")} ${L(l)}"></label>`;
   $("onbGroups").innerHTML=GROUPS.filter(g=>ONB_GROUP[g.k]).map(g=>{const ts=TABS.filter(([k])=>g.tabs.includes(k)&&tabAllowed(k)),[em,t,sub0]=ONB_GROUP[g.k],sub=g.k==="sport"&&!tabAllowed("nutri")?"Tes séances, ton chrono et ton minuteur.":sub0;
-    return `<section class="onb-slide"><div class="onb-box"><div class="onb-big">${ICON(em)}</div><div class="onb-grp" style="text-align:center">${L(g.label)}</div><h1 style="font-size:26px">${L(t)}</h1><p class="sub">${L(sub)}</p>${ts.length>1?`<button type="button" class="linkbtn onb-all" data-onball="${g.k}"></button>`:""}<div class="onb-list">${ts.map(it).join("")}</div><p class="small muted">${L("Touche une carte pour la garder ou la masquer.")}</p></div></section>`}).join("");
+    return `<section class="onb-slide"><div class="onb-box"><div class="onb-big onb-logo" data-app="${em}">${LOGO(em)}</div><div class="onb-grp" style="text-align:center">${esc(g.label)}</div><h1 style="font-size:26px">${L(t)}</h1><p class="sub">${L(sub)}</p>${ts.length>1?`<button type="button" class="linkbtn onb-all" data-onball="${g.k}"></button>`:""}<div class="onb-list">${ts.map(it).join("")}</div><p class="small muted">${L("Touche une carte pour la garder ou la masquer.")}</p></div></section>`}).join("");
   onbAllLbl();onbLook();$("onb").hidden=false;document.body.style.overflow="hidden";$("onbTrack").scrollLeft=0;onbStep();
 }
 const onbSlides=()=>[...document.querySelectorAll("#onbTrack .onb-slide")];
@@ -4287,7 +4303,7 @@ function onbFinish(){
   if(!Object.values(onbSel).some(Boolean)){toast("Garde au moins un onglet");return}
   Object.assign(data.prefs.tabs,onbSel);data.prefs.onboarded=true;delete data.prefs.onbPending;save();
   $("onb").hidden=true;document.body.style.overflow="";applyTabs();renderHomeSel();
-  show("home");toast("Bienvenue sur Sid'note");
+  show("home");toast("Bienvenue sur Sid'home");
 }
 $("onbGo").addEventListener("click",onbFinish);$("onbSkip").addEventListener("click",onbFinish);
 $("replayOnb").addEventListener("click",openOnb);
@@ -4331,7 +4347,9 @@ if(window.visualViewport){const vv=visualViewport,st=document.documentElement.st
       if(!bg.contains(document.activeElement)){e.preventDefault();a.focus();return}
       if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}},true)}
 // v31 : chrono compact quand il est collé en haut pendant la séance
-if(window.IntersectionObserver&&$("restSentinel")){new IntersectionObserver(es=>{const e=es[0];$("rest").classList.toggle("stuck",!e.isIntersecting&&e.boundingClientRect.top<0)},{threshold:0}).observe($("restSentinel"))}
+if(window.IntersectionObserver&&$("restSentinel")){new IntersectionObserver(es=>{const e=es[0];{const r=$("rest"),on=!e.isIntersecting&&e.boundingClientRect.top<0;if(on===r.classList.contains("stuck"))return;
+    // v42 : la hauteur perdue en devenant compact est gardée en marge : la page ne saute plus (sinon le chrono pouvait se coller et se décoller sans fin)
+    r.style.marginBottom="";const h0=r.offsetHeight;r.classList.toggle("stuck",on);if(on)r.style.marginBottom=(12+h0-r.offsetHeight)+"px"}},{threshold:0}).observe($("restSentinel"))}
 /* ---------- démarrage ---------- */
 hydrateIcons();document.querySelectorAll(".onb-floats [data-fn]").forEach(e=>e.innerHTML=ICON(e.dataset.fn));
 document.addEventListener("focusin",e=>{if(e.target.matches&&e.target.matches('input[list="typeList"]'))typeChipsFor(e.target)});

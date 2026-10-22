@@ -1,6 +1,6 @@
 const CACHE = "sidnote-v41";
 const LIB = "sidnote-lib-1"; // lecteur PDF (pdf.js), gardé entre les versions
-const FILES = ["./", "./index.html", "./app.css", "./i18n.js", "./app.js", "./manifest.webmanifest", "./apple-touch-icon.png", "./icon-192.png", "./icon-512.png", "./logo-180.png", "./logo-192.png", "./logo-512.png", "./logo-32.png"];
+const FILES = ["./", "./index.html", "./app.css", "./design.css", "./i18n.js", "./app.js", "./manifest.webmanifest", "./apple-touch-icon.png", "./icon-192.png", "./icon-512.png", "./logo-180.png", "./logo-192.png", "./logo-512.png", "./logo-32.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));

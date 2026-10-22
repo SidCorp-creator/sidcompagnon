@@ -18,8 +18,12 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const err=m=>errs.push(scheme+": "+m);
     // navigation v28 : espace dans la barre du bas, puis fonction dans les pastilles du haut
     const closePin=async()=>{if(await pg.isVisible("#pinSheet"))await pg.click("#psClose").catch(()=>{})};
-    const go=async v=>{await closePin();await pg.click(`#navIn [data-dock="${G[v]}"]`);await pg.waitForTimeout(150);await closePin();
-      if(v!=="more"&&await pg.isVisible(`#vhead [data-go="${v}"]`))await pg.click(`#vhead [data-go="${v}"]`);await pg.waitForTimeout(200);await closePin()};
+    // v42 : Sid'home → logo de l'app → barre du bas de l'app ; Réglages par le bouton du compte sur Sid'home
+    const home=async()=>{await closePin();if(await pg.isVisible('#vhead [data-go="home"]'))await pg.click('#vhead [data-go="home"]');else await pg.evaluate(()=>show("home"));await pg.waitForTimeout(150)};
+    const go=async v=>{await closePin();const c=await cur();
+      if(v==="more"||v==="app"){if(c===v)return;if(c!=="home")await home();await pg.click("#homeAvatar");await pg.waitForTimeout(150);if(v==="app")await pg.evaluate(()=>show("app"));await closePin();return}
+      if(c==="home"||G[c]!==G[v]){await home();await pg.click(`#homeBody [data-gapp="${G[v]}"]`);await pg.waitForTimeout(150);await closePin()}
+      if(await cur()!==v&&await pg.isVisible(`#navIn [data-go="${v}"]`))await pg.click(`#navIn [data-go="${v}"]`);await pg.waitForTimeout(200);await closePin()};
     const cur=()=>pg.evaluate(()=>data.ui.view);
     const email=scheme+"@test.be";
 
@@ -46,16 +50,20 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     await pg.evaluate(()=>{["plan","todo","pomo","notes","muscu","nutri","graph","docs","pwd","app"].forEach(k=>data.prefs.tabs[k]=true);save();applyTabs()});
 
-    // --- barre du bas : Aujourd'hui, Organisation, Santé, Coffre, Compte (plus de « + » ni d'« Espaces »)
-    const dock=await pg.$$eval("#navIn [data-dock]",x=>x.map(e=>e.dataset.dock).join(","));
-    if(dock!=="home,orga,sport,perso,more")err("barre du bas inattendue : "+dock);
+    // --- v42 : Sid'home : les 3 apps en logos, pas de barre du bas ; chaque app a sa barre et un retour à Sid'home
+    if(await pg.isVisible("nav"))err("barre du bas affichée sur Sid'home");
+    const apps=await pg.$$eval("#homeBody [data-gapp]",x=>x.map(e=>e.dataset.gapp).join(","));
+    if(apps!=="orga,sport,perso")err("logos des 3 apps absents de Sid'home : "+apps);
     await shot(pg,scheme+"-03-aujourdhui");
     await pg.click("#homeAdd");if(!(await pg.isVisible("#qaSheet")))err("le + de la page Aujourd'hui n'ouvre pas l'ajout rapide");await pg.click("#qaClose");
-    await pg.click('#navIn [data-dock="perso"]');await pg.waitForTimeout(200);await closePin();
-    if(G[await cur()]!=="perso")err("Coffre n'ouvre pas une fonction du coffre");
-    if((await pg.$$("#vhead .vseg [data-go]")).length!==3)err("pastilles du Coffre absentes");
-    await go("notes");await go("muscu");await pg.click('#navIn [data-dock="perso"]');await pg.waitForTimeout(200);await closePin();
-    if(await cur()!=="notes")err("l'espace ne rouvre pas la dernière fonction ouverte");
+    await pg.click('#homeBody [data-gapp="perso"]');await pg.waitForTimeout(200);await closePin();
+    if(G[await cur()]!=="perso")err("le logo sid'note n'ouvre pas sid'note");
+    if((await pg.$$("#navIn [data-go]")).length!==3)err("barre de sid'note : 3 fonctions attendues");
+    if(await pg.evaluate(()=>document.documentElement.dataset.app)!=="note")err("accent de l'app non appliqué");
+    if(await pg.isVisible('#homeBody'))err("Sid'home encore visible dans une app");
+    await go("notes");await go("muscu");await home();await pg.click('#homeBody [data-gapp="perso"]');await pg.waitForTimeout(200);await closePin();
+    if(await cur()!=="notes")err("l'app ne rouvre pas la dernière fonction ouverte");
+    await go("plan");if((await pg.$$eval("#navIn [data-go]",x=>x.map(e=>e.dataset.go).join(",")))!=="plan,todo,pomo")err("barre de sid'agenda : Agenda, Tâches, Focus attendus");
 
     // --- Tâches : catégorie tapée mais pas validée → créée et utilisée
     await go("todo");await pg.click("[data-tcatnew]");await pg.fill("#catIn","Projet");await pg.fill("#todoIn","Préparer le dossier");await pg.press("#todoIn","Enter");
@@ -121,7 +129,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(await pg.$$eval("#tasks .card",x=>x.length)!==0)err("« Tout replier » ne replie pas tous les mois");
     await pg.locator("#tasks").scrollIntoViewIfNeeded();await shot(pg,scheme+"-fr-plan-mois-replies");await pg.click("[data-mfoldall]");
     // --- v29 : le fond est figé quand une fenêtre est ouverte
-    await pg.click('#navIn [data-dock="home"]');await pg.click("#homeAdd");await pg.waitForTimeout(150);
+    await home();await pg.click("#homeAdd");await pg.waitForTimeout(150);
     if(!(await pg.evaluate(()=>document.documentElement.classList.contains("modal-open"))))err("le fond n'est pas figé sous l'ajout rapide");
     await shot(pg,scheme+"-fr-ajout-rapide");await pg.click("#qaClose");await pg.waitForTimeout(150);
     if(await pg.evaluate(()=>document.documentElement.classList.contains("modal-open")))err("le fond reste figé après fermeture");
@@ -135,12 +143,10 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(await pg.isVisible("#pinSheet"))err("le code des Documents s'ouvre encore dans une fenêtre");
     if(!(await pg.isVisible("#docPinHost #psPad")))err("clavier du code absent de la page Documents");
     await shot(pg,scheme+"-fr-docs-code");
-    // --- v29 : ambiances de couleurs
-    await go("more");if(!(await pg.isVisible("#palSel")))await pg.click('[data-sec="look"] summary');
-    await pg.click('[data-pal="saphir"]');if(await pg.evaluate(()=>document.documentElement.dataset.palette)!=="saphir")err("ambiance Saphir non appliquée");
-    await pg.locator("#palSel").scrollIntoViewIfNeeded();await shot(pg,scheme+"-fr-couleurs-saphir");
-    await pg.click('[data-pal="emeraude"]');await go("todo");await shot(pg,scheme+"-fr-todo-emeraude");
-    await go("more");await pg.click('[data-pal="or"]');if(await pg.evaluate(()=>document.documentElement.dataset.palette))err("retour à Noir & or impossible");
+    // --- v42 : les ambiances de couleurs sont remplacées par la direction « Éditorial de précision » (clair ivoire / graphite)
+    await go("more");if(await pg.isVisible("#palSel"))err("le choix des ambiances est encore affiché");
+    if(await pg.evaluate(()=>document.documentElement.dataset.palette||document.documentElement.dataset.ds!=="edito"))err("direction artistique non appliquée");
+    await go("todo");await shot(pg,scheme+"-fr-todo");
     // --- v31 : Nutrition : « à inclure / à éviter » propres à chaque repas ; délai pré-rempli en modifiant le profil
     await go("nutri");await pg.evaluate(()=>{const n=NU();n.consent=new Date().toISOString();n.profile={sex:"h",age:24,height:180,weight:72,goal:"gain",target:80,sports:[]};n.plan={kcal:2500,p:150,c:300,f:80,bmr:1800,tdee:2400,text:"",warn:[],wg:{ok:false,wk:.3,weeks:26,advice:"x"}};
       n.menuPrefs={type:"day",pp:{day:{include:"poulet",exclude:"poisson"}}};save();applySoon();renderNutri();nuGoTab("menu")});await pg.waitForTimeout(200);
@@ -174,14 +180,14 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await go("more");if(!(await pg.isVisible("#langSel")))await pg.click('[data-sec="look"] summary');await pg.selectOption("#langSel","en");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     for(const v of ["plan","todo","notes","pwd","more"]){await go(v);await pg.waitForTimeout(250);await shot(pg,`${scheme}-en-${v}`)}
-    await pg.click('#navIn [data-dock="home"]');await shot(pg,scheme+"-en-home");
+    await home();await shot(pg,scheme+"-en-home");
     // v31 : néerlandais
     await go("more");if(!(await pg.isVisible("#langSel")))await pg.click('[data-sec="look"] summary');await pg.selectOption("#langSel","nl");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     if(await pg.evaluate(()=>document.documentElement.lang)!=="nl")err("le néerlandais ne s'active pas");
     for(const v of ["plan","todo","notes","pwd","more"]){await go(v);await pg.waitForTimeout(250);await shot(pg,`${scheme}-nl-${v}`)}
     const nlLeft=await pg.evaluate(()=>{show("todo");return document.querySelector("#v-todo h1").textContent});if(nlLeft.trim()==="Tâches")err("titres non traduits en néerlandais");
-    await pg.click('#navIn [data-dock="home"]');await shot(pg,scheme+"-nl-home");
+    await home();await shot(pg,scheme+"-nl-home");
     await ctx.close();
   }
   // --- ordinateur (écran large) : barre latérale et rendu épuré
@@ -207,8 +213,8 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
       await shot(pg,"sans-acces-presentation-sport").catch(()=>{});await pg.click("#onbSkip")}
     if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     await pg.evaluate(()=>{data.prefs.tabs.nutri=true;data.prefs.tabs.graph=true;save();applyTabs()});
-    await pg.click('#navIn [data-dock="sport"]');await pg.waitForTimeout(300);await shot(pg,"sans-acces-sante");
-    if(!(await pg.locator('#vhead [data-go="nutri"]').count()))err("Nutrition absente pour un compte ordinaire");
+    await pg.evaluate(()=>show("home"));await pg.click('#homeBody [data-gapp="sport"]');await pg.waitForTimeout(300);await shot(pg,"sans-acces-sante");
+    if(!(await pg.locator('#navIn [data-go="nutri"]').count()))err("Nutrition absente pour un compte ordinaire");
     await pg.evaluate(()=>{show("nutri")});if(await pg.evaluate(()=>data.ui.view)!=="nutri")err("Nutrition ne s'ouvre pas");
     await pg.evaluate(()=>{data.prefs.home="todo";data.prefs.homeV=1;save()});await pg.waitForTimeout(1500);await pg.reload();await pg.waitForTimeout(1200);
     if(await pg.evaluate(()=>data.ui.view)!=="todo")err("la page d'ouverture choisie (Tâches) n'est pas respectée");
@@ -420,9 +426,10 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
         const off=await pg.evaluate(()=>["plan","todo"].every(k=>!onbSel[k]));if(!off)err("« Tout décocher » ne décoche pas tout");
         if((await b1.textContent()).trim()!=="Tout cocher")err("le bouton ne devient pas « Tout cocher »");await b1.click()}
       await pg.evaluate(()=>onbGoTo(onbSlides().length-1));await pg.waitForTimeout(700);
-      if(await pg.locator("#onbPal [data-opal]").count()!==5)err("couleurs absentes de la diapositive Thème");
-      await pg.click('#onbPal [data-opal="emeraude"]');await pg.waitForTimeout(1200);await shot(pg,"v36-presentation-couleurs");
-      if(await pg.evaluate(()=>document.documentElement.dataset.palette)!=="emeraude")err("la couleur choisie n'est pas appliquée");
+      // v42 : plus de choix d'ambiance (direction artistique unique) ; les logos des 3 apps sont sur leurs diapositives
+      if(await pg.isVisible("#onbPal"))err("les ambiances sont encore proposées dans la présentation");
+      if(await pg.locator("#onbGroups .onb-logo .logo").count()!==3)err("logos des apps absents de la présentation");
+      await shot(pg,"v36-presentation-couleurs");
       await pg.click("#onbGo");await pg.waitForTimeout(400)}
     if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     // titre Musculation entièrement visible (le cache du chrono ne le recouvre plus)
@@ -446,8 +453,9 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
       if(await pg.isVisible("#onb"))await pg.click("#onbSkip");await pg.waitForTimeout(300);return {ctx,pg}};
     const A=await mk("Sid","sid37@test.be"),B=await mk("Léa","lea37@test.be");
     if(await A.pg.isVisible("#notifAsk"))err("notifications encore proposées dès l'ouverture");
-    // v41 : Listes et Focus retirés de l'app
-    if(await A.pg.evaluate(()=>visibleTabs().some(k=>k==="lists"||k==="pomo")))err("Listes ou Focus encore visibles");
+    // v41 : Listes retirées ; v42 : Focus revient dans sid'agenda
+    if(await A.pg.evaluate(()=>visibleTabs().includes("lists")))err("Listes encore visibles");
+    if(!(await A.pg.evaluate(()=>GROUPS[0].tabs.includes("pomo")&&!OFF_TABS.includes("pomo"))))err("Focus absent de sid'agenda");
     // ajout rapide en langage courant
     const P=A.pg;await P.evaluate(()=>show("plan"));await P.click("#taskAdd");await P.waitForTimeout(200);
     await P.fill("#fTitle","Dentiste jeudi 14h");await P.waitForTimeout(150);

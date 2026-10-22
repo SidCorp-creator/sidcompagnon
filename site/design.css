@@ -1,0 +1,395 @@
+/* Sid'home v42 · direction « Éditorial de précision » (validée par Sid le 22 oct. 2026)
+   Une seule famille pour sid'agenda, sid'fit et sid'note : seul l'accent change (attribut data-app sur <html>).
+   Ivoire en clair, graphite en sombre. Polices : Fraunces (titres), Inter Tight (interface), IBM Plex Mono (chiffres, heures).
+   Règles : un accent par écran, pas d'ombre ni de dégradé, coins de 4 à 8 px, filets fins, graisses 300 à 500.
+   Ce fichier passe après app.css : il en garde la structure et ne change que l'apparence. */
+
+/* ---------- tokens ---------- */
+html[data-ds][data-ds][data-ds],html[data-ds][data-ds] body{
+  --bg:#F4F0E8; --surface:#F4F0E8; --surface-2:#EBE6DC; --field:#EBE6DC; --ink:#1C1A17; --ink-2:#8A8378; --muted:#6E675C; --line:#D6CFC2;
+  --bar:#F4F0E8; --on-accent:#F4F0E8;
+  --c-agenda:#9C3B26; --c-fit:#2F4A3A; --c-note:#1C1A17; --c-home:#1C1A17;
+  --app:var(--c-home);
+  --accent:var(--ink); --accent-soft:var(--surface-2); --g-strong:var(--ink); --g-bg:var(--surface-2); --g-ink:var(--ink);
+  --gold:var(--app); --on-gold:#F4F0E8;
+  --late:#9C3B26; --ok:#2F4A3A; --warn:#8A5A12;
+  --font:"Inter Tight",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --display:"Fraunces",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace; --digits:var(--mono);
+  --r-card:6px; --r-ctl:6px; --rule:.5px;
+  --ease:cubic-bezier(.2,.7,.2,1);
+  color-scheme:light}
+@media (prefers-color-scheme:dark){html[data-ds][data-ds][data-ds]:not([data-theme="light"]),html[data-ds][data-ds]:not([data-theme="light"]) body{
+  --bg:#111214; --surface:#111214; --surface-2:#1A1B1E; --field:#1A1B1E; --ink:#ECEDEE; --ink-2:#8B8E94; --muted:#8B8E94; --line:#26282C; --bar:#111214; --on-accent:#111214;
+  --c-agenda:#D2775F; --c-fit:#86AE95; --c-note:#ECEDEE; --c-home:#ECEDEE; --on-gold:#111214; --late:#D2775F; --ok:#86AE95; --warn:#D9AE62; color-scheme:dark}}
+html[data-ds][data-ds][data-ds][data-theme="dark"],html[data-ds][data-ds][data-theme="dark"] body{
+  --bg:#111214; --surface:#111214; --surface-2:#1A1B1E; --field:#1A1B1E; --ink:#ECEDEE; --ink-2:#8B8E94; --muted:#8B8E94; --line:#26282C; --bar:#111214; --on-accent:#111214;
+  --c-agenda:#D2775F; --c-fit:#86AE95; --c-note:#ECEDEE; --c-home:#ECEDEE; --on-gold:#111214; --late:#D2775F; --ok:#86AE95; --warn:#D9AE62; color-scheme:dark}
+html[data-ds][data-app="agenda"] body{--app:var(--c-agenda)}
+html[data-ds][data-app="fit"] body{--app:var(--c-fit)}
+html[data-ds][data-app="note"] body{--app:var(--c-note)}
+
+/* ---------- corrections automatiques des styles d'app.css (arrondis, graisses) ---------- */
+/* arrondis ramenés à 4–6 px */
+html[data-ds] .card{border-radius:6px}
+html[data-ds] .btn{border-radius:6px}
+html[data-ds] input,html[data-ds] select{border-radius:6px}
+html[data-ds] .prog .track{border-radius:6px}
+html[data-ds] .prog .fill{border-radius:6px}
+html[data-ds] .act-list{border-radius:6px}
+html[data-ds] .realise{border-radius:6px}
+html[data-ds] .next .n{border-radius:6px}
+html[data-ds] .qbtn{border-radius:6px}
+html[data-ds] .day{border-radius:6px}
+html[data-ds] .marks .bars i.s{border-radius:6px 0 0 6px}
+html[data-ds] .marks .bars i.e{border-radius:0 6px 6px 0}
+html[data-ds] .marks .bars i.s.e{border-radius:6px}
+html[data-ds] .ym{border-radius:6px}
+html[data-ds] .pill{border-radius:6px}
+html[data-ds] .status{border-radius:6px}
+html[data-ds] .alert{border-radius:6px}
+html[data-ds] .pomo-stage{border-radius:6px}
+html[data-ds] .pomo-meta div{border-radius:6px}
+html[data-ds] .preset{border-radius:6px}
+html[data-ds] .plan{border-radius:6px}
+html[data-ds] .auth-logo{border-radius:6px}
+html[data-ds] .auth-feats .af-ic{border-radius:6px}
+html[data-ds] .seg{border-radius:6px}
+html[data-ds] .seg button{border-radius:6px}
+html[data-ds] .err{border-radius:6px}
+html[data-ds] .sheet{border-radius:6px 6px 0 0}
+html[data-ds] .resume{border-radius:6px}
+html[data-ds] .switch{border-radius:6px}
+html[data-ds] .spot iframe{border-radius:6px}
+html[data-ds] .rest{border-radius:6px}
+html[data-ds] .rest-tabs{border-radius:6px}
+html[data-ds] .rest-tabs button{border-radius:6px}
+html[data-ds] .rest.run .ms{border-radius:6px}
+html[data-ds] .ex{border-radius:6px}
+html[data-ds] .mini{border-radius:6px}
+html[data-ds] textarea{border-radius:6px}
+html[data-ds] .tm-mode{border-radius:6px}
+html[data-ds] .tm-mode button{border-radius:6px}
+html[data-ds] .catbar{border-radius:6px}
+html[data-ds] .cat-prog{border-radius:6px}
+html[data-ds] .onb-dots i{border-radius:6px}
+html[data-ds] .onb-it{border-radius:6px}
+html[data-ds] .onb-it .ic{border-radius:6px}
+html[data-ds] .onb-steps li{border-radius:6px}
+html[data-ds] .nu-tabs{border-radius:6px}
+html[data-ds] .nu-tabs button{border-radius:6px}
+html[data-ds] .nu-left{border-radius:6px}
+html[data-ds] .notmention{border-radius:6px}
+html[data-ds] .recipe{border-radius:6px}
+html[data-ds] .cal-title .yr-ic{border-radius:6px}
+html[data-ds] .docbar .seg{border-radius:6px}
+html[data-ds] .note-ed{border-radius:6px}
+html[data-ds] .doc-ghost{border-radius:6px}
+html[data-ds] .ns-bar{border-radius:6px}
+html[data-ds] .pw-av{border-radius:6px}
+html[data-ds] .sbadge{border-radius:6px}
+html[data-ds] .setsec{border-radius:6px}
+html[data-ds] .nu-sport{border-radius:6px}
+html[data-ds] .nu-goals button,html[data-ds] .nu-pace button{border-radius:6px}
+html[data-ds] .nu-m .bar{border-radius:6px}
+html[data-ds] .nu-m .bar i{border-radius:6px}
+html[data-ds] .nu-photo img{border-radius:6px}
+html[data-ds] .dish{border-radius:6px}
+html[data-ds] .dish-ic{border-radius:6px}
+html[data-ds] .mbar{border-radius:6px}
+html[data-ds] .mchip{border-radius:6px}
+html[data-ds] .memtag{border-radius:6px}
+html[data-ds] .loadcard{border-radius:6px}
+html[data-ds] .load-bar{border-radius:6px}
+html[data-ds] .load-bar i{border-radius:6px}
+html[data-ds] .nu-plan div{border-radius:6px}
+html[data-ds] .nu-ehint{border-radius:6px}
+html[data-ds] .nu-mtype button{border-radius:6px}
+html[data-ds] .soon-card{border-radius:6px}
+html[data-ds] .gr-tip{border-radius:6px}
+html[data-ds] .badge{border-radius:6px}
+html[data-ds] .toast{border-radius:6px}
+html[data-ds] .mini{border-radius:6px}
+html[data-ds] .pill{border-radius:6px}
+html[data-ds] .realise,html[data-ds] .resume,html[data-ds] .status{border-radius:6px}
+html[data-ds] .stepper button{border-radius:6px}
+html[data-ds] .cal-nav{border-radius:6px}
+html[data-ds] .sel{border-radius:6px}
+html[data-ds] .seg button{border-radius:6px}
+html[data-ds] .cal-title{border-radius:6px}
+html[data-ds] .day{border-radius:6px}
+html[data-ds] .next .n{border-radius:6px}
+html[data-ds] .chip-ev{border-radius:6px}
+html[data-ds] .yr-title{border-radius:6px}
+html[data-ds] .nu-tabs button{border-radius:6px}
+html[data-ds] .nu-mtype button,html[data-ds] .nu-goals button,html[data-ds] .nu-pace button,html[data-ds] .preset{border-radius:6px}
+html[data-ds] .dish-ic{border-radius:6px}
+html[data-ds] .mchip,html[data-ds] .nu-plan div,html[data-ds] .pomo-meta div{border-radius:6px}
+html[data-ds] .recipe{border-radius:6px}
+html[data-ds] .toast{border-radius:6px}
+html[data-ds] .toast-act{border-radius:6px}
+html[data-ds] .sheet{border-radius:6px 6px 0 0}
+html[data-ds] .pw-av{border-radius:6px}
+html[data-ds] .auth-logo{border-radius:6px}
+html[data-ds] .alert,html[data-ds] .nu-goalcard,html[data-ds] .nu-warn{border-radius:6px}
+html[data-ds] .gr-tip{border-radius:6px}
+html[data-ds] .rem-box{border-radius:6px}
+html[data-ds] .na-ic{border-radius:6px}
+html[data-ds] .dc-d{border-radius:6px}
+html[data-ds] .pw-eye{border-radius:6px}
+html[data-ds] .mf-n{border-radius:6px}
+html[data-ds] .rest.stuck{border-radius:6px}
+html[data-ds] .card{border-radius:6px}
+html[data-ds] .home-add{border-radius:6px}
+html[data-ds] .vseg{border-radius:6px}
+html[data-ds] .vseg button{border-radius:6px}
+html[data-ds] .dock-add{border-radius:6px}
+html[data-ds] .sp-ic{border-radius:6px}
+html[data-ds] .mcp-url{border-radius:6px}
+html[data-ds] .np{border-radius:6px}
+html[data-ds] .lightbox img{border-radius:6px}
+html[data-ds] .side-it,html[data-ds] .side-add{border-radius:6px}
+html[data-ds] .tchip{border-radius:4px}
+html[data-ds] .rt-bar{border-radius:6px}
+html[data-ds] .ai-opt{border-radius:6px}
+html[data-ds] .ai-step{border-radius:6px}
+html[data-ds] .ai-prompt{border-radius:6px}
+html[data-ds] .coach-day{border-radius:6px}
+html[data-ds] .wo-ex{border-radius:6px}
+html[data-ds] .wo-rest{border-radius:6px}
+html[data-ds] .nf-back{border-radius:6px}
+html[data-ds] .drop{border-radius:6px}
+html[data-ds] .rt-pop{border-radius:6px}
+html[data-ds] .rt-pop button{border-radius:6px}
+html[data-ds] [data-c2]{border-radius:4px}
+html[data-ds] .act-it[data-c2]{border-radius:6px}
+html[data-ds] .cf-hit{border-radius:6px}
+/* graisses ramenées à 500 au plus */
+html[data-ds] .sl-name{font-weight:500}
+html[data-ds] h1{font-weight:500}
+html[data-ds] h2{font-weight:500}
+html[data-ds] .btn{font-weight:500}
+html[data-ds] .brand{font-weight:500}
+html[data-ds] .sl-code{font-weight:500}
+html[data-ds] .act-it.danger{font-weight:500}
+html[data-ds] .act-it[aria-pressed="true"]{font-weight:500}
+html[data-ds] .realise{font-weight:500}
+html[data-ds] .x.armed{font-weight:500}
+html[data-ds] .foldbtn{font-weight:500}
+html[data-ds] .next .t{font-weight:500}
+html[data-ds] .qbtn{font-weight:500}
+html[data-ds] .cal-title{font-weight:500}
+html[data-ds] .cal-dow span{font-weight:500}
+html[data-ds] .yr-title{font-weight:500}
+html[data-ds] .ym-g i.ev{font-weight:500}
+html[data-ds] .ym-g i.td{font-weight:500}
+html[data-ds] .cal-sel .lbl{font-weight:500}
+html[data-ds] .late{font-weight:500}
+html[data-ds] .past{font-weight:500}
+html[data-ds] .status{font-weight:500}
+html[data-ds] .phase{font-weight:500}
+html[data-ds] .preset{font-weight:500}
+html[data-ds] .stepper button{font-weight:500}
+html[data-ds] .seg button{font-weight:500}
+html[data-ds] .err{font-weight:500}
+html[data-ds] .bk-list .n{font-weight:500}
+html[data-ds] .steps li::before{font-weight:500}
+html[data-ds] .install summary{font-weight:500}
+html[data-ds] .resume{font-weight:500}
+html[data-ds] .grp-y{font-weight:500}
+html[data-ds] .grp-m{font-weight:500}
+html[data-ds] .grp-w{font-weight:500}
+html[data-ds] .grp-d{font-weight:500}
+html[data-ds] .back{font-weight:500}
+html[data-ds] .dayv-title{font-weight:500}
+html[data-ds] .blk b{font-weight:500}
+html[data-ds] .linkbtn{font-weight:500}
+html[data-ds] .rest-tabs button{font-weight:500}
+html[data-ds] .ms-name{font-weight:500}
+html[data-ds] .ex-head input{font-weight:500}
+html[data-ds] .set .lbl{font-weight:500}
+html[data-ds] .mini{font-weight:500}
+html[data-ds] .more-opts>summary{font-weight:500}
+html[data-ds] .tm-mode button{font-weight:500}
+html[data-ds] .tm-frac label{font-weight:500}
+html[data-ds] .laps div:first-child{font-weight:500}
+html[data-ds] .doc-open b{font-weight:500}
+html[data-ds] .onb-skip{font-weight:500}
+html[data-ds] .onb-tag{font-weight:500}
+html[data-ds] .onb-steps li span{font-weight:500}
+html[data-ds] .nu-tabs button{font-weight:500}
+html[data-ds] .notmention{font-weight:500}
+html[data-ds] .me-done{font-weight:500}
+html[data-ds] .cal-title .yr-ic{font-weight:500}
+html[data-ds] .cat-h .fold-n{font-weight:500}
+html[data-ds] .howto>summary{font-weight:500}
+html[data-ds] .note b{font-weight:500}
+html[data-ds] .note-ed input{font-weight:500}
+html[data-ds] .pin-t{font-weight:500}
+html[data-ds] .pad button.del{font-weight:500}
+html[data-ds] .pin-err{font-weight:500}
+html[data-ds] .doc-ghost{font-weight:500}
+html[data-ds] .pw-av{font-weight:500}
+html[data-ds] .pw-main b{font-weight:500}
+html[data-ds] .tabgrp{font-weight:500}
+html[data-ds] .onb-grp{font-weight:500}
+html[data-ds] .setsec>summary{font-weight:500}
+html[data-ds] .nu-blk-h{font-weight:500}
+html[data-ds] .nu-in input{font-weight:500}
+html[data-ds] .dish-it .grow b{font-weight:500}
+html[data-ds] .dish-it .k{font-weight:500}
+html[data-ds] .memtag{font-weight:500}
+html[data-ds] .load-msg{font-weight:500}
+html[data-ds] .nu-mtype button{font-weight:500}
+html[data-ds] .gr-rev .lab{font-weight:500}
+html[data-ds] .badge{font-weight:500}
+html[data-ds] .view>.brand{font-weight:500}
+html[data-ds] .view>h1,html[data-ds] #notesList>h1{font-weight:500}
+html[data-ds] h1{font-weight:500}
+html[data-ds] h2{font-weight:500}
+html[data-ds] .setsec>summary{font-weight:500}
+html[data-ds] .btn{font-weight:500}
+html[data-ds] .mini{font-weight:500}
+html[data-ds] .pill[aria-pressed="true"]{font-weight:500}
+html[data-ds] .tab{font-weight:500}
+html[data-ds] .cal-title{font-weight:500}
+html[data-ds] .cal-title .yr-ic{font-weight:500}
+html[data-ds] .yr-title{font-weight:500}
+html[data-ds] .nu-big{font-weight:500}
+html[data-ds] .dish-kcal{font-weight:500}
+html[data-ds] .dish-ic{font-weight:500}
+html[data-ds] .toast-act{font-weight:500}
+html[data-ds] .onb-tag{font-weight:500}
+html[data-ds] .yr-title .yr-ic{font-weight:500}
+html[data-ds] .meal-tg .tg-box{font-weight:500}
+html[data-ds] .rem-h{font-weight:500}
+html[data-ds] .na-t{font-weight:500}
+html[data-ds] .eyebrow{font-weight:500}
+html[data-ds] nav .tab .tab-l{font-weight:500}
+html[data-ds] .dc-d b{font-weight:500}
+html[data-ds] .pad button.del{font-weight:500}
+html[data-ds] .auth-langs .linkbtn[aria-pressed="true"]{font-weight:500}
+html[data-ds] .hm-next b{font-weight:500}
+html[data-ds] .hm-tile b{font-weight:500}
+html[data-ds] .hm-time{font-weight:500}
+html[data-ds] .qa-it b{font-weight:500}
+html[data-ds] .mcp-it .grow b{font-weight:500}
+html[data-ds] .side-brand{font-weight:500}
+html[data-ds] .tchip{font-weight:500}
+html[data-ds] .wo-h .num{font-weight:500}
+html[data-ds] .wo-set.done .lbl{font-weight:500}
+html[data-ds] .wo-rest{font-weight:500}
+html[data-ds] .nf-back{font-weight:500}
+html[data-ds] .rt-aa{font-weight:500}
+html[data-ds] [data-c2]{font-weight:500}
+
+/* ---------- fond, texte, titres ---------- */
+html[data-ds],html[data-ds] body{background:var(--bg)!important;color:var(--ink);font:400 16px/1.45 var(--font);-webkit-font-smoothing:antialiased}
+html[data-ds] *,html[data-ds] *::before,html[data-ds] *::after{box-shadow:none!important;text-shadow:none!important}
+html[data-ds] :focus-visible{outline:1.5px solid var(--ink)!important;outline-offset:2px}
+html[data-ds] h1{font-family:var(--display);font-weight:300;font-size:40px;line-height:1.05;letter-spacing:-.01em;margin:14px 0 6px}
+html[data-ds] h1 i,html[data-ds] h1 em{font-style:italic;font-weight:300}
+html[data-ds] h2{font:500 11px/1.3 var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:28px 0 8px}
+html[data-ds] h3{font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:0}
+html[data-ds] .eyebrow,html[data-ds] .lab{font:500 11px/1.3 var(--font)!important;letter-spacing:.14em!important;text-transform:uppercase;color:var(--muted)}
+html[data-ds] .sub{color:var(--muted);font-size:15px}
+html[data-ds] b,html[data-ds] strong{font-weight:500}
+html[data-ds] .muted,html[data-ds] .small.muted{color:var(--muted)}
+
+/* ---------- listes en filets plutôt qu'en cartes ---------- */
+html[data-ds] .card:not(.sheet){background:transparent;border:0;border-top:var(--rule) solid var(--line);border-bottom:var(--rule) solid var(--line);border-radius:0}
+html[data-ds] .row{border-bottom:var(--rule) solid var(--line);padding-inline:0}
+html[data-ds] .setsec{background:transparent;border:0;border-bottom:var(--rule) solid var(--line);border-radius:0}
+html[data-ds] .setsec>summary{padding-inline:0}
+
+/* ---------- boutons, champs, pastilles ---------- */
+html[data-ds] .btn{background:var(--ink)!important;color:var(--bg)!important;border-radius:6px;font-weight:500;letter-spacing:0;transition:opacity .15s var(--ease)}
+html[data-ds] .btn:active{opacity:.8}
+html[data-ds] .btn.ghost{background:transparent!important;color:var(--ink)!important;border:var(--rule) solid var(--ink-2)}
+html[data-ds] .btn.stop{background:transparent!important;color:var(--late)!important;border:var(--rule) solid var(--late)}
+html[data-ds] .mini{background:transparent;border:var(--rule) solid var(--line);border-radius:4px;font-weight:400;color:var(--ink)}
+html[data-ds] .pill,html[data-ds] .chip,html[data-ds] .tchip,html[data-ds] .status{border-radius:4px;font-weight:400}
+html[data-ds] .pill[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+html[data-ds] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),html[data-ds] select,html[data-ds] textarea{background:transparent;border:var(--rule) solid var(--line);border-radius:6px;font-family:var(--font)}
+html[data-ds] input:focus,html[data-ds] select:focus,html[data-ds] textarea:focus{border-color:var(--ink)}
+html[data-ds] .seg{background:var(--surface-2);border-radius:6px}
+html[data-ds] .seg button{border-radius:4px;font-weight:400}
+html[data-ds] .seg button[aria-pressed="true"]{background:var(--bg);color:var(--ink);font-weight:500}
+html[data-ds] .switch:checked{background:var(--ink)}
+html[data-ds] .x{color:var(--muted)}
+html[data-ds] [data-c2]{background:var(--late)!important;color:#fff!important;border-radius:4px!important}
+
+/* ---------- chiffres, heures, mesures : IBM Plex Mono ---------- */
+html[data-ds] .hm-time,html[data-ds] .task .date,html[data-ds] .time,html[data-ds] .dish-kcal,html[data-ds] .num,html[data-ds] .sbadge,html[data-ds] .clock,html[data-ds] .pomo-time,html[data-ds] .rest-time,html[data-ds] .wo-set input,html[data-ds] .hm-tile b,html[data-ds] .nu-big,html[data-ds] .kpi{font-family:var(--mono)!important;font-variant-numeric:tabular-nums;font-weight:400}
+
+/* ---------- fenêtres, toast ---------- */
+html[data-ds] .sheet{background:var(--bg)!important;border-radius:8px 8px 0 0;border-top:var(--rule) solid var(--line)}
+html[data-ds] .sheet-bg{background:color-mix(in srgb,var(--ink) 28%,transparent)}
+html[data-ds] #toast{background:var(--ink);color:var(--bg);border-radius:6px;font-weight:400}
+
+/* ---------- barre du bas : les fonctions de l'app ouverte ---------- */
+html[data-ds] nav{background:var(--bg)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border-top:var(--rule) solid var(--line)!important;border-radius:0!important;box-shadow:none!important}
+html[data-ds] nav .in{display:grid;max-width:520px;margin:0 auto}
+html[data-ds] nav .tab{color:var(--muted);font-size:11px;font-weight:400;gap:4px;position:relative}
+html[data-ds] nav .tab svg{width:22px;height:22px;stroke-width:1.5}
+html[data-ds] nav .tab[aria-current="page"],html[data-ds] nav .tab[aria-current="page"] .tabicon{color:var(--app);font-weight:500}
+html[data-ds] nav .tab .sbadge{position:absolute;top:2px;left:calc(50% + 8px)}
+html[data-ds] body:not(.has-nav) main{padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}
+
+/* ---------- en-tête d'une app : logo + nom, retour à Sid'home ---------- */
+html[data-ds] .vhead{display:flex!important;align-items:center;justify-content:space-between;gap:12px;min-height:36px;margin:4px 0 0;background:none;border:0;padding:0}
+html[data-ds] .ah-brand{display:flex;align-items:center;gap:8px}
+html[data-ds] .ah-logo{width:22px;height:22px;color:var(--app)}
+html[data-ds] .ah-home{display:flex;align-items:center;gap:6px;border:0;background:none;color:var(--muted);font:400 13px var(--font);padding:8px 0 8px 8px;min-height:44px;cursor:pointer}
+html[data-ds] .ah-home svg{width:18px;height:18px;stroke-width:1.5}
+
+/* ---------- logos ---------- */
+.logo{display:block;width:100%;height:100%}
+[data-gapp="orga"],[data-app="agenda"]>.logo,.sp-apps [data-app="agenda"],.onb-logo[data-app="agenda"],.side-h[data-app="agenda"] .logo{color:var(--c-agenda)}
+[data-gapp="sport"],.sp-apps [data-app="fit"],.onb-logo[data-app="fit"],.side-h[data-app="fit"] .logo{color:var(--c-fit)}
+[data-gapp="perso"],.sp-apps [data-app="note"],.onb-logo[data-app="note"],.side-h[data-app="note"] .logo{color:var(--c-note)}
+.home-app span{color:var(--ink)}
+
+/* ---------- Sid'home : les 3 applications ---------- */
+html[data-ds] #v-home .home-hello{font-family:var(--display);font-weight:300;font-size:40px}
+.home-apps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:22px 0 8px;padding:18px 0;border-top:var(--rule) solid var(--line);border-bottom:var(--rule) solid var(--line)}
+.home-app{display:flex;flex-direction:column;align-items:center;gap:10px;border:0;background:none;padding:6px 0;cursor:pointer;font:400 14px var(--font);transition:opacity .15s var(--ease)}
+.home-app:active{opacity:.7}
+.home-applogo{width:72px;height:72px}
+html[data-ds] .hm-tile b{font-size:30px;font-weight:400;letter-spacing:-.01em}
+html[data-ds] .hm-tiles .card,html[data-ds] .hm-next{border:0;border-top:var(--rule) solid var(--line);border-radius:0;background:transparent}
+html[data-ds] .home-avatar{border-radius:6px;background:var(--surface-2);color:var(--ink);font-weight:500}
+html[data-ds] .home-add{border-radius:6px}
+
+/* ---------- animation d'ouverture (2 s) ---------- */
+.splash{position:fixed;inset:0;z-index:200;display:grid;place-content:center;justify-items:center;gap:14px;background:var(--bg,#F4F0E8);color:var(--ink,#1C1A17);pointer-events:none;opacity:1}
+.sp-mark{width:84px;height:84px;color:var(--ink,#1C1A17);opacity:0;transform:scale(.94)}
+.sp-name{font:300 32px/1 "Fraunces",Georgia,serif;letter-spacing:-.01em;opacity:0}
+.sp-apps{display:flex;gap:18px;margin-top:10px}
+.sp-apps span{width:30px;height:30px;opacity:0;transform:translateY(4px)}
+.splash.go{animation:spOut .35s var(--ease,ease-out) 1.65s forwards}
+.splash.go .sp-mark{animation:spIn .45s ease-out .05s forwards}
+.splash.go .sp-name{animation:spIn .45s ease-out .3s forwards}
+.splash.go .sp-apps span{animation:spIn .35s ease-out forwards}
+.splash.go .sp-apps span:nth-child(1){animation-delay:.7s}.splash.go .sp-apps span:nth-child(2){animation-delay:.85s}.splash.go .sp-apps span:nth-child(3){animation-delay:1s}
+@keyframes spIn{to{opacity:1;transform:none}}
+@keyframes spOut{to{opacity:0;visibility:hidden}}
+@media (prefers-reduced-motion:reduce){.splash.go{animation:spOut .2s linear .2s forwards}.splash.go *{animation:none!important;opacity:1!important;transform:none!important}}
+
+/* ---------- présentation ---------- */
+.onb-logo{width:96px;height:96px;margin:0 auto}
+html[data-ds] .onb{background:var(--bg)}
+html[data-ds] .onb h1{font-size:34px}
+html[data-ds] .onb-grp{font:500 11px var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+html[data-ds] .onb-dots i{border-radius:2px}
+html[data-ds] .onb-floats{display:none}
+
+/* ---------- barre latérale (ordinateur) ---------- */
+html[data-ds] .side{background:var(--bg);border-right:var(--rule) solid var(--line)}
+.side-logo{width:26px;height:26px;color:var(--ink)}
+.side-applogo{width:16px;height:16px;display:inline-block;vertical-align:-3px;margin-right:6px}
+html[data-ds] .side-brand span{font:300 22px var(--display)}
+html[data-ds] .side-it[aria-current="true"]{background:var(--surface-2);border-radius:6px}
+
+/* ---------- icônes fines ---------- */
+html[data-ds] svg.i,html[data-ds] .ic svg,html[data-ds] .sp-ic svg,html[data-ds] .tabicon svg{stroke-width:1.5}

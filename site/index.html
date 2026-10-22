@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Sid'note</title>
+<title>Sid'home</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="sid'note">
@@ -15,14 +15,16 @@
 <link rel="icon" href="logo-32.png" sizes="32x32"><link rel="icon" href="logo-192.png" sizes="192x192">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300;1,9..144,400&family=Inter+Tight:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="design.css">
 </head>
 <body>
+<div class="splash" id="splash" aria-hidden="true"><div class="sp-mark" id="spMark"></div><div class="sp-name">Sid'home</div><div class="sp-apps" id="spApps"></div></div>
 <div id="auth" class="auth" hidden>
   <div class="auth-box">
     <img src="logo-192.png" alt="" class="auth-logo">
-    <h1>Sid'note</h1>
+    <h1>Sid'home</h1>
     <p class="sub" id="authSub">Ton agenda, tes tâches, tes notes et tes documents, réunis dans une seule app.</p>
     <ul class="auth-feats card" id="authFeats"></ul>
     <div class="seg" role="group" aria-label="Choix">
@@ -48,7 +50,7 @@
         <li><span>Appuie sur <b>Partager</b>.</span></li>
         <li><span>Appuie sur <b>En savoir plus</b>.</span></li>
         <li><span>Appuie sur <b>Sur l'écran d'accueil</b>, puis sur <b>Ajouter</b>.</span></li>
-        <li><span>L'icône <b>Sid'note</b> apparaît sur ton écran d'accueil : ouvre l'app depuis cette icône.</span></li>
+        <li><span>L'icône <b>Sid'home</b> apparaît sur ton écran d'accueil : ouvre l'app depuis cette icône.</span></li>
       </ol>
     </details>
     <p class="small muted" id="authHint">Tu as créé ton compte avec un pseudo, avant l'arrivée de l'e-mail ? Tape ton pseudo à la place de l'e-mail pour te connecter.</p>
@@ -519,7 +521,7 @@
         <li><span>Appuie sur <b>Partager</b>.</span></li>
         <li><span>Appuie sur <b>En savoir plus</b>.</span></li>
         <li><span>Appuie sur <b>Sur l'écran d'accueil</b>, puis sur <b>Ajouter</b>.</span></li>
-        <li><span>L'icône <b>Sid'note</b> apparaît sur ton écran d'accueil : ouvre l'app depuis cette icône.</span></li>
+        <li><span>L'icône <b>Sid'home</b> apparaît sur ton écran d'accueil : ouvre l'app depuis cette icône.</span></li>
       </ol>
     <p class="small muted" style="margin:10px 4px 0">Utilise Safari : les autres navigateurs ne permettent pas toujours l'installation. Sur Android, ouvre le site dans Chrome, touche ⋮ puis « Ajouter à l'écran d'accueil ».</p>
   </section>
@@ -553,7 +555,7 @@
     <details class="setsec" data-sec="look"><summary><span>Apparence</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
       <div class="setsec-in">
     <div class="card">
-      <div class="row" style="display:block"><div style="margin-bottom:10px">Couleurs</div><div class="pals" id="palSel" role="group" aria-label="Couleurs"></div></div>
+      <div class="row" style="display:block" hidden><div style="margin-bottom:10px">Couleurs</div><div class="pals" id="palSel" role="group" aria-label="Couleurs"></div></div>
       <div class="row"><span class="grow">Thème</span><div class="seg" id="themeSel" role="group" aria-label="Thème" style="grid-template-columns:repeat(3,auto);padding:2px"><button type="button" data-theme="auto">Auto</button><button type="button" data-theme="light">Clair</button><button type="button" data-theme="dark">Sombre</button></div></div>
       <label class="row"><span class="grow">Langue</span><select id="langSel" class="sel"><option value="fr">Français</option><option value="en">English</option><option value="nl">Nederlands</option></select></label>
       <label class="row"><span class="grow">Page d'accueil</span><select id="homeSel" class="sel"></select></label>
@@ -639,7 +641,7 @@
     <div class="card" id="stats"></div>
       </div>
     </details>
-    <p class="small muted" style="margin:18px 4px">Sid'note · version 41 · une app <b>SidCorp</b></p>
+    <p class="small muted" style="margin:18px 4px">Sid'home · version 42 · une app <b>SidCorp</b></p>
   </section>
 </main>
 
@@ -836,8 +838,8 @@
     <section class="onb-slide">
       <div class="onb-box">
         <img src="logo-192.png" alt="" class="auth-logo onb-pop" style="width:84px;height:84px">
-        <h1 id="onbTitle">Bienvenue sur Sid'note</h1>
-        <p class="onb-tag">Une seule app pour ton planning, tes tâches, ton sport, ta nutrition et tes documents.</p>
+        <h1 id="onbTitle">Bienvenue sur Sid'home</h1>
+        <p class="onb-tag">Trois applications, un seul compte : sid'agenda pour tes journées, sid'fit pour ton corps, sid'note pour tes notes et tes documents.</p>
         <p class="sub">Tu n'as pas besoin de tout : on règle l'app ensemble en 3 étapes.</p>
         <ol class="onb-steps">
           <li><span>1</span>Choisis les onglets qui te servent</li>
@@ -856,7 +858,7 @@
         <h1>Ton thème</h1>
         <p class="sub">Sombre pour le soir, clair pour la journée, ou automatique selon ton téléphone. Tu pourras le changer dans Réglages.</p>
         <div class="seg" id="onbTheme" role="group" aria-label="Thème" style="grid-template-columns:repeat(3,1fr)"><button type="button" data-otheme="auto">Auto</button><button type="button" data-otheme="light">Clair</button><button type="button" data-otheme="dark">Sombre</button></div>
-        <div class="pals onb-pal" id="onbPal" role="group" aria-label="Couleurs"></div>
+        <div class="pals onb-pal" id="onbPal" role="group" aria-label="Couleurs" hidden></div>
         <button class="btn" id="onbGo" style="padding:14px;font-size:17px">C'est parti</button>
       </div>
     </section>

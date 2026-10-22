@@ -382,7 +382,7 @@ const TOOLS = [
   },
   {
     name: "enregistrer_programme",
-    description: "Enregistre un programme de musculation que TU as composé ou ajusté (remplace l'actuel). Visible dans Sid'note (Santé → Musculation), avec mode séance et progression des charges. Adapte-le au profil lu avec muscu_programme (exercices imposés et exclus compris). Dans une séance, chaque exercice doit apporter quelque chose de différent : jamais deux exercices du même schéma de mouvement pour le même muscle (ex. pecs : un développé horizontal, un incliné, un écarté). Repos : 3 min pour les gros exercices polyarticulaires (jusqu'à 4 min pour les plus lourds), au moins 2 min pour l'isolation.",
+    description: "Enregistre un programme de musculation que TU as composé ou ajusté (remplace l'actuel). Visible dans Sid'note (Santé → Musculation), avec mode séance et progression des charges. Adapte-le au profil lu avec muscu_programme (exercices imposés et exclus compris). Dans une séance, chaque exercice doit apporter quelque chose de différent : jamais deux exercices du même schéma de mouvement pour le même muscle (ex. pecs : un développé horizontal, un incliné, un écarté). Repos : 3 min pour les gros exercices polyarticulaires (jusqu'à 4 min pour les plus lourds), au moins 2 min pour l'isolation. Respecte les remarques de la personne lues avec muscu_programme (ex. abdos tous les jours, pas deux séances jambes) ; pour un ajustement, garde ce qui va bien et ne change que ce qui est demandé.",
     inputSchema: {
       type: "object", required: ["days"],
       properties: {
@@ -665,6 +665,11 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
       else {
         const pr = p.profile || {};
         out += `Profil : ${LV[pr.level] || pr.level || "?"}, objectif ${G[pr.goal] || pr.goal || "?"}, ${pr.days || p.days.length} séances/semaine de ${pr.dur || "?"} min, ${EQ[pr.equip] || pr.equip || "?"}${(pr.avoid || []).length ? `, à ménager : ${pr.avoid.map((x: string) => AV[x] || x).join(", ")}` : ""}${(pr.prio || []).length ? `, priorités : ${pr.prio.join(", ")}` : ""}${(pr.must || []).length ? `, exercices imposés : ${pr.must.join(", ")}` : ""}${(pr.never || []).length ? `, exercices exclus (ne jamais proposer) : ${pr.never.join(", ")}` : ""}.\n`;
+        // v7 (Sid'home v43) : zone libre à ménager, remarques de la personne (à respecter en priorité)
+        if (pr.avoidTxt) out += `Autre chose à ménager (écrit par la personne) : ${String(pr.avoidTxt).slice(0, 200)}.\n`;
+        const rem = (Array.isArray(pr.remarks) ? pr.remarks : []).slice(-5);
+        if (rem.length) out += `Remarques de la personne sur son programme (à respecter, la plus récente compte le plus) :\n` + rem.map((r: Data) => `- ${String(r.at || "").slice(0, 10)} : ${String(r.text || "").slice(0, 600)}`).join("\n") + "\n";
+        else if (pr.notes) out += `Remarques de la personne : ${String(pr.notes).slice(0, 600)}\n`;
         out += `Programme${p.src === "ia" ? " (ajusté par une IA)" : ""} :\n` + p.days.map((d: Data) => `## ${d.name}\n` + d.ex.map((e: Data) => `- ${e.name} : ${e.sets} × ${e.reps}, repos ${e.rest} s${e.rir ? `, RIR ${e.rir}` : ""}${e.note ? ` (${e.note})` : ""}`).join("\n")).join("\n") + "\n";
       }
       const logs = m.log.filter((l: Data) => l && !del[l.id]).sort((x: Data, y: Data) => String(y.date || "").localeCompare(String(x.date || ""))).slice(0, 10);

@@ -2069,22 +2069,31 @@ function coachHint(ex){const l=lastOf(ex.name);if(!l)return{kg:"",txt:L("Premiè
 const coachNext=()=>{const pl=PL();if(!pl||!pl.days.length)return null;const last=ML().filter(l=>pl.days.some(d=>d.id===l.day)).sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0];
   const i=last?pl.days.findIndex(d=>d.id===last.day):-1;return pl.days[(i+1)%pl.days.length]};
 function renderCoach(){const box=$("coachBox");if(!box)return;const pl=PL(),nx=coachNext();
+  const opn=new Set([...box.querySelectorAll(".coach-day[open]")].map(x=>x.dataset.day)),rmk=$("coRemark")?$("coRemark").value:""; // v43 : le rendu garde les séances dépliées et la remarque en cours
   if(!pl){box.innerHTML=`<div class="card coach-card"><div class="grow"><b>${L("Ton programme sur mesure")}</b><div class="small muted">${L("Quelques questions (niveau, objectif, jours, matériel) et Sid'home crée tes séances, avec les charges qui progressent d'une fois à l'autre.")}</div></div><button type="button" class="btn" data-coach="new">${L("Créer mon programme")}</button></div>`;return}
   const p=pl.profile||{},G={muscle:"Prendre du muscle",force:"Gagner en force",gras:"Perdre du gras",forme:"Être en forme"},LV={deb:"Débutant",inter:"Intermédiaire",conf:"Confirmé"};
   const wk=ML().filter(l=>l.date>=iso(mondayOf(new Date()))).length;
   box.innerHTML=`<div class="card coach-card coach-on"><div class="coach-top"><div class="grow"><span class="eyebrow">${L("Mon programme")}</span><b>${esc(L(G[p.goal]||"Sur mesure"))}${pl.src==="ia"?` · ${L("ajusté par Claude")}`:""}</b><div class="small muted">${esc(L(LV[p.level]||""))} · ${p.days||pl.days.length} ${L("séances par semaine")} · ${wk}/${pl.days.length} ${L("faites cette semaine")}</div></div><button type="button" class="pen" data-coach="more" aria-label="${L("Plus d'actions")}">${MORE}</button></div>
     ${nx?`<button type="button" class="btn coach-go" data-coach="start" data-day="${nx.id}">${IC("play")||"▶"} ${L("Commencer")} : ${esc(nx.name)}</button>`:""}
-    <div class="coach-days">${pl.days.map(d=>`<details class="coach-day"><summary><b class="grow notr">${esc(d.name)}</b><span class="small muted">${d.ex.length} ${L("exercices")}</span></summary>
-      <ol class="coach-ex">${d.ex.map((e,i)=>`<li><span class="grow notr">${esc(e.name)}</span><span class="small muted">${e.sets} × ${esc(e.reps)} · <button type="button" class="linkbtn co-rest" data-corest="${d.id}:${i}" aria-label="${L("Modifier le repos")}">${L("repos")} ${restLbl(e.rest)}</button></span></li>`).join("")}</ol>
-      <button type="button" class="mini" data-coach="start" data-day="${d.id}">${L("Faire cette séance")}</button></details>`).join("")}</div></div>`}
+    <div class="coach-days">${pl.days.map(d=>`<details class="coach-day" data-day="${d.id}" ${opn.has(d.id)?"open":""}><summary><b class="grow notr">${esc(d.name)}</b><span class="small muted">${d.ex.length} ${L("exercices")}</span></summary>
+      <ol class="coach-ex">${d.ex.map((e,i)=>`<li><span class="grow notr">${esc(e.name)}</span><span class="co-sets" role="group" aria-label="${L("Séries")} · ${esc(e.name)}"><button type="button" class="co-step" data-coset="${d.id}:${i}:-1" aria-label="${L("Retirer une série")}" ${e.sets<=1?"disabled":""}>−</button><span class="num">${e.sets}</span><button type="button" class="co-step" data-coset="${d.id}:${i}:1" aria-label="${L("Ajouter une série")}" ${e.sets>=10?"disabled":""}>+</button></span><span class="small muted">× ${esc(e.reps)} · <button type="button" class="linkbtn co-rest" data-corest="${d.id}:${i}" aria-label="${L("Modifier le repos")}">${L("repos")} ${restLbl(e.rest)}</button></span></li>`).join("")}</ol>
+      <button type="button" class="mini" data-coach="start" data-day="${d.id}">${L("Faire cette séance")}</button></details>`).join("")}</div>
+    ${pl.aiWait?`<div class="coach-wait" role="status"><span class="grow">${L("Demande envoyée à Claude : le programme ajusté arrivera ici tout seul.")}</span><button type="button" class="linkbtn" data-coach="resend">${L("Renvoyer")}</button><button type="button" class="x" data-coach="unwait" aria-label="${L("Masquer")}">×</button></div>`:""}
+    <div class="coach-adj"><label for="coRemark" class="eyebrow">${L("Ta remarque sur ce programme")}</label><textarea id="coRemark" class="autogrow" rows="2" maxlength="600" placeholder="${L("Ex. remplace la 2e séance jambes par une séance haut du corps")}">${esc(pl.aiWait?"":rmk)}</textarea>
+      <div class="coach-adj-b"><button type="button" class="btn" data-coach="adjust">${L("Ajuster avec Claude")}</button></div>
+      ${(p.remarks||[]).length?`<details class="coach-rem"><summary class="small muted">${(p.remarks||[]).length} ${L((p.remarks||[]).length>1?"remarques envoyées":"remarque envoyée")}</summary><ul>${p.remarks.slice().reverse().map(r=>`<li class="small"><span class="notr">${esc(r.text)}</span> <span class="muted">· ${fmtWhen(Date.parse(r.at))}</span></li>`).join("")}</ul></details>`:""}</div></div>`}
 let cfDraft={};
 const restLbl=r=>r>=60?String(Math.round(r/60*10)/10).replace(".",",")+" min":r+" s";
 // v42 : repos modifiable exercice par exercice (le mode séance utilise cette valeur)
 function coachRest(dayId,i){const pl=PL(),d=pl&&pl.days.find(x=>x.id===dayId),e=d&&d.ex[i];if(!e)return;
   openActions(`${L("Repos")} · ${e.name}`,[60,90,120,150,180,210,240,300].map(r=>({l:restLbl(r),on:e.rest===r,fn:()=>{e.rest=r;pl.upd=Date.now();M().upd=Date.now();save();renderCoach();toast(`${L("Repos")} : ${restLbl(r)}`)}})))}
 function coachOpen(){const p=(PL()&&PL().profile)||{level:"deb",goal:"muscle",days:3,dur:60,equip:"gym",avoid:[],prio:[],must:[],never:[]};cfDraft=JSON.parse(JSON.stringify(p));
-  document.querySelectorAll("#coachForm .cf-pick input").forEach(i=>i.value="");cfRender();$("coachErr").hidden=true;$("coachSheet").hidden=false}
-function cfRender(){document.querySelectorAll("#coachForm [data-cf]").forEach(g=>{const k=g.dataset.cf,v=cfDraft[k];g.querySelectorAll("[data-v]").forEach(b=>b.setAttribute("aria-pressed",String(Array.isArray(v)?v.includes(b.dataset.v):String(v)===b.dataset.v)))});
+  document.querySelectorAll("#coachForm .cf-pick input").forEach(i=>i.value="");$("cfNotes").value=cfDraft.notes||"";$("cfAvoidTxt").value=cfDraft.avoidTxt||"";
+  $("cfMore").open=cfOptN()>0;cfRender();$("coachErr").hidden=true;$("coachSheet").hidden=false}
+// v43 : nombre de précisions facultatives remplies (résumé du bloc replié)
+const cfOptN=()=>["prio","avoid","must","never"].reduce((n,k)=>n+((cfDraft[k]||[]).length?1:0),0)+(String(cfDraft.notes||"").trim()?1:0)+(String(cfDraft.avoidTxt||"").trim()?1:0);
+function cfRender(){{const n=cfOptN();$("cfMoreSum").textContent=n?`${n} ${L(n>1?"précisions":"précision")}`:L("facultatif")}
+  document.querySelectorAll("#coachForm [data-cf]").forEach(g=>{const k=g.dataset.cf,v=cfDraft[k];g.querySelectorAll("[data-v]").forEach(b=>b.setAttribute("aria-pressed",String(Array.isArray(v)?v.includes(b.dataset.v):String(v)===b.dataset.v)))});
   document.querySelectorAll("#coachForm .cf-pick").forEach(box=>{const k=box.dataset.cfx,a=cfDraft[k]||[];
     box.querySelector(".cf-sel").innerHTML=a.map(n=>`<span class="pill on cf-chip"><span class="notr">${esc(n)}</span><button type="button" class="x" data-cfrm="${esc(n)}" aria-label="${L("Retirer")}">×</button></span>`).join("");cfSearch(box)})}
 // v42 : recherche d'exercices (sans accents, un morceau de mot suffit) pour « je veux absolument » / « je ne veux pas du tout »
@@ -2093,23 +2102,53 @@ function cfSearch(box){const q=cfFold(box.querySelector("input").value).trim(),k
   if(!q){res.innerHTML="";return}const w=q.split(/\s+/);
   const hits=EXDB.filter(e=>!a.includes(e.n)&&w.every(x=>cfFold(e.n+" "+MUS[e.m]+" "+e.part).includes(x))).slice(0,8);
   res.innerHTML=hits.length?hits.map(e=>`<button type="button" class="cf-hit" data-cfadd="${esc(e.n)}"><span class="notr">${esc(e.n)}</span><small>${esc(L(MUS[e.m]))} · ${esc(L(e.part))}</small></button>`).join(""):`<div class="small muted">${L("Aucun exercice trouvé")}</div>`}
-$("coachForm").addEventListener("input",e=>{const box=e.target.closest(".cf-pick");if(box)cfSearch(box)});
+$("coachForm").addEventListener("input",e=>{const box=e.target.closest(".cf-pick");if(box)cfSearch(box);
+  if(e.target.id==="cfNotes"||e.target.id==="cfAvoidTxt"){cfDraft[e.target.id==="cfNotes"?"notes":"avoidTxt"]=e.target.value.slice(0,600);const n=cfOptN();$("cfMoreSum").textContent=n?`${n} ${L(n>1?"précisions":"précision")}`:L("facultatif")}});
 $("coachForm").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.closest(".cf-pick")){e.preventDefault();const f=e.target.closest(".cf-pick").querySelector("[data-cfadd]");if(f)f.click()}});
 $("coachForm").addEventListener("click",e=>{const ad=e.target.closest("[data-cfadd]"),rm=e.target.closest("[data-cfrm]");
   if(ad){const box=ad.closest(".cf-pick"),k=box.dataset.cfx,o=k==="must"?"never":"must",n=ad.dataset.cfadd;cfDraft[k]=[...new Set([...(cfDraft[k]||[]),n])];cfDraft[o]=(cfDraft[o]||[]).filter(x=>x!==n);box.querySelector("input").value="";cfRender();return}
   if(rm){const k=rm.closest(".cf-pick").dataset.cfx;cfDraft[k]=(cfDraft[k]||[]).filter(x=>x!==rm.dataset.cfrm);cfRender();return}
   const b=e.target.closest("[data-cf] [data-v]");if(!b)return;const g=b.closest("[data-cf]"),k=g.dataset.cf,v=b.dataset.v;
   if(g.classList.contains("cf-multi")){const a=cfDraft[k]||(cfDraft[k]=[]);cfDraft[k]=a.includes(v)?a.filter(x=>x!==v):[...a,v]}else cfDraft[k]=/^\d+$/.test(v)?+v:v;cfRender()});
-$("coachForm").addEventListener("submit",e=>{e.preventDefault();const p=cfDraft;
+$("coachForm").addEventListener("submit",async e=>{e.preventDefault();const p=cfDraft,withAi=!(e.submitter&&e.submitter.dataset.cfgo==="app");
   if(!p.level||!p.goal||!p.days||!p.dur||!p.equip){$("coachErr").textContent=L("Réponds aux cinq premières questions.");$("coachErr").hidden=false;return}
-  M().plan=coachBuild(p);M().upd=Date.now();save();$("coachSheet").hidden=true;renderCoach();toast("Ton programme est prêt")});
+  p.notes=String(p.notes||"").trim();p.avoidTxt=String(p.avoidTxt||"").trim();
+  const old=PL();p.remarks=(old&&old.profile&&old.profile.remarks)||[];if(p.notes&&!p.remarks.some(r=>r.text===p.notes))p.remarks=[...p.remarks,{at:new Date().toISOString(),text:p.notes}].slice(-10);
+  // v43 : le programme de l'app est toujours créé (il sert de base, et de secours si Claude ne répond pas)
+  M().plan=coachBuild(p);M().upd=Date.now();
+  if(withAi){if(!(await nuConsent())){save();$("coachSheet").hidden=true;renderCoach();toast("Ton programme est prêt (sans Claude)");return}
+    M().plan.aiWait=Date.now();save();$("coachSheet").hidden=true;renderCoach();aiHandoff(coachPrompt("new"),true)}
+  else{save();$("coachSheet").hidden=true;renderCoach();toast("Ton programme est prêt")}});
+// v43 : demandes envoyées au Claude de la personne (même principe que Nutrition) : il lit le profil et les remarques
+// avec muscu_programme, puis enregistre le programme avec enregistrer_programme ; le résultat revient ici tout seul.
+const GOALS={muscle:["prendre du muscle","build muscle","spiermassa opbouwen"],force:["gagner en force","get stronger","sterker worden"],gras:["perdre du gras","lose fat","vet verliezen"],forme:["être en forme","get fit","fit worden"]};
+function coachPrompt(kind,remark){const p=(PL()&&PL().profile)||cfDraft||{},li=LANG==="en"?1:LANG==="nl"?2:0,g=(GOALS[p.goal]||GOALS.muscle)[li];
+  const AV={shoulder:["épaules","shoulders","schouders"],back:["bas du dos","lower back","onderrug"],knee:["genoux","knees","knieën"]};
+  const av=[...(p.avoid||[]).map(x=>(AV[x]||[x,x,x])[li]),p.avoidTxt].filter(Boolean).join(", ");
+  const extra=[p.notes&&T3(`Mes remarques : ${p.notes}`,`My wishes: ${p.notes}`,`Mijn wensen: ${p.notes}`),av&&T3(`À ménager : ${av}`,`Go easy on: ${av}`,`Ontzien: ${av}`),(p.must||[]).length&&T3(`Exercices voulus : ${p.must.join(", ")}`,`Exercises I want: ${p.must.join(", ")}`,`Oefeningen die ik wil: ${p.must.join(", ")}`),(p.never||[]).length&&T3(`Exercices exclus : ${p.never.join(", ")}`,`Exercises to avoid: ${p.never.join(", ")}`,`Oefeningen om te vermijden: ${p.never.join(", ")}`)].filter(Boolean).join(". ");
+  if(kind==="adjust")return T3(`Avec Sid'note : lis mon programme de musculation (muscu_programme) et ajuste-le selon ma remarque, sans tout recommencer : « ${remark} ». Garde ce qui va bien, puis enregistre la nouvelle version avec enregistrer_programme.`,
+    `With Sid'note: read my workout program (muscu_programme) and adjust it to my remark without starting over: "${remark}". Keep what works, then save the new version with enregistrer_programme.`,
+    `Met Sid'note: lees mijn trainingsschema (muscu_programme) en pas het aan volgens mijn opmerking, zonder opnieuw te beginnen: "${remark}". Houd wat goed is en sla de nieuwe versie op met enregistrer_programme.`);
+  return T3(`Avec Sid'note : compose mon programme de musculation. Objectif ${g}, ${p.days} séances par semaine de ${p.dur} min. Lis d'abord mon profil complet avec muscu_programme.${extra?" "+extra+".":""} Enregistre-le ensuite avec enregistrer_programme.`,
+    `With Sid'note: build my workout program. Goal: ${g}, ${p.days} sessions a week of ${p.dur} min. First read my full profile with muscu_programme.${extra?" "+extra+".":""} Then save it with enregistrer_programme.`,
+    `Met Sid'note: stel mijn trainingsschema samen. Doel: ${g}, ${p.days} trainingen per week van ${p.dur} min. Lees eerst mijn volledige profiel met muscu_programme.${extra?" "+extra+".":""} Sla het daarna op met enregistrer_programme.`)}
+async function coachAdjust(text){text=String(text||"").trim();if(!text){toast("Écris d'abord ta remarque");return}const pl=PL();if(!pl)return;
+  if(!(await nuConsent()))return;
+  const pr=pl.profile||(pl.profile={});pr.remarks=[...(pr.remarks||[]),{at:new Date().toISOString(),text:text.slice(0,600)}].slice(-10);pl.aiWait=Date.now();pl.upd=Date.now();M().upd=Date.now();save();renderCoach();
+  aiHandoff(coachPrompt("adjust",text.slice(0,600)),true)}
 $("coachClose").addEventListener("click",()=>$("coachSheet").hidden=true);
 $("coachSheet").addEventListener("click",e=>{if(e.target.id==="coachSheet")$("coachSheet").hidden=true});
 $("coachBox").addEventListener("click",e=>{const r=e.target.closest("[data-corest]");if(r){const[d,i]=r.dataset.corest.split(":");coachRest(d,+i);return}
+  // v43 : séries libres (demande de Sid) : + / − sur chaque exercice du programme, de 1 à 10
+  const cs=e.target.closest("[data-coset]");if(cs){const[d,i,k]=cs.dataset.coset.split(":"),pl=PL(),day=pl&&pl.days.find(x=>x.id===d),ex=day&&day.ex[+i];if(!ex)return;
+    ex.sets=Math.max(1,Math.min(10,(+ex.sets||3)+(+k)));pl.upd=Date.now();M().upd=Date.now();save();renderCoach();const nb=document.querySelector(`#coachBox [data-coset="${d}:${i}:${k}"]`);if(nb&&!nb.disabled)nb.focus();return}
   const b=e.target.closest("[data-coach]");if(!b)return;const k=b.dataset.coach;
   if(k==="new")coachOpen();else if(k==="start")woStart(b.dataset.day);
+  else if(k==="adjust")coachAdjust($("coRemark").value);
+  else if(k==="resend"){const pl=PL(),rm=pl&&pl.profile&&(pl.profile.remarks||[]).slice(-1)[0];aiHandoff(rm&&rm.text!==pl.profile.notes?coachPrompt("adjust",rm.text):coachPrompt("new"),true)}
+  else if(k==="unwait"){const pl=PL();if(pl){delete pl.aiWait;pl.upd=Date.now();save();renderCoach()}}
   else if(k==="more")openActions(L("Mon programme"),[{l:"Modifier mes réponses",fn:coachOpen},
-    {l:"Ajuster avec Claude",fn:()=>aiHandoff(T3("Avec Sid'note : lis mon programme de musculation et mon historique, puis améliore-le pour moi (choix des exercices, volume, progression). Enregistre la nouvelle version dans Sid'note.","With Sid'note: read my workout program and history, then improve it for me (exercise choice, volume, progression). Save the new version in Sid'note.","Met Sid'note: lees mijn trainingsschema en geschiedenis en verbeter het (oefeningen, volume, progressie). Sla de nieuwe versie op in Sid'note."),true)},
+    {l:"Ajuster avec Claude",fn:async()=>{if(!(await nuConsent()))return;aiHandoff(T3("Avec Sid'note : lis mon programme de musculation et mon historique, puis améliore-le pour moi (choix des exercices, volume, progression). Enregistre la nouvelle version dans Sid'note.","With Sid'note: read my workout program and history, then improve it for me (exercise choice, volume, progression). Save the new version in Sid'note.","Met Sid'note: lees mijn trainingsschema en geschiedenis en verbeter het (oefeningen, volume, progressie). Sla de nieuwe versie op in Sid'note."),true)}},
     {l:"Supprimer le programme",danger:true,fn:()=>{const old=M().plan;undoable("Programme supprimé",[],()=>{M().plan={deleted:true,upd:Date.now()}},{after:renderCoach,revert:()=>{M().plan={...old,upd:Date.now()}}})}}])});
 // --- mode séance : charges conseillées, séries à cocher, repos qui se lance tout seul ---
 let wo=null,woT=null;
@@ -2119,12 +2158,16 @@ function woStart(dayId){const pl=PL(),d=pl&&pl.days.find(x=>x.id===dayId);if(!d)
 function woRender(){$("woBody").innerHTML=wo.ex.map((e,i)=>`<div class="wo-ex"><div class="wo-h"><span class="num">${i+1}</span><b class="grow notr">${esc(e.name)}</b><button type="button" class="mini" data-woswap="${i}">${L("Changer")}</button></div>
   <div class="small muted">${e.sets.length} × ${esc(e.reps)} ${L("reps")} · ${L("repos")} ${restLbl(e.rest)} · ${L("garde")} ${esc(e.rir)} ${L("rép. en réserve")}${e.note?` · ${esc(L(e.note))}`:""}</div>
   <div class="small wo-hint">${esc(e.hint||"")}</div>
-  ${e.sets.map((s,j)=>`<div class="wo-set ${s.done?"done":""}"><span class="lbl">${L("Série")} ${j+1}</span><div class="unit"><input type="text" inputmode="decimal" data-wok="${i}:${j}" value="${esc(s.kg)}" aria-label="kg"><span>kg</span></div><div class="unit"><input type="text" inputmode="numeric" data-wor="${i}:${j}" value="${esc(s.reps)}" placeholder="${esc(String(e.reps).split(/[–-]/).pop())}" aria-label="reps"><span>reps</span></div><button type="button" class="check" data-wodone="${i}:${j}" aria-label="${L("Série faite")}">${s.done?CHECK:""}</button></div>`).join("")}</div>`).join("")}
+  ${e.sets.map((s,j)=>`<div class="wo-set ${s.done?"done":""}"><button type="button" class="wo-del" data-wodel="${i}:${j}" aria-label="${L("Retirer la série")} ${j+1}" ${e.sets.length<=1?"disabled":""}>×</button><span class="lbl">${L("Série")} ${j+1}</span><div class="unit"><input type="text" inputmode="decimal" data-wok="${i}:${j}" value="${esc(s.kg)}" aria-label="kg"><span>kg</span></div><div class="unit"><input type="text" inputmode="numeric" data-wor="${i}:${j}" value="${esc(s.reps)}" placeholder="${esc(String(e.reps).split(/[–-]/).pop())}" aria-label="reps"><span>reps</span></div><button type="button" class="check" data-wodone="${i}:${j}" aria-label="${L("Série faite")}">${s.done?CHECK:""}</button></div>`).join("")}<button type="button" class="mini wo-add" data-woadd="${i}" ${e.sets.length>=12?"disabled":""}>+ ${L("Ajouter une série")}</button></div>`).join("")}
 function woRest(sec){clearInterval(woT);const end=Date.now()+sec*1000,box=$("woRest");box.hidden=false;
   const tick=()=>{const r=Math.max(0,Math.round((end-Date.now())/1000));$("woRestTxt").textContent=`${L("Repos")} ${Math.floor(r/60)}:${two(r%60)}`;if(!r){clearInterval(woT);box.hidden=true;if(navigator.vibrate)navigator.vibrate([200,100,200]);try{beep&&beep()}catch(e){}toast("C'est reparti !")}};tick();woT=setInterval(tick,500)}
 $("woRestSkip").addEventListener("click",()=>{clearInterval(woT);$("woRest").hidden=true});
 $("woBody").addEventListener("input",e=>{const k=e.target.dataset.wok||e.target.dataset.wor;if(!k)return;const[i,j]=k.split(":").map(Number);wo.ex[i].sets[j][e.target.dataset.wok?"kg":"reps"]=e.target.value.replace(",",".").replace(/[^0-9.]/g,"")});
-$("woBody").addEventListener("click",e=>{const d=e.target.closest("[data-wodone]");
+$("woBody").addEventListener("click",e=>{
+  // v43 : séries libres pendant la séance (n'écrit pas le programme)
+  const wa=e.target.closest("[data-woadd]");if(wa){const ex=wo.ex[+wa.dataset.woadd],last=ex.sets[ex.sets.length-1]||{};if(ex.sets.length<12)ex.sets.push({kg:last.kg||"",reps:"",done:false});woRender();const nb=document.querySelector(`#woBody [data-woadd="${wa.dataset.woadd}"]`);if(nb)nb.focus();return}
+  const wd=e.target.closest("[data-wodel]");if(wd){const[i,j]=wd.dataset.wodel.split(":").map(Number);if(wo.ex[i].sets.length>1){wo.ex[i].sets.splice(j,1);woRender()}return}
+  const d=e.target.closest("[data-wodone]");
   if(d){const[i,j]=d.dataset.wodone.split(":").map(Number),s=wo.ex[i].sets[j];s.done=!s.done;if(s.done&&!s.reps)s.reps=String(wo.ex[i].reps).split(/[–-]/).pop();woRender();if(s.done)woRest(wo.ex[i].rest);return}
   const w=e.target.closest("[data-woswap]");if(w){const i=+w.dataset.woswap,cur=wo.ex[i],p=(PL().profile||{}),eq=p.equip==="gym"?"g":p.equip==="db"?"d":"b";
     // v42 : remplaçants = même muscle (même schéma d'abord), compatibles avec le matériel, les zones à ménager, les exclusions et le reste de la séance

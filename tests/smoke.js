@@ -613,11 +613,14 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     // programme : débutant, 3 séances, haltères, genoux à ménager
     await pg.evaluate(()=>show("muscu"));await pg.waitForTimeout(200);await shot(pg,"v41-muscu-vide");
     await pg.click('#coachBox [data-coach="new"]');
+    // v43 : les précisions facultatives sont repliées
+    if(await pg.isVisible('#coachForm [data-cf="avoid"]'))err("précisions facultatives pas repliées");
+    await pg.click("#cfMore summary");
     for(const [k,v] of [["level","deb"],["goal","muscle"],["days","3"],["dur","60"],["equip","db"],["avoid","knee"]])await pg.click(`#coachForm [data-cf="${k}"] [data-v="${v}"]`);
     // v42 : exercices imposés / exclus, avec recherche
     await pg.fill('.cf-pick[data-cfx="must"] input',"marteau");await pg.waitForTimeout(100);await pg.click('.cf-pick[data-cfx="must"] [data-cfadd]');
     await pg.fill('.cf-pick[data-cfx="never"] input',"rowing halt");await pg.waitForTimeout(100);await pg.click('.cf-pick[data-cfx="never"] [data-cfadd]');
-    await shot(pg,"v41-coach-questions");await pg.click('#coachForm [type="submit"]');await pg.waitForTimeout(300);
+    await shot(pg,"v41-coach-questions");await pg.click('#coachForm [data-cfgo="app"]');await pg.waitForTimeout(300);
     const mn=await pg.evaluate(()=>{const a=PL().days.flatMap(d=>d.ex.map(e=>e.name));return[a.includes("Curl marteau"),a.includes("Rowing haltère un bras")]});
     if(!mn[0])err("exercice imposé absent du programme");if(mn[1])err("exercice exclu présent dans le programme");
     const dup=await pg.evaluate(()=>PL().days.some(d=>{const s=new Set();return d.ex.some(e=>{const x=EXN(e.name),k=x.m+":"+x.pat;if(s.has(k)||s.has(x.g))return true;s.add(k);s.add(x.g)})}));if(dup)err("doublon dans une séance");
@@ -629,8 +632,24 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     else if(await pg.evaluate(()=>PL().days.some(d=>d.ex.some(e=>!EXN(e.name).eq.includes("d")))))err("exercice de salle avec des haltères seulement");
     else if(pl.days.some(d=>d.ex.some(e=>/Squat goblet|Fentes|Leg extension/.test(e.name))))err("genoux pas ménagés");
     await shot(pg,"v41-coach-programme");
+    // v43 : séries libres dans le programme (+ / −)
+    {const s0=await pg.evaluate(()=>PL().days[0].ex[0].sets);await pg.click(`#coachBox [data-coset="${pl.days[0].id}:0:1"]`);await pg.click(`#coachBox [data-coset="${pl.days[0].id}:0:1"]`);await pg.click(`#coachBox [data-coset="${pl.days[0].id}:0:-1"]`);
+      if(await pg.evaluate(()=>PL().days[0].ex[0].sets)!==s0+1)err("séries du programme pas modifiables")}
+    // v43 : remarque → ajustement par Claude (le message part dans son Claude, comme Nutrition)
+    await pg.fill("#coRemark","remplace la 2e séance jambes par une séance haut du corps");await pg.click('#coachBox [data-coach="adjust"]');await pg.waitForTimeout(300);
+    if(await pg.isVisible("#consentSheet")){await pg.click("#consentYes");await pg.waitForTimeout(300)}
+    if(!(await pg.isVisible("#aiAskSheet"))||!(await pg.textContent("#aaPrompt")).includes("remplace la 2e séance jambes"))err("l'ajustement n'envoie pas la remarque à Claude");
+    if(!(await pg.evaluate(()=>PL().aiWait&&PL().profile.remarks.length===1)))err("remarque pas gardée / attente non signalée");
+    await shot(pg,"v43-coach-ajuster");await pg.click("#aaClose");await pg.waitForTimeout(150);
+    if(!(await pg.isVisible("#coachBox .coach-wait")))err("« demande envoyée à Claude » pas affiché");
+    // le programme de Claude arrive (comme par le connecteur) : l'attente disparaît
+    await pg.evaluate(()=>{const o=PL();M().plan={id:"ia1",profile:o.profile,days:o.days.map(d=>({...d})),at:new Date().toISOString(),upd:Date.now(),src:"ia"};M().upd=Date.now();renderCoach()});
+    if(await pg.isVisible("#coachBox .coach-wait"))err("l'attente reste après l'arrivée du programme de Claude");
     // séance : 2 séries faites, enregistrée, puis la charge monte
     await pg.click('#coachBox [data-coach="start"]');await pg.waitForTimeout(300);await shot(pg,"v41-seance");
+    // v43 : ajouter / retirer une série pendant la séance
+    {const n0=await pg.evaluate(()=>wo.ex[0].sets.length);await pg.click('#woBody [data-woadd="0"]');await pg.click('#woBody [data-woadd="0"]');await pg.click('#woBody [data-wodel="0:0"]');
+      if(await pg.evaluate(()=>wo.ex[0].sets.length)!==n0+1)err("séries pas ajoutables / retirables pendant la séance")}
     const nm=await pg.evaluate(()=>wo.ex[0].name),top=await pg.evaluate(()=>String(wo.ex[0].reps).split(/[–-]/).pop());
     await pg.evaluate(t=>{wo.ex[0].sets.forEach(s=>{s.kg="20";s.reps=t;s.done=true});woRender()},top);
     // v42 : en touchant un champ de nombre, le curseur va à la fin
@@ -689,6 +708,18 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.click('#homeBody [data-folder-open="fh1"]');await pg.waitForTimeout(250);if(await pg.evaluate(()=>data.ui.view+"/"+noteDir)!=="notes/fh1")err("le dossier récent ne s'ouvre pas");
     await pg.evaluate(()=>show("home"));await pg.click('#homeBody .hm-sec[data-app="fit"] .hm-open');await pg.waitForTimeout(250);if(await pg.evaluate(()=>appOf(data.ui.view))!=="fit")err("« Ouvrir » de sid'fit n'ouvre pas sid'fit");
     await ctx.close()}
+  // --- v43 lot 4 : « Créer avec Claude » envoie toutes les réponses + remarques libres ; le programme de l'app sert de base
+  for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1440,height:900}}],["tablette",{...devices["iPad (gen 7)"]}]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v43 programme "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43co"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.evaluate(()=>show("muscu"));await pg.click('#coachBox [data-coach="new"]');await pg.waitForTimeout(200);await shot(pg,"v43-"+nm+"-programme-questions");
+    await pg.click("#cfMore summary");await pg.fill("#cfNotes","je veux faire abdos tous les jours");await pg.fill("#cfAvoidTxt","poignet droit");
+    if(!(await pg.textContent("#cfMoreSum")).includes("2"))err("le résumé des précisions ne compte pas");
+    await pg.click('#coachForm [data-cfgo="ai"]');await pg.waitForTimeout(300);if(await pg.isVisible("#consentSheet")){await pg.click("#consentYes");await pg.waitForTimeout(300)}
+    const pr=await pg.textContent("#aaPrompt");if(!pr.includes("abdos tous les jours")||!pr.includes("poignet droit")||!pr.includes("enregistrer_programme"))err("message à Claude incomplet : "+pr);
+    if(!(await pg.evaluate(()=>!!PL()&&!!PL().aiWait&&PL().profile.avoidTxt==="poignet droit")))err("programme de base / attente / zone libre non gardés");
+    await shot(pg,"v43-"+nm+"-programme-claude");await ctx.close()}
   {const ctx=await b.newContext({...devices["iPhone 13"],intro:true,reducedMotion:"reduce"}),pg=await ctx.newPage(),err=m=>errs.push("v43 animations réduites : "+m);
     await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43rm@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");

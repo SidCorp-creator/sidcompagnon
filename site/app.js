@@ -398,7 +398,8 @@ function renderNav(v){const nav=document.querySelector("nav"),a=appOf(v);
 const dockOf=v=>v==="home"?"home":v==="more"||v==="app"?"more":v==="spaces"?"":groupOf(v).k;
 // espace touché → dernière fonction ouverte dans cet espace (sinon la première affichée)
 function openGroup(k){const g=GROUPS.find(x=>x.k===k);if(!g)return;const ts=groupTabs(g);if(!ts.length)return;
-  const last=data.ui.glast&&data.ui.glast[k];show(ts.includes(last)?last:ts[0])}
+  // Sid'note s'ouvre toujours sur Notes (demande de Sid) ; les autres apps rouvrent leur dernière fonction
+  const last=k==="perso"&&ts.includes("notes")?"notes":data.ui.glast&&data.ui.glast[k];show(ts.includes(last)?last:ts[0])}
 // pastilles : chaque fonction a la sienne, dans la barre du haut (À faire : tâches ouvertes, Pomodoro : en cours)
 const BADGES={};
 const badgeHtml=k=>{const b=BADGES[k];return !b?"":b==="dot"?`<i class="sbadge dot" aria-label="${L("En cours")}"></i>`:`<i class="sbadge">${b>99?"99+":b}</i>`};
@@ -4608,7 +4609,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v43-9";
+const BUILD="sidnote-v43-10";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||swTimer||tmRun||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

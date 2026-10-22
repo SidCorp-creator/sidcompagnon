@@ -754,6 +754,8 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const closed=await pg.evaluate(async()=>{const fw={closed:false,close(){this.closed=true}};window.open=()=>fw;extOpen("https://claude.ai/new?q=x");
       document.dispatchEvent(new Event("visibilitychange"));await new Promise(r=>setTimeout(r,400));return fw.closed});
     if(!closed)err("la fenêtre de Claude n'est pas refermée au retour");
+    // Sid'note s'ouvre toujours sur Notes, même si Documents était ouvert en dernier
+    const nv=await pg.evaluate(()=>{show("docs");show("home");openGroup("perso");const v=data.ui.view;show("nutri");return v});if(nv!=="notes")err("Sid'note s'ouvre sur « "+nv+" » au lieu de Notes");
     if(await pg.evaluate(()=>!!nuPhoto||!$("nuPhotoPrev").hidden))err("la photo reste affichée après l'envoi");
     // sans Claude branché : la feuille de partage reste le secours (photo + message)
     await pg.evaluate(()=>{data.prefs.aiOk=0;navigator.canShare=()=>true;navigator.share=async d=>{window.__shared={n:(d.files||[]).length,type:d.files&&d.files[0]&&d.files[0].type,text:d.text}}});

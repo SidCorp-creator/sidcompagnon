@@ -742,3 +742,28 @@ html[data-ds] .nu-ring .bgc{stroke:var(--line)}
 html[data-ds] .cf-open{border-top:var(--rule,1px) solid var(--line);padding-top:14px;margin-top:6px}
 html[data-ds] .cf-open .cf-opt{letter-spacing:0;text-transform:none;font-weight:400;margin-left:6px;color:var(--muted)}
 html[data-ds] .nu-for,html[data-ds] .nu-for-day{text-transform:none;letter-spacing:0;font-size:14px}
+
+/* ---- v44.6 : Tâches, « Nouvelle tâche » en action principale, recherche discrète ---- */
+#v-todo .todo-new{margin:6px 0 14px;gap:8px}
+#v-todo .todo-new input{font-size:17px;min-height:50px;border:1.5px solid var(--app);border-radius:8px;background:var(--surface);padding-inline:14px}
+#v-todo .todo-new .btn{min-height:50px;padding-inline:20px;background:var(--app);color:var(--on-app,#fff);border-color:var(--app);font-weight:500}
+#v-todo .todo-tools{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+#v-todo .todo-tools .prog{flex:1;margin:0}
+#v-todo .todo-sbtn{flex:none;width:36px;height:36px;display:grid;place-items:center;border:var(--rule,1px) solid var(--line);border-radius:6px;background:none;color:var(--muted);cursor:pointer;touch-action:manipulation}
+#v-todo .todo-sbtn[aria-expanded="true"]{color:var(--app);border-color:var(--app)}
+#v-todo .todo-search{font-size:16px;min-height:40px;margin:0 0 12px}
+
+/* ---- v44.6 : musculation, une seule interface (séries, répétitions, kg) ---- */
+.ex2 .ex-vals{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:end;padding-left:26px}
+.ex2 .ex-f{display:grid;gap:4px;min-width:0}
+.ex2 .ex-l{font:500 10px/1.2 var(--font);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.ex2 .co-sets{display:inline-flex;align-items:center;gap:2px;height:40px}
+.ex2 .co-step{width:34px;height:34px;border:var(--rule,1px) solid var(--line);border-radius:6px;background:transparent;color:var(--app);font:500 17px/1 var(--font);cursor:pointer;touch-action:manipulation}
+.ex2 .co-step:disabled{opacity:.35;cursor:default}
+.ex2 .co-sets .num{min-width:24px;text-align:center;font:400 15px var(--mono,monospace)}
+.ex2 .ex-in{width:100%;height:40px;min-height:40px;font:400 16px var(--mono,monospace);text-align:center;background:var(--field,var(--surface));border:var(--rule,1px) solid var(--line);border-radius:6px;padding:0 6px}
+.ex2 .ex-in::placeholder{color:var(--line);opacity:1}
+@media (max-width:360px){.ex2 .ex-vals{padding-left:0}}
+
+/* ---- v44.6 : rien ne passe sous la barre d'état de l'iPhone (bande opaque en haut, sous les fenêtres) ---- */
+body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:29;pointer-events:none}

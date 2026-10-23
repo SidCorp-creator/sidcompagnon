@@ -124,11 +124,15 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
 
     // --- v29 : mois repliables dans l'Agenda
     await pg.evaluate(()=>{const y=new Date().getFullYear();data.tasks.push({id:"m1",title:"Anniversaire A",date:`${y+1}-01-19`,status:"à faire",cat:"Perso"},{id:"m2",title:"Anniversaire B",date:`${y+1}-03-02`,status:"à faire",cat:"Perso"});save();renderPlan()});
+    // v44.6 : tous les mois repliés par défaut ; un mois s'ouvre au toucher, « Tout déplier » / « Tout replier »
+    if(await pg.$$eval("#tasks .card",x=>x.length)!==0)err("des mois sont ouverts par défaut");
+    await pg.locator("#tasks").scrollIntoViewIfNeeded();await shot(pg,scheme+"-fr-plan-mois-replies");
     await pg.click("#tasks [data-mfold]");await pg.waitForTimeout(150);
-    if(!(await pg.$eval("#tasks [data-mfold]",b=>b.getAttribute("aria-expanded")==="false")))err("le mois ne se replie pas");
+    if(!(await pg.$eval("#tasks [data-mfold]",b=>b.getAttribute("aria-expanded")==="true")))err("le mois ne s'ouvre pas");
     await pg.click("[data-mfoldall]");await pg.waitForTimeout(150);
     if(await pg.$$eval("#tasks .card",x=>x.length)!==0)err("« Tout replier » ne replie pas tous les mois");
-    await pg.locator("#tasks").scrollIntoViewIfNeeded();await shot(pg,scheme+"-fr-plan-mois-replies");await pg.click("[data-mfoldall]");
+    await pg.click("[data-mfoldall]");await pg.waitForTimeout(150);
+    if(await pg.$$eval("#tasks [data-mfold][aria-expanded='false']",x=>x.length))err("« Tout déplier » n'ouvre pas tous les mois");
     // --- v29 : le fond est figé quand une fenêtre est ouverte
     await home();await pg.click("#homeAdd");await pg.waitForTimeout(150);
     if(!(await pg.evaluate(()=>document.documentElement.classList.contains("modal-open"))))err("le fond n'est pas figé sous l'ajout rapide");
@@ -625,8 +629,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(await pg.evaluate(()=>PLD().some(d=>d.exercises.some(e=>e.rest<120))))err("repos trop court");
     // v44 : les séances du programme sont des cartes comme les autres (repos et séries modifiables sur la carte)
     const d0=await pg.evaluate(()=>PLD()[0].id);
-    await pg.click(`#msList [data-ms="${d0}"] summary`);await pg.click(`#msList [data-ms="${d0}"] [data-msrest]`);await pg.waitForTimeout(150);await pg.click('#actList .act-it:has-text("4 min")');
-    if(await pg.evaluate(()=>PLD()[0].exercises[0].rest)!==240)err("repos pas modifiable");
+    await pg.click(`#msList [data-ms="${d0}"] summary`);
     const pl=await pg.evaluate(()=>PLD().map(d=>d.exercises.map(e=>e.name)));
     if(pl.length!==3)err("programme pas créé : "+pl.length);
     else if(await pg.evaluate(()=>PLD().some(d=>d.exercises.length<3||d.exercises.some(e=>!EXN(e.name)))))err("séance trop courte ou exercice hors de la liste");
@@ -646,19 +649,20 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     // le programme de Claude arrive (comme par le connecteur) : l'attente disparaît
     await pg.evaluate(()=>{const o=PL();PLD().forEach(s=>{s.grp={...s.grp,id:"ia1",src:"claude"};s.upd=Date.now()});M().plan={id:"ia1",v:2,profile:o.profile,at:new Date().toISOString(),upd:Date.now(),src:"ia"};M().upd=Date.now();renderMuscu()});
     if(await pg.isVisible("#coachBox .coach-wait"))err("l'attente reste après l'arrivée du programme de Claude");
-    // séance : 2 séries faites, enregistrée, puis la charge monte
-    await pg.click('#coachBox [data-coach="start"]');await pg.waitForTimeout(300);await shot(pg,"v41-seance");
-    // v43 : ajouter / retirer une série pendant la séance
-    {const n0=await pg.evaluate(()=>wo.ex[0].sets.length);await pg.click('#woBody [data-woadd="0"]');await pg.click('#woBody [data-woadd="0"]');await pg.click('#woBody [data-wodel="0:0"]');
-      if(await pg.evaluate(()=>wo.ex[0].sets.length)!==n0+1)err("séries pas ajoutables / retirables pendant la séance")}
-    const nm=await pg.evaluate(()=>wo.ex[0].name),top=await pg.evaluate(()=>String(wo.ex[0].reps).split(/[–-]/).pop());
-    await pg.evaluate(t=>{wo.ex[0].sets.forEach(s=>{s.kg="20";s.reps=t;s.done=true});woRender()},top);
-    // v42 : en touchant un champ de nombre, le curseur va à la fin
-    await pg.click('[data-wok="0:0"]',{position:{x:8,y:10}});await pg.waitForTimeout(120);
-    const cur=await pg.evaluate(()=>{const el=document.activeElement;return [el.selectionStart,el.value.length]});if(cur[0]!==cur[1])err("curseur pas à la fin du nombre : "+cur);
-    await pg.click("#woDone");await pg.waitForTimeout(300);
-    const lg=await pg.evaluate(()=>ML().length);if(lg!==1)err("séance pas enregistrée");
-    const h=await pg.evaluate(n=>coachHint(PLD().flatMap(d=>d.exercises).find(e=>e.name===n)),nm);if(!(+h.kg>20))err("charge pas augmentée après tout réussi : "+JSON.stringify(h));
+    // v44.6 : une seule interface : séries, répétitions et kg communs, modifiés directement sur la carte (plus de mode séance)
+    if(await pg.$("#woSheet")||await pg.$('#coachBox [data-coach="start"]')||await pg.$("#msList [data-msstart]"))err("le mode séance (commencer / terminer) existe encore");
+    {const sel=`#msList [data-ms="${d0}"] [data-ex]:first-of-type`;
+      if(await pg.inputValue(`${sel} [data-f="exkg"]`)!=="")err("le poids est pré-rempli");
+      if(await pg.$$eval(`#msList [data-ms="${d0}"] [data-ex]:first-of-type input`,x=>x.length)!==3)err("un exercice doit avoir 3 champs (nom, répétitions, kg)");
+      for(const [f,v] of [["exkg","22,5"],["exreps","10"]]){await pg.$eval(`${sel} [data-f="${f}"]`,el=>{el.value=""});await pg.type(`${sel} [data-f="${f}"]`,v)}await pg.waitForTimeout(700);
+      const v=await pg.evaluate(()=>[PLD()[0].exercises[0].kg,PLD()[0].exercises[0].reps]);if(v[0]!=="22.5"||v[1]!=="10")err("poids / répétitions pas enregistrés : "+v);
+      // v42 : en touchant un champ de nombre, le curseur va à la fin
+      await pg.click(`${sel} [data-f="exkg"]`,{position:{x:8,y:10}});await pg.waitForTimeout(120);
+      const cur=await pg.evaluate(()=>{const el=document.activeElement;return [el.selectionStart,el.value.length]});if(cur[0]!==cur[1])err("curseur pas à la fin du nombre : "+cur);
+      await pg.locator(`#msList [data-ms="${d0}"]`).scrollIntoViewIfNeeded();await shot(pg,"v446-muscu-carte")}
+    // migration : un ancien exercice (une ligne par série) garde son poids et ses répétitions
+    {const r=await pg.evaluate(()=>{M().sessions.push({id:"old1",name:"Ancienne",upd:1,exercises:[{id:"oe",name:"Curl poulie",reps:"",sets:[{kg:"12",reps:"10"},{kg:"14",reps:"8"},{kg:"",reps:""}]}]});renderMuscu();const e=M().sessions.find(s=>s.id==="old1").exercises[0];return [e.kg,e.reps,e.sets.length]});
+      if(r[0]!=="14"||r[1]!=="8"||r[2]!==3)err("migration de l'ancien format : "+r)}
     // notes : glisser une note puis un dossier dans un dossier
     await pg.evaluate(()=>{data.noteFolders=[{id:"fA",name:"Master 2",parent:null},{id:"fB",name:"Cours",parent:null}];data.notes=[{id:"n1",title:"Finance",body:"x",createdAt:new Date().toISOString(),upd:Date.now()}];save();show("notes");noteDir=null;renderNotes()});
     await pg.waitForTimeout(300);await shot(pg,"v41-notes-glisser");
@@ -784,8 +788,9 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const mg=await pg.evaluate(()=>{data.muscu={sessions:[{id:"s1",name:"Push libre",exercises:[{id:"e1",name:"Dips",sets:[{kg:"20",reps:"8"},{kg:"22,5",reps:"6"}]}]}],
       plan:{id:"P1",profile:{level:"inter",goal:"muscle",days:2,dur:60,equip:"gym"},days:[{id:"d1",name:"Séance A",ex:[{name:"Squat barre",pat:"quads:squat",sets:4,reps:"6–10",rest:180,rir:"1–2"}]},{id:"d2",name:"Séance B",ex:[{name:"Tractions",pat:"back:vpull",sets:3,reps:"8–12",rest:120}]}],upd:1,src:"app"},
       log:[{id:"l1",date:"2026-10-20",day:"d1",name:"Séance A",ex:[{name:"Squat barre",sets:[{kg:"80",reps:"10"}]}]}]};save();show("muscu");renderMuscu();
-      const m=data.muscu;return{days:!!m.plan.days,v:m.plan.v,ses:m.sessions.map(s=>s.name+":"+s.exercises.map(e=>e.sets.length+"/"+(e.reps||"")+"/"+(e.rest||"")).join(",")).join(" | "),next:coachNext()&&coachNext().id,cards:document.querySelectorAll("#msList .ms").length,kg:m.sessions[0].exercises[0].sets[1].kg}});
-    if(mg.days||mg.v!==2||mg.ses!=="Push libre:2// | Séance A:4/6–10/180 | Séance B:3/8–12/120"||mg.next!=="d2"||mg.cards!==3||mg.kg!=="22,5")err("migration : "+JSON.stringify(mg));
+      const m=data.muscu;return{days:!!m.plan.days,v:m.plan.v,ses:m.sessions.map(s=>s.name+":"+s.exercises.map(e=>e.sets.length+"/"+(e.reps||"")+"/"+(e.rest||"")).join(",")).join(" | "),next:coachNext()&&coachNext().id,cards:document.querySelectorAll("#msList .ms").length,kg:m.sessions[0].exercises[0].sets[1].kg,kg1:m.sessions[0].exercises[0].kg}});
+    // v44.6 : un seul poids / un seul nombre de répétitions par exercice, repris de la dernière série remplie
+    if(mg.days||mg.v!==2||mg.ses!=="Push libre:2/6/ | Séance A:4/6–10/180 | Séance B:3/8–12/120"||mg.next!=="d2"||mg.cards!==3||mg.kg!=="22,5"||mg.kg1!=="22.5")err("migration : "+JSON.stringify(mg));
     if(await pg.$("#rest"))err("chrono encore présent");
     await pg.waitForFunction(()=>{const s=document.getElementById("splash");return !s||s.hidden||getComputedStyle(s).display==="none"||getComputedStyle(s).opacity==="0"},null,{timeout:6000}).catch(()=>{});await pg.waitForTimeout(300);
     await pg.click('#msList [data-ms="d2"] summary');await pg.evaluate(()=>{const e=document.querySelector("#msList");window.scrollTo(0,e.getBoundingClientRect().top+scrollY-120)});await shot(pg,"v44-"+nm+"-seances");
@@ -872,9 +877,10 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
       data.ui.glast={orga:"todo",sport:"muscu",perso:"docs"};data.ui.filter="Toutes";save();renderPlan()});
     // ouverture : sid'agenda → Agenda, sid'fit → Nutrition (même si une autre fonction était ouverte avant)
     await pg.evaluate(()=>openGroup("orga"));if(await pg.evaluate(()=>data.ui.view)!=="plan")err("sid'agenda ne s'ouvre pas sur Agenda");
-    // mois ouverts à l'ouverture, même après « Tout replier »
+    // v44.6 : mois repliés à l'ouverture, même après « Tout déplier »
     await pg.click("[data-mfoldall]");await pg.waitForTimeout(100);await pg.evaluate(()=>{show("home");openGroup("orga")});await pg.waitForTimeout(100);
-    if(await pg.$$eval("#tasks [data-mfold][aria-expanded='false']",x=>x.length))err("des mois sont repliés à l'ouverture");
+    if(await pg.$$eval("#tasks [data-mfold][aria-expanded='true']",x=>x.length))err("des mois sont ouverts à l'ouverture");
+    await pg.click("[data-mfoldall]");await pg.waitForTimeout(100);
     if(!(await pg.$$eval("#tasks .prow .pr-date",x=>x.length)))err("nouvelles lignes de dates absentes");
     await pg.click('#tasks [data-tmore2="p0"]');await pg.waitForTimeout(150);if(!(await pg.isVisible("#actSheet")))err("« ⋯ » n'ouvre pas les actions de l'activité");
     await pg.click("#actClose");await pg.waitForTimeout(100);

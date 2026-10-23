@@ -1271,3 +1271,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 .nu-ring .fgc{stroke:var(--pc);transition:stroke-dashoffset .25s linear,stroke .2s}
 .nu-ring-txt{position:absolute;inset:0;display:grid;place-items:center}
 @media (prefers-reduced-motion:reduce){.nu-ring .fgc{transition:none}}
+
+/* v44.4 : barre du bas toujours collée au bas de la partie visible de l'écran (bug iOS : elle remontait au milieu après le clavier) */
+nav{top:calc(var(--vvt,0px) + var(--vvh,100%));bottom:auto;transform:translateY(-100%)}
+html.kb-open nav{visibility:hidden}

@@ -612,8 +612,8 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>show("muscu"));await pg.waitForTimeout(200);await shot(pg,"v41-muscu-vide");
     await pg.click('#coachBox [data-coach="new"]');
     // v43 : les précisions facultatives sont repliées
-    if(await pg.isVisible('#coachForm [data-cf="avoid"]'))err("précisions facultatives pas repliées");
-    await pg.click("#cfMore summary");
+    if(!(await pg.isVisible('#coachForm [data-cf="avoid"]')))err("précisions pas ouvertes d'emblée (v44.4)");
+    
     for(const [k,v] of [["level","deb"],["goal","muscle"],["days","3"],["dur","60"],["equip","db"],["avoid","knee"]])await pg.click(`#coachForm [data-cf="${k}"] [data-v="${v}"]`);
     // v42 : exercices imposés / exclus, avec recherche
     await pg.fill('.cf-pick[data-cfx="must"] input',"marteau");await pg.waitForTimeout(100);await pg.click('.cf-pick[data-cfx="must"] [data-cfadd]');
@@ -695,7 +695,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>show("home"));await pg.click('#homeBody [data-gapp="sport"]');await pg.waitForTimeout(400);
     if(!(await pg.isVisible("#appIntro")))err("pas d'animation à l'ouverture de sid'fit");else{await shot(pg,"v43-"+nm+"-animation-fit");
       await pg.mouse.click(400,300);await pg.waitForTimeout(300);if(await pg.isVisible("#appIntro"))err("un clic ne passe pas l'animation")}
-    if(await pg.evaluate(()=>data.ui.view)!=="muscu")err("sid'fit ne s'ouvre pas après l'animation");
+    if(await pg.evaluate(()=>data.ui.view)!=="nutri")err("sid'fit ne s'ouvre pas sur Nutrition après l'animation");
     await shot(pg,"v43-"+nm+"-muscu");await ctx.close()}
   // --- v43 lot 3 : Aujourd'hui = une section par app (nom, couleur, « Ouvrir »), dossiers récents dans sid'note
   {const ctx=await b.newContext({...devices["iPhone 13"]}),pg=await ctx.newPage(),err=m=>errs.push("v43 Aujourd'hui : "+m);pg.on("pageerror",e=>err(e.message));
@@ -715,7 +715,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43co"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     await pg.evaluate(()=>show("muscu"));await pg.click('#coachBox [data-coach="new"]');await pg.waitForTimeout(200);await shot(pg,"v43-"+nm+"-programme-questions");
-    await pg.click("#cfMore summary");await pg.fill("#cfNotes","je veux faire abdos tous les jours");await pg.fill("#cfAvoidTxt","poignet droit");
+    await pg.fill("#cfNotes","je veux faire abdos tous les jours");await pg.fill("#cfAvoidTxt","poignet droit");
     if(!(await pg.textContent("#cfMoreSum")).includes("2"))err("le résumé des précisions ne compte pas");
     await pg.click('#coachForm [data-cfgo="ai"]');await pg.waitForTimeout(300);if(await pg.isVisible("#consentSheet")){await pg.click("#consentYes");await pg.waitForTimeout(300)}
     const pr=await pg.textContent("#aaPrompt");if(!pr.includes("abdos tous les jours")||!pr.includes("poignet droit")||!pr.includes("enregistrer_programme"))err("message à Claude incomplet : "+pr);
@@ -770,7 +770,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await shot(pg,"v43-photo-claude");await pg.click("#aaShare");await pg.waitForTimeout(300);
     const sh=await pg.evaluate(()=>window.__shared);if(!sh||sh.n!==1||sh.type!=="image/jpeg"||!/photo/i.test(sh.text||""))err("la photo n'est pas partagée avec le message : "+JSON.stringify(sh));
     if(await pg.isVisible("#aiAskSheet"))await pg.click("#aaClose");
-    await pg.evaluate(()=>{show("muscu");coachOpen()});await pg.click("#cfMore summary");await pg.fill("#cfNotes","abdos tous les jours");await pg.fill("#cfAvoidTxt","poignet");
+    await pg.evaluate(()=>{show("muscu");coachOpen()});await pg.fill("#cfNotes","abdos tous les jours");await pg.fill("#cfAvoidTxt","poignet");
     await pg.click('#coachForm [data-cfgo="ai"]');await pg.waitForTimeout(400);if(await pg.isVisible("#aaClose"))await pg.click("#aaClose");
     await pg.evaluate(()=>coachOpen());await pg.waitForTimeout(150);if(await pg.inputValue("#cfNotes")!==""||await pg.inputValue("#cfAvoidTxt")!=="")err("remarques du programme pré-remplies à la réouverture");
     if(!(await pg.evaluate(()=>PL().profile.remarks.some(r=>r.text==="abdos tous les jours"))))err("la remarque n'est plus gardée pour Claude");
@@ -864,6 +864,49 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43rm@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     await pg.click('#homeBody [data-gapp="perso"]');await pg.waitForTimeout(300);if(await pg.isVisible("#appIntro"))err("animation affichée malgré « réduire les animations »");await ctx.close()}
+  // --- v44.4 : barre du bas, ouverture des apps, liste des dates, sortie animée, repas des jours passés, séance supprimée d'un coup, précisions ouvertes
+  {const ctx=await b.newContext({...devices["iPhone 13"],intro:true}),pg=await ctx.newPage(),err=m=>errs.push("v44.4 : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v444@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.evaluate(()=>{window.__noIntro=true;const y=new Date().getFullYear()+1;for(let i=0;i<14;i++)data.tasks.push({id:"p"+i,title:"Activité "+i,date:`${y}-${String(1+i%12).padStart(2,"0")}-${String(3+i).padStart(2,"0")}`,time:i%2?"08:00":"",status:"à faire",cat:"Perso"});
+      data.ui.glast={orga:"todo",sport:"muscu",perso:"docs"};data.ui.filter="Toutes";save();renderPlan()});
+    // ouverture : sid'agenda → Agenda, sid'fit → Nutrition (même si une autre fonction était ouverte avant)
+    await pg.evaluate(()=>openGroup("orga"));if(await pg.evaluate(()=>data.ui.view)!=="plan")err("sid'agenda ne s'ouvre pas sur Agenda");
+    // mois ouverts à l'ouverture, même après « Tout replier »
+    await pg.click("[data-mfoldall]");await pg.waitForTimeout(100);await pg.evaluate(()=>{show("home");openGroup("orga")});await pg.waitForTimeout(100);
+    if(await pg.$$eval("#tasks [data-mfold][aria-expanded='false']",x=>x.length))err("des mois sont repliés à l'ouverture");
+    if(!(await pg.$$eval("#tasks .prow .pr-date",x=>x.length)))err("nouvelles lignes de dates absentes");
+    await pg.click('#tasks [data-tmore2="p0"]');await pg.waitForTimeout(150);if(!(await pg.isVisible("#actSheet")))err("« ⋯ » n'ouvre pas les actions de l'activité");
+    await pg.click("#actClose");await pg.waitForTimeout(100);
+    // barre du bas : collée en bas après défilement
+    await pg.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));await pg.waitForTimeout(300);
+    {const r=await pg.evaluate(()=>{const n=document.querySelector("nav").getBoundingClientRect();return [n.bottom,innerHeight,n.height]});if(Math.abs(r[0]-r[1])>1||r[2]<40)err("barre du bas pas collée en bas : "+r)}
+    await shot(pg,"v444-agenda-liste");
+    await pg.evaluate(()=>window.scrollTo(0,0));await pg.locator("#tasks").scrollIntoViewIfNeeded();await shot(pg,"v444-agenda-liste-haut");
+    // sortie animée vers Sid'home
+    await pg.evaluate(()=>{window.__noIntro=false;show("home")});await pg.waitForTimeout(150);if(!(await pg.isVisible("#appOutro")))err("pas d'animation de sortie");
+    await shot(pg,"v444-sortie");await pg.waitForTimeout(900);if(await pg.$("#appOutro"))err("l'animation de sortie ne disparaît pas");
+    await pg.evaluate(()=>{window.__noIntro=true});
+    await pg.evaluate(()=>openGroup("sport"));if(await pg.evaluate(()=>data.ui.view)!=="nutri")err("sid'fit ne s'ouvre pas sur Nutrition");
+    // repas d'un jour passé : jour choisi dans « Ajouter ce que tu manges », dit à Claude
+    await pg.evaluate(()=>{data.nutri={consent:new Date().toISOString(),profile:{sex:"h",age:24,height:180,weight:80,goal:"maintain",sports:[]},plan:{kcal:2000,p:150,c:200,f:70,bmr:1800,tdee:2000,text:"",warn:[]},upd:Date.now(),log:[]};save();renderNutri()});
+    await pg.click('#nuFor [data-nufor="-1"]');await pg.waitForTimeout(100);
+    {const r=await pg.evaluate(()=>{const y=new Date(today());y.setDate(y.getDate()-1);return [nuDay===iso(y),aiPrompt("aliment",{text:"pâtes 200 g"}).includes(iso(y)),$("nuForTxt").textContent]});
+      if(!r[0])err("le jour du repas ne recule pas");if(!r[1])err("le message à Claude ne donne pas le jour passé");}
+    await pg.evaluate(()=>{nuAddItems([{name:"Pâtes",qty:"200 g",kcal:300,p:10,c:60,f:2}],null,null)});
+    if(!(await pg.evaluate(()=>{const y=new Date(today());y.setDate(y.getDate()-1);return NU().log.some(x=>x.day===iso(y)&&x.name==="Pâtes")})))err("repas non ajouté au jour passé");
+    await pg.locator("#nuAddBox").scrollIntoViewIfNeeded();await shot(pg,"v444-nutrition-jour-passe");
+    // séance supprimée d'un coup (poubelle dans l'en-tête, 2 appuis)
+    await pg.evaluate(()=>{M().sessions.push({id:"sx",name:"Séance test",upd:Date.now(),exercises:[{id:"e1",name:"Curl poulie",sets:[{kg:"",reps:""},{kg:"",reps:""}]},{id:"e2",name:"Face pull",sets:[{kg:"",reps:""}]}]});save();show("muscu");renderMuscu()});await pg.waitForTimeout(200);
+    await pg.locator('[data-ms="sx"] .ms-del').scrollIntoViewIfNeeded();await pg.click('[data-ms="sx"] .ms-del');await pg.waitForTimeout(100);
+    if(!(await pg.evaluate(()=>M().sessions.some(x=>x.id==="sx"))))err("la séance est supprimée sans confirmation");
+    if(await pg.evaluate(()=>document.querySelector('[data-ms="sx"]').open))err("la poubelle ouvre la séance");
+    await shot(pg,"v444-seance-suppr");
+    await pg.click('[data-ms="sx"] .ms-del');await pg.waitForTimeout(200);if(await pg.evaluate(()=>M().sessions.some(x=>x.id==="sx")))err("la séance n'est pas supprimée");
+    // « Tes précisions » ouvert d'emblée
+    await pg.evaluate(()=>coachOpen());await pg.waitForTimeout(200);if(!(await pg.isVisible("#cfNotes")))err("« Tes précisions » n'est pas ouvert");
+    await pg.locator("#cfNotes").scrollIntoViewIfNeeded();await shot(pg,"v444-programme-precisions");
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

@@ -587,7 +587,14 @@ html[data-ds] .onb[data-app] .onb-dots i.on{background:var(--app)}
 .it-stack span{position:absolute;inset:0;border:1.5px solid var(--app);border-radius:4px;background:var(--bg);opacity:0;transform:translate(var(--x),-30px) rotate(var(--r));animation:aiSheet .4s ease-out forwards}
 .it-stack span:last-child{background:var(--app)}
 @keyframes aiSheet{to{opacity:1;transform:translate(calc(var(--x) / 3),0) rotate(var(--r))}}
-@media (prefers-reduced-motion:reduce){.app-intro{display:none!important}}
+/* v44.4 : sortie d'une app (retour à Sid'home) */
+.app-outro{position:fixed;inset:0;z-index:190;display:grid;place-content:center;background:var(--bg);pointer-events:none}
+.ao-brand{display:flex;flex-direction:column;align-items:center;gap:14px}
+.ao-logo{width:72px;height:72px;display:block;transform-origin:center}
+.ao-logo svg{width:100%;height:100%}
+.app-outro[data-app="agenda"] .ao-logo{color:var(--c-agenda)}.app-outro[data-app="fit"] .ao-logo{color:var(--c-fit)}.app-outro[data-app="note"] .ao-logo{color:var(--c-note)}
+.ao-name{font:300 26px/1 var(--display,"Fraunces",serif);color:var(--ink);letter-spacing:-.01em}
+@media (prefers-reduced-motion:reduce){.app-intro,.app-outro{display:none!important}}
 
 /* ---- v43 : Aujourd'hui = un résumé par app, chacun dans sa section ---- */
 .hm-sec{margin:26px 0 0;border-top:2px solid var(--app);padding-top:12px}
@@ -694,3 +701,44 @@ html[data-ds] .seg button[aria-pressed="true"],html[data-ds] .seg button[aria-se
 .conv-row input{flex:1;min-width:0}
 html[data-ds] .nu-ring circle{stroke-width:1.5px;stroke-linecap:butt}
 html[data-ds] .nu-ring .bgc{stroke:var(--line)}
+
+/* ---- v44.4 : sid'agenda, lignes de « Toutes les dates » ---- */
+#tasks .prow{border-left:0;gap:14px;align-items:center;padding:14px 2px;min-height:64px}
+#tasks .card{padding-inline:0}
+#tasks .prow .pr-date{flex:none;width:40px;display:flex;flex-direction:column;align-items:center;gap:3px;padding-right:12px;border-right:2px solid var(--c);align-self:stretch;justify-content:center}
+#tasks .prow .pr-date b{font:400 22px/1 var(--display,"Fraunces",serif);color:var(--ink);font-variant-numeric:lining-nums}
+#tasks .prow .pr-date span{font:500 10px/1 var(--font);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+#tasks .prow .pr-main{min-width:0;display:flex;flex-direction:column;gap:3px}
+#tasks .prow .ttl{font:400 16px/1.3 var(--font);color:var(--ink);padding:0;overflow-wrap:anywhere}
+#tasks .prow .pr-meta{display:flex;flex-wrap:wrap;align-items:center;gap:0 5px;font:400 13px/1.4 var(--font);color:var(--muted)}
+#tasks .prow .pr-dot{width:7px;height:7px;border-radius:50%;background:var(--c);flex:none;margin-right:2px}
+#tasks .prow .pr-time{font-family:var(--mono,monospace);font-size:12px}
+#tasks .prow .pr-note{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+#tasks .prow .tbc{margin-left:2px;background:none;cursor:pointer;font:500 11px/1.6 var(--font)}
+#tasks .prow .status{flex:none;border:0;background:var(--app-soft,transparent);color:var(--app);padding:6px 10px;font:500 12px/1 var(--font);border-radius:99px;min-height:30px}
+#tasks .prow .status[data-s="en cours"]{color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,transparent)}
+#tasks .prow .status[data-s="fait"]{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+#tasks .prow .pr-more{flex:none;width:36px;height:36px;margin-right:-6px;border:0;background:none;color:var(--muted);font:500 20px/1 var(--font);border-radius:6px;cursor:pointer;touch-action:manipulation;display:grid;place-items:center}
+#tasks .prow .pr-more:active{background:var(--surface)}
+#tasks .prow.isfait .ttl{text-decoration:line-through;color:var(--muted)}
+#tasks .prow.is-past{opacity:.55}
+@media (max-width:380px){#tasks .prow{gap:10px}#tasks .prow .pr-date{width:34px;padding-right:9px}}
+
+/* ---- v44.4 : sid'fit, jour du repas dans « Ajouter ce que tu manges » ---- */
+.nu-for{display:flex;align-items:center;gap:4px;font:400 14px var(--font);color:var(--muted)}
+.nu-for-l{margin-right:4px}
+.nu-for-nav{border:0;background:none;color:var(--muted);width:32px;height:32px;border-radius:6px;font:400 20px/1 var(--font);cursor:pointer;touch-action:manipulation}
+.nu-for-nav:disabled{opacity:.3;cursor:default}
+.nu-for-day{position:relative;display:inline-flex;align-items:center;padding:4px 10px;border:var(--rule,1px) solid var(--line);border-radius:6px;color:var(--ink);cursor:pointer}
+.nu-for-day input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;font-size:16px}
+.nu-for.past .nu-for-day{border-color:var(--app);color:var(--app);font-weight:500}
+
+/* ---- v44.4 : sid'fit, supprimer une séance depuis son en-tête ---- */
+.ms summary .ms-del{flex:none;width:auto;min-width:36px;height:36px;padding:0 6px;display:grid;place-items:center;color:var(--muted);border-radius:6px}
+.ms summary .ms-del svg{width:18px;height:18px}
+.ms summary .ms-del.armed{color:var(--late);font:500 13px var(--font);white-space:nowrap}
+
+/* ---- v44.4 : « Tes précisions » toujours ouvert (même rendu que « L'essentiel », séparé par un filet) ---- */
+html[data-ds] .cf-open{border-top:var(--rule,1px) solid var(--line);padding-top:14px;margin-top:6px}
+html[data-ds] .cf-open .cf-opt{letter-spacing:0;text-transform:none;font-weight:400;margin-left:6px;color:var(--muted)}
+html[data-ds] .nu-for,html[data-ds] .nu-for-day{text-transform:none;letter-spacing:0;font-size:14px}

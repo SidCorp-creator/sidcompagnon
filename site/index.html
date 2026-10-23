@@ -301,6 +301,7 @@
       <h2 class="nu-add-h">Ajouter ce que tu manges</h2>
       <form class="card form nu-ask" id="nuAskForm">
         <textarea id="nuAsk" rows="2" placeholder="Ce que tu manges, avec la quantité" aria-label="Ce que tu manges" enterkeyhint="send"></textarea>
+        <div class="nu-for" id="nuFor"><span class="nu-for-l">Pour</span><button type="button" class="nu-for-nav" data-nufor="-1" aria-label="Jour précédent">‹</button><label class="nu-for-day"><span id="nuForTxt"></span><input type="date" id="nuForDate" aria-label="Jour du repas"></label><button type="button" class="nu-for-nav" data-nufor="1" id="nuForNext" aria-label="Jour suivant">›</button></div>
         <div class="nu-photo" id="nuPhotoPrev" hidden></div>
         <div class="nu-ask-row">
           <label class="mini nu-tool"><input type="file" id="nuPhoto" accept="image/*" capture="environment" hidden><i class="ic" data-i="camera"></i> Photo</label>
@@ -631,7 +632,7 @@
     <div class="card" id="stats"></div>
       </div>
     </details>
-    <p class="small muted" style="margin:18px 4px">Sid'home · version 44.3 · une app <b>SidCorp</b></p>
+    <p class="small muted" style="margin:18px 4px">Sid'home · version 44.4 · une app <b>SidCorp</b></p>
   </section>
 </main>
 
@@ -709,13 +710,13 @@
       <div class="cf-two"><div class="cf-q"><b>Séances par semaine</b><div class="seg cf-seg" data-cf="days" style="grid-template-columns:repeat(5,1fr)"><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button><button type="button" data-v="4">4</button><button type="button" data-v="5">5</button><button type="button" data-v="6">6</button></div></div><div class="cf-q"><b>Durée d'une séance</b><div class="seg cf-seg" data-cf="dur" style="grid-template-columns:repeat(4,1fr)"><button type="button" data-v="45">45 min</button><button type="button" data-v="60">1 h</button><button type="button" data-v="75">1 h 15</button><button type="button" data-v="90">1 h 30</button></div></div></div>
       <div class="cf-q"><b>Où t'entraînes-tu ?</b><div class="seg cf-seg" data-cf="equip" style="grid-template-columns:repeat(3,1fr)"><button type="button" data-v="gym">Salle de sport</button><button type="button" data-v="db">Maison avec haltères</button><button type="button" data-v="bw">Sans matériel</button></div></div>
       </fieldset>
-      <details class="cf-sec cf-more" id="cfMore"><summary><span class="eyebrow">Tes précisions</span><span class="small muted" id="cfMoreSum">facultatif</span></summary>
+      <fieldset class="cf-sec cf-open" id="cfMore"><legend class="eyebrow">Tes précisions <span class="small muted cf-opt" id="cfMoreSum">facultatif</span></legend>
       <div class="cf-q"><label for="cfNotes"><b>Tes remarques sur le programme</b></label><textarea id="cfNotes" class="cf-free autogrow" rows="2" maxlength="600" placeholder="Ex. je veux faire abdos tous les jours, pas 2 séances jambes par semaine"></textarea></div>
       <div class="cf-q"><b>À travailler en priorité</b><div class="chips cf-multi" data-cf="prio"><button type="button" class="pill" data-v="chest">Pectoraux</button><button type="button" class="pill" data-v="back">Dos</button><button type="button" class="pill" data-v="shoulders">Épaules</button><button type="button" class="pill" data-v="arms">Bras</button><button type="button" class="pill" data-v="legs">Jambes</button><button type="button" class="pill" data-v="glutes">Fessiers</button><button type="button" class="pill" data-v="abs">Abdos</button></div></div>
       <div class="cf-q"><b>Zones à ménager</b><div class="chips cf-multi" data-cf="avoid"><button type="button" class="pill" data-v="shoulder">Épaules</button><button type="button" class="pill" data-v="back">Bas du dos</button><button type="button" class="pill" data-v="knee">Genoux</button></div><input type="text" id="cfAvoidTxt" class="cf-free" placeholder="Autre chose à ménager (ex. poignet droit, hernie discale)" aria-label="Autre chose à ménager" autocomplete="off" maxlength="200"></div>
       <div class="cf-q"><b>Exercices que je veux absolument</b><div class="cf-pick" data-cfx="must"><input type="search" class="search" placeholder="Rechercher un exercice" aria-label="Rechercher un exercice à imposer" autocomplete="off" enterkeyhint="search"><div class="cf-res"></div><div class="chips cf-sel"></div></div></div>
       <div class="cf-q"><b>Exercices que je ne veux pas du tout</b><div class="cf-pick" data-cfx="never"><input type="search" class="search" placeholder="Rechercher un exercice" aria-label="Rechercher un exercice à exclure" autocomplete="off" enterkeyhint="search"><div class="cf-res"></div><div class="chips cf-sel"></div></div></div>
-      </details>
+      </fieldset>
       <p class="small muted" id="coachErr" role="alert" hidden></p>
       <div class="cf-go"><button class="btn" type="submit" data-cfgo="ai">Créer avec Claude</button><button class="btn ghost" type="submit" data-cfgo="app">Créer tout de suite, sans Claude</button></div>
     </form>

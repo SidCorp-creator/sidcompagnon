@@ -947,6 +947,43 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
       await pg.mouse.move(bx.x+bx.width*0.6,bx.y+bx.height*0.5);await pg.mouse.down();await pg.mouse.up();await pg.waitForTimeout(150);
       if(await pg.isVisible("#grTip")){await pg.mouse.click(5,Math.max(5,bx.y-60));await pg.waitForTimeout(150);if(await pg.isVisible("#grTip"))err("l'infobulle reste après un toucher ailleurs")}}
     await ctx.close()}
+  // --- v44.7 : PDF de cours dans sid'note : import, zone de texte, surligneur, notes liées ; retrouvés à la réouverture et après rechargement
+  for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1280,height:800}}]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v44.7 PDF "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v447pdf"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.evaluate(()=>{NF().push({id:"fc",name:"Finance",parent:null,createdAt:new Date().toISOString()});save();show("notes");noteDir="fc";renderNotes()});await pg.waitForTimeout(200);
+    await pg.setInputFiles("#pdfIn",path.join(__dirname,"fixtures","cours.pdf"));
+    await pg.waitForFunction(()=>!$("pdfv").hidden&&document.querySelectorAll("#pvBody .pv-page canvas").length>0,null,{timeout:15000}).catch(()=>err("le PDF ne s'affiche pas"));
+    const nid=await pg.evaluate(()=>pv.note);
+    if(await pg.evaluate(id=>{const n=noteFind(id);return !(n&&n.pdf&&n.folder==="fc"&&n.pdf.pages===2)},nid))err("note PDF mal créée (dossier, pages)");
+    await shot(pg,"v447-"+nm+"-pdf-ouvert");
+    // zone de texte
+    await pg.click('[data-pvt="text"]');const p1=pg.locator('#pvBody .pv-page[data-pg="1"] .pv-ov');const bb=await p1.boundingBox();
+    await pg.mouse.click(bb.x+bb.width*0.5,bb.y+bb.height*0.2);await pg.waitForTimeout(150);
+    await pg.keyboard.type("À revoir pour l'examen");await pg.waitForTimeout(700);
+    // surligneur
+    await pg.click('[data-pvt="hl"]');await pg.mouse.move(bb.x+bb.width*0.1,bb.y+bb.height*0.12);await pg.mouse.down();await pg.mouse.move(bb.x+bb.width*0.6,bb.y+bb.height*0.14,{steps:6});await pg.mouse.up();await pg.waitForTimeout(200);
+    // notes liées
+    await pg.click('[data-pvt="notes"]');await pg.fill("#pvNoteTxt","Formule de l'actualisation");await pg.waitForTimeout(700);
+    await shot(pg,"v447-"+nm+"-pdf-annote");
+    const st=await pg.evaluate(id=>{const a=pvAnns(id);return [a.filter(x=>x.t==="text"&&x.txt==="À revoir pour l'examen").length,a.filter(x=>x.t==="hl"&&x.w>.3).length,noteFind(id).body]},nid);
+    if(st[0]!==1)err("zone de texte pas enregistrée");if(st[1]!==1)err("surlignage pas enregistré");if(st[2]!=="Formule de l'actualisation")err("notes liées pas enregistrées");
+    // fermeture, liste, réouverture
+    await pg.click("#pvBack");await pg.waitForTimeout(200);
+    if(!(await pg.textContent("#noteList")).includes("PDF"))err("badge PDF absent de la liste");
+    await pg.click(`#noteList [data-note="${nid}"]`);await pg.waitForFunction(()=>document.querySelectorAll("#pvBody .pv-hl").length===1&&document.querySelectorAll("#pvBody .pv-txt").length===1,null,{timeout:10000}).catch(()=>err("annotations pas retrouvées à la réouverture"));
+    // après synchro et rechargement (comme un autre appareil) : tout est là, fichier compris
+    await pg.waitForTimeout(2500);if(!(await pg.evaluate(id=>noteFind(id).pdf.up,nid)))err("PDF pas envoyé en ligne");
+    await pg.evaluate(()=>{pvClose()});await pg.reload();await pg.waitForTimeout(2500);
+    await pg.evaluate(id=>{idb.del(pdfKey(id))},nid);await pg.waitForTimeout(200); // fichier absent de l'appareil : relu en ligne
+    await pg.evaluate(id=>{show("notes");pdfOpen(id)},nid);
+    await pg.waitForFunction(()=>document.querySelectorAll("#pvBody .pv-page canvas").length>0&&document.querySelectorAll("#pvBody .pv-hl").length===1,null,{timeout:15000}).catch(()=>err("PDF ou annotations perdus après rechargement"));
+    if(await pg.inputValue("#pvNoteTxt")!=="Formule de l'actualisation")err("notes liées perdues après rechargement");
+    // suppression d'un surlignage (toucher → Supprimer, annulable)
+    await pg.click('[data-pvt="read"]');await pg.waitForTimeout(400);{const r=await pg.evaluate(()=>{const h=document.querySelector("#pvBody .pv-hl").getBoundingClientRect();return [h.x+h.width/2,h.y+h.height/2]});await pg.mouse.click(r[0],r[1])}await pg.waitForTimeout(150);await pg.click('#actList .act-it.danger');await pg.click('#actList .act-it.danger').catch(()=>{});await pg.waitForTimeout(250);
+    if(await pg.evaluate(id=>pvAnns(id).some(a=>a.t==="hl"),nid))err("surlignage pas supprimé");
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

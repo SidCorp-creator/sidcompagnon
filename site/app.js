@@ -196,7 +196,7 @@ function mergeData(loc,rem,opt){
   const out={...rem,...loc,del,res};
   out.todos=arr(loc.todos,rem.todos);out.tasks=arr(loc.tasks,rem.tasks);
   out.todoCats=arr(loc.todoCats,rem.todoCats);out.docs=arr(loc.docs,rem.docs);out.docFolders=arr(loc.docFolders,rem.docFolders);out.noteFolders=arr(loc.noteFolders,rem.noteFolders);
-  out.notes=arrU(loc.notes,rem.notes);out.pwds=arrU(loc.pwds,rem.pwds);
+  out.notes=arrU(loc.notes,rem.notes);out.pwds=arrU(loc.pwds,rem.pwds);out.pdfAnns=arrU(loc.pdfAnns,rem.pdfAnns); // v44.7 : annotations des PDF de cours
   // v33 : une note modifiée sur les deux appareils depuis la dernière synchro : on garde aussi l'autre version, en copie
   if(since){const ln=new Map((Array.isArray(loc.notes)?loc.notes:[]).map(x=>[x&&x.id,x]));
     for(const r of Array.isArray(rem.notes)?rem.notes:[]){const l=r&&ln.get(r.id);if(!l||del[r.id]||(l.upd||0)<=since||(r.upd||0)<=since||(l.upd||0)===(r.upd||0))continue;
@@ -285,7 +285,7 @@ function applyRemote(d){
   for(const k of Object.keys(data))if(k!=="ui"&&k!=="pomo")delete data[k];
   for(const k of Object.keys(d))if(k!=="ui"&&k!=="pomo")data[k]=d[k];
   if(d.pomo&&data.pomo&&d.pomo!==data.pomo){const np=JSON.parse(JSON.stringify(d.pomo));for(const k of Object.keys(data.pomo))delete data.pomo[k];Object.assign(data.pomo,np)}
-  ["todos","tasks","courses","types","todoCats","docs","docFolders","noteFolders","notes","pwds"].forEach(k=>{if(!Array.isArray(data[k]))data[k]=[]});
+  ["todos","tasks","courses","types","todoCats","docs","docFolders","noteFolders","notes","pwds","pdfAnns"].forEach(k=>{if(!Array.isArray(data[k]))data[k]=[]});
   data.prefs=data.prefs||{};data.prefs.tabs=data.prefs.tabs||{plan:true,todo:true,pomo:true,app:true};
   data.muscu=data.muscu||{sessions:[]};if(!Array.isArray(data.muscu.sessions))data.muscu.sessions=[];
   data.nutri=data.nutri||{};["log","weights","weeks"].forEach(k=>{if(!Array.isArray(data.nutri[k]))data.nutri[k]=[]});
@@ -1244,7 +1244,7 @@ $("wipeBtn").addEventListener("click",async e=>{
   }catch(ex){b.disabled=false;delete b.dataset.armed;b.textContent=L("Supprimer mes données");toast(ex instanceof TypeError?L("Pas de connexion internet"):L("Suppression impossible : ")+(ex.message||""))}
 });
 // restauration : aperçu, puis Fusionner (rien n'est perdu) ou Remplacer (confirmation), sans jamais casser les coffres
-const BK_LISTS=[["todos","Tâches"],["tasks","Activités de l'agenda"],["notes","Notes"],["muscu.sessions","Séances de musculation"],["muscu.log","Séances faites (programme)"],["nutri.log","Repas notés"],["pwds","Mots de passe"],["docs","Documents (la liste)"],["todoCats",null],["docFolders",null],["noteFolders",null],["nutri.weights",null],["nutri.weeks",null]];
+const BK_LISTS=[["pdfAnns","Annotations de PDF"],["todos","Tâches"],["tasks","Activités de l'agenda"],["notes","Notes"],["muscu.sessions","Séances de musculation"],["muscu.log","Séances faites (programme)"],["nutri.log","Repas notés"],["pwds","Mots de passe"],["docs","Documents (la liste)"],["todoCats",null],["docFolders",null],["noteFolders",null],["nutri.weights",null],["nutri.weeks",null]];
 const bkGet=(d,k)=>{const v=k.split(".").reduce((o,x)=>o&&o[x],d);return Array.isArray(v)?v.filter(x=>x&&x.id):[]};
 function bkParse(j){
   if(j&&typeof j==="object"&&j.data&&typeof j.data==="object"&&/^(sidnote|Sid'note)$/.test(j.app||""))return {d:j.data,at:j.exported};
@@ -2725,7 +2725,7 @@ const noteView=n=>!n?null:n.secret?(nsKey&&n.vid===nsVid&&nsPlain.get(n.id))||nu
 function noteQueue(fn){clearTimeout(noteSaveT);notePend=fn;noteSaveT=setTimeout(noteFlush,600)}
 async function noteFlush(){clearTimeout(noteSaveT);noteSaveT=null;const f=notePend;notePend=null;if(f)await f()}
 function renderNotes(){
-  if(!$("noteList"))return;
+  if(!$("noteList"))return;if(typeof pvRefresh==="function")pvRefresh();
   // coffre des notes remis à zéro ou recréé ailleurs : on reverrouille
   if(nsKey&&(!nsOn()||data.noteVault.id!==nsVid)){nsKey=null;nsVid=null;nsPlain=new Map()}
   // notes secrètes arrivées d'un autre appareil : on les déchiffre puis on réaffiche
@@ -2761,7 +2761,7 @@ function renderNotes(){
     const lines=String(w.body||"").trim().split("\n").filter(Boolean);
     const t=w.title&&w.title.trim()?w.title:(lines.shift()||L("Nouvelle note"));
     const fp=q&&noteDirOf(x)?`<span class="small muted nf-in">${IC("folder")} ${esc(nfPath(x.folder).map(f=>f.name).join(" › "))}</span>`:"";
-    return `<div class="note-row"><span class="ngrip" data-ngrip="${x.id}" aria-hidden="true" title="${L("Maintenir et glisser")}">${GRIP}</span><button class="note" data-note="${x.id}"><b class="notr">${x.secret?IC("lock")+" ":""}${esc(t)}</b>${fp}<span class="prev notr">${esc(lines.join(" · ")||"")}</span>${x.photos&&x.photos.length?`<span class="np-count">${IC("camera")} ${x.photos.length} ${L(x.photos.length>1?"photos":"photo")}</span>`:""}${when}</button></div>`}).join("")+`</div>`
+    return `<div class="note-row"><span class="ngrip" data-ngrip="${x.id}" aria-hidden="true" title="${L("Maintenir et glisser")}">${GRIP}</span><button class="note" data-note="${x.id}"><b class="notr">${x.secret?IC("lock")+" ":""}${esc(t)}</b>${fp}<span class="prev notr">${esc(lines.join(" · ")||"")}</span>${x.photos&&x.photos.length?`<span class="np-count">${IC("camera")} ${x.photos.length} ${L(x.photos.length>1?"photos":"photo")}</span>`:""}${x.pdf?`<span class="np-count pdf-badge">PDF${x.pdf.pages?` · ${x.pdf.pages} ${L(x.pdf.pages>1?"pages":"page")}`:""}${(()=>{const k=pvAnns(x.id).length;return k?` · ${k} ${L(k>1?"annotations":"annotation")}`:""})()}</span>`:""}${when}</button></div>`}).join("")+`</div>`
     :dirs?"":`<div class="empty">${L(q?"Aucune note ne correspond.":noteDir?"Ce dossier est vide. Touche « + Note » pour y écrire.":"Aucune note pour l'instant. Touche « + Note » pour écrire.")}</div>`);
 }
 function openNote(id){noteOpenId=id;renderNotes();window.scrollTo(0,0)}
@@ -2816,6 +2816,7 @@ $("noteList").addEventListener("click",async e=>{
   const fo=e.target.closest("[data-nfopen]");if(fo){noteDir=fo.dataset.nfopen;renderNotes();window.scrollTo(0,0);return}
   const fm=e.target.closest("[data-nfmore]");if(fm){nfActions(fm.dataset.nfmore);return}
   const b=e.target.closest("[data-note]");if(!b)return;const n=noteFind(b.dataset.note);if(!n)return;
+  if(n.pdf){pdfOpen(n.id);return} // v44.7 : une note PDF s'ouvre dans le lecteur-annoteur
   if(n.secret&&!noteView(n)){if(!(await nsUnlock()))return;await nsLoad();if(!noteView(n))return}
   openNote(n.id)});
 $("nsBar").addEventListener("click",e=>{if(e.target.closest("[data-nslock]")){nsLock();toast("Notes secrètes verrouillées")}});
@@ -2862,7 +2863,7 @@ async function npUpload(n,p){if(p.up||npBusy.has(p.id))return;const u=await idb.
   try{const b=await dataToBlob(u);await stor("POST","documents/"+npPath(p.id),b,"image/jpeg"); // v32 : le stockage accepte les photos (plus de détour par le type PDF)
     p.up=true;save()}catch(e){}
   npBusy.delete(p.id)}
-function notesPhotosPending(){if(!session)return;NT().forEach(n=>(n.photos||[]).forEach(p=>{if(!p.up)npUpload(n,p)}))}
+function notesPhotosPending(){if(!session)return;NT().forEach(n=>{(n.photos||[]).forEach(p=>{if(!p.up)npUpload(n,p)});if(n.pdf&&!n.pdf.up)pdfUpload(n)})}
 function renderNotePhotos(n){const box=$("notePhotos");if(!box)return;const ps=(n&&n.photos)||[];box.hidden=!ps.length;
   box.innerHTML=ps.map(p=>`<button type="button" class="np" data-np="${p.id}" aria-label="${L("Voir la photo")}"><span class="np-load"></span></button>`).join("");
   ps.forEach(async p=>{const u=await npGet(p.id),el=box.querySelector(`[data-np="${p.id}"]`);if(el)el.innerHTML=u?`<img src="${u}" alt="">`:`<span class="small muted">${L("Indisponible")}</span>`})}
@@ -2872,6 +2873,93 @@ $("notePhotoIn").addEventListener("change",async e=>{const files=[...e.target.fi
   for(const f of files.slice(0,10)){try{const u=await shrink(f,1600,.82),id=uid();await idb.put(npKey(id),u);npCache.set(id,u);const p={id,up:false};n.photos.push(p);n.upd=Date.now();save();renderNotePhotos(n);npUpload(n,p)}
     catch(ex){toast("Photo illisible")}}
   toast(files.length>1?"Photos ajoutées":"Photo ajoutée")});
+// --- v44.7 : PDF de cours dans sid'note (demande de Sid) : une « note PDF » = {id, title, body (mes notes), pdf:{name, size, pages, up}}.
+// Le fichier est gardé sur l'appareil (IndexedDB) et copié dans l'espace privé (documents/<uid>/notes/<id>.pdf, pas chiffré, comme les notes).
+// Annotations : data.pdfAnns = [{id, note, page, t:"text"|"hl", x, y, w, h?, txt?, upd}] (positions en fraction de la page),
+// fusionnées par id entre appareils comme les notes. Outils : Lire, Texte (zone de texte posée sur la page), Surligner (au doigt), Mes notes.
+const pdfKey=id=>session.user.id+":npdf:"+id,pdfPath=id=>`${session.user.id}/notes/${id}.pdf`;
+const PA=()=>data.pdfAnns||(data.pdfAnns=[]);
+const pdfBusy=new Set();
+async function pdfUpload(n){if(!n.pdf||n.pdf.up||pdfBusy.has(n.id))return;const b=await idb.get(pdfKey(n.id));if(!b)return;pdfBusy.add(n.id);
+  try{await stor("POST","documents/"+pdfPath(n.id),b,"application/pdf");n.pdf.up=true;save()}catch(e){}pdfBusy.delete(n.id)}
+async function pdfBlob(n){let b=await idb.get(pdfKey(n.id));if(b)return b;
+  const r=await stor("GET","authenticated/documents/"+pdfPath(n.id));b=new Blob([await r.arrayBuffer()],{type:"application/pdf"});idb.put(pdfKey(n.id),b).catch(()=>{});return b}
+$("pdfIn").addEventListener("change",async e=>{const files=[...e.target.files];e.target.value="";let k=0,last=null;
+  for(const f of files.slice(0,10)){if(!/pdf$/i.test(f.type||f.name)){toast(`${f.name} : ${L("ce n'est pas un PDF")}`);continue}
+    if(f.size>50*1024*1024){toast(`${f.name} : ${L("trop lourd (50 Mo maximum)")}`);continue}
+    const id=uid(),n={id,title:f.name.replace(/\.pdf$/i,"").slice(0,120),body:"",createdAt:new Date().toISOString(),upd:Date.now(),pdf:{name:f.name.slice(0,120),size:f.size,up:false}};
+    if(noteDir)n.folder=noteDir;
+    try{await idb.put(pdfKey(id),f)}catch(ex){toast("Enregistrement impossible sur cet appareil");continue}
+    NT().push(n);k++;last=n;pdfUpload(n)}
+  if(!k)return;save();renderNotes();toast(k>1?`${k} ${L("PDF ajoutés")}`:L("PDF ajouté"));if(k===1&&last)pdfOpen(last.id)});
+let pv={note:null,tok:0,tool:"read",io:null,draw:null};
+const pvAnns=(nid,pg)=>PA().filter(a=>a&&a.note===nid&&(pg===undefined||a.page===pg)&&!(data.del&&data.del[a.id]));
+async function pdfOpen(id){const n=noteFind(id);if(!n||!n.pdf)return;const tok=++pv.tok;pv.note=n.id;pvTool("read");
+  $("pvTitle").value=n.title||"";$("pvNoteTxt").value=n.body||"";$("pvNotes").hidden=true;$("pdfv").hidden=false;document.body.style.overflow="hidden";
+  const body=$("pvBody");body.innerHTML=`<p class="muted pv-wait">${L("Ouverture…")}</p>`;
+  let blob;try{blob=await pdfBlob(n)}catch(ex){if(tok===pv.tok)body.innerHTML=`<p class="muted pv-wait">${esc(ex instanceof TypeError?L("Pas de connexion internet"):L("PDF introuvable sur cet appareil et en ligne"))}</p>`;return}
+  try{const lib=await loadPdfJs(),pdf=await lib.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise;if(tok!==pv.tok)return;
+    pv.pdf=pdf;body.innerHTML="";if(pv.io)pv.io.disconnect();
+    pv.io=new IntersectionObserver(es=>es.forEach(en=>{const w=en.target;if(en.isIntersecting)pvRender(w,tok);else if(w._c&&Math.abs(en.boundingClientRect.top)>innerHeight*3){w._c.remove();w._c=null}}),{root:body,rootMargin:"120% 0px"});
+    for(let i=1;i<=pdf.numPages;i++){if(tok!==pv.tok)return;const pg=await pdf.getPage(i),v=pg.getViewport({scale:1});
+      const w=document.createElement("div");w.className="pv-page";w.dataset.pg=i;w.style.aspectRatio=`${v.width} / ${v.height}`;w.innerHTML=`<div class="pv-ov" data-pg="${i}"></div><span class="pv-num">${i}</span>`;
+      body.appendChild(w);pvOverlay(w);pv.io.observe(w)}
+    if(n.pdf.pages!==pdf.numPages){n.pdf.pages=pdf.numPages;save();renderNotes()}
+  }catch(ex){if(tok===pv.tok)body.innerHTML=`<p class="muted pv-wait">${L("Ce PDF ne peut pas être affiché.")}</p>`}}
+async function pvRender(w,tok){if(w._c||w._busy||!pv.pdf)return;w._busy=true;
+  try{const pg=await pv.pdf.getPage(+w.dataset.pg),v0=pg.getViewport({scale:1}),W=w.clientWidth||600,dpr=Math.min(2,window.devicePixelRatio||1),vp=pg.getViewport({scale:W/v0.width*dpr});
+    const c=document.createElement("canvas");c.width=vp.width;c.height=vp.height;await pg.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;
+    if(tok!==pv.tok)return;w.prepend(c);w._c=c}catch(e){}w._busy=false}
+function pvClose(){pvFlushTxt();pv.tok++;pv.note=null;pv.pdf=null;if(pv.io)pv.io.disconnect();$("pdfv").hidden=true;$("pvBody").innerHTML="";document.body.style.overflow="";renderNotes()}
+// une annotation de chaque type, placée en pourcentage de la page (même rendu sur iPhone et sur PC)
+const pct=v=>(Math.round(v*10000)/100)+"%";
+function pvOverlay(w){const ov=w.querySelector(".pv-ov"),pg=+w.dataset.pg,act=document.activeElement,keep=act&&ov.contains(act)?act.closest("[data-ann]"):null;
+  ov.querySelectorAll("[data-ann]").forEach(el=>{if(el!==keep)el.remove()});
+  for(const a of pvAnns(pv.note,pg)){if(keep&&keep.dataset.ann===a.id)continue;
+    if(a.t==="hl")ov.insertAdjacentHTML("beforeend",`<button type="button" class="pv-hl" data-ann="${a.id}" style="left:${pct(a.x)};top:${pct(a.y)};width:${pct(a.w)};height:${pct(a.h)}" aria-label="${L("Surlignage")}"></button>`);
+    else ov.insertAdjacentHTML("beforeend",`<div class="pv-txt" data-ann="${a.id}" style="left:${pct(a.x)};top:${pct(a.y)};width:${pct(a.w||.4)}"><textarea rows="1" class="notr" aria-label="${L("Texte sur le PDF")}" placeholder="${L("Écris ici…")}">${esc(a.txt||"")}</textarea><button type="button" class="pv-txt-x" data-pvdel="${a.id}" aria-label="${L("Supprimer ce texte")}">×</button></div>`)}
+  ov.querySelectorAll(".pv-txt textarea").forEach(pvGrow)}
+const pvGrow=t=>{t.style.height="auto";t.style.height=t.scrollHeight+"px"};
+function pvRefresh(){if(!pv.note||$("pdfv").hidden)return;if(!noteFind(pv.note)){pvClose();return}document.querySelectorAll("#pvBody .pv-page").forEach(pvOverlay)}
+const PV_HINT={text:"Touche la page à l'endroit où tu veux écrire.",hl:"Fais glisser ton doigt sur la zone à surligner.",read:""};
+function pvTool(t){if(t==="notes"){const op=$("pvNotes").hidden;$("pvNotes").hidden=!op;document.querySelector('[data-pvt="notes"]').setAttribute("aria-pressed",op);if(op&&matchMedia("(min-width:900px)").matches)$("pvNoteTxt").focus();return}
+  pv.tool=t;$("pdfv").dataset.tool=t;document.querySelectorAll("[data-pvt]").forEach(b=>{if(b.dataset.pvt!=="notes")b.setAttribute("aria-pressed",b.dataset.pvt===t)});
+  const h=$("pvHint");h.hidden=!PV_HINT[t];h.textContent=L(PV_HINT[t]||"")}
+document.querySelector(".pv-tools").addEventListener("click",e=>{const b=e.target.closest("[data-pvt]");if(b)pvTool(b.dataset.pvt)});
+$("pvNotesClose").addEventListener("click",()=>pvTool("notes"));
+$("pvBack").addEventListener("click",pvClose);
+$("pvMore").innerHTML=MORE;
+$("pvMore").addEventListener("click",()=>{const n=noteFind(pv.note);if(!n)return;
+  openActions(n.title||L("PDF"),[{l:"Ranger dans un dossier",fn:()=>openActions(L("Ranger dans"),nfChoices(noteDirOf(n),null,fid=>{if(fid)n.folder=fid;else delete n.folder;n.upd=Date.now();save();toast(fid?`${L("Rangée dans")} « ${nfOf(fid).name} »`:"Rangée dans Notes")}))},
+    {l:"Supprimer ce PDF",danger:true,fn:()=>{const id=n.id;pvClose();undoable("PDF supprimé",[id],()=>{tomb(id);data.notes=NT().filter(x=>x!==n)},{after:renderNotes,later:()=>{if(!noteFind(id))npDropAll(n)}})}}])});
+// titre et notes liées au PDF (texte simple, enregistré au fur et à mesure)
+$("pvTitle").addEventListener("input",()=>{const n=noteFind(pv.note);if(!n)return;n.title=$("pvTitle").value.slice(0,120);n.upd=Date.now();msSaveSoon()});
+$("pvNoteTxt").addEventListener("input",()=>{const n=noteFind(pv.note);if(!n)return;n.body=$("pvNoteTxt").value;n.html=rtFromText(n.body);n.upd=Date.now();msSaveSoon()});
+// zones de texte : enregistrées pendant la saisie ; une zone laissée vide disparaît
+let pvTxtT=null,pvTxtEl=null;
+function pvFlushTxt(){clearTimeout(pvTxtT);const el=pvTxtEl;pvTxtEl=null;if(!el)return;const a=PA().find(x=>x.id===el.closest("[data-ann]").dataset.ann);if(!a)return;
+  const v=el.value.slice(0,2000);if(a.txt!==v){a.txt=v;a.upd=Date.now();save()}}
+$("pvBody").addEventListener("input",e=>{const ta=e.target.closest(".pv-txt textarea");if(!ta)return;pvGrow(ta);pvTxtEl=ta;clearTimeout(pvTxtT);pvTxtT=setTimeout(pvFlushTxt,500)});
+$("pvBody").addEventListener("focusout",e=>{const ta=e.target.closest(".pv-txt textarea");if(!ta)return;pvTxtEl=ta;pvFlushTxt();
+  if(!ta.value.trim()){const id=ta.closest("[data-ann]").dataset.ann;setTimeout(()=>{if(document.activeElement===ta)return;const a=PA().find(x=>x.id===id);if(a&&!String(a.txt||"").trim()){tomb(id);data.pdfAnns=PA().filter(x=>x!==a);save();pvRefresh()}},150)}});
+function pvDel(id,msg){const a=PA().find(x=>x.id===id);if(!a)return;undoable(msg,[id],()=>{tomb(id);data.pdfAnns=PA().filter(x=>x!==a)},{after:pvRefresh})}
+$("pvBody").addEventListener("click",e=>{
+  const d=e.target.closest("[data-pvdel]");if(d){pvDel(d.dataset.pvdel,"Texte supprimé");return}
+  const hl=e.target.closest(".pv-hl");if(hl&&pv.tool!=="hl"){openActions(L("Surlignage"),[{l:"Supprimer le surlignage",danger:true,fn:()=>pvDel(hl.dataset.ann,"Surlignage supprimé")}]);return}
+  if(pv.tool!=="text"||e.target.closest(".pv-txt"))return;const ov=e.target.closest(".pv-ov");if(!ov)return;
+  const r=ov.getBoundingClientRect(),x=Math.min(.75,Math.max(0,(e.clientX-r.left)/r.width)),y=Math.min(.97,Math.max(0,(e.clientY-r.top)/r.height));
+  const a={id:uid(),note:pv.note,page:+ov.dataset.pg,t:"text",x,y,w:Math.min(.45,1-x),txt:"",upd:Date.now()};PA().push(a);save();pvOverlay(ov.closest(".pv-page"));
+  const ta=ov.querySelector(`[data-ann="${a.id}"] textarea`);if(ta)ta.focus();pvTool("read")});
+// surligneur : on fait glisser sur la page (la page ne défile pas pendant ce temps)
+$("pvBody").addEventListener("pointerdown",e=>{if(pv.tool!=="hl")return;const ov=e.target.closest(".pv-ov");if(!ov)return;e.preventDefault();
+  const r=ov.getBoundingClientRect(),p=ev=>[Math.min(1,Math.max(0,(ev.clientX-r.left)/r.width)),Math.min(1,Math.max(0,(ev.clientY-r.top)/r.height))],[x0,y0]=p(e);
+  const el=document.createElement("div");el.className="pv-hl pv-hl-draw";ov.appendChild(el);pv.draw={ov,el,x0,y0,p,x:x0,y:y0,w:0,h:0};try{ov.setPointerCapture(e.pointerId)}catch(_){}});
+$("pvBody").addEventListener("pointermove",e=>{const d=pv.draw;if(!d)return;const[x1,y1]=d.p(e);d.x=Math.min(d.x0,x1);d.y=Math.min(d.y0,y1);d.w=Math.abs(x1-d.x0);d.h=Math.abs(y1-d.y0);
+  Object.assign(d.el.style,{left:pct(d.x),top:pct(d.y),width:pct(d.w),height:pct(Math.max(d.h,.012))})});
+const pvDrawEnd=()=>{const d=pv.draw;if(!d)return;pv.draw=null;d.el.remove();if(d.w<.015)return;
+  PA().push({id:uid(),note:pv.note,page:+d.ov.dataset.pg,t:"hl",x:d.x,y:d.y,w:d.w,h:Math.max(d.h,.012),upd:Date.now()});save();pvOverlay(d.ov.closest(".pv-page"))};
+$("pvBody").addEventListener("pointerup",pvDrawEnd);$("pvBody").addEventListener("pointercancel",pvDrawEnd);
+addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("pdfv").hidden&&$("actSheet").hidden&&!e.target.closest(".pv-txt"))pvClose()});
 $("notePhotos").addEventListener("click",async e=>{const b=e.target.closest("[data-np]");if(!b)return;const u=await npGet(b.dataset.np);if(!u)return;
   lbCur=b.dataset.np;$("lbImg").src=u;$("lightbox").hidden=false;const d=$("lbDel");d.classList.remove("armed");d.textContent=L("Supprimer la photo")});
 $("lbClose").addEventListener("click",()=>{$("lightbox").hidden=true;lbCur=null});
@@ -2880,7 +2968,8 @@ $("lbDel").addEventListener("click",e=>{const b=e.currentTarget,n=noteFind(noteO
   if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent=L("Confirmer la suppression");return}
   const id=lbCur;n.photos=(n.photos||[]).filter(p=>p.id!==id);n.upd=Date.now();save();idb.del(npKey(id));npCache.delete(id);stor("DELETE","documents/"+npPath(id)).catch(()=>{});
   $("lightbox").hidden=true;lbCur=null;renderNotePhotos(n);toast("Photo supprimée")});
-const npDropAll=n=>(n&&n.photos||[]).forEach(p=>{idb.del(npKey(p.id));npCache.delete(p.id);stor("DELETE","documents/"+npPath(p.id)).catch(()=>{})});
+const npDropAll=n=>{(n&&n.photos||[]).forEach(p=>{idb.del(npKey(p.id));npCache.delete(p.id);stor("DELETE","documents/"+npPath(p.id)).catch(()=>{})});
+  if(n&&n.pdf){idb.del(pdfKey(n.id));stor("DELETE","documents/"+pdfPath(n.id)).catch(()=>{});(data.pdfAnns||[]).filter(a=>a.note===n.id).forEach(a=>tomb(a.id));data.pdfAnns=(data.pdfAnns||[]).filter(a=>a.note!==n.id);save()}};
 async function nsLoad(){
   if(!nsKey)return;const k=nsKey,m=new Map();
   for(const n of NT()){if(!n.secret||n.vid!==nsVid)continue;const o=nsPlain.get(n.id);

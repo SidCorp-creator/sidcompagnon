@@ -443,7 +443,7 @@
       <div class="nf-path" id="nfPath" role="navigation" aria-label="Dossiers" hidden></div>
       <h1>Notes</h1>
       <p class="sub">Écris librement : idées, listes, brouillons. Tout est enregistré au fur et à mesure.</p>
-      <div class="pw-top"><input type="search" class="search" id="noteSearch" placeholder="Rechercher une note" aria-label="Rechercher une note" autocomplete="off"><button type="button" class="btn ghost" id="nfNew">+ Dossier</button><button type="button" class="btn" id="noteNew">+ Note</button></div>
+      <div class="pw-top"><input type="search" class="search" id="noteSearch" placeholder="Rechercher une note" aria-label="Rechercher une note" autocomplete="off"><button type="button" class="btn ghost" id="nfNew">+ Dossier</button><label class="btn ghost" id="pdfNew" title="Importer un PDF de cours">+ PDF<input type="file" id="pdfIn" accept="application/pdf,.pdf" multiple hidden></label><button type="button" class="btn" id="noteNew">+ Note</button></div>
       <form id="nfForm" class="nf-form" hidden><input id="nfIn" placeholder="Nom du dossier" aria-label="Nom du dossier" autocomplete="off" enterkeyhint="done"><button class="btn" type="submit">Créer</button><button type="button" class="btn ghost" id="nfCancel">Annuler</button></form>
       <div class="ns-bar" id="nsBar" hidden></div>
       <div class="card" id="noteList"></div>
@@ -856,6 +856,24 @@
     </section>
   </div>
   <div class="onb-nav"><button type="button" class="btn ghost" id="onbPrev">‹</button><div class="onb-dots" id="onbDots"></div><button type="button" class="btn" id="onbNext">Suivant ›</button></div>
+</div>
+<!-- v44.7 : PDF de cours annotés (sid'note) -->
+<div class="pdfv" id="pdfv" hidden role="dialog" aria-modal="true" aria-labelledby="pvTitle" data-tool="read">
+  <div class="pv-head">
+    <button type="button" class="back" id="pvBack" aria-label="Retour">‹ Notes</button>
+    <input id="pvTitle" class="pv-title notr" aria-label="Titre du PDF" autocomplete="off">
+    <button type="button" class="pen" id="pvMore" aria-label="Plus d'actions"></button>
+  </div>
+  <div class="pv-tools" role="group" aria-label="Outils">
+    <button type="button" data-pvt="read" aria-pressed="true">Lire</button>
+    <button type="button" data-pvt="text" aria-pressed="false">Texte</button>
+    <button type="button" data-pvt="hl" aria-pressed="false">Surligner</button>
+    <button type="button" data-pvt="notes" aria-pressed="false">Mes notes</button>
+  </div>
+  <p class="pv-hint" id="pvHint" hidden></p>
+  <div class="pv-main"><div class="pv-body" id="pvBody"></div>
+    <aside class="pv-notes" id="pvNotes" hidden aria-label="Mes notes sur ce PDF"><div class="pv-notes-h"><b>Mes notes sur ce PDF</b><button type="button" class="x" id="pvNotesClose" aria-label="Fermer">×</button></div>
+      <textarea id="pvNoteTxt" placeholder="Écris tes notes sur ce cours…" aria-label="Mes notes sur ce PDF"></textarea></aside></div>
 </div>
 <div class="viewer" id="viewer" hidden>
   <div class="viewer-head"><button type="button" class="back" id="vwBack">‹ Documents</button><b class="grow" id="vwTitle"></b><button type="button" class="mini" id="vwShare">Partager</button></div>

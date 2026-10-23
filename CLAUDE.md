@@ -247,6 +247,12 @@ assets/               ← logo
   - Tâches : « Nouvelle tâche » en haut, en action principale (`.todo-new`) ; recherche derrière une loupe (`#todoSearchBtn`) ; « Sans catégorie » en premier.
   - Musculation : **une seule interface** : par exercice, nom, séries (− / +), répétitions (`ex.reps`) et poids communs (`ex.kg`), modifiés sur la carte. Mode séance (`#woSheet`, `woStart`, `coachHint`, « Commencer / Abandonner / Terminer ») et repos retirés de l'écran (données `rest`, `note`, `log` gardées). Migration : `ex.kg` / `ex.reps` repris de la dernière série remplie, les séries gardent leurs valeurs. Le partage / import lit et écrit « 20 kg ». Le connecteur `mcp` n'a pas changé (v10) : à faire plus tard si utile (montrer `ex.kg` dans `muscu_programme`, le garder dans `enregistrer_programme`, l'écrire dans `noter_seance`).
   - Bande opaque sous la barre d'état de l'iPhone (`body::before`, hauteur `env(safe-area-inset-top)`, z-index 29) : plus rien ne défile derrière.
+- 44.7 (retours de Sid du 23 oct. 2026, préparée, pas encore en ligne au moment de l'écrire) :
+  - Défilement : la page réserve en bas la hauteur réelle de la barre (`navPad` → `--navh`, `html[data-ds] body main{padding-bottom:max(navh+32px, 32px+safe-area)}`). Cause : sur ordinateur avec la barre latérale masquée, la barre du bas réapparaît mais `main` gardait 48 px.
+  - Musculation : **une ligne par série** « Série n : [kg] – [reps] » (`.ex3`, `data-f="setkg|setreps"`, `data-msaddset`, `data-msdelset`), rien de pré-rempli (placeholders discrets « kg » / « reps »). Migration (`ex.ps=1`) : séries gardées ; `ex.kg` / `ex.reps` de la 44.6 recopiés seulement si toutes les séries étaient vides (jamais une fourchette « 8–12 »), puis `ex.kg` retiré. Partage sans kg.
+  - Graphiques : infobulle cachée au défilement (`scroll` capturé, `pointercancel`, `touchmove` hors graphique) et au toucher ailleurs ; plus de minuterie de 2,5 s.
+  - Aujourd'hui (Sid'home) : 3 grandes cartes `.hc` (logo, nom, description d'une ligne, au plus 2 repères ; toucher = `openGroup`). Retirés de cette page : liste du jour, tâches à cocher, carte Claude, dossiers récents (toujours dans chaque app).
+  - PDF annotés dans sid'note : plan proposé à Sid (voir la conversation), pas encore commencé.
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

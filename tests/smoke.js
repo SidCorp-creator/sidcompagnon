@@ -52,8 +52,8 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
 
     // --- v42 : Sid'home : les 3 apps en logos, pas de barre du bas ; chaque app a sa barre et un retour à Sid'home
     if(await pg.isVisible("nav"))err("barre du bas affichée sur Sid'home");
-    const apps=await pg.$$eval("#homeBody .home-apps [data-gapp]",x=>x.map(e=>e.dataset.gapp).join(","));
-    if(apps!=="orga,sport,perso")err("logos des 3 apps absents de Sid'home : "+apps);
+    const apps=await pg.$$eval("#homeBody .hc-list [data-gapp]",x=>x.map(e=>e.dataset.gapp).join(","));
+    if(apps!=="orga,sport,perso")err("cartes des 3 apps absentes de Sid'home : "+apps);
     await shot(pg,scheme+"-03-aujourdhui");
     await pg.click("#homeAdd");if(!(await pg.isVisible("#qaSheet")))err("le + de la page Aujourd'hui n'ouvre pas l'ajout rapide");await pg.click("#qaClose");
     await pg.click('#homeBody [data-gapp="perso"]');await pg.waitForTimeout(200);await closePin();
@@ -547,10 +547,10 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const tm=await pg.evaluate(()=>{const t=data.todos.find(x=>x.title==="Appeler maman");const d=new Date();d.setDate(d.getDate()+1);return t&&t.day===iso(d)});if(!tm)err("« Appeler maman demain » pas prévue demain");
     await pg.evaluate(()=>{const y=new Date();y.setDate(y.getDate()-2);data.todos.push({id:"late1",title:"Payer le loyer",createdAt:new Date().toISOString(),done:false,day:iso(y)});data.todos.push({id:"free1",title:"Ranger la cave",createdAt:new Date().toISOString(),done:false});save();show("home")});
     await pg.waitForTimeout(300);await shot(pg,"v39-aujourdhui");
-    if(!(await pg.locator('#homeBody [data-htg="late1"]').count()))err("tâche d'hier pas reportée sur aujourd'hui");
-    if(!(await pg.textContent("#homeBody")).includes("reportée"))err("badge « reportée » absent");
-    await pg.click('#homeBody [data-hplan="free1"]');await pg.waitForTimeout(200);if(!(await pg.evaluate(()=>data.todos.find(x=>x.id==="free1").day===iso(today()))))err("« Aujourd'hui » ne planifie pas la tâche");
-    await pg.click('#homeBody [data-htg="late1"]');await pg.waitForTimeout(200);
+    // v44.7 : Aujourd'hui ne liste plus les tâches (seulement leur nombre sur la carte sid'agenda) : le report se vérifie dans Tâches
+    if(!(await pg.textContent('#homeBody .hc[data-app="agenda"]')).includes("1 "))err("nombre de tâches du jour absent de la carte sid'agenda");
+    if(!(await pg.evaluate(()=>dayTodos(iso(today())).some(t=>t.id==="late1")&&tLate(data.todos.find(t=>t.id==="late1")))))err("tâche d'hier pas reportée sur aujourd'hui");
+    await pg.evaluate(()=>{todoToggle(data.todos.find(x=>x.id==="late1"))});await pg.waitForTimeout(200);
     const dn=await pg.evaluate(()=>{const t=data.todos.find(x=>x.id==="late1");return t.done&&t.day===iso(today())});if(!dn)err("tâche reportée mal cochée");
     await pg.evaluate(()=>{show("plan");selDay=iso(today());calMode="day";renderCal()});await pg.waitForTimeout(300);
     if(!(await pg.isVisible("#calDayView .dt-box")))err("tâches du jour absentes de l'agenda");
@@ -580,10 +580,11 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>{openActions("x",[{l:"y",fn:()=>{}}]);show("more");document.querySelector('[data-sec="privacy"]').open=true;closeAll()});await pg.waitForTimeout(200);
     if(await pg.evaluate(()=>!$("actSheet").hidden||document.querySelector('[data-sec="privacy"]').open))err("closeAll laisse des choses ouvertes");
     // Mon IA : choisir Claude, adresse créée et copiée, test confirmé
+    // v44.7 : plus de carte Claude sur Aujourd'hui (elle reste dans Nutrition et Réglages)
     await pg.evaluate(()=>show("home"));await pg.waitForTimeout(200);
-    if(!(await pg.isVisible("#homeBody .hm-ai")))err("carte « branche ton IA » absente d'Aujourd'hui");
+    if(await pg.isVisible("#homeBody .hm-ai"))err("la carte Claude est encore sur Aujourd'hui");
     // v42 : Claude seulement, l'assistant va directement aux étapes de Claude
-    await pg.click('#homeBody [data-aiwiz]');await pg.waitForTimeout(900);await shot(pg,"v39-ia-etapes");
+    await pg.evaluate(()=>aiWizard());await pg.waitForTimeout(900);await shot(pg,"v39-ia-etapes");
     if(await pg.locator("[data-aipick]").count())err("le choix d'une autre IA est encore proposé");
     const au=await pg.textContent("#aiUrl");if(!/\/functions\/v1\/mcp\//.test(au))err("adresse pas créée dans l'assistant : "+au);
     const ah=await pg.getAttribute("[data-aiadd]","href").catch(()=>"");
@@ -637,7 +638,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await shot(pg,"v41-coach-programme");
     // v43 : séries libres (+ / −), sur la carte de la séance
     {const s0=await pg.evaluate(()=>PLD()[0].exercises[0].sets.length),sel=`#msList [data-ms="${d0}"] [data-ex]:first-of-type`;
-      await pg.click(`${sel} [data-msset="1"]`);await pg.click(`${sel} [data-msset="1"]`);await pg.click(`${sel} [data-msset="-1"]`);
+      await pg.click(`${sel} [data-msaddset]`);await pg.click(`${sel} [data-msaddset]`);await pg.click(`${sel} [data-msdelset="0"]`);
       if(await pg.evaluate(()=>PLD()[0].exercises[0].sets.length)!==s0+1)err("séries du programme pas modifiables")}
     // v43 : remarque → ajustement par Claude (le message part dans son Claude, comme Nutrition)
     await pg.fill("#coRemark","remplace la 2e séance jambes par une séance haut du corps");await pg.click('#coachBox [data-coach="adjust"]');await pg.waitForTimeout(300);
@@ -649,20 +650,25 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     // le programme de Claude arrive (comme par le connecteur) : l'attente disparaît
     await pg.evaluate(()=>{const o=PL();PLD().forEach(s=>{s.grp={...s.grp,id:"ia1",src:"claude"};s.upd=Date.now()});M().plan={id:"ia1",v:2,profile:o.profile,at:new Date().toISOString(),upd:Date.now(),src:"ia"};M().upd=Date.now();renderMuscu()});
     if(await pg.isVisible("#coachBox .coach-wait"))err("l'attente reste après l'arrivée du programme de Claude");
-    // v44.6 : une seule interface : séries, répétitions et kg communs, modifiés directement sur la carte (plus de mode séance)
+    // v44.7 : une seule interface, une ligne par série « Série n : [kg] – [reps] », + / × par série, rien de pré-rempli (plus de mode séance)
     if(await pg.$("#woSheet")||await pg.$('#coachBox [data-coach="start"]')||await pg.$("#msList [data-msstart]"))err("le mode séance (commencer / terminer) existe encore");
-    {const sel=`#msList [data-ms="${d0}"] [data-ex]:first-of-type`;
-      if(await pg.inputValue(`${sel} [data-f="exkg"]`)!=="")err("le poids est pré-rempli");
-      if(await pg.$$eval(`#msList [data-ms="${d0}"] [data-ex]:first-of-type input`,x=>x.length)!==3)err("un exercice doit avoir 3 champs (nom, répétitions, kg)");
-      for(const [f,v] of [["exkg","22,5"],["exreps","10"]]){await pg.$eval(`${sel} [data-f="${f}"]`,el=>{el.value=""});await pg.type(`${sel} [data-f="${f}"]`,v)}await pg.waitForTimeout(700);
-      const v=await pg.evaluate(()=>[PLD()[0].exercises[0].kg,PLD()[0].exercises[0].reps]);if(v[0]!=="22.5"||v[1]!=="10")err("poids / répétitions pas enregistrés : "+v);
+    {const sel=`#msList [data-ms="${d0}"] [data-ex]:first-of-type`,n0=await pg.evaluate(()=>PLD()[0].exercises[0].sets.length);
+      if(await pg.$$eval(`${sel} .set-row`,x=>x.length)!==n0)err("pas une ligne par série");
+      if(await pg.$$eval(`${sel} .set-in`,x=>x.some(i=>i.value!=="")))err("des séries sont pré-remplies");
+      if(await pg.$$eval(`${sel} .set-row:first-child .set-in`,x=>x.map(i=>i.dataset.f).join())!=="setkg,setreps")err("kg doit venir avant les répétitions");
+      await pg.click(`${sel} [data-msaddset]`);await pg.waitForTimeout(150);if(await pg.evaluate(()=>PLD()[0].exercises[0].sets.length)!==n0+1)err("« + Ajouter une série » ne marche pas");
+      await pg.click(`${sel} [data-msdelset="0"]`);await pg.waitForTimeout(150);if(await pg.evaluate(()=>PLD()[0].exercises[0].sets.length)!==n0)err("× ne retire pas la série");
+      await pg.type(`${sel} .set-row:nth-child(2) [data-f="setkg"]`,"22,5");await pg.type(`${sel} .set-row:nth-child(2) [data-f="setreps"]`,"10");await pg.waitForTimeout(700);
+      const v=await pg.evaluate(()=>{const s=PLD()[0].exercises[0].sets[1];return [s.kg,s.reps]});if(v[0]!=="22.5"||v[1]!=="10")err("série pas enregistrée : "+v);
       // v42 : en touchant un champ de nombre, le curseur va à la fin
-      await pg.click(`${sel} [data-f="exkg"]`,{position:{x:8,y:10}});await pg.waitForTimeout(120);
+      await pg.click(`${sel} .set-row:nth-child(2) [data-f="setkg"]`,{position:{x:8,y:10}});await pg.waitForTimeout(120);
       const cur=await pg.evaluate(()=>{const el=document.activeElement;return [el.selectionStart,el.value.length]});if(cur[0]!==cur[1])err("curseur pas à la fin du nombre : "+cur);
-      await pg.locator(`#msList [data-ms="${d0}"]`).scrollIntoViewIfNeeded();await shot(pg,"v446-muscu-carte")}
-    // migration : un ancien exercice (une ligne par série) garde son poids et ses répétitions
-    {const r=await pg.evaluate(()=>{M().sessions.push({id:"old1",name:"Ancienne",upd:1,exercises:[{id:"oe",name:"Curl poulie",reps:"",sets:[{kg:"12",reps:"10"},{kg:"14",reps:"8"},{kg:"",reps:""}]}]});renderMuscu();const e=M().sessions.find(s=>s.id==="old1").exercises[0];return [e.kg,e.reps,e.sets.length]});
-      if(r[0]!=="14"||r[1]!=="8"||r[2]!==3)err("migration de l'ancien format : "+r)}
+      await pg.locator(`#msList [data-ms="${d0}"]`).scrollIntoViewIfNeeded();await shot(pg,"v447-muscu-series")}
+    // migration : séries gardées telles quelles ; un poids commun de la 44.6 va dans les séries vides, jamais une fourchette « 8–12 »
+    {const r=await pg.evaluate(()=>{M().sessions.push({id:"old1",name:"Ancienne",upd:1,exercises:[{id:"oe",name:"Curl poulie",reps:"",sets:[{kg:"12",reps:"10"},{kg:"14",reps:"8"},{kg:"",reps:""}]},
+        {id:"oe2",name:"Face pull",reps:"10",kg:"20",sets:[{kg:"",reps:""},{kg:"",reps:""}]},{id:"oe3",name:"Pec deck",reps:"8–12",kg:"",sets:[{kg:"",reps:""}]}]});renderMuscu();
+      const e=M().sessions.find(s=>s.id==="old1").exercises;return JSON.stringify(e.map(x=>x.sets.map(s=>s.kg+"/"+s.reps).join(",")))});
+      if(r!==JSON.stringify(["12/10,14/8,/","20/10,20/10","/"]))err("migration des séries : "+r)}
     // notes : glisser une note puis un dossier dans un dossier
     await pg.evaluate(()=>{data.noteFolders=[{id:"fA",name:"Master 2",parent:null},{id:"fB",name:"Cours",parent:null}];data.notes=[{id:"n1",title:"Finance",body:"x",createdAt:new Date().toISOString(),upd:Date.now()}];save();show("notes");noteDir=null;renderNotes()});
     await pg.waitForTimeout(300);await shot(pg,"v41-notes-glisser");
@@ -706,12 +712,13 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43home@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     await pg.evaluate(()=>{data.noteFolders=[{id:"fh1",name:"Cours",createdAt:new Date().toISOString()}];data.notes=[{id:"nh1",title:"Chapitre",body:"x",folder:"fh1",createdAt:new Date().toISOString(),upd:Date.now()}];save();show("home")});await pg.waitForTimeout(200);
-    const secs=await pg.$$eval("#homeBody .hm-sec",x=>x.map(e=>e.dataset.app).join(","));if(secs!=="agenda,fit,note")err("sections attendues agenda,fit,note : "+secs);
-    if((await pg.$$("#homeBody .hm-sec .hm-open")).length!==3)err("lien « Ouvrir » manquant");
-    const t=await pg.textContent("#homeBody");if(!t.includes("Dossiers récents")||t.includes("Notes récentes"))err("« Dossiers récents » attendu à la place des notes récentes");
-    await shot(pg,"v43-aujourdhui");
-    await pg.click('#homeBody [data-folder-open="fh1"]');await pg.waitForTimeout(250);if(await pg.evaluate(()=>data.ui.view+"/"+noteDir)!=="notes/fh1")err("le dossier récent ne s'ouvre pas");
-    await pg.evaluate(()=>show("home"));await pg.click('#homeBody .hm-sec[data-app="fit"] .hm-open');await pg.waitForTimeout(250);if(await pg.evaluate(()=>appOf(data.ui.view))!=="fit")err("« Ouvrir » de sid'fit n'ouvre pas sid'fit");
+    // v44.7 : 3 grandes cartes (nom, description d'une ligne, au plus 2 repères), toucher = ouvrir l'app
+    const secs=await pg.$$eval("#homeBody .hc",x=>x.map(e=>e.dataset.app).join(","));if(secs!=="agenda,fit,note")err("cartes attendues agenda,fit,note : "+secs);
+    if(await pg.$$eval("#homeBody .hc",x=>x.some(c=>!c.querySelector(".hc-desc").textContent.trim()||c.querySelectorAll(".hc-it").length>2)))err("carte sans description ou avec plus de 2 repères");
+    if(!(await pg.textContent('#homeBody .hc[data-app="note"]')).includes("Chapitre"))err("dernière note absente de la carte sid'note");
+    await shot(pg,"v447-aujourdhui");
+    await pg.setViewportSize({width:1280,height:800});await pg.waitForTimeout(200);await shot(pg,"v447-aujourdhui-pc");await pg.setViewportSize({width:390,height:664});
+    await pg.click('#homeBody .hc[data-app="fit"]');await pg.waitForTimeout(250);if(await pg.evaluate(()=>appOf(data.ui.view))!=="fit")err("la carte sid'fit n'ouvre pas sid'fit");
     await ctx.close()}
   // --- v43 lot 4 : « Créer avec Claude » envoie toutes les réponses + remarques libres ; le programme de l'app sert de base
   for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1440,height:900}}],["tablette",{...devices["iPad (gen 7)"]}]]){
@@ -789,8 +796,8 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
       plan:{id:"P1",profile:{level:"inter",goal:"muscle",days:2,dur:60,equip:"gym"},days:[{id:"d1",name:"Séance A",ex:[{name:"Squat barre",pat:"quads:squat",sets:4,reps:"6–10",rest:180,rir:"1–2"}]},{id:"d2",name:"Séance B",ex:[{name:"Tractions",pat:"back:vpull",sets:3,reps:"8–12",rest:120}]}],upd:1,src:"app"},
       log:[{id:"l1",date:"2026-10-20",day:"d1",name:"Séance A",ex:[{name:"Squat barre",sets:[{kg:"80",reps:"10"}]}]}]};save();show("muscu");renderMuscu();
       const m=data.muscu;return{days:!!m.plan.days,v:m.plan.v,ses:m.sessions.map(s=>s.name+":"+s.exercises.map(e=>e.sets.length+"/"+(e.reps||"")+"/"+(e.rest||"")).join(",")).join(" | "),next:coachNext()&&coachNext().id,cards:document.querySelectorAll("#msList .ms").length,kg:m.sessions[0].exercises[0].sets[1].kg,kg1:m.sessions[0].exercises[0].kg}});
-    // v44.6 : un seul poids / un seul nombre de répétitions par exercice, repris de la dernière série remplie
-    if(mg.days||mg.v!==2||mg.ses!=="Push libre:2/6/ | Séance A:4/6–10/180 | Séance B:3/8–12/120"||mg.next!=="d2"||mg.cards!==3||mg.kg!=="22,5"||mg.kg1!=="22.5")err("migration : "+JSON.stringify(mg));
+    // v44.7 : les séries gardent leurs valeurs (une ligne par série), rien n'est recopié ailleurs
+    if(mg.days||mg.v!==2||mg.ses!=="Push libre:2// | Séance A:4/6–10/180 | Séance B:3/8–12/120"||mg.next!=="d2"||mg.cards!==3||mg.kg!=="22,5"||mg.kg1!==undefined)err("migration : "+JSON.stringify(mg));
     if(await pg.$("#rest"))err("chrono encore présent");
     await pg.waitForFunction(()=>{const s=document.getElementById("splash");return !s||s.hidden||getComputedStyle(s).display==="none"||getComputedStyle(s).opacity==="0"},null,{timeout:6000}).catch(()=>{});await pg.waitForTimeout(300);
     await pg.click('#msList [data-ms="d2"] summary');await pg.evaluate(()=>{const e=document.querySelector("#msList");window.scrollTo(0,e.getBoundingClientRect().top+scrollY-120)});await shot(pg,"v44-"+nm+"-seances");
@@ -912,6 +919,33 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     // « Tes précisions » ouvert d'emblée
     await pg.evaluate(()=>coachOpen());await pg.waitForTimeout(200);if(!(await pg.isVisible("#cfNotes")))err("« Tes précisions » n'est pas ouvert");
     await pg.locator("#cfNotes").scrollIntoViewIfNeeded();await shot(pg,"v444-programme-precisions");
+    await ctx.close()}
+  // --- v44.7 : la dernière ligne de chaque page reste visible au-dessus de la barre du bas (iPhone et PC barre latérale masquée) ; infobulle des graphiques
+  for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1280,height:720}}]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v44.7 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v447"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.evaluate(()=>{data.ui.sideOff=1;saveUI();if(typeof sideApply==="function")sideApply();const y=new Date().getFullYear()+1;for(let i=0;i<12;i++)data.tasks.push({id:"q"+i,title:"Activité "+i,date:`${y}-${String(1+i).padStart(2,"0")}-10`,status:"à faire",cat:"Perso"});
+      M().sessions.push({id:"big",name:"Grosse séance",upd:Date.now(),exercises:Array.from({length:8},(_,i)=>({id:"x"+i,name:"Exercice "+i,ps:1,sets:[{kg:"",reps:""},{kg:"",reps:""},{kg:"",reps:""}]}))});save();openGroup("orga");renderPlan()});
+    await pg.waitForTimeout(300);await pg.click("[data-mfoldall]");await pg.waitForTimeout(200);
+    const lastVis=async sel=>pg.evaluate(s=>{window.scrollTo(0,document.documentElement.scrollHeight);const els=document.querySelectorAll(s),l=els[els.length-1],n=document.querySelector("nav");if(!l)return "absent";
+      const r=l.getBoundingClientRect(),top=n&&getComputedStyle(n).display!=="none"&&!n.hidden?n.getBoundingClientRect().top:innerHeight;return r.bottom<=top+1?"ok":`${Math.round(r.bottom)} > ${Math.round(top)}`},sel);
+    await pg.waitForTimeout(300);{const r=await lastVis("#tasks .prow");if(r!=="ok")err("dernière date cachée par la barre du bas : "+r)}
+    await shot(pg,"v447-"+nm+"-agenda-bas");
+    await pg.evaluate(()=>{show("muscu");msOpenId="big";renderMuscu()});await pg.waitForTimeout(300);
+    {const r=await lastVis("#v-muscu .ms-actions");if(r!=="ok")err("bas de la séance caché par la barre du bas : "+r)}
+    await shot(pg,"v447-"+nm+"-muscu-bas");
+    // graphiques : l'infobulle disparaît quand on fait défiler ou qu'on touche ailleurs
+    await pg.evaluate(()=>{const d=new Date();data.nutri={consent:"x",profile:{sex:"h",age:24,height:180,weight:80,goal:"maintain",sports:[]},plan:{kcal:2000,p:150,c:200,f:70,bmr:1800,tdee:2000,text:"",warn:[]},upd:Date.now(),
+      log:[0,1,2,3].map(i=>{const x=new Date(d);x.setDate(x.getDate()-i);return{id:"g"+i,day:iso(x),at:x.toISOString(),name:"Repas",kcal:1800,p:100,c:200,f:60,upd:1}}),weights:[],weeks:[]};save();show("graph")});
+    await pg.waitForTimeout(400);
+    const svg=pg.locator("#v-graph svg").first();await svg.scrollIntoViewIfNeeded();const bx=await svg.boundingBox();
+    if(!bx)err("graphique absent");else{
+      await pg.mouse.move(bx.x+bx.width*0.6,bx.y+bx.height*0.5);await pg.mouse.down();await pg.mouse.up();await pg.waitForTimeout(150);
+      if(!(await pg.isVisible("#grTip")))err("l'infobulle ne s'affiche pas au toucher");
+      if(await pg.isVisible("#grTip")){await pg.evaluate(()=>window.scrollBy(0,40));await pg.waitForTimeout(200);if(await pg.isVisible("#grTip"))err("l'infobulle reste après le défilement")}
+      await pg.mouse.move(bx.x+bx.width*0.6,bx.y+bx.height*0.5);await pg.mouse.down();await pg.mouse.up();await pg.waitForTimeout(150);
+      if(await pg.isVisible("#grTip")){await pg.mouse.click(5,Math.max(5,bx.y-60));await pg.waitForTimeout(150);if(await pg.isVisible("#grTip"))err("l'infobulle reste après un toucher ailleurs")}}
     await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");

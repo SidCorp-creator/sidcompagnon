@@ -450,7 +450,13 @@ const PLUSIC=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 // Toucher un espace rouvre sa dernière fonction ; en haut, des pastilles passent d'une fonction à l'autre. Le « + » est sur la page Aujourd'hui.
 const DOCK=[["home","Aujourd'hui",HOMEIC],["orga","Organisation",null],["sport","Santé",null],["perso","Coffre",null],["more","Compte",USERIC]];
 // v42 : la barre du bas montre les fonctions de l'app ouverte (sid'agenda : Agenda, Tâches, Focus…) ; dans Sid'home, pas de barre
-function renderNav(v){const nav=document.querySelector("nav"),a=appOf(v);
+// v44.7 : la page garde toujours en bas la place de la barre (sa hauteur réelle, 0 si elle est cachée) : le dernier élément
+// n'est plus coupé derrière (ordinateur avec la barre latérale masquée, téléphone, tablette)
+function navPad(){const n=document.querySelector("nav"),h=n&&!n.hidden&&getComputedStyle(n).display!=="none"?Math.ceil(n.getBoundingClientRect().height):0;
+  document.documentElement.style.setProperty("--navh",h+"px")}
+addEventListener("resize",()=>requestAnimationFrame(navPad));
+if(window.ResizeObserver)new ResizeObserver(()=>navPad()).observe(document.querySelector("nav"));
+function renderNav(v){requestAnimationFrame(navPad);const nav=document.querySelector("nav"),a=appOf(v);
   if(a==="home"){nav.hidden=true;document.body.classList.remove("has-nav");return}
   const ts=groupTabs(groupOf(v));nav.hidden=false;document.body.classList.add("has-nav");$("navIn").style.gridTemplateColumns=`repeat(${ts.length},minmax(0,1fr))`;
   $("navIn").innerHTML=ts.map(k=>`<button type="button" class="tab" data-go="${k}"${k===v?' aria-current="page"':""}><span class="tabicon">${ICON(k)}</span><span class="tab-l">${L(SHORT[k])}</span>${badgeHtml(k)}</button>`).join("")}
@@ -530,7 +536,7 @@ $("spacesList").addEventListener("click",e=>{const b=e.target.closest("[data-go]
 // v43 : la barre latérale (ordinateur et tablette) peut être masquée ; le choix est propre à l'appareil (data.ui.sideOff).
 // Par défaut : affichée à partir de 960 px, masquée sur tablette (768–959 px). Masquée, la barre du bas de l'app reprend sa place.
 const SIDEIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M9.5 4.5v15"/></svg>';
-function sideApply(){const wide=matchMedia("(min-width:768px)").matches,u=data.ui||{};
+function sideApply(){requestAnimationFrame(navPad);const wide=matchMedia("(min-width:768px)").matches,u=data.ui||{};
   const on=wide&&(u.sideOff===undefined?innerWidth>=960:!u.sideOff);
   document.body.classList.toggle("side-off",wide&&!on);document.body.classList.toggle("side-on",on);
   const sb=$("sideShow");if(sb){sb.hidden=!(wide&&!on);sb.setAttribute("aria-expanded","false")}}
@@ -568,45 +574,31 @@ function renderHome(){if(!$("homeBody"))return;
   const vis=visibleTabs(),T=vis.includes("plan")?allT().filter(t=>t.status!=="fait"&&!t.canc):[];
   const start=t=>{const d=parse(t.date);const[h,m]=(t.time||"08:00").split(":").map(Number);d.setHours(h,m);return d};
   const next=T.filter(t=>t.time&&start(t)>now).sort((a,b)=>start(a)-start(b))[0]||T.filter(t=>!t.time&&t.date>t0).sort((a,b)=>a.date.localeCompare(b.date))[0];
-  // v42 : les 3 applications ; toucher un logo ouvre l'app (sa dernière fonction)
-  let h=`<div class="home-apps">${APP_GROUPS.filter(g=>groupTabs(g).length).map(g=>`<button type="button" class="home-app" data-gapp="${g.k}">${LOGO(g.app,"home-applogo")}<span>${esc(g.label)}</span></button>`).join("")}</div>`;
-  if(!isTrial()&&!data.prefs.aiOk&&!data.ui.aiCardOff)h+=`<div class="card ai-card hm-ai"><div class="grow"><b>${L("Nouveau : branche Claude")}</b><div class="small muted">${L("Claude calcule tes repas, crée tes menus et note tes tâches directement dans Sid'home.")}</div></div><div class="ai-card-b"><button type="button" class="btn" data-aiwiz="1">${L("Brancher")}</button><button type="button" class="x" data-aioff="1" aria-label="${L("Masquer")}">×</button></div></div>`;
-  // v43 : un résumé par app, chacun dans sa section (nom, couleur, lien « Ouvrir »)
-  const G=Object.fromEntries(APP_GROUPS.map(g=>[g.app,g]));
-  const sec=(app,sum,body)=>{const g=G[app];if(!g||!groupTabs(g).length)return"";
-    return `<section class="hm-sec" data-app="${app}" aria-labelledby="hs-${app}"><div class="hm-sec-h"><span class="hm-sec-logo">${LOGO(app)}</span><span class="grow"><h2 id="hs-${app}">${esc(g.label)}</h2><span class="small muted">${sum}</span></span><button type="button" class="hm-open" data-gapp="${g.k}">${L("Ouvrir")}<span aria-hidden="true"> ›</span></button></div>${body}</section>`};
-  // sid'agenda : prochain rendez-vous, la journée, les tâches du jour
-  {let b="",n1=0,n2=0;
-    if(next){const s=start(next),diff=s-now,same=next.date===t0,tm=parse(next.date);tm.setDate(tm.getDate()-1);
-      const when=next.time&&same?inCount(diff):next.time&&iso(tm)===t0?`${L("demain")} · ${next.time}`:`${DOW[s.getDay()]} ${s.getDate()} ${MO[s.getMonth()]}${next.time?" · "+next.time:""}`;
-      b+=`<button type="button" class="hm-next" data-go="plan"><span class="eyebrow">${L("Prochain")} · ${esc(when)}</span><b class="notr">${esc(next.title)}</b><span class="small muted">${next.time?hrs(next):""}${next.loc?` · <span class="notr">${esc(next.loc)}</span>`:next.cat?` · ${esc(next.cat)}`:""}</span></button>`}
-    if(vis.includes("plan")){const day=allT().filter(t=>onDay(t,t0)).sort((a,b)=>sk(a).localeCompare(sk(b)));n1=day.filter(t=>t.status!=="fait"&&!t.canc).length;
-      b+=`<h3 class="hm-h">${L("Aujourd'hui")}</h3><div class="hm-list">${day.length?day.map(t=>`<button type="button" class="hm-row ${t.status==="fait"||t.canc?"is-done":""}" data-go="plan"><span class="hm-time">${t.time||L("Journée")}</span><span class="grow notr">${esc(t.title)}</span><span class="dot" style="background:var(${colorOf(t)})"></span></button>`).join(""):`<div class="empty">${L("Rien de prévu aujourd'hui.")}</div>`}</div>`}
-    if(vis.includes("todo")){const td=dayTodos(t0),un=data.todos.filter(t=>!t.done&&!t.paused&&!t.day);n2=td.filter(t=>!t.done).length;
-      const row=t=>`<div class="hm-row hm-trow ${t.done?"is-done":""}"><button type="button" class="hm-chk" data-htg="${t.id}" aria-label="${L(t.done?"Remettre à faire":"Terminer")}">${t.done?CHECK:""}</button><button type="button" class="grow notr hm-tt" data-todo-open="${t.id}">${esc(t.title)}${tLate(t)?` <span class="tchip late">↻ ${L("reportée")}</span>`:""}</button></div>`;
-      b+=`<h3 class="hm-h">${L("Tâches du jour")}</h3><div class="hm-list">${td.length?td.map(row).join(""):`<div class="empty">${L("Aucune tâche prévue aujourd'hui.")}</div>`}`+
-        (un.length?`<div class="hm-plan"><span class="small muted">${un.length} ${L(un.length>1?"tâches à planifier":"tâche à planifier")}</span>${un.slice(0,3).map(t=>`<div class="hm-row"><span class="grow notr">${esc(t.title)}</span><button type="button" class="mini" data-hplan="${t.id}">${L("Aujourd'hui")}</button></div>`).join("")}</div>`:"")+`</div>`}
-    h+=sec("agenda",`${n1} ${L(n1>1?"activités":"activité")} · ${n2} ${L(n2>1?"tâches":"tâche")} ${L("aujourd'hui")}`,b)}
-  // sid'fit : calories du jour, poids, séance
-  {let b="",sum=[];const rows=[];
-    if(vis.includes("nutri")&&nutriAllowed()&&NU().plan&&NU().plan.kcal){const tg=dayTarget(t0).kcal,eat=sumOf(dayLog(t0)).kcal,l=Math.round(tg-eat);
-      rows.push(["nutri",L("Nutrition"),`${fmtFull(Math.round(eat))} / ${fmtFull(tg)} kcal`,L(l>=0?`${fmtFull(l)} kcal restantes`:`${fmtFull(-l)} kcal en trop`)]);sum.push(`${fmtFull(Math.abs(l))} ${L(l>=0?"kcal restantes":"kcal en trop")}`)}
-    else if(vis.includes("nutri")&&nutriAllowed())rows.push(["nutri",L("Nutrition"),"—",L("Crée ton profil pour suivre tes calories")]);
-    if(vis.includes("nutri")){const w=(NU().weights||[]).slice().sort((a,b)=>b.day.localeCompare(a.day))[0];if(w)rows.push(["graph",L("Poids"),`${String(w.kg).replace(".",LANG==="en"?".":",")} kg`,fmtDay(w.day)])}
-    if(vis.includes("muscu")){const M=data.muscu||{},nd=coachNext(),lg=(M.log||[]).slice().sort((a,b)=>(b.date||"").localeCompare(a.date||""));
-      const wk=lg.filter(x=>x.date&&x.date>=iso(new Date(Date.now()-6*864e5))).length+(M.sessions||[]).filter(x=>x.date&&x.date>=iso(new Date(Date.now()-6*864e5))).length;
-      if(nd)rows.push(["muscu",L("Prochaine séance"),nd.name,`${nd.exercises.length} ${L(nd.exercises.length>1?"exercices":"exercice")}`]);
-      else rows.push(["muscu",L("Musculation"),`${wk}`,L(wk>1?"séances ces 7 derniers jours":"séance ces 7 derniers jours")]);
-      sum.push(`${wk} ${L(wk>1?"séances cette semaine":"séance cette semaine")}`)}
-    b=rows.length?`<div class="hm-list">${rows.map(([k,l,v,d])=>`<button type="button" class="hm-row hm-kv" data-go="${k}"><span class="hm-k">${l}</span><span class="grow"><b class="notr">${esc(v)}</b><span class="small muted"> ${esc(d)}</span></span></button>`).join("")}</div>`:"";
-    h+=sec("fit",sum.join(" · ")||L("Musculation, nutrition et graphiques"),b)}
-  // sid'note : les dossiers récents (v43, à la place des notes récentes)
-  if(vis.includes("notes")||vis.includes("docs")||vis.includes("pwd")){let b="";
-    if(vis.includes("notes")){const last={};NT().forEach(n=>{if(!n.folder||!nfOf(n.folder))return;nfPath(n.folder).forEach(f=>{last[f.id]=Math.max(last[f.id]||0,n.upd||Date.parse(n.createdAt)||0)})});
-      const fs=NF().map(f=>({f,t:last[f.id]||Date.parse(f.createdAt)||0})).sort((a,b)=>b.t-a.t).slice(0,4);
-      b+=`<h3 class="hm-h">${L("Dossiers récents")}</h3><div class="hm-list">${fs.length?fs.map(({f,t})=>`<button type="button" class="hm-row" data-folder-open="${f.id}"><span class="hm-fic">${IC("folder")}</span><span class="grow notr">${esc(nfPath(f.id).map(x=>x.name).join(" › "))}</span><span class="small muted">${nfCount(f.id)} · ${t?fmtWhen(t):""}</span></button>`).join(""):`<div class="empty">${L("Aucun dossier pour l'instant. Crée-en un dans sid'note pour ranger tes notes.")}</div>`}</div>`}
-    const nN=NT().length,nD=(data.docs||[]).length;
-    h+=sec("note",`${nN} ${L(nN>1?"notes":"note")} · ${NF().length} ${L(NF().length>1?"dossiers":"dossier")}${vis.includes("docs")?` · ${nD} ${L(nD>1?"documents":"document")}`:""}`,b)}
+  // v44.7 : Sid'home = 3 grandes cartes, une par app (nom, identité, ce qu'elle fait en une ligne, 1 ou 2 repères du jour) ;
+  // toucher une carte ouvre l'app. Tout le reste a quitté cette page (il est dans chaque app).
+  const cards=[];
+  {const g=APP_GROUPS.find(x=>x.app==="agenda");if(groupTabs(g).length){const it=[];
+    if(next){const s=start(next),same=next.date===t0,tm=parse(next.date);tm.setDate(tm.getDate()-1);
+      const when=next.time&&same?inCount(s-now):next.time&&iso(tm)===t0?`${L("demain")} · ${next.time}`:`${DOW[s.getDay()]} ${s.getDate()} ${MO[s.getMonth()]}${next.time?" · "+next.time:""}`;
+      it.push([L("Prochain"),`<span class="notr">${esc(next.title)}</span>`,esc(when)])}
+    if(vis.includes("todo")){const n=dayTodos(t0).filter(t=>!t.done).length;it.push([L("Tâches"),n?`${n} ${L(n>1?"tâches aujourd'hui":"tâche aujourd'hui")}`:L("Aucune tâche aujourd'hui"),""])}
+    if(!it.length)it.push([L("Prochain"),L("Rien de prévu"),""]);
+    cards.push({g,desc:"Ton agenda et tes tâches, jour après jour.",it})}}
+  {const g=APP_GROUPS.find(x=>x.app==="fit");if(groupTabs(g).length){const it=[];
+    if(vis.includes("nutri")&&nutriAllowed()&&NU().plan&&NU().plan.kcal){const tg=dayTarget(t0).kcal,eat=sumOf(dayLog(t0)).kcal;it.push([L("Nutrition"),`${fmtFull(Math.round(eat))} / ${fmtFull(tg)} kcal`,""])}
+    if(vis.includes("muscu")){const nd=coachNext();if(nd)it.push([L("Séance"),`<span class="notr">${esc(nd.name)}</span>`,""])}
+    if(!it.length)it.push([L("Pour commencer"),L("Crée ton profil ou ta première séance"),""]);
+    cards.push({g,desc:"Musculation, nutrition et graphiques de ta forme.",it:it.slice(0,2)})}}
+  {const g=APP_GROUPS.find(x=>x.app==="note");if(groupTabs(g).length){const it=[];
+    const last=NT().filter(n=>!n.secret&&(n.title||n.body)).sort((a,b)=>(b.upd||0)-(a.upd||0))[0];
+    if(last)it.push([L("Dernière note"),`<span class="notr">${esc(last.title||String(last.body||"").slice(0,40))}</span>`,""]);
+    const nN=NT().length;it.push([L("Classeur"),`${nN} ${L(nN>1?"notes":"note")} · ${NF().length} ${L(NF().length>1?"dossiers":"dossier")}`,""]);
+    cards.push({g,desc:"Notes, documents et mots de passe, à l'abri.",it:it.slice(0,2)})}}
+  let h=`<div class="hc-list">${cards.map(({g,desc,it})=>`<button type="button" class="hc" data-app="${g.app}" data-gapp="${g.k}">
+    <span class="hc-top">${LOGO(g.app,"home-applogo hc-logo")}<span class="hc-name">${esc(g.label)}</span><span class="hc-go" aria-hidden="true">›</span></span>
+    <span class="hc-desc">${L(desc)}</span>
+    <span class="hc-items">${it.map(([k,v,w])=>`<span class="hc-it"><span class="hc-k">${k}</span><span class="hc-v">${v}${w?` <span class="hc-w">· ${w}</span>`:""}</span></span>`).join("")}</span>
+  </button>`).join("")}</div>`;
   $("homeBody").innerHTML=h}
 $("homeBody").addEventListener("click",e=>{
   const ga=e.target.closest("[data-gapp]");if(ga){openGroup(ga.dataset.gapp);return}
@@ -1941,7 +1933,7 @@ let msOpenId=null,msTimer=null;
 const M=()=>data.muscu||(data.muscu={sessions:[]});
 const msFind=id=>M().sessions.find(x=>x.id===id);
 const newSet=()=>({reps:"",kg:""});
-const newEx=(name="",n=3)=>({id:uid(),name,reps:"",kg:"",sets:Array.from({length:n},newSet)});
+const newEx=(name="",n=3)=>({id:uid(),name,ps:1,sets:Array.from({length:n},newSet)});
 const seTouch=se=>{se.upd=Date.now();M().upd=Date.now()};
 const GSRC={app:"Créé par Sid'home",claude:"Créé par Claude",import:"Importé"};
 // ancien programme (avant la v44 : plan.days, exercices avec un nombre de séries) → séances au format commun, sans rien perdre
@@ -1952,16 +1944,18 @@ function muMigrate(){const m=M(),p=m.plan;if(!Array.isArray(m.sessions))m.sessio
         exercises:(d.ex||[]).map(e=>({id:uid(),name:e.name||"",pat:e.pat||"",reps:e.reps||"",rest:+e.rest||120,rir:e.rir||"",note:e.note||"",sets:Array.from({length:Math.max(1,Math.min(20,+e.sets||3))},newSet)}))})});
     delete p.days;p.v=2;p.upd=Date.now();ch=true}
   for(const se of m.sessions)if(se&&!Array.isArray(se.exercises)){se.exercises=[];ch=true}
-  // v44.6 : un seul poids et un seul nombre de répétitions par exercice, repris de la dernière série remplie (les séries gardent leurs valeurs)
-  for(const se of m.sessions)for(const ex of (se&&se.exercises)||[]){if(!ex||ex.kg!==undefined)continue;if(!Array.isArray(ex.sets)||!ex.sets.length)ex.sets=[newSet()];
-    const lastV=k=>{for(let j=ex.sets.length-1;j>=0;j--){const v=ex.sets[j]&&ex.sets[j][k];if(v!==undefined&&v!==null&&String(v).trim()!=="")return String(v).trim()}return ""};
-    ex.kg=lastV("kg").replace(",",".");if(!String(ex.reps||"").trim()){const r=lastV("reps");if(r)ex.reps=r}ch=true}
+  // v44.7 : retour à une ligne par série (kg puis répétitions). Un poids / un nombre de répétitions communs tapés en 44.6
+  // (ex.kg, ex.reps) sont recopiés dans les séries seulement si toutes étaient vides ; la fourchette visée d'un programme (« 8–12 ») n'est jamais recopiée
+  for(const se of m.sessions)for(const ex of (se&&se.exercises)||[]){if(!ex||ex.ps)continue;if(!Array.isArray(ex.sets)||!ex.sets.length)ex.sets=[newSet()];
+    const kg=String(ex.kg==null?"":ex.kg).trim(),rp=String(ex.reps||"").trim(),empty=k=>ex.sets.every(x=>!x||String(x[k]==null?"":x[k]).trim()==="");
+    if(kg&&empty("kg"))ex.sets.forEach(x=>{x.kg=kg});if(/^\d+$/.test(rp)&&empty("reps"))ex.sets.forEach(x=>{x.reps=rp});
+    delete ex.kg;ex.ps=1;ch=true}
   if(ch){m.upd=Date.now();save()}}
 const PL=()=>{const p=M().plan;return p&&!p.deleted&&(p.v===2||Array.isArray(p.days))?p:null}; // supprimé = {deleted, upd} pour que la suppression gagne à la fusion
 const grpSe=id=>M().sessions.filter(s=>s&&s.grp&&s.grp.id===id).sort((a,b)=>(a.ord||0)-(b.ord||0));
 const PLD=()=>{const p=PL();return p?grpSe(p.id):[]}; // séances du programme suivi
 // texte de partage commun (séance seule, ou programme entier) : c'est aussi le format d'import (et celui que Claude peut donner)
-const exLine=(e,i)=>`${i+1}. ${e.name||L("Exercice")} : ${e.sets.length} ${e.sets.length>1?"séries":"série"}${e.reps?` × ${e.reps}`:""}${e.kg?`, ${String(e.kg).replace(".",",")} kg`:""}${e.rest?`, repos ${restLbl(e.rest)}`:""}${e.note?` (${e.note})`:""}`;
+const exLine=(e,i)=>`${i+1}. ${e.name||L("Exercice")} : ${e.sets.length} ${e.sets.length>1?"séries":"série"}${e.reps?` × ${e.reps}`:""}${e.rest?`, repos ${restLbl(e.rest)}`:""}${e.note?` (${e.note})`:""}`;
 const seTxt=se=>`Séance « ${se.name||"Séance"} »\n${se.exercises.map(exLine).join("\n")}`;
 const shareTxt=(list,prog)=>prog?`Programme « ${prog} » (Sid'home)\n\n${list.map(seTxt).join("\n\n")}`:`${seTxt(list[0]).replace(/\n/," (Sid'home)\n")}`;
 // lecture tolérante : texte de Sid'home (ancien et nouveau), ou programme écrit par Claude (titres « ## Séance … », puces, « 4 × 8–10 »)
@@ -1980,27 +1974,28 @@ function parseShared(txt){
     const ex=newEx(r[1].replace(/\s*\(.*\)\s*$/,"").trim(),Math.min(20,Math.max(1,+r[2])));
     if(rp)ex.reps=rp[1].replace(/\s*(?:à|to|-)\s*/,"–").replace(/\s+/g,"");
     if(rs)ex.rest=Math.round(parseFloat(rs[1].replace(",","."))*(/min/i.test(rs[2])?60:1));
-    {const kg=rest.match(/(\d+(?:[.,]\d+)?)\s*kg\b/i);if(kg)ex.kg=kg[1].replace(",",".")} // v44.6 : poids commun
+    {const kg=rest.match(/(\d+(?:[.,]\d+)?)\s*kg\b/i);if(kg)ex.sets.forEach(x=>{x.kg=kg[1].replace(",",".")})} // poids donné dans le texte (44.6)
     const nt=rest.match(/\(([^)]+)\)\s*$/);if(nt&&!/repos|rest/i.test(nt[1]))ex.note=nt[1].slice(0,160);
     if(!cur){cur={id:uid(),name:L("Séance importée"),exercises:[]};out.push(cur)}cur.exercises.push(ex)}
   const ses=out.filter(s=>s.exercises.length);if(!ses.length)return null;
   return{prog:prog||(ses.length>1?L("Programme importé"):""),ses}}
 // une carte par séance, la même pour toutes (libre, programme de Sid'home, de Claude ou importé)
-// v44.6 : une seule interface (demande de Sid) : pour chaque exercice, le nom, le nombre de séries, les répétitions et le poids,
-// modifiables directement (plus de mode séance ni de ligne par série). Les champs vides restent vides.
+// v44.7 (demande de Sid) : une seule interface, modifiée directement ; pour chaque exercice, une ligne par série :
+// « Série 1 : [kg] – [reps] », « + Ajouter une série », × pour retirer une série. Rien n'est pré-rempli.
 const exKg=x=>String(x==null?"":x).replace(".",LANG==="en"?".":",");
 function seCard(se){const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0);
   return `<details class="ms" data-ms="${se.id}" ${se.id===msOpenId?"open":""}>
     <summary><span class="chev">›</span><span class="grow"><span class="ms-name notr">${esc(se.name||L("Séance"))}</span><br><span class="small muted">${se.exercises.length} ${L(se.exercises.length>1?"exercices":"exercice")} · ${nS} ${L(nS>1?"séries":"série")}</span></span><button type="button" class="x ms-del" data-msdel="1" aria-label="${L("Supprimer la séance")}">${IC("trash")}</button></summary>
     <div class="ms-body">
       <label class="small muted" style="display:grid;gap:4px">${L("Nom de la séance")}<input data-f="msname" value="${esc(se.name)}" autocomplete="off"></label>
-      ${se.exercises.map((ex,i)=>`<div class="ex ex2" data-ex="${ex.id}">
+      ${se.exercises.map((ex,i)=>`<div class="ex ex3" data-ex="${ex.id}">
         <div class="ex-head"><span class="num">${i+1}</span><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">×</button></div>
-        <div class="ex-vals">
-          <div class="ex-f"><span class="ex-l">${L("Séries")}</span><span class="co-sets" role="group" aria-label="${L("Séries")}"><button type="button" class="co-step" data-msset="-1" aria-label="${L("Retirer une série")}" ${ex.sets.length<=1?"disabled":""}>−</button><span class="num">${ex.sets.length}</span><button type="button" class="co-step" data-msset="1" aria-label="${L("Ajouter une série")}" ${ex.sets.length>=20?"disabled":""}>+</button></span></div>
-          <label class="ex-f"><span class="ex-l">${L("Répétitions")}</span><input class="ex-in" data-f="exreps" value="${esc(ex.reps||"")}" placeholder="—" aria-label="${L("Répétitions")}" autocomplete="off" inputmode="numeric"></label>
-          <label class="ex-f"><span class="ex-l">kg</span><input class="ex-in" data-f="exkg" value="${esc(exKg(ex.kg))}" placeholder="—" aria-label="${L("Poids en kg")}" autocomplete="off" inputmode="decimal"></label>
-        </div>
+        <div class="set-rows">${ex.sets.map((st,j)=>`<div class="set-row" data-si="${j}"><span class="set-l">${L("Série")} ${j+1}</span>
+          <input class="set-in" data-f="setkg" value="${esc(exKg(st&&st.kg))}" placeholder="kg" aria-label="${L("Série")} ${j+1} : kg" autocomplete="off" inputmode="decimal">
+          <span class="set-sep" aria-hidden="true">–</span>
+          <input class="set-in" data-f="setreps" value="${esc(String((st&&st.reps)||""))}" placeholder="reps" aria-label="${L("Série")} ${j+1} : ${L("répétitions")}" autocomplete="off" inputmode="numeric">
+          <button type="button" class="set-del" data-msdelset="${j}" aria-label="${L("Retirer la série")} ${j+1}" ${ex.sets.length<=1?"disabled":""}>×</button></div>`).join("")}</div>
+        <button type="button" class="set-add" data-msaddset="1" ${ex.sets.length>=20?"disabled":""}>+ ${L("Ajouter une série")}</button>
       </div>`).join("")}
       <button type="button" class="qbtn" data-msaddex="1">+ ${L("Ajouter un exercice")}</button>
       <div class="ms-actions">
@@ -2029,8 +2024,9 @@ $("msList").addEventListener("input",e=>{
   const se=msFind(inp.closest("[data-ms]").dataset.ms);if(!se)return;
   if(f==="msname"){se.name=inp.value;const n=inp.closest("[data-ms]").querySelector(".ms-name");if(n)n.textContent=inp.value||L("Séance")}
   else{const ex=se.exercises.find(x=>x.id===inp.closest("[data-ex]").dataset.ex);if(!ex)return;
-    if(f==="exname")ex.name=inp.value;else if(f==="exreps")ex.reps=inp.value.slice(0,12);
-    else if(f==="exkg")ex.kg=inp.value.replace(",",".").replace(/[^0-9.]/g,"").slice(0,7)}
+    if(f==="exname")ex.name=inp.value;
+    else if(f==="setkg"||f==="setreps"){const st=ex.sets[+inp.closest("[data-si]").dataset.si];if(!st)return;
+      if(f==="setkg")st.kg=inp.value.replace(",",".").replace(/[^0-9.]/g,"").slice(0,7);else st.reps=inp.value.replace(/[^0-9]/g,"").slice(0,4)}}
   msSaveSoon(se)});
 async function copyText(txt,what){
   const ok=what==="prog"?"Programme copié : colle-le dans un message":"Séance copiée : colle-la dans un message";
@@ -2045,9 +2041,9 @@ $("msList").addEventListener("click",e=>{
   const exOf=()=>se.exercises.find(x=>x.id===b.closest("[data-ex]").dataset.ex);
   if(b.dataset.msaddex){se.exercises.push(newEx());seTouch(se);save();renderMuscu();const ins=$("msList").querySelectorAll(`[data-ms="${se.id}"] [data-f=exname]`);ins[ins.length-1]?.focus()}
   else if(b.dataset.msdelex){armDelete(b,()=>{se.exercises=se.exercises.filter(x=>x.id!==b.dataset.msdelex);seTouch(se);save();renderMuscu()})}
-  else if(b.dataset.msset){const ex=exOf();if(!ex)return;
-    if(+b.dataset.msset>0){if(ex.sets.length<20)ex.sets.push(newSet())}else if(ex.sets.length>1)ex.sets.pop();
-    seTouch(se);save();renderMuscu();const nb=document.querySelector(`#msList [data-ex="${ex.id}"] [data-msset="${b.dataset.msset}"]`);if(nb&&!nb.disabled)nb.focus()}
+  else if(b.dataset.msaddset){const ex=exOf();if(!ex||ex.sets.length>=20)return;ex.sets.push(newSet());seTouch(se);save();renderMuscu();
+    const ins=document.querySelectorAll(`#msList [data-ex="${ex.id}"] [data-f="setkg"]`);ins[ins.length-1]?.focus()}
+  else if(b.dataset.msdelset!==undefined){const ex=exOf();if(!ex||ex.sets.length<=1)return;ex.sets.splice(+b.dataset.msdelset,1);seTouch(se);save();renderMuscu()}
   else if(b.dataset.msshare)copyText(shareTxt([se]),"se");
   // v44.4 : aussi depuis l'en-tête de la séance (poubelle, 2 appuis)
   else if(b.dataset.msdel&&c2ok(b))undoable("Séance supprimée",[se.id],()=>{tomb(se.id);M().sessions=M().sessions.filter(x=>x!==se)},{after:renderMuscu});
@@ -4208,8 +4204,14 @@ function niceMax(v){const st=niceStep(v/4);return Math.max(st,Math.ceil(v/st)*st
 const fmtFull=v=>Math.round(v).toLocaleString(LANG==="en"?"en-US":LANG==="nl"?"nl-NL":"fr-FR");
 const fmtN=v=>{v=Math.round(v*10)/10;return v>=1000?(Math.round(v/100)/10+"K").replace(".",LANG==="en"?".":","):String(v).replace(".",LANG==="en"?".":",")};
 function grTipShow(ev,html){const t=$("grTip");t.innerHTML=html;t.hidden=false;const x=ev.clientX,y=ev.clientY,w=t.offsetWidth,h=t.offsetHeight;
-  t.style.left=Math.min(innerWidth-w-8,Math.max(8,x-w/2))+"px";t.style.top=Math.max(8,y-h-14)+"px";clearTimeout(grTipT);if(ev.pointerType==="touch")grTipT=setTimeout(grTipHide,2500)}
-function grTipHide(){$("grTip").hidden=true}
+  t.style.left=Math.min(innerWidth-w-8,Math.max(8,x-w/2))+"px";t.style.top=Math.max(8,y-h-14)+"px";clearTimeout(grTipT)}
+function grTipHide(){$("grTip").hidden=true;document.querySelectorAll("#v-graph .gr-x").forEach(x=>x.setAttribute("visibility","hidden"))}
+// v44.7 : sur téléphone, l'infobulle reste tant qu'on est sur le graphique ; elle disparaît dès qu'on fait défiler la page
+// (le navigateur annule alors le toucher : pointercancel) ou qu'on touche ailleurs
+addEventListener("scroll",()=>{if(!$("grTip").hidden)grTipHide()},{passive:true,capture:true});
+document.addEventListener("pointerdown",e=>{if(!$("grTip").hidden&&!e.target.closest("#v-graph svg"))grTipHide()},true);
+document.addEventListener("pointercancel",e=>{if(e.target.closest&&e.target.closest("#v-graph svg"))grTipHide()},true);
+document.addEventListener("touchmove",e=>{if(!$("grTip").hidden&&!(e.target.closest&&e.target.closest("#v-graph svg")))grTipHide()},{passive:true,capture:true});
 // courbe(s) : 2px, points d'extrémité, réticule + bulle sur toutes les séries
 function lineChart(el,days,series,opt={}){
   const W=Math.max(280,el.clientWidth||320),H=170,ml=34,mr=14,mt=12,mb=24,pw=W-ml-mr,ph=H-mt-mb;
@@ -4533,7 +4535,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v44-6";
+const BUILD="sidnote-v44-7";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

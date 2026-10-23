@@ -1272,6 +1272,9 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 .nu-ring-txt{position:absolute;inset:0;display:grid;place-items:center}
 @media (prefers-reduced-motion:reduce){.nu-ring .fgc{transition:none}}
 
-/* v44.4 : barre du bas toujours collée au bas de la partie visible de l'écran (bug iOS : elle remontait au milieu après le clavier) */
-nav{top:calc(var(--vvt,0px) + var(--vvh,100%));bottom:auto;transform:translateY(-100%)}
+/* v44.5 : barre du bas collée en bas (bottom:0). Le calage sur visualViewport (44.4) se faussait pendant le rebond d'iOS
+   (page tirée vers le bas en haut de l'écran) et la barre restait au milieu : retiré. La page ne rebondit plus (overscroll-behavior),
+   et la barre est masquée pendant la saisie (clavier ouvert). */
+html,body{overscroll-behavior:none}
+nav{top:auto;bottom:0;transform:none}
 html.kb-open nav{visibility:hidden}

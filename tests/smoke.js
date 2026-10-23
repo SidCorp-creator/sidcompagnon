@@ -885,7 +885,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>window.scrollTo(0,0));await pg.locator("#tasks").scrollIntoViewIfNeeded();await shot(pg,"v444-agenda-liste-haut");
     // sortie animée vers Sid'home
     await pg.evaluate(()=>{window.__noIntro=false;show("home")});await pg.waitForTimeout(150);if(!(await pg.isVisible("#appOutro")))err("pas d'animation de sortie");
-    await shot(pg,"v444-sortie");await pg.waitForTimeout(900);if(await pg.$("#appOutro"))err("l'animation de sortie ne disparaît pas");
+    await pg.waitForTimeout(450);await shot(pg,"v444-sortie");await pg.waitForTimeout(1300);if(await pg.$("#appOutro"))err("l'animation de sortie ne disparaît pas");
     await pg.evaluate(()=>{window.__noIntro=true});
     await pg.evaluate(()=>openGroup("sport"));if(await pg.evaluate(()=>data.ui.view)!=="nutri")err("sid'fit ne s'ouvre pas sur Nutrition");
     // repas d'un jour passé : jour choisi dans « Ajouter ce que tu manges », dit à Claude

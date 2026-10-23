@@ -236,7 +236,11 @@ assets/               ← logo
   - Agenda, « Toutes les dates » : lignes `.prow` (jour + jour de la semaine à gauche avec filet de couleur, titre = modifier, catégorie · heure, statut en pastille, « ⋯ » `data-tmore2` → modifier / statut / supprimer). Mois tous ouverts à l'ouverture de sid'agenda (`planFoldMem` en mémoire ; `data.prefs.planFold` n'est plus lu).
   - Nutrition : jour du repas choisi dans « Ajouter ce que tu manges » (`#nuFor`, même `nuDay` que « Ma journée ») ; pour un jour passé, le message à Claude donne la date (`nuDayNote`) ; plus de retour forcé à aujourd'hui au retour de Claude (seulement après 30 min).
   - Musculation : poubelle dans l'en-tête de chaque séance (`.ms-del`, 2 appuis, annulable). « Tes précisions » toujours ouvert (`fieldset.cf-open`).
-  - Logo Sid'home : 3 propositions (A toit, B clé, C avant-toit) montrées à Sid, **pas encore remplacé** (attente de son choix ; sources dans le scratchpad `logohome/`).
+  - Logo Sid'home : 3 propositions montrées à Sid (A toit, B clé, C avant-toit).
+- 44.5 :
+  - Logo Sid'home = **C · Avant-toit** (choix de Sid) : `LOGOS.home` (`M9.5 30 L32 11.5 L54.5 30 H47.5 V51 H16.5 V30 Z`, S en `translate(32 38.8) scale(14.2)`), `favicon.svg`, PNG régénérés (logo-32/180/192/512, icon-192/512, apple-touch-icon à 80 %, maskable à 66 %). Sur iPhone, l'icône de l'écran d'accueil ne change qu'en réinstallant l'app (Partager → Sur l'écran d'accueil).
+  - Barre du bas : **retour à `bottom:0`** (le calage `--vvt/--vvh` de la 44.4 se faussait pendant le rebond iOS en haut de page : barre bloquée au milieu). Page sans rebond : `html,body{overscroll-behavior:none}`. Masquage pendant la saisie gardé (`kb-open`). Ne pas recaler `nav` sur `visualViewport`.
+  - Animation de sortie : 1,5 s (demande de Sid).
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

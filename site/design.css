@@ -900,3 +900,10 @@ html[data-ds] .pdfv input.pv-title{border:0!important;background:transparent!imp
 .pv-txt.pv-on textarea{border-style:solid!important;border-color:#2F4A3A!important}
 @media (pointer:coarse){.pv-txt-x,.pv-txt-mv{width:30px!important;height:30px!important;top:-15px!important}.pv-txt-x{right:-15px!important;line-height:30px!important}.pv-txt-mv{left:-15px!important}.pv-txt-rs{width:28px;height:28px;right:-14px;bottom:-14px}.pv-txt-rs::after{inset:8px}}
 .cal-help li span{display:block}
+/* v45 : « Sid'compagnon » tient toujours sur une ligne dans la barre latérale (jamais coupé) */
+@media (min-width:768px){
+  html[data-ds] .side-brand{gap:8px;margin:0 0 14px 4px}
+  html[data-ds] .side-brand .side-logo{flex:none}
+  html[data-ds] .side-brand span{flex:1 1 auto;min-width:0;white-space:nowrap;font-size:18px;letter-spacing:-.015em;line-height:1.1}
+  html[data-ds] .side-brand .side-tog{flex:none;width:28px;height:28px}
+}

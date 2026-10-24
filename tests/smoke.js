@@ -1027,6 +1027,9 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v45"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     if(await pg.evaluate(()=>document.documentElement.dataset.theme)!=="dark")err("pas en sombre par défaut");
+    if(nm==="pc"){await pg.evaluate(()=>{data.ui.sideOff=false;sideApply()});await pg.waitForTimeout(200);
+      const sb=await pg.evaluate(()=>{const s=document.querySelector(".side-brand span"),r=s.getBoundingClientRect(),t=document.querySelector(".side-tog").getBoundingClientRect();return [Math.round(r.height),s.scrollWidth>s.clientWidth+1,r.right>t.left+1]});
+      if(sb[0]>30||sb[1]||sb[2])err("« Sid'compagnon » coupé ou trop large dans la barre latérale : "+sb)}
     // calendriers : 3 calendriers, dont un privé (identifiant), superposés ; masquer / afficher
     await pg.evaluate(()=>{show("plan");$("moreOpts").open=true});await pg.waitForTimeout(200);
     const addCal=async(name,url,u,pw)=>{await pg.fill("#icalName",name);await pg.fill("#icalUrl",url);if(u){await pg.evaluate(()=>$("icalPriv").open=true);await pg.fill("#icalUser",u);await pg.fill("#icalPass",pw)}await pg.click("#icalSave");await pg.waitForTimeout(700)};

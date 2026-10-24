@@ -1,4 +1,4 @@
-# Sid'home
+# Sid'compagnon
 
 > Application personnelle (PWA) éditée par SidCorp, en français, anglais et néerlandais. Un seul compte, trois applications : sid'agenda (agenda, tâches du jour, minuteur de concentration), sid'fit (programme de musculation, nutrition, graphiques) et sid'note (notes et dossiers, documents, mots de passe chiffrés).
 

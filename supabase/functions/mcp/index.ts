@@ -3,6 +3,7 @@
 // seule son empreinte SHA-256 est gardée (table mcp_tokens, supabase/sql/mcp.sql). Verify JWT : OFF.
 // v10 (Sid'home v44) : séances et programmes au même format, liste d'exercices lue dans site/exercices.js.
 // v11 (Sid'home 44.7) : outil modifier_note (remettre au propre, corriger, compléter, renommer, ranger une note existante).
+// v12 (Sid'compagnon v45) : l'agenda lit tous les calendriers reliés affichés (data.prefs.icals).
 // Accès : agenda (v41 : avec les rappels), tâches, notes (pas les notes secrètes), nutrition (v39 : c'est l'IA de la personne qui calcule), musculation (v41), photo d'assiette (v43, outil photo_repas : lue puis effacée). Plus de listes partagées (retirées en v41). Jamais les coffres (mots de passe, documents).
 // Écriture « à condition » sur user_data (comme push() dans l'app) : si l'app a écrit entre-temps, on relit et on recommence.
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -73,9 +74,21 @@ function icsLocal(v: string) {
   const p = Object.fromEntries(BXL.formatToParts(new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]))).map((x) => [x.type, x.value]));
   return { date: `${p.year}-${p.month}-${p.day}`, time: `${p.hour}:${p.minute}` };
 }
+// v12 (Sid'compagnon v45) : plusieurs calendriers reliés (data.prefs.icals = [{id, name, url, on}]) ; ancien format : data.prefs.ical seul.
+// Un calendrier privé avec identifiant n'est lisible que par l'app (identifiant gardé sur l'appareil) : la copie data.icalSoon le remplace.
 async function icalEvents(d: Data, from: string, to: string): Promise<Data[] | null> {
-  const raw = d.prefs && d.prefs.ical;
-  if (!raw) return [];
+  const p = d.prefs || {};
+  const cals = Array.isArray(p.icals) ? p.icals.filter((c: Data) => c && c.url && c.on !== false) : p.ical ? [{ name: "", url: p.ical }] : [];
+  if (!cals.length) return [];
+  let out: Data[] = [], bad = 0;
+  for (const c of cals.slice(0, 12)) {
+    const ev = await icalOne(c.url, from, to);
+    if (ev === null) { bad++; continue; }
+    out = out.concat(ev.map((e) => ({ ...e, calName: c.name || "" })));
+  }
+  return bad === cals.length ? null : bad ? out.concat([{ partial: true }]) : out;
+}
+async function icalOne(raw: string, from: string, to: string): Promise<Data[] | null> {
   let text = "";
   try {
     const url = new URL(String(raw).trim().replace(/^webcal:/i, "https:"));
@@ -433,6 +446,18 @@ const TOOLS = [
     },
   },
 ];
+// v12 : chaque outil porte le logo de son app (sid'agenda, sid'fit, sid'note), le connecteur « Sid'note » le logo note
+// (champ « icons » du protocole MCP ; une IA qui ne le connaît pas l'ignore). Images servies par le site.
+const ICON = (app: string) => [
+  { src: `https://sidcompagnon.com/icons/${app}-128.png`, mimeType: "image/png", sizes: ["128x128"] },
+  { src: `https://sidcompagnon.com/icons/${app}.svg`, mimeType: "image/svg+xml", sizes: ["any"] },
+];
+const APP_TOOLS: Record<string, string[]> = {
+  agenda: ["agenda", "ajouter_activite", "modifier_activite", "taches", "ajouter_tache", "planifier_tache", "terminer_tache"],
+  note: ["notes", "lire_note", "ajouter_note", "modifier_note"],
+  fit: ["nutrition_journee", "photo_repas", "noter_repas", "retirer_repas", "enregistrer_menu", "nutrition_semaine", "noter_poids", "enregistrer_commentaire", "muscu_programme", "enregistrer_programme", "noter_seance"],
+};
+for (const t of TOOLS as Data[]) { const app = Object.keys(APP_TOOLS).find((k) => APP_TOOLS[k].includes(t.name)); if (app) t.icons = ICON(app); }
 // rappels d'une activité (comme remApply dans l'app) : t.leads = délais choisis, la veille toujours comprise
 const leadsOf = (v: unknown) => {
   const a = (Array.isArray(v) ? v : [v]).map(Number).filter((n) => Number.isFinite(n) && n > 0 && n <= 10080).map(Math.round);
@@ -501,6 +526,10 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
       const del = data.del || {};
       let cal = await icalEvents(data, from, to);
       let calNote = "";
+      if (cal && cal.some((c: Data) => c.partial)) {
+        cal = cal.filter((c: Data) => !c.partial).concat((Array.isArray(data.icalSoon) ? data.icalSoon : []).filter((c: Data) => c && c.date >= from && c.date <= to && !cal!.some((x: Data) => x.title === c.title && x.date === c.date && (x.time || "") === (c.time || ""))).map((c: Data) => ({ ...c, src: "ical" })));
+        calNote = "\n(Un calendrier relié n'a pas pu être lu : ses cours viennent de la dernière copie faite par l'app.)";
+      }
       if (cal === null) { // calendrier injoignable : on reprend la copie des 14 prochains jours faite par l'app
         cal = (Array.isArray(data.icalSoon) ? data.icalSoon : []).filter((c: Data) => c && c.date >= from && c.date <= to).map((c: Data) => ({ ...c, src: "ical" }));
         calNote = "\n(Calendrier relié injoignable pour l'instant : cours repris de la dernière copie faite par l'app.)";
@@ -516,7 +545,7 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
       if (!list.length) return `${head}\nAucune activité ni aucun cours entre le ${from} et le ${to}.${todoTxt}${calNote}`;
       return `${head}\n` + list.map((t: Data) =>
         `- ${dayName(t.date)} ${t.date}${t.end ? ` → ${t.end}` : ""}${t.time ? ` ${t.time}${t.timeEnd ? `–${t.timeEnd}` : ""}` : ""} · ${t.title}` +
-        (t.src === "ical" ? ` [cours, calendrier relié${t.loc ? `, ${t.loc}` : ""}]` : `${t.cat ? ` [${t.cat}]` : ""}${t.status && t.status !== "à faire" ? ` (${t.status})` : ""} (id ${t.id})`)).join("\n") + todoTxt + calNote;
+        (t.src === "ical" ? ` [${t.calName ? `calendrier « ${t.calName} »` : "cours, calendrier relié"}${t.loc ? `, ${t.loc}` : ""}]` : `${t.cat ? ` [${t.cat}]` : ""}${t.status && t.status !== "à faire" ? ` (${t.status})` : ""} (id ${t.id})`)).join("\n") + todoTxt + calNote;
     }
     case "ajouter_activite": {
       const title = String(a.title || "").trim();
@@ -835,7 +864,7 @@ Deno.serve(async (req) => {
       return rpcOk(id, {
         protocolVersion: params?.protocolVersion || "2025-06-18",
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "sidnote", title: "Sid'note", version: "1.5.0" },
+        serverInfo: { name: "sidnote", title: "Sid'note", version: "1.6.0", icons: ICON("note"), websiteUrl: "https://sidcompagnon.com" },
         instructions: "Sid'note est l'application d'organisation de la personne (agenda, cours, tâches, notes, nutrition, musculation). Dates en AAAA-MM-JJ, heure de Bruxelles. Quand la personne demande un rappel pour une activité (ex. 1 h avant), passe-le dans reminders (en minutes) avec ajouter_activite ou modifier_activite : c'est une notification sur son téléphone. Quand la personne dit ce qu'elle a mangé ou envoie la photo de son assiette (si elle parle d'une photo envoyée depuis Sid'note, elle est jointe à nutrition_journee, ou lis-la avec photo_repas), estime toi-même calories et macros puis note-le avec noter_repas (sans redemander, sauf doute sur la quantité). Pour un menu, lis d'abord nutrition_journee puis enregistre-le avec enregistrer_menu. Après un bilan ou un commentaire nutrition (jour ou semaine), enregistre-le avec enregistrer_commentaire pour qu'il s'affiche dans l'app. Quand la personne parle d'une chose à faire un jour précis, ajoute la tâche avec sa date (ajouter_tache) : elle apparaîtra ce jour-là dans son agenda et passera au lendemain si elle n'est pas faite. Pour une note, propose un dossier (folder) si c'est utile ; pour corriger, compléter ou remettre au propre une note qui existe déjà, utilise modifier_note (ne crée pas de doublon). Pour la musculation, lis muscu_programme avant d'ajuster, puis enregistre avec enregistrer_programme ; une séance racontée se note avec noter_seance. Les mots de passe, documents et notes secrètes sont chiffrés et jamais accessibles.",
       });
     case "ping":

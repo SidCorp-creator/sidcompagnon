@@ -1,4 +1,4 @@
-/* Pages légales de Sid'home (v43) : mêmes couleurs que l'app, lisibles sans connexion ni JavaScript */
+/* Pages légales de Sid'compagnon (v43) : mêmes couleurs que l'app, lisibles sans connexion ni JavaScript */
 :root{--bg:#F4F0E8;--ink:#1C1A17;--muted:#6E675C;--line:#D6CFC2;--app:#1C1A17;--soft:#EBE6DC;color-scheme:light}
 @media (prefers-color-scheme:dark){:root{--bg:#111214;--ink:#ECEDEE;--muted:#9A9DA3;--line:#2E3035;--app:#ECEDEE;--soft:#1A1B1E;color-scheme:dark}}
 *{box-sizing:border-box}

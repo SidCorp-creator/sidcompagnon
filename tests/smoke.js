@@ -18,7 +18,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const err=m=>errs.push(scheme+": "+m);
     // navigation v28 : espace dans la barre du bas, puis fonction dans les pastilles du haut
     const closePin=async()=>{if(await pg.isVisible("#pinSheet"))await pg.click("#psClose").catch(()=>{})};
-    // v42 : Sid'home → logo de l'app → barre du bas de l'app ; Réglages par le bouton du compte sur Sid'home
+    // v42 : Sid'compagnon → logo de l'app → barre du bas de l'app ; Réglages par le bouton du compte sur Sid'compagnon
     const home=async()=>{await closePin();if(await pg.isVisible('#vhead [data-go="home"]'))await pg.click('#vhead [data-go="home"]');else await pg.evaluate(()=>show("home"));await pg.waitForTimeout(150)};
     const go=async v=>{await closePin();const c=await cur();
       if(v==="more"||v==="app"){if(c===v)return;if(c!=="home")await home();await pg.click("#homeAvatar");await pg.waitForTimeout(150);if(v==="app")await pg.evaluate(()=>show("app"));await closePin();return}
@@ -46,24 +46,26 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     // --- inscription, présentation passée, tous les onglets affichés
     await pg.click("#mSignup");await pg.fill("#aName","Test");await pg.fill("#aEmail",email);
     await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    // v45 : sombre par défaut ; le passage « light » choisit le thème clair pour garder des captures des deux thèmes
+    if(scheme==="light")await pg.evaluate(()=>{data.prefs.theme="light";save();applyLook()});else if(await pg.evaluate(()=>document.documentElement.dataset.theme)!=="dark")err("le thème sombre n'est pas appliqué par défaut");
     if(await pg.isVisible("#onb")){await shot(pg,scheme+"-02-presentation");await pg.click("#onbSkip");await pg.waitForTimeout(400)}
     if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     await pg.evaluate(()=>{["plan","todo","pomo","notes","muscu","nutri","graph","docs","pwd","app"].forEach(k=>data.prefs.tabs[k]=true);save();applyTabs()});
 
-    // --- v42 : Sid'home : les 3 apps en logos, pas de barre du bas ; chaque app a sa barre et un retour à Sid'home
-    if(await pg.isVisible("nav"))err("barre du bas affichée sur Sid'home");
+    // --- v42 : Sid'compagnon : les 3 apps en logos, pas de barre du bas ; chaque app a sa barre et un retour à Sid'compagnon
+    if(await pg.isVisible("nav"))err("barre du bas affichée sur Sid'compagnon");
     const apps=await pg.$$eval("#homeBody .hc-list [data-gapp]",x=>x.map(e=>e.dataset.gapp).join(","));
-    if(apps!=="orga,sport,perso")err("cartes des 3 apps absentes de Sid'home : "+apps);
+    if(apps!=="orga,sport,perso")err("cartes des 3 apps absentes de Sid'compagnon : "+apps);
     await shot(pg,scheme+"-03-aujourdhui");
     await pg.click("#homeAdd");if(!(await pg.isVisible("#qaSheet")))err("le + de la page Aujourd'hui n'ouvre pas l'ajout rapide");await pg.click("#qaClose");
     await pg.click('#homeBody [data-gapp="perso"]');await pg.waitForTimeout(200);await closePin();
     if(G[await cur()]!=="perso")err("le logo sid'note n'ouvre pas sid'note");
     if((await pg.$$("#navIn [data-go]")).length!==3)err("barre de sid'note : 3 fonctions attendues");
     if(await pg.evaluate(()=>document.documentElement.dataset.app)!=="note")err("accent de l'app non appliqué");
-    if(await pg.isVisible('#homeBody'))err("Sid'home encore visible dans une app");
+    if(await pg.isVisible('#homeBody'))err("Sid'compagnon encore visible dans une app");
     await go("notes");await go("muscu");await home();await pg.click('#homeBody [data-gapp="perso"]');await pg.waitForTimeout(200);await closePin();
     if(await cur()!=="notes")err("l'app ne rouvre pas la dernière fonction ouverte");
-    await home();if(await pg.isVisible("#vhead"))err("en-tête d'app affiché sur Sid'home");
+    await home();if(await pg.isVisible("#vhead"))err("en-tête d'app affiché sur Sid'compagnon");
     await go("plan");if((await pg.$$eval("#navIn [data-go]",x=>x.map(e=>e.dataset.go).join(",")))!=="plan,todo,pomo")err("barre de sid'agenda : Agenda, Tâches, Focus attendus");
 
     // --- Tâches : catégorie tapée mais pas validée → créée et utilisée
@@ -116,7 +118,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
 
     // --- Agenda : option de calendrier relié, sans « UMons »
     await go("plan");
-    if(!(await pg.textContent("#moreOpts summary")).includes("Relier un calendrier"))err("option iCal non renommée");
+    if(!(await pg.textContent("#moreOpts summary")).includes("Calendriers reliés"))err("option iCal non renommée");
     if((await pg.textContent("#v-plan")).includes("UMons"))err("« UMons » encore affiché dans l'agenda");
     await pg.click("#moreOpts summary");await pg.locator("#moreOpts").scrollIntoViewIfNeeded();await shot(pg,scheme+"-fr-plan-calendrier-relie");await pg.click("#moreOpts summary");
     const notifTxt=await pg.evaluate(()=>{renderLeads();return document.querySelector(".notif-box").textContent});
@@ -695,7 +697,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
       if(!(await pg.isVisible(".onb-slide.on .onb-hero")))err("présentation : diapositive de l'app invisible");
       await shot(pg,"v43-"+nm+"-presentation-agenda");await pg.click("#onbSkip")}
     if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
-    if(await pg.evaluate(()=>document.documentElement.dataset.theme)!=="light")err("le thème clair n'est pas pré-sélectionné (appareil en sombre)");
+    if(await pg.evaluate(()=>document.documentElement.dataset.theme)!=="dark")err("le thème sombre n'est pas le thème par défaut");
     if(nm==="pc"){if(!(await pg.isVisible("#side")))err("barre latérale absente");
       await pg.click("#side .side-tog");await pg.waitForTimeout(200);if(await pg.isVisible("#side")||!(await pg.isVisible("#sideShow")))err("la barre latérale ne se masque pas");
       await pg.reload();await pg.waitForTimeout(2600);if(await pg.isVisible("#side"))err("le choix « barre masquée » n'est pas gardé");
@@ -767,7 +769,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const ob2=await (await pg.request.get("http://localhost:8790/__objs")).json();
     if(!Object.keys(ob2).some(k=>/\/envoi-\d+\.jpg$/.test(k))||Object.keys(ob2).some(k=>/\/repas-\d+\.jpg$/.test(k)))err("la photo envoyée n'est pas marquée « envoi » : "+JSON.stringify(Object.keys(ob2)));
     if(await pg.isVisible("#aiAskSheet"))err("une fenêtre intermédiaire s'ouvre encore pour la photo");
-    // la petite fenêtre ouverte pour Claude est refermée au retour dans Sid'home (sur iPhone, elle restait blanche)
+    // la petite fenêtre ouverte pour Claude est refermée au retour dans Sid'compagnon (sur iPhone, elle restait blanche)
     const closed=await pg.evaluate(async()=>{const fw={closed:false,close(){this.closed=true}};window.open=()=>fw;extOpen("https://claude.ai/new?q=x");
       document.dispatchEvent(new Event("visibilitychange"));await new Promise(r=>setTimeout(r,400));return fw.closed});
     if(!closed)err("la fenêtre de Claude n'est pas refermée au retour");
@@ -898,7 +900,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     {const r=await pg.evaluate(()=>{const n=document.querySelector("nav").getBoundingClientRect();return [n.bottom,innerHeight,n.height]});if(Math.abs(r[0]-r[1])>1||r[2]<40)err("barre du bas pas collée en bas : "+r)}
     await shot(pg,"v444-agenda-liste");
     await pg.evaluate(()=>window.scrollTo(0,0));await pg.locator("#tasks").scrollIntoViewIfNeeded();await shot(pg,"v444-agenda-liste-haut");
-    // sortie animée vers Sid'home
+    // sortie animée vers Sid'compagnon
     await pg.evaluate(()=>{window.__noIntro=false;show("home")});await pg.waitForTimeout(150);if(!(await pg.isVisible("#appOutro")))err("pas d'animation de sortie");
     await pg.waitForTimeout(450);await shot(pg,"v444-sortie");await pg.waitForTimeout(1300);if(await pg.$("#appOutro"))err("l'animation de sortie ne disparaît pas");
     await pg.evaluate(()=>{window.__noIntro=true});
@@ -943,6 +945,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.waitForTimeout(400);
     const svg=pg.locator("#v-graph svg").first();await svg.scrollIntoViewIfNeeded();const bx=await svg.boundingBox();
     if(!bx)err("graphique absent");else{
+      await pg.evaluate(()=>{$("toast").hidden=true}); // le message de bienvenue ne doit pas recouvrir le graphique pendant le test
       await pg.mouse.move(bx.x+bx.width*0.6,bx.y+bx.height*0.5);await pg.mouse.down();await pg.mouse.up();await pg.waitForTimeout(150);
       if(!(await pg.isVisible("#grTip")))err("l'infobulle ne s'affiche pas au toucher");
       if(await pg.isVisible("#grTip")){await pg.evaluate(()=>window.scrollBy(0,40));await pg.waitForTimeout(200);if(await pg.isVisible("#grTip"))err("l'infobulle reste après le défilement")}
@@ -965,26 +968,26 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.mouse.click(bb.x+bb.width*0.5,bb.y+bb.height*0.2);await pg.waitForTimeout(150);
     await pg.keyboard.type("À revoir pour l'examen");await pg.waitForTimeout(700);
     // surligneur
-    await pg.click('[data-pvt="hl"]');await pg.mouse.move(bb.x+bb.width*0.1,bb.y+bb.height*0.12);await pg.mouse.down();await pg.mouse.move(bb.x+bb.width*0.6,bb.y+bb.height*0.14,{steps:6});await pg.mouse.up();await pg.waitForTimeout(200);
+    await pg.click('[data-pvt="hl"]');await pg.waitForTimeout(150);{const b2=await p1.boundingBox();bb.x=b2.x;bb.y=b2.y}await pg.mouse.move(bb.x+bb.width*0.1,bb.y+bb.height*0.12);await pg.mouse.down();await pg.mouse.move(bb.x+bb.width*0.6,bb.y+bb.height*0.14,{steps:6});await pg.mouse.up();await pg.waitForTimeout(200);
     // notes liées
     await pg.click('[data-pvt="notes"]');await pg.fill("#pvNoteTxt","Formule de l'actualisation");await pg.waitForTimeout(700);
     await shot(pg,"v447-"+nm+"-pdf-annote");
-    const st=await pg.evaluate(id=>{const a=pvAnns(id);return [a.filter(x=>x.t==="text"&&x.txt==="À revoir pour l'examen").length,a.filter(x=>x.t==="hl"&&x.w>.3).length,noteFind(id).body]},nid);
+    const st=await pg.evaluate(id=>{const a=pvAnns(id);return [a.filter(x=>x.t==="text"&&x.txt==="À revoir pour l'examen").length,a.filter(x=>x.t==="ink"&&x.hl&&x.pts.length>1).length,noteFind(id).body]},nid);
     if(st[0]!==1)err("zone de texte pas enregistrée");if(st[1]!==1)err("surlignage pas enregistré");if(st[2]!=="Formule de l'actualisation")err("notes liées pas enregistrées");
     // fermeture, liste, réouverture
     await pg.click("#pvBack");await pg.waitForTimeout(200);
     if(!(await pg.textContent("#noteList")).includes("PDF"))err("badge PDF absent de la liste");
-    await pg.click(`#noteList [data-note="${nid}"]`);await pg.waitForFunction(()=>document.querySelectorAll("#pvBody .pv-hl").length===1&&document.querySelectorAll("#pvBody .pv-txt").length===1,null,{timeout:10000}).catch(()=>err("annotations pas retrouvées à la réouverture"));
+    await pg.click(`#noteList [data-note="${nid}"]`);await pg.waitForFunction(()=>document.querySelectorAll("#pvBody path.ink-hl").length===1&&document.querySelectorAll("#pvBody .pv-txt").length===1,null,{timeout:10000}).catch(()=>err("annotations pas retrouvées à la réouverture"));
     // après synchro et rechargement (comme un autre appareil) : tout est là, fichier compris
     await pg.waitForTimeout(2500);if(!(await pg.evaluate(id=>noteFind(id).pdf.up,nid)))err("PDF pas envoyé en ligne");
     await pg.evaluate(()=>{pvClose()});await pg.reload();await pg.waitForTimeout(2500);
     await pg.evaluate(id=>{idb.del(pdfKey(id))},nid);await pg.waitForTimeout(200); // fichier absent de l'appareil : relu en ligne
     await pg.evaluate(id=>{show("notes");pdfOpen(id)},nid);
-    await pg.waitForFunction(()=>document.querySelectorAll("#pvBody .pv-page canvas").length>0&&document.querySelectorAll("#pvBody .pv-hl").length===1,null,{timeout:15000}).catch(()=>err("PDF ou annotations perdus après rechargement"));
+    await pg.waitForFunction(()=>document.querySelectorAll("#pvBody .pv-page canvas").length>0&&document.querySelectorAll("#pvBody path.ink-hl").length===1,null,{timeout:15000}).catch(()=>err("PDF ou annotations perdus après rechargement"));
     if(await pg.inputValue("#pvNoteTxt")!=="Formule de l'actualisation")err("notes liées perdues après rechargement");
     // suppression d'un surlignage (toucher → Supprimer, annulable)
-    await pg.click('[data-pvt="read"]');await pg.waitForTimeout(400);{const r=await pg.evaluate(()=>{const h=document.querySelector("#pvBody .pv-hl").getBoundingClientRect();return [h.x+h.width/2,h.y+h.height/2]});await pg.mouse.click(r[0],r[1])}await pg.waitForTimeout(150);await pg.click('#actList .act-it.danger');await pg.click('#actList .act-it.danger').catch(()=>{});await pg.waitForTimeout(250);
-    if(await pg.evaluate(id=>pvAnns(id).some(a=>a.t==="hl"),nid))err("surlignage pas supprimé");
+    await pg.click('[data-pvt="read"]');await pg.waitForTimeout(400);{const r=await pg.evaluate(()=>{const p=document.querySelector("#pvBody path.ink-hl"),l=p.getTotalLength(),pt=p.getPointAtLength(l/2),m=p.getScreenCTM();return [pt.x*m.a+m.e,pt.y*m.d+m.f]});await pg.mouse.click(r[0],r[1])}await pg.waitForTimeout(150);await pg.click('#actList .act-it.danger');await pg.click('#actList .act-it.danger').catch(()=>{});await pg.waitForTimeout(250);
+    if(await pg.evaluate(id=>pvAnns(id).some(a=>a.t==="ink"&&a.hl),nid))err("surlignage pas supprimé");
     await ctx.close()}
   // --- v44.7 : fiche « comment faire » des exercices ; supprimer une note depuis la liste ; le micro d'une note écrit dans la note
   for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1280,height:800}}]]){
@@ -1014,6 +1017,74 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.click("#noteMic");await pg.waitForTimeout(1500);await pg.click("#noteMic");await pg.waitForTimeout(700);
     const nv=await pg.evaluate(()=>{const n=noteFind("nd2");return [n.title,n.body]});
     if(nv[0]!=="À garder"||!nv[1].includes("bonjour le cours et la suite"))err("dictée : "+JSON.stringify(nv));
+    await ctx.close()}
+  // --- v45 : Sid'compagnon, sombre par défaut, calendriers superposés (dont un privé), photos des exercices, série 1 sur toutes, annotation des PDF
+  for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1280,height:800}}]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v45 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);
+    if(!(await pg.title()).includes("Sid'compagnon"))err("titre de la page pas renommé");
+    if((await pg.content()).includes("Sid'home"))err("« Sid'home » encore présent dans la page");
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v45"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    if(await pg.evaluate(()=>document.documentElement.dataset.theme)!=="dark")err("pas en sombre par défaut");
+    // calendriers : 3 calendriers, dont un privé (identifiant), superposés ; masquer / afficher
+    await pg.evaluate(()=>{show("plan");$("moreOpts").open=true});await pg.waitForTimeout(200);
+    const addCal=async(name,url,u,pw)=>{await pg.fill("#icalName",name);await pg.fill("#icalUrl",url);if(u){await pg.evaluate(()=>$("icalPriv").open=true);await pg.fill("#icalUser",u);await pg.fill("#icalPass",pw)}await pg.click("#icalSave");await pg.waitForTimeout(700)};
+    await addCal("Cours","https://ecole.test/cours.ics");await addCal("Travail","https://boulot.test/travail.ics");await addCal("Perso","https://cloud.test/prive.ics","moi","pw");
+    const cs=await pg.evaluate(()=>({n:CALS().length,cols:new Set(CALS().map(c=>c.c)).size,ev:[...new Set(icalEvents.map(e=>e.cat))].sort().join(","),auth:!!icalAuth(CALS()[2].id),inData:JSON.stringify(data).includes('"pw"')}));
+    if(cs.n!==3||cs.cols!==3)err("calendriers : "+JSON.stringify(cs));
+    if(cs.ev!=="Cours,Perso,Travail")err("calendriers pas superposés : "+cs.ev);
+    if(!cs.auth||cs.inData)err("identifiant du calendrier privé mal gardé (doit rester sur l'appareil)");
+    if(await pg.$$eval("#calLegend .cal-pill",x=>x.length)!==3)err("pas de pastilles des calendriers au-dessus du calendrier");
+    await pg.click('#calLegend [data-calon2]:nth-child(2)');await pg.waitForTimeout(200);
+    if(await pg.evaluate(()=>icalEvents.some(e=>e.cat==="Travail")))err("masquer un calendrier ne le cache pas");
+    await pg.locator("#calList").scrollIntoViewIfNeeded();await shot(pg,"v45-"+nm+"-calendriers");
+    await pg.click('#calLegend [data-calon2]:nth-child(2)');await pg.waitForTimeout(400);
+    if(!(await pg.evaluate(()=>icalEvents.some(e=>e.cat==="Travail"))))err("réafficher un calendrier ne marche pas");
+    // ancien format (un seul lien) : repris comme 1er calendrier
+    if(await pg.evaluate(()=>{const p=data.prefs;const keep=p.icals;delete p.icals;p.ical="https://ancien.test/a.ics";const l=CALS();const ok=l.length===1&&l[0].url==="https://ancien.test/a.ics";p.icals=keep;p.ical=keep[0].url;return !ok}))err("ancien lien iCal pas repris");
+    await shot(pg,"v45-"+nm+"-agenda");
+    // musculation : photos dans la fiche, série 1 sur toutes
+    await pg.evaluate(()=>{M().sessions.push({id:"s45",name:"Haut",upd:Date.now(),exercises:[{id:"e45",name:"Développé couché haltères",ps:1,sets:[{kg:"",reps:""},{kg:"",reps:""},{kg:"",reps:""}]}]});msOpenId="s45";save();show("muscu");renderMuscu()});await pg.waitForTimeout(300);
+    await pg.fill('[data-ex="e45"] .set-row:first-child [data-f="setkg"]',"34");await pg.fill('[data-ex="e45"] .set-row:first-child [data-f="setreps"]',"8");await pg.waitForTimeout(600);
+    await pg.click('[data-ex="e45"] [data-mscopy1]');await pg.waitForTimeout(250);
+    if(await pg.evaluate(()=>M().sessions.find(s=>s.id==="s45").exercises[0].sets.map(x=>x.kg+"/"+x.reps).join())!=="34/8,34/8,34/8")err("série 1 pas recopiée");
+    await pg.locator('[data-ex="e45"]').scrollIntoViewIfNeeded();await shot(pg,"v45-"+nm+"-serie1");
+    await pg.click('[data-ex="e45"] [data-exhelp]');await pg.waitForTimeout(300);
+    await pg.waitForFunction(()=>[...document.querySelectorAll("#exHelpBody .exh-pics img")].length===2&&[...document.querySelectorAll("#exHelpBody .exh-pics img")].every(i=>i.complete&&i.naturalWidth>0),null,{timeout:8000}).catch(()=>err("photos de l'exercice absentes"));
+    await shot(pg,"v45-"+nm+"-exo-photos");await pg.click("#exHelpClose");
+    // PDF : le mode Texte reste actif ; zone de texte supprimable et redimensionnable ; stylo ; surligneur couleur + épaisseur ; gomme
+    await pg.evaluate(()=>{show("notes");noteDir=null;renderNotes()});await pg.waitForTimeout(200);
+    await pg.setInputFiles("#pdfIn",path.join(__dirname,"fixtures","cours.pdf"));
+    await pg.waitForFunction(()=>!$("pdfv").hidden&&document.querySelectorAll("#pvBody .pv-page canvas").length>0,null,{timeout:15000}).catch(()=>err("PDF pas affiché"));
+    const nid=await pg.evaluate(()=>pv.note);const ov=pg.locator('#pvBody .pv-page[data-pg="1"] .pv-ov');let bb=await ov.boundingBox();
+    await pg.click('[data-pvt="text"]');await pg.mouse.click(bb.x+bb.width*.2,bb.y+bb.height*.15);await pg.waitForTimeout(150);await pg.keyboard.type("salut je prend note");await pg.waitForTimeout(600);
+    await pg.mouse.click(bb.x+bb.width*.2,bb.y+bb.height*.5);await pg.waitForTimeout(150);
+    if(await pg.evaluate(()=>pv.tool)!=="text")err("le mode Texte ne reste pas actif après un clic sur la page");
+    await pg.keyboard.type("deuxième");await pg.waitForTimeout(600);
+    const tid=await pg.evaluate(id=>pvAnns(id).find(a=>a.t==="text"&&a.txt==="salut je prend note").id,nid);
+    // redimensionner (coin) puis supprimer (×)
+    const w0=await pg.evaluate(id=>PA().find(a=>a.id===id).w,tid);
+    const rs=await pg.locator(`[data-pvrs="${tid}"]`).boundingBox();await pg.mouse.move(rs.x+rs.width/2,rs.y+rs.height/2);await pg.mouse.down();await pg.mouse.move(rs.x+rs.width/2+bb.width*.15,rs.y+rs.height/2+bb.height*.05,{steps:6});await pg.mouse.up();await pg.waitForTimeout(200);
+    const sz=await pg.evaluate(id=>{const a=PA().find(x=>x.id===id);return [a.w,a.h||0]},tid);if(!(sz[0]>w0+.1&&sz[1]>0))err("zone de texte pas redimensionnée : "+sz);
+    await shot(pg,"v45-"+nm+"-pdf-texte");
+    await pg.click(`[data-pvdel="${tid}"]`);await pg.waitForTimeout(250);
+    if(await pg.evaluate(id=>PA().some(a=>a.id===id),tid))err("× ne supprime pas la zone de texte");
+    // stylo
+    await pg.click('[data-pvt="pen"]');if(!(await pg.isVisible("#pvOpts")))err("pas de réglages du stylo");
+    await pg.click('#pvOpts [data-pvc="#D62828"]');await pg.waitForTimeout(150);bb=await ov.boundingBox();
+    await pg.mouse.move(bb.x+bb.width*.3,bb.y+bb.height*.4);await pg.mouse.down();for(let i=1;i<=8;i++)await pg.mouse.move(bb.x+bb.width*(.3+i*.03),bb.y+bb.height*(.4+(i%2?.02:-.02)));await pg.mouse.up();await pg.waitForTimeout(200);
+    // surligneur : couleur verte, épaisseur max
+    await pg.click('[data-pvt="hl"]');await pg.click('#pvOpts [data-pvc="#7CE07C"]');await pg.evaluate(()=>{const r=$("pvSize");r.value=10;r.dispatchEvent(new Event("input",{bubbles:true}))});
+    await pg.waitForTimeout(150);bb=await ov.boundingBox();await pg.mouse.move(bb.x+bb.width*.1,bb.y+bb.height*.25);await pg.mouse.down();await pg.mouse.move(bb.x+bb.width*.6,bb.y+bb.height*.25,{steps:8});await pg.mouse.up();await pg.waitForTimeout(200);
+    const ink=await pg.evaluate(id=>pvAnns(id).filter(a=>a.t==="ink").map(a=>[a.hl,a.c,a.w,a.pts.length]),nid);
+    if(!ink.some(x=>!x[0]&&x[1]==="#D62828"&&x[3]>3))err("trait au stylo pas enregistré : "+JSON.stringify(ink));
+    if(!ink.some(x=>x[0]&&x[1]==="#7CE07C"&&x[2]>.05))err("surligneur (couleur / épaisseur) pas enregistré : "+JSON.stringify(ink));
+    await shot(pg,"v45-"+nm+"-pdf-dessin");
+    // gomme : on passe sur le trait du stylo
+    await pg.click('[data-pvt="erase"]');await pg.waitForTimeout(150);bb=await ov.boundingBox();await pg.mouse.move(bb.x+bb.width*.36,bb.y+bb.height*.33);await pg.mouse.down();await pg.mouse.move(bb.x+bb.width*.36,bb.y+bb.height*.47,{steps:8});await pg.mouse.up();await pg.waitForTimeout(250);
+    if(await pg.evaluate(id=>pvAnns(id).some(a=>a.t==="ink"&&!a.hl),nid))err("la gomme n'efface pas le trait");
+    if(!(await pg.evaluate(id=>pvAnns(id).some(a=>a.t==="ink"&&a.hl),nid)))err("la gomme a effacé le surlignage aussi");
     await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");

@@ -1,26 +1,26 @@
 <!doctype html>
-<html lang="fr" data-theme="light" data-ds="edito">
+<html lang="fr" data-theme="dark" data-ds="edito">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Sid'home</title>
-<meta name="description" content="Sid'home réunit trois applications personnelles avec un seul compte : sid'agenda (agenda, tâches, minuteur de concentration), sid'fit (musculation, nutrition, graphiques) et sid'note (notes, documents et mots de passe chiffrés).">
-<meta name="application-name" content="Sid'home">
+<title>Sid'compagnon</title>
+<meta name="description" content="Sid'compagnon réunit trois applications personnelles avec un seul compte : sid'agenda (agenda, tâches, minuteur de concentration), sid'fit (musculation, nutrition, graphiques) et sid'note (notes, documents et mots de passe chiffrés).">
+<meta name="application-name" content="Sid'compagnon">
 <meta name="author" content="SidCorp">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://sidcompagnon.com/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Sid'home">
+<meta property="og:title" content="Sid'compagnon">
 <meta property="og:description" content="Trois applications, un seul compte : sid'agenda, sid'fit et sid'note.">
 <meta property="og:url" content="https://sidcompagnon.com/">
 <meta property="og:image" content="https://sidcompagnon.com/logo-512.png">
 <meta property="og:locale" content="fr_BE">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Sid'home">
+<meta name="apple-mobile-web-app-title" content="Sid'compagnon">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#F4F0E8" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#F4F0E8" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#111214" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111214" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="logo-180.png">
 <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="icon" href="logo-32.png" sizes="32x32"><link rel="icon" href="logo-192.png" sizes="192x192">
@@ -30,12 +30,12 @@
 </head>
 <body>
 <a class="skip-link" href="#main">Aller au contenu</a>
-<noscript><p style="padding:16px;font-family:sans-serif">Sid'home a besoin de JavaScript pour fonctionner. Sid'home réunit sid'agenda (agenda, tâches), sid'fit (musculation, nutrition) et sid'note (notes, documents, mots de passe). <a href="confidentialite.html">Confidentialité</a> · <a href="conditions.html">Conditions d'utilisation</a> · <a href="cookies.html">Cookies</a></p></noscript>
-<div class="splash" id="splash" aria-hidden="true"><div class="sp-mark" id="spMark"></div><div class="sp-name">Sid'home</div><div class="sp-apps" id="spApps"></div></div>
+<noscript><p style="padding:16px;font-family:sans-serif">Sid'compagnon a besoin de JavaScript pour fonctionner. Sid'compagnon réunit sid'agenda (agenda, tâches), sid'fit (musculation, nutrition) et sid'note (notes, documents, mots de passe). <a href="confidentialite.html">Confidentialité</a> · <a href="conditions.html">Conditions d'utilisation</a> · <a href="cookies.html">Cookies</a></p></noscript>
+<div class="splash" id="splash" aria-hidden="true"><div class="sp-mark" id="spMark"></div><div class="sp-name">Sid'compagnon</div><div class="sp-apps" id="spApps"></div></div>
 <div id="auth" class="auth" hidden>
   <div class="auth-box">
     <span class="auth-logo" id="authLogo" aria-hidden="true"></span>
-    <h1>Sid'home</h1>
+    <h1>Sid'compagnon</h1>
     <p class="sub" id="authSub">Ton agenda, tes tâches, tes notes et tes documents, réunis dans une seule app.</p>
     <ul class="auth-feats card" id="authFeats"></ul>
     <div class="seg" role="group" aria-label="Choix">
@@ -55,17 +55,17 @@
     </form>
     <div class="auth-trial"><button type="button" class="btn ghost" id="aTrial">Essayer sans compte</button>
       <p class="small muted">Tes données restent sur cet appareil. Tu pourras créer ton compte ensuite pour tout garder et synchroniser.</p></div>
-    <details class="install" id="authInstall"><summary>Comment installer Sid'home sur iPhone ?</summary>
+    <details class="install" id="authInstall"><summary>Comment installer Sid'compagnon sur iPhone ?</summary>
       <ol class="steps card">
         <li><span>Dans Safari, appuie sur les <b>3 petits points</b> en bas à droite.</span></li>
         <li><span>Appuie sur <b>Partager</b>.</span></li>
         <li><span>Appuie sur <b>En savoir plus</b>.</span></li>
         <li><span>Appuie sur <b>Sur l'écran d'accueil</b>, puis sur <b>Ajouter</b>.</span></li>
-        <li><span>L'icône <b>Sid'home</b> apparaît sur ton écran d'accueil : ouvre l'app depuis cette icône.</span></li>
+        <li><span>L'icône <b>Sid'compagnon</b> apparaît sur ton écran d'accueil : ouvre l'app depuis cette icône.</span></li>
       </ol>
     </details>
     <p class="small muted" id="authHint">Tu as créé ton compte avec un pseudo, avant l'arrivée de l'e-mail ? Tape ton pseudo à la place de l'e-mail pour te connecter.</p>
-    <div class="auth-foot"><button type="button" class="linkbtn" id="authLang" style="background:none;border:0;cursor:pointer;font-size:14px">English</button><span class="small muted">Sid'home · une app <b>SidCorp</b></span></div>
+    <div class="auth-foot"><button type="button" class="linkbtn" id="authLang" style="background:none;border:0;cursor:pointer;font-size:14px">English</button><span class="small muted">Sid'compagnon · une app <b>SidCorp</b></span></div>
   </div>
 </div>
 <aside class="side" id="side" aria-label="Navigation"></aside>
@@ -135,6 +135,7 @@
     <h2>Prochaines échéances</h2>
     <div class="next" id="next"></div>
     <div class="bar-h2"><h2 id="calH2">Ce mois-ci</h2><button type="button" class="mini" id="icalRefresh" hidden>↻ Actualiser</button></div>
+    <div class="chips cal-legend" id="calLegend" role="group" aria-label="Calendriers affichés" hidden></div>
     <div class="card cal">
       <div id="calMonth">
         <div class="cal-head">
@@ -154,12 +155,31 @@
       <div class="notif-box" style="margin-top:8px"></div>
     </details>
     <details class="more-opts" id="moreOpts" style="margin-top:10px">
-      <summary><span class="plus">+</span> Relier un calendrier</summary>
+      <summary><span class="plus">+</span> Calendriers reliés</summary>
       <div class="card form" id="icalCard" style="margin-top:8px">
-        <b style="font-size:15px">Calendrier relié (iCal)</b>
-        <div class="small muted">Colle le lien iCal d'un calendrier : horaire de cours, Google Agenda, Outlook, iCloud… Ses événements s'affichent dans ton agenda et se mettent à jour tout seuls.</div>
+        <b style="font-size:15px">Calendriers reliés (iCal)</b>
+        <div class="small muted">Relie autant de calendriers que tu veux (horaire de cours, Google Agenda, Outlook, iCloud…) : ils s'affichent ensemble dans ton agenda, chacun dans sa couleur, et se mettent à jour tout seuls. L'interrupteur affiche ou masque un calendrier.</div>
+        <div id="calList" class="cal-list"></div>
+        <b style="font-size:14px;margin-top:6px">Ajouter un calendrier</b>
+        <input id="icalName" aria-label="Nom du calendrier" placeholder="Nom (ex. Cours, Travail, Famille)" maxlength="40" autocomplete="off">
         <input id="icalUrl" aria-label="Lien du calendrier (iCal)" placeholder="https://…/calendrier.ics" inputmode="url" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off">
-        <div class="two"><button class="btn ghost" id="icalDel" type="button">Retirer</button><button class="btn" id="icalSave" type="button">Enregistrer</button></div>
+        <details class="cal-help">
+          <summary>Où trouver le lien de mon calendrier ?</summary>
+          <ul class="small">
+            <li><b>Google Agenda</b><span>Sur ordinateur : Paramètres → ton agenda → « Intégrer l'agenda » → copie l'adresse secrète au format iCal.</span></li>
+            <li><b>iCloud</b><span>App Calendrier de l'iPhone : touche « Calendriers » → ⓘ à côté du calendrier → active « Calendrier public » → « Partager le lien ».</span></li>
+            <li><b>Outlook</b><span>Sur outlook.com : Paramètres → Calendrier → Calendriers partagés → « Publier un calendrier » → copie le lien ICS.</span></li>
+            <li><b>Horaire de cours</b><span>Sur le site de ton école, cherche « exporter », « iCal » ou « .ics ».</span></li>
+          </ul>
+          <div class="small muted">Une adresse secrète est privée : seule une personne qui a le lien peut lire le calendrier. Ne la partage pas.</div>
+        </details>
+        <details class="cal-help" id="icalPriv">
+          <summary>Calendrier privé avec identifiant</summary>
+          <div class="small muted">Pour un calendrier protégé par un identifiant (ex. Nextcloud, serveur d'entreprise). Utilise de préférence un mot de passe d'application. Il reste sur cet appareil : il n'est jamais enregistré dans ton compte.</div>
+          <input id="icalUser" aria-label="Identifiant du calendrier" placeholder="Identifiant" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off">
+          <input id="icalPass" type="password" aria-label="Mot de passe du calendrier" placeholder="Mot de passe" autocomplete="new-password">
+        </details>
+        <button class="btn" id="icalSave" type="button">Ajouter ce calendrier</button>
         <div class="small muted" id="icalState"></div>
       </div>
     </details>
@@ -239,8 +259,8 @@
     </form>
     <button type="button" class="qbtn" id="msImportOpen" style="margin-top:4px">Importer une séance ou un programme</button>
     <div class="card form" id="msImport" hidden style="margin-top:10px">
-      <div class="small muted">Colle ici une séance ou un programme partagé depuis Sid'home, ou écrit par Claude.</div>
-      <textarea id="msPaste" placeholder="Programme « Push Pull » (Sid'home)&#10;Séance « Push »&#10;1. Développé couché haltères : 4 séries × 6–10, repos 3 min&#10;2. Pec deck : 3 séries × 10–15, repos 2 min"></textarea>
+      <div class="small muted">Colle ici une séance ou un programme partagé depuis Sid'compagnon, ou écrit par Claude.</div>
+      <textarea id="msPaste" placeholder="Programme « Push Pull » (Sid'compagnon)&#10;Séance « Push »&#10;1. Développé couché haltères : 4 séries × 6–10, repos 3 min&#10;2. Pec deck : 3 séries × 10–15, repos 2 min"></textarea>
       <div class="two"><button class="btn ghost" type="button" id="msImportCancel">Annuler</button><button class="btn" type="button" id="msImportBtn">Importer</button></div>
     </div>
   </section>
@@ -497,7 +517,7 @@
   <section class="view" id="v-app" hidden>
     <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
     <h1>Application</h1>
-    <p class="sub">Installe Sid'home sur ton iPhone pour l'ouvrir comme une vraie app, en plein écran.</p>
+    <p class="sub">Installe Sid'compagnon sur ton iPhone pour l'ouvrir comme une vraie app, en plein écran.</p>
     <div class="card"><div class="row okline" id="appStatus"></div></div>
     <h2>Installer sur iPhone</h2>
     <ol class="steps card">
@@ -505,7 +525,7 @@
         <li><span>Appuie sur <b>Partager</b>.</span></li>
         <li><span>Appuie sur <b>En savoir plus</b>.</span></li>
         <li><span>Appuie sur <b>Sur l'écran d'accueil</b>, puis sur <b>Ajouter</b>.</span></li>
-        <li><span>L'icône <b>Sid'home</b> apparaît sur ton écran d'accueil : ouvre l'app depuis cette icône.</span></li>
+        <li><span>L'icône <b>Sid'compagnon</b> apparaît sur ton écran d'accueil : ouvre l'app depuis cette icône.</span></li>
       </ol>
     <p class="small muted" style="margin:10px 4px 0">Utilise Safari : les autres navigateurs ne permettent pas toujours l'installation. Sur Android, ouvre le site dans Chrome, touche ⋮ puis « Ajouter à l'écran d'accueil ».</p>
   </section>
@@ -570,7 +590,7 @@
     <details class="setsec" data-sec="sidfit" id="fitSec"><summary><span>Sid'fit : conversations Claude</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
       <div class="setsec-in">
     <div class="card">
-      <div class="row"><div class="grow small muted">Pour garder ton historique Claude propre, toutes les demandes Nutrition passent par une seule conversation, et toutes les demandes Musculation par une autre. Sid'home copie le message puis ouvre la conversation : tu n'as plus qu'à coller.</div></div>
+      <div class="row"><div class="grow small muted">Pour garder ton historique Claude propre, toutes les demandes Nutrition passent par une seule conversation, et toutes les demandes Musculation par une autre. Sid'compagnon copie le message puis ouvre la conversation : tu n'as plus qu'à coller.</div></div>
       <form class="conv-f" data-conv="nutri"><label for="convNutri" class="eyebrow">Lien de la conversation Nutrition</label>
         <div class="conv-row"><input id="convNutri" type="url" inputmode="url" placeholder="https://claude.ai/project/…" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div></form>
       <form class="conv-f" data-conv="muscu"><label for="convMuscu" class="eyebrow">Lien de la conversation Musculation</label>
@@ -581,7 +601,7 @@
     <details class="setsec" data-sec="claude" id="mcpSec"><summary><span>Claude</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
       <div class="setsec-in">
     <div class="card">
-      <div class="row"><div class="grow small muted">Relie Sid'home à Claude : il calcule tes repas, crée tes menus et tes programmes, lit ton agenda et ajoute tâches et notes, puis tout arrive ici. Il ne voit jamais tes mots de passe, tes documents ni tes notes secrètes.</div></div>
+      <div class="row"><div class="grow small muted">Relie Sid'compagnon à Claude : il calcule tes repas, crée tes menus et tes programmes, lit ton agenda et ajoute tâches et notes, puis tout arrive ici. Il ne voit jamais tes mots de passe, tes documents ni tes notes secrètes.</div></div>
       <div class="row"><div class="grow" id="aiState"></div></div>
       <div class="row"><button type="button" class="btn" data-aiwiz="1" style="width:100%">Brancher Claude</button></div>
       <div class="row"><div class="grow small muted">Adresses déjà créées (avancé) :</div></div>
@@ -607,10 +627,10 @@
       <div class="small muted" style="margin-top:8px">Par défaut, mots de passe, documents et notes secrètes restent ouverts jusqu'à ce que tu fermes complètement l'app. Propre à cet appareil.</div></div></div>
     <div class="card" id="bioCard" style="margin-bottom:10px" hidden><div class="row"><div class="grow"><b id="bioT">Face ID</b><div class="small muted" id="bioS"></div></div><button type="button" class="btn" id="bioBtn">Activer</button></div></div>
     <div class="card priv">
-      <div class="row"><span class="priv-ic"><i class="ic" data-i="database"></i></span><div class="grow"><b>Ce que tu écris</b><div class="small muted">Planning, tâches, notes, séances, nutrition et réglages sont enregistrés dans ton compte, sur les serveurs de Supabase, en Europe (Francfort, Allemagne). Les autres utilisateurs ne peuvent pas les voir. L'administrateur de Sid'home (SidCorp) peut techniquement y accéder pour l'entretien, mais ne les consulte pas.</div></div></div>
+      <div class="row"><span class="priv-ic"><i class="ic" data-i="database"></i></span><div class="grow"><b>Ce que tu écris</b><div class="small muted">Planning, tâches, notes, séances, nutrition et réglages sont enregistrés dans ton compte, sur les serveurs de Supabase, en Europe (Francfort, Allemagne). Les autres utilisateurs ne peuvent pas les voir. L'administrateur de Sid'compagnon (SidCorp) peut techniquement y accéder pour l'entretien, mais ne les consulte pas.</div></div></div>
       <div class="row"><span class="priv-ic"><i class="ic" data-i="shield"></i></span><div class="grow"><b>Mots de passe et notes secrètes</b><div class="small muted">Chiffrés sur ton appareil avant d'être envoyés, avec une clé tirée de ta phrase secrète, que le serveur ne connaît pas. Ton code à 5 chiffres sert seulement à les déverrouiller sur ton appareil. Un coffre encore protégé par le code seul (avant la protection renforcée) pourrait être deviné par quelqu'un qui aurait accès au serveur : ouvre-le une fois pour le renforcer.</div></div></div>
       <div class="row"><span class="priv-ic"><i class="ic" data-i="file"></i></span><div class="grow"><b>Documents (PDF, scans)</b><div class="small muted">Chiffrés sur ton appareil avec la clé de ta phrase secrète (la copie gardée sur l'appareil aussi), puis copiés dans ton espace privé (Supabase Storage), où ce n'est que du contenu illisible. Les photos des notes, elles, ne sont pas chiffrées : comme le texte des notes, elles restent privées dans ton compte.</div></div></div>
-      <div class="row"><span class="priv-ic"><i class="ic" data-i="camera"></i></span><div class="grow"><b>Photos de tes plats</b><div class="small muted">Envoyées une seule fois pour être analysées : elles passent par le serveur Sid'home puis par le service d'IA d'Anthropic, qui calcule les calories. Elles ne sont pas enregistrées dans ton compte, ne servent pas à entraîner l'IA et ne sont gardées que peu de temps par Anthropic (sécurité) avant d'être effacées. Seule une petite vignette reste sur ton téléphone.</div></div></div>
+      <div class="row"><span class="priv-ic"><i class="ic" data-i="camera"></i></span><div class="grow"><b>Photos de tes plats</b><div class="small muted">Envoyées une seule fois pour être analysées : elles passent par le serveur Sid'compagnon puis par le service d'IA d'Anthropic, qui calcule les calories. Elles ne sont pas enregistrées dans ton compte, ne servent pas à entraîner l'IA et ne sont gardées que peu de temps par Anthropic (sécurité) avant d'être effacées. Seule une petite vignette reste sur ton téléphone.</div></div></div>
       <div class="row"><span class="priv-ic"><i class="ic" data-i="apple"></i></span><div class="grow"><b>Textes de nutrition</b><div class="small muted">Ce que tu tapes (aliments, profil) est envoyé à l'IA pour le calcul. Les aliments sont retenus dans une mémoire commune et anonyme (juste « 100 g de riz = 130 kcal », jamais ton nom).</div></div></div>
       <div class="row"><span class="priv-ic"><i class="ic" data-i="globe"></i></span><div class="grow"><b>Le site</b><div class="small muted">Netlify héberge seulement l'application. Il ne voit pas tes données. Pas de publicité, pas de pisteur, rien n'est vendu.</div></div></div>
     </div>
@@ -636,7 +656,7 @@
     <div class="card" id="stats"></div>
       </div>
     </details>
-    <p class="small muted" style="margin:18px 4px">Sid'home · version 44.8 · une app <b>SidCorp</b></p>
+    <p class="small muted" style="margin:18px 4px">Sid'compagnon · version 45 · une app <b>SidCorp</b></p>
   </section>
 </main>
 
@@ -707,7 +727,7 @@
   <div class="sheet card">
     <div class="sheet-head"><b>Mon programme sur mesure</b><button type="button" class="x" id="coachClose" aria-label="Fermer">×</button></div>
     <form id="coachForm" class="coach-form">
-      <p class="small muted cf-intro">5 questions, puis tes précisions si tu veux. Claude compose ton programme et le dépose ici ; sans Claude, Sid'home le crée tout de suite.</p>
+      <p class="small muted cf-intro">5 questions, puis tes précisions si tu veux. Claude compose ton programme et le dépose ici ; sans Claude, Sid'compagnon le crée tout de suite.</p>
       <fieldset class="cf-sec"><legend class="eyebrow">L'essentiel</legend>
       <div class="cf-q"><b>Ton objectif</b><div class="seg cf-seg" data-cf="goal" style="grid-template-columns:repeat(2,1fr)"><button type="button" data-v="muscle">Prendre du muscle</button><button type="button" data-v="force">Gagner en force</button><button type="button" data-v="gras">Perdre du gras</button><button type="button" data-v="forme">Être en forme</button></div></div>
       <div class="cf-q"><b>Ton niveau</b><div class="seg cf-seg" data-cf="level" style="grid-template-columns:repeat(3,1fr)"><button type="button" data-v="deb">Débutant<small>moins de 6 mois</small></button><button type="button" data-v="inter">Intermédiaire<small>6 mois à 2 ans</small></button><button type="button" data-v="conf">Confirmé<small>plus de 2 ans</small></button></div></div>
@@ -756,7 +776,7 @@
 <div class="sheet-bg" id="consentSheet" hidden>
   <div class="sheet card">
     <div class="sheet-head"><b>Tes données de santé</b><button type="button" class="x" id="consentClose" aria-label="Fermer">×</button></div>
-    <p class="small" style="margin:0">Pour la nutrition, les graphiques et ton programme de musculation, Sid'home utilise ton âge, ton poids, ta taille, ton sport, ce que tu manges, tes séances et les zones à ménager. Ce sont des données de santé.</p>
+    <p class="small" style="margin:0">Pour la nutrition, les graphiques et ton programme de musculation, Sid'compagnon utilise ton âge, ton poids, ta taille, ton sport, ce que tu manges, tes séances et les zones à ménager. Ce sont des données de santé.</p>
     <p class="small muted" style="margin:0">Elles restent dans ton compte (Supabase, Europe). Si tu branches Claude, c'est ton propre compte Claude (Anthropic, États-Unis) qui les lit par le connecteur, quand tu le lui demandes. Tu peux retirer ton accord à tout moment dans Réglages, et supprimer tes données.</p>
     <button type="button" class="linkbtn" data-openlegal="privacy">Lire la politique de confidentialité</button>
     <div class="two"><button type="button" class="btn ghost" id="consentNo">Pas maintenant</button><button type="button" class="btn" id="consentYes">J'accepte</button></div>
@@ -815,7 +835,7 @@
   <form class="sheet card" id="recForm" novalidate>
     <div class="sheet-head"><b id="recTitle"></b><button type="button" class="x" id="recClose" aria-label="Fermer">×</button></div>
     <p class="small muted" id="recText" style="margin:0"></p>
-    <label>Mot de passe de ton compte Sid'home<input id="recPw" type="password" autocomplete="current-password"></label>
+    <label>Mot de passe de ton compte Sid'compagnon<input id="recPw" type="password" autocomplete="current-password"></label>
     <p class="err" id="recErr" role="alert" hidden></p>
     <div class="two"><button type="button" class="btn ghost" id="recLater">Plus tard</button><button class="btn" type="submit" id="recOk">Valider</button></div>
   </form>
@@ -836,7 +856,7 @@
     <section class="onb-slide">
       <div class="onb-box">
         <img src="logo-192.png" alt="" class="auth-logo onb-pop" style="width:84px;height:84px">
-        <h1 id="onbTitle">Bienvenue sur Sid'home</h1>
+        <h1 id="onbTitle">Bienvenue sur Sid'compagnon</h1>
         <p class="onb-tag">Trois applications, un seul compte : sid'agenda pour tes journées, sid'fit pour ton corps, sid'note pour tes notes et tes documents.</p>
         <p class="sub">Tu n'as pas besoin de tout : on règle l'app ensemble en 3 étapes.</p>
         <ol class="onb-steps">
@@ -874,8 +894,11 @@
     <button type="button" data-pvt="read" aria-pressed="true">Lire</button>
     <button type="button" data-pvt="text" aria-pressed="false">Texte</button>
     <button type="button" data-pvt="hl" aria-pressed="false">Surligner</button>
+    <button type="button" data-pvt="pen" aria-pressed="false">Stylo</button>
+    <button type="button" data-pvt="erase" aria-pressed="false">Gomme</button>
     <button type="button" data-pvt="notes" aria-pressed="false">Mes notes</button>
   </div>
+  <div class="pv-opts" id="pvOpts" hidden></div>
   <p class="pv-hint" id="pvHint" hidden></p>
   <div class="pv-main"><div class="pv-body" id="pvBody"></div>
     <aside class="pv-notes" id="pvNotes" hidden aria-label="Mes notes sur ce PDF"><div class="pv-notes-h"><b>Mes notes sur ce PDF</b><button type="button" class="x" id="pvNotesClose" aria-label="Fermer">×</button></div>
@@ -907,7 +930,7 @@
   <div class="sheet card na-box">
     <div class="na-ic"><i class="ic" data-i="bell"></i></div>
     <b class="na-t" id="naTitle">Ne rate plus rien</b>
-    <p class="small muted" id="naText" style="margin:0">Active les notifications : Sid'home te prévient avant tes rendez-vous, tes cours et tes échéances. Tu choisis quand, dans Agenda ou Réglages.</p>
+    <p class="small muted" id="naText" style="margin:0">Active les notifications : Sid'compagnon te prévient avant tes rendez-vous, tes cours et tes échéances. Tu choisis quand, dans Agenda ou Réglages.</p>
     <button type="button" class="btn" id="naYes">Activer les notifications</button>
     <button type="button" class="btn ghost" id="naNo" data-esc="1">Plus tard</button>
   </div>

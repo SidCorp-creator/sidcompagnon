@@ -102,7 +102,7 @@ async function api(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="44";const errSent=new Set();
+const APP_V="45";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -281,7 +281,7 @@ function renderAllSafe(){
   document.addEventListener("focusout",h);
 }
 function applyRemote(d){
-  const prevIcal=data.prefs&&data.prefs.ical;
+  const prevIcal=JSON.stringify([data.prefs&&data.prefs.ical,data.prefs&&data.prefs.icals]);
   for(const k of Object.keys(data))if(k!=="ui"&&k!=="pomo")delete data[k];
   for(const k of Object.keys(d))if(k!=="ui"&&k!=="pomo")data[k]=d[k];
   if(d.pomo&&data.pomo&&d.pomo!==data.pomo){const np=JSON.parse(JSON.stringify(d.pomo));for(const k of Object.keys(data.pomo))delete data.pomo[k];Object.assign(data.pomo,np)}
@@ -290,7 +290,7 @@ function applyRemote(d){
   data.muscu=data.muscu||{sessions:[]};if(!Array.isArray(data.muscu.sessions))data.muscu.sessions=[];
   data.nutri=data.nutri||{};["log","weights","weeks"].forEach(k=>{if(!Array.isArray(data.nutri[k]))data.nutri[k]=[]});
   if(typeof applyLook==="function")applyLook();
-  if((data.prefs.ical||null)!==(prevIcal||null)&&typeof icalFetch==="function"){icalEvents=[];icalAt=0;const u=$("icalUrl");if(u)u.value=data.prefs.ical||"";icalFetch(true)}
+  if(JSON.stringify([data.prefs.ical,data.prefs.icals])!==prevIcal&&typeof icalFetch==="function"){CALS();icalMix();renderCals();icalFetch(true)}
   renderAllSafe();
 }
 function setSync(){
@@ -303,7 +303,7 @@ function setSync(){
   if(hb){hb.hidden=!bad;if(bad)hb.innerHTML=`<span class="grow"><b>${L("Pas encore enregistré en ligne")}</b><span class="small">${L("Tes dernières modifications sont gardées sur cet appareil, mais le serveur les a refusées. Nouvel essai automatique.")}${syncErr&&syncErr.message?` <span class="muted notr">(${esc(String(syncErr.message).slice(0,80))})</span>`:""}</span></span><button type="button" class="mini" data-syncretry="1">${L("Réessayer")}</button>`}
 }
 function endSession(msg,keepCache){
-  if(session&&!keepCache){ls.del(cacheKey(session.user.id));ls.del(baseKey(session.user.id));ls.del("sidnote-ical-"+session.user.id);try{idbClearUser(session.user.id)}catch(e){}}
+  if(session&&!keepCache){ls.del(cacheKey(session.user.id));ls.del(baseKey(session.user.id));ls.del("sidnote-ical-"+session.user.id);ls.del("sidnote-icalauth-"+session.user.id);try{idbClearUser(session.user.id)}catch(e){}}
   ls.del(SESSION_KEY);
   try{if(msg)sessionStorage.setItem("sidnote-msg",msg)}catch(e){}
   location.reload();
@@ -369,7 +369,7 @@ const c2ok=b=>{if(b.dataset.c2){clearTimeout(b._c2);delete b.dataset.c2;b.classL
 const LOGO_APPS={home:1,agenda:1,fit:1,note:1};
 const LOGO=(app,cls)=>`<img class="logo ${cls||""}" src="icons/${LOGO_APPS[app]?app:"home"}.svg" alt="" aria-hidden="true" draggable="false">`;
 
-// v42 : animation d'ouverture (2 s) : le logo Sid'home, puis les trois apps ; elle ne bloque jamais les touchers
+// v42 : animation d'ouverture (2 s) : le logo Sid'compagnon, puis les trois apps ; elle ne bloque jamais les touchers
 if($("authLogo"))$("authLogo").innerHTML=LOGO("home");
 (()=>{const sp=$("splash");if(!sp)return;$("spMark").innerHTML=LOGO("home");$("spApps").innerHTML=["agenda","fit","note"].map(a=>`<span data-app="${a}">${LOGO(a)}</span>`).join("");
   const quick=matchMedia("(prefers-reduced-motion: reduce)").matches;sp.classList.add("go");setTimeout(()=>{sp.remove();bootTop()},quick?400:2100)})();
@@ -406,7 +406,7 @@ function appIntro(app,vv){
   introT=setTimeout(()=>introEnd(),2000)}
 function introEnd(now){clearTimeout(introT);const el=$("appIntro");if(!el)return;if(now){el.remove();return}el.classList.add("out");setTimeout(()=>el.remove(),180)}
 addEventListener("keydown",e=>{if($("appIntro"))introEnd()},true);
-// v44.4 : animation de sortie (retour à Sid'home) : le logo de l'app, au centre, rejoint sa place parmi les 3 logos de l'accueil
+// v44.4 : animation de sortie (retour à Sid'compagnon) : le logo de l'app, au centre, rejoint sa place parmi les 3 logos de l'accueil
 const OUT_K={agenda:"orga",fit:"sport",note:"perso"};
 function appOutro(app){
   if(matchMedia("(prefers-reduced-motion: reduce)").matches||window.__noIntro||!document.body.animate)return;
@@ -426,12 +426,12 @@ function appOutro(app){
 /* ---------- onglets, rangés par catégories ---------- */
 // La barre du bas montre des catégories ; dans une catégorie, une barre en haut permet de choisir la fonction.
 // v25 : les catégories deviennent des « espaces » (page Espaces + barre latérale sur ordinateur)
-// v42 : trois applications dans l'application mère Sid'home (même compte, mêmes données) ; Réglages et Compte sont dans Sid'home
+// v42 : trois applications dans l'application mère Sid'compagnon (même compte, mêmes données) ; Réglages et Compte sont dans Sid'compagnon
 const GROUPS=[
   {k:"orga",label:"sid'agenda",app:"agenda",tabs:["plan","todo","pomo"]}, // v41 : Listes retirées ; v42 : Focus (pomodoro) revient
   {k:"sport",label:"sid'fit",app:"fit",tabs:["muscu","nutri","graph"]},
   {k:"perso",label:"sid'note",app:"note",tabs:["notes","docs","pwd"]},
-  {k:"more",label:"Sid'home",app:"home",tabs:["more","app"]}];
+  {k:"more",label:"Sid'compagnon",app:"home",tabs:["more","app"]}];
 const APP_GROUPS=GROUPS.slice(0,3);
 const appOf=v=>v==="home"||v==="spaces"?"home":groupOf(v).app;
 const SHORT={plan:"Agenda",todo:"Tâches",lists:"Listes",pomo:"Focus",muscu:"Musculation",nutri:"Nutrition",graph:"Graphiques",notes:"Notes",docs:"Documents",pwd:"Mots de passe",more:"Réglages",app:"Installer l'app"};
@@ -451,7 +451,7 @@ const PLUSIC=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 // v28 : la barre du bas montre directement les 3 espaces (demande de Sid) : Aujourd'hui, Organisation, Santé, Coffre, Compte.
 // Toucher un espace rouvre sa dernière fonction ; en haut, des pastilles passent d'une fonction à l'autre. Le « + » est sur la page Aujourd'hui.
 const DOCK=[["home","Aujourd'hui",HOMEIC],["orga","Organisation",null],["sport","Santé",null],["perso","Coffre",null],["more","Compte",USERIC]];
-// v42 : la barre du bas montre les fonctions de l'app ouverte (sid'agenda : Agenda, Tâches, Focus…) ; dans Sid'home, pas de barre
+// v42 : la barre du bas montre les fonctions de l'app ouverte (sid'agenda : Agenda, Tâches, Focus…) ; dans Sid'compagnon, pas de barre
 // v44.7 : la page garde toujours en bas la place de la barre (sa hauteur réelle, 0 si elle est cachée) : le dernier élément
 // n'est plus coupé derrière (ordinateur avec la barre latérale masquée, téléphone, tablette)
 function navPad(){const n=document.querySelector("nav"),h=n&&!n.hidden&&getComputedStyle(n).display!=="none"?Math.ceil(n.getBoundingClientRect().height):0;
@@ -513,11 +513,11 @@ function applyTabs(){
 }
 // --- en-tête d'un module : nom de l'espace + pastilles de ses fonctions ---
 // v28 : nom de l'espace + pastilles des fonctions de cet espace (Agenda · Tâches · Focus…)
-// v42 : en-tête d'une app : son logo et son nom, et le retour à Sid'home (les fonctions sont dans la barre du bas)
+// v42 : en-tête d'une app : son logo et son nom, et le retour à Sid'compagnon (les fonctions sont dans la barre du bas)
 function renderVhead(v){const el=$("vhead");
   if(v==="home"||v==="spaces"){el.hidden=true;return}
   const g=groupOf(v);el.hidden=false;el.classList.remove("many");
-  el.innerHTML=`<span class="ah-brand">${LOGO(g.app,"ah-logo")}<span class="eyebrow">${esc(g.label)}</span></span><button type="button" class="ah-home" data-go="home" aria-label="${L("Retour à Sid'home")}">${GRIDIC}<span>Sid'home</span></button>`}
+  el.innerHTML=`<span class="ah-brand">${LOGO(g.app,"ah-logo")}<span class="eyebrow">${esc(g.label)}</span></span><button type="button" class="ah-home" data-go="home" aria-label="${L("Retour à Sid'compagnon")}">${GRIDIC}<span>Sid'compagnon</span></button>`}
 $("vhead").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
 // --- page Espaces et barre latérale (ordinateur) : tous les modules, rangés par espace, avec un chiffre utile ---
 function spaceMeta(k){try{
@@ -545,7 +545,7 @@ function sideApply(){requestAnimationFrame(navPad);const wide=matchMedia("(min-w
 function sideToggle(show){data.ui.sideOff=!show;saveUI();sideApply();const f=show?document.querySelector("#side .side-tog"):$("sideShow");if(f)f.focus({preventScroll:true})}
 addEventListener("resize",()=>sideApply());
 function renderSide(v){const el=$("side");if(!el)return;v=v||data.ui.view;
-  el.innerHTML=`<div class="side-brand">${LOGO("home","side-logo")}<span class="grow">Sid'home</span><button type="button" class="side-tog" aria-label="${L("Masquer la barre latérale")}" title="${L("Masquer la barre latérale")}" aria-expanded="true" aria-controls="side">${SIDEIC}</button></div>
+  el.innerHTML=`<div class="side-brand">${LOGO("home","side-logo")}<span class="grow">Sid'compagnon</span><button type="button" class="side-tog" aria-label="${L("Masquer la barre latérale")}" title="${L("Masquer la barre latérale")}" aria-expanded="true" aria-controls="side">${SIDEIC}</button></div>
     <button type="button" class="side-it" data-go="home" aria-current="${v==="home"}"><span class="sp-ic">${HOMEIC}</span><span class="grow">${L("Aujourd'hui")}</span></button>
     <button type="button" class="side-add" data-sadd="1"><span class="sp-ic">${PLUSIC}</span><span class="grow">${L("Ajouter")}</span></button>`+
     GROUPS.map(g=>{const ts=groupTabs(g);if(!ts.length)return"";
@@ -576,7 +576,7 @@ function renderHome(){if(!$("homeBody"))return;
   const vis=visibleTabs(),T=vis.includes("plan")?allT().filter(t=>t.status!=="fait"&&!t.canc):[];
   const start=t=>{const d=parse(t.date);const[h,m]=(t.time||"08:00").split(":").map(Number);d.setHours(h,m);return d};
   const next=T.filter(t=>t.time&&start(t)>now).sort((a,b)=>start(a)-start(b))[0]||T.filter(t=>!t.time&&t.date>t0).sort((a,b)=>a.date.localeCompare(b.date))[0];
-  // v44.7 : Sid'home = 3 grandes cartes, une par app (nom, identité, ce qu'elle fait en une ligne, 1 ou 2 repères du jour) ;
+  // v44.7 : Sid'compagnon = 3 grandes cartes, une par app (nom, identité, ce qu'elle fait en une ligne, 1 ou 2 repères du jour) ;
   // toucher une carte ouvre l'app. Tout le reste a quitté cette page (il est dans chaque app).
   const cards=[];
   {const g=APP_GROUPS.find(x=>x.app==="agenda");if(groupTabs(g).length){const it=[];
@@ -1007,15 +1007,17 @@ function renderPlan(){
     :`<div class="n" style="--c:var(--line)"><div class="t muted">${L("Rien à venir")}</div></div>`;
   renderCal();
   // filtres
-  let f=data.ui.filter||"Toutes";if(f!=="Toutes"&&f!==ICAL_CAT&&!typeOf(f))f="Toutes";if(f===ICAL_CAT&&!icalEvents.length)f="Toutes";
+  // v45 : une pastille par calendrier relié affiché (sa couleur)
+  const calF=CALS().filter(c=>c.on!==false&&icalEvents.some(t=>t.cal===c.id));
+  let f=data.ui.filter||"Toutes";if(f!=="Toutes"&&!typeOf(f)&&!calF.some(c=>c.name===f))f="Toutes";
   const used=data.types.filter(ty=>T.some(t=>norm(t.cat)===norm(ty.name)));
-  if(icalEvents.length)used.push({name:ICAL_CAT,c:"--x4"});
+  calF.forEach(c=>{if(!used.some(u=>norm(u.name)===norm(c.name)))used.push({name:c.name,c:c.c||"--x4"})});
   $("chips").innerHTML=[{name:"Toutes"},...used].map(c=>`<button class="pill" data-f="${esc(c.name)}" aria-pressed="${c.name===f}">${c.c?`<span class="dot" style="background:var(${c.c})"></span>`:""}${esc(c.name)}</button>`).join("");
   fillTypeList();
   $("listH2").textContent=q?"Résultats":"Toutes les dates";
   // liste
-  const src=f===ICAL_CAT?icalEvents:q?T.concat(icalEvents):T;
-  const list=src.filter(t=>(f==="Toutes"||f===ICAL_CAT||norm(t.cat)===norm(f))&&(!q||norm(t.title+" "+(t.cat||"")+" "+(t.note||"")+" "+(t.loc||"")).includes(q))).sort((a,b)=>sk(a).localeCompare(sk(b)));
+  const src=calF.some(c=>c.name===f)?icalEvents:q?T.concat(icalEvents):T;
+  const list=src.filter(t=>(f==="Toutes"||norm(t.cat)===norm(f))&&(!q||norm(t.title+" "+(t.cat||"")+" "+(t.note||"")+" "+(t.loc||"")).includes(q))).sort((a,b)=>sk(a).localeCompare(sk(b)));
   if(!list.length){$("tasks").innerHTML=`<div class="card" style="margin-top:10px"><div class="empty">${q?"Aucune activité ne correspond.":"Rien dans cette catégorie."}</div></div>`;return}
   const g={};list.forEach(t=>{const d=parse(t.date);const k=d.getFullYear()*100+d.getMonth();(g[k]=g[k]||[]).push(t)});
   // v29 : chaque mois se replie (toucher son nom) ; v44.6 : tous repliés par défaut, ouverts à la demande (en mémoire seulement, planOpenMem)
@@ -1024,8 +1026,8 @@ function renderPlan(){
     return `<button type="button" class="mfold" data-mfold="${k}" aria-expanded="${!shut}"><span class="mf-chev">${CHEV}</span><span class="grow">${L(MOL[k%100])} ${Math.floor(k/100)}</span><span class="mf-n">${g[k].length}</span></button>`+(shut?"":`<div class="card">${g[k].map(t=>{
     // v44.4 : ligne aérée : jour à gauche, titre + détails au milieu, statut et « ⋯ » à droite (toucher le titre = modifier)
     const d=parse(t.date),dd=`<div class="pr-date" aria-hidden="true"><b>${d.getDate()}</b><span class="notr">${d.toLocaleDateString(LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE",{weekday:"short"})}</span></div>`;
-    if(t.src==="ical")return `<div class="row task prow ${t.canc?"isfait":""}" style="--c:var(--x4)" data-icalinfo="${esc(t.id)}">${dd}
-      <div class="grow pr-main"><div class="ttl">${esc(t.title)}</div><div class="pr-meta"><i class="pr-dot"></i>${esc(L(ICAL_CAT))}${t.time?` · <span class="pr-time">${hrs(t)}</span>`:""}${t.canc?'<span class="canc-pill">Annulé</span>':""}${t.loc?` · ${esc(t.loc)}`:""}</div></div></div>`;
+    if(t.src==="ical")return `<div class="row task prow ${t.canc?"isfait":""}" style="--c:var(${colorOf(t)})" data-icalinfo="${esc(t.id)}">${dd}
+      <div class="grow pr-main"><div class="ttl">${esc(t.title)}</div><div class="pr-meta"><i class="pr-dot"></i><span class="notr">${esc(t.cat||L(ICAL_CAT))}</span>${t.time?` · <span class="pr-time">${hrs(t)}</span>`:""}${t.canc?'<span class="canc-pill">Annulé</span>':""}${t.loc?` · ${esc(t.loc)}`:""}</div></div></div>`;
     const late=t.status!=="fait"&&daysTo(t.end||t.date)<0;
     return `<div class="row task prow ${t.status==="fait"?"isfait":""} ${late?"is-past":""}" style="--c:var(${colorOf(t)})">${dd}
       <div class="grow pr-main"><button type="button" class="ttl ttl-btn" data-edit="task:${t.id}">${esc(t.title)}</button>
@@ -1103,13 +1105,34 @@ $("taskForm").addEventListener("submit",e=>{
   remApply(t,"f");data.tasks.push(t);save();renderPlan();renderTypes();e.target.reset();remSel.f=null;renderRem("f");closeTaskSheet();toast("Ajouté à l'agenda");if(t.time)setTimeout(maybeAskNotif,900); // v37 : la proposition arrive quand elle a du sens
 });
 
-/* ---------- horaire de cours (iCal) ---------- */
-const ICAL_CAT="Calendrier relié"; // v28 : nom neutre (marche avec tout lien iCal : horaire de cours, Google Agenda, Outlook, iCloud…)
-let icalEvents=[],icalAt=0,icalBusy=false;
+/* ---------- calendriers reliés (iCal) ---------- */
+// v45 : plusieurs calendriers superposés dans la même vue. data.prefs.icals = [{id, name, url, c (couleur), on (affiché)}] ;
+// data.prefs.ical garde le lien du 1er (anciennes versions). Calendrier privé : identifiant + mot de passe gardés sur l'appareil
+// seulement (localStorage « sidnote-icalauth-<uid> », jamais envoyés au compte), passés au relais « horaire » le temps de la lecture.
+const ICAL_CAT="Calendrier relié"; // nom par défaut d'un calendrier (v28 : neutre, marche avec tout lien iCal)
+const CAL_COLORS=["--x4","--x1","--x2","--x3","--x5","--x6","--c-cours","--c-event"];
+let icalEvents=[],icalAt=0,icalBusy=false,icalAll={},icalErr={};
 const icalKey=()=>"sidnote-ical-"+(session?session.user.id:"x");
+const icalAuthKey=()=>"sidnote-icalauth-"+(session?session.user.id:"x");
+const icalAuth=id=>(ls.get(icalAuthKey())||{})[id]||null;
+function icalAuthSet(id,v){const a=ls.get(icalAuthKey())||{};if(v)a[id]=v;else delete a[id];ls.set(icalAuthKey(),a)}
+function CALS(){const p=data.prefs||(data.prefs={});
+  if(!Array.isArray(p.icals))p.icals=p.ical?[{id:"cal1",name:ICAL_CAT,url:p.ical,c:"--x4",on:true}]:[];
+  return p.icals}
+const calOf=id=>CALS().find(c=>c.id===id);
+function calsSave(){const l=CALS();data.prefs.ical=l.length?l[0].url:null;save()}
 const allT=()=>data.tasks.concat(icalEvents);
-const colorOf=t=>t&&t.src==="ical"?"--x4":tc(t&&t.cat);
-function icalLoadCache(){const c=ls.get(icalKey());if(c&&Array.isArray(c.events)&&c.url===(data.prefs&&data.prefs.ical)){icalEvents=c.events;icalEvents.forEach(e=>e.cat=ICAL_CAT);icalAt=c.at||0}}
+const colorOf=t=>t&&t.src==="ical"?((calOf(t.cal)||{}).c||"--x4"):tc(t&&t.cat);
+// événements affichés = ceux des calendriers allumés, chacun avec le nom de son calendrier comme catégorie
+function icalMix(){icalEvents=[];let at=0;
+  for(const c of CALS()){const x=icalAll[c.id];if(!x||x.url!==c.url)continue;at=Math.max(at,x.at||0);
+    if(c.on===false)continue;x.events.forEach(e=>{e.cal=c.id;e.cat=c.name||ICAL_CAT});icalEvents=icalEvents.concat(x.events)}
+  icalAt=at}
+function icalLoadCache(){const c=ls.get(icalKey());icalAll={};
+  if(c&&c.cals)icalAll=c.cals;
+  else if(c&&Array.isArray(c.events)){const f=CALS()[0];if(f&&c.url===f.url)icalAll[f.id]={url:c.url,at:c.at||0,events:c.events}} // cache d'avant la v45
+  icalMix()}
+function icalCacheSave(){const keep={};CALS().forEach(c=>{if(icalAll[c.id])keep[c.id]=icalAll[c.id]});icalAll=keep;ls.set(icalKey(),{v:2,cals:keep})}
 // lecture d'un fichier iCal (.ics)
 function parseICS(text,now=new Date()){
   const lines=String(text).replace(/\r?\n[ \t]/g,"").split(/\r?\n/);
@@ -1147,46 +1170,85 @@ function parseICS(text,now=new Date()){
   }
   const seen=new Set();return out.filter(t=>!seen.has(t.id)&&seen.add(t.id));
 }
-async function icalFetch(force){
-  const url=data.prefs&&data.prefs.ical;
-  if(!url||!session||icalBusy)return;
+async function icalFetchOne(c){
+  const au=icalAuth(c.id),body={url:c.url};if(au){body.user=au.user||"";body.pass=au.pass||""}
+  const r=await fetch(SUPABASE_URL+"/functions/v1/horaire",{method:"POST",headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",Authorization:"Bearer "+await token()},body:JSON.stringify(body)});
+  const txt=await r.text();
+  if(!r.ok){let m="";try{m=JSON.parse(txt).error||""}catch(e){}
+    throw new Error(r.status===404?"La fonction « horaire » n'est pas encore installée sur Supabase.":m||("Erreur "+r.status))}
+  icalAll[c.id]={url:c.url,at:Date.now(),events:parseICS(txt)}}
+// force : tout relire ; only : un seul calendrier (ajout, identifiant changé)
+async function icalFetch(force,only){
+  const list=CALS().filter(c=>c.on!==false&&(!only||c.id===only));
+  if(!list.length||!session||icalBusy)return;
   if(!force&&Date.now()-icalAt<15*60e3)return;
-  icalBusy=true;icalState("Mise à jour du calendrier…");
-  try{
-    const r=await fetch(SUPABASE_URL+"/functions/v1/horaire",{method:"POST",headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",Authorization:"Bearer "+await token()},body:JSON.stringify({url})});
-    const txt=await r.text();
-    if(!r.ok){let m="";try{m=JSON.parse(txt).error||""}catch(e){}
-      throw new Error(r.status===404?"La fonction « horaire » n'est pas encore installée sur Supabase.":m||("Erreur "+r.status))}
-    icalEvents=parseICS(txt);icalAt=Date.now();
-    ls.set(icalKey(),{url,at:icalAt,events:icalEvents});
-    icalSoonSync();renderAllSafe();if(force)toast(`Calendrier à jour : ${icalEvents.filter(t=>!t.canc).length} ${icalEvents.filter(t=>!t.canc).length>1?"événements":"événement"}`);
-  }catch(ex){icalState(ex instanceof TypeError?"Pas de connexion : le calendrier sera mis à jour plus tard.":ex.message);if(force)toast("Mise à jour impossible");icalBusy=false;return}
-  icalBusy=false;icalState();
+  icalBusy=true;icalState("Mise à jour du calendrier…");let off=false;
+  for(const c of list){try{await icalFetchOne(c);delete icalErr[c.id]}catch(ex){if(ex instanceof TypeError)off=true;icalErr[c.id]=ex instanceof TypeError?L("Pas de connexion"):ex.message}}
+  icalBusy=false;icalCacheSave();icalMix();icalSoonSync();renderAllSafe();renderCals();
+  const bad=list.filter(c=>icalErr[c.id]);
+  if(off)icalState("Pas de connexion : le calendrier sera mis à jour plus tard.");else icalState();
+  if(force){const n=icalEvents.filter(t=>!t.canc).length;
+    if(bad.length===list.length)toast("Mise à jour impossible");else toast(`Calendrier à jour : ${n} ${n>1?"événements":"événement"}`)}
 }
 // les cours des 14 prochains jours sont copiés dans le compte (data.icalSoon) : le serveur des rappels
 // ne peut pas lire l'horaire lui-même, il prévient 24 h avant chaque cours à partir de cette liste
 function icalSoonSync(){if(!session)return;
   const t0=iso(today()),e=new Date(today());e.setDate(e.getDate()+14);const t1=iso(e);
-  const list=notifIcal()&&data.prefs.ical?icalEvents.filter(t=>!t.canc&&t.date>=t0&&t.date<=t1).map(t=>({id:t.id,title:t.title,date:t.date,time:t.time||"",loc:t.loc||""})).slice(0,120):[];
+  const list=notifIcal()&&CALS().length?icalEvents.filter(t=>!t.canc&&t.date>=t0&&t.date<=t1).map(t=>({id:t.id,title:t.title,date:t.date,time:t.time||"",loc:t.loc||""})).slice(0,200):[];
   if(JSON.stringify(list)===JSON.stringify(data.icalSoon||[]))return;data.icalSoon=list;save()}
 function icalState(msg){
-  const el=$("icalState");if(!el)return;const url=data.prefs&&data.prefs.ical;
-  $("icalRefresh").hidden=!url;
-  if(msg){el.textContent=msg;return}
-  if(!url){el.textContent="Aucun calendrier relié.";return}
+  const el=$("icalState");if(!el)return;const has=CALS().length;
+  $("icalRefresh").hidden=!has;
+  if(msg){el.textContent=L(msg);return}
+  if(!has){el.textContent=L("Aucun calendrier relié.");return}
   const n=icalEvents.filter(t=>!t.canc).length,c=icalEvents.filter(t=>t.canc).length;
-  el.textContent=icalAt?`${n} ${n>1?"événements":"événement"}${c?` · ${c} annulé${c>1?"s":""}`:""} · mis à jour à ${new Date(icalAt).toLocaleTimeString("fr-BE",{hour:"2-digit",minute:"2-digit"})}`:"Pas encore mis à jour.";
+  el.textContent=icalAt?`${n} ${n>1?"événements":"événement"}${c?` · ${c} annulé${c>1?"s":""}`:""} · mis à jour à ${new Date(icalAt).toLocaleTimeString("fr-BE",{hour:"2-digit",minute:"2-digit"})}`:L("Pas encore mis à jour.");
 }
 function icalInfo(id){
   const t=icalEvents.find(x=>x.id===id);if(!t)return;
-  toast(`${t.canc?"Annulé · ":""}${t.title}${t.time?" · "+hrs(t):""}${t.loc?" · "+t.loc:""}`);
+  toast(`${t.canc?L("Annulé")+" · ":""}${t.title}${t.time?" · "+hrs(t):""}${t.loc?" · "+t.loc:""}${t.cat?" · "+t.cat:""}`);
 }
+// liste des calendriers (Agenda → « Calendriers reliés ») + pastilles au-dessus du calendrier pour afficher / masquer chacun
+function renderCals(){
+  const box=$("calList");if(!box)return;const l=CALS();
+  box.innerHTML=l.map(c=>{const n=(icalAll[c.id]&&icalAll[c.id].url===c.url)?icalAll[c.id].events.filter(t=>!t.canc).length:null,err=icalErr[c.id];
+    return `<div class="cal-row${c.on===false?" off":""}"><button type="button" class="cal-dot" data-calcolor="${c.id}" style="--c:var(${c.c||"--x4"})" aria-label="${L("Changer la couleur")}"></button>
+      <div class="grow cal-main"><b class="notr">${esc(c.name||ICAL_CAT)}</b><span class="small ${err?"cal-err":"muted"}"><span>${err?esc(err):n===null?L("Pas encore mis à jour."):`${n} ${n>1?"événements":"événement"}`}</span>${icalAuth(c.id)?` · <span>${L("privé")}</span>`:""}</span></div>
+      <input type="checkbox" class="switch" data-calon="${c.id}" ${c.on===false?"":"checked"} title="${L("Afficher")}" aria-label="${L("Afficher")} ${esc(c.name||ICAL_CAT)}">
+      <button type="button" class="pen" data-calmore="${c.id}" aria-label="${L("Plus d'actions")}">${MORE}</button></div>`}).join("")||`<div class="small muted">${L("Aucun calendrier relié.")}</div>`;
+  const lg=$("calLegend");if(lg){lg.hidden=l.length<1;
+    lg.innerHTML=l.map(c=>`<button type="button" class="pill cal-pill" data-calon2="${c.id}" aria-pressed="${c.on!==false}"><span class="dot" style="background:var(${c.c||"--x4"})"></span><span class="notr">${esc(c.name||ICAL_CAT)}</span></button>`).join("")}
+  icalState()}
+function calToggle(id,on){const c=calOf(id);if(!c)return;c.on=on;c.upd=Date.now();calsSave();icalMix();
+  if(on&&!(icalAll[id]&&icalAll[id].url===c.url))icalFetch(true,id);icalSoonSync();renderAllSafe();renderCals()}
+function calActions(id){const c=calOf(id);if(!c)return;
+  openActions(c.name||ICAL_CAT,[
+    {l:"Renommer",fn:()=>{const v=prompt(L("Nom du calendrier"),c.name||"");if(v&&v.trim()){c.name=v.trim().slice(0,40);c.upd=Date.now();calsSave();icalMix();renderAllSafe();renderCals()}}},
+    {l:"Changer la couleur",fn:()=>calColor(id)},
+    {l:icalAuth(id)?"Modifier l'identifiant":"Ajouter un identifiant (calendrier privé)",fn:()=>calAuthAsk(id)},
+    {l:"Actualiser",fn:()=>icalFetch(true,id)},
+    {l:"Retirer ce calendrier",danger:true,fn:()=>{data.prefs.icals=CALS().filter(x=>x!==c);delete icalAll[id];delete icalErr[id];icalAuthSet(id,null);calsSave();icalCacheSave();icalMix();icalSoonSync();renderAllSafe();renderCals();toast("Calendrier retiré")}}])}
+function calColor(id){const c=calOf(id);if(!c)return;const i=CAL_COLORS.indexOf(c.c);c.c=CAL_COLORS[(i+1)%CAL_COLORS.length];c.upd=Date.now();calsSave();renderAllSafe();renderCals()}
+function calAuthAsk(id){const a=icalAuth(id)||{};
+  const u=prompt(L("Identifiant du calendrier (laisse vide pour retirer)"),a.user||"");if(u===null)return;
+  if(!u.trim()){icalAuthSet(id,null);renderCals();icalFetch(true,id);return}
+  const pw=prompt(L("Mot de passe du calendrier (de préférence un mot de passe d'application)"),"");if(pw===null)return;
+  icalAuthSet(id,{user:u.trim(),pass:pw});renderCals();icalFetch(true,id)}
+$("calList").addEventListener("click",e=>{const m=e.target.closest("[data-calmore]");if(m){calActions(m.dataset.calmore);return}
+  const d=e.target.closest("[data-calcolor]");if(d)calColor(d.dataset.calcolor)});
+$("calList").addEventListener("change",e=>{const t=e.target.closest("[data-calon]");if(t)calToggle(t.dataset.calon,t.checked)});
+$("calLegend").addEventListener("click",e=>{const b=e.target.closest("[data-calon2]");if(!b)return;const c=calOf(b.dataset.calon2);if(c)calToggle(c.id,c.on===false)});
 $("icalSave").addEventListener("click",()=>{
   const v=$("icalUrl").value.trim().replace(/^webcal:/i,"https:");
   if(!/^https:\/\/\S+$/i.test(v)){toast("Colle un lien qui commence par https://");return}
-  data.prefs.ical=v;save();icalEvents=[];icalAt=0;icalFetch(true);
-});
-$("icalDel").addEventListener("click",()=>{data.prefs.ical=null;save();icalEvents=[];icalAt=0;ls.del(icalKey());$("icalUrl").value="";renderAllSafe();icalState();toast("Calendrier retiré")});
+  if(CALS().some(c=>c.url===v)){toast("Ce calendrier est déjà relié");return}
+  if(CALS().length>=12){toast("12 calendriers au maximum");return}
+  const l=CALS(),used=l.map(c=>c.c),id="cal"+Date.now().toString(36);
+  let name=$("icalName").value.trim().slice(0,40);if(!name)name=l.length?`${L("Calendrier")} ${l.length+1}`:ICAL_CAT;
+  l.push({id,name,url:v,c:CAL_COLORS.find(x=>!used.includes(x))||CAL_COLORS[l.length%CAL_COLORS.length],on:true,upd:Date.now()});
+  const u=$("icalUser").value.trim(),pw=$("icalPass").value;if(u||pw)icalAuthSet(id,{user:u,pass:pw});
+  ["icalUrl","icalName","icalUser","icalPass"].forEach(k=>$(k).value="");$("icalPriv").open=false;
+  calsSave();renderCals();icalFetch(true,id)});
 $("icalRefresh").addEventListener("click",()=>icalFetch(true));
 
 /* ---------- Types d'événement ---------- */
@@ -1227,11 +1289,11 @@ async function saveJSON(obj,name,title){
 const bkObj=extra=>({app:"sidnote",v:2,exported:new Date().toISOString(),...(extra||{}),data:forServer(data)});
 $("backupBtn").addEventListener("click",()=>saveJSON(bkObj(),`sidnote-sauvegarde-${new Date().toISOString().slice(0,10)}.json`,L("Sauvegarde Sid'note")));
 // RGPD : export complet (JSON) et suppression des données du compte
-$("exportAllBtn").addEventListener("click",()=>saveJSON(bkObj({account:{email:session&&session.email,id:session&&session.user.id}}),`sidnote-mes-donnees-${new Date().toISOString().slice(0,10)}.json`,L("Mes données Sid'home")));
+$("exportAllBtn").addEventListener("click",()=>saveJSON(bkObj({account:{email:session&&session.email,id:session&&session.user.id}}),`sidnote-mes-donnees-${new Date().toISOString().slice(0,10)}.json`,L("Mes données Sid'compagnon")));
 $("wipeBtn").addEventListener("click",async e=>{
   const b=e.currentTarget;
   if(!b.dataset.armed){b.dataset.armed="1";b.textContent=L("Tout effacer ? Toucher encore pour confirmer");setTimeout(()=>{delete b.dataset.armed;b.textContent=L("Supprimer mes données")},4000);return}
-  if(!confirm(L("Tout ce que tu as mis dans Sid'home sera effacé, sur tous tes appareils. C'est définitif. Continuer ?")))return;
+  if(!confirm(L("Tout ce que tu as mis dans Sid'compagnon sera effacé, sur tous tes appareils. C'est définitif. Continuer ?")))return;
   b.disabled=true;b.textContent="…";
   try{
     const t=await token(),u=session.user.id;
@@ -1239,7 +1301,7 @@ $("wipeBtn").addEventListener("click",async e=>{
     await dropSub().catch(()=>{});
     const fresh={...blank(),wipe:new Date().toISOString()},rev=new Date().toISOString();
     await api("/rest/v1/user_data?on_conflict=user_id",{method:"POST",token:t,headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:{user_id:u,data:forServer(fresh),updated_at:rev}});
-    await idbClearUser(u);ls.del("sidnote-ical-"+u);ls.del(cacheKey(u));ls.del("sidnote-mk-"+u);ls.del("sidnote-bio-"+u);
+    await idbClearUser(u);ls.del("sidnote-ical-"+u);ls.del("sidnote-icalauth-"+u);ls.del(cacheKey(u));ls.del("sidnote-mk-"+u);ls.del("sidnote-bio-"+u);
     toast(L("Tes données ont été supprimées"));
     try{api("/auth/v1/logout",{method:"POST",token:session.access_token}).catch(()=>{})}catch(x){}
     setTimeout(()=>endSession("",false),900);
@@ -1294,25 +1356,25 @@ $("bkReplace").addEventListener("click",e=>{const b=e.currentTarget;
 /* ---------- v35 : confidentialité, conditions d'utilisation, consentement santé, suppression du compte ---------- */
 // v43 : textes légaux mis à jour (connecteur Claude, Spotify à la demande, polices hébergées ici) ; version complète dans les pages publiques
 const LEGAL={privacy:[
-  ["Qui est responsable","Sid'home est édité par SidCorp, qui est responsable du traitement de tes données. Les coordonnées complètes figurent dans la version complète de cette politique. Pas de publicité : aucune donnée n'est vendue ni utilisée à des fins commerciales."],
+  ["Qui est responsable","Sid'compagnon est édité par SidCorp, qui est responsable du traitement de tes données. Les coordonnées complètes figurent dans la version complète de cette politique. Pas de publicité : aucune donnée n'est vendue ni utilisée à des fins commerciales."],
   ["Ce qui est enregistré, et pourquoi","Ton e-mail, ton pseudo et ton mot de passe (gardé haché par Supabase), pour ton compte. Ce que tu mets dans l'app (agenda, tâches, notes, documents, séances, nutrition, réglages), pour te rendre le service : c'est la base légale « exécution du contrat ». Des rapports d'erreur techniques (version, message d'erreur, type de navigateur, sans ton contenu), pour corriger les bugs : intérêt légitime. Ton abonnement aux notifications, seulement si tu les actives."],
-  ["Données de santé","Ton poids, tes repas, ton profil (âge, taille, sport), tes séances et les zones à ménager sont des données de santé. Sid'home ne les utilise qu'avec ton accord explicite, que tu peux retirer à tout moment dans Réglages. Sid'home ne les envoie à aucune IA de lui-même : si tu branches Claude, c'est ton propre compte Claude (Anthropic) qui les lit par le connecteur, quand tu le lui demandes, selon les conditions d'Anthropic. La photo d'assiette que tu envoies à Claude est déposée dans ton dossier privé, lue une seule fois par ton Claude, puis effacée (au plus tard après 24 h). Les aliments sont retenus dans une mémoire commune anonyme (jamais ton nom)."],
+  ["Données de santé","Ton poids, tes repas, ton profil (âge, taille, sport), tes séances et les zones à ménager sont des données de santé. Sid'compagnon ne les utilise qu'avec ton accord explicite, que tu peux retirer à tout moment dans Réglages. Sid'compagnon ne les envoie à aucune IA de lui-même : si tu branches Claude, c'est ton propre compte Claude (Anthropic) qui les lit par le connecteur, quand tu le lui demandes, selon les conditions d'Anthropic. La photo d'assiette que tu envoies à Claude est déposée dans ton dossier privé, lue une seule fois par ton Claude, puis effacée (au plus tard après 24 h). Les aliments sont retenus dans une mémoire commune anonyme (jamais ton nom)."],
   ["Où, et avec qui","Tes données sont dans ton compte chez Supabase, en Europe (Francfort, Allemagne). Le site est hébergé par Netlify, qui garde des journaux techniques (dont ton adresse IP) pour faire tourner le site. Anthropic n'intervient que si tu branches Claude, Spotify seulement si tu charges son lecteur. Plus aucune police ni bibliothèque n'est chargée chez un tiers. Sur ton appareil, l'app garde une copie de tes données pour marcher sans connexion."],
   ["Ce qui est chiffré","Mots de passe, notes secrètes et documents sont chiffrés sur ton appareil avec ta phrase secrète avant d'être envoyés : personne d'autre ne peut les lire, pas même SidCorp. Le reste est protégé par ton compte ; l'administrateur pourrait techniquement y accéder pour l'entretien, mais ne le fait pas."],
   ["Combien de temps","Tant que ton compte existe. Les éléments supprimés quittent la synchronisation après 90 jours ; les sauvegardes automatiques sont gardées 14 jours ; les rapports d'erreur 90 jours. « Supprimer mon compte » efface tout de suite ton compte et tes données (les sauvegardes disparaissent dans les 14 jours)."],
   ["Tes droits","Tu peux voir, télécharger, corriger et supprimer tes données à tout moment (Réglages, « Tes données et ta vie privée »), retirer ton accord pour les données de santé, t'opposer à un traitement et supprimer ton compte. Tu peux aussi porter plainte auprès de l'Autorité de protection des données (Belgique, www.autoriteprotectiondonnees.be)."]],
  terms:[
-  ["Le service","Sid'home est gratuit, sans achat ni abonnement, et fourni tel quel. Il peut évoluer, être interrompu ou s'arrêter ; tu seras prévenu à l'avance si possible."],
+  ["Le service","Sid'compagnon est gratuit, sans achat ni abonnement, et fourni tel quel. Il peut évoluer, être interrompu ou s'arrêter ; tu seras prévenu à l'avance si possible."],
   ["Ton compte","Ton compte est personnel. Garde ton mot de passe et ta phrase secrète pour toi. Si tu perds ta phrase secrète sans avoir activé la récupération, tes coffres ne peuvent pas être rouverts, même par SidCorp."],
   ["Ce que tu y mets","Tu restes propriétaire de ton contenu. N'y mets rien d'illégal. Fais de temps en temps une sauvegarde (Réglages, « Sauvegarde »)."],
   ["Santé : nutrition et musculation","Les calculs, menus et programmes sont donnés à titre indicatif, parfois par une IA qui peut se tromper. Ce n'est pas un avis médical : demande conseil à un médecin, un diététicien ou un coach, surtout en cas de douleur, de grossesse, de maladie ou de troubles alimentaires."],
   ["Claude (facultatif)","Brancher Claude est facultatif. Claude est un service d'Anthropic, utilisé avec ton propre compte et selon ses conditions ; SidCorp n'en est pas responsable. Tu peux débrancher le connecteur à tout moment (Réglages)."],
   ["Fin et droit applicable","Tu peux supprimer ton compte à tout moment. SidCorp peut fermer un compte utilisé de façon abusive. Ces conditions relèvent du droit belge ; elles ne retirent aucun droit que la loi te donne comme consommateur."]],
  cookies:[
-  ["Pas de cookie","Sid'home ne dépose aucun cookie : ni publicité, ni mesure d'audience, ni pisteur."],
+  ["Pas de cookie","Sid'compagnon ne dépose aucun cookie : ni publicité, ni mesure d'audience, ni pisteur."],
   ["Ce qui est gardé sur ton appareil","Seulement ce qui est nécessaire pour faire marcher l'app que tu as demandée : ta session (rester connecté), une copie de tes données pour marcher sans connexion, tes fichiers, tes préférences d'affichage (langue, thème, barre latérale), un compteur anti-essais pour la connexion, et le cache de l'app. Ces éléments sont dispensés de consentement (loi belge du 13 juin 2005, art. 129) car strictement nécessaires."],
   ["Contenu tiers : Spotify","Le lecteur Spotify (Focus) n'est chargé que si tu touches « Charger le lecteur Spotify ». Spotify reçoit alors ton adresse IP et peut déposer ses propres cookies, selon sa politique. Tu peux retirer ce choix à tout moment sous le lecteur."],
-  ["Pas de bandeau","Comme rien de non nécessaire n'est chargé sans ton action, Sid'home n'affiche pas de bandeau de cookies."]]};
+  ["Pas de bandeau","Comme rien de non nécessaire n'est chargé sans ton action, Sid'compagnon n'affiche pas de bandeau de cookies."]]};
 const LEGAL_PAGE={privacy:"confidentialite.html",terms:"conditions.html",cookies:"cookies.html"};
 function openLegal(k){k=LEGAL[k]?k:"privacy";
   document.querySelectorAll("#legalSeg [data-legal]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.legal===k)));
@@ -1345,8 +1407,8 @@ $("delAccBtn").addEventListener("click",async()=>{
   const b=$("delAccBtn");b.disabled=true;b.textContent="…";
   try{const u=session.user.id;await dropSub().catch(()=>{});
     await api("/functions/v1/delete-account",{method:"POST",token:await token(),body:{}});
-    await idbClearUser(u);["sidnote-ical-"+u,cacheKey(u),"sidnote-mk-"+u,"sidnote-bio-"+u,LAST_KEY].forEach(k=>ls.del(k));
-    endSession(L("Ton compte a été supprimé. Merci d'avoir utilisé Sid'home."),true);
+    await idbClearUser(u);["sidnote-ical-"+u,"sidnote-icalauth-"+u,cacheKey(u),"sidnote-mk-"+u,"sidnote-bio-"+u,LAST_KEY].forEach(k=>ls.del(k));
+    endSession(L("Ton compte a été supprimé. Merci d'avoir utilisé Sid'compagnon."),true);
   }catch(ex){b.disabled=false;b.textContent=L("Supprimer mon compte");toast(ex instanceof TypeError?L("Pas de connexion internet"):(ex.message||L("Suppression impossible")))}});
 
 /* ---------- v37 : listes partagées entre proches ---------- */
@@ -1788,7 +1850,7 @@ async function currentSub(){if(!pushOK())return null;const r=await navigator.ser
 // le bloc « notifications » existe à deux endroits (Réglages et Planning) : même contenu, mêmes réglages
 let nfState={kind:"off",msg:""},nfCustom=false;
 async function renderNotif(){
-  if(!pushOK())nfState={kind:"na",msg:isIOS&&!standalone()?"Pour activer les notifications, ouvre Sid'home depuis l'icône de ton écran d'accueil.":"Ce navigateur ne gère pas les notifications."};
+  if(!pushOK())nfState={kind:"na",msg:isIOS&&!standalone()?"Pour activer les notifications, ouvre Sid'compagnon depuis l'icône de ton écran d'accueil.":"Ce navigateur ne gère pas les notifications."};
   else if(Notification.permission==="denied")nfState={kind:"na",msg:"Notifications bloquées. Autorise-les dans Réglages > Notifications > Sid'note."};
   else{const sub=await currentSub().catch(()=>null);nfState=sub&&Notification.permission==="granted"?{kind:"on"}:{kind:"off"}}
   renderLeads();
@@ -1802,7 +1864,7 @@ function renderLeads(){
     <div class="label" style="margin:12px 4px 6px">${L("Me prévenir")}</div>
     <div class="chips" style="flex-wrap:wrap;margin:0;padding-inline:0">${all.map(m=>m===1440?`<span class="pill lock" aria-pressed="true" title="${L("Toujours active")}">${leadLbl(m)} · ${L("toujours")}</span>`:`<button type="button" class="pill" data-lead="${m}" aria-pressed="${cur.includes(m)}">${leadLbl(m)}</button>`).join("")}<button type="button" class="pill add" data-nf="custom">+ ${L("Autre délai")}</button></div>
     ${nfCustom?`<form class="notif-lead-custom" data-nf="customf"><input type="text" inputmode="numeric" maxlength="3" name="n" placeholder="15" aria-label="${L("Durée")}" autocomplete="off"><select class="sel" name="u" aria-label="${L("Unité")}"><option value="1">${L("minutes")}</option><option value="60" selected>${L("heures")}</option><option value="1440">${L("jours")}</option></select><span class="small muted">${L("avant")}</span><button class="btn" type="submit" style="padding:8px 14px">OK</button></form>`:""}
-    ${data.prefs.ical?`<label class="nf-ical"><input type="checkbox" data-nf="ical" ${ical?"checked":""}> <span>${L("Cours du calendrier relié : mêmes rappels que tes activités")}</span></label>`:""}
+    ${CALS().length?`<label class="nf-ical"><input type="checkbox" data-nf="ical" ${ical?"checked":""}> <span>${L("Cours du calendrier relié : mêmes rappels que tes activités")}</span></label>`:""}
     <p class="small muted" style="margin:8px 4px 0">${L("Tu peux en choisir plusieurs. Une activité sans heure compte pour 8 h. Sur iPhone : iOS 16.4 ou plus, et Sid'note ouvert depuis l'écran d'accueil.")}</p>`;
   const ae=document.activeElement,typing=ae&&ae.matches&&ae.matches("input[type=text],select");
   document.querySelectorAll(".notif-box").forEach(b=>{if(!(typing&&b.contains(ae)))b.innerHTML=html});
@@ -1923,7 +1985,7 @@ $("eDelete").addEventListener("click",e=>{
 });
 
 /* ---------- musculation ---------- */
-// v44 : un seul format pour les séances libres, les programmes de Sid'home, ceux de Claude et ceux importés.
+// v44 : un seul format pour les séances libres, les programmes de Sid'compagnon, ceux de Claude et ceux importés.
 // data.muscu.sessions = [{id, name, upd, grp?:{id, name, src:"app"|"claude"|"import"}, ord?, exercises:[{id, name, sets:[{kg, reps}], reps?, rest?, rir?, note?, pat?}]}]
 //   une séance sans grp est une séance libre ; un programme = les séances d'un même grp (ordre : ord).
 // data.muscu.plan = {id, v:2, profile, at, upd, src, aiWait?} : le programme suivi (ses séances ont grp.id === plan.id) ; supprimé = {deleted, upd}.
@@ -1937,7 +1999,7 @@ const msFind=id=>M().sessions.find(x=>x.id===id);
 const newSet=()=>({reps:"",kg:""});
 const newEx=(name="",n=3)=>({id:uid(),name,ps:1,sets:Array.from({length:n},newSet)});
 const seTouch=se=>{se.upd=Date.now();M().upd=Date.now()};
-const GSRC={app:"Créé par Sid'home",claude:"Créé par Claude",import:"Importé"};
+const GSRC={app:"Créé par Sid'compagnon",claude:"Créé par Claude",import:"Importé"};
 // ancien programme (avant la v44 : plan.days, exercices avec un nombre de séries) → séances au format commun, sans rien perdre
 function muMigrate(){const m=M(),p=m.plan;if(!Array.isArray(m.sessions))m.sessions=[];let ch=false;
   if(p&&!p.deleted&&Array.isArray(p.days)){const grp={id:p.id,name:L("Mon programme"),src:p.src==="ia"?"claude":"app"};
@@ -1959,13 +2021,13 @@ const PLD=()=>{const p=PL();return p?grpSe(p.id):[]}; // séances du programme s
 // texte de partage commun (séance seule, ou programme entier) : c'est aussi le format d'import (et celui que Claude peut donner)
 const exLine=(e,i)=>`${i+1}. ${e.name||L("Exercice")} : ${e.sets.length} ${e.sets.length>1?"séries":"série"}${e.reps?` × ${e.reps}`:""}${e.rest?`, repos ${restLbl(e.rest)}`:""}${e.note?` (${e.note})`:""}`;
 const seTxt=se=>`Séance « ${se.name||"Séance"} »\n${se.exercises.map(exLine).join("\n")}`;
-const shareTxt=(list,prog)=>prog?`Programme « ${prog} » (Sid'home)\n\n${list.map(seTxt).join("\n\n")}`:`${seTxt(list[0]).replace(/\n/," (Sid'home)\n")}`;
-// lecture tolérante : texte de Sid'home (ancien et nouveau), ou programme écrit par Claude (titres « ## Séance … », puces, « 4 × 8–10 »)
+const shareTxt=(list,prog)=>prog?`Programme « ${prog} » (Sid'compagnon)\n\n${list.map(seTxt).join("\n\n")}`:`${seTxt(list[0]).replace(/\n/," (Sid'compagnon)\n")}`;
+// lecture tolérante : texte de Sid'compagnon (ancien et nouveau), ou programme écrit par Claude (titres « ## Séance … », puces, « 4 × 8–10 »)
 function parseShared(txt){
   const lines=String(txt||"").split(/\r?\n/).map(l=>l.replace(/\*\*/g,"").trim()).filter(Boolean);if(!lines.length)return null;
   let prog="",cur=null;const out=[];
-  // titre « Séance « Push » » (format de Sid'home : le nom est entre guillemets) ou « ## Séance A — Haut du corps » (on garde tout le titre)
-  const head=(l,w)=>{const t=l.replace(/^#{1,4}\s*/,"").replace(/\s*\((?:sid'?(?:note|home))\)\s*:?\s*$/i,"").replace(/\s*:\s*$/,"");
+  // titre « Séance « Push » » (format de Sid'compagnon : le nom est entre guillemets) ou « ## Séance A — Haut du corps » (on garde tout le titre)
+  const head=(l,w)=>{const t=l.replace(/^#{1,4}\s*/,"").replace(/\s*\((?:sid'?(?:note|home|compagnon))\)\s*:?\s*$/i,"").replace(/\s*:\s*$/,"");
     if(!new RegExp(`^(?:${w})\\b`,"i").test(t))return null;const q=t.match(/[«"“]\s*(.+?)\s*[»"”]/);return q?q[1]:t};
   for(const l of lines){
     const pg=head(l,"programme|program|schema|schéma");if(pg!==null&&!/^\d/.test(l)){prog=pg||L("Programme importé");continue}
@@ -1981,7 +2043,7 @@ function parseShared(txt){
     if(!cur){cur={id:uid(),name:L("Séance importée"),exercises:[]};out.push(cur)}cur.exercises.push(ex)}
   const ses=out.filter(s=>s.exercises.length);if(!ses.length)return null;
   return{prog:prog||(ses.length>1?L("Programme importé"):""),ses}}
-// une carte par séance, la même pour toutes (libre, programme de Sid'home, de Claude ou importé)
+// une carte par séance, la même pour toutes (libre, programme de Sid'compagnon, de Claude ou importé)
 // v44.7 (demande de Sid) : une seule interface, modifiée directement ; pour chaque exercice, une ligne par série :
 // « Série 1 : [kg] – [reps] », « + Ajouter une série », × pour retirer une série. Rien n'est pré-rempli.
 const exKg=x=>String(x==null?"":x).replace(".",LANG==="en"?".":",");
@@ -1997,7 +2059,7 @@ function seCard(se){const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0);
           <span class="set-sep" aria-hidden="true">–</span>
           <input class="set-in" data-f="setreps" value="${esc(String((st&&st.reps)||""))}" placeholder="reps" aria-label="${L("Série")} ${j+1} : ${L("répétitions")}" autocomplete="off" inputmode="numeric">
           <button type="button" class="set-del" data-msdelset="${j}" aria-label="${L("Retirer la série")} ${j+1}" ${ex.sets.length<=1?"disabled":""}>×</button></div>`).join("")}</div>
-        <button type="button" class="set-add" data-msaddset="1" ${ex.sets.length>=20?"disabled":""}>+ ${L("Ajouter une série")}</button>
+        <div class="set-acts"><button type="button" class="set-add" data-msaddset="1" ${ex.sets.length>=20?"disabled":""}>+ ${L("Ajouter une série")}</button>${ex.sets.length>1?`<button type="button" class="set-add set-copy" data-mscopy1="1" title="${L("Recopier le poids et les répétitions de la série 1 dans toutes les séries")}">↓ ${L("Série 1 sur toutes")}</button>`:""}</div>
       </div>`).join("")}
       <button type="button" class="qbtn" data-msaddex="1">+ ${L("Ajouter un exercice")}</button>
       <div class="ms-actions">
@@ -2035,9 +2097,10 @@ function exAide(name){const A=window.SIDFIT_AIDE||{},k=fold(String(name||"").tri
   const key=Object.keys(A).find(x=>fold(x)===k);return key?{name:key,f:A[key][LANG]||A[key].fr}:null}
 function exHelpOpen(name){const a=exAide(name);if(!a)return;const[mus,steps,err]=a.f;
   $("exHelpTitle").textContent=name.trim();
-  $("exHelpBody").innerHTML=`<p class="exh-lbl">${L("Muscles travaillés")}</p><p class="notr">${esc(mus)}</p>
+  const im=(window.SIDFIT_IMG||{})[a.name];
+  $("exHelpBody").innerHTML=(im?`<div class="exh-pics">${[0,1].map(i=>`<figure><img src="exercices/${encodeURIComponent(im)}-${i}.jpg" alt="${esc(name.trim())} : ${L(i?"arrivée":"départ")}" loading="lazy" decoding="async" width="480" height="320"><figcaption>${L(i?"Arrivée":"Départ")}</figcaption></figure>`).join("")}</div>`:"")+`<p class="exh-lbl">${L("Muscles travaillés")}</p><p class="notr">${esc(mus)}</p>
     <p class="exh-lbl">${L("Comment faire")}</p><ol class="exh-steps notr">${steps.map(x=>`<li>${esc(x)}</li>`).join("")}</ol>
-    <p class="exh-lbl">${L("À éviter")}</p><p class="exh-err notr">${esc(err)}</p>`;
+    <p class="exh-lbl">${L("À éviter")}</p><p class="exh-err notr">${esc(err)}</p>${im?`<p class="small muted exh-src">${L("Photos : Free Exercise DB (domaine public)")}</p>`:""}`;
   $("exHelpSheet").hidden=false}
 $("exHelpClose").addEventListener("click",()=>$("exHelpSheet").hidden=true);
 $("exHelpSheet").addEventListener("click",e=>{if(e.target.id==="exHelpSheet")$("exHelpSheet").hidden=true});
@@ -2055,6 +2118,11 @@ $("msList").addEventListener("click",e=>{
   if(b.dataset.msaddex){se.exercises.push(newEx());seTouch(se);save();renderMuscu();const ins=$("msList").querySelectorAll(`[data-ms="${se.id}"] [data-f=exname]`);ins[ins.length-1]?.focus()}
   else if(b.dataset.msdelex){armDelete(b,()=>{se.exercises=se.exercises.filter(x=>x.id!==b.dataset.msdelex);seTouch(se);save();renderMuscu()})}
   else if(b.dataset.exhelp){const ex=exOf();if(ex)exHelpOpen(ex.name)}
+  else if(b.dataset.mscopy1){const ex=exOf();if(!ex||ex.sets.length<2)return;const f=ex.sets[0]||{};
+    // v45 : la série 1 (poids et répétitions) est recopiée dans toutes les autres séries de l'exercice
+    if(!String(f.kg||"").trim()&&!String(f.reps||"").trim()){toast("Remplis d'abord la série 1");return}
+    const before=ex.sets.map(x=>({...x}));ex.sets.forEach((x,j)=>{if(j)ex.sets[j]={...x,kg:f.kg||"",reps:f.reps||""}});seTouch(se);save();renderMuscu();
+    toastAct("Série 1 recopiée sur toutes les séries","Annuler",()=>{ex.sets=before;seTouch(se);save();renderMuscu()})}
   else if(b.dataset.msaddset){const ex=exOf();if(!ex||ex.sets.length>=20)return;ex.sets.push(newSet());seTouch(se);save();renderMuscu();
     const ins=document.querySelectorAll(`#msList [data-ex="${ex.id}"] [data-f="setkg"]`);ins[ins.length-1]?.focus()}
   else if(b.dataset.msdelset!==undefined){const ex=exOf();if(!ex||ex.sets.length<=1)return;ex.sets.splice(+b.dataset.msdelset,1);seTouch(se);save();renderMuscu()}
@@ -2074,7 +2142,7 @@ function grpActions(id){
     undoable("Programme supprimé",ids,()=>{ids.forEach(tomb);M().sessions=M().sessions.filter(s=>!ids.includes(s.id));if(isPlan)M().plan={deleted:true,upd:Date.now()}},
       {after:renderMuscu,revert:isPlan?()=>{M().plan={...oldPlan,upd:Date.now()}}:undefined})}});
   openActions(isPlan?L("Mon programme"):name,it)}
-// importer une séance ou un programme (texte partagé depuis Sid'home, ou programme écrit par Claude) : même chemin pour tout
+// importer une séance ou un programme (texte partagé depuis Sid'compagnon, ou programme écrit par Claude) : même chemin pour tout
 function importShared(txt){const r=parseShared(txt);if(!r)return null;
   const grp=r.prog?{id:uid(),name:r.prog.slice(0,80),src:"import"}:null;
   r.ses.forEach((s,i)=>{s.upd=Date.now();if(grp){s.grp=grp;s.ord=i}M().sessions.push(s)});M().upd=Date.now();return r}
@@ -2082,7 +2150,7 @@ $("msImportOpen").addEventListener("click",()=>{$("msImport").hidden=false;$("ms
 $("msImportCancel").addEventListener("click",()=>{$("msImport").hidden=true;$("msImportOpen").hidden=false});
 $("msImportBtn").addEventListener("click",()=>{
   const r=importShared($("msPaste").value);
-  if(!r){toast("Texte non reconnu. Colle une séance ou un programme partagé depuis Sid'home.");return}
+  if(!r){toast("Texte non reconnu. Colle une séance ou un programme partagé depuis Sid'compagnon.");return}
   msOpenId=r.ses[0].id;save();$("msPaste").value="";$("msImport").hidden=true;$("msImportOpen").hidden=false;renderMuscu();
   toast(r.prog?`${L("Programme importé")} : ${r.ses.length} ${L(r.ses.length>1?"séances":"séance")}`:`${L("Séance importée")} : ${r.ses[0].name}`)});
 
@@ -2156,7 +2224,7 @@ const coachNext=()=>{const ds=PLD();if(!ds.length)return null;const last=ML().fi
   const i=last?ds.findIndex(d=>d.id===last.day):-1;return ds[(i+1)%ds.length]};
 function renderCoach(){const box=$("coachBox");if(!box)return;const pl=PL(),ds=PLD();
   const rmk=$("coRemark")?$("coRemark").value:""; // v43 : le rendu garde la remarque en cours
-  if(!pl){box.innerHTML=`<div class="card coach-card"><div class="grow"><b>${L("Ton programme sur mesure")}</b><div class="small muted">${L("Quelques questions (niveau, objectif, jours, matériel) et Sid'home crée tes séances.")}</div></div><button type="button" class="btn" data-coach="new">${L("Créer mon programme")}</button></div>`;return}
+  if(!pl){box.innerHTML=`<div class="card coach-card"><div class="grow"><b>${L("Ton programme sur mesure")}</b><div class="small muted">${L("Quelques questions (niveau, objectif, jours, matériel) et Sid'compagnon crée tes séances.")}</div></div><button type="button" class="btn" data-coach="new">${L("Créer mon programme")}</button></div>`;return}
   const p=pl.profile||{},G={muscle:"Prendre du muscle",force:"Gagner en force",gras:"Perdre du gras",forme:"Être en forme"},LV={deb:"Débutant",inter:"Intermédiaire",conf:"Confirmé"};
   box.innerHTML=`<div class="card coach-card coach-on"><div class="coach-top"><div class="grow"><span class="eyebrow">${L("Mon programme")}</span><b>${esc(L(G[p.goal]||"Sur mesure"))}${pl.src==="ia"?` · ${L("ajusté par Claude")}`:""}</b><div class="small muted">${p.level?esc(L(LV[p.level]||""))+" · ":""}${ds.length} ${L(ds.length>1?"séances":"séance")}</div></div><button type="button" class="pen" data-coach="more" aria-label="${L("Plus d'actions")}">${MORE}</button></div>
     ${pl.aiWait?`<div class="coach-wait" role="status"><span class="grow">${L("Demande envoyée à Claude : le programme ajusté arrivera ici tout seul.")}</span><button type="button" class="linkbtn" data-coach="resend">${L("Renvoyer")}</button><button type="button" class="x" data-coach="unwait" aria-label="${L("Masquer")}">×</button></div>`:""}
@@ -2434,7 +2502,7 @@ async function dvUnlock(){
   if(dvOpen)return true;
   const hasV=vaultOn(),hasD=!!(data.docVault&&data.docVault.chk);
   // aucun code encore : on choisit le code unique (documents + mots de passe), puis la phrase secrète (v32)
-  if(!hasD&&!hasV){const code=await askPin({mode:"new",head:"Ton code Sid'home",sub:"Choisis ton code à 5 chiffres : il ouvre tes documents et tes mots de passe sur cet appareil."});if(!code)return false;
+  if(!hasD&&!hasV){const code=await askPin({mode:"new",head:"Ton code Sid'compagnon",sub:"Choisis ton code à 5 chiffres : il ouvre tes documents et tes mots de passe sur cet appareil."});if(!code)return false;
     const mk=await mkNeed();if(!mk)return false;
     const d=await v2Make(mk,"sidnote-docs",{uni:true}),w=await v2Make(mk,"sidnote",{uni:true});
     data.docVault=d.v;data.vault=w.v;dvKey=d.key;dvVid=d.v.id;dvOpen=true;await mkWrap("main",code,mk);save();toast("Code enregistré");return true}
@@ -2671,7 +2739,7 @@ const accEmail=()=>session.email||`${slug(session.name||"")}@${EMAIL_DOMAIN}`;
 // active la récupération pour un coffre (après création du code, ou plus tard)
 async function recEnable(v,code){
   if(v&&v.id)recAsked.add(v.id); // une seule proposition par session, même si on répond « Plus tard »
-  const pw=await askAccountPw("Ne perds jamais ton code","Entre le mot de passe de ton compte Sid'home : si tu oublies ce code un jour, il te suffira de ce mot de passe pour le retrouver.",
+  const pw=await askAccountPw("Ne perds jamais ton code","Entre le mot de passe de ton compte Sid'compagnon : si tu oublies ce code un jour, il te suffira de ce mot de passe pour le retrouver.",
     async pw=>{try{await api("/auth/v1/token?grant_type=password",{method:"POST",body:{email:accEmail(),password:pw}});return null}
       catch(ex){return ex instanceof TypeError?"Pas de connexion internet. Réessaie quand tu es connecté.":"Mot de passe incorrect."}},"Plus tard");
   if(!pw)return false;
@@ -2681,7 +2749,7 @@ async function recEnable(v,code){
 function recOffer(v,code){if(v&&!isV2(v)&&!v.rec&&!recAsked.has(v.id)){recAsked.add(v.id);recEnable(v,code)}}
 // retrouve le code oublié (null si annulé)
 async function recRecover(v){let code=null;
-  await askAccountPw("Code oublié","Entre le mot de passe de ton compte Sid'home pour retrouver ton code.",
+  await askAccountPw("Code oublié","Entre le mot de passe de ton compte Sid'compagnon pour retrouver ton code.",
     async pw=>{try{const key=await pinKey(pw,v.rec.salt,PIN_ITER);code=(await decJ(key,v.rec)).pin;return null}catch(e){return "Mot de passe incorrect."}});
   if(code)toast(`${L("Ton code est")} ${code}`,6000);return code}
 
@@ -2916,7 +2984,7 @@ $("pdfIn").addEventListener("change",async e=>{const files=[...e.target.files];e
     try{await idb.put(pdfKey(id),f)}catch(ex){toast("Enregistrement impossible sur cet appareil");continue}
     NT().push(n);k++;last=n;pdfUpload(n)}
   if(!k)return;save();renderNotes();toast(k>1?`${k} ${L("PDF ajoutés")}`:L("PDF ajouté"));if(k===1&&last)pdfOpen(last.id)});
-let pv={note:null,tok:0,tool:"read",io:null,draw:null};
+let pv={note:null,tok:0,tool:"read",io:null,draw:null,sel:null};
 const pvAnns=(nid,pg)=>PA().filter(a=>a&&a.note===nid&&(pg===undefined||a.page===pg)&&!(data.del&&data.del[a.id]));
 async function pdfOpen(id){const n=noteFind(id);if(!n||!n.pdf)return;const tok=++pv.tok;pv.note=n.id;pvTool("read");
   $("pvTitle").value=n.title||"";$("pvNoteTxt").value=n.body||"";$("pvNotes").hidden=true;$("pdfv").hidden=false;document.body.style.overflow="hidden";
@@ -2935,20 +3003,36 @@ async function pvRender(w,tok){if(w._c||w._busy||!pv.pdf)return;w._busy=true;
     const c=document.createElement("canvas");c.width=vp.width;c.height=vp.height;await pg.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;
     if(tok!==pv.tok)return;w.prepend(c);w._c=c}catch(e){}w._busy=false}
 function pvClose(){pvFlushTxt();pv.tok++;pv.note=null;pv.pdf=null;if(pv.io)pv.io.disconnect();$("pdfv").hidden=true;$("pvBody").innerHTML="";document.body.style.overflow="";renderNotes()}
-// une annotation de chaque type, placée en pourcentage de la page (même rendu sur iPhone et sur PC)
+// annotations placées en fraction de la page (même rendu sur iPhone et sur PC). v45 : zones de texte déplaçables et
+// redimensionnables (× pour supprimer), traits libres au stylo et au surligneur ({t:"ink", pts:[[x,y]…], c, w, hl}), gomme.
 const pct=v=>(Math.round(v*10000)/100)+"%";
-function pvOverlay(w){const ov=w.querySelector(".pv-ov"),pg=+w.dataset.pg,act=document.activeElement,keep=act&&ov.contains(act)?act.closest("[data-ann]"):null;
+const PV_COL={hl:["#FFD400","#7CE07C","#6EC6FF","#FF8AD0","#FFA94D"],pen:["#1C1A17","#D62828","#1D4ED8","#2F7A3A","#7C3AED"]};
+const pvPen=k=>{const u=(data.ui.pvPen=data.ui.pvPen||{});return u[k]=u[k]||{c:PV_COL[k][0],s:k==="hl"?4:3}};
+const pvW=(k,s)=>k==="hl"?.008+s*.005:.0015+s*.0012; // épaisseur en fraction de la largeur de la page (réglage 1 à 10)
+const pvRatio=w=>{const m=String(w.style.aspectRatio||"1 / 1.4").split("/").map(Number);return m[1]/m[0]||1.4};
+const pvPath=(pts,r)=>pts.map((p,i)=>(i?"L":"M")+(p[0]*1000).toFixed(1)+" "+(p[1]*1000*r).toFixed(1)).join(" ")+(pts.length===1?" l0.1 0":"");
+function pvOverlay(w){const ov=w.querySelector(".pv-ov"),pg=+w.dataset.pg,act=document.activeElement,keep=act&&ov.contains(act)?act.closest("[data-ann]"):null,r=pvRatio(w);
   ov.querySelectorAll("[data-ann]").forEach(el=>{if(el!==keep)el.remove()});
+  let svg=ov.querySelector("svg.pv-ink");if(!svg){ov.insertAdjacentHTML("afterbegin",`<svg class="pv-ink" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"></svg>`);svg=ov.querySelector("svg.pv-ink")}
+  svg.setAttribute("viewBox",`0 0 1000 ${(1000*r).toFixed(1)}`);
   for(const a of pvAnns(pv.note,pg)){if(keep&&keep.dataset.ann===a.id)continue;
-    if(a.t==="hl")ov.insertAdjacentHTML("beforeend",`<button type="button" class="pv-hl" data-ann="${a.id}" style="left:${pct(a.x)};top:${pct(a.y)};width:${pct(a.w)};height:${pct(a.h)}" aria-label="${L("Surlignage")}"></button>`);
-    else ov.insertAdjacentHTML("beforeend",`<div class="pv-txt" data-ann="${a.id}" style="left:${pct(a.x)};top:${pct(a.y)};width:${pct(a.w||.4)}"><textarea rows="1" class="notr" aria-label="${L("Texte sur le PDF")}" placeholder="${L("Écris ici…")}">${esc(a.txt||"")}</textarea><button type="button" class="pv-txt-x" data-pvdel="${a.id}" aria-label="${L("Supprimer ce texte")}">×</button></div>`)}
+    if(a.t==="ink"&&Array.isArray(a.pts)&&a.pts.length)svg.insertAdjacentHTML("beforeend",`<path data-ann="${a.id}" class="${a.hl?"ink-hl":"ink-pen"}" d="${pvPath(a.pts,r)}" stroke="${esc(/^#[0-9a-f]{6}$/i.test(a.c||"")?a.c:"#1C1A17")}" stroke-width="${((a.w||.004)*1000).toFixed(1)}"/>`);
+    else if(a.t==="hl")ov.insertAdjacentHTML("beforeend",`<button type="button" class="pv-hl" data-ann="${a.id}" style="left:${pct(a.x)};top:${pct(a.y)};width:${pct(a.w)};height:${pct(a.h)}" aria-label="${L("Surlignage")}"></button>`);
+    else if(a.t==="text")ov.insertAdjacentHTML("beforeend",`<div class="pv-txt${pv.sel===a.id?" pv-on":""}" data-ann="${a.id}" style="left:${pct(a.x)};top:${pct(a.y)};width:${pct(a.w||.4)}${a.h?`;height:${pct(a.h)}`:""}"><textarea rows="1" class="notr" aria-label="${L("Texte sur le PDF")}" placeholder="${L("Écris ici…")}">${esc(a.txt||"")}</textarea><button type="button" class="pv-txt-x" data-pvdel="${a.id}" aria-label="${L("Supprimer ce texte")}">×</button><span class="pv-txt-mv" data-pvmv="${a.id}" title="${L("Déplacer")}" aria-hidden="true">${GRIP}</span><span class="pv-txt-rs" data-pvrs="${a.id}" title="${L("Agrandir ou rétrécir")}" aria-hidden="true"></span></div>`)}
   ov.querySelectorAll(".pv-txt textarea").forEach(pvGrow)}
-const pvGrow=t=>{t.style.height="auto";t.style.height=t.scrollHeight+"px"};
+const pvGrow=t=>{t.style.height="auto";const box=t.parentElement,h=box&&box.style.height?box.clientHeight:0;t.style.height=Math.max(t.scrollHeight,h)+"px"};
 function pvRefresh(){if(!pv.note||$("pdfv").hidden)return;if(!noteFind(pv.note)){pvClose();return}document.querySelectorAll("#pvBody .pv-page").forEach(pvOverlay)}
-const PV_HINT={text:"Touche la page à l'endroit où tu veux écrire.",hl:"Fais glisser ton doigt sur la zone à surligner.",read:""};
+const PV_HINT={text:"Touche la page à l'endroit où tu veux écrire. Tu restes en mode Texte jusqu'à ce que tu changes d'outil.",hl:"Fais glisser ton doigt (ou la souris) sur ce que tu veux surligner.",pen:"Écris ou dessine au doigt, au stylet ou à la souris.",erase:"Passe sur un trait, un surlignage ou une zone de texte pour l'effacer.",read:""};
 function pvTool(t){if(t==="notes"){const op=$("pvNotes").hidden;$("pvNotes").hidden=!op;document.querySelector('[data-pvt="notes"]').setAttribute("aria-pressed",op);if(op&&matchMedia("(min-width:900px)").matches)$("pvNoteTxt").focus();return}
   pv.tool=t;$("pdfv").dataset.tool=t;document.querySelectorAll("[data-pvt]").forEach(b=>{if(b.dataset.pvt!=="notes")b.setAttribute("aria-pressed",b.dataset.pvt===t)});
-  const h=$("pvHint");h.hidden=!PV_HINT[t];h.textContent=L(PV_HINT[t]||"")}
+  const h=$("pvHint");h.hidden=!PV_HINT[t];h.textContent=L(PV_HINT[t]||"");pvOpts()}
+// couleurs et épaisseur du surligneur et du stylo (gardées sur l'appareil)
+function pvOpts(){const o=$("pvOpts"),k=pv.tool==="hl"||pv.tool==="pen"?pv.tool:null;o.hidden=!k;if(!k)return;const st=pvPen(k);
+  o.innerHTML=`<div class="pv-sw" role="group" aria-label="${L("Couleur")}">${PV_COL[k].map(c=>`<button type="button" data-pvc="${c}" style="--sw:${c}" aria-pressed="${st.c===c}" aria-label="${L("Couleur")} ${c}"></button>`).join("")}</div>
+    <label class="pv-size"><span>${L("Épaisseur")}</span><input type="range" id="pvSize" min="1" max="10" step="1" value="${st.s}" aria-label="${L("Épaisseur")}"><i class="pv-dot" style="--d:${Math.round(pvW(k,st.s)*360)}px;--sw:${st.c}${k==="hl"?";opacity:.55":""}"></i></label>`}
+$("pvOpts").addEventListener("click",e=>{const b=e.target.closest("[data-pvc]");if(!b)return;const k=pv.tool;if(!PV_COL[k])return;pvPen(k).c=b.dataset.pvc;saveUI();pvOpts()});
+$("pvOpts").addEventListener("input",e=>{if(e.target.id!=="pvSize")return;const k=pv.tool;if(!PV_COL[k])return;pvPen(k).s=+e.target.value;saveUI();
+  const d=$("pvOpts").querySelector(".pv-dot");if(d)d.style.setProperty("--d",Math.round(pvW(k,+e.target.value)*360)+"px")});
 document.querySelector(".pv-tools").addEventListener("click",e=>{const b=e.target.closest("[data-pvt]");if(b)pvTool(b.dataset.pvt)});
 $("pvNotesClose").addEventListener("click",()=>pvTool("notes"));
 $("pvBack").addEventListener("click",pvClose);
@@ -2964,26 +3048,62 @@ let pvTxtT=null,pvTxtEl=null;
 function pvFlushTxt(){clearTimeout(pvTxtT);const el=pvTxtEl;pvTxtEl=null;if(!el)return;const a=PA().find(x=>x.id===el.closest("[data-ann]").dataset.ann);if(!a)return;
   const v=el.value.slice(0,2000);if(a.txt!==v){a.txt=v;a.upd=Date.now();save()}}
 $("pvBody").addEventListener("input",e=>{const ta=e.target.closest(".pv-txt textarea");if(!ta)return;pvGrow(ta);pvTxtEl=ta;clearTimeout(pvTxtT);pvTxtT=setTimeout(pvFlushTxt,500)});
+$("pvBody").addEventListener("focusin",e=>{const t=e.target.closest(".pv-txt");if(t)pvSelect(t.dataset.ann)});
 $("pvBody").addEventListener("focusout",e=>{const ta=e.target.closest(".pv-txt textarea");if(!ta)return;pvTxtEl=ta;pvFlushTxt();
   if(!ta.value.trim()){const id=ta.closest("[data-ann]").dataset.ann;setTimeout(()=>{if(document.activeElement===ta)return;const a=PA().find(x=>x.id===id);if(a&&!String(a.txt||"").trim()){tomb(id);data.pdfAnns=PA().filter(x=>x!==a);save();pvRefresh()}},150)}});
-function pvDel(id,msg){const a=PA().find(x=>x.id===id);if(!a)return;undoable(msg,[id],()=>{tomb(id);data.pdfAnns=PA().filter(x=>x!==a)},{after:pvRefresh})}
+function pvSelect(id){pv.sel=id||null;document.querySelectorAll("#pvBody .pv-txt").forEach(t=>t.classList.toggle("pv-on",t.dataset.ann===pv.sel))}
+function pvDel(id,msg){const a=PA().find(x=>x.id===id);if(!a)return;if(pv.sel===id)pv.sel=null;undoable(msg,[id],()=>{tomb(id);data.pdfAnns=PA().filter(x=>x!==a)},{after:pvRefresh})}
+const PV_DELMSG={text:"Texte supprimé",hl:"Surlignage supprimé",ink:"Trait supprimé"};
+// les poignées des zones de texte ne prennent pas le focus (sinon la zone se ferme avant le clic)
+$("pvBody").addEventListener("mousedown",e=>{if(e.target.closest(".pv-txt-x,.pv-txt-mv,.pv-txt-rs"))e.preventDefault()});
 $("pvBody").addEventListener("click",e=>{
   const d=e.target.closest("[data-pvdel]");if(d){pvDel(d.dataset.pvdel,"Texte supprimé");return}
-  const hl=e.target.closest(".pv-hl");if(hl&&pv.tool!=="hl"){openActions(L("Surlignage"),[{l:"Supprimer le surlignage",danger:true,fn:()=>pvDel(hl.dataset.ann,"Surlignage supprimé")}]);return}
+  if(e.target.closest(".pv-txt-mv,.pv-txt-rs"))return;
+  if(pv.tool==="read"){const hl=e.target.closest(".pv-hl,path[data-ann]");
+    if(hl){const a=PA().find(x=>x.id===hl.dataset.ann);if(!a)return;pv.sel=a.id;openActions(L(a.t==="hl"||a.hl?"Surlignage":"Trait"),[{l:a.t==="hl"||a.hl?"Supprimer le surlignage":"Supprimer le trait",danger:true,fn:()=>pvDel(a.id,PV_DELMSG[a.t==="ink"&&!a.hl?"ink":a.t==="ink"?"hl":a.t])}]);return}
+    if(!e.target.closest(".pv-txt"))pvSelect(null);return}
   if(pv.tool!=="text"||e.target.closest(".pv-txt"))return;const ov=e.target.closest(".pv-ov");if(!ov)return;
   const r=ov.getBoundingClientRect(),x=Math.min(.75,Math.max(0,(e.clientX-r.left)/r.width)),y=Math.min(.97,Math.max(0,(e.clientY-r.top)/r.height));
-  const a={id:uid(),note:pv.note,page:+ov.dataset.pg,t:"text",x,y,w:Math.min(.45,1-x),txt:"",upd:Date.now()};PA().push(a);save();pvOverlay(ov.closest(".pv-page"));
-  const ta=ov.querySelector(`[data-ann="${a.id}"] textarea`);if(ta)ta.focus();pvTool("read")});
-// surligneur : on fait glisser sur la page (la page ne défile pas pendant ce temps)
-$("pvBody").addEventListener("pointerdown",e=>{if(pv.tool!=="hl")return;const ov=e.target.closest(".pv-ov");if(!ov)return;e.preventDefault();
-  const r=ov.getBoundingClientRect(),p=ev=>[Math.min(1,Math.max(0,(ev.clientX-r.left)/r.width)),Math.min(1,Math.max(0,(ev.clientY-r.top)/r.height))],[x0,y0]=p(e);
-  const el=document.createElement("div");el.className="pv-hl pv-hl-draw";ov.appendChild(el);pv.draw={ov,el,x0,y0,p,x:x0,y:y0,w:0,h:0};try{ov.setPointerCapture(e.pointerId)}catch(_){}});
-$("pvBody").addEventListener("pointermove",e=>{const d=pv.draw;if(!d)return;const[x1,y1]=d.p(e);d.x=Math.min(d.x0,x1);d.y=Math.min(d.y0,y1);d.w=Math.abs(x1-d.x0);d.h=Math.abs(y1-d.y0);
-  Object.assign(d.el.style,{left:pct(d.x),top:pct(d.y),width:pct(d.w),height:pct(Math.max(d.h,.012))})});
-const pvDrawEnd=()=>{const d=pv.draw;if(!d)return;pv.draw=null;d.el.remove();if(d.w<.015)return;
-  PA().push({id:uid(),note:pv.note,page:+d.ov.dataset.pg,t:"hl",x:d.x,y:d.y,w:d.w,h:Math.max(d.h,.012),upd:Date.now()});save();pvOverlay(d.ov.closest(".pv-page"))};
+  const a={id:uid(),note:pv.note,page:+ov.dataset.pg,t:"text",x,y,w:Math.min(.45,1-x),txt:"",upd:Date.now()};PA().push(a);save();pv.sel=a.id;pvOverlay(ov.closest(".pv-page"));
+  const ta=ov.querySelector(`[data-ann="${a.id}"] textarea`);if(ta)ta.focus()}); // v45 : on reste en mode Texte
+// déplacer / redimensionner une zone de texte (poignées ⠿ et coin bas droit)
+$("pvBody").addEventListener("pointerdown",e=>{const h=e.target.closest("[data-pvmv],[data-pvrs]");if(!h)return;e.preventDefault();e.stopPropagation();
+  const box=h.closest(".pv-txt"),ov=box.closest(".pv-ov"),a=PA().find(x=>x.id===box.dataset.ann);if(!a)return;pvSelect(a.id);
+  const r=ov.getBoundingClientRect(),mv=!!h.dataset.pvmv,x0=e.clientX,y0=e.clientY,s={x:a.x,y:a.y,w:a.w||.4,h:a.h||box.offsetHeight/r.height};
+  try{h.setPointerCapture(e.pointerId)}catch(_){}
+  const move=ev=>{const dx=(ev.clientX-x0)/r.width,dy=(ev.clientY-y0)/r.height;
+    if(mv){a.x=Math.min(1-s.w,Math.max(0,s.x+dx));a.y=Math.min(.98,Math.max(0,s.y+dy));box.style.left=pct(a.x);box.style.top=pct(a.y)}
+    else{a.w=Math.min(1-a.x,Math.max(.08,s.w+dx));a.h=Math.min(1-a.y,Math.max(.025,s.h+dy));box.style.width=pct(a.w);box.style.height=pct(a.h);pvGrow(box.querySelector("textarea"))}};
+  const up=()=>{h.removeEventListener("pointermove",move);h.removeEventListener("pointerup",up);h.removeEventListener("pointercancel",up);a.upd=Date.now();save()};
+  h.addEventListener("pointermove",move);h.addEventListener("pointerup",up);h.addEventListener("pointercancel",up)},true);
+// stylo, surligneur (trait libre) et gomme : on glisse sur la page (elle ne défile pas pendant ce temps)
+const pvPt=(r,ev)=>[Math.min(1,Math.max(0,(ev.clientX-r.left)/r.width)),Math.min(1,Math.max(0,(ev.clientY-r.top)/r.height))];
+$("pvBody").addEventListener("pointerdown",e=>{if(!["hl","pen","erase"].includes(pv.tool)||e.target.closest(".pv-txt"))return;const ov=e.target.closest(".pv-ov");if(!ov)return;e.preventDefault();
+  const w=ov.closest(".pv-page"),r=ov.getBoundingClientRect(),rat=pvRatio(w);try{ov.setPointerCapture(e.pointerId)}catch(_){}
+  if(pv.tool==="erase"){pv.draw={erase:true,ov,r,rat,hit:new Set()};pvErase(e);return}
+  const k=pv.tool,st=pvPen(k),svg=ov.querySelector("svg.pv-ink"),el=document.createElementNS("http://www.w3.org/2000/svg","path");
+  el.setAttribute("class",k==="hl"?"ink-hl":"ink-pen");el.setAttribute("stroke",st.c);el.setAttribute("stroke-width",(pvW(k,st.s)*1000).toFixed(1));svg.appendChild(el);
+  pv.draw={ov,r,rat,el,k,c:st.c,w:pvW(k,st.s),pts:[pvPt(r,e)]};el.setAttribute("d",pvPath(pv.draw.pts,rat))});
+function pvErase(ev){const d=pv.draw,[x,y]=pvPt(d.r,ev),pg=+d.ov.dataset.pg,rad=.018;
+  for(const a of pvAnns(pv.note,pg)){if(d.hit.has(a.id))continue;let hit=false;
+    if(a.t==="ink")hit=(a.pts||[]).some(p=>Math.hypot(p[0]-x,(p[1]-y)*d.rat)<rad+(a.w||0)/2);
+    else if(a.t==="hl")hit=x>=a.x-rad&&x<=a.x+a.w+rad&&y>=a.y-rad&&y<=a.y+a.h+rad;
+    else if(a.t==="text"){const el=d.ov.querySelector(`.pv-txt[data-ann="${a.id}"]`),hh=el?el.offsetHeight/d.r.height:(a.h||.04);hit=x>=a.x&&x<=a.x+(a.w||.4)&&y>=a.y&&y<=a.y+hh}
+    if(hit){d.hit.add(a.id);d.ov.querySelectorAll(`[data-ann="${a.id}"]`).forEach(el=>el.classList.add("pv-gone"))}}}
+$("pvBody").addEventListener("pointermove",e=>{const d=pv.draw;if(!d)return;if(d.erase){pvErase(e);return}
+  const p=pvPt(d.r,e),l=d.pts[d.pts.length-1];if(Math.hypot(p[0]-l[0],(p[1]-l[1])*d.rat)<.003)return;d.pts.push(p);d.el.setAttribute("d",pvPath(d.pts,d.rat))});
+const pvDrawEnd=()=>{const d=pv.draw;if(!d)return;pv.draw=null;
+  if(d.erase){const ids=[...d.hit];if(!ids.length)return;const gone=PA().filter(a=>ids.includes(a.id));
+    undoable(ids.length>1?"Éléments effacés":"Élément effacé",ids,()=>{ids.forEach(tomb);data.pdfAnns=PA().filter(a=>!gone.includes(a))},{after:pvRefresh});return}
+  d.el.remove();if(d.pts.length>1200)d.pts=d.pts.filter((_,i)=>i%2===0);
+  const r4=v=>Math.round(v*10000)/10000;
+  PA().push({id:uid(),note:pv.note,page:+d.ov.dataset.pg,t:"ink",hl:d.k==="hl",c:d.c,w:r4(d.w),pts:d.pts.map(p=>[r4(p[0]),r4(p[1])]),upd:Date.now()});save();pvOverlay(d.ov.closest(".pv-page"))};
 $("pvBody").addEventListener("pointerup",pvDrawEnd);$("pvBody").addEventListener("pointercancel",pvDrawEnd);
-addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("pdfv").hidden&&$("actSheet").hidden&&!e.target.closest(".pv-txt"))pvClose()});
+// clavier : Échap ferme ; Suppr / Retour arrière efface la zone de texte sélectionnée (vide ou pas en cours d'écriture)
+addEventListener("keydown",e=>{if($("pdfv").hidden||!$("actSheet").hidden)return;
+  if(e.key==="Escape"&&!e.target.closest(".pv-txt")){pvClose();return}
+  if((e.key==="Delete"||e.key==="Backspace")&&pv.sel){const ta=e.target.closest&&e.target.closest(".pv-txt textarea");
+    if(ta&&ta.value)return;e.preventDefault();const id=pv.sel,a=PA().find(x=>x.id===id);if(!a)return;if(ta)ta.blur();pvDel(id,PV_DELMSG[a.t==="ink"&&a.hl?"hl":a.t])}});
 $("notePhotos").addEventListener("click",async e=>{const b=e.target.closest("[data-np]");if(!b)return;const u=await npGet(b.dataset.np);if(!u)return;
   lbCur=b.dataset.np;$("lbImg").src=u;$("lightbox").hidden=false;const d=$("lbDel");d.classList.remove("armed");d.textContent=L("Supprimer la photo")});
 $("lbClose").addEventListener("click",()=>{$("lightbox").hidden=true;lbCur=null});
@@ -3128,7 +3248,7 @@ function aiRender(){const b=$("aiBody"),ai=aiCur()||AIS.claude;aiStop();
       <div class="ai-acts"><a class="btn" href="https://claude.ai/login" target="_blank" rel="noopener">${L("Créer mon compte Claude")}</a><button type="button" class="btn ghost" data-aistep="setup">${L("C'est fait, continuer")}</button></div>`;return}
   if(aiW.step==="setup"){$("aiTitle").textContent=ai.name;
     b.innerHTML=`<div class="ai-step"><b>${L("Tout est prêt")}</b><div class="small muted">${L("Touche le bouton : Claude s'ouvre avec Sid'note déjà rempli. Là-bas, touche simplement « Ajouter », puis reviens ici.")}</div>
-        ${aiW.url?`<a class="btn" href="${esc(ai.add(aiW.url))}" target="_blank" rel="noopener" style="width:100%;margin-top:10px" data-aiadd="1">${L("Ajouter Sid'home à")} ${esc(ai.name)}</a>`:`<button type="button" class="btn" disabled style="width:100%;margin-top:10px">${L("Préparation…")}</button>`}
+        ${aiW.url?`<a class="btn" href="${esc(ai.add(aiW.url))}" target="_blank" rel="noopener" style="width:100%;margin-top:10px" data-aiadd="1">${L("Ajouter Sid'compagnon à")} ${esc(ai.name)}</a>`:`<button type="button" class="btn" disabled style="width:100%;margin-top:10px">${L("Préparation…")}</button>`}
         <div class="small muted" style="margin-top:8px">${L("Si Claude te demande de te connecter, fais-le : la fenêtre s'ouvrira ensuite toute seule.")}</div></div>
       <details class="ai-more"><summary class="small">${L("Voir mon adresse (si besoin)")}</summary><div class="mcp-url notr" id="aiUrl">${aiW.url?esc(aiW.url):L("Création…")}</div>
         <button type="button" class="btn ghost" data-aicopy="1" style="width:100%;margin-top:8px">${L("Copier l'adresse")}</button></details>
@@ -3397,13 +3517,13 @@ $("phForgot").addEventListener("click",async()=>{if(!phRes||!phOn())return;const
     if(!b.dataset.armed){b.dataset.armed="1";phFail("La récupération par le mot de passe du compte n'était pas activée : sans ta phrase, tes coffres ne peuvent pas être rouverts.");
       b.textContent=L("Tout effacer et recommencer ? Touche encore pour confirmer");return}
     phEnd(null);vaultsReset();return}
-  let ph=null;await askAccountPw("Phrase oubliée","Entre le mot de passe de ton compte Sid'home pour retrouver ta phrase secrète.",
+  let ph=null;await askAccountPw("Phrase oubliée","Entre le mot de passe de ton compte Sid'compagnon pour retrouver ta phrase secrète.",
     async pw=>{try{ph=(await decJ(await pinKey(pw,x.rec.salt,PIN_ITER),x.rec)).ph;return ph?null:"Mot de passe incorrect."}catch(e){return "Mot de passe incorrect."}});
   if(!ph)return;
   try{const mk=await phCheck(ph);phMem=mk;toast(`${L("Ta phrase secrète est")} « ${ph} »`,8000);phEnd({mk,ph})}catch(e){phFail("Phrase incorrecte.")}});
 // récupération de la phrase grâce au mot de passe du compte (proposée quand la phrase est choisie)
 async function phRecOffer(ph){if(!data.phx||data.phx.rec||isTrial())return;
-  const pw=await askAccountPw("Ne perds jamais ta phrase","Entre le mot de passe de ton compte Sid'home : si tu oublies ta phrase secrète un jour, ce mot de passe suffira pour la retrouver.",
+  const pw=await askAccountPw("Ne perds jamais ta phrase","Entre le mot de passe de ton compte Sid'compagnon : si tu oublies ta phrase secrète un jour, ce mot de passe suffira pour la retrouver.",
     async pw=>{try{await api("/auth/v1/token?grant_type=password",{method:"POST",body:{email:accEmail(),password:pw}});return null}
       catch(ex){return ex instanceof TypeError?"Pas de connexion internet. Réessaie quand tu es connecté.":"Mot de passe incorrect."}},"Plus tard");
   if(!pw||!data.phx)return;const salt=rnd(16);
@@ -3611,15 +3731,15 @@ function applyLook(){
   // v42 : direction « Éditorial de précision » : clair ivoire ou graphite ; les anciennes ambiances ne sont plus appliquées (le choix reste dans les données)
   const pal=PALETTES[p.palette||look.palette]?(p.palette||look.palette):"or";
   document.documentElement.removeAttribute("data-palette");document.documentElement.dataset.ds="edito";
-  // v43 : clair par défaut pour tout le monde ; seul un choix fait par la personne (prefs.theme) est gardé
-  const theme=p.theme||(session?"light":look.theme)||"light";
+  // v45 : sombre par défaut pour tout le monde (avant : clair) ; seul un choix fait par la personne (prefs.theme) est gardé
+  const theme=p.theme||(session?"dark":look.theme)||"dark";
   if(theme==="auto")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",theme);
   const dark=theme==="dark"||(theme==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);
   document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content",dark?"#111214":"#F4F0E8"));
   ls.set("sidnote-look",{theme,palette:pal}); // pour l'écran de connexion
 }
 function renderLook(){
-  const th=data.prefs.theme||"light",dark=document.documentElement.dataset.theme==="dark"||(!document.documentElement.dataset.theme&&matchMedia("(prefers-color-scheme: dark)").matches);
+  const th=data.prefs.theme||"dark",dark=document.documentElement.dataset.theme==="dark"||(!document.documentElement.dataset.theme&&matchMedia("(prefers-color-scheme: dark)").matches);
   document.querySelectorAll("#themeSel button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.theme===th));
   const pal=data.prefs.palette||"or";
   $("palSel").innerHTML=Object.entries(PALETTES).map(([k,a])=>`<button type="button" class="pal" data-pal="${k}" aria-pressed="${k===pal}"><span class="pal-dot" style="--pa:${dark?a[3]:a[1]};--pb:${dark?a[4]:a[2]}">${k===pal?CHECK:""}</span><span class="pal-n">${L(a[0])}</span></button>`).join("");
@@ -4026,7 +4146,7 @@ $("nuPhoto").addEventListener("change",async e=>{const f=e.target.files[0];e.tar
 $("nuPhotoPrev").addEventListener("click",e=>{if(e.target.closest("[data-nuphrm]")){nuPhotoDrop(nuPhoto);nuPhoto=null;$("nuPhotoPrev").hidden=true;$("nuPhotoPrev").innerHTML="";nuAskLbl()}});
 // envoi direct : Claude s'ouvre avec le message ; la fenêtre est ouverte pendant le toucher (sinon le navigateur la bloque)
 // Sur iPhone (app installée), un lien vers Claude ouvre une petite fenêtre de navigateur qui passe la main à l'app Claude,
-// puis reste vide derrière : on la garde sous la main et on la ferme dès que la personne revient dans Sid'home
+// puis reste vide derrière : on la garde sous la main et on la ferme dès que la personne revient dans Sid'compagnon
 let extWin=null;
 function extOpen(u){
   // app installée sur iPhone : on ouvre directement l'app Claude (adresse claude://…), sans fenêtre de navigateur qui resterait blanche ;
@@ -4501,7 +4621,7 @@ const ONB_DESC={
   nutri:"Tes calories et tes macros du jour, et des menus faits pour toi.",
   muscu:"Tes séances et tes programmes, tes charges et tes répétitions, avec la progression d'une fois à l'autre.",
   docs:"Range tes PDF, scanne des feuilles avec l'appareil photo et retrouve-les en un instant.",
-  app:"Les étapes pour installer Sid'home sur ton écran d'accueil."};
+  app:"Les étapes pour installer Sid'compagnon sur ton écran d'accueil."};
 let onbSel={};
 const ONB_GROUP={orga:["agenda","Organise tes journées","Ton agenda, tes tâches du jour et un minuteur de concentration."],
   sport:["fit","Bouge et mange bien","Ton programme de musculation, ta nutrition et tes progrès en graphiques."],
@@ -4529,7 +4649,7 @@ function onbGoTo(i){const sl=onbSlides();onbI=Math.max(0,Math.min(sl.length-1,i)
 $("onbTrack").addEventListener("scroll",()=>{if($("onbTrack").scrollLeft)$("onbTrack").scrollLeft=0});
 $("onbNext").addEventListener("click",()=>onbGoTo(onbIdx()+1));$("onbPrev").addEventListener("click",()=>onbGoTo(onbIdx()-1));
 // thème appliqué tout de suite
-function onbLook(){const th=data.prefs.theme||"light";document.querySelectorAll("#onbTheme button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.otheme===th));
+function onbLook(){const th=data.prefs.theme||"dark";document.querySelectorAll("#onbTheme button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.otheme===th));
   // v36 : les couleurs (ambiances) se choisissent aussi ici
   const pal=data.prefs.palette||"or",dark=document.documentElement.dataset.theme==="dark"||(!document.documentElement.dataset.theme&&matchMedia("(prefers-color-scheme: dark)").matches);
   $("onbPal").innerHTML=Object.entries(PALETTES).map(([k,a])=>`<button type="button" class="pal" data-opal="${k}" aria-pressed="${k===pal}"><span class="pal-dot" style="--pa:${dark?a[3]:a[1]};--pb:${dark?a[4]:a[2]}">${k===pal?CHECK:""}</span><span class="pal-n">${L(a[0])}</span></button>`).join("")}
@@ -4547,7 +4667,7 @@ function onbFinish(){
   if(!Object.values(onbSel).some(Boolean)){toast("Garde au moins un onglet");return}
   Object.assign(data.prefs.tabs,onbSel);data.prefs.onboarded=true;delete data.prefs.onbPending;save();
   $("onb").hidden=true;document.body.style.overflow="";applyTabs();renderHomeSel();
-  show("home");toast("Bienvenue sur Sid'home");
+  show("home");toast("Bienvenue sur Sid'compagnon");
 }
 $("onbGo").addEventListener("click",onbFinish);$("onbSkip").addEventListener("click",onbFinish);
 $("replayOnb").addEventListener("click",openOnb);
@@ -4557,7 +4677,7 @@ function maybeAskNotif(){if(!session||isTrial()||data.ui.notifAsked||!$("onb").h
   const can=pushOK();if(can&&(Notification.permission!=="default"))return;
   if(!can&&!(isIOS&&!standalone()))return; // navigateur sans notifications : rien à proposer
   $("naTitle").textContent=L("Ne rate plus rien");
-  $("naText").textContent=L(can?"Active les notifications : Sid'home te prévient avant tes rendez-vous, tes cours et tes échéances. Tu choisis quand, dans Agenda ou Réglages."
+  $("naText").textContent=L(can?"Active les notifications : Sid'compagnon te prévient avant tes rendez-vous, tes cours et tes échéances. Tu choisis quand, dans Agenda ou Réglages."
     :"Pour recevoir des rappels avant tes rendez-vous et tes cours, installe d'abord Sid'note sur ton écran d'accueil, puis ouvre-le depuis son icône.");
   $("naYes").textContent=L(can?"Activer les notifications":"Voir comment l'installer");$("notifAsk").hidden=false}
 const naDone=()=>{data.ui.notifAsked=Date.now();saveUI();$("notifAsk").hidden=true};
@@ -4624,7 +4744,7 @@ if(ephExpired){
   // anciens utilisateurs : pas de présentation, ils connaissent déjà l'app
   if(!data.prefs.onboarded&&(data.todos.length||data.tasks.length||(data.muscu&&data.muscu.sessions.length)||(data.pomo&&Object.keys(data.pomo.log||{}).length))){data.prefs.onboarded=true;save()}
   renderAccount();
-  icalLoadCache();$("icalUrl").value=(data.prefs&&data.prefs.ical)||"";
+  icalLoadCache();renderCals();
   renderAll();applyTabs();icalState();icalFetch(false);renderHomeSel();
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)icalFetch(false)});
   // v32 : page d'ouverture choisie dans Réglages (« Aujourd'hui » par défaut, ou la dernière page ouverte)
@@ -4649,7 +4769,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v44-8";
+const BUILD="sidnote-v45";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

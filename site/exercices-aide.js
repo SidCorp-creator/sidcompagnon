@@ -1134,3 +1134,47 @@ window.SIDFIT_AIDE = {
   ]
  }
 };
+
+// v45 : photo de chaque exercice (position de départ et d'arrivée) : site/exercices/<nom>-0.jpg et -1.jpg, 480 px.
+// Source : Free Exercise DB (github.com/yuhonas/free-exercise-db), domaine public (Unlicense). Clé = nom exact de l'exercice.
+window.SIDFIT_IMG = {
+ "Développé couché haltères": "dumbbell-bench-press",
+ "Chest press machine": "leverage-chest-press",
+ "Développé incliné à la Smith": "smith-machine-incline-bench-press",
+ "Pec deck": "butterfly",
+ "Dips lestés": "dips-chest-version",
+ "Tractions pronation lestées": "weighted-pull-ups",
+ "Tractions prise neutre": "v-bar-pullup",
+ "Tractions prise large": "pullups",
+ "Pull-over à la poulie": "straight-arm-pulldown",
+ "Rowing avec appui": "dumbbell-incline-row",
+ "Tirage poulie basse assis": "seated-cable-rows",
+ "Rowing machine convergente": "leverage-iso-row",
+ "T-bar avec appui poitrine": "lying-t-bar-row",
+ "Shrugs haltères ou machine": "dumbbell-shrug",
+ "Shoulder press à la Smith": "smith-machine-overhead-shoulder-press",
+ "Élévations latérales poulie": "cable-seated-lateral-raise",
+ "Élévations latérales haltères": "side-lateral-raise",
+ "Élévations latérales machine": "side-lateral-raise",
+ "Face pull": "face-pull",
+ "Reverse pec deck": "reverse-machine-flyes",
+ "Oiseau à la poulie": "cable-rear-delt-fly",
+ "Curl barre EZ": "ez-bar-curl",
+ "Curl incliné haltères": "incline-dumbbell-curl",
+ "Curl marteau": "hammer-curls",
+ "Curl poulie": "standing-biceps-cable-curl",
+ "Extension au-dessus de la tête à la poulie": "cable-rope-overhead-triceps-extension",
+ "Extension poulie haute à la corde": "triceps-pushdown-rope-attachment",
+ "Presse à cuisses amplitude limitée": "leg-press",
+ "Leg extension charge modérée": "leg-extensions",
+ "Hack squat amplitude limitée": "hack-squat",
+ "Hip thrust machine": "barbell-hip-thrust",
+ "Abduction hanche machine": "thigh-abductor",
+ "Leg curl assis": "seated-leg-curl",
+ "Leg curl allongé": "lying-leg-curls",
+ "Adduction machine": "thigh-adductor",
+ "Mollets assis": "seated-calf-raise",
+ "Mollets debout machine": "standing-calf-raises",
+ "Mollets à la presse": "calf-press-on-the-leg-press-machine",
+ "Crunch à la poulie": "cable-crunch"
+};

@@ -1,4 +1,4 @@
-/* Sid'home v42 · direction « Éditorial de précision » (validée par Sid le 22 oct. 2026)
+/* Sid'compagnon v42 · direction « Éditorial de précision » (validée par Sid le 22 oct. 2026)
    Une seule famille pour sid'agenda, sid'fit et sid'note : seul l'accent change (attribut data-app sur <html>).
    Ivoire en clair, graphite en sombre. Polices : Fraunces (titres), Inter Tight (interface), IBM Plex Mono (chiffres, heures).
    Règles : un accent par écran, pas d'ombre ni de dégradé, coins de 4 à 8 px, filets fins, graisses 300 à 500.
@@ -330,7 +330,7 @@ html[data-ds] nav .tab[aria-current="page"],html[data-ds] nav .tab[aria-current=
 html[data-ds] nav .tab .sbadge{position:absolute;top:2px;left:calc(50% + 8px)}
 html[data-ds] body:not(.has-nav) main{padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}
 
-/* ---------- en-tête d'une app : logo + nom, retour à Sid'home ---------- */
+/* ---------- en-tête d'une app : logo + nom, retour à Sid'compagnon ---------- */
 html[data-ds] .vhead:not([hidden]){display:flex!important;align-items:center;justify-content:space-between;gap:12px;min-height:36px;margin:4px 0 0;background:none;border:0;padding:0}
 html[data-ds] .ah-brand{display:flex;align-items:center;gap:8px}
 html[data-ds] .ah-logo{width:22px;height:22px;color:var(--app)}
@@ -344,7 +344,7 @@ html[data-ds] .ah-home svg{width:18px;height:18px;stroke-width:1.5}
 [data-gapp="perso"],.sp-apps [data-app="note"],.onb-logo[data-app="note"],.side-h[data-app="note"] .logo{color:var(--c-note)}
 .home-app span{color:var(--ink)}
 
-/* ---------- Sid'home : les 3 applications ---------- */
+/* ---------- Sid'compagnon : les 3 applications ---------- */
 html[data-ds] #v-home .home-hello{font-family:var(--display);font-weight:300;font-size:40px}
 .home-apps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:22px 0 8px;padding:18px 0;border-top:var(--rule) solid var(--line);border-bottom:var(--rule) solid var(--line)}
 .home-app{display:flex;flex-direction:column;align-items:center;gap:10px;border:0;background:none;padding:6px 0;cursor:pointer;font:400 14px var(--font);transition:opacity .15s var(--ease)}
@@ -587,7 +587,7 @@ html[data-ds] .onb[data-app] .onb-dots i.on{background:var(--app)}
 .it-stack span{position:absolute;inset:0;border:1.5px solid var(--app);border-radius:4px;background:var(--bg);opacity:0;transform:translate(var(--x),-30px) rotate(var(--r));animation:aiSheet .4s ease-out forwards}
 .it-stack span:last-child{background:var(--app)}
 @keyframes aiSheet{to{opacity:1;transform:translate(calc(var(--x) / 3),0) rotate(var(--r))}}
-/* v44.4 : sortie d'une app (retour à Sid'home) */
+/* v44.4 : sortie d'une app (retour à Sid'compagnon) */
 .app-outro{position:fixed;inset:0;z-index:190;display:grid;place-content:center;background:var(--bg);pointer-events:none}
 .ao-brand{display:flex;flex-direction:column;align-items:center;gap:14px}
 .ao-logo{width:72px;height:72px;display:block;transform-origin:center}
@@ -772,7 +772,7 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area
 /* ---- v44.7 : la dernière ligne de chaque page n'est plus cachée par la barre du bas (--navh = sa hauteur réelle, posée par navPad) ---- */
 html[data-ds] body main{padding-bottom:max(calc(var(--navh,0px) + 32px),calc(32px + env(safe-area-inset-bottom,0px)))!important}
 
-/* ---- v44.7 : Sid'home, 3 grandes cartes (une par app) ---- */
+/* ---- v44.7 : Sid'compagnon, 3 grandes cartes (une par app) ---- */
 .hc-list{display:grid;gap:14px;margin-top:18px}
 @media (min-width:900px){.hc-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}}
 .hc{--app:var(--c-agenda);display:flex;flex-direction:column;align-items:stretch;gap:10px;text-align:left;width:100%;padding:20px 20px 18px;border:var(--rule,1px) solid var(--line);border-top:3px solid var(--app);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit;cursor:pointer;touch-action:manipulation;transition:border-color .15s var(--ease,ease),transform .15s var(--ease,ease)}
@@ -841,3 +841,62 @@ html[data-ds] .pdfv input.pv-title{border:0!important;background:transparent!imp
 .exh .exh-steps{margin:0;padding-left:22px;line-height:1.5}
 .exh .exh-steps li{margin:0 0 8px}
 .exh .exh-err{padding:10px 12px;border-left:3px solid var(--app,var(--accent));background:var(--app-soft,transparent);border-radius:4px}
+/* v45 : calendriers reliés superposés */
+.cal-list{display:grid;gap:0}
+.cal-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:var(--rule,1px) solid var(--line)}
+.cal-row:last-child{border-bottom:0}
+.cal-row.off .cal-main{opacity:.5}
+.cal-dot{flex:none;width:22px;height:22px;min-width:22px;border-radius:50%;padding:0;border:2px solid var(--card,transparent);background:var(--c);box-shadow:0 0 0 1px var(--line)}
+.cal-main{display:flex;flex-direction:column;min-width:0}
+.cal-main b{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cal-err{color:var(--bad,#C0392B)}
+.cal-help summary{cursor:pointer;font-size:14px;color:var(--app,var(--accent));padding:4px 0}
+.cal-help ul{margin:6px 0;padding-left:18px;line-height:1.5}
+.cal-help li{margin-bottom:6px}
+.cal-help input{margin-top:8px}
+.cal-legend{margin:2px 0 8px}
+.cal-legend .cal-pill[aria-pressed="false"]{opacity:.45}
+.cal-legend .cal-pill[aria-pressed="false"] .dot{background:transparent!important;box-shadow:inset 0 0 0 1.5px var(--muted)}
+/* v45 : photos de l'exercice (départ / arrivée) dans la fiche « ? » */
+.exh-pics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:2px 0 6px}
+.exh-pics figure{margin:0}
+.exh-pics img{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;border-radius:6px;background:var(--line)}
+.exh-pics figcaption{font-size:12px;color:var(--muted);margin-top:4px;text-align:center}
+.exh .exh-src{margin-top:14px;font-size:12px}
+/* v45 : « Série 1 sur toutes » à côté de « + Ajouter une série » */
+.ex3 .set-acts{display:flex;flex-wrap:wrap;gap:8px;margin-left:26px}
+.ex3 .set-acts .set-add{margin-left:0}
+@media (max-width:380px){.ex3 .set-acts{margin-left:0}}
+/* v45 : annotation des PDF : traits libres (stylo, surligneur), gomme, zones de texte déplaçables et redimensionnables */
+.pv-ink{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.pv-ink path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.pv-ink path.ink-hl{stroke-opacity:.42;mix-blend-mode:multiply;stroke-linecap:butt}
+.pdfv[data-tool="read"] .pv-ink path{pointer-events:stroke;cursor:pointer}
+.pdfv[data-tool="pen"] .pv-ov,.pdfv[data-tool="erase"] .pv-ov{pointer-events:auto;touch-action:none}
+.pdfv[data-tool="pen"] .pv-ov{cursor:crosshair}
+.pdfv[data-tool="erase"] .pv-ov{cursor:cell}
+.pdfv[data-tool="erase"] .pv-hl,.pdfv[data-tool="pen"] .pv-hl{pointer-events:none}
+.pv-gone{opacity:.15!important}
+.pv-tools button[data-pvt="pen"][aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.pv-tools button[data-pvt="erase"][aria-pressed="true"]{background:#C0392B;color:#fff;border-color:#C0392B}
+.pv-opts{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:8px 12px;border-bottom:var(--rule,1px) solid var(--line);background:var(--surface)}
+.pv-opts[hidden]{display:none!important}
+.pv-sw{display:flex;gap:8px}
+.pv-sw button{width:30px;height:30px;min-width:30px;border-radius:50%;padding:0;border:2px solid var(--bg);background:var(--sw);box-shadow:0 0 0 1px var(--line);cursor:pointer;touch-action:manipulation}
+.pv-sw button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ink)}
+.pv-size{display:flex;align-items:center;gap:10px;font:400 13px var(--font);color:var(--muted)}
+.pv-size input[type=range]{width:130px;min-height:0;height:24px;padding:0;border:0;background:transparent;accent-color:var(--ink)}
+.pv-dot{display:inline-block;width:var(--d);height:var(--d);min-width:3px;min-height:3px;max-width:26px;max-height:26px;border-radius:50%;background:var(--sw)}
+/* zone de texte : × (supprimer), ⠿ (déplacer), coin (agrandir / rétrécir), visibles quand elle est choisie ou en mode Texte */
+.pv-txt textarea{min-height:100%;box-sizing:border-box}
+.pv-txt-mv,.pv-txt-rs{position:absolute;display:none;touch-action:none;z-index:3}
+.pv-txt-mv{top:-12px;left:-12px;width:24px;height:24px;border-radius:50%;background:#1C1A17;color:#fff;align-items:center;justify-content:center;cursor:move}
+.pv-txt-mv svg{width:9px;height:12px}
+.pv-txt-rs{right:-9px;bottom:-9px;width:18px;height:18px;border-radius:50%;background:#1C1A17;cursor:nwse-resize}
+.pv-txt-rs::after{content:"";position:absolute;inset:5px;border-right:2px solid #fff;border-bottom:2px solid #fff}
+.pv-txt.pv-on .pv-txt-x,.pdfv[data-tool="text"] .pv-txt .pv-txt-x,.pv-txt:hover .pv-txt-x{display:block}
+.pv-txt.pv-on .pv-txt-mv,.pdfv[data-tool="text"] .pv-txt .pv-txt-mv,.pv-txt:hover .pv-txt-mv,.pv-txt:focus-within .pv-txt-mv{display:flex}
+.pv-txt.pv-on .pv-txt-rs,.pdfv[data-tool="text"] .pv-txt .pv-txt-rs,.pv-txt:hover .pv-txt-rs,.pv-txt:focus-within .pv-txt-rs{display:block}
+.pv-txt.pv-on textarea{border-style:solid!important;border-color:#2F4A3A!important}
+@media (pointer:coarse){.pv-txt-x,.pv-txt-mv{width:30px!important;height:30px!important;top:-15px!important}.pv-txt-x{right:-15px!important;line-height:30px!important}.pv-txt-mv{left:-15px!important}.pv-txt-rs{width:28px;height:28px;right:-14px;bottom:-14px}.pv-txt-rs::after{inset:8px}}
+.cal-help li span{display:block}

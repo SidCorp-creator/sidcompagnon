@@ -1,4 +1,4 @@
-# Sid'home (SidCorp) — application personnelle. Les données des personnes sont derrière un compte et ne sont jamais publiques.
+# Sid'compagnon (SidCorp) — application personnelle. Les données des personnes sont derrière un compte et ne sont jamais publiques.
 # Pages publiques : l'accueil et les pages légales. Les agents IA peuvent les lire.
 User-agent: *
 Allow: /$

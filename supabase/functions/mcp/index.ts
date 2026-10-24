@@ -446,7 +446,7 @@ const TOOLS = [
     },
   },
 ];
-// v12 : chaque outil porte le logo de son app (sid'agenda, sid'fit, sid'note), le connecteur « Sid'note » le logo note
+// v12 : chaque outil porte le logo de son app (sid'agenda, sid'fit, sid'note), le connecteur lui-même le logo Sid'compagnon (choix de Sid)
 // (champ « icons » du protocole MCP ; une IA qui ne le connaît pas l'ignore). Images servies par le site.
 const ICON = (app: string) => [
   { src: `https://sidcompagnon.com/icons/${app}-128.png`, mimeType: "image/png", sizes: ["128x128"] },
@@ -864,7 +864,7 @@ Deno.serve(async (req) => {
       return rpcOk(id, {
         protocolVersion: params?.protocolVersion || "2025-06-18",
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "sidnote", title: "Sid'note", version: "1.6.0", icons: ICON("note"), websiteUrl: "https://sidcompagnon.com" },
+        serverInfo: { name: "sidnote", title: "Sid'note", version: "1.6.0", icons: ICON("home"), websiteUrl: "https://sidcompagnon.com" },
         instructions: "Sid'note est l'application d'organisation de la personne (agenda, cours, tâches, notes, nutrition, musculation). Dates en AAAA-MM-JJ, heure de Bruxelles. Quand la personne demande un rappel pour une activité (ex. 1 h avant), passe-le dans reminders (en minutes) avec ajouter_activite ou modifier_activite : c'est une notification sur son téléphone. Quand la personne dit ce qu'elle a mangé ou envoie la photo de son assiette (si elle parle d'une photo envoyée depuis Sid'note, elle est jointe à nutrition_journee, ou lis-la avec photo_repas), estime toi-même calories et macros puis note-le avec noter_repas (sans redemander, sauf doute sur la quantité). Pour un menu, lis d'abord nutrition_journee puis enregistre-le avec enregistrer_menu. Après un bilan ou un commentaire nutrition (jour ou semaine), enregistre-le avec enregistrer_commentaire pour qu'il s'affiche dans l'app. Quand la personne parle d'une chose à faire un jour précis, ajoute la tâche avec sa date (ajouter_tache) : elle apparaîtra ce jour-là dans son agenda et passera au lendemain si elle n'est pas faite. Pour une note, propose un dossier (folder) si c'est utile ; pour corriger, compléter ou remettre au propre une note qui existe déjà, utilise modifier_note (ne crée pas de doublon). Pour la musculation, lis muscu_programme avant d'ajuster, puis enregistre avec enregistrer_programme ; une séance racontée se note avec noter_seance. Les mots de passe, documents et notes secrètes sont chiffrés et jamais accessibles.",
       });
     case "ping":

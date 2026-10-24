@@ -1,4 +1,4 @@
-# Sid'note
+# Sid'compagnon
 
 PWA personnelle (planning, à faire, Pomodoro, musculation, documents) de Mohamed « Sid » Sidki — SidCorp.
 

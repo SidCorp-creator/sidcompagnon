@@ -260,7 +260,7 @@ assets/               ← logo
   - **Micro des notes** : le bouton micro à côté du titre est retiré (`micFor` ne vise plus `noteTitle`) ; le micro de l'en-tête (`#noteMic`) écrit dans le texte. Bug corrigé : il gardait `e.currentTarget` (vide après le clic) → le repère `.dict-tmp` était retiré au bout de 0,5 s et la suite de la dictée se perdait.
   - **Supprimer une note depuis la liste** : « ⋯ » sur chaque note (`data-nmore`, `noteActions` : ranger dans un dossier, supprimer annulable via `noteRemove`, aussi pour une note secrète verrouillée).
   - Connecteur `mcp` **v11** (« 1.5.0 », déployé le 24 oct. 2026) : outil `modifier_note` (note = id ou titre ; `title`, `body` remplace tout, `append` ajoute à la fin en gardant la mise en forme, `folder` range, « / » = hors dossier ; photos gardées, jamais les notes secrètes). Claude.ai garde l'ancienne liste d'outils : il faut une nouvelle conversation (ou reconnecter Sid'note) pour qu'il voie l'outil.
-  - **Pas encore mis en ligne** (Sid veut une seule mise en ligne avec ses prochains ajouts).
+  - Mise en ligne le 24 oct. 2026 (site vérifié : version 44.7, icônes et fiches servies correctement).
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

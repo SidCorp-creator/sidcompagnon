@@ -1046,6 +1046,17 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(!(await pg.evaluate(()=>icalEvents.some(e=>e.cat==="Travail"))))err("réafficher un calendrier ne marche pas");
     // ancien format (un seul lien) : repris comme 1er calendrier
     if(await pg.evaluate(()=>{const p=data.prefs;const keep=p.icals;delete p.icals;p.ical="https://ancien.test/a.ics";const l=CALS();const ok=l.length===1&&l[0].url==="https://ancien.test/a.ics";p.icals=keep;p.ical=keep[0].url;return !ok}))err("ancien lien iCal pas repris");
+    // v45.3 : ajouter une activité en la disant à Claude (comme Nutrition) ; la recherche est derrière la loupe
+    await pg.evaluate(()=>{show("plan");window.scrollTo(0,0)});await pg.waitForTimeout(200);
+    if(await pg.isVisible("#planSearch"))err("la recherche est encore affichée d'office dans l'agenda");
+    await pg.fill("#plAsk","Dentiste jeudi à 14h, type Santé");await shot(pg,"v45-"+nm+"-agenda-claude");await pg.click("#plAskBtn");await pg.waitForTimeout(300);
+    if(!(await pg.isVisible("#aiAskSheet")))err("« Ajouter avec Claude » n'ouvre pas la fenêtre vers Claude");
+    {const pr=await pg.textContent("#aaPrompt");if(!pr.includes("Dentiste jeudi à 14h")||!pr.includes("ajouter_activite"))err("message pour Claude incomplet : "+pr)}
+    if(await pg.inputValue("#plAsk"))err("le champ n'est pas vidé après l'envoi");
+    await pg.evaluate(()=>{$("aiAskSheet").hidden=true});
+    await pg.click("#planSearchBtn");if(!(await pg.isVisible("#planSearch")))err("la loupe n'ouvre pas la recherche");
+    await pg.fill("#planSearch","zzz");await pg.waitForTimeout(150);await pg.click("#planSearchBtn");
+    if(await pg.evaluate(()=>planQ))err("refermer la recherche ne l'efface pas");
     await shot(pg,"v45-"+nm+"-agenda");
     // musculation : photos dans la fiche, série 1 sur toutes
     await pg.evaluate(()=>{M().sessions.push({id:"s45",name:"Haut",upd:Date.now(),exercises:[{id:"e45",name:"Développé couché haltères",ps:1,sets:[{kg:"",reps:""},{kg:"",reps:""},{kg:"",reps:""}]}]});msOpenId="s45";save();show("muscu");renderMuscu()});await pg.waitForTimeout(300);

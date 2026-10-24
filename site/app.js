@@ -6,6 +6,7 @@ let bootFresh=true;
 function bootTop(){if(bootFresh&&typeof data!=="undefined"&&data.ui&&data.ui.view==="home")window.scrollTo(0,0)}
 /* ---------- icônes au trait (v24, style Graphite : plus aucun émoji dans l'interface) ---------- */
 const ICS={
+  search:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
   bell:'<path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3H4a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/>',
   calendar:'<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/>',
   utensils:'<path d="M7 3v18M4 3v5a3 3 0 0 0 6 0V3M17 21V3c-2 1.5-3 4-3 8h3"/>',
@@ -997,6 +998,19 @@ $("calPrev").addEventListener("click",()=>{calM--;if(calM<0){calM=11;calY--}rend
 $("calNext").addEventListener("click",()=>{calM++;if(calM>11){calM=0;calY++}renderCal()});
 $("calTitle").addEventListener("click",()=>{calMode="year";renderCal();zoom($("calYear"))});
 $("planSearch").addEventListener("input",e=>{planQ=e.target.value;renderPlan()});
+// v45.3 : ajouter des activités en les disant à Claude (même fonctionnement que Nutrition) : le message part chez Claude,
+// qui les enregistre avec le connecteur (ajouter_activite) ; l'agenda les récupère au retour dans l'app. Recherche derrière la loupe.
+$("planSearchBtn").addEventListener("click",()=>{const i=$("planSearch"),open=i.hidden;i.hidden=!open;$("planSearchBtn").setAttribute("aria-expanded",open);
+  if(open)i.focus();else if(planQ){i.value="";planQ="";renderPlan()}});
+$("plMic").addEventListener("click",e=>dictate(e.currentTarget,$("plAsk")));
+$("plAsk").addEventListener("input",e=>grow(e.target));
+$("plAsk").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();$("plAskForm").requestSubmit()}});
+function plPrompt(q){const d=today(),day=`${d.toLocaleDateString(LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE",{weekday:"long"})} ${iso(d)}`;
+  return T3(`Ajoute dans mon agenda Sid'compagnon : ${q}\n(Aujourd'hui : ${day}, heure de Bruxelles. Utilise ajouter_activite avec le titre, la date, l'heure de début et de fin, le type et les rappels si je les donne. S'il y a plusieurs activités, ajoute-les toutes. Si la date ou l'heure n'est pas claire, demande-moi avant.)`,
+    `Add to my Sid'compagnon calendar: ${q}\n(Today: ${day}, Brussels time. Use ajouter_activite with the title, date, start and end time, type and reminders if I give them. If there are several activities, add them all. If the date or time is unclear, ask me first.)`,
+    `Voeg toe aan mijn Sid'compagnon-agenda: ${q}\n(Vandaag: ${day}, Brusselse tijd. Gebruik ajouter_activite met de titel, datum, begin- en einduur, het type en herinneringen als ik die geef. Bij meerdere activiteiten: voeg ze allemaal toe. Als de datum of het uur niet duidelijk is, vraag het me eerst.)`)}
+$("plAskForm").addEventListener("submit",e=>{e.preventDefault();const q=$("plAsk").value.trim();if(!q)return;dictStop();
+  aiHandoff(plPrompt(q),"agenda");$("plAsk").value="";grow($("plAsk"))});
 let planOpenMem={}; // mois ouverts dans « Toutes les dates » ; v44.6 : tous repliés par défaut (à l'ouverture de sid'agenda et au rechargement)
 function renderPlan(){
   const T=data.tasks,q=norm(planQ);
@@ -3288,8 +3302,8 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden&&!$("aiShe
 // ouvrir une nouvelle conversation à chaque demande : une conversation existante ne peut pas être pré-remplie, donc le message est copié
 // puis la conversation s'ouvre, il n'y a plus qu'à coller. Ancien « Dossier Santé » (data.prefs.aiProj) : sert de repli pour les deux sujets.
 const CONV_OK=u=>/^https:\/\/claude\.ai\/(?:chat|project)\/[\w-]+/.test(u||"");
-const convUrl=t=>{const c=(data.prefs.aiConv||{})[t];return CONV_OK(c)?c:CONV_OK(data.prefs.aiProj)?data.prefs.aiProj:""};
-const CONV_NAME={nutri:"Nutrition",muscu:"Musculation"};
+const convUrl=t=>{const c=(data.prefs.aiConv||{})[t];return CONV_OK(c)?c:t!=="agenda"&&CONV_OK(data.prefs.aiProj)?data.prefs.aiProj:""}; // l'ancien dossier Santé ne sert pas à l'agenda
+const CONV_NAME={nutri:"Nutrition",muscu:"Musculation",agenda:"Agenda"};
 // copie pendant le toucher (sinon l'iPhone la refuse), avec un repli sans l'API du presse-papiers
 function copyNow(t){try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).catch(()=>{});return}}catch(e){}
   const x=document.createElement("textarea");x.value=t;x.setAttribute("readonly","");x.style.position="fixed";x.style.opacity="0";document.body.appendChild(x);x.select();try{document.execCommand("copy")}catch(e){}x.remove()}
@@ -4772,7 +4786,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v45-2";
+const BUILD="sidnote-v45-3";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

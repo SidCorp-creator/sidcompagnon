@@ -128,9 +128,18 @@
   <section class="view" id="v-plan" hidden>
     <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
     <h1>Agenda</h1>
-    <input type="search" class="search" id="planSearch" placeholder="Rechercher une activité" aria-label="Rechercher une activité" autocomplete="off" style="margin-top:6px">
+    <!-- v45.3 : ajout d'activités par Claude (comme « Ajouter ce que tu manges » en Nutrition) ; la recherche passe derrière la loupe -->
+    <form class="card form nu-ask pl-ask" id="plAskForm" style="margin-top:6px">
+      <textarea id="plAsk" rows="2" placeholder="Ton activité : quoi, quel jour, à quelle heure, quel type…" aria-label="Activité à planifier" enterkeyhint="send"></textarea>
+      <div class="nu-ask-row">
+        <button type="button" class="mini nu-mic nu-tool" id="plMic" aria-label="Dicter"><i class="ic" data-i="mic"></i></button>
+        <button type="button" class="mini nu-tool" id="planSearchBtn" aria-label="Rechercher une activité" aria-expanded="false"><i class="ic" data-i="search"></i></button>
+        <button class="btn" type="submit" id="plAskBtn">Planifier</button>
+      </div>
+    </form>
+    <input type="search" class="search" id="planSearch" placeholder="Rechercher une activité" aria-label="Rechercher une activité" autocomplete="off" style="margin-top:6px" hidden>
     <div id="planTop">
-    <button type="button" class="btn add-act" id="taskAdd">+ Activité</button>
+    <button type="button" class="btn ghost add-act" id="taskAdd">+ Activité</button>
     <datalist id="typeList"></datalist>
     <h2>Prochaines échéances</h2>
     <div class="next" id="next"></div>
@@ -656,7 +665,7 @@
     <div class="card" id="stats"></div>
       </div>
     </details>
-    <p class="small muted" style="margin:18px 4px">Sid'compagnon · version 45.2 · une app <b>SidCorp</b></p>
+    <p class="small muted" style="margin:18px 4px">Sid'compagnon · version 45.3 · une app <b>SidCorp</b></p>
   </section>
 </main>
 

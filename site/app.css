@@ -1278,3 +1278,4 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 html,body{overscroll-behavior:none}
 nav{top:auto;bottom:0;transform:none}
 html.kb-open nav{visibility:hidden}
+.note-row .note-more{align-self:center;flex:none;margin-left:4px}

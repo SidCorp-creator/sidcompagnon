@@ -364,8 +364,10 @@ document.addEventListener("focusin",e=>{const el=e.target;if(!(el instanceof HTM
 const c2ok=b=>{if(b.dataset.c2){clearTimeout(b._c2);delete b.dataset.c2;b.classList.remove("armed");b.innerHTML=b._c2h;return true}confirm2(b,()=>{});return false};
 
 // v42 : logos (S signature gravé dans la silhouette de chaque app) ; couleur = currentColor, la découpe laisse voir le fond
-const LOGOS={"home":{"s":"<path d=\"M9.5 30 L32 11.5 L54.5 30 H47.5 V51 H16.5 V30 Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"3.5\" stroke-linejoin=\"round\"/>","c":"<path d=\"M0.029 0.498Q-0.036 0.498 -0.078 0.479Q-0.12 0.461 -0.143 0.442Q-0.166 0.423 -0.175 0.423Q-0.18 0.423 -0.189 0.435Q-0.198 0.446 -0.209 0.462Q-0.22 0.477 -0.23 0.488Q-0.239 0.5 -0.245 0.5Q-0.248 0.5 -0.252 0.497Q-0.256 0.494 -0.257 0.49L-0.311 0.203Q-0.312 0.199 -0.311 0.197Q-0.311 0.195 -0.31 0.194Q-0.308 0.192 -0.306 0.194Q-0.304 0.195 -0.302 0.198Q-0.249 0.31 -0.196 0.372Q-0.143 0.435 -0.09 0.46Q-0.037 0.485 0.017 0.485Q0.094 0.485 0.14 0.443Q0.186 0.4 0.186 0.319Q0.186 0.27 0.166 0.228Q0.145 0.187 0.096 0.15Q0.046 0.114 -0.04 0.083Q-0.147 0.044 -0.211 -0.002Q-0.275 -0.047 -0.303 -0.103Q-0.331 -0.158 -0.331 -0.226Q-0.331 -0.307 -0.291 -0.368Q-0.25 -0.43 -0.18 -0.464Q-0.11 -0.498 -0.021 -0.498Q0.039 -0.498 0.079 -0.483Q0.118 -0.468 0.14 -0.453Q0.162 -0.438 0.172 -0.438Q0.181 -0.438 0.197 -0.453Q0.213 -0.469 0.228 -0.484Q0.243 -0.5 0.249 -0.5Q0.252 -0.5 0.255 -0.498Q0.257 -0.497 0.258 -0.492L0.331 -0.203Q0.331 -0.199 0.331 -0.197Q0.331 -0.195 0.329 -0.194Q0.328 -0.193 0.326 -0.194Q0.323 -0.196 0.322 -0.198Q0.265 -0.31 0.211 -0.372Q0.157 -0.435 0.102 -0.46Q0.047 -0.485 -0.011 -0.485Q-0.087 -0.485 -0.137 -0.437Q-0.186 -0.389 -0.186 -0.304Q-0.186 -0.253 -0.166 -0.21Q-0.146 -0.167 -0.099 -0.131Q-0.051 -0.094 0.032 -0.063Q0.143 -0.022 0.208 0.023Q0.272 0.069 0.299 0.122Q0.326 0.175 0.326 0.238Q0.326 0.311 0.291 0.37Q0.256 0.428 0.189 0.463Q0.123 0.498 0.029 0.498Z\" transform=\"translate(32 38.8) scale(14.2)\" fill=\"black\"/>"},"agenda":{"s":"<path d=\"M18 22 H46 V47 H18 Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"6\" stroke-linejoin=\"round\"/><path d=\"M24.5 12 V16 M39.5 12 V16\" stroke=\"currentColor\" stroke-width=\"4.5\" stroke-linecap=\"round\"/>","c":"<path d=\"M0.029 0.498Q-0.036 0.498 -0.078 0.479Q-0.12 0.461 -0.143 0.442Q-0.166 0.423 -0.175 0.423Q-0.18 0.423 -0.189 0.435Q-0.198 0.446 -0.209 0.462Q-0.22 0.477 -0.23 0.488Q-0.239 0.5 -0.245 0.5Q-0.248 0.5 -0.252 0.497Q-0.256 0.494 -0.257 0.49L-0.311 0.203Q-0.312 0.199 -0.311 0.197Q-0.311 0.195 -0.31 0.194Q-0.308 0.192 -0.306 0.194Q-0.304 0.195 -0.302 0.198Q-0.249 0.31 -0.196 0.372Q-0.143 0.435 -0.09 0.46Q-0.037 0.485 0.017 0.485Q0.094 0.485 0.14 0.443Q0.186 0.4 0.186 0.319Q0.186 0.27 0.166 0.228Q0.145 0.187 0.096 0.15Q0.046 0.114 -0.04 0.083Q-0.147 0.044 -0.211 -0.002Q-0.275 -0.047 -0.303 -0.103Q-0.331 -0.158 -0.331 -0.226Q-0.331 -0.307 -0.291 -0.368Q-0.25 -0.43 -0.18 -0.464Q-0.11 -0.498 -0.021 -0.498Q0.039 -0.498 0.079 -0.483Q0.118 -0.468 0.14 -0.453Q0.162 -0.438 0.172 -0.438Q0.181 -0.438 0.197 -0.453Q0.213 -0.469 0.228 -0.484Q0.243 -0.5 0.249 -0.5Q0.252 -0.5 0.255 -0.498Q0.257 -0.497 0.258 -0.492L0.331 -0.203Q0.331 -0.199 0.331 -0.197Q0.331 -0.195 0.329 -0.194Q0.328 -0.193 0.326 -0.194Q0.323 -0.196 0.322 -0.198Q0.265 -0.31 0.211 -0.372Q0.157 -0.435 0.102 -0.46Q0.047 -0.485 -0.011 -0.485Q-0.087 -0.485 -0.137 -0.437Q-0.186 -0.389 -0.186 -0.304Q-0.186 -0.253 -0.166 -0.21Q-0.146 -0.167 -0.099 -0.131Q-0.051 -0.094 0.032 -0.063Q0.143 -0.022 0.208 0.023Q0.272 0.069 0.299 0.122Q0.326 0.175 0.326 0.238Q0.326 0.311 0.291 0.37Q0.256 0.428 0.189 0.463Q0.123 0.498 0.029 0.498Z\" transform=\"translate(32 35.5) scale(15.5)\" fill=\"black\"/><path d=\"M17 19.2 H47\" stroke=\"black\" stroke-width=\"1.2\"/>"},"fit":{"s":"<path d=\"M21.5 31 C20.2 27 19.8 23.5 19.8 21 A6 6 0 0 1 25.8 15 H38.2 A6 6 0 0 1 44.2 21 C44.2 23.5 43.8 27 42.5 31\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><path d=\"M32 24 C42.5 24 49 30.5 49 38.5 C49 44 46.6 48 44.5 50 C43.8 50.7 43 51 42 51 H22 C21 51 20.2 50.7 19.5 50 C17.4 48 15 44 15 38.5 C15 30.5 21.5 24 32 24 Z\" fill=\"currentColor\"/>","c":"<path d=\"M0.029 0.498Q-0.036 0.498 -0.078 0.479Q-0.12 0.461 -0.143 0.442Q-0.166 0.423 -0.175 0.423Q-0.18 0.423 -0.189 0.435Q-0.198 0.446 -0.209 0.462Q-0.22 0.477 -0.23 0.488Q-0.239 0.5 -0.245 0.5Q-0.248 0.5 -0.252 0.497Q-0.256 0.494 -0.257 0.49L-0.311 0.203Q-0.312 0.199 -0.311 0.197Q-0.311 0.195 -0.31 0.194Q-0.308 0.192 -0.306 0.194Q-0.304 0.195 -0.302 0.198Q-0.249 0.31 -0.196 0.372Q-0.143 0.435 -0.09 0.46Q-0.037 0.485 0.017 0.485Q0.094 0.485 0.14 0.443Q0.186 0.4 0.186 0.319Q0.186 0.27 0.166 0.228Q0.145 0.187 0.096 0.15Q0.046 0.114 -0.04 0.083Q-0.147 0.044 -0.211 -0.002Q-0.275 -0.047 -0.303 -0.103Q-0.331 -0.158 -0.331 -0.226Q-0.331 -0.307 -0.291 -0.368Q-0.25 -0.43 -0.18 -0.464Q-0.11 -0.498 -0.021 -0.498Q0.039 -0.498 0.079 -0.483Q0.118 -0.468 0.14 -0.453Q0.162 -0.438 0.172 -0.438Q0.181 -0.438 0.197 -0.453Q0.213 -0.469 0.228 -0.484Q0.243 -0.5 0.249 -0.5Q0.252 -0.5 0.255 -0.498Q0.257 -0.497 0.258 -0.492L0.331 -0.203Q0.331 -0.199 0.331 -0.197Q0.331 -0.195 0.329 -0.194Q0.328 -0.193 0.326 -0.194Q0.323 -0.196 0.322 -0.198Q0.265 -0.31 0.211 -0.372Q0.157 -0.435 0.102 -0.46Q0.047 -0.485 -0.011 -0.485Q-0.087 -0.485 -0.137 -0.437Q-0.186 -0.389 -0.186 -0.304Q-0.186 -0.253 -0.166 -0.21Q-0.146 -0.167 -0.099 -0.131Q-0.051 -0.094 0.032 -0.063Q0.143 -0.022 0.208 0.023Q0.272 0.069 0.299 0.122Q0.326 0.175 0.326 0.238Q0.326 0.311 0.291 0.37Q0.256 0.428 0.189 0.463Q0.123 0.498 0.029 0.498Z\" transform=\"translate(32 39) scale(15.5)\" fill=\"black\"/>"},"note":{"s":"<path d=\"M17 13 H39 L47 21 V51 H17 Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linejoin=\"round\"/><path d=\"M39 13 V21 H47 Z\" fill=\"currentColor\"/>","c":"<path d=\"M0.029 0.498Q-0.036 0.498 -0.078 0.479Q-0.12 0.461 -0.143 0.442Q-0.166 0.423 -0.175 0.423Q-0.18 0.423 -0.189 0.435Q-0.198 0.446 -0.209 0.462Q-0.22 0.477 -0.23 0.488Q-0.239 0.5 -0.245 0.5Q-0.248 0.5 -0.252 0.497Q-0.256 0.494 -0.257 0.49L-0.311 0.203Q-0.312 0.199 -0.311 0.197Q-0.311 0.195 -0.31 0.194Q-0.308 0.192 -0.306 0.194Q-0.304 0.195 -0.302 0.198Q-0.249 0.31 -0.196 0.372Q-0.143 0.435 -0.09 0.46Q-0.037 0.485 0.017 0.485Q0.094 0.485 0.14 0.443Q0.186 0.4 0.186 0.319Q0.186 0.27 0.166 0.228Q0.145 0.187 0.096 0.15Q0.046 0.114 -0.04 0.083Q-0.147 0.044 -0.211 -0.002Q-0.275 -0.047 -0.303 -0.103Q-0.331 -0.158 -0.331 -0.226Q-0.331 -0.307 -0.291 -0.368Q-0.25 -0.43 -0.18 -0.464Q-0.11 -0.498 -0.021 -0.498Q0.039 -0.498 0.079 -0.483Q0.118 -0.468 0.14 -0.453Q0.162 -0.438 0.172 -0.438Q0.181 -0.438 0.197 -0.453Q0.213 -0.469 0.228 -0.484Q0.243 -0.5 0.249 -0.5Q0.252 -0.5 0.255 -0.498Q0.257 -0.497 0.258 -0.492L0.331 -0.203Q0.331 -0.199 0.331 -0.197Q0.331 -0.195 0.329 -0.194Q0.328 -0.193 0.326 -0.194Q0.323 -0.196 0.322 -0.198Q0.265 -0.31 0.211 -0.372Q0.157 -0.435 0.102 -0.46Q0.047 -0.485 -0.011 -0.485Q-0.087 -0.485 -0.137 -0.437Q-0.186 -0.389 -0.186 -0.304Q-0.186 -0.253 -0.166 -0.21Q-0.146 -0.167 -0.099 -0.131Q-0.051 -0.094 0.032 -0.063Q0.143 -0.022 0.208 0.023Q0.272 0.069 0.299 0.122Q0.326 0.175 0.326 0.238Q0.326 0.311 0.291 0.37Q0.256 0.428 0.189 0.463Q0.123 0.498 0.029 0.498Z\" transform=\"translate(32 34.5) scale(15.5)\" fill=\"black\"/><path d=\"M39 11.5 V21 H48.5\" fill=\"none\" stroke=\"black\" stroke-width=\"1.4\" stroke-linejoin=\"round\"/>"}};
-let logoN=0;const LOGO=(app,cls)=>{const id="lg"+(++logoN),L0=LOGOS[app]||LOGOS.home;return `<svg class="logo ${cls||""}" viewBox="0 0 64 64" aria-hidden="true"><defs><mask id="${id}"><rect width="64" height="64" fill="white"/>${L0.c}</mask></defs><g mask="url(#${id})">${L0.s}</g></svg>`};
+// (v42–44.6 : logos dessinés ici en SVG ; remplacés en 44.7 par site/icons/*.svg)
+// v44.7 : nouvelles icônes des apps (fournies par Sid : pictogramme + sceau « S », version pleine arrondie), dans site/icons/
+const LOGO_APPS={home:1,agenda:1,fit:1,note:1};
+const LOGO=(app,cls)=>`<img class="logo ${cls||""}" src="icons/${LOGO_APPS[app]?app:"home"}.svg" alt="" aria-hidden="true" draggable="false">`;
 
 // v42 : animation d'ouverture (2 s) : le logo Sid'home, puis les trois apps ; elle ne bloque jamais les touchers
 if($("authLogo"))$("authLogo").innerHTML=LOGO("home");
@@ -1989,7 +1991,7 @@ function seCard(se){const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0);
     <div class="ms-body">
       <label class="small muted" style="display:grid;gap:4px">${L("Nom de la séance")}<input data-f="msname" value="${esc(se.name)}" autocomplete="off"></label>
       ${se.exercises.map((ex,i)=>`<div class="ex ex3" data-ex="${ex.id}">
-        <div class="ex-head"><span class="num">${i+1}</span><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">×</button></div>
+        <div class="ex-head"><span class="num">${i+1}</span><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><button type="button" class="mini ex-help" data-exhelp="1" aria-label="${L("Comment faire cet exercice")}" title="${L("Comment faire cet exercice")}"${exAide(ex.name)?"":" hidden"}>?</button><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">×</button></div>
         <div class="set-rows">${ex.sets.map((st,j)=>`<div class="set-row" data-si="${j}"><span class="set-l">${L("Série")} ${j+1}</span>
           <input class="set-in" data-f="setkg" value="${esc(exKg(st&&st.kg))}" placeholder="kg" aria-label="${L("Série")} ${j+1} : kg" autocomplete="off" inputmode="decimal">
           <span class="set-sep" aria-hidden="true">–</span>
@@ -2024,10 +2026,21 @@ $("msList").addEventListener("input",e=>{
   const se=msFind(inp.closest("[data-ms]").dataset.ms);if(!se)return;
   if(f==="msname"){se.name=inp.value;const n=inp.closest("[data-ms]").querySelector(".ms-name");if(n)n.textContent=inp.value||L("Séance")}
   else{const ex=se.exercises.find(x=>x.id===inp.closest("[data-ex]").dataset.ex);if(!ex)return;
-    if(f==="exname")ex.name=inp.value;
+    if(f==="exname"){ex.name=inp.value;const h=inp.parentElement.querySelector("[data-exhelp]");if(h)h.hidden=!exAide(ex.name)}
     else if(f==="setkg"||f==="setreps"){const st=ex.sets[+inp.closest("[data-si]").dataset.si];if(!st)return;
       if(f==="setkg")st.kg=inp.value.replace(",",".").replace(/[^0-9.]/g,"").slice(0,7);else st.reps=inp.value.replace(/[^0-9]/g,"").slice(0,4)}}
   msSaveSoon(se)});
+// v44.7 : fiche « comment faire » de chaque exercice proposé (site/exercices-aide.js), dans la langue de l'app
+function exAide(name){const A=window.SIDFIT_AIDE||{},k=fold(String(name||"").trim());if(!k)return null;
+  const key=Object.keys(A).find(x=>fold(x)===k);return key?{name:key,f:A[key][LANG]||A[key].fr}:null}
+function exHelpOpen(name){const a=exAide(name);if(!a)return;const[mus,steps,err]=a.f;
+  $("exHelpTitle").textContent=name.trim();
+  $("exHelpBody").innerHTML=`<p class="exh-lbl">${L("Muscles travaillés")}</p><p class="notr">${esc(mus)}</p>
+    <p class="exh-lbl">${L("Comment faire")}</p><ol class="exh-steps notr">${steps.map(x=>`<li>${esc(x)}</li>`).join("")}</ol>
+    <p class="exh-lbl">${L("À éviter")}</p><p class="exh-err notr">${esc(err)}</p>`;
+  $("exHelpSheet").hidden=false}
+$("exHelpClose").addEventListener("click",()=>$("exHelpSheet").hidden=true);
+$("exHelpSheet").addEventListener("click",e=>{if(e.target.id==="exHelpSheet")$("exHelpSheet").hidden=true});
 async function copyText(txt,what){
   const ok=what==="prog"?"Programme copié : colle-le dans un message":"Séance copiée : colle-la dans un message";
   try{await navigator.clipboard.writeText(txt);toast(ok);return}catch(e){}
@@ -2041,6 +2054,7 @@ $("msList").addEventListener("click",e=>{
   const exOf=()=>se.exercises.find(x=>x.id===b.closest("[data-ex]").dataset.ex);
   if(b.dataset.msaddex){se.exercises.push(newEx());seTouch(se);save();renderMuscu();const ins=$("msList").querySelectorAll(`[data-ms="${se.id}"] [data-f=exname]`);ins[ins.length-1]?.focus()}
   else if(b.dataset.msdelex){armDelete(b,()=>{se.exercises=se.exercises.filter(x=>x.id!==b.dataset.msdelex);seTouch(se);save();renderMuscu()})}
+  else if(b.dataset.exhelp){const ex=exOf();if(ex)exHelpOpen(ex.name)}
   else if(b.dataset.msaddset){const ex=exOf();if(!ex||ex.sets.length>=20)return;ex.sets.push(newSet());seTouch(se);save();renderMuscu();
     const ins=document.querySelectorAll(`#msList [data-ex="${ex.id}"] [data-f="setkg"]`);ins[ins.length-1]?.focus()}
   else if(b.dataset.msdelset!==undefined){const ex=exOf();if(!ex||ex.sets.length<=1)return;ex.sets.splice(+b.dataset.msdelset,1);seTouch(se);save();renderMuscu()}
@@ -2757,11 +2771,12 @@ function renderNotes(){
   if(!q)list=list.filter(x=>noteDirOf(x)===noteDir);
   if(q)list=list.filter(x=>noteView(x)).map(x=>{const w=noteView(x);return{x,s:Math.max(fuzzyScore(w.title||"",q),fold(w.body).includes(fold(q))?11:0)}}).filter(o=>o.s>0).sort((a,b)=>b.s-a.s).map(o=>o.x);
   $("noteList").innerHTML=dirs+(list.length&&dirs?`<h2 class="nl-h">${L("Notes")}</h2>`:"")+(list.length?`<div class="nl-notes">`+list.map(x=>{const w=noteView(x),when=`<span class="when">${fmtWhen(x.upd||Date.parse(x.createdAt))}</span>`;
-    if(!w)return `<button class="note note-lock" data-note="${x.id}"><b>${IC("lock")} ${L("Note secrète")}</b><span class="prev">${L("Touche pour l'ouvrir avec ton code")}</span>${when}</button>`;
+    const more=`<button type="button" class="pen note-more" data-nmore="${x.id}" aria-label="${L("Plus d'actions")}">${MORE}</button>`;
+    if(!w)return `<div class="note-row"><button class="note note-lock" data-note="${x.id}"><b>${IC("lock")} ${L("Note secrète")}</b><span class="prev">${L("Touche pour l'ouvrir avec ton code")}</span>${when}</button>${more}</div>`;
     const lines=String(w.body||"").trim().split("\n").filter(Boolean);
     const t=w.title&&w.title.trim()?w.title:(lines.shift()||L("Nouvelle note"));
     const fp=q&&noteDirOf(x)?`<span class="small muted nf-in">${IC("folder")} ${esc(nfPath(x.folder).map(f=>f.name).join(" › "))}</span>`:"";
-    return `<div class="note-row"><span class="ngrip" data-ngrip="${x.id}" aria-hidden="true" title="${L("Maintenir et glisser")}">${GRIP}</span><button class="note" data-note="${x.id}"><b class="notr">${x.secret?IC("lock")+" ":""}${esc(t)}</b>${fp}<span class="prev notr">${esc(lines.join(" · ")||"")}</span>${x.photos&&x.photos.length?`<span class="np-count">${IC("camera")} ${x.photos.length} ${L(x.photos.length>1?"photos":"photo")}</span>`:""}${x.pdf?`<span class="np-count pdf-badge">PDF${x.pdf.pages?` · ${x.pdf.pages} ${L(x.pdf.pages>1?"pages":"page")}`:""}${(()=>{const k=pvAnns(x.id).length;return k?` · ${k} ${L(k>1?"annotations":"annotation")}`:""})()}</span>`:""}${when}</button></div>`}).join("")+`</div>`
+    return `<div class="note-row"><span class="ngrip" data-ngrip="${x.id}" aria-hidden="true" title="${L("Maintenir et glisser")}">${GRIP}</span><button class="note" data-note="${x.id}"><b class="notr">${x.secret?IC("lock")+" ":""}${esc(t)}</b>${fp}<span class="prev notr">${esc(lines.join(" · ")||"")}</span>${x.photos&&x.photos.length?`<span class="np-count">${IC("camera")} ${x.photos.length} ${L(x.photos.length>1?"photos":"photo")}</span>`:""}${x.pdf?`<span class="np-count pdf-badge">PDF${x.pdf.pages?` · ${x.pdf.pages} ${L(x.pdf.pages>1?"pages":"page")}`:""}${(()=>{const k=pvAnns(x.id).length;return k?` · ${k} ${L(k>1?"annotations":"annotation")}`:""})()}</span>`:""}${when}</button>${more}</div>`}).join("")+`</div>`
     :dirs?"":`<div class="empty">${L(q?"Aucune note ne correspond.":noteDir?"Ce dossier est vide. Touche « + Note » pour y écrire.":"Aucune note pour l'instant. Touche « + Note » pour écrire.")}</div>`);
 }
 function openNote(id){noteOpenId=id;renderNotes();window.scrollTo(0,0)}
@@ -2815,6 +2830,7 @@ $("noteMove").addEventListener("click",()=>{const n=noteFind(noteOpenId);if(!n)r
 $("noteList").addEventListener("click",async e=>{
   const fo=e.target.closest("[data-nfopen]");if(fo){noteDir=fo.dataset.nfopen;renderNotes();window.scrollTo(0,0);return}
   const fm=e.target.closest("[data-nfmore]");if(fm){nfActions(fm.dataset.nfmore);return}
+  const nm=e.target.closest("[data-nmore]");if(nm){noteActions(nm.dataset.nmore);return}
   const b=e.target.closest("[data-note]");if(!b)return;const n=noteFind(b.dataset.note);if(!n)return;
   if(n.pdf){pdfOpen(n.id);return} // v44.7 : une note PDF s'ouvre dans le lecteur-annoteur
   if(n.secret&&!noteView(n)){if(!(await nsUnlock()))return;await nsLoad();if(!noteView(n))return}
@@ -2830,9 +2846,17 @@ function noteInput(){
 }
 $("noteTitle").addEventListener("input",noteInput);$("noteBody").addEventListener("input",noteInput);
 $("noteTitle").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("noteBody").focus()}});
+// les photos (et le PDF) ne sont effacés qu'une fois l'annulation impossible
+function noteRemove(n){undoable("Note supprimée",[n.id],()=>{tomb(n.id);data.notes=NT().filter(x=>x!==n)},{after:renderNotes,later:()=>{if(!noteFind(n.id)){npDropAll(n);nsPlain.delete(n.id)}}})}
 $("noteDel").addEventListener("click",async()=>{if(!c2ok($("noteDel")))return;await noteFlush();const n=noteFind(noteOpenId);noteOpenId=null;if(!n){renderNotes();return}
-  // les photos ne sont effacées qu'une fois l'annulation impossible
-  undoable("Note supprimée",[n.id],()=>{tomb(n.id);data.notes=NT().filter(x=>x!==n)},{after:renderNotes,later:()=>{if(!noteFind(n.id)){npDropAll(n);nsPlain.delete(n.id)}}})});
+  noteRemove(n)});
+// v44.7 : « ⋯ » sur chaque note de la liste : la ranger ou la supprimer sans l'ouvrir (suppression annulable 5 s)
+function noteActions(id){const n=noteFind(id);if(!n)return;const w=noteView(n);
+  const t=w?(w.title&&w.title.trim()?w.title:String(w.body||"").trim().split("\n")[0]||(n.pdf&&n.pdf.name)||L("Nouvelle note")):L("Note secrète");
+  const items=[];
+  if(NF().length)items.push({l:"Ranger dans un dossier",fn:()=>openActions(L("Ranger dans"),nfChoices(noteDirOf(n),null,fid=>{if(fid)n.folder=fid;else delete n.folder;n.upd=Date.now();save();renderNotes();toast(fid?`${L("Rangée dans")} « ${nfOf(fid).name} »`:"Rangée dans Notes")}))});
+  items.push({l:"Supprimer",danger:true,fn:()=>noteRemove(n)});
+  openActions(t,items)}
 // cadenas : rend la note secrète (ou la verrouille si elle l'est déjà), puis la ferme
 $("noteLock").addEventListener("click",async()=>{
   const n=noteFind(noteOpenId);if(!n)return;dictStop();
@@ -3636,14 +3660,15 @@ function dictate(btn,field,onChange){
   rec.onend=()=>{if(dict&&dict.rec===rec){btn.classList.remove("on");dict=null}};
   try{rec.start();dict={rec,btn};btn.classList.add("on");toast("Parle, je t'écoute…")}catch(e){toast("Dictée indisponible ici : touche le micro du clavier de l'iPhone.")}
 }
-$("noteMic").addEventListener("click",e=>{const el=$("noteBody");if(dict){dictate(e.currentTarget,null);return}
+$("noteMic").addEventListener("click",e=>{const el=$("noteBody"),btn=e.currentTarget;if(dict){dictate(btn,null);return}
   // le texte dicté arrive dans un petit repère posé à l'endroit du curseur (l'éditeur n'est pas un champ texte)
   el.focus();const sel=getSelection();let r=sel.rangeCount&&el.contains(sel.anchorNode)?sel.getRangeAt(0):null;
   if(!r){r=document.createRange();r.selectNodeContents(el);r.collapse(false)}
   const sp=document.createElement("span");sp.className="dict-tmp";r.deleteContents();r.insertNode(sp);
   const field={get value(){return sp.textContent},set value(x){sp.textContent=x},selectionStart:0,selectionEnd:0,focus(){el.focus()}};
-  dictate(e.currentTarget,field,()=>{noteInput()});
-  const stopWatch=setInterval(()=>{if(!dict||dict.btn!==e.currentTarget){clearInterval(stopWatch);if(sp.isConnected)sp.replaceWith(...sp.childNodes);noteInput()}},500)});
+  dictate(btn,field,()=>{noteInput()});
+  // v44.7 : le bouton est gardé dans « btn » (e.currentTarget est vide après le clic : le repère était retiré au bout de 0,5 s et la dictée se perdait)
+  const stopWatch=setInterval(()=>{if(!dict||dict.btn!==btn){clearInterval(stopWatch);if(sp.isConnected)sp.replaceWith(...sp.childNodes);noteInput()}},500)});
 // --- barre de mise en forme ---
 function rtBlock(){const s=getSelection();let n=s.rangeCount?s.anchorNode:null;while(n&&n!==$("noteBody")){if(n.nodeType===1&&/^(H2|H3|BLOCKQUOTE|LI|DIV|P)$/.test(n.tagName))return n;n=n.parentNode}return null}
 function rtCmd(k){const el=$("noteBody");el.focus();const ex=(c,v)=>document.execCommand(c,false,v===undefined?null:v);
@@ -3721,7 +3746,7 @@ function micFor(inp){if(!inp||inp.dataset.mic)return;inp.dataset.mic="1";
   else{const w=document.createElement("span");w.className="mic-field";inp.before(w);w.append(inp,b)}
   b.addEventListener("click",()=>dictate(b,inp,()=>inp.dispatchEvent(new Event("input",{bubbles:true}))));
 }
-["todoIn","fTitle","eTitle","msName","catIn","noteTitle","pwNote"].forEach(id=>micFor($(id)));
+["todoIn","fTitle","eTitle","msName","catIn","pwNote"].forEach(id=>micFor($(id)));
 
 /* ---------- nutrition (calories et macros, calculés par Claude) ---------- */
 // data.nutri = {profile, plan, menuPrefs, menu, upd, rev, log:[{id, day, at, grp, gname, gem, name, qty, em, kcal, p, c, f, upd}], weights:[{id, day, kg, upd}], weeks:[…]}

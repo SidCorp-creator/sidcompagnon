@@ -716,6 +716,8 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const secs=await pg.$$eval("#homeBody .hc",x=>x.map(e=>e.dataset.app).join(","));if(secs!=="agenda,fit,note")err("cartes attendues agenda,fit,note : "+secs);
     if(await pg.$$eval("#homeBody .hc",x=>x.some(c=>!c.querySelector(".hc-desc").textContent.trim()||c.querySelectorAll(".hc-it").length>2)))err("carte sans description ou avec plus de 2 repères");
     if(!(await pg.textContent('#homeBody .hc[data-app="note"]')).includes("Chapitre"))err("dernière note absente de la carte sid'note");
+    // v44.7 : nouvelles icônes des apps (site/icons/*.svg) : vraiment chargées
+    await pg.waitForTimeout(300);if(await pg.$$eval("#homeBody .hc img.logo",x=>x.length!==3||x.some(i=>!i.complete||!i.naturalWidth)))err("icônes des apps non chargées");
     await shot(pg,"v447-aujourdhui");
     await pg.setViewportSize({width:1280,height:800});await pg.waitForTimeout(200);await shot(pg,"v447-aujourdhui-pc");await pg.setViewportSize({width:390,height:664});
     await pg.click('#homeBody .hc[data-app="fit"]');await pg.waitForTimeout(250);if(await pg.evaluate(()=>appOf(data.ui.view))!=="fit")err("la carte sid'fit n'ouvre pas sid'fit");
@@ -983,6 +985,35 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     // suppression d'un surlignage (toucher → Supprimer, annulable)
     await pg.click('[data-pvt="read"]');await pg.waitForTimeout(400);{const r=await pg.evaluate(()=>{const h=document.querySelector("#pvBody .pv-hl").getBoundingClientRect();return [h.x+h.width/2,h.y+h.height/2]});await pg.mouse.click(r[0],r[1])}await pg.waitForTimeout(150);await pg.click('#actList .act-it.danger');await pg.click('#actList .act-it.danger').catch(()=>{});await pg.waitForTimeout(250);
     if(await pg.evaluate(id=>pvAnns(id).some(a=>a.t==="hl"),nid))err("surlignage pas supprimé");
+    await ctx.close()}
+  // --- v44.7 : fiche « comment faire » des exercices ; supprimer une note depuis la liste ; le micro d'une note écrit dans la note
+  for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1280,height:800}}]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v44.7 b "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    // fausse reconnaissance vocale : « bonjour le cours » dès le départ
+    await pg.addInitScript(()=>{window.SpeechRecognition=window.webkitSpeechRecognition=class{start(){const R=t=>Object.assign([{transcript:t}],{isFinal:true});setTimeout(()=>this.onresult&&this.onresult({resultIndex:0,results:[R("bonjour le cours")]}),50);
+      setTimeout(()=>this.onresult&&this.onresult({resultIndex:1,results:[R("bonjour le cours"),R(" et la suite")]}),1100)}stop(){setTimeout(()=>this.onend&&this.onend(),10)}}});
+    await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v447b"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.evaluate(()=>{M().sessions.push({id:"hx",name:"Haut",upd:Date.now(),exercises:[{id:"hx1",name:"Développé couché haltères",ps:1,sets:[{kg:"",reps:""}]},{id:"hx2",name:"Mon exo inventé",ps:1,sets:[{kg:"",reps:""}]}]});msOpenId="hx";save();show("muscu");renderMuscu()});await pg.waitForTimeout(300);
+    if(!(await pg.isVisible('[data-ex="hx1"] [data-exhelp]')))err("pas de bouton « ? » sur un exercice de la liste");
+    if(await pg.isVisible('[data-ex="hx2"] [data-exhelp]'))err("bouton « ? » sur un exercice sans fiche");
+    await pg.click('[data-ex="hx1"] [data-exhelp]');await pg.waitForTimeout(200);
+    if(!(await pg.isVisible("#exHelpSheet"))||(await pg.$$eval("#exHelpBody .exh-steps li",x=>x.length))!==3)err("fiche de l'exercice incomplète");
+    await shot(pg,"v447-"+nm+"-exo-aide");await pg.click("#exHelpClose");
+    await pg.fill('[data-ex="hx2"] [data-f="exname"]',"pec deck");await pg.waitForTimeout(100);
+    if(!(await pg.isVisible('[data-ex="hx2"] [data-exhelp]')))err("le « ? » n'apparaît pas après avoir tapé un exercice connu");
+    // notes : ⋯ dans la liste → Supprimer (annulable), sans ouvrir la note
+    await pg.evaluate(()=>{data.notes=[{id:"nd1",title:"À jeter",body:"x",createdAt:new Date().toISOString(),upd:Date.now()},{id:"nd2",title:"À garder",body:"y",createdAt:new Date().toISOString(),upd:Date.now()-1000}];save();show("notes");noteDir=null;renderNotes()});await pg.waitForTimeout(200);
+    await shot(pg,"v447-"+nm+"-notes-liste");
+    await pg.click('[data-nmore="nd1"]');await pg.waitForTimeout(150);await pg.click("#actList .act-it.danger");await pg.click("#actList .act-it.danger");await pg.waitForTimeout(250);
+    if(!(await pg.textContent("#toast")).includes("Note supprimée"))err("pas de toast « Note supprimée » (annulable)");
+    if(await pg.evaluate(()=>!!noteFind("nd1")||!noteFind("nd2")||!!noteOpenId))err("suppression depuis la liste : mauvaise note ou note ouverte");
+    // micro : plus de micro à côté du titre ; celui de l'en-tête écrit dans le texte de la note
+    await pg.click('[data-note="nd2"]');await pg.waitForTimeout(200);
+    if(await pg.$("#noteTitle + .nu-mic"))err("micro encore à côté du titre");
+    await pg.click("#noteMic");await pg.waitForTimeout(1500);await pg.click("#noteMic");await pg.waitForTimeout(700);
+    const nv=await pg.evaluate(()=>{const n=noteFind("nd2");return [n.title,n.body]});
+    if(nv[0]!=="À garder"||!nv[1].includes("bonjour le cours et la suite"))err("dictée : "+JSON.stringify(nv));
     await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");

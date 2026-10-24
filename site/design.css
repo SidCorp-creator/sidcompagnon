@@ -832,3 +832,12 @@ html[data-ds] .pdfv .pv-notes textarea{width:auto;align-self:stretch;min-height:
 html[data-ds] .pdfv .pv-txt textarea{border:1px dashed rgba(47,74,58,.45);border-radius:3px;background:rgba(255,255,240,.92);color:#1C1A17;min-height:0;font:400 2.3cqw/1.3 var(--font);padding:.4cqw .8cqw}
 html[data-ds] .pdfv .pv-txt textarea:focus{border-style:solid;font-size:max(2.3cqw,16px)}
 html[data-ds] .pdfv input.pv-title{border:0!important;background:transparent!important;box-shadow:none!important;height:auto!important}
+/* v44.7 : fiche « comment faire » d'un exercice */
+.ex-head .ex-help{flex:none;width:32px;min-width:32px;height:32px;padding:0;border-radius:50%;font:600 15px var(--mono,inherit);display:inline-flex;align-items:center;justify-content:center}
+.ex-head .ex-help[hidden]{display:none!important}
+.exh .exh-lbl{margin:16px 0 6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.exh .exh-lbl:first-child{margin-top:4px}
+.exh p{margin:0;line-height:1.5}
+.exh .exh-steps{margin:0;padding-left:22px;line-height:1.5}
+.exh .exh-steps li{margin:0 0 8px}
+.exh .exh-err{padding:10px 12px;border-left:3px solid var(--app,var(--accent));background:var(--app-soft,transparent);border-radius:4px}

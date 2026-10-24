@@ -22,12 +22,14 @@ site/                 ← exactement ce qui est mis en ligne sur Netlify
   confidentialite.html, conditions.html, cookies.html, legal.css ← v43 : pages légales publiques (FR, champs [À COMPLÉTER])
   robots.txt, sitemap.xml, llms.txt ← v43
   exercices.js        ← v44 : liste des exercices proposés par sid'fit (seule source, modifiable ; le connecteur la relit en ligne)
+  exercices-aide.js   ← 44.7 : fiche « comment faire » de chaque exercice (FR/EN/NL)
+  icons/              ← 44.7 : icônes des apps (home, agenda, fit, note)
   i18n.js             ← traductions DICT/PATS (EN) et DICT_NL/PATS_NL (NL), chargé avant app.js
   app.js              ← tout le programme (les `const` de i18n.js sont visibles car scripts classiques)
   sw.js               ← service worker (réseau d'abord ; cache pdf.js à part)
   _headers            ← en-têtes de sécurité Netlify (CSP…) ; tests/serve.js les applique aussi en local
   manifest.webmanifest, icônes
-supabase/functions/   ← fonctions Edge (Deno) : horaire (relais iCal), nutrition (v39 : mémoire des aliments seulement), rappels (notifications), delete-account (v35, suppression du compte), mcp (v38, connecteur Claude ; v10 en v44)
+supabase/functions/   ← fonctions Edge (Deno) : horaire (relais iCal), nutrition (v39 : mémoire des aliments seulement), rappels (notifications), delete-account (v35, suppression du compte), mcp (v38, connecteur Claude ; v11 en 44.7)
 supabase/sql/         ← SQL : v37.sql (sauvegarde quotidienne, erreurs, listes partagées — à exécuter par Sid), documents.sql (déjà exécuté), nutrition.sql (v20, compteur d'appels Claude, exécuté), food_memory.sql (v21, mémoire des aliments), notifications.sql (v22, cron 5 min + anti-doublon)
 secrets/              ← clés VAPID, secret cron, version complète de rappels : NE JAMAIS publier ni committer
 tests/                ← serve.js (aperçu local + faux Supabase), smoke.js (test Playwright), mock-supabase.js, memory.test.js (mémoire des aliments, `node tests/memory.test.js`), rappels.test.js (calcul des rappels)
@@ -253,6 +255,11 @@ assets/               ← logo
   - Graphiques : infobulle cachée au défilement (`scroll` capturé, `pointercancel`, `touchmove` hors graphique) et au toucher ailleurs ; plus de minuterie de 2,5 s.
   - Aujourd'hui (Sid'home) : 3 grandes cartes `.hc` (logo, nom, description d'une ligne, au plus 2 repères ; toucher = `openGroup`). Retirés de cette page : liste du jour, tâches à cocher, carte Claude, dossiers récents (toujours dans chaque app).
   - **PDF de cours dans sid'note** (choix de Sid : dans Notes, surligneur au doigt) : bouton « + PDF » (`#pdfIn`) → note `{…, pdf:{name,size,pages,up}}` (dans le dossier ouvert) ; fichier en IndexedDB (`pdfKey`) + Storage `documents/<uid>/notes/<id>.pdf` (`pdfUpload`, relu en ligne par `pdfBlob`, non chiffré comme les notes ; inventaire de la page de confidentialité mis à jour). Lecteur-annoteur `#pdfv` (z-index 25, sous les fenêtres) : pages pdf.js dessinées seulement à l'approche (`IntersectionObserver`, canvas retirés loin de l'écran), outils Lire / Texte (zone de texte posée au toucher) / Surligner (glisser, `touch-action:none`) / Mes notes (`n.body`). Annotations `data.pdfAnns=[{id,note,page,t:"text"|"hl",x,y,w,h,txt,upd}]` en fraction de page (dans `mergeData` via `arrU`, `applyRemote`, `BK_LISTS`), supprimées avec la note (`npDropAll`). Test : `tests/fixtures/cours.pdf` + bloc « v44.7 : PDF » de `tests/smoke.js`.
+  - **Nouvelles icônes** (fournies par Sid, zip `sidhome-icones`) : `site/icons/{home,agenda,fit,note}.svg` (version « pleine arrondie »), `LOGO(app,cls)` = `<img src="icons/<app>.svg">` (l'ancien `LOGOS` en SVG en ligne est retiré), favicon et PNG régénérés. `tests/serve.js` sert maintenant `.svg`/`.pdf`/`.woff2` avec le bon type (sinon images cassées dans les captures).
+  - **Fiche « comment faire » des exercices** : `site/exercices-aide.js` (`window.SIDFIT_AIDE`, clé = nom exact de `exercices.js`, `{fr|en|nl: [muscles, [3 étapes], erreur à éviter]}`, chargé avant app.js, en cache dans `sw.js`). Bouton « ? » (`data-exhelp`) sur chaque exercice qui a une fiche (apparaît aussi en tapant un nom connu, `exAide` sans accents), fenêtre `#exHelpSheet` (`exHelpOpen`). Pour un nouvel exercice dans `exercices.js`, ajouter sa fiche ici.
+  - **Micro des notes** : le bouton micro à côté du titre est retiré (`micFor` ne vise plus `noteTitle`) ; le micro de l'en-tête (`#noteMic`) écrit dans le texte. Bug corrigé : il gardait `e.currentTarget` (vide après le clic) → le repère `.dict-tmp` était retiré au bout de 0,5 s et la suite de la dictée se perdait.
+  - **Supprimer une note depuis la liste** : « ⋯ » sur chaque note (`data-nmore`, `noteActions` : ranger dans un dossier, supprimer annulable via `noteRemove`, aussi pour une note secrète verrouillée).
+  - Connecteur `mcp` **v11** (« 1.5.0 », déployé le 24 oct. 2026) : outil `modifier_note` (note = id ou titre ; `title`, `body` remplace tout, `append` ajoute à la fin en gardant la mise en forme, `folder` range, « / » = hors dossier ; photos gardées, jamais les notes secrètes). Claude.ai garde l'ancienne liste d'outils : il faut une nouvelle conversation (ou reconnecter Sid'note) pour qu'il voie l'outil.
   - **Pas encore mis en ligne** (Sid veut une seule mise en ligne avec ses prochains ajouts).
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 

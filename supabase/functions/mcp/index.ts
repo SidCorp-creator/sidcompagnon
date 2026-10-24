@@ -2,6 +2,7 @@
 // Adresse : https://<projet>.supabase.co/functions/v1/mcp/<clé>  — la clé est personnelle (créée dans Réglages > Mon IA),
 // seule son empreinte SHA-256 est gardée (table mcp_tokens, supabase/sql/mcp.sql). Verify JWT : OFF.
 // v10 (Sid'home v44) : séances et programmes au même format, liste d'exercices lue dans site/exercices.js.
+// v11 (Sid'home 44.7) : outil modifier_note (remettre au propre, corriger, compléter, renommer, ranger une note existante).
 // Accès : agenda (v41 : avec les rappels), tâches, notes (pas les notes secrètes), nutrition (v39 : c'est l'IA de la personne qui calcule), musculation (v41), photo d'assiette (v43, outil photo_repas : lue puis effacée). Plus de listes partagées (retirées en v41). Jamais les coffres (mots de passe, documents).
 // Écriture « à condition » sur user_data (comme push() dans l'app) : si l'app a écrit entre-temps, on relit et on recommence.
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -176,6 +177,8 @@ function mdToHtml(md: string) {
   close();
   return out.join("");
 }
+// texte brut d'une note (recherche, aperçu) à partir du petit balisage
+const mdPlain = (md: string) => md.replace(/^#+\s*|^\s*\[[ x]\]\s*/gim, "").replace(/\*\*/g, "");
 function folderPath(d: Data, path: unknown): string | null {
   const parts = String(path || "").split("/").map((x) => x.trim().slice(0, 60)).filter(Boolean).slice(0, 6);
   if (!parts.length) return null;
@@ -287,7 +290,7 @@ const TOOLS = [
   },
   {
     name: "lire_note",
-    description: "Lit le texte complet d'une note (id ou morceau du titre).",
+    description: "Lit le texte complet d'une note (id ou morceau du titre). Pour la corriger ou la remettre au propre ensuite, utilise modifier_note.",
     inputSchema: { type: "object", required: ["note"], properties: { note: { type: "string" } } },
     annotations: { readOnlyHint: true },
   },
@@ -295,6 +298,17 @@ const TOOLS = [
     name: "ajouter_note",
     description: "Crée une nouvelle note dans Sid'note, éventuellement dans un dossier (chemin « Cours/Finance », créé s'il n'existe pas). Le texte peut contenir des lignes « # Titre », « - puce », « 1. étape » et « [ ] case », et du **gras**.",
     inputSchema: { type: "object", required: ["title", "body"], properties: { title: { type: "string" }, body: { type: "string" }, folder: { type: "string", description: "Dossier, ex. Cours/Finance (facultatif)" } } },
+  },
+  {
+    name: "modifier_note",
+    description: "Modifie une note existante (id ou morceau du titre) : la remettre au propre, la corriger, la compléter, la renommer ou la ranger. « body » remplace tout le texte ; « append » ajoute du texte à la fin sans toucher au reste. Lis-la d'abord avec lire_note. Même petit balisage que ajouter_note (# Titre, - puce, 1. étape, [ ] case, **gras**). Les photos de la note sont gardées. Préfère cet outil à ajouter_note quand la personne parle d'une note qui existe déjà.",
+    inputSchema: { type: "object", required: ["note"], properties: {
+      note: { type: "string", description: "Id ou morceau du titre de la note" },
+      title: { type: "string", description: "Nouveau titre (facultatif)" },
+      body: { type: "string", description: "Nouveau texte complet, remplace l'ancien (facultatif)" },
+      append: { type: "string", description: "Texte à ajouter à la fin (facultatif)" },
+      folder: { type: "string", description: "Dossier où la ranger, ex. Cours/Finance ; « / » = hors dossier (facultatif)" },
+    } },
   },
   {
     name: "nutrition_journee",
@@ -615,13 +629,34 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
       const n: Data = await writeData(user, (d) => {
         d.notes = Array.isArray(d.notes) ? d.notes : [];
         const body = String(a.body || "");
-        const n: Data = { id: uid(), title: String(a.title || "").trim(), body: body.replace(/^#+\s*|^\s*\[[ x]\]\s*/gim, "").replace(/\*\*/g, ""), html: mdToHtml(body), createdAt: new Date().toISOString(), upd: Date.now() };
+        const n: Data = { id: uid(), title: String(a.title || "").trim(), body: mdPlain(body), html: mdToHtml(body), createdAt: new Date().toISOString(), upd: Date.now() };
         const fid = folderPath(d, a.folder);
         if (fid) n.folder = fid;
         d.notes.push(n);
         return n;
       });
       return `Note créée : ${n.title || "(sans titre)"} (id ${n.id}).`;
+    }
+    case "modifier_note": {
+      const has = (k: string) => typeof a[k] === "string";
+      if (!has("title") && !has("body") && !has("append") && !(has("folder") && a.folder.trim())) throw new Error("Rien à modifier : donne title, body, append ou folder.");
+      const n: Data = await writeData(user, (d) => {
+        const del = d.del || {};
+        const n = findOne((Array.isArray(d.notes) ? d.notes : []).filter((x: Data) => x && !x.secret && !del[x.id]), a.note, "la note");
+        if (has("title") && a.title.trim()) n.title = String(a.title).trim().slice(0, 200);
+        if (has("body")) { const b = String(a.body); n.body = mdPlain(b); n.html = mdToHtml(b); }
+        if (has("append") && String(a.append).trim()) {
+          const b = String(a.append);
+          // texte d'avant gardé tel quel (avec sa mise en forme), le nouveau ajouté en dessous
+          const prev = typeof n.html === "string" && n.html ? n.html : String(n.body || "").split("\n").map((l: string) => l ? `<div>${escH(l)}</div>` : "<div><br></div>").join("");
+          n.html = prev + mdToHtml(b);
+          n.body = (String(n.body || "").trimEnd() + "\n" + mdPlain(b)).trim();
+        }
+        if (has("folder") && String(a.folder).trim()) { const p = String(a.folder).trim(); if (p === "/") delete n.folder; else { const fid = folderPath(d, p); if (fid) n.folder = fid; } }
+        n.upd = Date.now();
+        return { title: n.title, id: n.id, dir: n.folder ? folderName(d, n.folder) : "" };
+      });
+      return `Note modifiée : ${n.title || "(sans titre)"} (id ${n.id})${n.dir ? ` [dossier ${n.dir}]` : ""}.`;
     }
     case "nutrition_journee": {
       const { data } = await readData(user);
@@ -800,8 +835,8 @@ Deno.serve(async (req) => {
       return rpcOk(id, {
         protocolVersion: params?.protocolVersion || "2025-06-18",
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "sidnote", title: "Sid'note", version: "1.4.0" },
-        instructions: "Sid'note est l'application d'organisation de la personne (agenda, cours, tâches, notes, nutrition, musculation). Dates en AAAA-MM-JJ, heure de Bruxelles. Quand la personne demande un rappel pour une activité (ex. 1 h avant), passe-le dans reminders (en minutes) avec ajouter_activite ou modifier_activite : c'est une notification sur son téléphone. Quand la personne dit ce qu'elle a mangé ou envoie la photo de son assiette (si elle parle d'une photo envoyée depuis Sid'note, elle est jointe à nutrition_journee, ou lis-la avec photo_repas), estime toi-même calories et macros puis note-le avec noter_repas (sans redemander, sauf doute sur la quantité). Pour un menu, lis d'abord nutrition_journee puis enregistre-le avec enregistrer_menu. Après un bilan ou un commentaire nutrition (jour ou semaine), enregistre-le avec enregistrer_commentaire pour qu'il s'affiche dans l'app. Quand la personne parle d'une chose à faire un jour précis, ajoute la tâche avec sa date (ajouter_tache) : elle apparaîtra ce jour-là dans son agenda et passera au lendemain si elle n'est pas faite. Pour une note, propose un dossier (folder) si c'est utile. Pour la musculation, lis muscu_programme avant d'ajuster, puis enregistre avec enregistrer_programme ; une séance racontée se note avec noter_seance. Les mots de passe, documents et notes secrètes sont chiffrés et jamais accessibles.",
+        serverInfo: { name: "sidnote", title: "Sid'note", version: "1.5.0" },
+        instructions: "Sid'note est l'application d'organisation de la personne (agenda, cours, tâches, notes, nutrition, musculation). Dates en AAAA-MM-JJ, heure de Bruxelles. Quand la personne demande un rappel pour une activité (ex. 1 h avant), passe-le dans reminders (en minutes) avec ajouter_activite ou modifier_activite : c'est une notification sur son téléphone. Quand la personne dit ce qu'elle a mangé ou envoie la photo de son assiette (si elle parle d'une photo envoyée depuis Sid'note, elle est jointe à nutrition_journee, ou lis-la avec photo_repas), estime toi-même calories et macros puis note-le avec noter_repas (sans redemander, sauf doute sur la quantité). Pour un menu, lis d'abord nutrition_journee puis enregistre-le avec enregistrer_menu. Après un bilan ou un commentaire nutrition (jour ou semaine), enregistre-le avec enregistrer_commentaire pour qu'il s'affiche dans l'app. Quand la personne parle d'une chose à faire un jour précis, ajoute la tâche avec sa date (ajouter_tache) : elle apparaîtra ce jour-là dans son agenda et passera au lendemain si elle n'est pas faite. Pour une note, propose un dossier (folder) si c'est utile ; pour corriger, compléter ou remettre au propre une note qui existe déjà, utilise modifier_note (ne crée pas de doublon). Pour la musculation, lis muscu_programme avant d'ajuster, puis enregistre avec enregistrer_programme ; une séance racontée se note avec noter_seance. Les mots de passe, documents et notes secrètes sont chiffrés et jamais accessibles.",
       });
     case "ping":
       return rpcOk(id, {});

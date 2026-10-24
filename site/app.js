@@ -3201,6 +3201,9 @@ $("psForgot").addEventListener("click",async e=>{const b=e.currentTarget;if(!ps)
   const f=ps.forgot;psEnd(null);f()});
 
 /* ---------- v38 : connecteur Claude (fonction Edge « mcp ») ---------- */
+// v45.2 : adresse sur le domaine de l'app (sidcompagnon.com/mcp/<clé>, relayée par Netlify vers la fonction Supabase, voir site/_redirects) :
+// Claude affiche l'icône du site de l'adresse. Les anciennes adresses …supabase.co/functions/v1/mcp/<clé> marchent toujours.
+const MCP_BASE="https://sidcompagnon.com/mcp/";
 // Une adresse secrète par personne : …/functions/v1/mcp/<clé>. Seule l'empreinte SHA-256 de la clé est gardée (table mcp_tokens) ;
 // la clé n'est montrée qu'une fois. Retirer une adresse coupe aussitôt l'accès de Claude.
 let mcpRows=[];
@@ -3214,7 +3217,7 @@ async function mcpLoad(){const sec=$("mcpSec");if(!sec)return;sec.hidden=!sessio
 async function mcpCreate(label){const key=b64e(crypto.getRandomValues(new Uint8Array(32))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
   const hash=hex(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(key)));
   await api("/rest/v1/mcp_tokens",{method:"POST",token:await token(),headers:{Prefer:"return=minimal"},body:{hash,user_id:session.user.id,label:String(label||"IA").slice(0,40)}});
-  return {url:SUPABASE_URL+"/functions/v1/mcp/"+key,hash}}
+  return {url:MCP_BASE+key,hash}}
 $("mcpNew").addEventListener("click",async e=>{const b=e.currentTarget;if(b.disabled)return;b.disabled=true;
   try{const r=await mcpCreate("Claude");$("mcpUrl").textContent=r.url;$("mcpOut").hidden=false;await mcpLoad()}
   catch(ex){toast(ex instanceof TypeError?"Pas de connexion internet":"Création impossible pour l'instant")}
@@ -4769,7 +4772,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v45-1";
+const BUILD="sidnote-v45-2";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

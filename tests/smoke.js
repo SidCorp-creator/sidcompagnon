@@ -519,7 +519,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     // adresse pour Claude
     await pg.evaluate(()=>{show("more");document.querySelector('[data-sec="claude"]').open=true});await pg.waitForTimeout(500);
     await pg.click("#mcpNew");await pg.waitForTimeout(800);
-    const url=await pg.textContent("#mcpUrl");if(!/\/functions\/v1\/mcp\/[A-Za-z0-9_-]{40,}$/.test(url))err("adresse Claude incorrecte : "+url);
+    const url=await pg.textContent("#mcpUrl");if(!/^https:\/\/sidcompagnon\.com\/mcp\/[A-Za-z0-9_-]{40,}$/.test(url))err("adresse Claude incorrecte : "+url); // v45.2 : sur le domaine de l'app
     if(await pg.locator("#mcpList [data-mcpdel]").count()!==1)err("adresse Claude absente de la liste");
     await shot(pg,"v38-claude");
     await pg.click("#mcpList [data-mcpdel]");await pg.click("#mcpList [data-mcpdel]");await pg.waitForTimeout(600);
@@ -588,7 +588,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     // v42 : Claude seulement, l'assistant va directement aux étapes de Claude
     await pg.evaluate(()=>aiWizard());await pg.waitForTimeout(900);await shot(pg,"v39-ia-etapes");
     if(await pg.locator("[data-aipick]").count())err("le choix d'une autre IA est encore proposé");
-    const au=await pg.textContent("#aiUrl");if(!/\/functions\/v1\/mcp\//.test(au))err("adresse pas créée dans l'assistant : "+au);
+    const au=await pg.textContent("#aiUrl");if(!/^https:\/\/sidcompagnon\.com\/mcp\//.test(au))err("adresse pas créée dans l'assistant : "+au);
     const ah=await pg.getAttribute("[data-aiadd]","href").catch(()=>"");
     if(!(ah.startsWith("https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=Sid'note")&&ah.includes("connectorUrl="+encodeURIComponent(au))))err("lien Claude pré-rempli incorrect : "+ah);
     await pg.click('[data-aistep="test"]');await pg.waitForTimeout(300);await pg.evaluate(async()=>{await fetch(SUPABASE_URL+"/__mcpuse")});

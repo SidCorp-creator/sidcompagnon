@@ -1411,7 +1411,7 @@ $("slBody").addEventListener("click",async e=>{const b=e.target.closest("button"
   else if(d.slclear){const ids=slItems.filter(x=>x.done);slItems=slItems.filter(x=>!x.done);renderLists();
     try{await slApi(`/rest/v1/shared_items?list_id=eq.${slOpen}&done=eq.true`,{method:"DELETE"});toast(`${ids.length} ${L(ids.length>1?"éléments retirés":"élément retiré")}`)}catch(ex){slErr=slErrMsg(ex);slLoad()}}
   else if(d.slinvite){const l=slLists.find(x=>x.id===slOpen);if(!l)return;
-    const txt=`${L("Rejoins ma liste")} « ${l.name} » ${L("sur Sid'note avec le code")} ${l.code} : https://sidnote.netlify.app/#rejoindre=${l.code}`;
+    const txt=`${L("Rejoins ma liste")} « ${l.name} » ${L("sur Sid'note avec le code")} ${l.code} : ${location.origin}/#rejoindre=${l.code}`;
     try{if(navigator.share){await navigator.share({title:"Sid'note",text:txt});return}}catch(ex){if(ex.name==="AbortError")return}
     toast(await copyTxt(txt)?L("Invitation copiée : colle-la dans un message"):`${L("Code")} : ${l.code}`,5000)}
   else if(d.slleave){if(slArmed!=="leave"){slArmed="leave";renderLists();setTimeout(()=>{if(slArmed==="leave"){slArmed="";renderLists()}},4000);return}
@@ -1419,7 +1419,7 @@ $("slBody").addEventListener("click",async e=>{const b=e.target.closest("button"
     try{if(l.owner===session.user.id)await slApi(`/rest/v1/shared_lists?id=eq.${l.id}`,{method:"DELETE"});
       else await slApi(`/rest/v1/shared_members?list_id=eq.${l.id}&user_id=eq.${session.user.id}`,{method:"DELETE"});
       slOpen=null;slItems=[];await slLoad();toast(l.owner===session.user.id?"Liste supprimée":"Tu as quitté la liste")}catch(ex){slErr=slErrMsg(ex);renderLists()}}});
-// lien d'invitation : https://sidnote.netlify.app/#rejoindre=CODE (gardé jusqu'à la connexion si besoin)
+// lien d'invitation : <adresse du site>/#rejoindre=CODE (gardé jusqu'à la connexion si besoin)
 function slFromHash(){const m=location.hash.match(/rejoindre=([A-Za-z0-9]{4,8})/);if(!m)return false;ls.set("sidnote-join",m[1].toUpperCase());history.replaceState(null,"",location.pathname+location.search);return true}
 slFromHash();
 addEventListener("hashchange",()=>{if(slFromHash()&&session&&!isTrial())show("lists")}); // lien ouvert alors que l'app l'est déjà
@@ -4649,7 +4649,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v44-7";
+const BUILD="sidnote-v44-8";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

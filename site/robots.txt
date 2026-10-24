@@ -9,4 +9,4 @@ Allow: /llms.txt
 Disallow: /lib/
 Disallow: /fonts/
 
-Sitemap: https://sidnote.netlify.app/sitemap.xml
+Sitemap: https://sidcompagnon.com/sitemap.xml

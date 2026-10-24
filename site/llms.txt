@@ -5,6 +5,6 @@
 Les données des personnes sont privées (compte Supabase, Europe) et ne sont pas accessibles publiquement. Un connecteur MCP permet au Claude de chaque personne de lire et écrire dans son propre compte, avec une clé personnelle.
 
 ## Pages publiques
-- [Politique de confidentialité](https://sidnote.netlify.app/confidentialite.html)
-- [Conditions d'utilisation](https://sidnote.netlify.app/conditions.html)
-- [Politique des cookies](https://sidnote.netlify.app/cookies.html)
+- [Politique de confidentialité](https://sidcompagnon.com/confidentialite.html)
+- [Conditions d'utilisation](https://sidcompagnon.com/conditions.html)
+- [Politique des cookies](https://sidcompagnon.com/cookies.html)

@@ -511,13 +511,13 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>{pwdLock();bioAutoAt.main=Date.now();show("pwd")});await pg.waitForTimeout(300);
     if(!(await pg.isVisible("#pinBio")))err("bouton Face ID absent sur le clavier du code");
     await shot(pg,"v38-faceid-clavier");
-    await pg.click("#pinBio");await pg.waitForFunction(()=>!!vaultKey,null,{timeout:15000}).catch(()=>err("Face ID n'ouvre pas les mots de passe"));
+    await pg.evaluate(()=>{renderPwd();$("pinBio").click()}); // le bouton peut clignoter pendant une synchro : on vise directement l'actionawait pg.waitForFunction(()=>!!vaultKey,null,{timeout:15000}).catch(()=>err("Face ID n'ouvre pas les mots de passe"));
     // code changé ailleurs : Face ID se retire proprement, le code reste possible
     await pg.evaluate(async()=>{const s=ls.get(bioLsKey());const k=await bioPrf(s);s.main=await encJ(k,{c:"11111"});ls.set(bioLsKey(),s);pwdLock();bioAutoAt.main=Date.now();show("pwd")});await pg.waitForTimeout(300);
-    await pg.click("#pinBio");await pg.waitForTimeout(2500);
+    await pg.waitForFunction(()=>{if(vaultKey)pwdLock();return !vaultKey&&pinStep==="unlock"&&!$("pinBio").hidden},null,{timeout:5000}).catch(()=>{});await pg.click("#pinBio");await pg.waitForTimeout(2500);
     if(await pg.evaluate(()=>!!vaultKey||bioHas("main")))err("mauvais code Face ID mal géré");
     // adresse pour Claude
-    await pg.evaluate(()=>{show("more");document.querySelector('[data-sec="claude"]').open=true});await pg.waitForTimeout(500);
+    await pg.evaluate(()=>{show("more");document.querySelector('[data-sec="claude"]').open=true;$("aiAdv").open=true});await pg.waitForTimeout(500);
     await pg.click("#mcpNew");await pg.waitForTimeout(800);
     const url=await pg.textContent("#mcpUrl");if(!/^https:\/\/sidcompagnon\.com\/mcp\/[A-Za-z0-9_-]{40,}$/.test(url))err("adresse Claude incorrecte : "+url); // v45.2 : sur le domaine de l'app
     if(await pg.locator("#mcpList [data-mcpdel]").count()!==1)err("adresse Claude absente de la liste");
@@ -1119,6 +1119,31 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
       const sv=[...f.querySelectorAll("button[type=submit]")][0].getBoundingClientRect();return {sw:f.scrollWidth,cw:f.clientWidth,bad,save:sv.right<=fr.right+1,page:document.documentElement.scrollWidth<=innerWidth+1}});
     if(ov.sw>ov.cw+1||ov.bad.length||!ov.save||!ov.page)err("« Modifier l'activité » déborde : "+JSON.stringify(ov));
     await shot(pg,"v46-"+nm+"-modifier-activite");
+    await pg.evaluate(()=>{document.querySelectorAll(".sheet-bg").forEach(x=>x.hidden=true);syncScrollLock()});
+    // --- v46.1 (phase 2) : réglages Claude = un état + une action, le reste dans « Avancé » ; une conversation par app ; « Revoir les étapes » en haut
+    await pg.evaluate(()=>{window.__open=[];window.open=u=>{window.__open.push(u);return null};show("more");$("mcpSec").open=true;renderAiCards()});await pg.waitForTimeout(200);
+    const st=await pg.evaluate(()=>({t:$("aiState").textContent.trim(),b:$("aiMain").textContent.trim(),adv:$("aiAdv").open,fit:!!$("fitSec")}));
+    if(st.t!=="Claude n'est pas branché"||st.b!=="Brancher Claude"||st.adv||st.fit)err("réglages Claude (pas branché) : "+JSON.stringify(st));
+    await shot(pg,"v461-"+nm+"-reglages-claude");
+    await pg.evaluate(()=>{data.prefs.ai="claude";data.prefs.aiOk=new Date().toISOString();save();renderAiCards();convSettings("note")});await pg.waitForTimeout(400);
+    if(!(await pg.isVisible("#convNote"))||!(await pg.isVisible("#convAgenda")))err("conversations sid'agenda / sid'note absentes de « Avancé »");
+    if(await pg.evaluate(()=>$("aiState").textContent.trim()+"|"+$("aiMain").textContent.trim())!=="Claude est branché|Tester la connexion")err("état « branché » mal affiché");
+    await shot(pg,"v461-"+nm+"-reglages-avance");
+    // sans lien : nouvelle conversation qui commence par le titre de l'app ; le lien collé dans la fenêtre est gardé
+    const o=await pg.evaluate(()=>{aiGo("agenda","Ajoute dentiste demain");return decodeURIComponent(window.__open.slice(-1)[0])});
+    if(!o.startsWith("https://claude.ai/new?q=sid'agenda — discussion avec Claude\n\nAjoute dentiste"))err("nouvelle conversation sid'agenda sans titre : "+o);
+    await pg.evaluate(()=>{show("plan");aiHandoff("Note mon cours","note")});await pg.waitForTimeout(200);
+    if(!(await pg.isVisible("#aaConvIn")))err("pas de champ pour garder la conversation sid'note");
+    await shot(pg,"v461-"+nm+"-garder-conversation");
+    await pg.fill("#aaConvIn","https://claude.ai/chat/3333-cccc");await pg.click(".aa-conv button");await pg.waitForTimeout(200);
+    if(await pg.evaluate(()=>(data.prefs.aiConv||{}).note)!=="https://claude.ai/chat/3333-cccc"||await pg.isVisible("#aiAskSheet"))err("lien de la conversation sid'note pas gardé");
+    if(await pg.evaluate(()=>aiGo("note","x",true))!=="chat"||await pg.evaluate(()=>window.__open.slice(-1)[0])!=="https://claude.ai/chat/3333-cccc")err("sid'note n'ouvre pas sa conversation");
+    // l'ancien dossier Santé ne sert pas à sid'note ni à sid'agenda
+    if(await pg.evaluate(()=>{data.prefs.aiProj="https://claude.ai/project/9999";return convUrl("agenda")+convUrl("muscu")})!=="https://claude.ai/project/9999")err("dossier Santé mal appliqué");
+    await pg.evaluate(()=>{aiWizard()});await pg.waitForTimeout(200);
+    const fb=await pg.evaluate(()=>{const f=$("aiBody").firstElementChild;return f&&f.matches(".ai-back[data-aistep=setup]")&&f.getBoundingClientRect().height>=40});
+    if(!fb)err("« Revoir les étapes » pas en haut de l'assistant");
+    await shot(pg,"v461-"+nm+"-assistant");
     await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");

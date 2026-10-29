@@ -597,36 +597,39 @@
     </div>
       </div>
     </details>
-    <details class="setsec" data-sec="sidfit" id="fitSec"><summary><span>Sid'fit : conversations Claude</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
-      <div class="setsec-in">
-    <div class="card">
-      <div class="row"><div class="grow small muted">Pour garder ton historique Claude propre, toutes les demandes Nutrition passent par une seule conversation, et toutes les demandes Musculation par une autre. Sid'compagnon copie le message puis ouvre la conversation : tu n'as plus qu'à coller.</div></div>
-      <form class="conv-f" data-conv="nutri"><label for="convNutri" class="eyebrow">Lien de la conversation Nutrition</label>
-        <div class="conv-row"><input id="convNutri" type="url" inputmode="url" placeholder="https://claude.ai/project/…" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div></form>
-      <form class="conv-f" data-conv="muscu"><label for="convMuscu" class="eyebrow">Lien de la conversation Musculation</label>
-        <div class="conv-row"><input id="convMuscu" type="url" inputmode="url" placeholder="https://claude.ai/project/…" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div></form>
-      <div class="row"><div class="grow small muted">Conseillé : un projet Claude par sujet (lien https://claude.ai/project/…). Chaque demande s'ouvre alors dans le projet avec le message déjà écrit, il ne reste qu'à l'envoyer. Avec une conversation (https://claude.ai/chat/…), le message est copié et il faut le coller. Pour trouver le lien : ouvre le projet sur claude.ai (dans Safari ou sur ordinateur) et copie l'adresse de la page. N'utilise pas « Partager » dans Claude : ce lien-là est public. Laisse vide pour ouvrir une nouvelle conversation à chaque fois.</div></div>
-    </div>
-      </div></details>
     <details class="setsec" data-sec="claude" id="mcpSec"><summary><span>Claude</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
       <div class="setsec-in">
     <div class="card">
-      <div class="row"><div class="grow small muted">Relie Sid'compagnon à Claude : il calcule tes repas, crée tes menus et tes programmes, lit ton agenda et ajoute tâches et notes, puis tout arrive ici. Il ne voit jamais tes mots de passe, tes documents ni tes notes secrètes.</div></div>
-      <div class="row"><div class="grow" id="aiState"></div></div>
-      <div class="row"><button type="button" class="btn" data-aiwiz="1" style="width:100%">Brancher Claude</button></div>
-      <div class="row"><div class="grow small muted">Adresses déjà créées (avancé) :</div></div>
-      <div id="mcpList"></div>
-      <div class="row"><button type="button" class="btn ghost" id="mcpNew" style="width:100%">Créer mon adresse pour Claude</button></div>
-      <div id="mcpOut" hidden>
-        <div class="row" style="display:block"><div class="small muted" style="margin-bottom:6px">Ton adresse (affichée une seule fois, garde-la pour toi) :</div>
-          <div class="mcp-url notr" id="mcpUrl"></div>
-          <button type="button" class="btn ghost" id="mcpCopy" style="width:100%;margin-top:8px">Copier l'adresse</button></div>
-        <div class="row" style="display:block"><ol class="small mcp-steps">
-          <li>Ouvre claude.ai → Paramètres → Connecteurs.</li>
-          <li>Touche « Ajouter un connecteur personnalisé ».</li>
-          <li>Nom : Sid'note. URL : colle l'adresse. Authentification : « Aucune connexion ».</li>
-          <li>Touche « Ajouter » : c'est prêt.</li></ol></div>
-      </div>
+      <div class="ai-st" id="aiState"></div>
+      <div class="row"><button type="button" class="btn" data-aiwiz="1" id="aiMain" style="width:100%">Brancher Claude</button></div>
+      <div class="row"><div class="grow small muted">Claude calcule tes repas, crée tes menus et tes programmes, lit ton agenda et ajoute tâches et notes, puis tout arrive ici. Il ne voit jamais tes mots de passe, tes documents ni tes notes secrètes.</div></div>
+      <details class="ai-adv" id="aiAdv"><summary>Avancé</summary>
+        <div class="ai-adv-h">Une conversation par app</div>
+        <div class="small muted">Chaque app garde sa propre conversation avec Claude : toutes ses demandes y passent, ton historique reste rangé. Colle ici le lien de la conversation (ou d'un projet). Laisse vide pour en ouvrir une nouvelle.</div>
+        <form class="conv-f" data-conv="agenda"><label for="convAgenda" class="eyebrow">sid'agenda — discussion avec Claude</label>
+          <div class="conv-row"><input id="convAgenda" type="url" inputmode="url" placeholder="https://claude.ai/chat/…" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div></form>
+        <form class="conv-f" data-conv="nutri"><label for="convNutri" class="eyebrow">sid'fit — Nutrition</label>
+          <div class="conv-row"><input id="convNutri" type="url" inputmode="url" placeholder="https://claude.ai/chat/…" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div></form>
+        <form class="conv-f" data-conv="muscu"><label for="convMuscu" class="eyebrow">sid'fit — Musculation</label>
+          <div class="conv-row"><input id="convMuscu" type="url" inputmode="url" placeholder="https://claude.ai/chat/…" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div></form>
+        <form class="conv-f" data-conv="note"><label for="convNote" class="eyebrow">sid'note — discussion avec Claude</label>
+          <div class="conv-row"><input id="convNote" type="url" inputmode="url" placeholder="https://claude.ai/chat/…" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div></form>
+        <div class="small muted" style="margin-top:8px">Pour trouver le lien : ouvre la conversation sur claude.ai (navigateur ou ordinateur) et copie l'adresse de la page. Avec un projet (https://claude.ai/project/…), le message est déjà écrit ; avec une conversation, il est copié et il suffit de le coller. N'utilise pas « Partager » dans Claude : ce lien-là est public.</div>
+        <div class="ai-adv-h">Adresses du connecteur</div>
+        <div id="mcpList"></div>
+        <div class="row"><button type="button" class="btn ghost" id="mcpNew" style="width:100%">Créer mon adresse pour Claude</button></div>
+        <div id="mcpOut" hidden>
+          <div class="row" style="display:block"><div class="small muted" style="margin-bottom:6px">Ton adresse (affichée une seule fois, garde-la pour toi) :</div>
+            <div class="mcp-url notr" id="mcpUrl"></div>
+            <button type="button" class="btn ghost" id="mcpCopy" style="width:100%;margin-top:8px">Copier l'adresse</button></div>
+          <div class="row" style="display:block"><ol class="small mcp-steps">
+            <li>Ouvre claude.ai → Paramètres → Connecteurs.</li>
+            <li>Touche « Ajouter un connecteur personnalisé ».</li>
+            <li>Nom : Sid'note. URL : colle l'adresse. Authentification : « Aucune connexion ».</li>
+            <li>Touche « Ajouter » : c'est prêt.</li></ol></div>
+        </div>
+        <div class="row"><button type="button" class="btn ghost" data-aiwiz="setup" style="width:100%">Rebrancher Claude</button></div>
+      </details>
     </div>
       </div>
     </details>
@@ -666,7 +669,7 @@
     <div class="card" id="stats"></div>
       </div>
     </details>
-    <p class="small muted" style="margin:18px 4px">Sid'compagnon · version 46 · une app <b>SidCorp</b></p>
+    <p class="small muted" style="margin:18px 4px">Sid'compagnon · version 46.1 · une app <b>SidCorp</b></p>
   </section>
 </main>
 

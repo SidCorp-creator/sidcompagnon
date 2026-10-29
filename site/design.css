@@ -917,3 +917,13 @@ html[data-ds] .pdfv input.pv-title{border:0!important;background:transparent!imp
 .tchips,.sheet .chips,.rem-box .chips,.rem-box > div{flex-wrap:wrap!important;max-width:100%}
 .tchips{overflow:visible}
 @media (max-width:380px){.sheet .two{gap:6px}}
+
+/* v46.1 : réglages Claude simplifiés (un état, une action, le reste dans « Avancé ») */
+.ai-st{display:flex;align-items:center;gap:10px;padding:4px 2px 12px;font-size:17px}
+.ai-dot{width:10px;height:10px;border-radius:50%;background:var(--muted);flex:none}
+.ai-st.on .ai-dot{background:var(--good,#2e7d32)}
+.ai-adv{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+.ai-adv > summary{cursor:pointer;color:var(--muted);padding:8px 2px;font-size:15px}
+.ai-adv-h{font-weight:600;margin:16px 0 4px}
+.ai-back{width:100%;margin:0 0 14px;font-size:16px}
+.aa-conv{margin-top:6px;padding-top:10px;border-top:1px solid var(--line)}

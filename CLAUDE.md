@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 46.** L'app s'appelle **Sid'compagnon** depuis la v45 (avant : Sid'home, v42–44). Adresse : **https://sidcompagnon.com** depuis la 44.8 (sidnote.netlify.app répond encore).
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 46.1.** L'app s'appelle **Sid'compagnon** depuis la v45 (avant : Sid'home, v42–44). Adresse : **https://sidcompagnon.com** depuis la 44.8 (sidnote.netlify.app répond encore).
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -279,6 +279,12 @@ assets/               ← logo
   - Fenêtres (`.sheet`) : plus aucun débordement horizontal (`min-width:0` sur les champs, grilles `minmax(0,1fr)`, `.tchips` passent à la ligne : la rangée des types en `nowrap` élargissait « Modifier l'activité »). Test v46 avec 12 types longs, smartphone + ordinateur + écran étroit.
   - iCal : mise à jour automatique toutes les 6 h (`ICAL_EVERY`), « ↻ Actualiser » immédiat.
   - Google : données structurées `WebSite` (nom « Sid'compagnon », dans un `<script type="application/ld+json">`, non exécuté donc compatible CSP), `og:site_name`, les 12 en-têtes cachés « Sid'note » des écrans renommés, manifest aux couleurs sombres, sitemap daté.
+- v46.1 (phase 2, tickets #10 à #12) :
+  - **Une conversation Claude par app** : `data.prefs.aiConv = {agenda, nutri, muscu, note}` (`CONV_IN`, `CONV_NAME`, `CONV_TITLE`). Sans lien réglé, la nouvelle conversation commence par le titre de l'app (`convFirst` : « sid'agenda — discussion avec Claude », « sid'note — discussion avec Claude », « sid'fit — Nutrition / Musculation ») et la fenêtre d'envoi propose de coller son lien (`.aa-conv`, `#aaConvIn`) pour que toutes les demandes suivantes y aillent. L'ancien dossier Santé (`aiProj`) ne sert plus qu'à nutri / muscu. Formulaires `.conv-f` gérés par un seul `submit` délégué.
+  - **Réglages > Claude simplifié** : un état (`#aiState`, point vert « Claude est branché » / « Claude n'est pas branché »), une action (`#aiMain` : « Brancher Claude » / « Tester la connexion »), le reste dans `<details id="aiAdv">` « Avancé » (4 conversations, adresses du connecteur, « Rebrancher Claude » = `data-aiwiz="setup"`). La section « Sid'fit : conversations Claude » (`#fitSec`) est retirée ; `convSettings(t)` ouvre « Avancé » sur le bon champ.
+  - Assistant : « ↺ Revoir les étapes » en haut, en bouton principal (`.ai-back`).
+  - Les messages envoyés à Claude disent toujours « Sid'note » (nom du connecteur chez les gens : ne pas renommer).
+  - Test Face ID du smoke rendu stable (attend que le coffre soit bien reverrouillé avant de toucher le bouton).
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

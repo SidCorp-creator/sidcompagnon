@@ -103,7 +103,7 @@ async function api(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="46";const errSent=new Set();
+const APP_V="46.1";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -3259,7 +3259,7 @@ const aiCur=()=>data.prefs.ai==="claude"?AIS.claude:null; // v42 : Claude seulem
 const AI_TEST=()=>T3("Qu'est-ce que j'ai de prévu aujourd'hui dans Sid'note ?","What do I have planned today in Sid'note?","Wat staat er vandaag gepland in Sid'note?");
 const AI_HABIT=()=>T3("À partir de maintenant, quand je te dis ce que j'ai mangé ou que je t'envoie la photo de mon assiette, calcule les calories et note-le toujours dans Sid'note, sans me le redemander.","From now on, whenever I tell you what I ate or send a photo of my plate, work out the calories and always log it in Sid'note without asking me again.","Vanaf nu: als ik je vertel wat ik gegeten heb of een foto van mijn bord stuur, bereken de calorieën en noteer het altijd in Sid'note zonder het opnieuw te vragen.");
 let aiW={step:"pick",url:"",hash:"",poll:null};
-function aiWizard(){if(data.prefs.ai!=="claude"){data.prefs.ai="claude";delete data.prefs.aiOk;save()}aiW={step:data.prefs.aiOk?"test":"setup",url:"",hash:"",poll:null};$("aiSheet").hidden=false;aiRender()}
+function aiWizard(step){if(data.prefs.ai!=="claude"){data.prefs.ai="claude";delete data.prefs.aiOk;save()}aiW={step:step==="setup"?"setup":data.prefs.aiOk?"test":"setup",url:"",hash:"",poll:null};$("aiSheet").hidden=false;aiRender()}
 function aiStop(){if(aiW.poll){clearInterval(aiW.poll);aiW.poll=null}}
 function aiRender(){const b=$("aiBody"),ai=aiCur()||AIS.claude;aiStop();
   if(aiW.step==="none"){$("aiTitle").textContent=L("Créer un compte Claude");
@@ -3276,13 +3276,14 @@ function aiRender(){const b=$("aiBody"),ai=aiCur()||AIS.claude;aiStop();
       .catch(ex=>{const u=$("aiUrl");if(u)u.textContent=L(ex instanceof TypeError?"Pas de connexion internet":"Création impossible pour l'instant");toast(ex instanceof TypeError?"Pas de connexion internet":"Création impossible pour l'instant")});
     return}
   if(aiW.step==="test"){$("aiTitle").textContent=ai.name;const ok=!!data.prefs.aiOk&&!aiW.hash;
-    b.innerHTML=`<div class="ai-step"><b>3. ${L("Envoie ce message à")} ${esc(ai.name)}</b><div class="ai-prompt notr">${esc(AI_TEST())}</div>
+    b.innerHTML=`<button type="button" class="btn ai-back" data-aistep="setup">↺ ${L("Revoir les étapes")}</button>
+      <div class="ai-step"><b>3. ${L("Envoie ce message à")} ${esc(ai.name)}</b><div class="ai-prompt notr">${esc(AI_TEST())}</div>
         <a class="btn" href="${ai.ask(AI_TEST())}" target="_blank" rel="noopener" style="width:100%;margin-top:8px">${L("Envoyer avec")} ${esc(ai.name)}</a></div>
       <div class="ai-wait" id="aiWait">${ok?`<b class="ok">✓ ${L("C'est branché !")}</b>`:`<span class="spin"></span>${L("En attente de Claude… (accepte l'accès à Sid'note s'il te le demande)")}`}</div>
       <div class="ai-step" id="aiHabit" ${ok?"":"hidden"}><b>${L("Dernière astuce")}</b><div class="small muted">${L("Pour que tes repas arrivent tout seuls dans Sid'note, envoie-lui une fois ce message :")}</div>
         <div class="ai-prompt notr">${esc(AI_HABIT())}</div><a class="btn ghost" href="${ai.ask(AI_HABIT())}" target="_blank" rel="noopener" style="width:100%;margin-top:8px">${L("Envoyer avec")} ${esc(ai.name)}</a>
-        <button type="button" class="btn ghost" data-convset="1" style="width:100%;margin-top:8px">${L("Toujours utiliser la même conversation")}</button></div>
-      <div class="ai-acts"><button type="button" class="btn ghost" data-aistep="setup">${L("Revoir les étapes")}</button><button type="button" class="btn" id="aiDone" ${ok?"":"hidden"}>${L("Terminer")}</button></div>`;
+        <button type="button" class="btn ghost" data-convset="nutri" style="width:100%;margin-top:8px">${L("Une conversation par app")}</button></div>
+      <div class="ai-acts"><button type="button" class="btn" id="aiDone" ${ok?"":"hidden"}>${L("Terminer")}</button></div>`;
     if(!ok)aiW.poll=setInterval(aiCheck,3000);return}}
 // le branchement est confirmé dès que l'IA a utilisé l'adresse (mcp_tokens.last_used)
 async function aiCheck(){if($("aiSheet").hidden){aiStop();return}
@@ -3296,16 +3297,21 @@ $("aiBody").addEventListener("click",e=>{const p=e.target.closest("[data-aipick]
   if(e.target.closest("#aiDone")){$("aiSheet").hidden=true;aiStop();toast("Claude est branché sur Sid'note")}});
 $("aiClose").addEventListener("click",()=>{$("aiSheet").hidden=true;aiStop()});
 $("aiSheet").addEventListener("click",e=>{if(e.target.id==="aiSheet"){$("aiSheet").hidden=true;aiStop()}});
-document.addEventListener("click",e=>{if(e.target.closest("[data-aiwiz]")){$("aiAskSheet").hidden=true;aiWizard()}
-  else if(e.target.closest("[data-convset]")){$("aiAskSheet").hidden=true;$("aiSheet").hidden=true;aiStop();convSettings()}});
+document.addEventListener("click",e=>{const w=e.target.closest("[data-aiwiz]");if(w){$("aiAskSheet").hidden=true;aiWizard(w.dataset.aiwiz)}
+  else if(e.target.closest("[data-convset]")){$("aiAskSheet").hidden=true;$("aiSheet").hidden=true;aiStop();convSettings(e.target.closest("[data-convset]").dataset.convset)}});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&!$("aiSheet").hidden&&aiW.step==="test")aiCheck()});
 // demande confiée à Claude : message prêt, ouvert dans Claude d'un toucher (ou copié)
 // v44 : une conversation fixe par sujet (data.prefs.aiConv = {nutri, muscu}, liens claude.ai/chat/… ou claude.ai/project/…) pour ne pas
 // ouvrir une nouvelle conversation à chaque demande : une conversation existante ne peut pas être pré-remplie, donc le message est copié
 // puis la conversation s'ouvre, il n'y a plus qu'à coller. Ancien « Dossier Santé » (data.prefs.aiProj) : sert de repli pour les deux sujets.
 const CONV_OK=u=>/^https:\/\/claude\.ai\/(?:chat|project)\/[\w-]+/.test(u||"");
-const convUrl=t=>{const c=(data.prefs.aiConv||{})[t];return CONV_OK(c)?c:t!=="agenda"&&CONV_OK(data.prefs.aiProj)?data.prefs.aiProj:""}; // l'ancien dossier Santé ne sert pas à l'agenda
-const CONV_NAME={nutri:"Nutrition",muscu:"Musculation",agenda:"Agenda"};
+// v46.1 : une conversation par app (agenda, nutri, muscu, note) ; l'ancien dossier Santé ne sert qu'à sid'fit
+const convUrl=t=>{const c=(data.prefs.aiConv||{})[t];return CONV_OK(c)?c:(t==="nutri"||t==="muscu")&&CONV_OK(data.prefs.aiProj)?data.prefs.aiProj:""};
+const CONV_NAME={nutri:"Nutrition",muscu:"Musculation",agenda:"sid'agenda",note:"sid'note"};
+const CONV_TITLE={agenda:"sid'agenda — discussion avec Claude",nutri:"sid'fit — Nutrition",muscu:"sid'fit — Musculation",note:"sid'note — discussion avec Claude"};
+const CONV_IN={agenda:"convAgenda",nutri:"convNutri",muscu:"convMuscu",note:"convNote"};
+// nouvelle conversation : le titre de l'app en tête du premier message, pour la retrouver dans Claude et la garder
+const convFirst=(t,p)=>CONV_TITLE[t]&&!convUrl(t)?`${L(CONV_TITLE[t])}\n\n${p}`:p;
 // copie pendant le toucher (sinon l'iPhone la refuse), avec un repli sans l'API du presse-papiers
 function copyNow(t){try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).catch(()=>{});return}}catch(e){}
   const x=document.createElement("textarea");x.value=t;x.setAttribute("readonly","");x.style.position="fixed";x.style.opacity="0";document.body.appendChild(x);x.select();try{document.execCommand("copy")}catch(e){}x.remove()}
@@ -3317,14 +3323,15 @@ const convKind=t=>{const u=convUrl(t);return !u?"":projId(u)?"proj":"chat"};
 function aiGo(topic,prompt,quiet){const u=topic&&convUrl(topic),ai=aiCur()||AIS.claude,pid=projId(u);
   if(pid){extOpen(`https://claude.ai/new?project=${encodeURIComponent(pid)}&q=${encodeURIComponent(prompt)}`);return "proj"}
   if(u){copyNow(prompt);extOpen(u);if(!quiet)toast("Prompt copié, colle-le dans la conversation");return "chat"}
-  extOpen(ai.ask(prompt));return ""}
-function convSettings(){show("more");const d=$("fitSec");if(d){d.open=true;setTimeout(()=>{d.scrollIntoView({block:"start",behavior:"smooth"});const i=$("convNutri");if(i&&!i.value)i.focus({preventScroll:true})},120)}}
-function renderConv(){const c=data.prefs.aiConv||{};for(const[t,id]of[["nutri","convNutri"],["muscu","convMuscu"]]){const i=$(id);if(i&&document.activeElement!==i)i.value=c[t]||""}}
-document.querySelectorAll(".conv-f").forEach(f=>f.addEventListener("submit",e=>{e.preventDefault();const t=f.dataset.conv,v=f.querySelector("input").value.trim();
+  extOpen(ai.ask(convFirst(topic,prompt)));return ""}
+function convSettings(t){show("more");const d=$("mcpSec"),a=$("aiAdv");if(d){d.open=true;if(a)a.open=true;setTimeout(()=>{const i=$(CONV_IN[t]||"convAgenda");(i?i.closest(".conv-f"):a).scrollIntoView({block:"center",behavior:"smooth"});if(i&&!i.value&&!matchMedia("(pointer:coarse)").matches)i.focus({preventScroll:true})},120)}}
+function renderConv(){const c=data.prefs.aiConv||{};for(const[t,id]of Object.entries(CONV_IN)){const i=$(id);if(i&&document.activeElement!==i)i.value=c[t]||""}}
+document.addEventListener("submit",e=>{const f=e.target.closest(".conv-f");if(!f)return;e.preventDefault();const t=f.dataset.conv,v=f.querySelector("input").value.trim();
   if(v&&/^https:\/\/claude\.ai\/share\//.test(v)){toast("Ce lien de partage est public : copie plutôt l'adresse de la conversation (https://claude.ai/chat/…)");return}
   if(v&&!CONV_OK(v)){toast("Colle le lien complet de la conversation (https://claude.ai/chat/…)");return}
   const c=data.prefs.aiConv=data.prefs.aiConv||{};if(v)c[t]=v;else delete c[t];save();renderAiCards();
-  toast(v?`${L("Conversation")} ${L(CONV_NAME[t])} ${L("enregistrée")}`:`${L("Conversation")} ${L(CONV_NAME[t])} ${L("retirée : une nouvelle conversation s'ouvrira à chaque fois")}`)}));
+  if(f.closest("#aaActs"))$("aiAskSheet").hidden=true;
+  toast(v?`${L("Conversation")} ${L(CONV_NAME[t])} ${L("enregistrée")}`:`${L("Conversation")} ${L(CONV_NAME[t])} ${L("retirée : une nouvelle conversation s'ouvrira à chaque fois")}`)});
 // v43 : une photo ne passe pas dans un lien (?q= ne prend que du texte). On la partage avec la feuille de partage
 // (iPhone : app Claude, photo + message), sinon on la copie pour la coller dans Claude (ordinateur), ou on l'enregistre.
 let aaImg=null;
@@ -3342,9 +3349,10 @@ function aiHandoff(prompt,topic,opt){const ai=aiCur()||AIS.claude,cv=topic&&conv
       <button type="button" class="btn" id="aaImgCopy" hidden>${L("Copier la photo et ouvrir Claude")}</button>
       <a class="btn ghost" id="aaImgSave" href="${img}" download="assiette.jpg">${L("Enregistrer la photo")}</a>`:"")+
     (cv&&!img?`<button type="button" class="btn" data-aaconv="1">${L(convKind(topic)==="proj"?"Ouvrir dans le projet":"Ouvrir la conversation")} ${L(CONV_NAME[topic])}</button><div class="small muted" style="text-align:center">${L(convKind(topic)==="proj"?"Le message sera déjà écrit dans ton projet : il ne reste qu'à l'envoyer.":"Le message sera copié : colle-le dans la conversation.")}</div>`:"")+
-    (ai&&!cv&&!img?`<a class="btn ${data.prefs.aiOk?"":"ghost"}" href="${ai.ask(prompt)}" target="_blank" rel="noopener">${L("Envoyer avec")} ${esc(ai.name)}</a>`:"")+
+    (ai&&!cv&&!img?`<a class="btn ${data.prefs.aiOk?"":"ghost"}" href="${ai.ask(convFirst(topic,prompt))}" target="_blank" rel="noopener">${L("Envoyer avec")} ${esc(ai.name)}</a>`:"")+
     `<button type="button" class="btn ghost" id="aaCopy">${L("Copier le message")}</button>`+
-    (topic&&!cv&&ai&&data.prefs.aiOk?`<button type="button" class="linkbtn aa-proj" data-convset="1">${L("Toujours utiliser la même conversation")} ${L(CONV_NAME[topic]||"")}</button>`:"");
+    (CONV_TITLE[topic]&&!cv&&!img&&ai&&data.prefs.aiOk?`<form class="conv-f aa-conv" data-conv="${topic}"><label class="small muted" for="aaConvIn">${L("Ensuite, pour que toutes les demandes")} ${L(CONV_NAME[topic])} ${L("arrivent dans cette même conversation, colle ici son lien :")}</label>
+      <div class="conv-row"><input id="aaConvIn" type="url" inputmode="url" placeholder="https://claude.ai/chat/…" autocomplete="off"><button class="btn ghost" type="submit">${L("Enregistrer")}</button></div></form>`:"");
   $("aiAskSheet").hidden=false;if(img)aaImgPrep(img)}
 $("aaActs").addEventListener("click",e=>{
   if(e.target.closest("#aaShare")){if(!aaImg||!aaImg.file){toast("Photo en préparation, réessaie");return}
@@ -3360,7 +3368,8 @@ $("aaClose").addEventListener("click",()=>$("aiAskSheet").hidden=true);
 $("aiAskSheet").addEventListener("click",e=>{if(e.target.id==="aiAskSheet")$("aiAskSheet").hidden=true});
 // cartes « Mon IA » : Nutrition, Réglages
 function renderAiCards(){const ai=aiCur(),ok=!!(ai&&data.prefs.aiOk);
-  const st=$("aiState");if(st)st.innerHTML=ok?`<b class="ok">✓ ${esc(ai.name)} ${L("est branché")}</b><div class="small muted">${L("Conversations sid'fit")} : ${convUrl("nutri")||convUrl("muscu")?L("réglées"):L("pas encore")} · <button type="button" class="linkbtn" data-convset="1">${L(convUrl("nutri")||convUrl("muscu")?"Modifier":"Configurer")}</button></div>`:`<span class="small muted">${L("Claude n'est pas encore branché.")}</span>`;
+  const st=$("aiState");if(st){st.classList.toggle("on",ok);st.innerHTML=ok?`<span class="ai-dot"></span><b>${L("Claude est branché")}</b>`:`<span class="ai-dot"></span><b>${L("Claude n'est pas branché")}</b>`}
+  const mb=$("aiMain");if(mb)mb.textContent=L(ok?"Tester la connexion":"Brancher Claude");
   const c=$("nuAiCard");if(!c)return;c.hidden=isTrial()||ok; // v43 : Claude branché → la carte cède la place à « Ajouter ce que tu manges » (en haut)
   const lk=$("nuAiLink");if(lk){lk.hidden=!ok||isTrial();if(ok)lk.href=convUrl("nutri")||ai.ask(T3("J'ai mangé : ","I ate: ","Ik heb gegeten: "))}renderConv();
   c.innerHTML=ok?`<div class="grow"><b>${IC("sparkle")||""} ${L("Claude calcule pour toi")}</b><div class="small muted">${L("Dis-lui ce que tu as mangé ou envoie-lui la photo de ton assiette : tout arrive ici.")}</div></div><a class="btn" href="${ai.ask(T3("J'ai mangé : ","I ate: ","Ik heb gegeten: "))}" target="_blank" rel="noopener">${L("Ouvrir")} ${esc(ai.name)}</a>`
@@ -4595,7 +4604,7 @@ function trNode(n){
   while((x=w.nextNode()))if(x.nodeType===3)trNode(x);else for(const a of ["placeholder","aria-label","title"]){const v=x.getAttribute(a);if(v){const u=trStr(v);if(u!==v)x.setAttribute(a,u)}}
 }
 function startTranslate(){
-  document.documentElement.lang=LANG;document.title="Sid'note";
+  document.documentElement.lang=LANG;document.title="Sid'compagnon";
   if(LANG==="nl"){
     MO.splice(0,12,"jan.","feb.","mrt.","apr.","mei","jun.","jul.","aug.","sep.","okt.","nov.","dec.");
     MOL.splice(0,12,"Januari","Februari","Maart","April","Mei","Juni","Juli","Augustus","September","Oktober","November","December");
@@ -4697,7 +4706,7 @@ function maybeAskNotif(){if(!session||isTrial()||data.ui.notifAsked||!$("onb").h
   if(!can&&!(isIOS&&!standalone()))return; // navigateur sans notifications : rien à proposer
   $("naTitle").textContent=L("Ne rate plus rien");
   $("naText").textContent=L(can?"Active les notifications : Sid'compagnon te prévient avant tes rendez-vous, tes cours et tes échéances. Tu choisis quand, dans Agenda ou Réglages."
-    :"Pour recevoir des rappels avant tes rendez-vous et tes cours, installe d'abord Sid'note sur ton écran d'accueil, puis ouvre-le depuis son icône.");
+    :"Pour recevoir des rappels avant tes rendez-vous et tes cours, installe d'abord Sid'compagnon sur ton écran d'accueil, puis ouvre-le depuis son icône.");
   $("naYes").textContent=L(can?"Activer les notifications":"Voir comment l'installer");$("notifAsk").hidden=false}
 const naDone=()=>{data.ui.notifAsked=Date.now();saveUI();$("notifAsk").hidden=true};
 $("naYes").addEventListener("click",async e=>{if(pushOK()){await notifToggle(e.currentTarget);naDone()}else{naDone();show("app")}});
@@ -4788,7 +4797,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v46";
+const BUILD="sidnote-v46-1";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

@@ -1,6 +1,6 @@
-const CACHE = "sidnote-v18";
-const LIB = "sidnote-lib-1"; // lecteur PDF (pdf.js), gardé entre les versions
-const FILES = ["./", "./index.html", "./manifest.webmanifest", "./apple-touch-icon.png", "./icon-192.png", "./icon-512.png"];
+const CACHE = "sidnote-v45-3";
+const LIB = "sidnote-lib-2"; // lecteur PDF (pdf.js), gardé entre les versions
+const FILES = ["./", "./index.html", "./app.css", "./design.css", "./fonts.css", "./i18n.js", "./exercices.js", "./exercices-aide.js", "./app.js", "./manifest.webmanifest", "./icons/home.svg", "./icons/agenda.svg", "./icons/fit.svg", "./icons/note.svg", "./apple-touch-icon.png", "./icon-192.png", "./icon-512.png", "./logo-180.png", "./logo-192.png", "./logo-512.png", "./logo-32.png", "./favicon.svg", "./maskable-512.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
@@ -17,8 +17,8 @@ self.addEventListener("activate", e => {
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
   const u = new URL(e.request.url);
-  // lecteur PDF : cache d'abord, pour lire les documents hors connexion
-  if (u.hostname === "cdnjs.cloudflare.com" && u.pathname.includes("/pdf.js/")) {
+  // v43 : lecteur PDF et polices hébergés sur le site ; cache d'abord, pour lire les documents et garder les polices hors connexion
+  if (u.origin === self.location.origin && (u.pathname.includes("/lib/pdfjs/") || u.pathname.includes("/fonts/"))) {
     e.respondWith(caches.open(LIB).then(c => c.match(e.request).then(r => r || fetch(e.request).then(res => { if (res.ok) c.put(e.request, res.clone()); return res; }))));
     return;
   }
@@ -40,8 +40,8 @@ self.addEventListener("push", e => {
   try { d = e.data ? e.data.json() : {}; } catch (err) { d = { body: e.data && e.data.text() }; }
   e.waitUntil(self.registration.showNotification(d.title || "sid'note", {
     body: d.body || "",
-    icon: "icon-192.png",
-    badge: "icon-192.png",
+    icon: "logo-192.png",
+    badge: "logo-192.png",
     tag: d.tag,
     data: { url: d.url || "./" }
   }));

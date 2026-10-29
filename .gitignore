@@ -2,3 +2,6 @@ secrets/
 node_modules/
 tests/out/
 .netlify/
+# zips à déposer sur Netlify (fabriqués à chaque version)
+*.zip
+*-a-coller.txt

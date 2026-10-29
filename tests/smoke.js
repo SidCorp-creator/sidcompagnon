@@ -1100,6 +1100,26 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(await pg.evaluate(id=>pvAnns(id).some(a=>a.t==="ink"&&!a.hl),nid))err("la gomme n'efface pas le trait");
     if(!(await pg.evaluate(id=>pvAnns(id).some(a=>a.t==="ink"&&a.hl),nid)))err("la gomme a effacé le surlignage aussi");
     await ctx.close()}
+  // --- v46 (phase 1) : « smartphone » au lieu de « iPhone », fenêtre « Modifier l'activité » sans débordement, iCal toutes les 6 h, nom du site pour Google
+  for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1280,height:800}}],["pc-etroit",{viewport:{width:820,height:700}}]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v46 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);
+    for(const lg of ["fr","en"]){const t=await pg.evaluate(()=>document.documentElement.innerHTML);if(/iphone/i.test(t.replace(/<!--[\s\S]*?-->/g,"").replace(/<script[\s\S]*?<\/script>/g,"")))err("« iPhone » encore dans la page ("+lg+")")}
+    const ld=await pg.evaluate(()=>{const x=document.querySelector('script[type="application/ld+json"]');return x?JSON.parse(x.textContent):null});
+    if(!ld||ld["@type"]!=="WebSite"||ld.name!=="Sid'compagnon")err("données structurées WebSite absentes ou mauvais nom");
+    if(await pg.evaluate(()=>document.body.innerHTML.includes("Sid'note</div>")))err("en-têtes « Sid'note » encore dans la page");
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v46"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    if(await pg.evaluate(()=>ICAL_EVERY)!==6*3600e3)err("iCal pas réglé sur 6 h");
+    // beaucoup de types aux noms longs + titre long : tout doit tenir dans la fenêtre
+    await pg.evaluate(()=>{["Cours magistral","Examen écrit","Sport collectif","Travail en équipe","Rendez-vous médical","Famille et amis","Projet personnel","Administration","Voyage d'affaires","Séminaire","Anniversaire","Réunion de direction"].forEach(n=>ensureType(n));
+      data.tasks.push({id:"t46",title:"Réunion importante avec un titre vraiment très long pour voir si la fenêtre tient",date:iso(today()),time:"10:00",cat:"Réunion de direction",status:"à faire",leads:[10,30,60,1440,2880]});save();show("plan");openEdit("task:t46")});
+    await pg.waitForTimeout(400);
+    const ov=await pg.evaluate(()=>{const f=$("editForm"),fr=f.getBoundingClientRect(),bad=[...f.querySelectorAll("*")].filter(e=>{const r=e.getBoundingClientRect();return r.width&&r.right>fr.right+1}).map(e=>e.id||e.className||e.tagName).slice(0,4);
+      const sv=[...f.querySelectorAll("button[type=submit]")][0].getBoundingClientRect();return {sw:f.scrollWidth,cw:f.clientWidth,bad,save:sv.right<=fr.right+1,page:document.documentElement.scrollWidth<=innerWidth+1}});
+    if(ov.sw>ov.cw+1||ov.bad.length||!ov.save||!ov.page)err("« Modifier l'activité » déborde : "+JSON.stringify(ov));
+    await shot(pg,"v46-"+nm+"-modifier-activite");
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

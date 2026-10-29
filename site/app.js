@@ -103,7 +103,7 @@ async function api(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="45";const errSent=new Set();
+const APP_V="46";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -1191,11 +1191,13 @@ async function icalFetchOne(c){
   if(!r.ok){let m="";try{m=JSON.parse(txt).error||""}catch(e){}
     throw new Error(r.status===404?"La fonction « horaire » n'est pas encore installée sur Supabase.":m||("Erreur "+r.status))}
   icalAll[c.id]={url:c.url,at:Date.now(),events:parseICS(txt)}}
+// v46 (#8) : mise à jour automatique toutes les 6 heures au plus (avant : 15 min) ; « ↻ Actualiser » relit tout de suite
+const ICAL_EVERY=6*3600e3;
 // force : tout relire ; only : un seul calendrier (ajout, identifiant changé)
 async function icalFetch(force,only){
   const list=CALS().filter(c=>c.on!==false&&(!only||c.id===only));
   if(!list.length||!session||icalBusy)return;
-  if(!force&&Date.now()-icalAt<15*60e3)return;
+  if(!force&&Date.now()-icalAt<ICAL_EVERY)return;
   icalBusy=true;icalState("Mise à jour du calendrier…");let off=false;
   for(const c of list){try{await icalFetchOne(c);delete icalErr[c.id]}catch(ex){if(ex instanceof TypeError)off=true;icalErr[c.id]=ex instanceof TypeError?L("Pas de connexion"):ex.message}}
   icalBusy=false;icalCacheSave();icalMix();icalSoonSync();renderAllSafe();renderCals();
@@ -1487,8 +1489,8 @@ $("slBody").addEventListener("click",async e=>{const b=e.target.closest("button"
   else if(d.slclear){const ids=slItems.filter(x=>x.done);slItems=slItems.filter(x=>!x.done);renderLists();
     try{await slApi(`/rest/v1/shared_items?list_id=eq.${slOpen}&done=eq.true`,{method:"DELETE"});toast(`${ids.length} ${L(ids.length>1?"éléments retirés":"élément retiré")}`)}catch(ex){slErr=slErrMsg(ex);slLoad()}}
   else if(d.slinvite){const l=slLists.find(x=>x.id===slOpen);if(!l)return;
-    const txt=`${L("Rejoins ma liste")} « ${l.name} » ${L("sur Sid'note avec le code")} ${l.code} : ${location.origin}/#rejoindre=${l.code}`;
-    try{if(navigator.share){await navigator.share({title:"Sid'note",text:txt});return}}catch(ex){if(ex.name==="AbortError")return}
+    const txt=`${L("Rejoins ma liste")} « ${l.name} » ${L("sur Sid'compagnon avec le code")} ${l.code} : ${location.origin}/#rejoindre=${l.code}`;
+    try{if(navigator.share){await navigator.share({title:"Sid'compagnon",text:txt});return}}catch(ex){if(ex.name==="AbortError")return}
     toast(await copyTxt(txt)?L("Invitation copiée : colle-la dans un message"):`${L("Code")} : ${l.code}`,5000)}
   else if(d.slleave){if(slArmed!=="leave"){slArmed="leave";renderLists();setTimeout(()=>{if(slArmed==="leave"){slArmed="";renderLists()}},4000);return}
     const l=slLists.find(x=>x.id===slOpen);if(!l)return;slArmed="";
@@ -1618,12 +1620,12 @@ function tickPomo(){
   $("mLeft").textContent=hm((totalMs-el)/MIN);
   $("mEnd").textContent=hhmm(new Date(Date.now()+(totalMs-el)));
   $("pomoPause").textContent=r.pausedAt?"Reprendre":"Pause";
-  document.title=r.pausedAt?"Sid'note":`${clockTxt(L.d-L.into)} · ${isW?"Travail":"Pause"}`;
+  document.title=r.pausedAt?"Sid'compagnon":`${clockTxt(L.d-L.into)} · ${isW?"Travail":"Pause"}`;
 }
 function renderPomo(){
   const run=!!P.run;
   $("pomoSetup").hidden=run;$("pomoRun").hidden=!run;setBadge("pomo",run?"dot":0);
-  if(run)tickPomo();else{renderSetup();document.title="Sid'note"}
+  if(run)tickPomo();else{renderSetup();document.title="Sid'compagnon"}
   renderPomoStats();
 }
 function renderPomoStats(){
@@ -1865,7 +1867,7 @@ async function currentSub(){if(!pushOK())return null;const r=await navigator.ser
 let nfState={kind:"off",msg:""},nfCustom=false;
 async function renderNotif(){
   if(!pushOK())nfState={kind:"na",msg:isIOS&&!standalone()?"Pour activer les notifications, ouvre Sid'compagnon depuis l'icône de ton écran d'accueil.":"Ce navigateur ne gère pas les notifications."};
-  else if(Notification.permission==="denied")nfState={kind:"na",msg:"Notifications bloquées. Autorise-les dans Réglages > Notifications > Sid'note."};
+  else if(Notification.permission==="denied")nfState={kind:"na",msg:"Notifications bloquées. Autorise-les dans les réglages de ton smartphone (Notifications > Sid'compagnon)."};
   else{const sub=await currentSub().catch(()=>null);nfState=sub&&Notification.permission==="granted"?{kind:"on"}:{kind:"off"}}
   renderLeads();
 }
@@ -1879,7 +1881,7 @@ function renderLeads(){
     <div class="chips" style="flex-wrap:wrap;margin:0;padding-inline:0">${all.map(m=>m===1440?`<span class="pill lock" aria-pressed="true" title="${L("Toujours active")}">${leadLbl(m)} · ${L("toujours")}</span>`:`<button type="button" class="pill" data-lead="${m}" aria-pressed="${cur.includes(m)}">${leadLbl(m)}</button>`).join("")}<button type="button" class="pill add" data-nf="custom">+ ${L("Autre délai")}</button></div>
     ${nfCustom?`<form class="notif-lead-custom" data-nf="customf"><input type="text" inputmode="numeric" maxlength="3" name="n" placeholder="15" aria-label="${L("Durée")}" autocomplete="off"><select class="sel" name="u" aria-label="${L("Unité")}"><option value="1">${L("minutes")}</option><option value="60" selected>${L("heures")}</option><option value="1440">${L("jours")}</option></select><span class="small muted">${L("avant")}</span><button class="btn" type="submit" style="padding:8px 14px">OK</button></form>`:""}
     ${CALS().length?`<label class="nf-ical"><input type="checkbox" data-nf="ical" ${ical?"checked":""}> <span>${L("Cours du calendrier relié : mêmes rappels que tes activités")}</span></label>`:""}
-    <p class="small muted" style="margin:8px 4px 0">${L("Tu peux en choisir plusieurs. Une activité sans heure compte pour 8 h. Sur iPhone : iOS 16.4 ou plus, et Sid'note ouvert depuis l'écran d'accueil.")}</p>`;
+    <p class="small muted" style="margin:8px 4px 0">${L("Tu peux en choisir plusieurs. Une activité sans heure compte pour 8 h. Sur smartphone, ouvre Sid'compagnon depuis l'écran d'accueil (iOS 16.4 ou plus).")}</p>`;
   const ae=document.activeElement,typing=ae&&ae.matches&&ae.matches("input[type=text],select");
   document.querySelectorAll(".notif-box").forEach(b=>{if(!(typing&&b.contains(ae)))b.innerHTML=html});
   renderRem("f");if(!$("sheet").hidden&&editing&&editing.kind==="task")renderRem("e");
@@ -3386,7 +3388,7 @@ async function bioPrf(s){
 // code retrouvé par Face ID (null si annulé ou impossible)
 // v39 : erreurs Face ID relevées (table client_errors) pour comprendre ce qui bloque sur un iPhone donné
 const bioErr=(where,e)=>{try{reportErr(`bio ${where}: ${e&&e.name||""} ${e&&e.message||e}`.slice(0,400),"")}catch(x){}};
-const bioMsg=e=>e&&e.name==="NotAllowedError"?"Face ID annulé":e&&e.message==="noprf"?"Ton appareil ne permet pas Face ID ici (iPhone : iOS 18 ou plus)":`${L("Face ID indisponible")} (${e&&e.name||"?"})`;
+const bioMsg=e=>e&&e.name==="NotAllowedError"?"Face ID annulé":e&&e.message==="noprf"?"Ton appareil ne permet pas le déverrouillage biométrique ici (iOS 18 ou plus, ou un Android récent)":`${L("Face ID indisponible")} (${e&&e.name||"?"})`;
 async function bioCode(ctx){const s=bioStore();if(!s||!s[ctx])return null;try{return (await decJ(await bioPrf(s),s[ctx])).c}catch(e){if(!(e&&e.name==="NotAllowedError"))bioErr("get",e);return null}}
 function bioDrop(ctx){const s=bioStore();if(!s)return;delete s[ctx];if(!s.main&&!s.notes)ls.del(bioLsKey());else ls.set(bioLsKey(),s);renderBio()}
 // le code qui ouvre chaque coffre de cet appareil (vérifié avant d'être gardé)
@@ -3786,16 +3788,16 @@ let dict=null;
 function dictStop(){if(dict){try{dict.rec.stop()}catch(e){}dict.btn.classList.remove("on");dict=null}}
 function dictate(btn,field,onChange){
   if(dict){const same=dict.btn===btn;dictStop();if(same)return}
-  if(!SR){toast("Dictée indisponible ici : touche le micro du clavier de l'iPhone.");field.focus();return}
+  if(!SR){toast("Dictée indisponible ici : touche le micro du clavier de ton smartphone.");field.focus();return}
   const rec=new SR();rec.lang=LANG==="en"?"en-US":LANG==="nl"?"nl-NL":"fr-FR";rec.continuous=true;rec.interimResults=true;
   // le texte dicté s'insère à l'endroit du curseur
   const start=field.selectionStart??field.value.length,before=field.value.slice(0,start),after=field.value.slice(field.selectionEnd??start);
   const sep=before&&!/\s$/.test(before)?" ":"";let finals="";
   rec.onresult=ev=>{let interim="";for(let i=ev.resultIndex;i<ev.results.length;i++){const r=ev.results[i];if(r.isFinal)finals+=r[0].transcript;else interim+=r[0].transcript}
     field.value=before+sep+(finals+interim).trimStart()+after;onChange&&onChange()};
-  rec.onerror=ev=>{if(ev.error==="not-allowed"||ev.error==="service-not-allowed")toast("Micro refusé : autorise-le dans les réglages de l'iPhone.");else if(ev.error!=="aborted"&&ev.error!=="no-speech")toast("Dictée interrompue")};
+  rec.onerror=ev=>{if(ev.error==="not-allowed"||ev.error==="service-not-allowed")toast("Micro refusé : autorise-le dans les réglages de ton smartphone.");else if(ev.error!=="aborted"&&ev.error!=="no-speech")toast("Dictée interrompue")};
   rec.onend=()=>{if(dict&&dict.rec===rec){btn.classList.remove("on");dict=null}};
-  try{rec.start();dict={rec,btn};btn.classList.add("on");toast("Parle, je t'écoute…")}catch(e){toast("Dictée indisponible ici : touche le micro du clavier de l'iPhone.")}
+  try{rec.start();dict={rec,btn};btn.classList.add("on");toast("Parle, je t'écoute…")}catch(e){toast("Dictée indisponible ici : touche le micro du clavier de ton smartphone.")}
 }
 $("noteMic").addEventListener("click",e=>{const el=$("noteBody"),btn=e.currentTarget;if(dict){dictate(btn,null);return}
   // le texte dicté arrive dans un petit repère posé à l'endroit du curseur (l'éditeur n'est pas un champ texte)
@@ -4753,7 +4755,7 @@ if(ephExpired){
   $("authFeats").innerHTML=[["plan","Organise tes journées","Agenda et tâches du jour, avec des rappels."],
     ["pwd","Garde tout à l'abri","Notes, documents scannés et mots de passe, chiffrés avec ta phrase secrète."],
     ["muscu","Ta santé","Programme de musculation sur mesure, nutrition et graphiques."],
-    ["app","Partout avec toi","Sur iPhone et sur ordinateur, même sans connexion."]].map(([k,t,d])=>`<li><span class="af-ic">${ICON(k)}</span><span><b>${L(t)}</b><span class="small muted">${L(d)}</span></span></li>`).join("");
+    ["app","Partout avec toi","Sur smartphone et sur ordinateur, même sans connexion."]].map(([k,t,d])=>`<li><span class="af-ic">${ICON(k)}</span><span><b>${L(t)}</b><span class="small muted">${L(d)}</span></span></li>`).join("");
   $("aTrial").addEventListener("click",startTrial);if(ls.get("sidnote-trial-carry")){$("aTrial").textContent=L("Revenir à l'essai");$("authSub").textContent=L("Crée ton compte : les données de ton essai seront reprises.")}
   if(!CONFIGURED){$("authSub").textContent="L'app n'est pas encore reliée à son serveur.";}
   try{const m=sessionStorage.getItem("sidnote-msg");if(m){$("aErr").textContent=m;$("aErr").hidden=false;sessionStorage.removeItem("sidnote-msg")}}catch(e){}
@@ -4786,7 +4788,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v45-3";
+const BUILD="sidnote-v46";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

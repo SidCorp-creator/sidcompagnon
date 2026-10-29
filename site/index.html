@@ -10,6 +10,7 @@
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://sidcompagnon.com/">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Sid'compagnon">
 <meta property="og:title" content="Sid'compagnon">
 <meta property="og:description" content="Trois applications, un seul compte : sid'agenda, sid'fit et sid'note.">
 <meta property="og:url" content="https://sidcompagnon.com/">
@@ -21,6 +22,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#111214" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#111214" media="(prefers-color-scheme: dark)">
+<!-- v46 (#9) : nom officiel du site pour Google (données structurées WebSite) ; ce bloc de données n'est pas un script exécuté -->
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Sid'compagnon","alternateName":["Sidcompagnon","Sid compagnon"],"url":"https://sidcompagnon.com/","inLanguage":["fr","en","nl"],"publisher":{"@type":"Organization","name":"SidCorp","url":"https://sidcompagnon.com/","logo":"https://sidcompagnon.com/logo-512.png"}}</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="logo-180.png">
 <link rel="icon" href="favicon.ico" sizes="any"><link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="icon" href="logo-32.png" sizes="32x32"><link rel="icon" href="logo-192.png" sizes="192x192">
@@ -55,12 +58,11 @@
     </form>
     <div class="auth-trial"><button type="button" class="btn ghost" id="aTrial">Essayer sans compte</button>
       <p class="small muted">Tes données restent sur cet appareil. Tu pourras créer ton compte ensuite pour tout garder et synchroniser.</p></div>
-    <details class="install" id="authInstall"><summary>Comment installer Sid'compagnon sur iPhone ?</summary>
+    <details class="install" id="authInstall"><summary>Comment installer Sid'compagnon sur ton smartphone ?</summary>
       <ol class="steps card">
-        <li><span>Dans Safari, appuie sur les <b>3 petits points</b> en bas à droite.</span></li>
-        <li><span>Appuie sur <b>Partager</b>.</span></li>
-        <li><span>Appuie sur <b>En savoir plus</b>.</span></li>
-        <li><span>Appuie sur <b>Sur l'écran d'accueil</b>, puis sur <b>Ajouter</b>.</span></li>
+        <li><span><b>Smartphone Apple (Safari)</b> : appuie sur les <b>3 petits points</b> en bas à droite, puis sur <b>Partager</b>.</span></li>
+        <li><span>Appuie sur <b>En savoir plus</b>, puis sur <b>Sur l'écran d'accueil</b> et enfin sur <b>Ajouter</b>.</span></li>
+        <li><span><b>Smartphone Android (Chrome)</b> : touche <b>⋮</b> en haut à droite, puis <b>Ajouter à l'écran d'accueil</b> (ou <b>Installer l'application</b>).</span></li>
         <li><span>L'icône <b>Sid'compagnon</b> apparaît sur ton écran d'accueil : ouvre l'app depuis cette icône.</span></li>
       </ol>
     </details>
@@ -83,12 +85,12 @@
   <!-- ESPACES (v25) -->
   <section class="view" id="v-spaces" hidden>
     <span class="eyebrow">Espaces</span>
-    <h1>Tout Sid'note</h1>
+    <h1>Tout Sid'compagnon</h1>
     <div id="spacesList"></div>
   </section>
   <!-- À FAIRE -->
   <section class="view" id="v-todo" hidden>
-    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'compagnon</div>
     <h1>Tâches</h1>
     <p class="sub" id="hello" style="margin-top:-2px"></p>
     <!-- v44.6 : « Nouvelle tâche » est l'action principale, la recherche est discrète (loupe) -->
@@ -118,7 +120,7 @@
 
   <!-- LISTES PARTAGÉES (v37) -->
   <section class="view" id="v-lists" hidden>
-    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'compagnon</div>
     <h1>Listes partagées</h1>
     <p class="sub">Une liste de courses ou de choses à faire, partagée avec tes proches : chacun la voit, la complète et la coche.</p>
     <div id="slBody"></div>
@@ -126,7 +128,7 @@
 
   <!-- PLANNING -->
   <section class="view" id="v-plan" hidden>
-    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'compagnon</div>
     <h1>Agenda</h1>
     <!-- v45.3 : ajout d'activités par Claude (comme « Ajouter ce que tu manges » en Nutrition) ; la recherche passe derrière la loupe -->
     <form class="card form nu-ask pl-ask" id="plAskForm" style="margin-top:6px">
@@ -176,7 +178,7 @@
           <summary>Où trouver le lien de mon calendrier ?</summary>
           <ul class="small">
             <li><b>Google Agenda</b><span>Sur ordinateur : Paramètres → ton agenda → « Intégrer l'agenda » → copie l'adresse secrète au format iCal.</span></li>
-            <li><b>iCloud</b><span>App Calendrier de l'iPhone : touche « Calendriers » → ⓘ à côté du calendrier → active « Calendrier public » → « Partager le lien ».</span></li>
+            <li><b>iCloud</b><span>App Calendrier d'Apple : touche « Calendriers » → ⓘ à côté du calendrier → active « Calendrier public » → « Partager le lien ».</span></li>
             <li><b>Outlook</b><span>Sur outlook.com : Paramètres → Calendrier → Calendriers partagés → « Publier un calendrier » → copie le lien ICS.</span></li>
             <li><b>Horaire de cours</b><span>Sur le site de ton école, cherche « exporter », « iCal » ou « .ics ».</span></li>
           </ul>
@@ -200,7 +202,7 @@
 
   <!-- POMODORO -->
   <section class="view" id="v-pomo" hidden>
-    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'compagnon</div>
     <h1>Focus</h1>
     <!-- réglage -->
     <div id="pomoSetup">
@@ -255,7 +257,7 @@
 
   <!-- MUSCULATION -->
   <section class="view" id="v-muscu" hidden>
-    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'compagnon</div>
     <h1>Musculation</h1>
     <p class="sub">Tes programmes et tes séances, au même endroit : note tes séries, tes répétitions et tes poids directement.</p>
     <div id="coachBox"></div>
@@ -276,7 +278,7 @@
 
   <!-- NUTRITION -->
   <section class="view soonable" id="v-nutri" hidden>
-    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'compagnon</div>
     <h1>Nutrition</h1>
     <!-- profil -->
       <div class="card ai-card" id="nuAiCard" hidden></div>
@@ -404,7 +406,7 @@
 
   <!-- GRAPHIQUES -->
   <section class="view soonable" id="v-graph" hidden>
-    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'compagnon</div>
     <h1>Graphiques</h1>
     <div class="gr-filters"><div class="seg" id="grRange" role="group" aria-label="Période"><button type="button" data-range="7">7 jours</button><button type="button" data-range="30">30 jours</button></div></div>
     <div class="card gr-card">
@@ -434,7 +436,7 @@
 
   <!-- DOCUMENTS -->
   <section class="view" id="v-docs" hidden>
-    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'compagnon</div>
     <h1>Documents</h1>
     <p class="sub">Range tes PDF et scanne tes documents. Ils te suivent sur tous tes appareils.</p>
     <div class="pin-host" id="docPinHost" hidden></div>
@@ -451,14 +453,14 @@
       <button type="button" class="btn ghost" id="docScanBtn">◎ Scanner</button>
     </div>
     <details class="howto" id="iosScan">
-      <summary>Scanner avec le scanner de l'iPhone (plus précis)</summary>
+      <summary>Scanner avec le scanner de ton smartphone (plus précis)</summary>
       <ol class="steps card">
-        <li><span>Ouvre l'app <b>Fichiers</b> de l'iPhone.</span></li>
-        <li><span>Appuie sur les <b>3 petits points</b> en haut à droite, puis sur <b>Scanner des documents</b>.</span></li>
-        <li><span>Scanne tes pages, puis appuie sur <b>Enregistrer</b>.</span></li>
+        <li><span><b>Smartphone Apple</b> : ouvre l'app <b>Fichiers</b>, appuie sur les <b>3 petits points</b> en haut à droite, puis sur <b>Scanner des documents</b>.</span></li>
+        <li><span><b>Android</b> : ouvre l'app <b>Google Drive</b>, touche <b>+</b>, puis <b>Scanner</b>.</span></li>
+        <li><span>Scanne tes pages, puis enregistre le PDF.</span></li>
         <li><span>Reviens ici, appuie sur <b>Importer</b>, puis sur <b>Choisir un fichier</b> et sélectionne ton scan.</span></li>
       </ol>
-      <p class="small muted" style="margin:8px 4px 0">Le PDF garde toute la qualité du scanner d'Apple (bords détectés, page redressée).</p>
+      <p class="small muted" style="margin:8px 4px 0">Le PDF garde toute la qualité du scanner de ton smartphone (bords détectés, page redressée).</p>
     </details>
     <div class="docbar"><div class="small muted grow" id="docInfo" style="margin:0 4px"></div>
       <div class="seg" id="docSort" role="group" aria-label="Classer les documents"><button type="button" data-dsort="date" aria-pressed="true">Récents</button><button type="button" data-dsort="alpha" aria-pressed="false">A → Z</button></div></div>
@@ -467,7 +469,7 @@
 
   <!-- NOTES -->
   <section class="view" id="v-notes" hidden>
-    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'compagnon</div>
     <div id="notesList">
       <div class="nf-path" id="nfPath" role="navigation" aria-label="Dossiers" hidden></div>
       <h1>Notes</h1>
@@ -501,7 +503,7 @@
 
   <!-- MOTS DE PASSE -->
   <section class="view" id="v-pwd" hidden>
-    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'compagnon</div>
     <h1>Mots de passe</h1>
     <p class="sub">Tes mots de passe, chiffrés sur ton appareil avec ta phrase secrète. Le serveur ne garde que du texte illisible.</p>
     <div id="pinBox" class="pin">
@@ -524,24 +526,23 @@
 
   <!-- APPLI -->
   <section class="view" id="v-app" hidden>
-    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'compagnon</div>
     <h1>Application</h1>
-    <p class="sub">Installe Sid'compagnon sur ton iPhone pour l'ouvrir comme une vraie app, en plein écran.</p>
+    <p class="sub">Installe Sid'compagnon sur ton smartphone pour l'ouvrir comme une vraie app, en plein écran.</p>
     <div class="card"><div class="row okline" id="appStatus"></div></div>
-    <h2>Installer sur iPhone</h2>
+    <h2>Installer sur ton smartphone</h2>
     <ol class="steps card">
-        <li><span>Dans Safari, appuie sur les <b>3 petits points</b> en bas à droite.</span></li>
-        <li><span>Appuie sur <b>Partager</b>.</span></li>
-        <li><span>Appuie sur <b>En savoir plus</b>.</span></li>
-        <li><span>Appuie sur <b>Sur l'écran d'accueil</b>, puis sur <b>Ajouter</b>.</span></li>
+        <li><span><b>Smartphone Apple (Safari)</b> : appuie sur les <b>3 petits points</b> en bas à droite, puis sur <b>Partager</b>.</span></li>
+        <li><span>Appuie sur <b>En savoir plus</b>, puis sur <b>Sur l'écran d'accueil</b> et enfin sur <b>Ajouter</b>.</span></li>
+        <li><span><b>Smartphone Android (Chrome)</b> : touche <b>⋮</b> en haut à droite, puis <b>Ajouter à l'écran d'accueil</b> (ou <b>Installer l'application</b>).</span></li>
         <li><span>L'icône <b>Sid'compagnon</b> apparaît sur ton écran d'accueil : ouvre l'app depuis cette icône.</span></li>
       </ol>
-    <p class="small muted" style="margin:10px 4px 0">Utilise Safari : les autres navigateurs ne permettent pas toujours l'installation. Sur Android, ouvre le site dans Chrome, touche ⋮ puis « Ajouter à l'écran d'accueil ».</p>
+    <p class="small muted" style="margin:10px 4px 0">Utilise Safari sur un smartphone Apple et Chrome sur Android : les autres navigateurs ne permettent pas toujours l'installation.</p>
   </section>
 
   <!-- RÉGLAGES -->
   <section class="view" id="v-more" hidden>
-    <div class="brand"><img src="logo-192.png" alt="">Sid'note</div>
+    <div class="brand"><img src="logo-192.png" alt="">Sid'compagnon</div>
     <h1>Réglages</h1>
     <details class="setsec" data-sec="compte" open><summary><span>Compte</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
       <div class="setsec-in">
@@ -665,7 +666,7 @@
     <div class="card" id="stats"></div>
       </div>
     </details>
-    <p class="small muted" style="margin:18px 4px">Sid'compagnon · version 45.3 · une app <b>SidCorp</b></p>
+    <p class="small muted" style="margin:18px 4px">Sid'compagnon · version 46 · une app <b>SidCorp</b></p>
   </section>
 </main>
 

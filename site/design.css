@@ -908,3 +908,12 @@ html[data-ds] .pdfv input.pv-title{border:0!important;background:transparent!imp
   html[data-ds] .side-brand .side-tog{flex:none;width:28px;height:28px}
 }
 .pl-ask{margin-bottom:10px}
+/* v46 (#7) : « Modifier l'activité » et toutes les fenêtres : rien ne dépasse à droite, les puces passent à la ligne */
+.sheet{box-sizing:border-box;overflow-x:hidden;min-width:0}
+.sheet > *,.sheet label,.sheet .two > *{min-width:0}
+.sheet .two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.sheet input,.sheet select,.sheet textarea{min-width:0;max-width:100%;box-sizing:border-box}
+.sheet input[type=date],.sheet input[type=time]{width:100%}
+.tchips,.sheet .chips,.rem-box .chips,.rem-box > div{flex-wrap:wrap!important;max-width:100%}
+.tchips{overflow:visible}
+@media (max-width:380px){.sheet .two{gap:6px}}

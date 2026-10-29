@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 45.3.** L'app s'appelle **Sid'compagnon** depuis la v45 (avant : Sid'home, v42–44). Adresse : **https://sidcompagnon.com** depuis la 44.8 (sidnote.netlify.app répond encore).
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 46.** L'app s'appelle **Sid'compagnon** depuis la v45 (avant : Sid'home, v42–44). Adresse : **https://sidcompagnon.com** depuis la 44.8 (sidnote.netlify.app répond encore).
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -274,6 +274,11 @@ assets/               ← logo
   - 45.2 : **adresse du connecteur sur le domaine de l'app** : `https://sidcompagnon.com/mcp/<clé>` (`MCP_BASE` dans app.js), relayée par Netlify vers la fonction Supabase (`site/_redirects`, règle 200!). Raison : Claude.ai affiche l'icône (favicon) du site de l'adresse, pas `serverInfo.icons` : avec l'adresse Supabase, c'était l'éclair vert de Supabase. `site/favicon.ico` (logo Sid'compagnon, 16 à 64 px) ajouté. Les anciennes adresses `…supabase.co/functions/v1/mcp/<clé>` marchent toujours ; pour changer le logo, il faut créer une nouvelle adresse dans l'app et remplacer le connecteur dans Claude.
   - 45.1 : « Sid'compagnon » ne passe plus à la ligne dans la barre latérale (nom en 18 px, `white-space:nowrap`, test dans le bloc v45).
   - Tests : bloc « v45 » de `tests/smoke.js` (iPhone + PC) ; l'ancien test du surligneur lit les traits ; le message de bienvenue est masqué avant le test des graphiques (plus long avec « Sid'compagnon »).
+- v46 (phase 1 du plan de Sid du 29 oct. 2026, tickets #6 à #9) :
+  - « iPhone » → « smartphone » dans tous les textes visibles (FR/EN/NL) ; instructions d'installation et de scan écrites pour Apple (Safari, Fichiers) et Android (Chrome, Google Drive) sans le mot « iPhone ». Restes de l'ancien nom corrigés (titre de l'onglet Focus, partage, message « Notifications bloquées »).
+  - Fenêtres (`.sheet`) : plus aucun débordement horizontal (`min-width:0` sur les champs, grilles `minmax(0,1fr)`, `.tchips` passent à la ligne : la rangée des types en `nowrap` élargissait « Modifier l'activité »). Test v46 avec 12 types longs, smartphone + ordinateur + écran étroit.
+  - iCal : mise à jour automatique toutes les 6 h (`ICAL_EVERY`), « ↻ Actualiser » immédiat.
+  - Google : données structurées `WebSite` (nom « Sid'compagnon », dans un `<script type="application/ld+json">`, non exécuté donc compatible CSP), `og:site_name`, les 12 en-têtes cachés « Sid'note » des écrans renommés, manifest aux couleurs sombres, sitemap daté.
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

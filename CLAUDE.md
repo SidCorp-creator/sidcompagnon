@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 45.** L'app s'appelle **Sid'compagnon** depuis la v45 (avant : Sid'home, v42–44). Adresse : **https://sidcompagnon.com** depuis la 44.8 (sidnote.netlify.app répond encore).
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 45.3.** L'app s'appelle **Sid'compagnon** depuis la v45 (avant : Sid'home, v42–44). Adresse : **https://sidcompagnon.com** depuis la 44.8 (sidnote.netlify.app répond encore).
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -284,6 +284,10 @@ assets/               ← logo
 - Le son ne marche qu'après un geste de l'utilisateur. Garder `unlockAudio()`.
 
 ## Déploiement (Vercel depuis fin oct. 2026)
+- **Tout le travail se fait sur `main`** (fusion du 29 oct. 2026, ticket #2). Projet Vercel `sidcorp1/sidcompagnon` relié au dépôt GitHub `SidCorp-creator/sidcompagnon` (ancien nom `sidnote`, redirigé). **Vercel déploie automatiquement à chaque envoi** (une mise en ligne = un `git push`, plus de crédits Netlify) ; chaque branche a un aperçu protégé par la connexion Vercel. La **production** vient pour l'instant de la branche `claude/bold-darwin-f9wzuz` : tant que Sid n'a pas mis « Production Branch = main » dans Vercel (Settings → Git), pousser `main` PUIS `git push origin main:claude/bold-darwin-f9wzuz` pour mettre en ligne. Vérifier ensuite `https://sidcompagnon.com/sw.js` (et le relais : `POST /mcp/<faux>` → « Clé inconnue »).
+- `vercel.json` existe à la racine ET dans `site/` (ajoutés par Sid) : `site/vercel.json` n'est pas servi en public, l'un des deux sert de réglage selon le « Root Directory » de Vercel, inconnu sans accès au tableau de bord. **Les garder identiques.**
+- Agents spécialisés dans `.claude/agents/` (19, un domaine chacun : architecte, migration, frontend, design-system, ux-mobile, supabase, securite, connecteur-claude, nutrition, musculation, agenda, notes-documents, traductions, redaction, seo, qa-tests, revue-code, deploiement, tickets).
+- Connecteur `mcp` : le dépôt lit la liste d'exercices sur `https://sidcompagnon.com/exercices.js` mais la version déployée (v12) lit encore `sidnote.netlify.app` : redéployer la fonction avec le prochain changement du connecteur, et avant de supprimer le site Netlify.
 - Sid a quitté Netlify : `sidcompagnon.com` est servi par **Vercel** (vérifié le 29 oct. 2026 : en-têtes `server: Vercel`). Réglages dans **`vercel.json`** à la racine (remplace `site/_headers` et `site/_redirects`, supprimés) : dossier publié `site/`, en-têtes de sécurité (CSP…), `sw.js` en `no-cache`, relais `/mcp/*` → fonction Supabase `mcp`. `tests/serve.js` lit les en-têtes dans `vercel.json`.
 - Suivi : tickets GitHub n° 1 à 20 (labels `app:*` et `type:*`, choix de Sid : GitHub Issues + Projects plutôt que GitLab). Chaque commit cite son ticket (`#n`).
 - Stack cible validée : TypeScript + React + Vite (PWA), migration écran par écran (ticket #3).

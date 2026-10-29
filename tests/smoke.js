@@ -676,6 +676,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.waitForTimeout(300);await shot(pg,"v41-notes-glisser");
     const drag=async(src,dst)=>{const a=await pg.locator(src).boundingBox(),c=await pg.locator(dst).boundingBox();
       await pg.mouse.move(a.x+a.width/2,a.y+a.height/2);await pg.mouse.down();await pg.mouse.move(c.x+c.width/2,c.y+c.height/2,{steps:8});await pg.mouse.up();await pg.waitForTimeout(250)};
+    await pg.evaluate(()=>document.querySelector('[data-nfopen="fB"]').scrollIntoView({block:"center"}));await pg.waitForTimeout(150); // v47 : le champ Claude en haut de Notes décale la liste
     await drag('[data-ngrip="n1"]','[data-nfopen="fB"]');
     if(!(await pg.evaluate(()=>data.notes[0].folder==="fB")))err("note pas glissée dans le dossier");
     await drag('[data-fgrip="fB"]','[data-nfopen="fA"]');

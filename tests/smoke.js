@@ -1145,6 +1145,72 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(!fb)err("« Revoir les étapes » pas en haut de l'assistant");
     await shot(pg,"v461-"+nm+"-assistant");
     await ctx.close()}
+  // --- v47 (phase 3) : objectif et séries conseillées, séances séparées, copie d'un repas, vues semaine/mois/année, champs Claude
+  for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1280,height:800}}]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v47 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v47"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.evaluate(()=>{window.__open=[];window.open=u=>{window.__open.push(u);return null};data.prefs.ai="claude";data.prefs.aiOk=1});
+    // musculation : un programme de 4 séances + une séance libre
+    await pg.evaluate(()=>{const g={id:"g1",name:"Programme test",src:"import"},ex=(n,k)=>({id:uid(),name:n,ps:1,sets:Array.from({length:k},newSet)});
+      M().sessions=[{id:"sa",name:"Push",grp:g,ord:0,upd:1,exercises:[ex("Développé couché",2),ex("Élévations latérales",3)]},{id:"sb",name:"Pull",grp:g,ord:1,upd:1,exercises:[ex("Tractions",3)]},
+        {id:"sc",name:"Jambes",grp:g,ord:2,upd:1,exercises:[ex("Squat",3)]},{id:"sd",name:"Upper",grp:g,ord:3,upd:1,exercises:[ex("Rowing",3)]},{id:"sf",name:"Bras du dimanche",upd:1,exercises:[ex("Curl",3)]}];
+      save();show("muscu");renderMuscu()});await pg.waitForTimeout(300);
+    const t=await pg.evaluate(()=>[...document.querySelectorAll("#msList .ms")].map(d=>(d.dataset.se||"-")+":"+(d.querySelector(".se-tag b")?.textContent||"")+":"+d.classList.contains("ms-free")));
+    if(t.join()!=="push:A:false,pull:B:false,legs:C:false,upper:D:false,-::true")err("séances mal séparées : "+t.join());
+    if(!(await pg.isVisible("#muGoal [data-mugoal=force]")))err("objectif pas visible");
+    await pg.click("#muGoal [data-mugoal=force]");await pg.waitForTimeout(200);
+    await pg.evaluate(()=>{msOpenId="sa";renderMuscu()});await pg.waitForTimeout(200);
+    const adv=await pg.evaluate(()=>[...document.querySelectorAll('[data-ms="sa"] .ex-adv b')].map(x=>x.textContent));
+    if(adv.join("|")!=="5 × 3–5|3 × 8–10")err("séries conseillées (force) : "+adv.join("|"));
+    await pg.evaluate(()=>$("msList").scrollIntoView());await shot(pg,"v47-"+nm+"-musculation");await pg.evaluate(()=>$("muGoal").scrollIntoView());await shot(pg,"v47-"+nm+"-objectif");
+    await pg.click('[data-ms="sa"] [data-msadv]');await pg.waitForTimeout(200);
+    const ap=await pg.evaluate(()=>{const e=msFind("sa").exercises[0];return e.sets.length+":"+e.reps});
+    if(ap!=="5:3–5")err("« Appliquer » : "+ap);
+    if(await pg.evaluate(()=>data.prefs.muGoal)!=="force")err("objectif pas gardé");
+    // champ Claude en haut de Musculation (avec l'accord santé) et de Notes
+    await pg.evaluate(()=>{data.nutri=data.nutri||{};data.nutri.consent=new Date().toISOString();save()});
+    await pg.fill("#muAsk","ajoute du dos à la séance B");await pg.click("#muAskForm button[type=submit]");await pg.waitForTimeout(300);
+    if(!(await pg.isVisible("#aiAskSheet"))||!(await pg.textContent("#aaPrompt")).includes("muscu_programme"))err("demande Musculation pas envoyée");
+    await pg.evaluate(()=>{$("aiAskSheet").hidden=true;show("notes")});await pg.waitForTimeout(200);
+    await pg.fill("#ntAsk","résume ma note de cours");await pg.click("#ntAskForm button[type=submit]");await pg.waitForTimeout(300);
+    if(!(await pg.textContent("#aaPrompt")).includes("modifier_note"))err("demande Notes pas envoyée");
+    await shot(pg,"v47-"+nm+"-notes-claude");
+    await pg.evaluate(()=>{$("aiAskSheet").hidden=true});
+    // nutrition : un plat aujourd'hui et hier, vue mois / semaine / année, puis copie sur deux jours
+    await pg.evaluate(()=>{const d=new Date(),y=new Date();y.setDate(y.getDate()-1);
+      data.nutri={consent:new Date().toISOString(),profile:{sex:"h",age:24,height:180,weight:80,goal:"maintain",sports:[]},plan:{kcal:2000,p:150,c:200,f:70,bmr:1800,tdee:2000,text:"",warn:[]},upd:Date.now(),
+        log:[{id:"l1",day:iso(d),at:d.toISOString(),grp:"gp",gname:"Pâtes",name:"Pâtes",qty:"200 g",kcal:1900,p:60,c:250,f:40,upd:1},{id:"l2",day:iso(d),at:d.toISOString(),grp:"gp",name:"Sauce",qty:"50 g",kcal:100,p:2,c:5,f:6,upd:1},
+          {id:"l3",day:iso(y),at:y.toISOString(),name:"Salade",qty:"1",kcal:600,p:20,c:30,f:20,upd:1}],weights:[],weeks:[]};
+      data.ui.nuTab="day";save();show("nutri");renderNutri()});await pg.waitForTimeout(300);
+    await pg.click("#nuDayBtn");await pg.waitForTimeout(200);
+    const mo=await pg.evaluate(()=>({vis:!$("nuCal").hidden,ok:document.querySelectorAll("#nuCal .nu-st.ok").length,under:document.querySelectorAll("#nuCal .nu-mgrid .nu-st.under").length}));
+    if(!mo.vis||mo.ok<1||mo.under<1)err("vue mois : "+JSON.stringify(mo));
+    await pg.evaluate(()=>$("nuCal").scrollIntoView());await shot(pg,"v47-"+nm+"-nutrition-mois");
+    await pg.click('#nuCal [data-nurange=week]');await pg.waitForTimeout(150);
+    if(await pg.locator("#nuCal .nwk-row").count()!==7)err("vue semaine : pas 7 jours");
+    await pg.evaluate(()=>$("nuCal").scrollIntoView());await shot(pg,"v47-"+nm+"-nutrition-semaine");
+    await pg.click('#nuCal [data-nurange=year]');await pg.waitForTimeout(150);
+    if(await pg.locator("#nuCal .ym").count()!==12)err("vue année : pas 12 mois");
+    const ov=await pg.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1&&$("nuCal").scrollWidth<=$("nuCal").clientWidth+1);if(!ov)err("le calendrier déborde");
+    await pg.evaluate(()=>$("nuCal").scrollIntoView());await shot(pg,"v47-"+nm+"-nutrition-annee");
+    await pg.click('#nuCal [data-nurange=""]');
+    await pg.click('#nuLog [data-nucopy="gp"]');await pg.waitForTimeout(200);
+    if(!(await pg.isVisible("#nuCopySheet")))err("fenêtre de copie absente");
+    const days=await pg.evaluate(()=>{const a=new Date(),b=new Date();a.setDate(a.getDate()-2);b.setDate(b.getDate()-3);return[iso(a),iso(b)]});
+    for(const k of days){if(!(await pg.isVisible(`#nuCopyBody [data-nucpd="${k}"]`)))await pg.click('#nuCopyBody [data-nucpn="-1"]');await pg.click(`#nuCopyBody [data-nucpd="${k}"]`)}
+    await shot(pg,"v47-"+nm+"-nutrition-copie");
+    await pg.click("#nuCopyGo");await pg.waitForTimeout(200);
+    const cp=await pg.evaluate(k=>k.map(d=>NU().log.filter(x=>x.day===d).map(x=>x.name+":"+x.kcal).sort().join("+")),days);
+    if(cp.join("|")!=="Pâtes:1900+Sauce:100|Pâtes:1900+Sauce:100")err("copie du repas : "+cp.join("|"));
+    await pg.click("#toast .toast-act");await pg.waitForTimeout(200);
+    if(await pg.evaluate(k=>NU().log.some(x=>k.includes(x.day)),days))err("annuler la copie ne marche pas");
+    // l'agenda garde son calendrier (grilles communes)
+    await pg.evaluate(()=>{show("plan");calMode="month";renderCal()});await pg.waitForTimeout(150);
+    if(await pg.locator("#calDays .day[data-day]").count()<28)err("calendrier de l'agenda cassé");
+    await pg.evaluate(()=>{calMode="year";renderCal()});if(await pg.locator("#calYear .ym").count()!==12)err("vue année de l'agenda cassée");
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

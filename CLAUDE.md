@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 46.1.** L'app s'appelle **Sid'compagnon** depuis la v45 (avant : Sid'home, v42–44). Adresse : **https://sidcompagnon.com** depuis la 44.8 (sidnote.netlify.app répond encore).
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 47.** L'app s'appelle **Sid'compagnon** depuis la v45 (avant : Sid'home, v42–44). Adresse : **https://sidcompagnon.com** depuis la 44.8 (sidnote.netlify.app répond encore).
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -285,6 +285,13 @@ assets/               ← logo
   - Assistant : « ↺ Revoir les étapes » en haut, en bouton principal (`.ai-back`).
   - Les messages envoyés à Claude disent toujours « Sid'note » (nom du connecteur chez les gens : ne pas renommer).
   - Test Face ID du smoke rendu stable (attend que le coffre soit bien reverrouillé avant de toucher le bouton).
+- v47 (phase 3, tickets #13 à #17) :
+  - **Musculation, objectif** : `data.prefs.muGoal` (force, muscle = prise de masse, gras = sèche, endu = endurance ; forme gardé pour les anciens profils), repris de `plan.profile.goal`, et recopié dedans quand on le change. Barre `#muGoal` (`renderMuGoal`). Conseil par exercice `exAdv` / `exAdvHtml` (`MU_SCHEME` : H polyarticulaire / I isolation, d'après `EXDB` ou `HEAVY_RE` pour un nom tapé), « Appliquer » (`exAdvApply` : ajoute des séries vides, ne retire que des séries vides, pose `ex.reps`, annulable). `coachBuild` connaît `endu`.
+  - **Séances séparées** : `seType` (nom puis muscles) → `data-se` push / pull / legs / upper / lower / full (filet coloré + pastille), lettre A, B, C… dans un programme (`seCard(se, letter)`), séance libre en pointillés (`.ms-free`, « Libre »). Le préfixe « Séance A · » des noms générés n'est plus affiché (données inchangées).
+  - **Champ Claude** en haut de Musculation (`#muAskForm`, `muPrompt`, sujet `muscu`, accord santé `nuConsent`) et de Notes (`#ntAskForm`, `ntPrompt`, sujet `note`).
+  - **Grilles communes** `monthGrid(y,m,cell)` / `yearGrid(y,cls)` (agenda, nutrition, copie). Nutrition : toucher la date (`#nuDayBtn`) ouvre `#nuCal` (Semaine / Mois / Année, `nuRange`, état du jour `nuSt` : dans l'objectif 90–105 %, en dessous, au-dessus ; moyenne de la période). `#nuDate` est gardé, caché.
+  - **Copier un repas** : « + » sur chaque plat (`data-nucopy`) → `#nuCopySheet` (mois, plusieurs jours, jusqu'à J+14) → copies avec nouveaux id / grp (`nuCopyDo`), annulable (pierres tombales).
+  - Connecteur (dépôt seulement, pas encore déployé) : objectif `endu` accepté et nommé. La version en ligne (v12) affiche « objectif endu » tel quel : sans gravité, le message envoyé à Claude donne l'objectif en clair.
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

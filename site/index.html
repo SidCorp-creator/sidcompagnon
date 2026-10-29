@@ -260,6 +260,14 @@
     <div class="brand"><img src="logo-192.png" alt="">Sid'compagnon</div>
     <h1>Musculation</h1>
     <p class="sub">Tes programmes et tes séances, au même endroit : note tes séries, tes répétitions et tes poids directement.</p>
+    <form class="card form nu-ask pl-ask ask-mu" id="muAskForm" style="margin-top:6px">
+      <textarea id="muAsk" rows="2" placeholder="Ta demande : ex. ajoute du dos à ma séance B, note ma séance d'hier…" aria-label="Demande sur ton entraînement" enterkeyhint="send"></textarea>
+      <div class="nu-ask-row">
+        <button type="button" class="mini nu-mic nu-tool" id="muMic" aria-label="Dicter"><i class="ic" data-i="mic"></i></button>
+        <button class="btn" type="submit">Envoyer</button>
+      </div>
+    </form>
+    <div class="mu-goal" id="muGoal"></div>
     <div id="coachBox"></div>
     <h2 class="ms-free-h">Mes séances</h2>
     <div id="msList"></div>
@@ -355,7 +363,8 @@
       </div>
       <div data-nupane="day">
       <p class="nu-hint">Ce que tu as mangé aujourd'hui, et ce qu'il te reste.</p>
-      <div class="dayv-head" style="margin-top:4px"><button type="button" class="cal-nav" id="nuPrev" aria-label="Jour précédent">‹</button><label class="dayv-title nu-daylbl"><span id="nuDayTxt"></span><input type="date" id="nuDate" aria-label="Choisir le jour"></label><button type="button" class="cal-nav" id="nuNext" aria-label="Jour suivant">›</button></div>
+      <div class="dayv-head" style="margin-top:4px"><button type="button" class="cal-nav" id="nuPrev" aria-label="Jour précédent">‹</button><button type="button" class="dayv-title nu-daylbl" id="nuDayBtn" aria-expanded="false" aria-controls="nuCal" aria-label="Voir la semaine, le mois ou l'année"><span id="nuDayTxt"></span><span class="nu-cal-ic" aria-hidden="true">▦</span></button><input type="date" id="nuDate" hidden aria-label="Choisir le jour"><button type="button" class="cal-nav" id="nuNext" aria-label="Jour suivant">›</button></div>
+      <div class="card nu-cal" id="nuCal" hidden></div>
       <div class="card nu-goalcard" id="nuGoalCard" hidden></div>
       <div class="card nu-sum">
         <div class="nu-ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="bgc" cx="60" cy="60" r="52" fill="none" stroke-width="10"/><circle class="fgc" id="nuRing" cx="60" cy="60" r="52" fill="none" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="326.73"/></svg><div class="nu-ring-txt"><div><div class="nu-big" id="nuKcal">0</div><div class="small muted" id="nuKcalOf"></div></div></div></div>
@@ -474,6 +483,13 @@
       <div class="nf-path" id="nfPath" role="navigation" aria-label="Dossiers" hidden></div>
       <h1>Notes</h1>
       <p class="sub">Écris librement : idées, listes, brouillons. Tout est enregistré au fur et à mesure.</p>
+      <form class="card form nu-ask pl-ask ask-nt" id="ntAskForm" style="margin-top:6px">
+        <textarea id="ntAsk" rows="2" placeholder="Ta demande : ex. résume ma note de cours, range mes notes de cuisine…" aria-label="Demande sur tes notes" enterkeyhint="send"></textarea>
+      <div class="nu-ask-row">
+        <button type="button" class="mini nu-mic nu-tool" id="ntMic" aria-label="Dicter"><i class="ic" data-i="mic"></i></button>
+        <button class="btn" type="submit">Envoyer</button>
+      </div>
+    </form>
       <div class="pw-top"><input type="search" class="search" id="noteSearch" placeholder="Rechercher une note" aria-label="Rechercher une note" autocomplete="off"><button type="button" class="btn ghost" id="nfNew">+ Dossier</button><label class="btn ghost" id="pdfNew" title="Importer un PDF de cours">+ PDF<input type="file" id="pdfIn" accept="application/pdf,.pdf" multiple hidden></label><button type="button" class="btn" id="noteNew">+ Note</button></div>
       <form id="nfForm" class="nf-form" hidden><input id="nfIn" placeholder="Nom du dossier" aria-label="Nom du dossier" autocomplete="off" enterkeyhint="done"><button class="btn" type="submit">Créer</button><button type="button" class="btn ghost" id="nfCancel">Annuler</button></form>
       <div class="ns-bar" id="nsBar" hidden></div>
@@ -669,7 +685,7 @@
     <div class="card" id="stats"></div>
       </div>
     </details>
-    <p class="small muted" style="margin:18px 4px">Sid'compagnon · version 46.1 · une app <b>SidCorp</b></p>
+    <p class="small muted" style="margin:18px 4px">Sid'compagnon · version 47 · une app <b>SidCorp</b></p>
   </section>
 </main>
 
@@ -742,7 +758,7 @@
     <form id="coachForm" class="coach-form">
       <p class="small muted cf-intro">5 questions, puis tes précisions si tu veux. Claude compose ton programme et le dépose ici ; sans Claude, Sid'compagnon le crée tout de suite.</p>
       <fieldset class="cf-sec"><legend class="eyebrow">L'essentiel</legend>
-      <div class="cf-q"><b>Ton objectif</b><div class="seg cf-seg" data-cf="goal" style="grid-template-columns:repeat(2,1fr)"><button type="button" data-v="muscle">Prendre du muscle</button><button type="button" data-v="force">Gagner en force</button><button type="button" data-v="gras">Perdre du gras</button><button type="button" data-v="forme">Être en forme</button></div></div>
+      <div class="cf-q"><b>Ton objectif</b><div class="seg cf-seg" data-cf="goal" style="grid-template-columns:repeat(2,1fr)"><button type="button" data-v="muscle">Prendre du muscle</button><button type="button" data-v="force">Gagner en force</button><button type="button" data-v="gras">Perdre du gras</button><button type="button" data-v="forme">Être en forme</button><button type="button" data-v="endu">Gagner en endurance</button></div></div>
       <div class="cf-q"><b>Ton niveau</b><div class="seg cf-seg" data-cf="level" style="grid-template-columns:repeat(3,1fr)"><button type="button" data-v="deb">Débutant<small>moins de 6 mois</small></button><button type="button" data-v="inter">Intermédiaire<small>6 mois à 2 ans</small></button><button type="button" data-v="conf">Confirmé<small>plus de 2 ans</small></button></div></div>
       <div class="cf-two"><div class="cf-q"><b>Séances par semaine</b><div class="seg cf-seg" data-cf="days" style="grid-template-columns:repeat(5,1fr)"><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button><button type="button" data-v="4">4</button><button type="button" data-v="5">5</button><button type="button" data-v="6">6</button></div></div><div class="cf-q"><b>Durée d'une séance</b><div class="seg cf-seg" data-cf="dur" style="grid-template-columns:repeat(4,1fr)"><button type="button" data-v="45">45 min</button><button type="button" data-v="60">1 h</button><button type="button" data-v="75">1 h 15</button><button type="button" data-v="90">1 h 30</button></div></div></div>
       <div class="cf-q"><b>Où t'entraînes-tu ?</b><div class="seg cf-seg" data-cf="equip" style="grid-template-columns:repeat(3,1fr)"><button type="button" data-v="gym">Salle de sport</button><button type="button" data-v="db">Maison avec haltères</button><button type="button" data-v="bw">Sans matériel</button></div></div>
@@ -771,6 +787,12 @@
     <p class="small muted" style="margin:0 0 10px">Claude calcule, puis écrit le résultat directement ici.</p>
     <div class="ai-prompt notr" id="aaPrompt"></div>
     <div class="ai-acts" id="aaActs"></div>
+  </div>
+</div>
+<div class="sheet-bg" id="nuCopySheet" hidden role="dialog" aria-modal="true" aria-labelledby="nuCopyTitle">
+  <div class="sheet card">
+    <div class="sheet-head"><b id="nuCopyTitle" class="notr">Copier ce repas</b><button type="button" class="x" id="nuCopyClose" aria-label="Fermer">×</button></div>
+    <div id="nuCopyBody"></div>
   </div>
 </div>
 <div class="sheet-bg" id="exHelpSheet" hidden role="dialog" aria-modal="true" aria-labelledby="exHelpTitle">

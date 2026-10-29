@@ -419,7 +419,7 @@ const TOOLS = [
     inputSchema: {
       type: "object", required: ["days"],
       properties: {
-        goal: { type: "string", enum: ["muscle", "force", "gras", "forme"], description: "Objectif (facultatif : sinon celui du profil)" },
+        goal: { type: "string", enum: ["muscle", "force", "gras", "forme", "endu"], description: "Objectif (facultatif : sinon celui du profil)" },
         days: {
           type: "array", description: "Une entrée par séance de la semaine (2 à 6)",
           items: {
@@ -779,7 +779,7 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
       const { data } = await readData(user);
       const m = MU(data), del = data.del || {}, p0 = m.plan && !m.plan.deleted && (m.plan.v === 2 || Array.isArray(m.plan.days)) ? m.plan : null;
       const ses = p0 ? planSe(m, p0).filter((s: Data) => !del[s.id]) : [], p = p0 && ses.length ? p0 : null;
-      const G: Data = { muscle: "prendre du muscle", force: "gagner en force", gras: "perdre du gras", forme: "être en forme" }, LV: Data = { deb: "débutant", inter: "intermédiaire", conf: "confirmé" };
+      const G: Data = { muscle: "prendre du muscle", force: "gagner en force", gras: "perdre du gras", forme: "être en forme", endu: "gagner en endurance" }, LV: Data = { deb: "débutant", inter: "intermédiaire", conf: "confirmé" };
       const AV: Data = { shoulder: "épaules", back: "bas du dos", knee: "genoux" }, EQ: Data = { gym: "salle de sport", db: "haltères à la maison", bw: "poids du corps" };
       let out = "";
       if (!p) out = "Pas encore de programme. La personne peut en créer un dans Sid'note (Santé → Musculation → Créer mon programme), ou tu peux en composer un avec enregistrer_programme (demande d'abord niveau, objectif, jours par semaine, durée, matériel, douleurs).\n";
@@ -812,7 +812,7 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
       await writeData(user, (d) => {
         const m = MU(d), op = m.plan && !m.plan.deleted ? m.plan : null, old = op ? op.profile || {} : {};
         const profile = { ...old, days: days.length };
-        if (["muscle", "force", "gras", "forme"].includes(a.goal)) profile.goal = a.goal;
+        if (["muscle", "force", "gras", "forme", "endu"].includes(a.goal)) profile.goal = a.goal;
         // les séances de l'ancien programme suivi sont retirées (pierres tombales, comme dans l'app), les nouvelles prennent le format commun
         const del = d.del || (d.del = {}), now = Date.now();
         if (op) for (const s of m.sessions) if (s && s.grp && s.grp.id === op.id) del[s.id] = now;

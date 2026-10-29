@@ -927,3 +927,53 @@ html[data-ds] .pdfv input.pv-title{border:0!important;background:transparent!imp
 .ai-adv-h{font-weight:600;margin:16px 0 4px}
 .ai-back{width:100%;margin:0 0 14px;font-size:16px}
 .aa-conv{margin-top:6px;padding-top:10px;border-top:1px solid var(--line)}
+
+/* v47 : musculation — objectif, séries conseillées, séances bien séparées (#13, #14) */
+.mu-goal{display:grid;gap:6px;margin:14px 0 6px}
+.mu-goal-seg button{font-size:14px;padding:9px 4px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ex-adv{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);padding:2px 2px 6px}
+.ex-adv b{color:var(--ink);font-family:var(--mono,inherit);font-weight:500}
+.ex-adv .linkbtn{font-size:13px}
+.ms{--se:var(--line);border-left:4px solid var(--se)}
+.ms[data-se=push]{--se:#C2703D}.ms[data-se=pull]{--se:#3F78AE}.ms[data-se=legs]{--se:#4F8A5C}
+.ms[data-se=upper]{--se:#8B62AA}.ms[data-se=lower]{--se:#3E8A86}.ms[data-se=full]{--se:#A0844A}
+.ms.ms-free{border-style:dashed;border-left-style:solid}
+.se-tag{display:inline-flex;align-items:center;gap:6px;margin:0 0 4px;font:500 11px var(--font);letter-spacing:.06em;text-transform:uppercase;color:var(--se)}
+.se-tag b{display:inline-grid;place-items:center;min-width:22px;height:22px;border-radius:4px;background:var(--se);color:#fff;font-size:12px;letter-spacing:0}
+.ms:not([data-se]) .se-tag b{background:var(--ink);color:var(--bg)}
+.se-tag.se-free{color:var(--muted);border:1px dashed var(--line);border-radius:4px;padding:2px 6px}
+.ms>summary .grow>.se-tag{display:flex;width:max-content}
+.ms-grp + .ms-grp{margin-top:26px}
+.ask-mu,.ask-nt{margin-bottom:10px}
+
+/* v47 : nutrition — calendrier semaine / mois / année (#16) et copie d'un repas (#15) */
+.nu-daylbl{border:0;background:none;color:inherit;font:inherit;display:inline-flex;align-items:center;gap:8px;justify-content:center;padding:6px 10px;border-radius:6px}
+.nu-daylbl[aria-expanded=true]{background:var(--app-soft,var(--surface-2))}
+.nu-cal-ic{font-size:13px;color:var(--app,var(--muted))}
+.nu-cal{display:grid;gap:10px;margin-bottom:10px}
+.nu-cal-seg{grid-template-columns:repeat(3,minmax(0,1fr))}
+.nu-cal-t{font-size:16px;font-weight:500;text-align:center;flex:1}
+.nu-cal .cal-nav:disabled,.nu-cpgrid ~ * .cal-nav:disabled,#nuCopyBody .cal-nav:disabled{opacity:.3;cursor:default}
+.nu-cal .day:disabled,#nuCopyBody .day:disabled{opacity:.35;cursor:default}
+.nu-st{--c:var(--muted);display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--c)}
+.nu-st.ok{--c:var(--good,#2e7d32)}.nu-st.under{--c:var(--m-p,#3F78AE)}.nu-st.over{--c:var(--late,#C2703D)}
+.nu-mgrid .marks .dots i.nu-st{width:7px;height:7px}
+.nu-leg{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center}
+.nu-leg span{display:inline-flex;align-items:center;gap:5px}
+.nu-cal-sum{text-align:center}
+.nu-cal-x{justify-self:center;font-size:14px}
+.nu-ygrid .ym-g i.ev{color:var(--ink);font-weight:500}
+.nu-ygrid .ym-g i.nu-ok{color:var(--good,#2e7d32)}.nu-ygrid .ym-g i.nu-under{color:var(--m-p,#3F78AE)}.nu-ygrid .ym-g i.nu-over{color:var(--late,#C2703D)}
+.nwk{display:grid;gap:2px}
+.nwk-row{display:grid;grid-template-columns:minmax(0,7.5em) minmax(0,1fr) auto;align-items:center;gap:10px;border:0;background:none;color:inherit;text-align:left;padding:8px 6px;border-radius:6px;cursor:pointer;font:inherit}
+.nwk-row.on{background:var(--app-soft,var(--surface-2))}
+.nwk-row:disabled{opacity:.4;cursor:default}
+.nwk-d{display:grid;line-height:1.2}.nwk-d b{font-weight:500;text-transform:capitalize}.nwk-d small{color:var(--muted);font-size:12px}
+.nwk-bar{height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.nwk-bar i{display:block;height:100%;background:var(--muted);border-radius:3px}
+.nwk-row.ok .nwk-bar i{background:var(--good,#2e7d32)}.nwk-row.under .nwk-bar i{background:var(--m-p,#3F78AE)}.nwk-row.over .nwk-bar i{background:var(--late,#C2703D)}
+.nwk-k{font-family:var(--mono,inherit);font-size:14px;text-align:right;white-space:nowrap}.nwk-k small{color:var(--muted);font-size:11px}
+.dish-h .nu-cp{font-size:20px;line-height:1;font-weight:400}
+#nuCopyBody .day.sel{background:var(--app,var(--accent));color:var(--on-app,#fff)}
+#nuCopyBody .day.nu-cp-src .num{outline:1px dashed var(--muted);border-radius:50%}
+@media (max-width:520px){.mu-goal-seg{grid-template-columns:repeat(2,minmax(0,1fr))!important}}

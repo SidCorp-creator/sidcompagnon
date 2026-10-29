@@ -103,7 +103,7 @@ async function api(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="46.1";const errSent=new Set();
+const APP_V="47";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -882,19 +882,23 @@ const toMin=h=>{if(!h)return null;const[a,b]=h.split(":").map(Number);return a*6
 const hrs=t=>t.time?(t.timeEnd?`${t.time}–${t.timeEnd}`:t.time):"";
 const sk=t=>t.date+(t.time||"99:99");
 const onDay=(t,k)=>t.date===k||(t.end&&t.date<=k&&t.end>=k);
+// v47 (#16) : grilles de calendrier communes (agenda, nutrition, choix de jours) : mêmes classes .day / .ym partout
+function monthGrid(y,m,cell){const first=new Date(y,m,1),lead=(first.getDay()+6)%7,n=new Date(y,m+1,0).getDate();
+  let h="";for(let i=0;i<lead;i++)h+=`<span class="day out"></span>`;for(let d=1;d<=n;d++)h+=cell(iso(new Date(y,m,d)),d);return h}
+function yearGrid(y,cls){const now=today();let h="";
+  for(let m=0;m<12;m++){const first=new Date(y,m,1),lead=(first.getDay()+6)%7,n=new Date(y,m+1,0).getDate();
+    let g="";for(let i=0;i<lead;i++)g+="<i></i>";
+    for(let d=1;d<=n;d++)g+=`<i class="${cls(iso(new Date(y,m,d)))}">${d}</i>`;
+    h+=`<button class="ym ${y===now.getFullYear()&&m===now.getMonth()?"cur":""}" data-ym="${m}" aria-label="${MOL[m]} ${y}"><b>${MOL[m]}</b><div class="ym-g">${g}</div></button>`}return h}
 function renderMonth(){
   const T=allT(),tIso=iso(today());
   $("calTitle").innerHTML=`${MOL[calM]} ${calY} <span class="yr-ic">▦ ${L("Année")}</span>`;$("calTitle").setAttribute("aria-label",`${MOL[calM]} ${calY}, ${L("voir toute l'année")}`);
-  const first=new Date(calY,calM,1),lead=(first.getDay()+6)%7,n=new Date(calY,calM+1,0).getDate();
-  let h="";for(let i=0;i<lead;i++)h+=`<span class="day out"></span>`;
-  for(let d=1;d<=n;d++){
-    const k=iso(new Date(calY,calM,d));
+  const h=monthGrid(calY,calM,(k,d)=>{
     const per=T.filter(t=>t.end&&t.date<=k&&t.end>=k).slice(0,2);
     const pts=T.filter(t=>!t.end&&t.date===k);
     const bars=per.map(t=>`<i class="${t.date===k?"s":""} ${t.end===k?"e":""}" style="--c:var(${colorOf(t)})"></i>`).join("");
     const dots=pts.slice(0,3).map(t=>`<i style="--c:var(${colorOf(t)});opacity:${t.status==="fait"||t.canc?.35:1}"></i>`).join("");
-    h+=`<button class="day ${k===tIso?"today":""} ${k<tIso?"past":""}" data-day="${k}" aria-label="${d} ${MOL[calM]}${per.length+pts.length?", "+(per.length+pts.length)+" élément(s)":""}"><span class="num">${d}</span><span class="marks">${bars?`<span class="bars">${bars}</span>`:""}${dots?`<span class="dots">${dots}</span>`:""}</span></button>`;
-  }
+    return `<button class="day ${k===tIso?"today":""} ${k<tIso?"past":""}" data-day="${k}" aria-label="${d} ${MOL[calM]}${per.length+pts.length?", "+(per.length+pts.length)+" élément(s)":""}"><span class="num">${d}</span><span class="marks">${bars?`<span class="bars">${bars}</span>`:""}${dots?`<span class="dots">${dots}</span>`:""}</span></button>`});
   $("calDays").innerHTML=h;
 }
 // v39 : tâches du jour dans l'agenda (cocher, ajouter pour ce jour) ; les reportées arrivent sur aujourd'hui
@@ -945,11 +949,7 @@ function renderCal(){
 // vue année : 12 petits mois, jours avec activité en couleur, aujourd'hui en rouge (comme le Calendrier de l'iPhone)
 function renderYear(){
   const T=allT(),tIso=iso(today()),has=new Set();T.forEach(t=>{if(!t.date)return;const e=t.end&&t.end>t.date?t.end:t.date;for(let d=parse(t.date);iso(d)<=e;d.setDate(d.getDate()+1))has.add(iso(d))});
-  const now=today();let h="";
-  for(let m=0;m<12;m++){const first=new Date(calY,m,1),lead=(first.getDay()+6)%7,n=new Date(calY,m+1,0).getDate();
-    let g="";for(let i=0;i<lead;i++)g+="<i></i>";
-    for(let d=1;d<=n;d++){const k=iso(new Date(calY,m,d));g+=`<i class="${k===tIso?"td":has.has(k)?"ev":""} ${k<tIso?"past":""}">${d}</i>`}
-    h+=`<button class="ym ${calY===now.getFullYear()&&m===now.getMonth()?"cur":""}" data-ym="${m}" aria-label="${MOL[m]} ${calY}"><b>${MOL[m]}</b><div class="ym-g">${g}</div></button>`}
+  const h=yearGrid(calY,k=>`${k===tIso?"td":has.has(k)?"ev":""} ${k<tIso?"past":""}`);
   $("calYear").innerHTML=`<div class="yr-head"><button class="cal-nav" data-yrn="-1" aria-label="${L("Année précédente")}">‹</button><button type="button" class="yr-title" data-yrtoday="1" aria-label="${L("Revenir au mois actuel")}">${calY}<span class="yr-ic">↩ ${L("Mois actuel")}</span></button><button class="cal-nav" data-yrn="1" aria-label="${L("Année suivante")}">›</button></div><div class="yr-grid">${h}</div>
     <p class="small muted" style="text-align:center;margin:10px 0 4px">${L("Touche un mois pour l'ouvrir.")} <button type="button" class="linkbtn" data-yrtoday="1" style="background:none;border:0;cursor:pointer">${L("Aujourd'hui")}</button></p>`;
 }
@@ -2063,13 +2063,17 @@ function parseShared(txt){
 // v44.7 (demande de Sid) : une seule interface, modifiée directement ; pour chaque exercice, une ligne par série :
 // « Série 1 : [kg] – [reps] », « + Ajouter une série », × pour retirer une série. Rien n'est pré-rempli.
 const exKg=x=>String(x==null?"":x).replace(".",LANG==="en"?".":",");
-function seCard(se){const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0);
-  return `<details class="ms" data-ms="${se.id}" ${se.id===msOpenId?"open":""}>
-    <summary><span class="chev">›</span><span class="grow"><span class="ms-name notr">${esc(se.name||L("Séance"))}</span><br><span class="small muted">${se.exercises.length} ${L(se.exercises.length>1?"exercices":"exercice")} · ${nS} ${L(nS>1?"séries":"série")}</span></span><button type="button" class="x ms-del" data-msdel="1" aria-label="${L("Supprimer la séance")}">${IC("trash")}</button></summary>
+function seCard(se,letter){const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0),ty=seType(se),T=ty&&SE_T[ty];
+  // v47 (#14) : lettre de la séance dans son programme + type (poussée, tirage, jambes…) en couleur ; séance libre en pointillés
+  const tag=letter||T?`<span class="se-tag">${letter?`<b>${letter}</b>`:""}${T?`<span>${L(T[0])}</span>`:""}</span>`:`<span class="se-tag se-free">${L("Libre")}</span>`;
+  const shown=String(se.name||"").replace(/^(?:Séance|Session|Training)\s+[A-F]\s*·\s*/i,"")||L("Séance");
+  return `<details class="ms${letter?"":" ms-free"}" data-ms="${se.id}" ${ty?`data-se="${ty}"`:""} ${se.id===msOpenId?"open":""}>
+    <summary><span class="chev">›</span><span class="grow">${tag}<span class="ms-name notr">${esc(shown)}</span><br><span class="small muted">${se.exercises.length} ${L(se.exercises.length>1?"exercices":"exercice")} · ${nS} ${L(nS>1?"séries":"série")}</span></span><button type="button" class="x ms-del" data-msdel="1" aria-label="${L("Supprimer la séance")}">${IC("trash")}</button></summary>
     <div class="ms-body">
       <label class="small muted" style="display:grid;gap:4px">${L("Nom de la séance")}<input data-f="msname" value="${esc(se.name)}" autocomplete="off"></label>
       ${se.exercises.map((ex,i)=>`<div class="ex ex3" data-ex="${ex.id}">
         <div class="ex-head"><span class="num">${i+1}</span><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><button type="button" class="mini ex-help" data-exhelp="1" aria-label="${L("Comment faire cet exercice")}" title="${L("Comment faire cet exercice")}"${exAide(ex.name)?"":" hidden"}>?</button><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">×</button></div>
+        ${exAdvHtml(ex)}
         <div class="set-rows">${ex.sets.map((st,j)=>`<div class="set-row" data-si="${j}"><span class="set-l">${L("Série")} ${j+1}</span>
           <input class="set-in" data-f="setkg" value="${esc(exKg(st&&st.kg))}" placeholder="kg" aria-label="${L("Série")} ${j+1} : kg" autocomplete="off" inputmode="decimal">
           <span class="set-sep" aria-hidden="true">–</span>
@@ -2090,10 +2094,11 @@ function renderMuscu(){muMigrate();try{renderCoach()}catch(e){}
   for(const s of S)if(s.grp&&!seen.has(s.grp.id)){seen.add(s.grp.id);groups.push({id:s.grp.id,name:s.grp.name||L("Programme"),src:s.grp.src||"import",ses:grpSe(s.grp.id)})}
   const free=S.filter(s=>!s.grp||!seen.has(s.grp.id));
   const gHtml=g=>`<section class="ms-grp" data-msgrp="${g.id}"><div class="ms-grp-h"><div class="grow"><span class="eyebrow notr">${esc(g.name)}</span><span class="small muted">${L(GSRC[g.src]||"Importé")} · ${g.ses.length} ${L(g.ses.length>1?"séances":"séance")}${g.plan?` · ${L("suivi")}`:""}</span></div><button type="button" class="pen" data-msgact="${g.id}" aria-label="${L("Actions du programme")}">${MORE}</button></div>
-    ${g.ses.map(se=>seCard(se)).join("")||`<div class="small muted">${L("Aucune séance dans ce programme.")}</div>`}</section>`;
+    ${g.ses.map((se,i)=>seCard(se,"ABCDEFGHIJ"[i]||"")).join("")||`<div class="small muted">${L("Aucune séance dans ce programme.")}</div>`}</section>`;
   $("msList").innerHTML=groups.map(gHtml).join("")+
     `<section class="ms-grp" data-msgrp=""><div class="ms-grp-h"><div class="grow"><span class="eyebrow">${L("Séances libres")}</span><span class="small muted">${free.length} ${L(free.length>1?"séances":"séance")}</span></div>${free.length?`<button type="button" class="pen" data-msgact="" aria-label="${L("Actions des séances libres")}">${MORE}</button>`:""}</div>
     ${free.map(se=>seCard(se)).join("")||`<div class="small muted">${L("Aucune séance libre. Crée-en une ci-dessous.")}</div>`}</section>`;
+  renderMuGoal();
   const dl=$("exList");if(dl&&!dl.childElementCount)dl.innerHTML=EXDB.map(e=>`<option value="${esc(e.n)}"></option>`).join("")}
 function msSaveSoon(se){if(se)seTouch(se);clearTimeout(msTimer);msTimer=setTimeout(save,500)}
 $("msForm").addEventListener("submit",e=>{e.preventDefault();const n=$("msName").value.trim();if(!n)return;
@@ -2104,7 +2109,8 @@ $("msList").addEventListener("input",e=>{
   const se=msFind(inp.closest("[data-ms]").dataset.ms);if(!se)return;
   if(f==="msname"){se.name=inp.value;const n=inp.closest("[data-ms]").querySelector(".ms-name");if(n)n.textContent=inp.value||L("Séance")}
   else{const ex=se.exercises.find(x=>x.id===inp.closest("[data-ex]").dataset.ex);if(!ex)return;
-    if(f==="exname"){ex.name=inp.value;const h=inp.parentElement.querySelector("[data-exhelp]");if(h)h.hidden=!exAide(ex.name)}
+    if(f==="exname"){ex.name=inp.value;const h=inp.parentElement.querySelector("[data-exhelp]");if(h)h.hidden=!exAide(ex.name);
+      const av=inp.closest("[data-ex]").querySelector(".ex-adv");if(av)av.outerHTML=exAdvHtml(ex)}
     else if(f==="setkg"||f==="setreps"){const st=ex.sets[+inp.closest("[data-si]").dataset.si];if(!st)return;
       if(f==="setkg")st.kg=inp.value.replace(",",".").replace(/[^0-9.]/g,"").slice(0,7);else st.reps=inp.value.replace(/[^0-9]/g,"").slice(0,4)}}
   msSaveSoon(se)});
@@ -2134,6 +2140,7 @@ $("msList").addEventListener("click",e=>{
   if(b.dataset.msaddex){se.exercises.push(newEx());seTouch(se);save();renderMuscu();const ins=$("msList").querySelectorAll(`[data-ms="${se.id}"] [data-f=exname]`);ins[ins.length-1]?.focus()}
   else if(b.dataset.msdelex){armDelete(b,()=>{se.exercises=se.exercises.filter(x=>x.id!==b.dataset.msdelex);seTouch(se);save();renderMuscu()})}
   else if(b.dataset.exhelp){const ex=exOf();if(ex)exHelpOpen(ex.name)}
+  else if(b.dataset.msadv){const ex=exOf();if(ex)exAdvApply(se,ex)}
   else if(b.dataset.mscopy1){const ex=exOf();if(!ex||ex.sets.length<2)return;const f=ex.sets[0]||{};
     // v45 : la série 1 (poids et répétitions) est recopiée dans toutes les autres séries de l'exercice
     if(!String(f.kg||"").trim()&&!String(f.reps||"").trim()){toast("Remplis d'abord la série 1");return}
@@ -2209,7 +2216,7 @@ const EXHEAVY=e=>e.t!=="I";
 function coachBuild(p){const split={2:["full1","full2"],3:p.level==="deb"?["full1","full2","full3"]:["push","pull","legs"],4:["upper1","lower1","upper2","lower2"],
     5:["push","pull","legs","upper1","lower2"],6:["push","pull","legs","push","pull","legs"]}[p.days]||["full1","full2"];
   const nEx={45:4,60:5,75:6,90:7}[p.dur]||5,eq=p.equip==="gym"?"g":p.equip==="db"?"d":"b",av=(p.avoid||[]).map(x=>({shoulder:"s",back:"b",knee:"k"}[x])).filter(Boolean);
-  const never=new Set(p.never||[]),R={muscle:["6–10","10–15"],force:["3–6","8–12"],gras:["8–12","12–15"],forme:["8–12","12–15"]}[p.goal]||["8–12","10–15"];
+  const never=new Set(p.never||[]),R={muscle:["6–10","10–15"],force:["3–5","8–10"],gras:["8–12","12–15"],forme:["8–12","12–15"],endu:["12–15","15–20"]}[p.goal]||["8–12","10–15"];
   const rir={deb:"2–3",inter:"1–2",conf:"0–1"}[p.level]||"2",prio=new Set((p.prio||[]).flatMap(k=>PRIO[k]||[])),turn={};
   let relax=false; // v44 : la liste d'exercices est surtout faite pour la salle : si le matériel laisse une séance presque vide, on l'ignore pour cette séance
   const ok=e=>(relax||e.eq.includes(eq))&&!never.has(e.n)&&!av.some(z=>e.z.includes(z));
@@ -2241,7 +2248,7 @@ const coachNext=()=>{const ds=PLD();if(!ds.length)return null;const last=ML().fi
 function renderCoach(){const box=$("coachBox");if(!box)return;const pl=PL(),ds=PLD();
   const rmk=$("coRemark")?$("coRemark").value:""; // v43 : le rendu garde la remarque en cours
   if(!pl){box.innerHTML=`<div class="card coach-card"><div class="grow"><b>${L("Ton programme sur mesure")}</b><div class="small muted">${L("Quelques questions (niveau, objectif, jours, matériel) et Sid'compagnon crée tes séances.")}</div></div><button type="button" class="btn" data-coach="new">${L("Créer mon programme")}</button></div>`;return}
-  const p=pl.profile||{},G={muscle:"Prendre du muscle",force:"Gagner en force",gras:"Perdre du gras",forme:"Être en forme"},LV={deb:"Débutant",inter:"Intermédiaire",conf:"Confirmé"};
+  const p=pl.profile||{},G={muscle:"Prendre du muscle",force:"Gagner en force",gras:"Perdre du gras",forme:"Être en forme",endu:"Gagner en endurance"},LV={deb:"Débutant",inter:"Intermédiaire",conf:"Confirmé"};
   box.innerHTML=`<div class="card coach-card coach-on"><div class="coach-top"><div class="grow"><span class="eyebrow">${L("Mon programme")}</span><b>${esc(L(G[p.goal]||"Sur mesure"))}${pl.src==="ia"?` · ${L("ajusté par Claude")}`:""}</b><div class="small muted">${p.level?esc(L(LV[p.level]||""))+" · ":""}${ds.length} ${L(ds.length>1?"séances":"séance")}</div></div><button type="button" class="pen" data-coach="more" aria-label="${L("Plus d'actions")}">${MORE}</button></div>
     ${pl.aiWait?`<div class="coach-wait" role="status"><span class="grow">${L("Demande envoyée à Claude : le programme ajusté arrivera ici tout seul.")}</span><button type="button" class="linkbtn" data-coach="resend">${L("Renvoyer")}</button><button type="button" class="x" data-coach="unwait" aria-label="${L("Masquer")}">×</button></div>`:""}
     <div class="coach-adj"><label for="coRemark" class="eyebrow">${L("Ta remarque sur ce programme")}</label><textarea id="coRemark" class="autogrow" rows="2" maxlength="600" placeholder="${L("Ex. remplace la 2e séance jambes par une séance haut du corps")}">${esc(pl.aiWait?"":rmk)}</textarea>
@@ -2283,7 +2290,7 @@ $("coachForm").addEventListener("submit",async e=>{e.preventDefault();const p=cf
   else{save();$("coachSheet").hidden=true;renderMuscu();toast("Ton programme est prêt")}});
 // v43 : demandes envoyées au Claude de la personne (même principe que Nutrition) : il lit le profil et les remarques
 // avec muscu_programme, puis enregistre le programme avec enregistrer_programme ; le résultat revient ici tout seul.
-const GOALS={muscle:["prendre du muscle","build muscle","spiermassa opbouwen"],force:["gagner en force","get stronger","sterker worden"],gras:["perdre du gras","lose fat","vet verliezen"],forme:["être en forme","get fit","fit worden"]};
+const GOALS={muscle:["prendre du muscle","build muscle","spiermassa opbouwen"],force:["gagner en force","get stronger","sterker worden"],gras:["perdre du gras","lose fat","vet verliezen"],forme:["être en forme","get fit","fit worden"],endu:["gagner en endurance","build endurance","uithoudingsvermogen opbouwen"]};
 function coachPrompt(kind,remark){const p=(PL()&&PL().profile)||cfDraft||{},li=LANG==="en"?1:LANG==="nl"?2:0,g=(GOALS[p.goal]||GOALS.muscle)[li];
   const AV={shoulder:["épaules","shoulders","schouders"],back:["bas du dos","lower back","onderrug"],knee:["genoux","knees","knieën"]};
   const av=[...(p.avoid||[]).map(x=>(AV[x]||[x,x,x])[li]),p.avoidTxt].filter(Boolean).join(", ");
@@ -2303,6 +2310,53 @@ async function coachAdjust(text){text=String(text||"").trim();if(!text){toast("�
   if(!(await nuConsent()))return;
   const pr=pl.profile||(pl.profile={});pr.remarks=[...(pr.remarks||[]),{at:new Date().toISOString(),text:text.slice(0,600)}].slice(-10);pl.aiWait=Date.now();pl.upd=Date.now();M().upd=Date.now();save();renderMuscu();
   aiHandoff(coachPrompt("adjust",text.slice(0,600)),"muscu")}
+/* ---------- v47 : objectif visible, séries conseillées, types de séances, demande à Claude (#13, #14, #17) ---------- */
+// objectif d'entraînement (data.prefs.muGoal, synchronisé ; repris du programme suivi s'il n'est pas réglé)
+const MU_GOALS={force:"Force",muscle:"Prise de masse",gras:"Sèche",endu:"Endurance",forme:"Forme"};
+// séries × répétitions conseillées : H = exercice polyarticulaire (lourd), I = isolation
+const MU_SCHEME={force:{H:[5,"3–5"],I:[3,"8–10"]},muscle:{H:[4,"6–10"],I:[3,"10–15"]},gras:{H:[3,"8–12"],I:[3,"12–15"]},endu:{H:[3,"12–15"],I:[3,"15–20"]},forme:{H:[3,"8–12"],I:[3,"12–15"]}};
+const muGoal=()=>{const g=data.prefs.muGoal||(PL()&&PL().profile&&PL().profile.goal);return MU_SCHEME[g]?g:"muscle"};
+const HEAVY_RE=/squat|souleve|developpe|rowing|traction|presse|dips|hip thrust|fente|military|bench|deadlift|\brow\b|press|pull-?up|lunge/;
+function exAdv(name){const n=String(name||"").trim();if(!n)return null;const e=EXN(n)||EXDB.find(x=>fold(x.n)===fold(n));
+  const k=e?(e.t==="I"?"I":"H"):(HEAVY_RE.test(fold(n))?"H":"I");const[sets,reps]=MU_SCHEME[muGoal()][k];return{sets,reps}}
+function exAdvHtml(ex){const a=exAdv(ex.name);if(!a)return `<div class="ex-adv" hidden></div>`;
+  const same=ex.sets.length===a.sets&&ex.reps===a.reps;
+  return `<div class="ex-adv"><span class="grow">${L("Conseillé")} (${L(MU_GOALS[muGoal()])}) : <b>${a.sets} × ${a.reps}</b></span>${same?`<span class="ok">✓</span>`:`<button type="button" class="linkbtn" data-msadv="1">${L("Appliquer")}</button>`}</div>`}
+// applique le conseil : nombre de séries (seules des séries vides sont retirées) et répétitions visées ; annulable
+function exAdvApply(se,ex){const a=exAdv(ex.name);if(!a)return;const before={sets:ex.sets.map(x=>({...x})),reps:ex.reps};
+  while(ex.sets.length<a.sets)ex.sets.push(newSet());
+  for(let j=ex.sets.length-1;j>=a.sets;j--){const x=ex.sets[j];if(!String(x.kg||"").trim()&&!String(x.reps||"").trim())ex.sets.splice(j,1)}
+  ex.reps=a.reps;seTouch(se);save();renderMuscu();
+  toastAct(`${a.sets} ${L("séries")} × ${a.reps}`,"Annuler",()=>{ex.sets=before.sets;ex.reps=before.reps;seTouch(se);save();renderMuscu()})}
+function renderMuGoal(){const box=$("muGoal");if(!box)return;const g=muGoal(),keys=["force","muscle","gras","endu"].concat(g==="forme"?["forme"]:[]);
+  box.innerHTML=`<span class="eyebrow">${L("Mon objectif")}</span><div class="seg mu-goal-seg" role="group" aria-label="${L("Mon objectif")}" style="grid-template-columns:repeat(${keys.length},minmax(0,1fr))">${keys.map(k=>`<button type="button" data-mugoal="${k}" aria-pressed="${k===g}">${L(MU_GOALS[k])}</button>`).join("")}</div>
+    <div class="small muted">${L("Les séries et répétitions conseillées de chaque exercice suivent cet objectif.")}</div>`}
+$("muGoal").addEventListener("click",e=>{const b=e.target.closest("[data-mugoal]");if(!b)return;const g=b.dataset.mugoal;if(g===muGoal()&&data.prefs.muGoal)return;
+  data.prefs.muGoal=g;const pl=PL();if(pl){pl.profile=pl.profile||{};pl.profile.goal=g;pl.upd=Date.now();M().upd=Date.now()}save();renderMuscu();
+  toast(`${L("Objectif")} : ${L(MU_GOALS[g])}`)});
+// type d'une séance : d'après son nom, sinon d'après les muscles de ses exercices
+const SE_T={push:["Poussée"],pull:["Tirage"],legs:["Jambes"],upper:["Haut du corps"],lower:["Bas du corps"],full:["Corps complet"]};
+function seType(se){const n=fold(se.name||"");
+  if(/\bpush\b|pouss|\bpecs?\b/.test(n))return "push";if(/\bpull\b|tirage/.test(n))return "pull";
+  if(/bas du corps|\blower\b/.test(n))return "lower";if(/haut du corps|\bupper\b/.test(n))return "upper";
+  if(/jambe|\blegs?\b|cuisse/.test(n))return "legs";if(/corps complet|full ?body|\bfull\b/.test(n))return "full";
+  const c={push:0,pull:0,legs:0},G={chest:"push",shoulders:"push",triceps:"push",back:"pull",biceps:"pull",traps:"pull",quads:"legs",hams:"legs",glutes:"legs",calves:"legs",adductors:"legs"};
+  for(const x of se.exercises||[]){const e=EXN(String(x.name||"").trim());if(e&&G[e.m])c[G[e.m]]++}
+  const up=c.push+c.pull;if(!up&&!c.legs)return null;
+  if(c.legs&&up)return c.legs>=2&&up>=2?"full":c.legs>up?"legs":"upper";
+  if(c.legs)return "legs";return c.push&&c.pull?(c.push>=c.pull*3?"push":c.pull>=c.push*3?"pull":"upper"):c.push?"push":"pull"}
+// v47 (#17) : un champ en haut de Musculation et de Notes, comme « Planifier » : la demande part chez Claude, le résultat revient par le connecteur
+function muPrompt(q){const g=L(MU_GOALS[muGoal()]);return T3(`Avec Sid'note, pour ma musculation : ${q}\n(Lis d'abord mon programme et mes séances avec muscu_programme. Pour changer le programme, enregistre-le avec enregistrer_programme ; pour une séance faite, note-la avec noter_seance. Utilise les exercices de la liste donnée par muscu_programme. Mon objectif : ${g}.)`,
+  `With Sid'note, for my workouts: ${q}\n(First read my program and sessions with muscu_programme. To change the program, save it with enregistrer_programme; for a finished session, log it with noter_seance. Use the exercises listed by muscu_programme. My goal: ${g}.)`,
+  `Met Sid'note, voor mijn training: ${q}\n(Lees eerst mijn schema en trainingen met muscu_programme. Om het schema te wijzigen: sla het op met enregistrer_programme; een gedane training noteer je met noter_seance. Gebruik de oefeningen uit de lijst van muscu_programme. Mijn doel: ${g}.)`)}
+function ntPrompt(q){return T3(`Avec Sid'note, dans mes notes : ${q}\n(Retrouve les notes avec notes et lire_note. Pour une nouvelle note, utilise ajouter_note et propose un dossier si c'est utile ; pour changer une note qui existe, utilise modifier_note, sans créer de doublon. Tu ne vois pas mes notes secrètes.)`,
+  `With Sid'note, in my notes: ${q}\n(Find notes with notes and lire_note. For a new note, use ajouter_note and suggest a folder if useful; to change an existing note, use modifier_note without creating a duplicate. You can't see my secret notes.)`,
+  `Met Sid'note, in mijn notities: ${q}\n(Zoek notities met notes en lire_note. Voor een nieuwe notitie: ajouter_note en stel een map voor als dat helpt; om een bestaande notitie te wijzigen: modifier_note, zonder dubbel. Je ziet mijn geheime notities niet.)`)}
+for(const[k,topic,mk,health]of[["mu","muscu",muPrompt,true],["nt","note",ntPrompt,false]]){const f=$(k+"AskForm"),t=$(k+"Ask");
+  $(k+"Mic").addEventListener("click",e=>dictate(e.currentTarget,t));t.addEventListener("input",()=>grow(t));
+  t.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();f.requestSubmit()}});
+  f.addEventListener("submit",async e=>{e.preventDefault();const q=t.value.trim();if(!q)return;dictStop();
+    if(health&&!(await nuConsent()))return;aiHandoff(mk(q.slice(0,1500)),topic);t.value="";grow(t)})}
 $("coachClose").addEventListener("click",()=>$("coachSheet").hidden=true);
 $("coachSheet").addEventListener("click",e=>{if(e.target.id==="coachSheet")$("coachSheet").hidden=true});
 $("coachBox").addEventListener("click",e=>{
@@ -4069,7 +4123,7 @@ function renderNutri(){try{renderAiCards()}catch(e){}
   if(!has||nuEditing){if(!nuDraft)nuFillForm();return}
   const pl=n.plan,list=dayLog(nuDay),s=sumOf(list),tg=dayTarget(nuDay);
   $("nuGoalCard").innerHTML=nuGoalHtml();$("nuGoalCard").hidden=!pl.wg||(pl.wg.ok&&pl.wgSeen);$("nuGoalCard").classList.toggle("ok",!!(pl.wg&&pl.wg.ok));
-  $("nuDayTxt").textContent=nuDayLabel(nuDay);$("nuDate").value=nuDay;$("nuNext").disabled=nuDay>=iso(today());
+  $("nuDayTxt").textContent=nuDayLabel(nuDay);$("nuDate").value=nuDay;$("nuNext").disabled=nuDay>=iso(today());renderNuCal();
   // v44.4 : le jour du repas se choisit aussi dans « Ajouter ce que tu manges » (jours passés)
   $("nuForTxt").textContent=nuDayLabel(nuDay);$("nuForDate").value=nuDay;$("nuForDate").max=iso(today());$("nuForNext").disabled=nuDay>=iso(today());$("nuFor").classList.toggle("past",nuDay<iso(today()));
   const pct=Math.min(1,s.kcal/tg.kcal);$("nuRing").style.strokeDashoffset=326.73*(1-pct);
@@ -4083,7 +4137,7 @@ function renderNutri(){try{renderAiCards()}catch(e){}
   $("nuLog").innerHTML=groups.length?groups.map(G=>{const t=sumOf(G.items),d=new Date(G.at);
     return `<details class="dish" open><summary class="dish-h"><span class="dish-ic" data-thumb="${G.g}">${mono(G.name)}</span>
       <span class="dish-t"><b class="notr">${esc(G.name)}</b><span class="dish-time">${two(d.getHours())}:${two(d.getMinutes())}</span>${G.items.length>1?` <span class="small muted">· ${G.items.length} ${L("aliments")}</span>`:""}</span>
-      <span class="dish-kcal">${r0(t.kcal)}<small>kcal</small></span>${G.items.length===1?`<button class="pen" data-nuedit="${G.items[0].id}" aria-label="${L("Modifier")}">${PEN}</button>`:""}<button type="button" class="x" data-nudelg="${G.g}" aria-label="${L("Supprimer ce plat")}">×</button></summary>
+      <span class="dish-kcal">${r0(t.kcal)}<small>kcal</small></span><button type="button" class="pen nu-cp" data-nucopy="${G.g}" aria-label="${L("Copier ce repas sur d'autres jours")}" title="${L("Copier sur d'autres jours")}">+</button>${G.items.length===1?`<button class="pen" data-nuedit="${G.items[0].id}" aria-label="${L("Modifier")}">${PEN}</button>`:""}<button type="button" class="x" data-nudelg="${G.g}" aria-label="${L("Supprimer ce plat")}">×</button></summary>
       ${macroHtml(t)}${G.items.length===1?`<div class="dish-note">${qtyCell("log:"+G.items[0].id,G.items[0])}</div>`:`<div class="dish-items">${G.items.map(x=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${qtyCell("log:"+x.id,x)}</div><span class="k">${r0(x.kcal)} kcal</span><button class="pen" data-nuedit="${x.id}" aria-label="${L("Modifier")}">${PEN}</button><button class="x" data-nudel="${x.id}" aria-label="${L("Supprimer")}">×</button></div>`).join("")}</div>`}</details>`}).join("")
     :`<div class="card"><div class="empty">${L(nuDay===iso(today())?"Rien pour l'instant. Écris ce que tu manges ci-dessus, ou prends ton plat en photo.":"Rien d'enregistré ce jour-là. Tu peux encore le compléter.")}</div></div>`;
   groups.forEach(G=>loadThumb(G.g));
@@ -4244,9 +4298,68 @@ function nuAddItems(items,time,meta){const at=nuAt(time),grp=uid();
 $("nuLog").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
   if(b.dataset.nuedit){e.preventDefault();nuOpenSheet(b.dataset.nuedit)}
   else if(b.dataset.nudel){e.preventDefault();if(!c2ok(b))return;const id=b.dataset.nudel;undoable("Supprimé",[id],()=>{tomb(id);NU().log=NU().log.filter(x=>x.id!==id)},{after:renderNutri})}
+  else if(b.dataset.nucopy){e.preventDefault();e.stopPropagation();nuCopyOpen(b.dataset.nucopy)}
   else if(b.dataset.nudelg){e.preventDefault();e.stopPropagation();if(!c2ok(b))return;const g=b.dataset.nudelg,ids=NU().log.filter(x=>(x.grp||x.id)===g).map(x=>x.id);
     undoable("Plat supprimé",ids,()=>{ids.forEach(tomb);NU().log=NU().log.filter(x=>(x.grp||x.id)!==g)},{after:renderNutri,later:()=>{if(!NU().log.some(x=>(x.grp||x.id)===g))idb.del(thumbKey(g))}})}
 });
+/* ---------- v47 : vues semaine / mois / année de la nutrition (#16) et copie d'un repas sur d'autres jours (#15) ---------- */
+// mêmes grilles que l'agenda (monthGrid / yearGrid, mêmes classes .day, .ym)
+let nuRange=null,nuRY=0,nuRM=0,nuRW="";
+const dowHead=()=>[1,2,3,4,5,6,0].map(i=>`<span>${esc(String(DOWL[i]||"").slice(0,1).toUpperCase())}</span>`).join("");
+// état d'un jour : dans l'objectif (90 à 105 %), en dessous, au-dessus ; rien si aucun repas
+function nuDays(){const m={};for(const x of NU().log||[]){if(!x||!x.day)continue;m[x.day]=(m[x.day]||0)+(+x.kcal||0)}return m}
+function nuSt(by,k){if(by[k]==null)return "";const t=dayTarget(k).kcal||1,r=by[k]/t;return r>1.05?"over":r>=.9?"ok":"under"}
+function nuCalOpen(mode){const d=parse(nuDay);nuRange=mode;nuRY=d.getFullYear();nuRM=d.getMonth();nuRW=wKey(nuDay);renderNuCal()}
+function renderNuCal(){const box=$("nuCal"),btn=$("nuDayBtn");if(!box)return;box.hidden=!nuRange;if(btn)btn.setAttribute("aria-expanded",String(!!nuRange));if(!nuRange)return;
+  const tIso=iso(today()),by=nuDays();let title="",body="",tot=0,nd=0,start="";
+  const sum=()=>`<div class="small muted nu-cal-sum">${nd?`${nd} ${L(nd>1?"jours notés":"jour noté")} · ${L("moyenne")} ${r0(tot/nd)} kcal`:L("Aucun repas noté sur cette période.")}</div>`;
+  const leg=`<div class="nu-leg small muted"><span><i class="nu-st ok"></i>${L("Dans l'objectif")}</span><span><i class="nu-st under"></i>${L("En dessous")}</span><span><i class="nu-st over"></i>${L("Au-dessus")}</span></div>`;
+  if(nuRange==="week"){const m=parse(nuRW),e=new Date(m);e.setDate(e.getDate()+6);start=nuRW;
+    title=`${m.getDate()} ${MO[m.getMonth()]} – ${e.getDate()} ${MO[e.getMonth()]} ${e.getFullYear()}`;
+    let rows="";for(let i=0;i<7;i++){const d=new Date(m);d.setDate(d.getDate()+i);const k=iso(d),st=nuSt(by,k),tg=dayTarget(k).kcal||0,v=by[k];if(v!=null){tot+=v;nd++}
+      rows+=`<button type="button" class="nwk-row ${k===nuDay?"on":""} ${st}" data-nuday="${k}" ${k>tIso?"disabled":""}><span class="nwk-d"><b>${esc(DOWL[d.getDay()])}</b><small>${d.getDate()} ${MO[d.getMonth()]}</small></span><span class="nwk-bar"><i style="width:${tg&&v?Math.min(100,v/tg*100):0}%"></i></span><span class="nwk-k">${v!=null?r0(v):"–"}${v!=null&&tg?`<small> / ${tg}</small>`:""}</span></button>`}
+    body=`<div class="nwk">${rows}</div>`+leg+sum()}
+  else if(nuRange==="month"){title=`${MOL[nuRM]} ${nuRY}`;start=iso(new Date(nuRY,nuRM,1));
+    const g=monthGrid(nuRY,nuRM,(k,d)=>{const st=nuSt(by,k);if(st){tot+=by[k];nd++}
+      return `<button type="button" class="day ${k===tIso?"today":""} ${k===nuDay?"sel":""} ${k<tIso?"past":""}" data-nuday="${k}" ${k>tIso?"disabled":""} aria-label="${d} ${MOL[nuRM]}${st?" · "+r0(by[k])+" kcal":""}"><span class="num">${d}</span><span class="marks">${st?`<span class="dots"><i class="nu-st ${st}"></i></span>`:""}</span></button>`});
+    body=`<div class="cal-grid cal-dow">${dowHead()}</div><div class="cal-grid nu-mgrid">${g}</div>`+leg+sum()}
+  else{title=String(nuRY);start=iso(new Date(nuRY,0,1));
+    for(const k in by)if(k.startsWith(nuRY+"-")){tot+=by[k];nd++}
+    body=`<div class="yr-grid nu-ygrid">${yearGrid(nuRY,k=>{const st=nuSt(by,k);return `${k===tIso?"td":st?"ev nu-"+st:""} ${k<tIso?"past":""}`})}</div><p class="small muted" style="text-align:center;margin:8px 0 0">${L("Touche un mois pour l'ouvrir.")}</p>`+sum()}
+  // période suivante seulement si elle a déjà commencé
+  const nx=nuRange==="week"?(()=>{const d=parse(nuRW);d.setDate(d.getDate()+7);return iso(d)})():nuRange==="month"?iso(new Date(nuRY,nuRM+1,1)):iso(new Date(nuRY+1,0,1));
+  box.innerHTML=`<div class="seg nu-cal-seg" role="group" aria-label="${L("Vue")}">${["week","month","year"].map(m=>`<button type="button" data-nurange="${m}" aria-pressed="${m===nuRange}">${L({week:"Semaine",month:"Mois",year:"Année"}[m])}</button>`).join("")}</div>
+    <div class="cal-head"><button type="button" class="cal-nav" data-nurn="-1" aria-label="${L("Période précédente")}">‹</button><b class="nu-cal-t">${esc(title)}</b><button type="button" class="cal-nav" data-nurn="1" aria-label="${L("Période suivante")}" ${nx>tIso?"disabled":""}>›</button></div>
+    ${body}<button type="button" class="linkbtn nu-cal-x" data-nurange="">${L("Fermer le calendrier")}</button>`}
+$("nuDayBtn").addEventListener("click",()=>{if(nuRange){nuRange=null;renderNuCal()}else nuCalOpen("month")});
+$("nuCal").addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled)return;
+  if(b.dataset.nurange!==undefined){if(b.dataset.nurange)nuCalOpen(b.dataset.nurange);else{nuRange=null;renderNuCal()}return}
+  if(b.dataset.nurn){const s=+b.dataset.nurn;if(nuRange==="week"){const d=parse(nuRW);d.setDate(d.getDate()+7*s);nuRW=iso(d)}
+    else if(nuRange==="month"){nuRM+=s;if(nuRM<0){nuRM=11;nuRY--}if(nuRM>11){nuRM=0;nuRY++}}else nuRY+=s;renderNuCal();return}
+  if(b.dataset.ym){nuRM=+b.dataset.ym;nuRange="month";renderNuCal();return}
+  if(b.dataset.nuday){const w=nuRange==="week";if(!w)nuRange=null;nuSetDay(b.dataset.nuday);if(!w)$("nuDayBtn").scrollIntoView({block:"nearest"})}});
+// copier un repas (tout le plat) sur un ou plusieurs autres jours ; annulable
+let nuCp=null;
+function nuCopyOpen(g){const items=NU().log.filter(x=>(x.grp||x.id)===g);if(!items.length)return;const d=parse(items[0].day||nuDay);
+  nuCp={g,y:d.getFullYear(),m:d.getMonth(),sel:new Set(),src:items[0].day};$("nuCopyTitle").textContent=`${L("Copier")} « ${items[0].gname||items[0].name} »`;renderNuCopy();$("nuCopySheet").hidden=false}
+function renderNuCopy(){if(!nuCp)return;const tIso=iso(today()),mx=(()=>{const d=today();d.setDate(d.getDate()+14);return iso(d)})(),n=nuCp.sel.size;
+  $("nuCopyBody").innerHTML=`<p class="small muted" style="margin:0 0 8px">${L("Touche les jours où tu as mangé (ou mangeras) la même chose.")}</p>
+    <div class="cal-head"><button type="button" class="cal-nav" data-nucpn="-1" aria-label="${L("Mois précédent")}">‹</button><b>${MOL[nuCp.m]} ${nuCp.y}</b><button type="button" class="cal-nav" data-nucpn="1" aria-label="${L("Mois suivant")}" ${iso(new Date(nuCp.y,nuCp.m+1,1))>mx?"disabled":""}>›</button></div>
+    <div class="cal-grid cal-dow">${dowHead()}</div>
+    <div class="cal-grid nu-cpgrid">${monthGrid(nuCp.y,nuCp.m,(k,d)=>`<button type="button" class="day ${k===tIso?"today":""} ${nuCp.sel.has(k)?"sel":""} ${k===nuCp.src?"nu-cp-src":""}" data-nucpd="${k}" aria-pressed="${nuCp.sel.has(k)}" ${k>mx||k===nuCp.src?"disabled":""} aria-label="${d} ${MOL[nuCp.m]}"><span class="num">${d}</span></button>`)}</div>
+    <button type="button" class="btn" id="nuCopyGo" ${n?"":"disabled"} style="width:100%;margin-top:12px">${n?`${L("Copier sur")} ${n} ${L(n>1?"jours":"jour")}`:L("Choisis au moins un jour")}</button>`}
+function nuCopyDo(){const src=NU().log.filter(x=>(x.grp||x.id)===nuCp.g);if(!src.length||!nuCp.sel.size)return;const ids=[],now=Date.now(),days=[...nuCp.sel].sort();
+  for(const k of days){const grp=src.length>1||src[0].grp?uid():null;
+    for(const x of src){const at=parse(k),t=new Date(x.at||Date.now());at.setHours(t.getHours(),t.getMinutes());const id=uid();ids.push(id);
+      const y={...x,id,day:k,at:at.toISOString(),upd:now};if(grp)y.grp=grp;else delete y.grp;NU().log.push(y)}}
+  NU().upd=now;save();$("nuCopySheet").hidden=true;nuCp=null;renderNutri();
+  toastAct(`${L("Repas copié sur")} ${days.length} ${L(days.length>1?"jours":"jour")}`,"Annuler",()=>{ids.forEach(tomb);NU().log=NU().log.filter(x=>!ids.includes(x.id));save();renderNutri();toast("Annulé")})}
+$("nuCopyBody").addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled||!nuCp)return;
+  if(b.dataset.nucpn){nuCp.m+= +b.dataset.nucpn;if(nuCp.m<0){nuCp.m=11;nuCp.y--}if(nuCp.m>11){nuCp.m=0;nuCp.y++}renderNuCopy();return}
+  if(b.dataset.nucpd){const k=b.dataset.nucpd;nuCp.sel.has(k)?nuCp.sel.delete(k):nuCp.sel.add(k);renderNuCopy();return}
+  if(b.id==="nuCopyGo")nuCopyDo()});
+$("nuCopyClose").addEventListener("click",()=>{$("nuCopySheet").hidden=true;nuCp=null});
+$("nuCopySheet").addEventListener("click",e=>{if(e.target.id==="nuCopySheet"){$("nuCopySheet").hidden=true;nuCp=null}});
 // saisie ou correction à la main
 function nuOpenSheet(id){
   const x=id?NU().log.find(e=>e.id===id):null;nuEditId=x?x.id:null;
@@ -4797,7 +4910,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v46-1";
+const BUILD="sidnote-v47";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

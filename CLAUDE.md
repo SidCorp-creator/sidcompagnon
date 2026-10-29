@@ -283,7 +283,12 @@ assets/               ← logo
 - Le volume Spotify ne peut pas être contrôlé depuis le web (Sid l'a déjà demandé : c'est impossible).
 - Le son ne marche qu'après un geste de l'utilisateur. Garder `unlockAudio()`.
 
-## Déploiement (Netlify)
+## Déploiement (Vercel depuis fin oct. 2026)
+- Sid a quitté Netlify : `sidcompagnon.com` est servi par **Vercel** (vérifié le 29 oct. 2026 : en-têtes `server: Vercel`). Réglages dans **`vercel.json`** à la racine (remplace `site/_headers` et `site/_redirects`, supprimés) : dossier publié `site/`, en-têtes de sécurité (CSP…), `sw.js` en `no-cache`, relais `/mcp/*` → fonction Supabase `mcp`. `tests/serve.js` lit les en-têtes dans `vercel.json`.
+- Suivi : tickets GitHub n° 1 à 20 (labels `app:*` et `type:*`, choix de Sid : GitHub Issues + Projects plutôt que GitLab). Chaque commit cite son ticket (`#n`).
+- Stack cible validée : TypeScript + React + Vite (PWA), migration écran par écran (ticket #3).
+
+## Ancien déploiement (Netlify, jusqu'au 24 oct. 2026)
 - Site Netlify : `sidnote.netlify.app` (équipe à renommer « SidCorp » dans Team settings → General → Team details ; **ne pas changer l'adresse du site**, l'app installée chez les proches casserait).
 - Jusqu'ici, Sid déposait un zip du dossier `site/` par glisser-déposer (Netlify Drop) : 15 crédits par dépôt, 300 crédits par mois (renouvelés vers le 5 du mois).
 - **Depuis le 21 oct. 2026 (v37), Claude publie lui-même** via le connecteur Netlify (Sid a connecté Netlify et donné l'accès réseau complet à l'environnement cloud). Site `sidnote` : id `e7fe294f-7d4e-4c67-a69a-c0f5ae4f5ff2` ; site de test `sidnote-test` : id `5c61415f-50cc-49da-8f96-86c245428f64`. Méthode : copier `site/` dans un dossier vide du scratchpad + `netlify.toml` (`[build] publish = "." command = ""`), appeler l'outil `deploy-site`, lancer la commande `npx -y @netlify/mcp@latest …` qu'il renvoie depuis ce dossier avec `NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt`, puis vérifier `https://sidnote.netlify.app/sw.js`.

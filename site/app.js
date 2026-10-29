@@ -3215,7 +3215,7 @@ $("psForgot").addEventListener("click",async e=>{const b=e.currentTarget;if(!ps)
   const f=ps.forgot;psEnd(null);f()});
 
 /* ---------- v38 : connecteur Claude (fonction Edge « mcp ») ---------- */
-// v45.2 : adresse sur le domaine de l'app (sidcompagnon.com/mcp/<clé>, relayée par Netlify vers la fonction Supabase, voir site/_redirects) :
+// v45.2 : adresse sur le domaine de l'app (sidcompagnon.com/mcp/<clé>, relayée par Vercel vers la fonction Supabase, voir vercel.json) :
 // Claude affiche l'icône du site de l'adresse. Les anciennes adresses …supabase.co/functions/v1/mcp/<clé> marchent toujours.
 const MCP_BASE="https://sidcompagnon.com/mcp/";
 // Une adresse secrète par personne : …/functions/v1/mcp/<clé>. Seule l'empreinte SHA-256 de la clé est gardée (table mcp_tokens) ;

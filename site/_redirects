@@ -1,3 +1,0 @@
-# v45.2 : adresse du connecteur Claude sur le domaine de l'app (Claude affiche alors l'icône de sidcompagnon.com et plus celle de Supabase).
-# Netlify relaie la requête telle quelle vers la fonction « mcp » de Supabase (méthode, corps et réponse inchangés).
-/mcp/*  https://eloeoaidgbkygazwjwiu.supabase.co/functions/v1/mcp/:splat  200!

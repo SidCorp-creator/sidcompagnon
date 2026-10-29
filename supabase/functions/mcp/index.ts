@@ -474,7 +474,7 @@ let exoCache: { at: number; txt: string } = { at: 0, txt: "" };
 async function exoList(): Promise<string> {
   if (exoCache.txt && Date.now() - exoCache.at < 6e5) return exoCache.txt;
   try {
-    const r = await fetch("https://sidnote.netlify.app/exercices.js", { signal: AbortSignal.timeout(5000) });
+    const r = await fetch("https://sidcompagnon.com/exercices.js", { signal: AbortSignal.timeout(5000) });
     const t = await r.text(), j = JSON.parse(t.slice(t.indexOf("{"), t.lastIndexOf("}") + 1));
     const txt = (j.groupes || []).map((g: Data) => `${g.nom} : ${(g.exercices || []).map((x: Data) => x.nom + (x.p ? " (P)" : "") + (x.note ? ` (${String(x.note).toLowerCase()})` : "")).join(", ")}`).join("\n");
     if (txt) exoCache = { at: Date.now(), txt };

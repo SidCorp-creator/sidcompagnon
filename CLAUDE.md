@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 47.** L'app s'appelle **Sid'compagnon** depuis la v45 (avant : Sid'home, v42–44). Adresse : **https://sidcompagnon.com** depuis la 44.8 (sidnote.netlify.app répond encore).
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 48.** L'app s'appelle **Sid'compagnon** depuis la v45 (avant : Sid'home, v42–44). Adresse : **https://sidcompagnon.com** depuis la 44.8 (sidnote.netlify.app répond encore).
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -292,6 +292,11 @@ assets/               ← logo
   - **Grilles communes** `monthGrid(y,m,cell)` / `yearGrid(y,cls)` (agenda, nutrition, copie). Nutrition : toucher la date (`#nuDayBtn`) ouvre `#nuCal` (Semaine / Mois / Année, `nuRange`, état du jour `nuSt` : dans l'objectif 90–105 %, en dessous, au-dessus ; moyenne de la période). `#nuDate` est gardé, caché.
   - **Copier un repas** : « + » sur chaque plat (`data-nucopy`) → `#nuCopySheet` (mois, plusieurs jours, jusqu'à J+14) → copies avec nouveaux id / grp (`nuCopyDo`), annulable (pierres tombales).
   - Connecteur (dépôt seulement, pas encore déployé) : objectif `endu` accepté et nommé. La version en ligne (v12) affiche « objectif endu » tel quel : sans gravité, le message envoyé à Claude donne l'objectif en clair.
+- v48 (ticket #18, **option A choisie par Sid** le 29 oct. 2026) : **le mot de passe du compte remplace la phrase secrète**, le chiffrement ne change pas.
+  - `data.phx.pw = {salt, iv, ct}` : la clé maître MK chiffrée dans le navigateur avec PBKDF2(mot de passe du compte). Nouveau coffre (`mkCreate`) : MK aléatoire, `phx` sans `salt` (aucune phrase), mot de passe vérifié auprès du serveur (`pwCheckSrv`). Nouvel appareil / code oublié : `devSetup` → `mkFromPw` (le mot de passe ouvre l'enveloppe, `pwUnwrap`) → code de l'appareil.
+  - Anciens comptes à phrase : rien n'est rechiffré ; au premier déverrouillage par le code, `phPwOffer` demande le mot de passe une fois (« Plus besoin de phrase secrète ») et ajoute `phx.pw`. La phrase reste valable en secours (annuler la fenêtre du mot de passe → `askPhrase`). Réversible : retirer `phx.pw` remet l'ancien fonctionnement.
+  - Changement de mot de passe : `recRewrap` rechiffre aussi `phx.pw`. Remise à zéro par e-mail : `finishLogin(…,{pwReset:true})` pose `phx.pwStale` ; au prochain déverrouillage sur un appareil (clé en mémoire), `phPwOffer` redemande le nouveau mot de passe. Sans aucun appareil ouvert ni phrase, les coffres ne peuvent plus être rouverts (dit dans les conditions et la confidentialité).
+  - Mode essai : phrase comme avant (pas de compte). Textes visibles, `LEGAL`, pages publiques (où « Sid'home » restait) mis à jour. Tests : blocs principal, coffre (passage, nouvel appareil, code oublié, changement / remise à zéro du mot de passe, ancien compte à phrase) et Face ID.
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

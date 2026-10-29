@@ -521,7 +521,7 @@
   <section class="view" id="v-pwd" hidden>
     <div class="brand"><img src="logo-192.png" alt="">Sid'compagnon</div>
     <h1>Mots de passe</h1>
-    <p class="sub">Tes mots de passe, chiffrés sur ton appareil avec ta phrase secrète. Le serveur ne garde que du texte illisible.</p>
+    <p class="sub">Tes mots de passe, chiffrés sur ton appareil. Le serveur ne garde que du texte illisible.</p>
     <div id="pinBox" class="pin">
       <p class="pin-t" id="pinTitle"></p>
       <p class="small muted" id="pinSub" style="margin:-8px 0 0;max-width:320px"></p>
@@ -657,8 +657,8 @@
     <div class="card" id="bioCard" style="margin-bottom:10px" hidden><div class="row"><div class="grow"><b id="bioT">Face ID</b><div class="small muted" id="bioS"></div></div><button type="button" class="btn" id="bioBtn">Activer</button></div></div>
     <div class="card priv">
       <div class="row"><span class="priv-ic"><i class="ic" data-i="database"></i></span><div class="grow"><b>Ce que tu écris</b><div class="small muted">Planning, tâches, notes, séances, nutrition et réglages sont enregistrés dans ton compte, sur les serveurs de Supabase, en Europe (Francfort, Allemagne). Les autres utilisateurs ne peuvent pas les voir. L'administrateur de Sid'compagnon (SidCorp) peut techniquement y accéder pour l'entretien, mais ne les consulte pas.</div></div></div>
-      <div class="row"><span class="priv-ic"><i class="ic" data-i="shield"></i></span><div class="grow"><b>Mots de passe et notes secrètes</b><div class="small muted">Chiffrés sur ton appareil avant d'être envoyés, avec une clé tirée de ta phrase secrète, que le serveur ne connaît pas. Ton code à 5 chiffres sert seulement à les déverrouiller sur ton appareil. Un coffre encore protégé par le code seul (avant la protection renforcée) pourrait être deviné par quelqu'un qui aurait accès au serveur : ouvre-le une fois pour le renforcer.</div></div></div>
-      <div class="row"><span class="priv-ic"><i class="ic" data-i="file"></i></span><div class="grow"><b>Documents (PDF, scans)</b><div class="small muted">Chiffrés sur ton appareil avec la clé de ta phrase secrète (la copie gardée sur l'appareil aussi), puis copiés dans ton espace privé (Supabase Storage), où ce n'est que du contenu illisible. Les photos des notes, elles, ne sont pas chiffrées : comme le texte des notes, elles restent privées dans ton compte.</div></div></div>
+      <div class="row"><span class="priv-ic"><i class="ic" data-i="shield"></i></span><div class="grow"><b>Mots de passe et notes secrètes</b><div class="small muted">Chiffrés sur ton appareil avant d'être envoyés, avec une clé protégée par le mot de passe de ton compte (ou ta phrase secrète pour les coffres créés avant) : le serveur ne garde que du chiffré. Ton code à 5 chiffres sert seulement à les déverrouiller sur ton appareil. Un coffre encore protégé par le code seul (avant la protection renforcée) pourrait être deviné par quelqu'un qui aurait accès au serveur : ouvre-le une fois pour le renforcer.</div></div></div>
+      <div class="row"><span class="priv-ic"><i class="ic" data-i="file"></i></span><div class="grow"><b>Documents (PDF, scans)</b><div class="small muted">Chiffrés sur ton appareil avec la même clé (la copie gardée sur l'appareil aussi), puis copiés dans ton espace privé (Supabase Storage), où ce n'est que du contenu illisible. Les photos des notes, elles, ne sont pas chiffrées : comme le texte des notes, elles restent privées dans ton compte.</div></div></div>
       <div class="row"><span class="priv-ic"><i class="ic" data-i="camera"></i></span><div class="grow"><b>Photos de tes plats</b><div class="small muted">Envoyées une seule fois pour être analysées : elles passent par le serveur Sid'compagnon puis par le service d'IA d'Anthropic, qui calcule les calories. Elles ne sont pas enregistrées dans ton compte, ne servent pas à entraîner l'IA et ne sont gardées que peu de temps par Anthropic (sécurité) avant d'être effacées. Seule une petite vignette reste sur ton téléphone.</div></div></div>
       <div class="row"><span class="priv-ic"><i class="ic" data-i="apple"></i></span><div class="grow"><b>Textes de nutrition</b><div class="small muted">Ce que tu tapes (aliments, profil) est envoyé à l'IA pour le calcul. Les aliments sont retenus dans une mémoire commune et anonyme (juste « 100 g de riz = 130 kcal », jamais ton nom).</div></div></div>
       <div class="row"><span class="priv-ic"><i class="ic" data-i="globe"></i></span><div class="grow"><b>Le site</b><div class="small muted">Netlify héberge seulement l'application. Il ne voit pas tes données. Pas de publicité, pas de pisteur, rien n'est vendu.</div></div></div>
@@ -685,7 +685,7 @@
     <div class="card" id="stats"></div>
       </div>
     </details>
-    <p class="small muted" style="margin:18px 4px">Sid'compagnon · version 47 · une app <b>SidCorp</b></p>
+    <p class="small muted" style="margin:18px 4px">Sid'compagnon · version 48 · une app <b>SidCorp</b></p>
   </section>
 </main>
 

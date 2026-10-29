@@ -95,17 +95,16 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     // --- Mots de passe : classement A → Z ou récents
     await go("pwd");await pg.waitForTimeout(300);await shot(pg,scheme+"-fr-pwd-code");
     if(await pg.isVisible("#pinPad")){const pin=async c=>{for(const d of c)await pg.click(`#pinPad [data-pin="${d}"]`)};
-      await pin("12345");await pg.waitForTimeout(400);if(!(await pg.isVisible("#vault"))&&!(await pg.isVisible("#phSheet"))){await pin("12345");}
-      // v32 : la phrase secrète est demandée à la création du coffre
-      await pg.waitForSelector("#phSheet:not([hidden])",{timeout:8000}).catch(()=>err("phrase secrète non demandée à la création du coffre"));
-      await pg.fill("#phIn","court");await pg.fill("#ph2In","court");await pg.click("#phOk");await pg.waitForTimeout(200);
-      if(!(await pg.isVisible("#phErr")))err("phrase trop courte acceptée");
-      await pg.fill("#phIn","trois mots 42");await pg.fill("#ph2In","trois mots 42");await shot(pg,scheme+"-fr-phrase-secrete");await pg.click("#phOk");
-      await pg.waitForSelector("#recSheet:not([hidden])",{timeout:15000}).catch(()=>err("récupération de la phrase non proposée"));
-      if(await pg.isVisible("#recSheet"))await pg.click("#recLater");
-      await pg.waitForSelector("#vault:not([hidden])",{timeout:8000}).catch(()=>err("coffre non ouvert"));await pg.waitForTimeout(400);
-      const vf=await pg.evaluate(()=>({v:data.vault.v,salt:!!data.vault.salt,ph:!!data.phx,dv:data.docVault&&data.docVault.v}));
-      if(vf.v!==2||vf.salt||!vf.ph||vf.dv!==2)err("coffre pas au format renforcé : "+JSON.stringify(vf));
+      await pin("12345");await pg.waitForTimeout(400);if(!(await pg.isVisible("#vault"))&&!(await pg.isVisible("#recSheet"))){await pin("12345");}
+      // v48 (option A) : plus de phrase secrète : le mot de passe du compte protège la clé du coffre
+      await pg.waitForSelector("#recSheet:not([hidden])",{timeout:8000}).catch(()=>err("mot de passe du compte non demandé à la création du coffre"));
+      if(await pg.isVisible("#phSheet"))err("phrase secrète encore demandée");
+      await pg.fill("#recPw","mauvais1");await pg.click("#recOk");await pg.waitForTimeout(400);
+      if(!(await pg.isVisible("#recErr")))err("mauvais mot de passe accepté pour le coffre");
+      await pg.fill("#recPw","secret11");await shot(pg,scheme+"-fr-coffre-mot-de-passe");await pg.click("#recOk");
+      await pg.waitForSelector("#vault:not([hidden])",{timeout:15000}).catch(()=>err("coffre non ouvert"));await pg.waitForTimeout(400);
+      const vf=await pg.evaluate(()=>({v:data.vault.v,salt:!!data.vault.salt,ph:!!data.phx,pw:!!(data.phx&&data.phx.pw),phs:!!(data.phx&&data.phx.salt),dv:data.docVault&&data.docVault.v}));
+      if(vf.v!==2||vf.salt||!vf.ph||!vf.pw||vf.phs||vf.dv!==2)err("coffre pas au format renforcé (mot de passe) : "+JSON.stringify(vf));
       if(await pg.isVisible("#recSheet"))await pg.click("#recLater")}
     if(await pg.isVisible("#vault")){
       for(const site of ["Zeta","Alpha"]){await pg.click("#pwNew");await pg.fill("#pwSite",site);await pg.fill("#pwPass","x"+site);await pg.click("#pwForm [type=submit]");await pg.waitForTimeout(300)}
@@ -232,6 +231,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const pin=async c=>{for(const d of c)await pg.click(`#pinPad [data-pin="${d}"]`)};
     const ps=async c=>{for(const d of c)await pg.click(`#psPad [data-ps="${d}"]`);await pg.waitForTimeout(150)};
     const phrase=async(t,two)=>{await pg.waitForSelector("#phSheet:not([hidden])",{timeout:10000});await pg.fill("#phIn",t);if(two)await pg.fill("#ph2In",t);await pg.click("#phOk")};
+    const acct=async t=>{await pg.waitForSelector("#recSheet:not([hidden])",{timeout:10000});await pg.fill("#recPw",t);await pg.click("#recOk")};
     const later=async()=>{await pg.waitForSelector("#recSheet:not([hidden])",{timeout:15000}).catch(()=>{});if(await pg.isVisible("#recSheet"))await pg.click("#recLater")};
     const show=v=>pg.evaluate(v=>show(v),v);
     await pg.goto(U);await pg.waitForTimeout(400);
@@ -249,9 +249,9 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
       await stor("POST","documents/"+d1.path,await docEncrypt(pdf,d.key)); // en ligne seulement, chiffré avec l'ancienne clé
       const d2={id:"d2",title:"Scan",size:pdf.size,pages:1,createdAt:new Date().toISOString(),up:false};await idb.put(docKey(d2),pdf); // sur l'appareil, en clair
       data.docs.push(d1,d2);save()});
-    // 1) mots de passe : ancien code → phrase demandée → coffre renforcé, mêmes données
+    // 1) mots de passe : ancien code → mot de passe du compte demandé (v48, plus de phrase) → coffre renforcé, mêmes données
     await show("pwd");await pg.waitForTimeout(300);await pin("24680");
-    await phrase("ma phrase secrete 7",true).catch(()=>err("phrase non demandée au passage du coffre"));await shot(pg,"coffre-renforce");await later();
+    await acct("motdepasse1").catch(()=>err("mot de passe non demandé au passage du coffre"));await shot(pg,"coffre-renforce");
     await pg.waitForSelector("#vault:not([hidden])",{timeout:15000}).catch(()=>err("coffre non rouvert après le passage"));await pg.waitForTimeout(800);
     let st=await pg.evaluate(()=>({v:data.vault.v,salt:!!data.vault.salt,vid:data.pwds[0].vid===data.vault.id,item:(vaultItems.get("p1")||{}).pw,mk:Object.keys(JSON.parse(localStorage.getItem("sidnote-mk-"+session.user.id)||"{}"))}));
     if(st.v!==2||st.salt||!st.vid||st.item!=="s3cret!"||!st.mk.includes("main"))err("passage des mots de passe raté : "+JSON.stringify(st));
@@ -268,13 +268,13 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.click("#noteBack");
     // 4) le serveur ne contient plus rien qu'un code à 5 chiffres suffirait à ouvrir
     st=await pg.evaluate(()=>JSON.stringify([data.vault,data.docVault,data.noteVault]));if(/"salt"/.test(st))err("un coffre dépend encore du code seul");
-    // 5) nouvel appareil : plus de clé sur l'appareil → phrase (fausse puis bonne) → nouveau code → tout se rouvre
+    // 5) nouvel appareil : plus de clé sur l'appareil → mot de passe du compte (faux puis bon) → nouveau code → tout se rouvre
     await pg.evaluate(()=>{localStorage.removeItem("sidnote-mk-"+session.user.id);phMem=null;pwdLock();dvLock();nsLock()});
     await show("pwd");await pg.waitForTimeout(300);
-    if(!(await pg.isVisible("#pinDev")))err("pas de bouton « phrase secrète » sur un nouvel appareil");await shot(pg,"coffre-nouvel-appareil");
-    await pg.click("#pinDev");await phrase("mauvaise phrase");await pg.waitForTimeout(1500);
-    if(!(await pg.isVisible("#phErr")))err("fausse phrase acceptée");
-    await phrase("ma phrase secrete 7");await pg.waitForSelector("#pinSheet:not([hidden])",{timeout:15000}).catch(()=>err("code de l'appareil non demandé"));
+    if(!(await pg.isVisible("#pinDev"))||!(await pg.textContent("#pinDev")).includes("mot de passe"))err("pas de bouton « mot de passe du compte » sur un nouvel appareil");await shot(pg,"coffre-nouvel-appareil");
+    await pg.click("#pinDev");await acct("mauvais");await pg.waitForTimeout(1500);
+    if(!(await pg.isVisible("#recErr")))err("faux mot de passe accepté");
+    await acct("motdepasse1");await pg.waitForSelector("#pinSheet:not([hidden])",{timeout:15000}).catch(()=>err("code de l'appareil non demandé"));
     await ps("11111");await ps("11111");await pg.waitForSelector("#vault:not([hidden])",{timeout:15000}).catch(()=>err("coffre non ouvert sur le nouvel appareil"));await pg.waitForTimeout(600);
     if(await pg.evaluate(()=>(vaultItems.get("p1")||{}).pw)!=="s3cret!")err("mot de passe illisible sur le nouvel appareil");
     await show("docs");await pg.waitForTimeout(300);await ps("11111");await pg.waitForTimeout(1500);
@@ -282,12 +282,40 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     // 6) mauvais code puis code oublié → phrase → nouveau code
     await pg.evaluate(()=>{phMem=null;pwdLock()});await show("pwd");await pg.waitForTimeout(300);await pin("99999");await pg.waitForTimeout(1500);
     if(!(await pg.textContent("#pinErr")).includes("incorrect"))err("mauvais code accepté");
-    await pg.click("#pinForgot");await phrase("ma phrase secrete 7");await pg.waitForSelector("#pinSheet:not([hidden])",{timeout:15000}).catch(()=>{});
+    await pg.click("#pinForgot");await acct("motdepasse1");await pg.waitForSelector("#pinSheet:not([hidden])",{timeout:15000}).catch(()=>{});
     await ps("33333");await ps("33333");await pg.waitForSelector("#vault:not([hidden])",{timeout:15000}).catch(()=>err("code oublié : coffre non rouvert"));
     // 7) fusion : un appareil resté sur l'ancien coffre n'écrase pas le coffre renforcé
     st=await pg.evaluate(()=>{const nv=data.vault,old={id:"oldv",salt:"x",chk:{},createdAt:"2026-01-01T00:00:00.000Z"};
       return [mergeData({...data,vault:old},data).vault.id===nv.id,mergeData(data,{...data,vault:old}).vault.id===nv.id]});
     if(!st[0]||!st[1])err("la fusion garde l'ancien coffre : "+st);
+    // 8) changement de mot de passe : l'enveloppe suit ; remise à zéro par e-mail : réenveloppée au prochain déverrouillage
+    st=await pg.evaluate(async()=>{await recRewrap("motdepasse1","nouveau123");let a=false,b=false;try{await pwUnwrap("nouveau123");a=true}catch(e){}try{await pwUnwrap("motdepasse1");b=true}catch(e){}return {a,b}});
+    if(!st.a||st.b)err("enveloppe pas rechiffrée au changement de mot de passe : "+JSON.stringify(st));
+    await pg.evaluate(()=>{data.phx={...data.phx,pwStale:1};pwOfferDone=false;phPwOffer()});
+    await acct("motdepasse1").catch(()=>err("mot de passe non redemandé après une remise à zéro"));await pg.waitForTimeout(800);
+    st=await pg.evaluate(async()=>{let a=false;try{await pwUnwrap("motdepasse1");a=true}catch(e){}return {a,stale:!!data.phx.pwStale}});
+    if(!st.a||st.stale)err("enveloppe pas refaite après une remise à zéro : "+JSON.stringify(st));
+    // 9) ancien compte avec phrase secrète : rien n'est rechiffré, le mot de passe est ajouté une fois, la phrase reste en secours
+    await pg.evaluate(async()=>{const salt=b64e(crypto.getRandomValues(new Uint8Array(16))),m2=await phDerive("vieille phrase 12",salt,PIN_ITER);
+      data.phx={id:"phold",salt,iter:PIN_ITER,chk:await encJ(m2.key,{ok:"sidnote-phrase"}),createdAt:"2026-02-01T00:00:00.000Z",at:Date.parse("2026-02-01")};
+      const n=await v2Make(m2,"sidnote",{uni:true});data.vault=n.v;data.pwds=[{id:"p9",vid:n.v.id,...await encJ(n.key,{site:"Poste",user:"sid",pw:"timbre"}),upd:2}];
+      data.docVault=null;data.noteVault=null;ls.del(mkLsKey());await mkWrap("main","22222",m2);phMem=null;pwOfferDone=false;pwdLock();save()});
+    await show("pwd");await pg.waitForTimeout(300);await pin("22222");
+    await pg.waitForSelector("#vault:not([hidden])",{timeout:15000}).catch(()=>err("ancien coffre à phrase non ouvert avec le code"));
+    await pg.waitForSelector("#recSheet:not([hidden])",{timeout:8000}).catch(()=>err("ajout du mot de passe non proposé à un ancien compte"));
+    if(!(await pg.textContent("#recTitle")).includes("phrase"))err("mauvais titre pour l'ajout du mot de passe");
+    await shot(pg,"coffre-plus-de-phrase");await acct("motdepasse1");await pg.waitForTimeout(800);
+    st=await pg.evaluate(()=>({pw:!!data.phx.pw,salt:!!data.phx.salt,id:data.phx.id,item:(vaultItems.get("p9")||{}).pw}));
+    if(!st.pw||!st.salt||st.id!=="phold"||st.item!=="timbre")err("ancien compte : "+JSON.stringify(st));
+    // nouvel appareil : le mot de passe suffit ; sinon (annuler), la phrase marche encore
+    await pg.evaluate(()=>{ls.del(mkLsKey());phMem=null;pwdLock()});await show("pwd");await pg.waitForTimeout(300);
+    await pg.click("#pinDev");await acct("motdepasse1");await ps("44444");await ps("44444");
+    await pg.waitForSelector("#vault:not([hidden])",{timeout:15000}).catch(()=>err("ancien compte : pas rouvert avec le mot de passe"));
+    await pg.evaluate(()=>{ls.del(mkLsKey());phMem=null;pwdLock()});await show("pwd");await pg.waitForTimeout(300);
+    await pg.click("#pinDev");await pg.waitForSelector("#recSheet:not([hidden])");await pg.click("#recLater");
+    await phrase("vieille phrase 12").catch(()=>err("phrase pas proposée en secours"));await ps("55555");await ps("55555");
+    await pg.waitForSelector("#vault:not([hidden])",{timeout:15000}).catch(()=>err("ancien compte : pas rouvert avec la phrase"));
+    if(await pg.evaluate(()=>(vaultItems.get("p9")||{}).pw)!=="timbre")err("ancien compte : mot de passe illisible");
     await ctx.close()}
   // --- v33 : sauvegarde complète, restauration (fusionner / remplacer), échecs de synchro visibles, copies de conflit
   {const ctx=await b.newContext({...devices["iPhone 13"]}),pg=await ctx.newPage(),err=m=>errs.push("sauvegarde : "+m);
@@ -490,10 +518,9 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.goto(U);await pg.waitForTimeout(400);
     await pg.click("#mSignup");await pg.fill("#aName","Bio");await pg.fill("#aEmail","bio38@test.be");await pg.fill("#aPw","motdepasse1");await pg.fill("#aPw2","motdepasse1");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
-    // coffre : code 24680 + phrase secrète
+    // coffre : code 24680 + mot de passe du compte (v48)
     await pg.evaluate(()=>show("pwd"));await pg.waitForTimeout(300);await pin("24680");await pin("24680");
-    await pg.waitForSelector("#phSheet:not([hidden])",{timeout:10000});await pg.fill("#phIn","trois mots et 7");await pg.fill("#ph2In","trois mots et 7");await pg.click("#phOk");
-    await pg.waitForSelector("#recSheet:not([hidden])",{timeout:15000}).catch(()=>{});if(await pg.isVisible("#recSheet"))await pg.click("#recLater");
+    await pg.waitForSelector("#recSheet:not([hidden])",{timeout:10000});await pg.fill("#recPw","motdepasse1");await pg.click("#recOk");
     await pg.waitForFunction(()=>!!vaultKey,null,{timeout:15000}).catch(()=>err("coffre pas créé"));
     // v39 : Face ID proposé tout seul juste après le choix du code
     await pg.waitForSelector("#actSheet:not([hidden])",{timeout:10000}).catch(()=>err("Face ID pas proposé après le choix du code"));

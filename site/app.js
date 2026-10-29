@@ -103,7 +103,7 @@ async function api(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="47";const errSent=new Set();
+const APP_V="48";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -1376,12 +1376,12 @@ const LEGAL={privacy:[
   ["Ce qui est enregistré, et pourquoi","Ton e-mail, ton pseudo et ton mot de passe (gardé haché par Supabase), pour ton compte. Ce que tu mets dans l'app (agenda, tâches, notes, documents, séances, nutrition, réglages), pour te rendre le service : c'est la base légale « exécution du contrat ». Des rapports d'erreur techniques (version, message d'erreur, type de navigateur, sans ton contenu), pour corriger les bugs : intérêt légitime. Ton abonnement aux notifications, seulement si tu les actives."],
   ["Données de santé","Ton poids, tes repas, ton profil (âge, taille, sport), tes séances et les zones à ménager sont des données de santé. Sid'compagnon ne les utilise qu'avec ton accord explicite, que tu peux retirer à tout moment dans Réglages. Sid'compagnon ne les envoie à aucune IA de lui-même : si tu branches Claude, c'est ton propre compte Claude (Anthropic) qui les lit par le connecteur, quand tu le lui demandes, selon les conditions d'Anthropic. La photo d'assiette que tu envoies à Claude est déposée dans ton dossier privé, lue une seule fois par ton Claude, puis effacée (au plus tard après 24 h). Les aliments sont retenus dans une mémoire commune anonyme (jamais ton nom)."],
   ["Où, et avec qui","Tes données sont dans ton compte chez Supabase, en Europe (Francfort, Allemagne). Le site est hébergé par Netlify, qui garde des journaux techniques (dont ton adresse IP) pour faire tourner le site. Anthropic n'intervient que si tu branches Claude, Spotify seulement si tu charges son lecteur. Plus aucune police ni bibliothèque n'est chargée chez un tiers. Sur ton appareil, l'app garde une copie de tes données pour marcher sans connexion."],
-  ["Ce qui est chiffré","Mots de passe, notes secrètes et documents sont chiffrés sur ton appareil avec ta phrase secrète avant d'être envoyés : personne d'autre ne peut les lire, pas même SidCorp. Le reste est protégé par ton compte ; l'administrateur pourrait techniquement y accéder pour l'entretien, mais ne le fait pas."],
+  ["Ce qui est chiffré","Mots de passe, notes secrètes et documents sont chiffrés sur ton appareil avec une clé protégée par le mot de passe de ton compte (ou ta phrase secrète pour les coffres créés avant) avant d'être envoyés : personne d'autre ne peut les lire, pas même SidCorp. Le reste est protégé par ton compte ; l'administrateur pourrait techniquement y accéder pour l'entretien, mais ne le fait pas."],
   ["Combien de temps","Tant que ton compte existe. Les éléments supprimés quittent la synchronisation après 90 jours ; les sauvegardes automatiques sont gardées 14 jours ; les rapports d'erreur 90 jours. « Supprimer mon compte » efface tout de suite ton compte et tes données (les sauvegardes disparaissent dans les 14 jours)."],
   ["Tes droits","Tu peux voir, télécharger, corriger et supprimer tes données à tout moment (Réglages, « Tes données et ta vie privée »), retirer ton accord pour les données de santé, t'opposer à un traitement et supprimer ton compte. Tu peux aussi porter plainte auprès de l'Autorité de protection des données (Belgique, www.autoriteprotectiondonnees.be)."]],
  terms:[
   ["Le service","Sid'compagnon est gratuit, sans achat ni abonnement, et fourni tel quel. Il peut évoluer, être interrompu ou s'arrêter ; tu seras prévenu à l'avance si possible."],
-  ["Ton compte","Ton compte est personnel. Garde ton mot de passe et ta phrase secrète pour toi. Si tu perds ta phrase secrète sans avoir activé la récupération, tes coffres ne peuvent pas être rouverts, même par SidCorp."],
+  ["Ton compte","Ton compte est personnel. Garde ton mot de passe pour toi : il protège aussi tes coffres. Si tu le remets à zéro par e-mail, ouvre d'abord tes coffres sur un appareil où ils sont déjà ouverts pour garder l'accès ; sinon, ils ne peuvent pas être rouverts, même par SidCorp."],
   ["Ce que tu y mets","Tu restes propriétaire de ton contenu. N'y mets rien d'illégal. Fais de temps en temps une sauvegarde (Réglages, « Sauvegarde »)."],
   ["Santé : nutrition et musculation","Les calculs, menus et programmes sont donnés à titre indicatif, parfois par une IA qui peut se tromper. Ce n'est pas un avis médical : demande conseil à un médecin, un diététicien ou un coach, surtout en cas de douleur, de grossesse, de maladie ou de troubles alimentaires."],
   ["Claude (facultatif)","Brancher Claude est facultatif. Claude est un service d'Anthropic, utilisé avec ton propre compte et selon ses conditions ; SidCorp n'en est pas responsable. Tu peux débrancher le connecteur à tout moment (Réglages)."],
@@ -1683,7 +1683,7 @@ function authError(e){
   return "Impossible de continuer : "+(e&&e.message||"erreur inconnue");
 }
 // après connexion : récupère (ou crée) les données du compte puis recharge l'app
-async function finishLogin(j,name,{carry=null,stay=true}={}){
+async function finishLogin(j,name,{carry=null,stay=true,pwReset=false}={}){
   const display=(j.user&&j.user.user_metadata&&j.user.user_metadata.name)||name||(j.user.email||"").split("@")[0];
   const uidv=j.user.id;
   const row=await fetchRow(uidv,j.access_token);
@@ -1708,6 +1708,7 @@ async function finishLogin(j,name,{carry=null,stay=true}={}){
     c={data:existing?existing.data:blank(),rev:new Date().toISOString(),dirty:true};
   }
   if(row&&!isTest)baseSet(uidv,row.updated_at,row.data); // v44.6 : version du serveur connue ici
+  if(pwReset&&c.data&&c.data.phx&&c.data.phx.pw){c.data.phx={...c.data.phx,pwStale:Date.now()};c.dirty=true} // v48 : réenveloppé au prochain déverrouillage
   session=null;storeSession(j,display);session.eph=isTest||!stay;ls.set(SESSION_KEY,session);ssSet("sidnote-alive","1");
   if(isTest)idbClearUser(uidv);
   ls.set(cacheKey(uidv),c);
@@ -1764,6 +1765,9 @@ async function recRewrap(oldPw,newPw){let n=0;
   for(const v of [data.vault,data.noteVault,data.docVault,data.phx]){if(!v||!v.rec)continue; // v32 : la phrase secrète aussi
     try{const o=await decJ(await pinKey(oldPw,v.rec.salt,PIN_ITER),v.rec);const salt=b64e(crypto.getRandomValues(new Uint8Array(16)));
       v.rec={salt,...await encJ(await pinKey(newPw,salt,PIN_ITER),o)};n++}catch(e){}}
+  // v48 : la clé maître enveloppée par le mot de passe du compte
+  if(data.phx&&data.phx.pw){try{const o=await decJ(await pinKey(oldPw,data.phx.pw.salt,PIN_ITER),data.phx.pw),salt=rnd(16);
+    const x={...data.phx,pw:{salt,...await encJ(await pinKey(newPw,salt,PIN_ITER),o)}};delete x.pwStale;data.phx=x;n++}catch(e){}}
   if(n)save();return n}
 let npCtx=null; // {mode:"change"} ou {mode:"recovery",token}
 function openNp(ctx){npCtx=ctx;const ch=ctx.mode==="change";$("npTitle").textContent=L(ch?"Changer mon mot de passe":"Nouveau mot de passe");
@@ -1786,11 +1790,11 @@ $("npForm").addEventListener("submit",async e=>{e.preventDefault();if(!npCtx)ret
     // lien reçu par e-mail : la session de récupération permet de changer le mot de passe, puis on se connecte normalement
     const u=await api("/auth/v1/user",{method:"PUT",token:npCtx.token,body:{password:pw}});
     const em=(u&&u.email)||npCtx.email;$("npSheet").hidden=true;npCtx=null;ls.del(AUTH_LOCK);
-    if(session&&session.user&&u&&session.user.id===u.id){toast("Mot de passe changé");return}
+    if(session&&session.user&&u&&session.user.id===u.id){if(data.phx&&data.phx.pw){data.phx={...data.phx,pwStale:Date.now()};save()}toast("Mot de passe changé");return}
     if(session)await endSessionQuiet();
     const j=await api("/auth/v1/token?grant_type=password",{method:"POST",body:{email:em,password:pw}});
     try{sessionStorage.setItem("sidnote-msg-ok","1")}catch(x){}
-    await finishLogin(j,"",{stay:true});
+    await finishLogin(j,"",{stay:true,pwReset:true});
   }catch(ex){btn.disabled=false;btn.textContent=L("Enregistrer");fail(ex.status===401||ex.status===403?"Ce lien a expiré. Redemande un e-mail avec « Mot de passe oublié ? ».":authError(ex))}});
 async function endSessionQuiet(){try{if(cache&&cache.dirty)await push()}catch(e){}ls.del(SESSION_KEY);session=null}
 // retour depuis l'e-mail : l'adresse contient #access_token=…&type=recovery (ou une erreur si le lien a expiré)
@@ -3559,7 +3563,7 @@ async function v2Key(v,mk){const key=await rawKey((await decJ(mk.key,v.wk)).k);a
 // clé d'un coffre à partir du code tapé ; erreur si le code est faux (ou si cet appareil n'a pas encore la phrase)
 async function vOpen(v,code,ctx){
   if(!isV2(v)){const k=await pinKey(code,v.salt,v.iter||PIN_ITER);await decJ(k,v.chk);return k}
-  const mk=await mkUnwrap(ctx||ctxOf(v),code),k=await v2Key(v,mk);phMem=mk;return k}
+  const mk=await mkUnwrap(ctx||ctxOf(v),code),k=await v2Key(v,mk);phMem=mk;setTimeout(phPwOffer,1500);return k}
 document.addEventListener("visibilitychange",()=>{if(document.hidden)phMem=null});
 
 // fenêtre de la phrase secrète : mode "new" (choisir, deux fois) ou "enter" ; renvoie {mk, ph} ou null
@@ -3610,11 +3614,48 @@ async function phRecOffer(ph){if(!data.phx||data.phx.rec||isTrial())return;
       catch(ex){return ex instanceof TypeError?"Pas de connexion internet. Réessaie quand tu es connecté.":"Mot de passe incorrect."}},"Plus tard");
   if(!pw||!data.phx)return;const salt=rnd(16);
   data.phx.rec={salt,...await encJ(await pinKey(pw,salt,PIN_ITER),{ph})};save();toast("Récupération de la phrase activée")}
-// clé maître : en mémoire, sinon demandée (phrase existante, ou nouvelle phrase si aucune)
-async function mkNeed(o){if(phMem)return phMem;const r=await askPhrase(o||{mode:"new"});if(!r)return null;if(r.created)await phRecOffer(r.ph);return r.mk}
+// v48 (option A choisie par Sid, #18) : le mot de passe du compte remplace la phrase secrète, le chiffrement ne change pas.
+// data.phx.pw = {salt, iv, ct} : la clé maître MK, chiffrée dans le navigateur avec une clé tirée du mot de passe du compte (PBKDF2).
+// - nouveau coffre : MK aléatoire, aucune phrase ; nouvel appareil ou code oublié : le mot de passe du compte suffit ;
+// - ancienne phrase : toujours valable en secours (phx.salt / chk gardés) ; MK reçoit seulement cette enveloppe en plus (rien n'est rechiffré) ;
+// - mot de passe changé : l'enveloppe suit (recRewrap) ; remis à zéro par e-mail : phx.pwStale, réenveloppé au prochain déverrouillage.
+// Mode essai (sans compte) : phrase comme avant.
+const phPw=()=>!!(data.phx&&data.phx.pw);
+async function pwWrap(mk,pw){const salt=rnd(16);return {salt,...await encJ(await pinKey(pw,salt,PIN_ITER),{k:mk.raw})}}
+async function pwUnwrap(pw){const w=data.phx.pw,raw=(await decJ(await pinKey(pw,w.salt,PIN_ITER),w)).k,mk={raw,key:await rawKey(raw)};await decJ(mk.key,data.phx.chk);return mk}
+const pwCheckSrv=async pw=>{try{await api("/auth/v1/token?grant_type=password",{method:"POST",body:{email:accEmail(),password:pw}});return null}
+  catch(ex){return ex instanceof TypeError?"Pas de connexion internet. Réessaie quand tu es connecté.":"Mot de passe incorrect."}};
+// nouvelle clé maître, protégée par le mot de passe du compte
+async function mkCreate(o){try{await pull()}catch(x){}
+  if(phOn())return null; // une clé a été créée entre-temps sur un autre appareil
+  const pw=await askAccountPw(o.title||"Protège ton coffre",o.ptext||"Entre le mot de passe de ton compte Sid'compagnon : il protège tes coffres. Sur un nouvel appareil, il suffira pour les rouvrir.",pwCheckSrv,o.later||"Annuler");
+  if(!pw||phOn())return null;
+  const raw=rnd(32),mk={raw,key:await rawKey(raw)},now=Date.now();
+  data.phx={id:uid(),chk:await encJ(mk.key,{ok:"sidnote-phrase"}),pw:await pwWrap(mk,pw),createdAt:new Date(now).toISOString(),at:now};save();phMem=mk;return mk}
+// clé maître retrouvée avec le mot de passe du compte (repli : l'ancienne phrase, si elle existe)
+async function mkFromPw(o){o=o||{};let mk=null;
+  const pw=await askAccountPw(o.title||"Mot de passe du compte",o.ptext||"Entre le mot de passe de ton compte Sid'compagnon pour ouvrir tes coffres sur cet appareil.",
+    async pw=>{try{mk=await pwUnwrap(pw);return null}catch(e){return data.phx.pwStale?"Ton mot de passe a été réinitialisé : ouvre d'abord tes coffres sur un appareil où ils sont déjà ouverts (ou annule pour utiliser ta phrase secrète, si tu en avais une).":data.phx.salt?"Mot de passe incorrect. Tu peux aussi annuler et utiliser ta phrase secrète.":"Mot de passe incorrect."}},"Annuler");
+  if(pw&&mk){phMem=mk;setTimeout(phPwOffer,1500);return mk}
+  if(data.phx&&data.phx.salt){const r=await askPhrase({mode:"enter",title:o.title});return r&&r.mk||null}
+  return null}
+// coffre ouvert avec la phrase (anciens comptes) ou mot de passe réinitialisé : on ajoute l'enveloppe du mot de passe, une fois
+let pwOfferDone=false;
+async function phPwOffer(){if(pwOfferDone||!phMem||isTrial()||!data.phx||(data.phx.pw&&!data.phx.pwStale))return;
+  if(document.querySelector(".sheet-bg:not([hidden])")){setTimeout(phPwOffer,2500);return}
+  pwOfferDone=true;const mk=phMem,stale=!!data.phx.pwStale;
+  const pw=await askAccountPw(stale?"Ton mot de passe a changé":"Plus besoin de phrase secrète",
+    stale?"Entre ton nouveau mot de passe une fois : il rouvrira tes coffres sur tes autres appareils.":"Entre le mot de passe de ton compte une fois : sur un nouvel appareil, il suffira pour rouvrir tes coffres. Ta phrase secrète reste valable en secours.",pwCheckSrv,"Plus tard");
+  if(!pw||!data.phx)return;try{await decJ(mk.key,data.phx.chk)}catch(e){return} // la clé en mémoire doit être celle de ces coffres
+  const x={...data.phx,pw:await pwWrap(mk,pw)};delete x.pwStale;data.phx=x;save();toast("C'est fait : ton mot de passe suffit désormais")}
+// clé maître : en mémoire, sinon mot de passe du compte (ou phrase pour les anciens coffres et l'essai) ; nouvelle clé si aucune
+async function mkNeed(o){if(phMem)return phMem;o=o||{mode:"new"};
+  if(!isTrial()){if(!phOn()){const mk=await mkCreate(o);if(mk||!phOn())return mk}if(phPw())return await mkFromPw(o)}
+  const r=await askPhrase(o);if(!r)return null;if(r.created)await phRecOffer(r.ph);return r.mk}
 // nouvel appareil, ou code oublié : phrase (ou mot de passe du compte), puis code à 5 chiffres pour cet appareil ; renvoie le code
 async function devSetup(ctx,head,forgot){
-  const mk=phMem&&!forgot?phMem:(await askPhrase({mode:"enter",title:head,text:forgot?"Code oublié : entre ta phrase secrète, puis choisis un nouveau code pour cet appareil.":"Première ouverture sur cet appareil : entre ta phrase secrète. Ensuite, choisis le code à 5 chiffres qui l'ouvrira ici."})||{}).mk;
+  const mk=phMem&&!forgot?phMem:phPw()&&!isTrial()?await mkFromPw({title:head,ptext:forgot?"Code oublié : entre le mot de passe de ton compte, puis choisis un nouveau code pour cet appareil.":"Première ouverture sur cet appareil : entre le mot de passe de ton compte. Ensuite, choisis le code à 5 chiffres qui l'ouvrira ici."})
+    :(await askPhrase({mode:"enter",title:head,text:forgot?"Code oublié : entre ta phrase secrète, puis choisis un nouveau code pour cet appareil.":"Première ouverture sur cet appareil : entre ta phrase secrète. Ensuite, choisis le code à 5 chiffres qui l'ouvrira ici."})||{}).mk;
   if(!mk)return null;
   const code=await askPin({mode:"new",head,sub:"Le code qui ouvrira ce coffre sur cet appareil. Tu peux reprendre ton code habituel."});
   if(!code||code==="forgot")return null;
@@ -3632,9 +3673,10 @@ async function v2Upgrade(kind,code,oldKey){
   const old=kind==="pw"?data.vault:kind==="docs"?data.docVault:data.noteVault;
   if(!old||isV2(old)||upAsked.has(old.id))return null;upAsked.add(old.id);
   if(kind==="docs"&&!navigator.onLine)return null; // les documents en ligne doivent être relus : on réessaiera
-  const r=phMem?{mk:phMem}:await askPhrase({mode:"new",title:"Renforce ta protection",later:"Plus tard",
-    text:phOn()?"Ton coffre passe à la protection renforcée : entre ta phrase secrète. Ton code reste le même.":"Ton code à 5 chiffres seul est trop facile à deviner pour quelqu'un qui volerait les données du serveur. Choisis une phrase secrète d'au moins 10 caractères : elle protégera vraiment tes coffres. Ton code reste le même pour ouvrir l'app sur cet appareil."});
-  if(!r)return null;const mk=r.mk;
+  const r=phMem?{mk:phMem}:{mk:await mkNeed({mode:"new",title:"Renforce ta protection",later:"Plus tard",
+    ptext:"Ton code à 5 chiffres seul est trop facile à deviner pour quelqu'un qui volerait les données du serveur. Entre le mot de passe de ton compte : il protégera vraiment tes coffres. Ton code reste le même sur cet appareil.",
+    text:phOn()?"Ton coffre passe à la protection renforcée : entre ta phrase secrète. Ton code reste le même.":"Ton code à 5 chiffres seul est trop facile à deviner pour quelqu'un qui volerait les données du serveur. Choisis une phrase secrète d'au moins 10 caractères : elle protégera vraiment tes coffres. Ton code reste le même pour ouvrir l'app sur cet appareil."})};
+  if(!r.mk)return null;const mk=r.mk;
   const ctx=kind==="notes"?"notes":"main";
   let nk;
   if(kind==="pw"){const n=await v2Make(mk,"sidnote",{uni:true});nk=n.key;const now=Date.now();
@@ -3679,7 +3721,8 @@ function renderPwd(){
   const T={new:["Choisis ton code","5 chiffres pour protéger tes mots de passe. Retiens-le bien : sans lui, ils ne peuvent pas être récupérés."],
     confirm:["Confirme ton code","Tape à nouveau les 5 chiffres."],unlock:["Entre ton code","Tes mots de passe sont verrouillés."],
     adopt:["Entre ton code","Le même que pour tes documents : il protégera aussi tes mots de passe."],
-    device:["Nouvel appareil","Pour ouvrir tes mots de passe ici, entre d'abord ta phrase secrète, puis choisis le code de cet appareil."]}[pinStep];
+    device:["Nouvel appareil",phPw()?"Pour ouvrir tes mots de passe ici, entre d'abord le mot de passe de ton compte, puis choisis le code de cet appareil.":"Pour ouvrir tes mots de passe ici, entre d'abord ta phrase secrète, puis choisis le code de cet appareil."]}[pinStep];
+  $("pinDev").textContent=L(phPw()?"Entrer le mot de passe de mon compte":"Entrer ma phrase secrète");
   $("pinTitle").textContent=L(T[0]);$("pinSub").textContent=L(T[1]);$("pinForgot").hidden=pinStep!=="unlock";
   $("pinBio").hidden=!(pinStep==="unlock"&&bioHas("main"));$("pinBio").textContent=bioUse();
   if(!$("pinPad").children.length)$("pinPad").innerHTML=[1,2,3,4,5,6,7,8,9].map(d=>`<button type="button" data-pin="${d}">${d}</button>`).join("")+
@@ -4766,7 +4809,7 @@ const ONB_DESC={
 let onbSel={};
 const ONB_GROUP={orga:["agenda","Organise tes journées","Ton agenda, tes tâches du jour et un minuteur de concentration."],
   sport:["fit","Bouge et mange bien","Ton programme de musculation, ta nutrition et tes progrès en graphiques."],
-  perso:["note","Garde tout à l'abri","Tes notes, tes documents et tes mots de passe, protégés par ton code et ta phrase secrète."]};
+  perso:["note","Garde tout à l'abri","Tes notes, tes documents et tes mots de passe, protégés par ton code et le mot de passe de ton compte."]};
 function openOnb(){
   onbSel={};TABS.forEach(([k])=>{if(!OFF_TABS.includes(k))onbSel[k]=data.prefs.tabs[k]!==false});
   document.querySelectorAll("#onbLang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG));
@@ -4875,7 +4918,7 @@ if(ephExpired){
   // v34 : nouveau visiteur → « Créer un compte » en premier ; on montre ce que fait l'app
   setMode(ls.get(LAST_KEY)&&!ls.get("sidnote-trial-carry")?"login":"signup");authWait();
   $("authFeats").innerHTML=[["plan","Organise tes journées","Agenda et tâches du jour, avec des rappels."],
-    ["pwd","Garde tout à l'abri","Notes, documents scannés et mots de passe, chiffrés avec ta phrase secrète."],
+    ["pwd","Garde tout à l'abri","Notes, documents scannés et mots de passe, chiffrés sur ton appareil."],
     ["muscu","Ta santé","Programme de musculation sur mesure, nutrition et graphiques."],
     ["app","Partout avec toi","Sur smartphone et sur ordinateur, même sans connexion."]].map(([k,t,d])=>`<li><span class="af-ic">${ICON(k)}</span><span><b>${L(t)}</b><span class="small muted">${L(d)}</span></span></li>`).join("");
   $("aTrial").addEventListener("click",startTrial);if(ls.get("sidnote-trial-carry")){$("aTrial").textContent=L("Revenir à l'essai");$("authSub").textContent=L("Crée ton compte : les données de ton essai seront reprises.")}
@@ -4910,7 +4953,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v47";
+const BUILD="sidnote-v48";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

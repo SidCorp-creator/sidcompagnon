@@ -1738,6 +1738,30 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>{const n=NU();n.profile.target=74;n.profile.dur=8;n.profile.durU="w";n.plan.wg={ok:false,wk:-0.75,weeks:8,advice:"Plus lent."};data.ui.nuTab="profile";save();show("nutri");$("toast").style.display="none";$("nuPlan").scrollIntoView()});
     await shot(pg,"v59-"+nm+"-profil");
     await ctx.close()}
+  // --- v60 (ticket #3, coquille étapes 1 et 2) : fusion et chiffrement en TypeScript (site/react/core.js), chargés avant app.js
+  for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1280,height:800}}]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v60 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);
+    if(!(await pg.evaluate(()=>!!(window.SCCore&&window.SCCore.version>=2&&window.SCCore.crypto&&window.SCCore.mergeData))))err("core.js pas chargé avant l'app");
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v60"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    const r=await pg.evaluate(async()=>{const out={};
+      // la fusion passe par core.js, et donne le même résultat que l'ancien code
+      let used=0;const real=window.SCCore.mergeData;window.SCCore.mergeData=(...a)=>{used++;return real(...a)};
+      const l={todos:[{id:"a",title:"A"}],prefs:{x:1}},rm={todos:[{id:"b",title:"B"}],prefs:{y:2}};
+      const n=JSON.stringify(mergeData(l,rm));window.__noCore=true;const o=JSON.stringify(mergeData(l,rm));window.__noCore=false;window.SCCore.mergeData=real;
+      out.merge=used===1&&n===o;
+      // en cas d'erreur dans core.js, l'ancien code prend le relais
+      window.SCCore.mergeData=()=>{throw new Error("test")};out.fallback=JSON.stringify(mergeData(l,rm))===o;window.SCCore.mergeData=real;
+      // vrai coffre (600 000 itérations) : chiffré par l'ancien code, ouvert par le nouveau, et inversement
+      const salt=b64e(crypto.getRandomValues(new Uint8Array(16))),obj={site:"Banque",pw:"x"};
+      window.__noCore=true;const kOld=await pinKey("24680",salt,PIN_ITER),eOld=await encJ(kOld,obj);window.__noCore=false;
+      const kNew=await pinKey("24680",salt,PIN_ITER);out.oldToNew=JSON.stringify(await decJ(kNew,eOld))===JSON.stringify(obj);
+      const eNew=await encJ(kNew,obj);window.__noCore=true;out.newToOld=JSON.stringify(await decJ(kOld,eNew))===JSON.stringify(obj);window.__noCore=false;
+      const mk1=await phDerive("secret11",salt);window.__noCore=true;const mk0=await phDerive("secret11",salt);window.__noCore=false;out.mk=mk1.raw===mk0.raw;
+      return out});
+    for(const[k,v]of Object.entries(r))if(!v)err("core : "+k+" en échec");
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

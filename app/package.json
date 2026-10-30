@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Migration progressive de Sid'compagnon vers TypeScript + React + Vite (ticket #3), écran par écran. Le build va dans site/react/.",
   "scripts": {
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && vite build -c vite.core.config.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

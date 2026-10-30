@@ -20,6 +20,7 @@ Décision de Sid (29 oct. 2026) : passer progressivement à TypeScript + React +
 | v51 | Focus : temps de travail concentré (jour, 7 jours) | `app/src/PomoStats.tsx` |
 | v52 | Graphiques : commentaires du jour et de la semaine, historique des semaines | `app/src/Reviews.tsx` |
 | v52 | Musculation : barre « Mon objectif » · Nutrition : barres des macros | `app/src/Small.tsx` |
+| v60 | Coquille, étapes 1 et 2 : fusion des données entre appareils et briques de chiffrement en TypeScript (script `site/react/core.js`, chargé avant app.js) | `app/src/core/merge.ts`, `app/src/core/crypto.ts` |
 | v59 | Nutrition : copie d'un repas (fenêtre), résumé du profil, objectif de poids | `app/src/NuExtra.tsx` |
 | v58 | Nutrition : menu (repas, quantités, recette, « Autre idée ») · Accueil Sid'compagnon : 3 cartes | `app/src/NuMenu.tsx`, `app/src/Home.tsx` |
 | v57 | Notes : chemin du dossier, dossiers, notes · Documents : classeurs, liste · Mots de passe : liste | `app/src/Notes.tsx`, `app/src/Vault.tsx` |
@@ -59,7 +60,15 @@ Reste dans `app.js` (la « coquille ») :
 - navigation, fenêtres, Réglages, présentation, traductions, notifications ;
 - tous les gestionnaires de clics des écrans migrés.
 
-### Pourquoi la dernière étape n'a pas été faite seule
+### Dernière étape : accord de Sid le 30 oct. 2026
+
+Sauvegardes faites avant : branche git `sauvegarde-v59`, table Supabase `sauvegarde.user_data_v59` (12 comptes, copie vérifiée identique).
+
+- Étape 1 (v60) : `mergeData` / `merge3` → `app/src/core/merge.ts`. `app.js` appelle `window.SCCore.mergeData` ; l'ancien code (`mergeDataOld`) sert si core.js manque ou lève une erreur. `tests/merge.test.js` passe les mêmes scénarios aux deux versions puis compare 5 000 cas tirés au hasard (graine fixe) : identiques ; une erreur volontaire est détectée des centaines de fois.
+- Étape 2 (v60) : briques de chiffrement → `app/src/core/crypto.ts` (b64, `pinKey`, `encJ`/`decJ`, `rawKey`, `phDerive`, documents « SNE1 », `bioKey`). Mêmes algorithmes et formats ; `tests/crypto.test.js` : chiffré par l'un, ouvert par l'autre, dans les deux sens ; mêmes clés maîtres. Bloc « v60 » du smoke : la même vérification dans l'app, avec les vraies 600 000 itérations. La logique du coffre (codes, appareils, récupération) reste dans app.js et utilise ces briques.
+- `core.js` est un script classique (IIFE, `vite.core.config.ts`), pas un module : il doit être prêt avant le démarrage de l'app (la synchro commence tout de suite).
+
+### Pourquoi la dernière étape n'avait pas été faite seule
 
 Passer la coquille en React/Vite revient à réécrire la synchronisation, la fusion des données et le chiffrement. Une erreur à cet endroit peut effacer ou rendre illisibles les données des comptes (règle de Sid : « Ne casse jamais les données des utilisateurs existants »), et c'est un changement que Sid a demandé de valider avant (« migration de base », « changement de chiffrement »). Proposition, à valider par Sid :
 1. Extraire d'abord, sans rien changer au comportement, la fusion (`mergeData`, `merge3`) et le chiffrement dans des modules TypeScript testés seuls (les tests `merge.test.js` existent déjà), utilisés par app.js.

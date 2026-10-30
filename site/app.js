@@ -103,7 +103,7 @@ async function api(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="59";const errSent=new Set();
+const APP_V="60";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -169,7 +169,12 @@ function merge3(b,l,r,key){
     return out}
   return m3pick(l,r)}
 // fusionne les données d'un autre appareil avec celles de cet appareil, sans rien perdre
+// v60 (#3, coquille étape 1) : le code de référence est app/src/core/merge.ts (site/react/core.js, window.SCCore, chargé avant ce fichier) ;
+// cette version reste en secours (core.js absent ou erreur) et sert de témoin au test tests/merge.test.js
 function mergeData(loc,rem,opt){
+  if(window.SCCore&&window.SCCore.mergeData&&!window.__noCore){try{return window.SCCore.mergeData(loc,rem,opt,{forServer,norm,L})}catch(e){try{reportErr("core merge: "+(e&&e.message))}catch(x){}}}
+  return mergeDataOld(loc,rem,opt)}
+function mergeDataOld(loc,rem,opt){
   loc=loc||{};rem=rem||{};const since=(opt&&opt.since)||0;
   // v44.6 : avec la base, on reconstruit d'abord la version de cet appareil comme « serveur + ce qui a vraiment changé ici »,
   // puis la fusion habituelle (pierres tombales, notes en conflit, coffres…) s'applique à cette version-là
@@ -2488,11 +2493,15 @@ function storErr(ex){
 // En ligne, il n'y a que du contenu illisible (« SNE1 » + iv + chiffré) : ni l'administrateur ni Supabase ne peuvent les ouvrir.
 const ENC_MAGIC=[83,78,69,49]; // "SNE1"
 const isEnc=u=>u.length>16&&ENC_MAGIC.every((c,i)=>u[i]===c);
-async function docEncrypt(blob,key){const iv=crypto.getRandomValues(new Uint8Array(12));
+// v60 (#3, coquille étape 2) : briques de chiffrement en TypeScript (app/src/core/crypto.ts, window.SCCore.crypto) ; mêmes formats,
+// l'ancien code ci-dessous sert si core.js manque (test croisé : tests/crypto.test.js)
+const CC=()=>window.SCCore&&window.SCCore.crypto&&!window.__noCore?window.SCCore.crypto:null;
+async function docEncrypt(blob,key){if(CC())return new Blob([await CC().docEncryptBytes(await blob.arrayBuffer(),key||dvKey)],{type:"application/pdf"});
+  const iv=crypto.getRandomValues(new Uint8Array(12));
   const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},key||dvKey,await blob.arrayBuffer());
   return new Blob([new Uint8Array(ENC_MAGIC),iv,new Uint8Array(ct)],{type:"application/pdf"})}
 async function docDecrypt(u,key){key=key||dvKey;if(!key)throw new Error(L("Déverrouille tes documents pour ouvrir ce fichier."));
-  try{return new Blob([await crypto.subtle.decrypt({name:"AES-GCM",iv:u.slice(4,16)},key,u.slice(16))],{type:"application/pdf"})}
+  try{return new Blob([CC()?await CC().docDecryptBytes(u,key):await crypto.subtle.decrypt({name:"AES-GCM",iv:u.slice(4,16)},key,u.slice(16))],{type:"application/pdf"})}
   catch(e){throw new Error(L("Ce document a été protégé avec un ancien code : ouvre-le sur l'appareil où tu l'as ajouté."))}}
 // v32 : avec le coffre renforcé, la copie gardée sur l'appareil (IndexedDB) est chiffrée elle aussi
 const sealOn=()=>isV2(data.docVault)&&!!dvKey;
@@ -3513,7 +3522,7 @@ const bioOk=()=>!!(window.PublicKeyCredential&&navigator.credentials&&window.isS
 const bioHas=ctx=>{const s=bioStore();return !!(s&&s[ctx])};
 const bioName=()=>/iPhone|iPad|Macintosh/.test(navigator.userAgent)?"Face ID":L("l'empreinte");
 const bioUse=()=>`${L("Utiliser")} ${bioName()}`;
-async function bioKey(first){const hk=await crypto.subtle.importKey("raw",first,"HKDF",false,["deriveKey"]);
+async function bioKey(first){if(CC())return CC().bioKey(first);const hk=await crypto.subtle.importKey("raw",first,"HKDF",false,["deriveKey"]);
   return crypto.subtle.deriveKey({name:"HKDF",hash:"SHA-256",salt:new Uint8Array(0),info:new TextEncoder().encode("sidnote-bio")},hk,{name:"AES-GCM",length:256},false,["encrypt","decrypt"])}
 // Face ID → clé tirée du secret de la passkey
 async function bioPrf(s){
@@ -3588,13 +3597,13 @@ const PW=()=>data.pwds||(data.pwds=[]);
 let vaultVid=null,vaultKey=null,vaultItems=new Map(),pinStep="",pinBuf="",pinFirst="",pinBusy=false,pwQ="",pwShown=new Set(),pwEditId=null,pinFails=0,pinWait=0;
 const b64e=u=>{let s="";const a=new Uint8Array(u);for(let i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s)};
 const b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
-async function pinKey(pin,salt,iter){
+async function pinKey(pin,salt,iter){if(CC())return CC().pinKey(pin,salt,iter);
   const base=await crypto.subtle.importKey("raw",new TextEncoder().encode(pin),"PBKDF2",false,["deriveKey"]);
   return crypto.subtle.deriveKey({name:"PBKDF2",salt:b64d(salt),iterations:iter,hash:"SHA-256"},base,{name:"AES-GCM",length:256},false,["encrypt","decrypt"]);
 }
-async function encJ(key,obj){const iv=crypto.getRandomValues(new Uint8Array(12));
+async function encJ(key,obj){if(CC())return CC().encJ(key,obj);const iv=crypto.getRandomValues(new Uint8Array(12));
   const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,new TextEncoder().encode(JSON.stringify(obj)));return{iv:b64e(iv),ct:b64e(ct)}}
-async function decJ(key,e){const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:b64d(e.iv)},key,b64d(e.ct));return JSON.parse(new TextDecoder().decode(pt))}
+async function decJ(key,e){if(CC())return CC().decJ(key,e);const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:b64d(e.iv)},key,b64d(e.ct));return JSON.parse(new TextDecoder().decode(pt))}
 const vaultOn=()=>!!(data.vault&&data.vault.chk);
 
 /* ---------- v32 : coffre renforcé (phrase secrète + code de l'appareil) ---------- */
@@ -3612,12 +3621,12 @@ let phMem=null; // clé maître en mémoire le temps que l'app est ouverte (effa
 const isV2=v=>!!(v&&v.v===2&&v.wk);
 const phOn=()=>!!(data.phx&&data.phx.chk);
 const rnd=n=>b64e(crypto.getRandomValues(new Uint8Array(n)));
-const rawKey=raw=>crypto.subtle.importKey("raw",b64d(raw),"AES-GCM",false,["encrypt","decrypt"]);
+const rawKey=raw=>CC()?CC().rawKey(raw):crypto.subtle.importKey("raw",b64d(raw),"AES-GCM",false,["encrypt","decrypt"]);
 const mkLsKey=()=>"sidnote-mk-"+session.user.id;
 const mkStore=()=>{const s=ls.get(mkLsKey());return s&&data.phx&&s.phx===data.phx.id?s:{}};
 const mkHas=ctx=>!!mkStore()[ctx];
 const ctxOf=v=>v&&data.noteVault&&v.id===data.noteVault.id?"notes":"main";
-async function phDerive(ph,salt,iter){
+async function phDerive(ph,salt,iter){if(CC())return CC().phDerive(ph,salt,iter||PIN_ITER);
   const base=await crypto.subtle.importKey("raw",new TextEncoder().encode(String(ph).normalize("NFC")),"PBKDF2",false,["deriveBits"]);
   const raw=b64e(await crypto.subtle.deriveBits({name:"PBKDF2",salt:b64d(salt),iterations:iter||PIN_ITER,hash:"SHA-256"},base,256));
   return {raw,key:await rawKey(raw)}}
@@ -5096,7 +5105,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v59";
+const BUILD="sidnote-v60";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

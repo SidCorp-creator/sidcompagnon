@@ -45,3 +45,21 @@ export interface Tip {
   show: (ev: PointerEvent, html: string) => void;
   hide: () => void;
 }
+
+/** Une activité de l'agenda (data.tasks) ou un événement d'un calendrier relié (src "ical"). */
+export interface AgTask {
+  id: string;
+  title: string;
+  date: string; // AAAA-MM-JJ
+  end?: string; // dernier jour, pour une activité sur plusieurs jours
+  time?: string; // HH:MM
+  timeEnd?: string;
+  status: string; // « à faire », « en cours », « fait »
+  tbc?: boolean; // date à confirmer
+  cat?: string;
+  note?: string;
+  loc?: string;
+  src?: string;
+  canc?: boolean; // événement annulé (calendrier relié)
+  cal?: string;
+}

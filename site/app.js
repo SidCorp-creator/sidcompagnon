@@ -103,7 +103,7 @@ async function api(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="52";const errSent=new Set();
+const APP_V="53";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -890,9 +890,12 @@ function yearGrid(y,cls){const now=today();let h="";
     let g="";for(let i=0;i<lead;i++)g+="<i></i>";
     for(let d=1;d<=n;d++)g+=`<i class="${cls(iso(new Date(y,m,d)))}">${d}</i>`;
     h+=`<button class="ym ${y===now.getFullYear()&&m===now.getMonth()?"cur":""}" data-ym="${m}" aria-label="${MOL[m]} ${y}"><b>${MOL[m]}</b><div class="ym-g">${g}</div></button>`}return h}
+// v53 (#3) : textes des îlots de l'agenda (tr = traduction avec les motifs, comme la traduction automatique du DOM)
+const agI18n=()=>({tr:x=>LANG&&LANG!=="fr"?trStr(x):x,L,MOL,MO,locale:LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE"});
 function renderMonth(){
   const T=allT(),tIso=iso(today());
   $("calTitle").innerHTML=`${MOL[calM]} ${calY} <span class="yr-ic">▦ ${L("Année")}</span>`;$("calTitle").setAttribute("aria-label",`${MOL[calM]} ${calY}, ${L("voir toute l'année")}`);
+  if(window.SCIslands&&window.SCIslands.agMonth&&!window.__noIslands){try{window.SCIslands.agMonth($("calDays"),{y:calY,m:calM,today:tIso,tasks:T,color:colorOf,i18n:agI18n()});return}catch(e){reportErr("island agMonth: "+(e&&e.message))}}
   const h=monthGrid(calY,calM,(k,d)=>{
     const per=T.filter(t=>t.end&&t.date<=k&&t.end>=k).slice(0,2);
     const pts=T.filter(t=>!t.end&&t.date===k);
@@ -948,6 +951,7 @@ function renderCal(){
 }
 // vue année : 12 petits mois, jours avec activité en couleur, aujourd'hui en rouge (comme le Calendrier de l'iPhone)
 function renderYear(){
+  if(window.SCIslands&&window.SCIslands.agYear&&!window.__noIslands){try{window.SCIslands.agYear($("calYear"),{y:calY,today:iso(today()),tasks:allT(),i18n:agI18n()});return}catch(e){reportErr("island agYear: "+(e&&e.message))}}
   const T=allT(),tIso=iso(today()),has=new Set();T.forEach(t=>{if(!t.date)return;const e=t.end&&t.end>t.date?t.end:t.date;for(let d=parse(t.date);iso(d)<=e;d.setDate(d.getDate()+1))has.add(iso(d))});
   const h=yearGrid(calY,k=>`${k===tIso?"td":has.has(k)?"ev":""} ${k<tIso?"past":""}`);
   $("calYear").innerHTML=`<div class="yr-head"><button class="cal-nav" data-yrn="-1" aria-label="${L("Année précédente")}">‹</button><button type="button" class="yr-title" data-yrtoday="1" aria-label="${L("Revenir au mois actuel")}">${calY}<span class="yr-ic">↩ ${L("Mois actuel")}</span></button><button class="cal-nav" data-yrn="1" aria-label="${L("Année suivante")}">›</button></div><div class="yr-grid">${h}</div>
@@ -1015,8 +1019,9 @@ let planOpenMem={}; // mois ouverts dans « Toutes les dates » ; v44.6 : tous r
 function renderPlan(){
   const T=data.tasks,q=norm(planQ);
   $("planTop").hidden=!!q;
+  const isl=window.SCIslands&&window.SCIslands.agPlan&&!window.__noIslands;
   const up=T.filter(t=>t.status!=="fait"&&daysTo(t.end||t.date)>=0).sort((a,b)=>sk(a).localeCompare(sk(b))).slice(0,4);
-  $("next").innerHTML=up.length?up.map(t=>{const d=daysTo(t.date);const w=d>1?`dans ${d} j`:d===1?"demain":d===0?"aujourd'hui":"en cours";
+  if(!isl)$("next").innerHTML=up.length?up.map(t=>{const d=daysTo(t.date);const w=d>1?`dans ${d} j`:d===1?"demain":d===0?"aujourd'hui":"en cours";
     return `<div class="n" style="--c:var(${colorOf(t)})"><div class="d">${fmt(t.date)}${t.time?" · "+hrs(t):""} · ${w}</div><div class="t">${esc(t.title)}</div></div>`}).join("")
     :`<div class="n" style="--c:var(--line)"><div class="t muted">${L("Rien à venir")}</div></div>`;
   renderCal();
@@ -1026,12 +1031,15 @@ function renderPlan(){
   let f=data.ui.filter||"Toutes";if(f!=="Toutes"&&!typeOf(f)&&!calF.some(c=>c.name===f))f="Toutes";
   const used=data.types.filter(ty=>T.some(t=>norm(t.cat)===norm(ty.name)));
   calF.forEach(c=>{if(!used.some(u=>norm(u.name)===norm(c.name)))used.push({name:c.name,c:c.c||"--x4"})});
-  $("chips").innerHTML=[{name:"Toutes"},...used].map(c=>`<button class="pill" data-f="${esc(c.name)}" aria-pressed="${c.name===f}">${c.c?`<span class="dot" style="background:var(${c.c})"></span>`:""}${esc(c.name)}</button>`).join("");
+  const chips=[{name:"Toutes"},...used];
+  if(!isl)$("chips").innerHTML=chips.map(c=>`<button class="pill" data-f="${esc(c.name)}" aria-pressed="${c.name===f}">${c.c?`<span class="dot" style="background:var(${c.c})"></span>`:""}${esc(c.name)}</button>`).join("");
   fillTypeList();
   $("listH2").textContent=q?"Résultats":"Toutes les dates";
   // liste
   const src=calF.some(c=>c.name===f)?icalEvents:q?T.concat(icalEvents):T;
   const list=src.filter(t=>(f==="Toutes"||norm(t.cat)===norm(f))&&(!q||norm(t.title+" "+(t.cat||"")+" "+(t.note||"")+" "+(t.loc||"")).includes(q))).sort((a,b)=>sk(a).localeCompare(sk(b)));
+  if(isl){try{window.SCIslands.agPlan({next:$("next"),chips:$("chips"),list:$("tasks")},{tasks:T,list,chips:chips.map(c=>({name:c.name,c:c.c})),filter:f,search:!!q,open:Object.keys(planOpenMem),today:iso(today()),color:colorOf,icalCat:ICAL_CAT,i18n:agI18n()});return}
+    catch(e){reportErr("island agPlan: "+(e&&e.message));window.__noIslands=true;try{renderPlan()}finally{window.__noIslands=false}return}}
   if(!list.length){$("tasks").innerHTML=`<div class="card" style="margin-top:10px"><div class="empty">${q?"Aucune activité ne correspond.":"Rien dans cette catégorie."}</div></div>`;return}
   const g={};list.forEach(t=>{const d=parse(t.date);const k=d.getFullYear()*100+d.getMonth();(g[k]=g[k]||[]).push(t)});
   // v29 : chaque mois se replie (toucher son nom) ; v44.6 : tous repliés par défaut, ouverts à la demande (en mémoire seulement, planOpenMem)
@@ -4386,7 +4394,7 @@ function renderNuCal(){const box=$("nuCal"),btn=$("nuDayBtn");if(!box)return;box
     <div class="cal-head"><button type="button" class="cal-nav" data-nurn="-1" aria-label="${L("Période précédente")}">‹</button><b class="nu-cal-t">${esc(title)}</b><button type="button" class="cal-nav" data-nurn="1" aria-label="${L("Période suivante")}" ${nx>tIso?"disabled":""}>›</button></div>
     ${body}<button type="button" class="linkbtn nu-cal-x" data-nurange="">${L("Fermer le calendrier")}</button>`}
 $("nuDayBtn").addEventListener("click",()=>{if(nuRange){nuRange=null;renderNuCal()}else nuCalOpen("month")});
-window.addEventListener("sc-islands",()=>{if(nuRange)renderNuCal();if(data&&data.ui&&data.ui.view==="graph")renderGraph();if(data&&data.ui&&data.ui.view==="pomo")renderPomoStats()}); // module React chargé après coup : on redessine avec lui
+window.addEventListener("sc-islands",()=>{if(nuRange)renderNuCal();if(data&&data.ui&&data.ui.view==="graph")renderGraph();if(data&&data.ui&&data.ui.view==="pomo")renderPomoStats();if(session&&data&&data.tasks)renderPlan()}); // module React chargé après coup : on redessine avec lui
 $("nuCal").addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled)return;
   if(b.dataset.nurange!==undefined){if(b.dataset.nurange)nuCalOpen(b.dataset.nurange);else{nuRange=null;renderNuCal()}return}
   if(b.dataset.nurn){const s=+b.dataset.nurn;if(nuRange==="week"){const d=parse(nuRW);d.setDate(d.getDate()+7*s);nuRW=iso(d)}
@@ -4980,7 +4988,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v52";
+const BUILD="sidnote-v53";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

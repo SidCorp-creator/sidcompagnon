@@ -7,7 +7,8 @@ import { ColChart, GrTable, KcalLegend, LineChart, MacroLegend, type LineOpt, ty
 import { PomoStats } from "./PomoStats";
 import { RevCard, WeeksHistory, type PastRev, type Rev } from "./Reviews";
 import { MuGoal, NuMacros, type MacroRow } from "./Small";
-import type { GrDay, I18n, Tip } from "./types";
+import { AgendaChips, AgendaList, AgendaMonth, AgendaNext, AgendaYear, type AgI18n, type Chip } from "./Agenda";
+import type { AgTask, GrDay, I18n, Tip } from "./types";
 import { fmtN, r1 } from "./format";
 
 const roots = new WeakMap<Element, Root>();
@@ -44,6 +45,19 @@ function graph(els: GraphEls, p: GraphProps) {
   mount(els.table, <GrTable i18n={p.i18n} D={p.D} />);
 }
 
+export interface AgPlanProps {
+  tasks: AgTask[]; // data.tasks (« À venir »)
+  list: AgTask[]; // activités filtrées et triées de « Toutes les dates »
+  chips: Chip[];
+  filter: string;
+  search: boolean;
+  open: string[]; // mois ouverts (planOpenMem)
+  today: string;
+  color: (t: AgTask) => string;
+  icalCat: string;
+  i18n: AgI18n;
+}
+
 declare global {
   interface Window {
     SCIslands?: {
@@ -54,11 +68,14 @@ declare global {
       reviews: (els: { day: Element; week: Element; weeks: Element }, p: { day: Rev | null; week: Rev | null; weeks: PastRev[]; busy: string; i18n: I18n }) => void;
       muGoal: (el: Element, p: { keys: string[]; goal: string; names: Record<string, string>; i18n: I18n }) => void;
       nuMacros: (el: Element, p: { rows: MacroRow[]; i18n: I18n }) => void;
+      agMonth: (el: Element, p: { y: number; m: number; today: string; tasks: AgTask[]; color: (t: AgTask) => string; i18n: AgI18n }) => void;
+      agYear: (el: Element, p: { y: number; today: string; tasks: AgTask[]; i18n: AgI18n }) => void;
+      agPlan: (els: { next: Element; chips: Element; list: Element }, p: AgPlanProps) => void;
     };
   }
 }
 window.SCIslands = {
-  version: 3,
+  version: 4,
   nuCal: (el, p) => mount(el, <NutritionCalendar {...p} />),
   graph,
   pomoStats: (el, p) => mount(el, <PomoStats {...p} />),
@@ -69,5 +86,12 @@ window.SCIslands = {
   },
   muGoal: (el, p) => mount(el, <MuGoal {...p} />),
   nuMacros: (el, p) => mount(el, <NuMacros {...p} />),
+  agMonth: (el, p) => mount(el, <AgendaMonth {...p} />),
+  agYear: (el, p) => mount(el, <AgendaYear {...p} />),
+  agPlan: (els, p) => {
+    mount(els.next, <AgendaNext tasks={p.tasks} today={p.today} color={p.color} i18n={p.i18n} />);
+    mount(els.chips, <AgendaChips chips={p.chips} active={p.filter} i18n={p.i18n} />);
+    mount(els.list, <AgendaList list={p.list} search={p.search} open={p.open} today={p.today} color={p.color} icalCat={p.icalCat} i18n={p.i18n} />);
+  },
 };
 window.dispatchEvent(new Event("sc-islands"));

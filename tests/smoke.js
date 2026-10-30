@@ -1355,6 +1355,59 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await check("macros",["nuMacros"],"()=>renderNutri()");
     await shot(pg,"v52-"+nm+"-nutrition");
     await ctx.close()}
+  // --- v53 (ticket #3) : Agenda (grille du mois, vue année, À venir, filtres, Toutes les dates) : même rendu que l'ancien, en français et en anglais
+  for(const [nm,dev,lg] of [["mobile",{...devices["iPhone 13"]},"fr"],["pc",{viewport:{width:1280,height:800}},"en"]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v53 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v53"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    if(lg!=="fr"){await pg.evaluate(l=>setLang(l),lg);await pg.waitForTimeout(2500)}
+    await pg.waitForFunction(()=>!!(window.SCIslands&&window.SCIslands.agPlan),null,{timeout:8000}).catch(()=>err("module React non chargé"));
+    // l'ancien rendu passe par la traduction automatique (asynchrone) : on attend un instant avant de comparer
+    await pg.evaluate(()=>{window.__par=async(ids,fn)=>{const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.getAttribute("style")?e.style.cssText:"")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+      fn();await new Promise(r=>setTimeout(r,60));const out={},a={},react=ids.every(id=>Object.keys($(id)).some(k=>k.startsWith("__reactContainer")));ids.forEach(id=>a[id]=norm($(id)));
+      const sv=ids.map(id=>{const el=$(id),c=el.cloneNode(false);c.classList.remove("notr");el.id=id+"R";el.after(c);c.id=id;c.innerHTML="";return[el,c,id]});
+      window.__noIslands=true;try{fn()}finally{window.__noIslands=false}await new Promise(r=>setTimeout(r,60));
+      sv.forEach(([el,c,id])=>{const b=norm(c);if(a[id]!==b){const al=a[id].split("\n"),bl=b.split("\n");out[id]=al.length+"/"+bl.length+" "+(al.find((l,i)=>l!==bl[i])||"")+" <> "+(bl.find((l,i)=>l!==al[i])||"")}c.remove();el.id=id});return{react,out}}});
+    const check=async(lbl,ids,fnSrc)=>{const r=await pg.evaluate(([ids,src])=>window.__par(ids,eval(src)),[ids,fnSrc]);
+      if(!r.react)err(lbl+" : pas rendu par React");for(const[id,d]of Object.entries(r.out))err(lbl+" : "+id+" différent : "+d.slice(0,300))};
+    await pg.evaluate(()=>{const d=n=>{const x=today();x.setDate(x.getDate()+n);return iso(x)};
+      data.tasks=[{id:"t1",title:"Dentiste",date:d(0),time:"14:00",status:"à faire",cat:"Santé",tbc:true},
+        {id:"t2",title:"Stage",date:d(-3),end:d(4),status:"en cours",cat:"Travail",note:"Rapport à rendre"},
+        {id:"t3",title:"Vieux rendez-vous",date:d(-40),time:"09:00",timeEnd:"10:30",status:"à faire",cat:"Sport"},
+        {id:"t4",title:"Fait hier",date:d(-1),status:"fait",cat:"Sport"},
+        {id:"t5",title:"Vacances",date:d(30),end:d(37),status:"à faire",tbc:true},
+        {id:"t6",title:"Anniv",date:d(1),status:"à faire"},{id:"t7",title:"Dans 3 jours",date:d(3),time:"08:00",status:"à faire",cat:"Travail"}];
+      icalEvents=[{id:"ic1",src:"ical",title:"Cours de chimie",date:d(2),time:"10:00",timeEnd:"12:00",status:"à faire",canc:true,loc:"Mons"},{id:"ic2",src:"ical",title:"TP",date:d(0),status:"à faire"}];
+      ensureType("Santé");ensureType("Travail");ensureType("Sport");save();show("plan");planOpenMem={}});
+    await check("mois",["calDays"],"()=>{calMode='month';const t=today();calY=t.getFullYear();calM=t.getMonth();renderCal()}");
+    await check("année",["calYear"],"()=>{calMode='year';renderCal()}");
+    await pg.evaluate(()=>{calMode="month";renderCal()});
+    await check("liste repliée",["next","chips","tasks","calDays"],"()=>{planOpenMem={};renderPlan()}");
+    await check("liste ouverte",["next","chips","tasks","calDays"],"()=>{document.querySelectorAll('#tasks [data-mfold]').forEach(x=>planOpenMem[x.dataset.mfold]=1);renderPlan()}");
+    await check("filtre",["next","chips","tasks","calDays"],"()=>{data.ui.filter='Travail';renderPlan()}");
+    await check("recherche",["next","chips","tasks","calDays"],"()=>{data.ui.filter='Toutes';planQ='cours';renderPlan()}");
+    await check("vide",["next","chips","tasks","calDays"],"()=>{planQ='zzz';renderPlan()}");
+    await pg.evaluate(()=>{planQ="";renderPlan()});
+    // les clics restent gérés par app.js : ouvrir un mois, changer un statut, ouvrir un jour
+    await pg.evaluate(()=>{planOpenMem={};renderPlan()});
+    const mk=await pg.evaluate(()=>{const b=document.querySelector("#tasks [data-mfold]");b.scrollIntoView();return b.dataset.mfold});
+    await pg.click(`#tasks [data-mfold="${mk}"]`);
+    if(!(await pg.evaluate(k=>!!planOpenMem[k]&&!!document.querySelector("#tasks .card .prow"),mk)))err("ouvrir un mois ne marche plus");
+    await pg.evaluate(()=>{planOpenMem={};document.querySelectorAll('#tasks [data-mfold]').forEach(x=>planOpenMem[x.dataset.mfold]=1);renderPlan()});
+    await pg.locator('#tasks [data-st="t1"]').scrollIntoViewIfNeeded();await pg.click('#tasks [data-st="t1"]');
+    if(await pg.evaluate(()=>data.tasks.find(t=>t.id==="t1").status)!=="en cours")err("changer le statut ne marche plus");
+    await pg.evaluate(()=>window.scrollTo(0,0));const dk=await pg.evaluate(()=>iso(today()));
+    await pg.locator(`#calDays [data-day="${dk}"]`).scrollIntoViewIfNeeded();await pg.click(`#calDays [data-day="${dk}"]`);await pg.waitForTimeout(300);
+    if(await pg.evaluate(()=>calMode)!=="day")err("ouvrir un jour ne marche plus");
+    await pg.evaluate(()=>{calMode="year";renderCal()});await pg.click("#calYear [data-yrn='1']");
+    if(await pg.evaluate(()=>calY)!==new Date().getFullYear()+1)err("année suivante ne marche plus");
+    await pg.click('#calYear [data-ym="0"]');await pg.waitForTimeout(300);
+    if(await pg.evaluate(()=>calMode+calM)!=="month0")err("ouvrir un mois de l'année ne marche plus");
+    if(lg==="en"&&/Toutes|Passé|à confirmer|élément/.test(await pg.evaluate(()=>$("tasks").textContent+$("chips").textContent+[...document.querySelectorAll("#calDays [aria-label]")].map(x=>x.getAttribute("aria-label")).join(" "))))err("textes non traduits en anglais");
+    await pg.evaluate(()=>{const t=today();calY=t.getFullYear();calM=t.getMonth();calMode="month";renderCal();document.querySelectorAll('#tasks [data-mfold]').forEach(x=>planOpenMem[x.dataset.mfold]=1);renderPlan();$("toast").hidden=true;$("toast").style.display="none";$("calDays").scrollIntoView()});
+    await shot(pg,"v53-"+nm+"-agenda");
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

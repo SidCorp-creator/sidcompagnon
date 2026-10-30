@@ -20,8 +20,13 @@ Décision de Sid (29 oct. 2026) : passer progressivement à TypeScript + React +
 | v51 | Focus : temps de travail concentré (jour, 7 jours) | `app/src/PomoStats.tsx` |
 | v52 | Graphiques : commentaires du jour et de la semaine, historique des semaines | `app/src/Reviews.tsx` |
 | v52 | Musculation : barre « Mon objectif » · Nutrition : barres des macros | `app/src/Small.tsx` |
+| v53 | Agenda : grille du mois, vue année, « Prochaines échéances », filtres, liste « Toutes les dates » | `app/src/Agenda.tsx` |
 
 Socle : `app/src/types.ts` (types des données, à compléter), `app/src/dates.ts` (dates locales), `app/src/format.ts` (nombres, durées, jours), `app/src/islands.tsx` (montage synchrone avec `flushSync`, classe `notr` posée au montage).
+
+Traductions : depuis la v53, les îlots reçoivent aussi `tr()` (= `trStr` de l'app : dictionnaire **et** motifs avec chiffres, comme la traduction automatique du DOM). Le test « v53 » compare aussi en anglais (l'ancien rendu passe par la traduction automatique).
+
+Agenda : restent dans l'ancien code la vue jour (formulaire d'ajout, tâches du jour), le titre du mois et les fenêtres (activité, calendriers reliés).
 
 Graphiques : tout l'affichage est en React depuis la v52 ; restent dans l'ancien code la saisie du poids et l'animation de chargement des commentaires (`nuLoading`, posée dans `#revLoad-…` que React laisse vide).
 
@@ -33,7 +38,7 @@ Du plus isolé au plus central, un écran par version, chacun avec son test « m
 2. ~~Musculation : objectif~~ (v52) ; séances (champs de saisie : à faire avec des composants contrôlés et l'enregistrement dans React).
 3. ~~Nutrition : barres des macros~~ (v52) ; journée, menus, profil.
 4. Nutrition (journée, menus, profil).
-5. Tâches, puis Agenda.
+5. ~~Agenda : mois, année, listes~~ (v53) ; vue jour. Puis Tâches.
 6. Notes, Documents, Mots de passe (le coffre en dernier, avec une revue sécurité).
 7. Enfin la coquille (connexion, synchronisation, navigation) : à ce moment `app.js` disparaît et l'app devient une app Vite complète.
 

@@ -108,7 +108,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="61";const errSent=new Set();
+const APP_V="62";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -578,6 +578,7 @@ $("side").addEventListener("click",e=>{if(e.target.closest(".side-tog")){sideTog
 function openQuickAdd(){const vis=visibleTabs(),acts=[
   ["plan","Une activité","Dans ton agenda",ICON("plan")],["todo","Une tâche","Dans ta liste",ICON("todo")],["notes","Une note","Texte ou photo",ICON("notes")],
   ["nutri","Un repas","Ce que tu manges",ICON("nutri")],["muscu","Une séance","Musculation",ICON("muscu")]].filter(a=>vis.includes(a[0]));
+  if(shIsl("quickAdd")){try{window.SCIslands.quickAdd($("qaList"),{i18n:agI18n(),acts:acts.map(([k,t,s,icon])=>({k,t,s,icon}))});$("qaSheet").hidden=false;return}catch(e){reportErr("island quickAdd: "+(e&&e.message))}}
   $("qaList").innerHTML=acts.map(([k,t,s,ic])=>`<button type="button" class="qa-it" data-qa="${k}"><span class="sp-ic">${ic}</span><span class="grow"><b>${L(t)}</b><span class="small muted">${L(s)}</span></span>${CHEVR}</button>`).join("");
   $("qaSheet").hidden=false}
 $("qaClose").addEventListener("click",()=>$("qaSheet").hidden=true);
@@ -645,6 +646,7 @@ function goToTodo(id){const t=data.todos.find(x=>x.id===id);show("todo");if(!t)r
     r.classList.remove("hl");void r.offsetWidth;r.classList.add("hl")},60)}
 setInterval(()=>{if(data.ui.view==="home"&&!document.hidden)renderHome()},60000);
 function renderTabsCard(){
+  if(shIsl("tabsCard")){try{window.SCIslands.tabsCard($("tabsCard"),{i18n:agI18n(),groups:GROUPS.map(g=>({k:g.k,icon:ICON("g-"+g.k)||"",label:g.label,tabs:g.tabs.filter(tabAllowed).map(k=>k==="more"?{k,label:"Réglages",on:true,fixed:true}:{k,label:TABS.find(t=>t[0]===k)[1],on:data.prefs.tabs[k]!==false})}))});return}catch(e){reportErr("island tabsCard: "+(e&&e.message))}}
   $("tabsCard").innerHTML=GROUPS.map(g=>`<div class="tabgrp">${ICON("g-"+g.k)}${L(g.label)}</div><div class="card">`+
     g.tabs.filter(tabAllowed).map(k=>k==="more"?`<div class="row"><span class="grow">${L("Réglages")}</span><span class="small muted">${L("toujours affiché")}</span></div>`
       :`<label class="row" style="cursor:pointer"><span class="grow">${L(TABS.find(t=>t[0]===k)[1])}</span><input type="checkbox" class="switch" data-tabpref="${k}" ${data.prefs.tabs[k]!==false?"checked":""}></label>`).join("")+`</div>`).join("");
@@ -1314,6 +1316,7 @@ $("icalRefresh").addEventListener("click",()=>icalFetch(true));
 /* ---------- Types d'événement ---------- */
 function renderTypes(){
   const cnt=n=>data.tasks.filter(t=>norm(t.cat)===norm(n)).length;
+  if(shIsl("typesCard")){try{window.SCIslands.typesCard($("typesCard"),{i18n:agI18n(),types:data.types.map(t=>({name:t.name,c:t.c,n:cnt(t.name)}))});return}catch(e){reportErr("island typesCard: "+(e&&e.message))}}
   $("typesCard").innerHTML=data.types.map((t,i)=>`<div class="row">
       <button class="swatch" data-tcol="${i}" style="background:var(${t.c})" aria-label="Changer la couleur de ${esc(t.name)}"></button>
       <div class="grow">${esc(t.name)} <span class="small muted">· ${cnt(t.name)}</span></div>
@@ -1329,11 +1332,13 @@ $("typesCard").addEventListener("click",e=>{
 });
 $("typesCard").addEventListener("submit",e=>{e.preventDefault();const v=$("typeIn").value.trim();if(!v)return;
   if(typeOf(v)){toast("Ce type existe déjà");return}
-  ensureType(v);save();renderTypes();renderPlan();toast("Type ajouté")});
+  ensureType(v);$("typeIn").value="";save();renderTypes();renderPlan();toast("Type ajouté")});
 
 /* ---------- Réglages ---------- */
 function renderStats(){
   const td=data.todos,tk=data.tasks;
+  // v62 (#3) : Réglages et petites fenêtres dessinés par React (app/src/Settings.tsx) ; ancien rendu en secours
+  if(shIsl("stats")){try{window.SCIslands.stats($("stats"),{i18n:agI18n(),rows:[["Tâches réalisées",`${td.filter(t=>t.done).length} / ${td.length}`],["Dates du planning terminées",`${tk.filter(t=>t.status==="fait").length} / ${tk.length}`],["Dates encore à confirmer",tk.filter(t=>t.tbc).length]]});return}catch(e){reportErr("island stats: "+(e&&e.message))}}
   $("stats").innerHTML=[
     ["Tâches réalisées",`${td.filter(t=>t.done).length} / ${td.length}`],
     ["Dates du planning terminées",`${tk.filter(t=>t.status==="fait").length} / ${tk.length}`],
@@ -2192,6 +2197,7 @@ function exAide(name){const A=window.SIDFIT_AIDE||{},k=fold(String(name||"").tri
 function exHelpOpen(name){const a=exAide(name);if(!a)return;const[mus,steps,err]=a.f;
   $("exHelpTitle").textContent=name.trim();
   const im=(window.SIDFIT_IMG||{})[a.name];
+  if(shIsl("exHelp")){try{window.SCIslands.exHelp($("exHelpBody"),{i18n:agI18n(),h:{name:name.trim(),img:im||null,mus,steps,err}});$("exHelpSheet").hidden=false;return}catch(e){reportErr("island exHelp: "+(e&&e.message))}}
   $("exHelpBody").innerHTML=(im?`<div class="exh-pics">${[0,1].map(i=>`<figure><img src="exercices/${encodeURIComponent(im)}-${i}.jpg" alt="${esc(name.trim())} : ${L(i?"arrivée":"départ")}" loading="lazy" decoding="async" width="480" height="320"><figcaption>${L(i?"Arrivée":"Départ")}</figcaption></figure>`).join("")}</div>`:"")+`<p class="exh-lbl">${L("Muscles travaillés")}</p><p class="notr">${esc(mus)}</p>
     <p class="exh-lbl">${L("Comment faire")}</p><ol class="exh-steps notr">${steps.map(x=>`<li>${esc(x)}</li>`).join("")}</ol>
     <p class="exh-lbl">${L("À éviter")}</p><p class="exh-err notr">${esc(err)}</p>${im?`<p class="small muted exh-src">${L("Photos : Free Exercise DB (domaine public)")}</p>`:""}`;
@@ -3377,7 +3383,8 @@ const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(
 async function mcpLoad(){const sec=$("mcpSec");if(!sec)return;sec.hidden=!session||isTrial();if(sec.hidden)return;
   try{mcpRows=await api("/rest/v1/mcp_tokens?select=hash,label,created_at,last_used&order=created_at",{token:await token()})||[]}catch(e){mcpRows=[]}
   const d=v=>v?new Date(v).toLocaleDateString(LANG==="fr"?"fr-BE":LANG==="nl"?"nl-BE":"en-GB",{day:"numeric",month:"short",year:"numeric"}):"";
-  $("mcpList").innerHTML=mcpRows.map(r=>`<div class="row mcp-it"><div class="grow"><b>${esc(L("Adresse du"))} ${esc(d(r.created_at))}</b><span class="small muted">${r.last_used?`${esc(L("Utilisée le"))} ${esc(d(r.last_used))}`:esc(L("Pas encore utilisée"))}</span></div><button type="button" class="mini" data-mcpdel="${esc(r.hash)}">${esc(L("Retirer"))}</button></div>`).join("");
+  if(shIsl("mcpList")){try{window.SCIslands.mcpList($("mcpList"),{i18n:agI18n(),rows:mcpRows.map(r=>({hash:r.hash,created:d(r.created_at),used:r.last_used?d(r.last_used):""}))})}catch(e){reportErr("island mcpList: "+(e&&e.message))}}
+  else $("mcpList").innerHTML=mcpRows.map(r=>`<div class="row mcp-it"><div class="grow"><b>${esc(L("Adresse du"))} ${esc(d(r.created_at))}</b><span class="small muted">${r.last_used?`${esc(L("Utilisée le"))} ${esc(d(r.last_used))}`:esc(L("Pas encore utilisée"))}</span></div><button type="button" class="mini" data-mcpdel="${esc(r.hash)}">${esc(L("Retirer"))}</button></div>`).join("");
   $("mcpNew").textContent=L(mcpRows.length?"Créer une nouvelle adresse":"Créer mon adresse pour Claude")}
 // nouvelle adresse secrète : seule son empreinte part sur le serveur ; renvoie {url, hash}
 async function mcpCreate(label){const key=b64e(crypto.getRandomValues(new Uint8Array(32))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
@@ -5120,7 +5127,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v61";
+const BUILD="sidnote-v62";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

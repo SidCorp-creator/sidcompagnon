@@ -1826,6 +1826,47 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(lg==="en"&&/Aujourd'hui|Ajouter|Tâches|Masquer/.test(await pg.evaluate(()=>$("side").textContent+$("navIn").textContent)))err("textes non traduits en anglais");
     await pg.evaluate(()=>{show("todo");$("toast").style.display="none"});await shot(pg,"v61-"+nm+"-navigation");
     await ctx.close()}
+  // --- v62 (ticket #3) : Réglages (statistiques, onglets, types, adresses Claude) et fenêtres (ajout rapide, fiche d'exercice) : même rendu, FR et EN
+  for(const [nm,dev,lg] of [["mobile",{...devices["iPhone 13"]},"fr"],["pc",{viewport:{width:1280,height:800}},"en"]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v62 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v62"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    if(lg!=="fr"){await pg.evaluate(l=>setLang(l),lg);await pg.waitForTimeout(2500)}
+    await pg.waitForFunction(()=>!!(window.SCIslands&&window.SCIslands.exHelp),null,{timeout:8000}).catch(()=>err("module React non chargé"));
+    await pg.evaluate(()=>{window.__par=async(ids,fn)=>{const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.getAttribute("style")?e.style.cssText:"")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+      fn();await new Promise(r=>setTimeout(r,60));const out={},a={},react=ids.every(id=>Object.keys($(id)).some(k=>k.startsWith("__reactContainer")));ids.forEach(id=>a[id]=norm($(id)));
+      const sv=ids.map(id=>{const el=$(id),c=el.cloneNode(false);c.classList.remove("notr");el.id=id+"R";el.after(c);c.id=id;c.innerHTML="";return[el,c,id]});
+      window.__noIslands=true;try{fn()}finally{window.__noIslands=false}await new Promise(r=>setTimeout(r,60));
+      sv.forEach(([el,c,id])=>{const b=norm(c);if(a[id]!==b){const al=a[id].split("\n"),bl=b.split("\n");out[id]=al.length+"/"+bl.length+" "+(al.find((l,i)=>l!==bl[i])||"")+" <> "+(bl.find((l,i)=>l!==al[i])||"")}c.remove();el.id=id});return{react,out}}});
+    const check=async(lbl,ids,fnSrc)=>{const r=await pg.evaluate(([ids,src])=>window.__par(ids,eval(src)),[ids,fnSrc]);
+      if(!r.react)err(lbl+" : pas rendu par React");for(const[id,d]of Object.entries(r.out))err(lbl+" : "+id+" différent : "+d.slice(0,300))};
+    await pg.evaluate(()=>{data.todos=[{id:"a",title:"A",createdAt:new Date().toISOString(),done:true},{id:"b",title:"B",createdAt:new Date().toISOString(),done:false}];
+      data.tasks=[{id:"t",title:"T",date:iso(today()),status:"fait",cat:"Sport"},{id:"u",title:"U",date:iso(today()),status:"à faire",tbc:true,cat:"Cours"}];ensureType("Sport");ensureType("Cours");data.prefs.tabs.pomo=false;save();show("more")});
+    await check("statistiques",["stats"],"()=>renderStats()");
+    await check("onglets",["tabsCard"],"()=>renderTabsCard()");
+    await check("types",["typesCard"],"()=>renderTypes()");
+    await check("ajout rapide",["qaList"],"()=>openQuickAdd()");
+    await pg.evaluate(()=>{$("qaSheet").hidden=true});
+    await check("fiche avec photos",["exHelpBody"],"()=>exHelpOpen('Développé couché haltères')");
+    const noImg=await pg.evaluate(()=>Object.keys(window.SIDFIT_AIDE||{}).find(k=>!(window.SIDFIT_IMG||{})[k]));
+    if(noImg)await check("fiche sans photo",["exHelpBody"],`()=>exHelpOpen(${JSON.stringify(noImg)})`);
+    await pg.evaluate(()=>{$("exHelpSheet").hidden=true;show("more");document.querySelectorAll(".setsec").forEach(d=>d.open=true)});
+    // interactions : onglet affiché / masqué, type ajouté (champ vidé), couleur changée, ajout rapide
+    await pg.evaluate(()=>{const c=document.querySelector('#tabsCard [data-tabpref="pomo"]');c.scrollIntoView();c.click()});
+    if(await pg.evaluate(()=>data.prefs.tabs.pomo)!==true)err("afficher un onglet ne marche plus");
+    await pg.evaluate(()=>{$("typeIn").scrollIntoView()});await pg.fill("#typeIn","Examen");await pg.press("#typeIn","Enter");await pg.waitForTimeout(200);
+    if(!(await pg.evaluate(()=>!!typeOf("Examen")&&$("typeIn").value==="")))err("ajouter un type : pas ajouté ou champ pas vidé");
+    const c0=await pg.evaluate(()=>data.types[0].c);await pg.evaluate(()=>document.querySelector('#typesCard [data-tcol="0"]').click());
+    if(await pg.evaluate(()=>data.types[0].c)===c0)err("changer la couleur d'un type ne marche plus");
+    await pg.evaluate(()=>openQuickAdd());await pg.click('#qaList [data-qa="todo"]');await pg.waitForTimeout(400);
+    if(await pg.evaluate(()=>data.ui.view)!=="todo")err("ajout rapide : la tâche ne s'ouvre pas");
+    // adresses du connecteur : créée puis affichée
+    await pg.evaluate(async()=>{await mcpCreate("Claude");await mcpLoad()});
+    if(!(await pg.evaluate(()=>document.querySelectorAll("#mcpList .mcp-it [data-mcpdel]").length===1)))err("adresse du connecteur pas affichée");
+    if(lg==="en"&&/Tâches réalisées|Nouveau type|toujours affiché|Muscles travaillés/.test(await pg.evaluate(()=>{exHelpOpen('Développé couché haltères');return $("stats").textContent+$("typesCard").innerHTML+$("tabsCard").textContent+$("exHelpBody").textContent})))err("textes non traduits en anglais");
+    await pg.evaluate(()=>{$("toast").style.display="none"});await shot(pg,"v62-"+nm+"-fiche");
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

@@ -18,6 +18,7 @@ import { NuMenu, type MenuVM } from "./NuMenu";
 import { HomeCards, type HcCard } from "./Home";
 import { GoalBody, NuCopy, NuPlan, type GoalVM, type NuCopyVM, type PlanVM } from "./NuExtra";
 import { AppHead, NavBar, SideBar, type NavItem, type NavI18n, type SideGroup, type SideIcons } from "./Shell";
+import { ExHelp, McpList, QuickAdd, Stats, TabsCard, TypesCard, type ExHelpVM, type SI18n, type TabGroup } from "./Settings";
 import type { AgTask, GrDay, I18n, Tip } from "./types";
 import { fmtN, r1 } from "./format";
 
@@ -83,6 +84,12 @@ declare global {
       agPlan: (els: { next: Element; chips: Element; list: Element }, p: AgPlanProps) => void;
       dayView: (el: Element, p: DayViewProps) => void;
       unmount: (el: Element) => void;
+      stats: (el: Element, p: { rows: [string, string | number][]; i18n: SI18n }) => void;
+      tabsCard: (el: Element, p: { groups: TabGroup[]; i18n: SI18n }) => void;
+      typesCard: (el: Element, p: { types: { name: string; c: string; n: number }[]; i18n: SI18n }) => void;
+      mcpList: (el: Element, p: { rows: { hash: string; created: string; used: string }[]; i18n: SI18n }) => void;
+      quickAdd: (el: Element, p: { acts: { k: string; t: string; s: string; icon: string }[]; i18n: SI18n }) => void;
+      exHelp: (el: Element, p: { h: ExHelpVM; i18n: SI18n }) => void;
       nav: (el: Element, p: { items: NavItem[]; cur: string; i18n: NavI18n }) => void;
       appHead: (el: Element, p: { app: string; label: string; gridIcon: string; i18n: NavI18n }) => void;
       side: (el: Element, p: { groups: SideGroup[]; cur: string; icons: SideIcons; i18n: NavI18n }) => void;
@@ -105,7 +112,7 @@ declare global {
   }
 }
 window.SCIslands = {
-  version: 12,
+  version: 13,
   nuCal: (el, p) => mount(el, <NutritionCalendar {...p} />),
   graph,
   pomoStats: (el, p) => mount(el, <PomoStats {...p} />),
@@ -144,6 +151,12 @@ window.SCIslands = {
   nav: (el, p) => mount(el, <NavBar {...p} />),
   appHead: (el, p) => mount(el, <AppHead {...p} />),
   side: (el, p) => mount(el, <SideBar {...p} />),
+  stats: (el, p) => mount(el, <Stats {...p} />),
+  tabsCard: (el, p) => mount(el, <TabsCard {...p} />),
+  typesCard: (el, p) => mount(el, <TypesCard {...p} />),
+  mcpList: (el, p) => mount(el, <McpList {...p} />),
+  quickAdd: (el, p) => mount(el, <QuickAdd {...p} />),
+  exHelp: (el, p) => mount(el, <ExHelp {...p} />),
   nuLog: (el, p) => mount(el, <NuLog {...p} />),
   nuResult: (el, p) => mount(el, <NuResult {...p} />),
   nuWeek: (el, p) => mount(el, <NuWeek {...p} />),

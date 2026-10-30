@@ -20,6 +20,7 @@ Décision de Sid (29 oct. 2026) : passer progressivement à TypeScript + React +
 | v51 | Focus : temps de travail concentré (jour, 7 jours) | `app/src/PomoStats.tsx` |
 | v52 | Graphiques : commentaires du jour et de la semaine, historique des semaines | `app/src/Reviews.tsx` |
 | v52 | Musculation : barre « Mon objectif » · Nutrition : barres des macros | `app/src/Small.tsx` |
+| v59 | Nutrition : copie d'un repas (fenêtre), résumé du profil, objectif de poids | `app/src/NuExtra.tsx` |
 | v58 | Nutrition : menu (repas, quantités, recette, « Autre idée ») · Accueil Sid'compagnon : 3 cartes | `app/src/NuMenu.tsx`, `app/src/Home.tsx` |
 | v57 | Notes : chemin du dossier, dossiers, notes · Documents : classeurs, liste · Mots de passe : liste | `app/src/Notes.tsx`, `app/src/Vault.tsx` |
 | v56 | Nutrition : plats de la journée (vignettes, quantités modifiables), résultat d'une analyse, sport de la semaine | `app/src/Nutrition.tsx` |
@@ -45,6 +46,25 @@ Du plus isolé au plus central, un écran par version, chacun avec son test « m
 5. ~~Agenda~~ (v53–v54) · ~~Tâches~~ (v54).
 6. ~~Notes, Documents, Mots de passe : listes~~ (v57). Revue sécurité faite : affichage seulement, aucune clé ni texte chiffré dans React ; le mot de passe et la note d'une entrée ne sont transmis que si la personne a touché « Afficher » ; au verrouillage, la liste est vidée (avant : elle restait dans la page, cachée). Restent dans app.js : l'éditeur de notes (contenteditable), le lecteur PDF, les claviers de code, le chiffrement.
 7. Enfin la coquille (connexion, synchronisation, navigation) : à ce moment `app.js` disparaît et l'app devient une app Vite complète.
+
+## Où on en est (30 oct. 2026, après la v59)
+
+Tout ce qui s'affiche dans les écrans principaux est dessiné par React : Agenda (mois, année, jour, listes), Tâches, Focus (résumé, durées, frise), Musculation, Nutrition (journée, analyse, sport, menu, profil, copie, calendrier, macros), Graphiques, Notes (liste), Documents (liste), Mots de passe (liste), accueil.
+
+Reste dans `app.js` (la « coquille ») :
+- connexion, inscription, session, mode essai ;
+- synchronisation et fusion à 3 voies (`push`, `pull`, `mergeData`, `merge3`) ;
+- chiffrement et coffre (codes, phrase / mot de passe, Face ID, documents chiffrés) ;
+- éditeur de notes (contenteditable), lecteur-annoteur PDF, scanner ;
+- navigation, fenêtres, Réglages, présentation, traductions, notifications ;
+- tous les gestionnaires de clics des écrans migrés.
+
+### Pourquoi la dernière étape n'a pas été faite seule
+
+Passer la coquille en React/Vite revient à réécrire la synchronisation, la fusion des données et le chiffrement. Une erreur à cet endroit peut effacer ou rendre illisibles les données des comptes (règle de Sid : « Ne casse jamais les données des utilisateurs existants »), et c'est un changement que Sid a demandé de valider avant (« migration de base », « changement de chiffrement »). Proposition, à valider par Sid :
+1. Extraire d'abord, sans rien changer au comportement, la fusion (`mergeData`, `merge3`) et le chiffrement dans des modules TypeScript testés seuls (les tests `merge.test.js` existent déjà), utilisés par app.js.
+2. Puis la navigation et les fenêtres (React Router ou équivalent léger), écran par écran.
+3. En dernier, la connexion et la synchronisation, avec une période de double fonctionnement et une sauvegarde complète avant (copie de `user_data`).
 
 ## Commandes
 

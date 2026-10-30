@@ -1702,6 +1702,42 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await shot(pg,"v58-"+nm+"-menu");
     await pg.evaluate(()=>{show("home");window.scrollTo(0,0)});await shot(pg,"v58-"+nm+"-accueil");
     await ctx.close()}
+  // --- v59 (ticket #3) : Nutrition (copie d'un repas, résumé du profil, objectif de poids) : même rendu, FR et EN
+  for(const [nm,dev,lg] of [["mobile",{...devices["iPhone 13"]},"fr"],["pc",{viewport:{width:1280,height:800}},"en"]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v59 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v59"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    if(lg!=="fr"){await pg.evaluate(l=>setLang(l),lg);await pg.waitForTimeout(2500)}
+    await pg.waitForFunction(()=>!!(window.SCIslands&&window.SCIslands.nuPlan),null,{timeout:8000}).catch(()=>err("module React non chargé"));
+    await pg.evaluate(()=>{window.__par=async(ids,fn)=>{const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.getAttribute("style")?e.style.cssText:"")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+      fn();await new Promise(r=>setTimeout(r,60));const out={},a={},react=ids.every(id=>Object.keys($(id)).some(k=>k.startsWith("__reactContainer")));ids.forEach(id=>a[id]=norm($(id)));
+      const sv=ids.map(id=>{const el=$(id),c=el.cloneNode(false);c.classList.remove("notr");el.id=id+"R";el.after(c);c.id=id;c.innerHTML="";return[el,c,id]});
+      window.__noIslands=true;try{fn()}finally{window.__noIslands=false}await new Promise(r=>setTimeout(r,60));
+      sv.forEach(([el,c,id])=>{const b=norm(c);if(a[id]!==b){const al=a[id].split("\n"),bl=b.split("\n");out[id]=al.length+"/"+bl.length+" "+(al.find((l,i)=>l!==bl[i])||"")+" <> "+(bl.find((l,i)=>l!==al[i])||"")}c.remove();el.id=id});return{react,out}}});
+    const check=async(lbl,ids,fnSrc)=>{const r=await pg.evaluate(([ids,src])=>window.__par(ids,eval(src)),[ids,fnSrc]);
+      if(!r.react)err(lbl+" : pas rendu par React");for(const[id,d]of Object.entries(r.out))err(lbl+" : "+id+" différent : "+d.slice(0,300))};
+    const IDS=["nuGoalCard","nuPlan","nuLog","nuMacros"]; // (pas de sport : #nuWeek reste vide et caché)
+    await pg.evaluate(()=>{data.nutri={consent:new Date().toISOString(),profile:{sex:"h",age:24,height:180,weight:80,target:74,dur:8,durU:"w",pace:"real",goal:"lose",sports:[]},
+      plan:{kcal:1900,p:160,c:180,f:60,bmr:1800,tdee:2300,text:"Ton plan est prêt.",warn:["Bois 2 L d'eau par jour."],wg:{ok:true,wk:-0.75,weeks:8,advice:"Rythme raisonnable."}},upd:Date.now(),
+      log:[{id:"c1",day:iso(today()),at:new Date().toISOString(),grp:"cg",gname:"Salade",name:"Salade",qty:"200 g",kcal:300,p:10,c:20,f:15,upd:1}],weights:[],weeks:[]};data.ui.nuTab="day";nuDay=iso(today());save();show("nutri")});
+    await check("objectif réaliste",IDS,"()=>renderNutri()");
+    await check("objectif pas réaliste, en mois",IDS,"()=>{const n=NU();n.plan.wg={ok:false,wk:-1.5,weeks:12,advice:''};n.profile.durU='m';n.profile.dur=2;n.profile.pace='fast';renderNutri()}");
+    await check("objectif sans délai",IDS,"()=>{const n=NU();n.plan.wg={ok:true,wk:0,weeks:0,advice:''};delete n.profile.dur;delete n.profile.pace;renderNutri()}");
+    await check("sans objectif de poids",IDS,"()=>{const n=NU();delete n.plan.wg;delete n.profile.target;renderNutri()}");
+    // copie d'un repas
+    await pg.evaluate(()=>{nuCopyOpen("cg")});await pg.waitForTimeout(200);
+    await check("copie d'un repas",["nuCopyBody"],"()=>renderNuCopy()");
+    const d1=await pg.evaluate(()=>{const x=today();x.setDate(x.getDate()+1);return iso(x)}),inM=await pg.evaluate(k=>!!document.querySelector(`#nuCopyBody [data-nucpd="${k}"]`),d1);
+    if(!inM)await pg.click('#nuCopyBody [data-nucpn="1"]');
+    await pg.click(`#nuCopyBody [data-nucpd="${d1}"]`);
+    await check("copie, un jour choisi",["nuCopyBody"],"()=>renderNuCopy()");
+    await pg.click("#nuCopyGo");await pg.waitForTimeout(200);
+    if(!(await pg.evaluate(k=>NU().log.some(x=>x.day===k&&x.name==="Salade"),d1)))err("copier un repas ne marche plus");
+    if(lg==="en"&&/Métabolisme|Objectif \(kcal\)|Chemin conseillé/.test(await pg.evaluate(()=>{data.ui.nuTab="profile";show("nutri");return $("nuPlan").textContent})))err("textes non traduits en anglais");
+    await pg.evaluate(()=>{const n=NU();n.profile.target=74;n.profile.dur=8;n.profile.durU="w";n.plan.wg={ok:false,wk:-0.75,weeks:8,advice:"Plus lent."};data.ui.nuTab="profile";save();show("nutri");$("toast").style.display="none";$("nuPlan").scrollIntoView()});
+    await shot(pg,"v59-"+nm+"-profil");
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

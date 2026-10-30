@@ -16,6 +16,7 @@ import { NoteList, NotesPath, type Icons, type NfVM, type NoteVM, type NotesI18n
 import { DocFolders, DocList, PwList, type DocFolderVM, type DocVM, type PwVM, type VI18n } from "./Vault";
 import { NuMenu, type MenuVM } from "./NuMenu";
 import { HomeCards, type HcCard } from "./Home";
+import { GoalBody, NuCopy, NuPlan, type GoalVM, type NuCopyVM, type PlanVM } from "./NuExtra";
 import type { AgTask, GrDay, I18n, Tip } from "./types";
 import { fmtN, r1 } from "./format";
 
@@ -81,6 +82,9 @@ declare global {
       agPlan: (els: { next: Element; chips: Element; list: Element }, p: AgPlanProps) => void;
       dayView: (el: Element, p: DayViewProps) => void;
       unmount: (el: Element) => void;
+      nuCopy: (el: Element, p: { c: NuCopyVM; MOL: string[]; i18n: NuI18n }) => void;
+      nuGoal: (el: Element, p: { g: GoalVM | null; alert: string; i18n: NuI18n }) => void;
+      nuPlan: (el: Element, p: { pl: PlanVM; alert: string; i18n: NuI18n }) => void;
       nuMenu: (el: Element, p: { m: MenuVM | null; mac: Mac[]; icons: { book: string }; i18n: NuI18n }) => void;
       home: (el: Element, p: { cards: HcCard[]; i18n: NuI18n }) => void;
       docs: (els: { folders: Element; list: Element }, p: { folders: DocFolderVM[]; cur: string; icon: string; grip: boolean; empty: string; docs: DocVM[]; i18n: VI18n }) => void;
@@ -97,7 +101,7 @@ declare global {
   }
 }
 window.SCIslands = {
-  version: 10,
+  version: 11,
   nuCal: (el, p) => mount(el, <NutritionCalendar {...p} />),
   graph,
   pomoStats: (el, p) => mount(el, <PomoStats {...p} />),
@@ -130,6 +134,9 @@ window.SCIslands = {
   pwList: (el, p) => mount(el, <PwList {...p} />),
   nuMenu: (el, p) => mount(el, <NuMenu {...p} />),
   home: (el, p) => mount(el, <HomeCards {...p} />),
+  nuCopy: (el, p) => mount(el, <NuCopy {...p} />),
+  nuGoal: (el, p) => mount(el, p.g ? <GoalBody g={p.g} alert={p.alert} i18n={p.i18n} /> : <></>),
+  nuPlan: (el, p) => mount(el, <NuPlan {...p} />),
   nuLog: (el, p) => mount(el, <NuLog {...p} />),
   nuResult: (el, p) => mount(el, <NuResult {...p} />),
   nuWeek: (el, p) => mount(el, <NuWeek {...p} />),

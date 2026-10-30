@@ -103,7 +103,7 @@ async function api(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="58";const errSent=new Set();
+const APP_V="59";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -4248,7 +4248,8 @@ function renderNutri(){try{renderAiCards()}catch(e){}
   $("nuProfSub").textContent=L(has?"Modifie tes infos : tes besoins sont recalculés.":"Présente-toi en quelques infos : on calcule ton métabolisme, tes besoins du jour et tes macros.");
   if(!has||nuEditing){if(!nuDraft)nuFillForm();return}
   const pl=n.plan,list=dayLog(nuDay),s=sumOf(list),tg=dayTarget(nuDay);
-  $("nuGoalCard").innerHTML=nuGoalHtml();$("nuGoalCard").hidden=!pl.wg||(pl.wg.ok&&pl.wgSeen);$("nuGoalCard").classList.toggle("ok",!!(pl.wg&&pl.wg.ok));
+  if(nuIsl("nuGoal")){try{window.SCIslands.nuGoal($("nuGoalCard"),{g:nuGoalVM(true),alert:IC("alert"),i18n:agI18n()})}catch(e){reportErr("island nuGoal: "+(e&&e.message));$("nuGoalCard").innerHTML=nuGoalHtml()}}
+  else $("nuGoalCard").innerHTML=nuGoalHtml();$("nuGoalCard").hidden=!pl.wg||(pl.wg.ok&&pl.wgSeen);$("nuGoalCard").classList.toggle("ok",!!(pl.wg&&pl.wg.ok));
   $("nuDayTxt").textContent=nuDayLabel(nuDay);$("nuDate").value=nuDay;$("nuNext").disabled=nuDay>=iso(today());renderNuCal();
   // v44.4 : le jour du repas se choisit aussi dans « Ajouter ce que tu manges » (jours passés)
   $("nuForTxt").textContent=nuDayLabel(nuDay);$("nuForDate").value=nuDay;$("nuForDate").max=iso(today());$("nuForNext").disabled=nuDay>=iso(today());$("nuFor").classList.toggle("past",nuDay<iso(today()));
@@ -4301,6 +4302,13 @@ function qtyCommit(key){const inp=$("qtyEdIn");if(!inp){qtyEd=null;return}const 
     if(b.dataset.qok){qtyCommit(b.dataset.qok);return}if(qtyEd)qtyCommit(qtyEd);qtyEd=b.dataset.qed;if(id==="nuLog")renderNutri();else{renderNuResult();const i=$("qtyEdIn");if(i){i.focus();i.select()}}},true);
   $(id).addEventListener("keydown",e=>{if(e.target.id==="qtyEdIn"&&e.key==="Enter"){e.preventDefault();qtyCommit(qtyEd)}else if(e.target.id==="qtyEdIn"&&e.key==="Escape"){qtyEd=null;id==="nuLog"?renderNutri():renderNuResult()}})});
 // objectif de poids : chemin conseillé, et alerte si le délai choisi n'est pas réaliste
+// objectif de poids pour React (mêmes textes que nuGoalHtml)
+function nuGoalVM(button){const n=NU(),pl=n.plan,p=n.profile||{},w=pl&&pl.wg;if(!w||!p.target)return null;
+  const unit=p.durU==="m"?(LANG==="en"?(p.dur>1?"months":"month"):LANG==="nl"?(p.dur>1?"maanden":"maand"):"mois"):L(p.dur>1?"semaines":"semaine");
+  const pace=w.wk?`${w.wk>0?"+":""}${String(w.wk).replace(".",LANG==="en"?".":",")} kg ${L("par semaine")}`:"";
+  const PACE={fast:"Drastique",real:"Réaliste",easy:"À mon aise"}[p.pace];
+  return{ok:!!w.ok,head:`${p.weight} → ${p.target} kg${p.dur?` ${L("en")} ${p.dur} ${unit}`:""}`,pace:PACE?`${L("Rythme")} : ${L(PACE)}`:"",real:p.dur?L(w.ok?"Ton délai est réaliste.":"Ce délai n'est pas réaliste, ni bon pour ta santé."):"",
+    advice:w.advice||"",path:pace||w.weeks?` ${pace}${pace&&w.weeks?" · ":""}${w.weeks?`${L("environ")} ${w.weeks} ${L("semaines")}`:""}`:"",button}}
 function nuGoalHtml(){
   const n=NU(),pl=n.plan,p=n.profile||{},w=pl&&pl.wg;if(!w||!p.target)return"";
   const unit=p.durU==="m"?(LANG==="en"?(p.dur>1?"months":"month"):LANG==="nl"?(p.dur>1?"maanden":"maand"):"mois"):L(p.dur>1?"semaines":"semaine");
@@ -4319,6 +4327,8 @@ $("nuGoalCard").addEventListener("click",e=>{const b=e.target.closest("button");
 const boxes=(items)=>`<div class="nu-plan ${items.length===4?"four":""}">${items.map(([v,l,c])=>`<div><b>${v}</b><span>${c?`<span class="mdot" style="--c:var(${c})"></span>`:""}${L(l)}</span></div>`).join("")}</div>`;
 function renderNuPlan(){
   const pl=NU().plan;if(!pl)return;
+  if(nuIsl("nuPlan")){try{window.SCIslands.nuPlan($("nuPlan"),{alert:IC("alert"),i18n:agI18n(),pl:{bmr:pl.bmr,tdee:pl.tdee,kcal:pl.kcal,p:pl.p,c:pl.c,f:pl.f,text:pl.text||"",warn:pl.warn||[],goal:pl.wg?nuGoalVM(false):null}});return}
+    catch(e){reportErr("island nuPlan: "+(e&&e.message))}}
   $("nuPlan").innerHTML=boxes([[pl.bmr,"Métabolisme de base"],[pl.tdee,"Dépense du jour"],[pl.kcal,"Objectif (kcal)"]])+
     boxes([[pl.p+" g","Protéines","--m-p"],[pl.c+" g","Glucides","--m-c"],[pl.f+" g","Lipides","--m-f"]])+
     `${pl.wg?`<div class="card nu-goalcard ${pl.wg.ok?"ok":""}" style="background:var(--bg)">${nuGoalHtml().replace(/<button[^>]*>.*?<\/button>/,"")}</div>`:""}
@@ -4489,6 +4499,9 @@ let nuCp=null;
 function nuCopyOpen(g){const items=NU().log.filter(x=>(x.grp||x.id)===g);if(!items.length)return;const d=parse(items[0].day||nuDay);
   nuCp={g,y:d.getFullYear(),m:d.getMonth(),sel:new Set(),src:items[0].day};$("nuCopyTitle").textContent=`${L("Copier")} « ${items[0].gname||items[0].name} »`;renderNuCopy();$("nuCopySheet").hidden=false}
 function renderNuCopy(){if(!nuCp)return;const tIso=iso(today()),mx=(()=>{const d=today();d.setDate(d.getDate()+14);return iso(d)})(),n=nuCp.sel.size;
+  // v59 (#3) : fenêtre dessinée par React (app/src/NuExtra.tsx)
+  if(nuIsl("nuCopy")){try{window.SCIslands.nuCopy($("nuCopyBody"),{MOL,i18n:agI18n(),c:{y:nuCp.y,m:nuCp.m,sel:[...nuCp.sel],src:nuCp.src,today:tIso,max:mx,nextOff:iso(new Date(nuCp.y,nuCp.m+1,1))>mx,
+    dow:[1,2,3,4,5,6,0].map(i=>String(DOWL[i]||"").slice(0,1).toUpperCase())}});return}catch(e){reportErr("island nuCopy: "+(e&&e.message))}}
   $("nuCopyBody").innerHTML=`<p class="small muted" style="margin:0 0 8px">${L("Touche les jours où tu as mangé (ou mangeras) la même chose.")}</p>
     <div class="cal-head"><button type="button" class="cal-nav" data-nucpn="-1" aria-label="${L("Mois précédent")}">‹</button><b>${MOL[nuCp.m]} ${nuCp.y}</b><button type="button" class="cal-nav" data-nucpn="1" aria-label="${L("Mois suivant")}" ${iso(new Date(nuCp.y,nuCp.m+1,1))>mx?"disabled":""}>›</button></div>
     <div class="cal-grid cal-dow">${dowHead()}</div>
@@ -5083,7 +5096,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v58";
+const BUILD="sidnote-v59";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

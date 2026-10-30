@@ -1655,6 +1655,53 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>{$("toast").style.display="none";show("notes");noteDir="fA";renderNotes();window.scrollTo(0,0)});
     await shot(pg,"v57-"+nm+"-notes");
     await ctx.close()}
+  // --- v58 (ticket #3) : Nutrition (menu) et page d'accueil Sid'compagnon (3 cartes) : même rendu, FR et EN
+  for(const [nm,dev,lg] of [["mobile",{...devices["iPhone 13"]},"fr"],["pc",{viewport:{width:1280,height:800}},"en"]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v58 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v58"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    if(lg!=="fr"){await pg.evaluate(l=>setLang(l),lg);await pg.waitForTimeout(2500)}
+    await pg.waitForFunction(()=>!!(window.SCIslands&&window.SCIslands.nuMenu),null,{timeout:8000}).catch(()=>err("module React non chargé"));
+    await pg.evaluate(()=>{window.__par=async(ids,fn)=>{const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.getAttribute("style")?e.style.cssText:"")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+      fn();await new Promise(r=>setTimeout(r,60));const out={},a={},react=ids.every(id=>Object.keys($(id)).some(k=>k.startsWith("__reactContainer")));ids.forEach(id=>a[id]=norm($(id)));
+      const sv=ids.map(id=>{const el=$(id),c=el.cloneNode(false);c.classList.remove("notr");el.id=id+"R";el.after(c);c.id=id;c.innerHTML="";return[el,c,id]});
+      window.__noIslands=true;try{fn()}finally{window.__noIslands=false}await new Promise(r=>setTimeout(r,60));
+      sv.forEach(([el,c,id])=>{const b=norm(c);if(a[id]!==b){const al=a[id].split("\n"),bl=b.split("\n");out[id]=al.length+"/"+bl.length+" "+(al.find((l,i)=>l!==bl[i])||"")+" <> "+(bl.find((l,i)=>l!==al[i])||"")}c.remove();el.id=id});return{react,out}}});
+    const check=async(lbl,ids,fnSrc)=>{const r=await pg.evaluate(([ids,src])=>window.__par(ids,eval(src)),[ids,fnSrc]);
+      if(!r.react)err(lbl+" : pas rendu par React");for(const[id,d]of Object.entries(r.out))err(lbl+" : "+id+" différent : "+d.slice(0,300))};
+    // accueil : avec et sans données
+    await pg.evaluate(()=>{show("home")});
+    await check("accueil vide",["homeBody"],"()=>renderHome()");
+    await pg.evaluate(()=>{const d=new Date();d.setHours(d.getHours()+2);data.tasks=[{id:"h1",title:"Dentiste <3>",date:iso(d),time:`${String(d.getHours()).padStart(2,"0")}:00`,status:"à faire"}];
+      data.todos=[{id:"ht",title:"x",createdAt:new Date().toISOString(),done:false,day:iso(today())}];data.notes=[{id:"hn",title:"Ma note",body:"",createdAt:new Date().toISOString(),upd:Date.now()}];
+      data.nutri={consent:new Date().toISOString(),profile:{sex:"h",age:24,height:180,weight:80,goal:"maintain",sports:[]},plan:{kcal:2000,p:150,c:200,f:70,bmr:1800,tdee:2000,text:"",warn:[]},upd:Date.now(),log:[{id:"x1",day:iso(today()),at:new Date().toISOString(),name:"Riz",kcal:450,p:9,c:90,f:2,upd:1}],weights:[],weeks:[]};save()});
+    await check("accueil rempli",["homeBody"],"()=>renderHome()");
+    await pg.click('#homeBody [data-gapp]');await pg.waitForTimeout(400);if(await pg.evaluate(()=>data.ui.view)==="home")err("toucher une carte de l'accueil n'ouvre plus l'app");
+    // menu
+    await pg.evaluate(()=>{const n=NU();n.menu=null;data.ui.nuTab="menu";save();show("nutri")});
+    await check("menu vide",["nuMenu"],"()=>{meEdit=null;meAdd=null;meRecipe=null;renderNuMenu()}");
+    await pg.evaluate(()=>{NU().menu={at:new Date().toISOString(),tips:"Bois de l'eau.",meals:[{slot:"breakfast",target:500,name:"Porridge",em:"🥣",items:[{name:"Flocons d'avoine",g:60,qty:"60 g",kcal:230,p:8,c:40,f:4},{name:"Huile d'olive",g:10,qty:"10 g",kcal:90,p:0,c:0,f:10},{name:"Pomme",qty:"1",kcal:80,p:0,c:20,f:0}]},
+      {slot:"lunch",target:700,name:"Riz poulet",items:[{name:"Riz cru",g:80,qty:"80 g",kcal:280,p:6,c:62,f:1}],steps:["Cuire le riz.","Griller le poulet."],ate:iso(today())}]};save()});
+    await check("menu",["nuMenu"],"()=>{meEdit=null;meAdd=null;meRecipe=null;renderNuMenu()}");
+    await check("menu, quantité ouverte",["nuMenu"],"()=>{meEdit='0:0';renderNuMenu()}");
+    await check("menu, ajout ouvert",["nuMenu"],"()=>{meEdit=null;meAdd=1;renderNuMenu()}");
+    await check("menu, recette",["nuMenu"],"()=>{meAdd=null;meRecipe=1;renderNuMenu()}");
+    await check("menu, recette en préparation",["nuMenu"],"()=>{meRecipe=0;nuBusy='recipe';renderNuMenu();nuBusy=''}");
+    await pg.evaluate(()=>{meRecipe=null;meEdit=null;meAdd=null;renderNuMenu();$("nuMenu").scrollIntoView()});
+    // quantité modifiée dans le menu : calories recalculées
+    await pg.click('#nuMenu [data-meq="0:0"]');await pg.fill("#meQtyIn","120");await pg.press("#meQtyIn","Enter");
+    if(await pg.evaluate(()=>NU().menu.meals[0].items[0].kcal)!==460)err("menu : quantité pas recalculée");
+    await pg.click('#nuMenu [data-merec="1"]');if(!(await pg.evaluate(()=>!!document.querySelector("#nuMenu .recipe ol li"))))err("menu : recette pas affichée");
+    // chargement d'un menu (ancien code) puis retour au rendu React
+    await pg.evaluate(()=>{nuMenuFree();nuBusy="menu";const stop=nuLoading($("nuMenu"),["Préparation du menu…"]);stop();nuBusy="";renderNuMenu()});
+    if(!(await pg.evaluate(()=>!!document.querySelector("#nuMenu .dish")&&Object.keys($("nuMenu")).some(k=>k.startsWith("__reactContainer")))))err("menu après chargement absent");
+    await pg.click('#nuMenu [data-numeal="0"]');await pg.waitForTimeout(200);if(!(await pg.evaluate(()=>NU().log.some(x=>x.name==="Flocons d'avoine"))))err("menu : ajouter à ma journée ne marche plus");
+    if(lg==="en"&&/Ton menu|Autre idée|Recette|Dans ta journée/.test(await pg.evaluate(()=>{data.ui.nuTab="menu";show("nutri");return $("nuMenu").textContent})))err("textes non traduits en anglais");
+    await pg.evaluate(()=>{$("toast").style.display="none";data.ui.nuTab="menu";show("nutri");$("nuMenu").scrollIntoView()});
+    await shot(pg,"v58-"+nm+"-menu");
+    await pg.evaluate(()=>{show("home");window.scrollTo(0,0)});await shot(pg,"v58-"+nm+"-accueil");
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

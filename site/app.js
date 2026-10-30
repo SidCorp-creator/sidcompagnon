@@ -108,7 +108,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="67";const errSent=new Set();
+const APP_V="68";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -1943,6 +1943,10 @@ async function renderNotif(){
 }
 function renderLeads(){
   const cur=notifLeads(),on=nfState.kind==="on",ical=notifIcal(),all=[...new Set([...LEADS.map(x=>x[0]),...cur])].sort((a,b)=>a-b);
+  if(shIsl("notifBox")){try{const p={kind:nfState.kind,msg:nfState.msg||"",leads:all.map(m=>({m,lbl:leadLbl(m),on:cur.includes(m)})),custom:nfCustom,cals:!!CALS().length,ical:!!ical,i18n:agI18n()}; // v68 (#3)
+    document.querySelectorAll(".notif-box").forEach(b=>{window.SCIslands.notifBox(b,p);const c=b.querySelector('[data-nf="ical"]');if(c&&c.checked!==!!ical)c.checked=!!ical});
+    renderRem("f");if(!$("sheet").hidden&&editing&&editing.kind==="task")renderRem("e");return}
+    catch(e){reportErr("island notifBox: "+(e&&e.message));document.querySelectorAll(".notif-box").forEach(b=>{try{window.SCIslands.unmount(b)}catch(_){}})}}
   const html=`<div class="card">
       <div class="row"><div class="grow">${L("Sois prévenu avant chaque activité du planning.")}<div class="small muted">${nfState.kind==="na"?L(nfState.msg):on?`<span class="syncdot"></span>${L("Activés sur cet appareil")}`:L("Désactivés sur cet appareil.")}</div></div></div>
       ${nfState.kind==="na"?"":`<div class="row" style="gap:8px"><button type="button" class="btn ${on?"ghost":""}" data-nf="toggle" style="flex:1">${L(on?"Désactiver":"Activer les notifications")}</button>${on?`<button type="button" class="btn ghost" data-nf="test">${L("Tester")}</button>`:""}</div>`}
@@ -2010,6 +2014,8 @@ const remSel={f:null,e:null},remCustom={f:false,e:false};
 const remOf=t=>[...new Set([...(t&&t.remind!==false&&Array.isArray(t.leads)&&t.leads.length?t.leads:t&&t.remind===false?[]:notifLeads()),1440])].sort((a,b)=>a-b);
 function renderRem(k){const box=$(k==="f"?"fRem":"eRem");if(!box)return;if(!remSel[k])remSel[k]=notifLeads().slice();
   const sel=remSel[k],on=nfState.kind==="on",all=[...new Set([...LEADS.map(x=>x[0]),...sel])].sort((a,b)=>a-b);
+  if(shIsl("remBox")){try{window.SCIslands.remBox(box,{kind:nfState.kind,msg:nfState.msg||"",leads:all.map(m=>({m,lbl:leadLbl(m),on:sel.includes(m)})),custom:!!remCustom[k],bell:IC("bell"),i18n:agI18n()});return}
+    catch(e){reportErr("island remBox: "+(e&&e.message));try{window.SCIslands.unmount(box)}catch(_){}}}
   box.innerHTML=`<div class="rem-h">${IC("bell")} ${L("Me prévenir")}</div>
     <div class="rem-chips">${all.map(m=>m===1440?`<span class="pill lock" aria-pressed="true">${leadLbl(m)} · ${L("toujours")}</span>`:`<button type="button" class="pill" data-rl="${m}" aria-pressed="${sel.includes(m)}">${leadLbl(m)}</button>`).join("")}<button type="button" class="pill add" data-rcustom="1">+ ${L("Autre")}</button></div>
     ${remCustom[k]?`<div class="notif-lead-custom"><input type="text" inputmode="numeric" maxlength="3" data-rn placeholder="15" aria-label="${L("Durée")}" autocomplete="off"><select class="sel" data-ru aria-label="${L("Unité")}"><option value="1">${L("minutes")}</option><option value="60" selected>${L("heures")}</option><option value="1440">${L("jours")}</option></select><span class="small muted">${L("avant")}</span><button type="button" class="btn" data-rok="1" style="padding:8px 14px">OK</button></div>`:""}
@@ -2872,6 +2878,7 @@ function makePDF(pages){
   return new Blob(parts,{type:"application/pdf"});
 }
 function renderScan(){
+  if(shIsl("scanPages")){try{window.SCIslands.scanPages($("scanPages"),{pages:scanPages.map(p=>p.out.url),i18n:agI18n()})}catch(e){reportErr("island scanPages: "+(e&&e.message))}}else
   $("scanPages").innerHTML=scanPages.map((p,i)=>`<div class="pg"><img src="${p.out.url}" alt="Page ${i+1}"><button class="rot" data-scrot="${i}" aria-label="Pivoter">↻</button><button class="rm" data-scrm="${i}" aria-label="Retirer">×</button><span>${i+1}</span></div>`).join("");
   document.querySelectorAll("#scanFilter button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.flt===scanFlt));
   $("scanSave").disabled=!scanPages.length;
@@ -3459,6 +3466,13 @@ let aiW={step:"pick",url:"",hash:"",poll:null};
 function aiWizard(step){if(data.prefs.ai!=="claude"){data.prefs.ai="claude";delete data.prefs.aiOk;save()}aiW={step:step==="setup"?"setup":data.prefs.aiOk?"test":"setup",url:"",hash:"",poll:null};$("aiSheet").hidden=false;aiRender()}
 function aiStop(){if(aiW.poll){clearInterval(aiW.poll);aiW.poll=null}}
 function aiRender(){const b=$("aiBody"),ai=aiCur()||AIS.claude;aiStop();
+  if(shIsl("aiWizard")&&["none","setup","test"].includes(aiW.step)){try{const ok=!!data.prefs.aiOk&&!aiW.hash; // v68 (#3)
+    $("aiTitle").textContent=aiW.step==="none"?L("Créer un compte Claude"):ai.name;
+    window.SCIslands.aiWizard(b,{w:{step:aiW.step,name:ai.name,url:aiW.url||"",urlErr:aiW.err||"",add:aiW.url?ai.add(aiW.url):"",ok,test:AI_TEST(),testHref:ai.ask(AI_TEST()),habit:AI_HABIT(),habitHref:ai.ask(AI_HABIT())},i18n:agI18n()});
+    if(aiW.step==="setup"&&!aiW.url&&!aiW.busy){aiW.busy=true;mcpCreate(ai.name).then(r=>{aiW.busy=false;aiW.url=r.url;aiW.hash=r.hash;aiW.err="";mcpLoad();if(aiW.step==="setup")aiRender()})
+      .catch(ex=>{aiW.busy=false;aiW.err=ex instanceof TypeError?"Pas de connexion internet":"Création impossible pour l'instant";if(aiW.step==="setup")aiRender();toast(aiW.err)})}
+    if(aiW.step==="test"&&!ok)aiW.poll=setInterval(aiCheck,3000);return}
+    catch(e){reportErr("island aiWizard: "+(e&&e.message));try{window.SCIslands.unmount(b)}catch(_){}}}
   if(aiW.step==="none"){$("aiTitle").textContent=L("Créer un compte Claude");
     b.innerHTML=`<p>${L("Crée un compte Claude gratuit (e-mail ou Google), puis reviens ici pour continuer.")}</p>
       <div class="ai-acts"><a class="btn" href="https://claude.ai/login" target="_blank" rel="noopener">${L("Créer mon compte Claude")}</a><button type="button" class="btn ghost" data-aistep="setup">${L("C'est fait, continuer")}</button></div>`;return}
@@ -3540,6 +3554,10 @@ async function aaImgPrep(dataUrl){aaImg={url:dataUrl,file:null,png:null};
   const sh=$("aaShare");if(sh)sh.hidden=!can;const cp=$("aaImgCopy");if(cp)cp.hidden=can||!(aaImg.png&&window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write)}
 function aiHandoff(prompt,topic,opt){const ai=aiCur()||AIS.claude,cv=topic&&convUrl(topic),img=opt&&opt.img;$("aaPrompt").textContent=prompt;aaImg=null;
   $("aaActs").dataset.topic=topic||"";
+  if(shIsl("aaActs")){try{const proj=!!cv&&convKind(topic)==="proj"; // v68 (#3)
+    window.SCIslands.aaActs($("aaActs"),{a:{wiz:!(ai&&data.prefs.aiOk),img:img||"",conv:!!cv,proj,convName:CONV_NAME[topic]||"",ask:ai&&!cv&&!img?ai.ask(convFirst(topic,prompt)):"",askOk:!!data.prefs.aiOk,name:ai?ai.name:"",
+      form:!!(CONV_TITLE[topic]&&!cv&&!img&&ai&&data.prefs.aiOk),topic:topic||""},i18n:agI18n()});const ci=$("aaConvIn");if(ci&&document.activeElement!==ci)ci.value="";
+    $("aiAskSheet").hidden=false;if(img)aaImgPrep(img);return}catch(e){reportErr("island aaActs: "+(e&&e.message));try{window.SCIslands.unmount($("aaActs"))}catch(_){}}}
   $("aaActs").innerHTML=(ai&&data.prefs.aiOk?"":`<button type="button" class="btn" data-aiwiz="1">${L("Brancher Claude")}</button>`)+
     (img?`<div class="aa-img"><img src="${img}" alt="${L("Photo de ton plat")}"><span class="small muted">${L("La photo part avec le message : choisis Claude dans la liste de partage.")}</span></div>
       <button type="button" class="btn" id="aaShare">${L("Envoyer la photo à Claude")}</button>
@@ -4441,10 +4459,14 @@ const nuPhotoDrop=ph=>{if(ph&&ph.up)ph.up.then(p=>stor("DELETE",p)).catch(()=>{}
 function nuAskLbl(){$("nuAskBtn").textContent=L(nuPhoto&&nuDirect()?"Envoyer à Claude":"Analyser")}
 $("nuPhoto").addEventListener("change",async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
   try{nuPhoto={big:await shrink(f,1280,.8),small:await shrink(f,240,.7)};
-    $("nuPhotoPrev").hidden=false;$("nuPhotoPrev").innerHTML=`<img src="${nuPhoto.small}" alt="${L("Photo du plat")}"><button type="button" aria-label="${L("Retirer la photo")}" data-nuphrm="1">×</button>`;
+    nuPhotoPrevSet(nuPhoto.small);
     if(nuDirect()){if(await nuConsent())nuPhotoUp()}nuAskLbl()}
   catch(ex){toast("Photo illisible")}});
-$("nuPhotoPrev").addEventListener("click",e=>{if(e.target.closest("[data-nuphrm]")){nuPhotoDrop(nuPhoto);nuPhoto=null;$("nuPhotoPrev").hidden=true;$("nuPhotoPrev").innerHTML="";nuAskLbl()}});
+// v68 (#3) : vignette de la photo du plat (React, ancien rendu en secours)
+function nuPhotoPrevSet(src){const el=$("nuPhotoPrev");el.hidden=!src;
+  if(shIsl("nuPhotoPrev")){try{window.SCIslands.nuPhotoPrev(el,{src:src||"",i18n:agI18n()});return}catch(e){reportErr("island nuPhotoPrev: "+(e&&e.message));try{window.SCIslands.unmount(el)}catch(_){}}}
+  el.innerHTML=src?`<img src="${src}" alt="${L("Photo du plat")}"><button type="button" aria-label="${L("Retirer la photo")}" data-nuphrm="1">×</button>`:""}
+$("nuPhotoPrev").addEventListener("click",e=>{if(e.target.closest("[data-nuphrm]")){nuPhotoDrop(nuPhoto);nuPhoto=null;nuPhotoPrevSet(null);nuAskLbl()}});
 // envoi direct : Claude s'ouvre avec le message ; la fenêtre est ouverte pendant le toucher (sinon le navigateur la bloque)
 // Sur iPhone (app installée), un lien vers Claude ouvre une petite fenêtre de navigateur qui passe la main à l'app Claude,
 // puis reste vide derrière : on la garde sous la main et on la ferme dès que la personne revient dans Sid'compagnon
@@ -4469,7 +4491,7 @@ function nuPhotoSend(q){const ph=nuPhoto;
   const msg=T3(`Avec Sid'note : lis ma journée nutrition (nutrition_journee) : la photo de mon assiette que je viens d'envoyer y est jointe. Estime ce que j'ai mangé, puis note-le avec noter_repas.${q?` Précision : ${q}`:""}${nuDayNote()}`,
     `With Sid'note: read my nutrition day (nutrition_journee): the photo of my plate I just sent is attached to it. Estimate what I ate, then log it with noter_repas.${q?` Note: ${q}`:""}${nuDayNote()}`,
     `Met Sid'note: lees mijn voedingsdag (nutrition_journee): de foto van mijn bord die ik net stuurde zit erbij. Schat wat ik gegeten heb en noteer het met noter_repas.${q?` Toelichting: ${q}`:""}${nuDayNote()}`);
-  const clear=()=>{nuPhoto=null;$("nuPhotoPrev").hidden=true;$("nuPhotoPrev").innerHTML="";$("nuAsk").value="";grow($("nuAsk"));nuAskLbl()};
+  const clear=()=>{nuPhoto=null;nuPhotoPrevSet(null);$("nuAsk").value="";grow($("nuAsk"));nuAskLbl()};
   // Claude s'ouvre tout de suite, pendant le toucher (une fenêtre vide remplie plus tard reste blanche dans l'app installée sur iPhone) ;
   // la photo finit de partir pendant que Claude s'ouvre (elle est en général déjà déposée depuis la prise de vue)
   // v44 : dans la conversation Nutrition si elle est réglée (le message est copié : il suffit de coller), sinon une nouvelle conversation
@@ -4492,7 +4514,7 @@ $("nuAskForm").addEventListener("submit",async e=>{
       items:(r.items||[]).map(x=>({name:String(x.name||q),qty:String(x.quantity||""),em:String(x.emoji||""),kcal:r0(x.kcal),p:r1(x.protein_g),c:r1(x.carbs_g),f:r1(x.fat_g)}))};
     if(!photo&&nuPending.items.length>1)nuPending.items.forEach(x=>x.extra=!mentioned(q,x.name));
     if(!nuPending.items.length){nuPending=null;toast("Aliment non reconnu, précise un peu")}
-  }catch(ex){toast(nuErrMsg(ex));if(ex.ai){nuPhoto=null;$("nuPhotoPrev").hidden=true;$("nuPhotoPrev").innerHTML="";$("nuAsk").value="";grow($("nuAsk"))}} // v43 : demande partie chez Claude → rien ne reste pré-rempli
+  }catch(ex){toast(nuErrMsg(ex));if(ex.ai){nuPhoto=null;nuPhotoPrevSet(null);$("nuAsk").value="";grow($("nuAsk"))}} // v43 : demande partie chez Claude → rien ne reste pré-rempli
   stop();nuBusy="";btn.disabled=false;renderNuResult();
 });
 // plats du jour pour React (même regroupement que renderNutri)
@@ -4519,7 +4541,7 @@ $("nuResult").addEventListener("click",async e=>{const b=e.target.closest("butto
   else if(b.dataset.nucancel){nuPending=null;renderNuResult()}
   else if(b.dataset.nuadd){const p=nuPending,g=nuAddItems(p.items,null,{name:p.title,em:p.em});
     if(p.photo){try{await idb.put(thumbKey(g),p.photo);thumbs.set(g,p.photo)}catch(x){}}
-    nuPending=null;nuPhoto=null;$("nuPhotoPrev").hidden=true;$("nuPhotoPrev").innerHTML="";$("nuAsk").value="";grow($("nuAsk"));renderNutri();toast(nuDay===iso(today())?"Ajouté à ta journée":"Ajouté à ce jour")}
+    nuPending=null;nuPhoto=null;nuPhotoPrevSet(null);$("nuAsk").value="";grow($("nuAsk"));renderNutri();toast(nuDay===iso(today())?"Ajouté à ta journée":"Ajouté à ce jour")}
 });
 function nuAddItems(items,time,meta){const at=nuAt(time),grp=uid();
   items.forEach(x=>NU().log.push({id:uid(),day:nuDay,at,grp,gname:meta&&meta.name||"",gem:meta&&meta.em||"",name:x.name,qty:x.qty||"",em:x.em||"",kcal:r0(x.kcal),p:r1(x.p),c:r1(x.c),f:r1(x.f),upd:Date.now()}));
@@ -5201,7 +5223,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v67";
+const BUILD="sidnote-v68";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

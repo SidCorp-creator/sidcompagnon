@@ -24,6 +24,8 @@ import { AuthFeats, FolderBar, NsBar, NuKcalOf, NuMealKcal, NuMkTot, NuSlots, Nu
 import { NotePhotos, PvOpts, PvOverlay, RtMenu, type PI18n, type PvAnn } from "./PdfView";
 import { ActList, AiState, BkList, NuAiCard, TypeChips, CalLegend, CalList, HomeSync, LegalBody, SyncState, type CalVM, type WI18n } from "./Sheets";
 import { CfRes, CfSel, CoachCard, type CI18n, type CoachVM } from "./Coach";
+import { NotifBox, RemBox, type Lead, type NI18n } from "./Notif";
+import { AaActs, AiWizard, NuPhotoPrev, ScanPages, type AaVM, type AI18n, type AiVM } from "./AiWizard";
 import type { AgTask, GrDay, I18n, Tip } from "./types";
 import { fmtN, r1 } from "./format";
 
@@ -112,6 +114,12 @@ declare global {
       coach: (el: Element, p: { c: CoachVM | null; more: string; i18n: CI18n }) => void;
       cfSel: (el: Element, p: { names: string[]; i18n: CI18n }) => void;
       cfRes: (el: Element, p: { q: boolean; hits: { n: string; grp: string; p: boolean }[]; i18n: CI18n }) => void;
+      notifBox: (el: Element, p: { kind: "na" | "on" | "off"; msg: string; leads: Lead[]; custom: boolean; cals: boolean; ical: boolean; i18n: NI18n }) => void;
+      remBox: (el: Element, p: { kind: "na" | "on" | "off"; msg: string; leads: Lead[]; custom: boolean; bell: string; i18n: NI18n }) => void;
+      aiWizard: (el: Element, p: { w: AiVM; i18n: AI18n }) => void;
+      aaActs: (el: Element, p: { a: AaVM; i18n: AI18n }) => void;
+      nuPhotoPrev: (el: Element, p: { src: string; i18n: AI18n }) => void;
+      scanPages: (el: Element, p: { pages: string[]; i18n: AI18n }) => void;
       legalBody: (el: Element, p: { parts: [string, string][]; page: string; i18n: WI18n }) => void;
       pvOpts: (el: Element, p: { cols: string[]; cur: string; size: number; dot: React.CSSProperties; i18n: PI18n }) => void;
       onbGroups: (el: Element, p: { groups: OnbGroup[]; i18n: OI18n }) => void;
@@ -146,7 +154,7 @@ declare global {
   }
 }
 window.SCIslands = {
-  version: 18,
+  version: 19,
   nuCal: (el, p) => mount(el, <NutritionCalendar {...p} />),
   graph,
   pomoStats: (el, p) => mount(el, <PomoStats {...p} />),
@@ -213,6 +221,12 @@ window.SCIslands = {
   calLegend: (el, p) => mount(el, <CalLegend {...p} />),
   bkList: (el, p) => mount(el, <BkList {...p} />),
   legalBody: (el, p) => mount(el, <LegalBody {...p} />),
+  aaActs: (el, p) => mount(el, <AaActs {...p} />),
+  nuPhotoPrev: (el, p) => mount(el, <NuPhotoPrev {...p} />),
+  scanPages: (el, p) => mount(el, <ScanPages {...p} />),
+  aiWizard: (el, p) => mount(el, <AiWizard {...p} />),
+  notifBox: (el, p) => mount(el, <NotifBox {...p} />),
+  remBox: (el, p) => mount(el, <RemBox {...p} />),
   coach: (el, p) => mount(el, <CoachCard {...p} />),
   cfSel: (el, p) => mount(el, <CfSel {...p} />),
   cfRes: (el, p) => mount(el, <CfRes {...p} />),

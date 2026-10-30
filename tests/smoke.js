@@ -2124,6 +2124,54 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await shot(pg,"v67-"+nm+"-recherche");
     await pg.evaluate(()=>{["cfMustT","cfSelT","cfResT"].forEach(id=>$(id).removeAttribute("id"));$("coachSheet").hidden=true});
     await ctx.close()}
+  // --- v68 (ticket #3) : notifications et rappels, assistant Claude, fenêtre « Envoyer à Claude », photo du plat, pages du scanner
+  for(const [nm,dev,lg] of [["mobile",{...devices["iPhone 13"]},"fr"],["pc",{viewport:{width:1280,height:800}},"en"]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v68 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    if(lg!=="fr")await ctx.addInitScript(()=>{try{localStorage.setItem("sidnote-lang",JSON.stringify("en"))}catch(e){}});
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v68"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.waitForFunction(()=>!!(window.SCIslands&&window.SCIslands.aiWizard),null,{timeout:8000}).catch(()=>err("module React non chargé"));
+    await pg.evaluate(()=>{window.__par=async(ids,fn,ms=300)=>{const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.getAttribute("style")?e.style.cssText:"")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+      fn();if(ms)await new Promise(r=>setTimeout(r,ms));const out={},a={},react=ids.every(id=>Object.keys($(id)).some(k=>k.startsWith("__reactContainer")));ids.forEach(id=>a[id]=norm($(id)));
+      const sv=ids.map(id=>{const el=$(id),c=el.cloneNode(false);c.classList.remove("notr");el.id=id+"R";el.after(c);c.id=id;c.innerHTML="";return[el,c,id]});
+      window.__noIslands=true;try{fn()}finally{window.__noIslands=false}if(ms)await new Promise(r=>setTimeout(r,ms));
+      sv.forEach(([el,c,id])=>{const b=norm(c);if(a[id]!==b){const al=a[id].split("\n"),bl=b.split("\n");out[id]=al.length+"/"+bl.length+" "+(al.find((l,i)=>l!==bl[i])||"")+" <> "+(bl.find((l,i)=>l!==al[i])||"")}c.remove();el.id=id});return{react,out}}});
+    const check=async(lbl,ids,fnSrc,ms)=>{const r=await pg.evaluate(([ids,src,ms])=>window.__par(ids,eval(src),ms),[ids,fnSrc,ms]);
+      if(!r.react)err(lbl+" : pas rendu par React");for(const[id,d]of Object.entries(r.out))err(lbl+" : "+id+" différent : "+d.slice(0,300))};
+    // notifications (Réglages) et « Me prévenir » de la fiche d'activité
+    await pg.evaluate(()=>{document.querySelectorAll(".notif-box")[1].id="nfBoxT"});
+    await check("notifications désactivées",["nfBoxT"],"()=>{nfState={kind:'off',msg:''};nfCustom=false;renderLeads()}",0);
+    await check("notifications activées, autre délai",["nfBoxT"],"()=>{nfState={kind:'on'};nfCustom=true;data.prefs.icals=[{id:'c1',name:'T',url:'https://x/t.ics',on:true,upd:1}];renderLeads()}",0);
+    await check("notifications impossibles",["nfBoxT"],"()=>{nfState={kind:'na',msg:'Ce navigateur ne gère pas les notifications.'};nfCustom=false;renderLeads()}",0);
+    const nf=await pg.evaluate(()=>{nfState={kind:"on"};nfCustom=true;renderLeads();const b=$("nfBoxT"),f=b.querySelector('[data-nf="customf"]');f.elements.n.value="3";f.elements.u.value="60";f.requestSubmit();return{leads:notifLeads(),sel:b.querySelector("select")?b.querySelector("select").value:"-"}});
+    if(!nf.leads.includes(180))err("autre délai pas ajouté : "+JSON.stringify(nf));
+    await pg.evaluate(()=>{show("plan");openTaskSheet(iso(today()))});
+    await check("me prévenir",["fRem"],"()=>{nfState={kind:'on'};remCustom.f=false;remSel.f=[60,1440];renderRem('f')}",0);
+    await check("me prévenir, autre",["fRem"],"()=>{nfState={kind:'off',msg:''};remCustom.f=true;renderRem('f')}",0);
+    const rm=await pg.evaluate(()=>{remCustom.f=false;renderRem("f");document.querySelector('#fRem [data-rl="30"]').click();return{sel:remSel.f,on:document.querySelector('#fRem [data-rl="30"]').getAttribute("aria-pressed")}});
+    if(!rm.sel.includes(30)||rm.on!=="true")err("me prévenir : "+JSON.stringify(rm));
+    await pg.evaluate(()=>{document.querySelector("#taskSheet .x").click();$("nfBoxT").removeAttribute("id")});
+    // assistant « Brancher Claude » : les trois étapes (adresse déjà créée pour ne pas appeler le serveur)
+    await pg.evaluate(()=>{data.prefs.ai="claude";data.prefs.aiOk=false;$("aiSheet").hidden=false});
+    await check("assistant : compte",["aiBody"],"()=>{aiW={step:'none',url:'',hash:'',poll:null};aiRender()}",0);
+    await check("assistant : étapes",["aiBody"],"()=>{aiW={step:'setup',url:'https://sidcompagnon.com/mcp/abc',hash:'h',poll:null};aiRender()}",0);
+    await check("assistant : test",["aiBody"],"()=>{aiW={step:'test',url:'u',hash:'h',poll:null};aiRender();aiStop()}",0);
+    await check("assistant : branché",["aiBody"],"()=>{data.prefs.aiOk=new Date().toISOString();aiW={step:'test',url:'',hash:'',poll:null};aiRender()}",0);
+    await pg.evaluate(()=>{aiStop();$("aiSheet").hidden=true});
+    // fenêtre « Envoyer à Claude »
+    await check("envoyer : pas branché",["aaActs"],"()=>{data.prefs.aiOk=false;aiHandoff('Bonjour','nutri')}",0);
+    await check("envoyer : branché, formulaire",["aaActs"],"()=>{data.prefs.aiOk=new Date().toISOString();data.prefs.aiConv={};aiHandoff('Bonjour','agenda')}",0);
+    await check("envoyer : conversation réglée",["aaActs"],"()=>{data.prefs.aiConv={note:'https://claude.ai/chat/abc'};aiHandoff('Bonjour','note')}",0);
+    await check("envoyer : photo",["aaActs"],"()=>{aiHandoff('Bonjour','nutri',{img:'IMG'})}".replace("IMG","data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="),0);
+    await shot(pg,"v68-"+nm+"-envoyer");await pg.evaluate(()=>{$("aiAskSheet").hidden=true});
+    // photo du plat et pages du scanner
+    await pg.evaluate(()=>{show("nutri")});
+    await check("photo du plat",["nuPhotoPrev"],"()=>nuPhotoPrevSet('IMG')".replace("IMG","data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="),0);
+    await check("sans photo",["nuPhotoPrev"],"()=>nuPhotoPrevSet(null)",0);
+    await check("pages du scanner",["scanPages"],"()=>{scanPages=[{out:{url:'IMG'}},{out:{url:'IMG'}}];renderScan()}".replace(/IMG/g,"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="));
+    await pg.evaluate(()=>{scanPages=[];renderScan()});
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

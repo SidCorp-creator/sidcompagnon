@@ -2208,6 +2208,30 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(!sp.f||!sp.same||!sp.gone)err("Spotify : "+JSON.stringify(sp));
     await check("installation",["appStatus"],"()=>renderApp()");
     await ctx.close()}
+  // --- v70 : confirmation en deux appuis sur des boutons dessinés par React
+  for(const [nm,dev,lg] of [["mobile",{...devices["iPhone 13"]},"fr"],["pc",{viewport:{width:1280,height:800}},"en"]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v70 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    if(lg!=="fr")await ctx.addInitScript(()=>{try{localStorage.setItem("sidnote-lang",JSON.stringify("en"))}catch(e){}});
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v70"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.waitForFunction(()=>!!(window.SCIslands&&window.SCIslands.actList),null,{timeout:8000}).catch(()=>err("module React non chargé"));
+    await pg.evaluate(()=>{window.__par=async(ids,fn,ms=300)=>{const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.getAttribute("style")?e.style.cssText:"")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+      fn();if(ms)await new Promise(r=>setTimeout(r,ms));const out={},a={},react=ids.every(id=>Object.keys($(id)).some(k=>k.startsWith("__reactContainer")));ids.forEach(id=>a[id]=norm($(id)));
+      const sv=ids.map(id=>{const el=$(id),c=el.cloneNode(false);c.classList.remove("notr");el.id=id+"R";el.after(c);c.id=id;c.innerHTML="";return[el,c,id]});
+      window.__noIslands=true;try{fn()}finally{window.__noIslands=false}if(ms)await new Promise(r=>setTimeout(r,ms));
+      sv.forEach(([el,c,id])=>{const b=norm(c);if(a[id]!==b){const al=a[id].split("\n"),bl=b.split("\n");out[id]=al.length+"/"+bl.length+" "+(al.find((l,i)=>l!==bl[i])||"")+" <> "+(bl.find((l,i)=>l!==al[i])||"")}c.remove();el.id=id});return{react,out}}});
+    const check=async(lbl,ids,fnSrc,ms)=>{const r=await pg.evaluate(([ids,src,ms])=>window.__par(ids,eval(src),ms),[ids,fnSrc,ms]);
+      if(!r.react)err(lbl+" : pas rendu par React");for(const[id,d]of Object.entries(r.out))err(lbl+" : "+id+" différent : "+d.slice(0,300))};
+    const c2=await pg.evaluate(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));let hit=0;
+      openActions("A",[{l:"Modifier",fn:()=>{}},{l:"Supprimer",danger:true,fn:()=>{hit++}}]);const b=document.querySelector('#actList [data-act="1"]');b.click();
+      const armed=b.classList.contains("armed")&&b.dataset.c2==="1";
+      openActions("B",[{l:"Renommer",fn:()=>{}},{l:"Retirer",danger:true,fn:()=>{hit++}}]);const b2=document.querySelector('#actList [data-act="1"]');
+      const after={same:b2===b,armed:b2.classList.contains("armed"),txt:b2.textContent.trim()};await w(3300);
+      const late=b2.textContent.trim();b2.click();b2.click();await w(50);return{armed,after,late,hit}});
+    const want=nm==="pc"?"Remove":"Retirer";
+    if(!c2.armed||c2.after.armed||c2.after.txt!==want||c2.late!==want||c2.hit!==1)err("confirmation en deux appuis : "+JSON.stringify(c2));
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

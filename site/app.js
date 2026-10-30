@@ -108,7 +108,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="69";const errSent=new Set();
+const APP_V="70";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -371,17 +371,20 @@ function undoable(msg,ids,apply,o){o=o||{};
     applyRemote(mergeData(data,snap));if(o.revert)o.revert();save();renderAll();if(o.after)o.after();toast("Annulé")},5000)}
 const CHECK='<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 // suppression en deux temps : 1er appui → bouton rouge « Confirmer ? », 2e appui dans les 3 s → suppression ; sinon le bouton revient
+// v70 : le bouton peut être dessiné par React ; on ne remet l'ancien contenu que s'il affiche encore « Confirmer ? »
+// (sinon React l'a déjà redessiné et l'ancien libellé écraserait le nouveau)
+function c2Off(btn){clearTimeout(btn._c2);delete btn.dataset.c2;btn.classList.remove("armed");if(btn.textContent===btn._c2t)btn.innerHTML=btn._c2h}
 function confirm2(btn,fn,txt){
-  if(btn.dataset.c2){clearTimeout(btn._c2);delete btn.dataset.c2;btn.classList.remove("armed");btn.innerHTML=btn._c2h;fn();return}
-  btn._c2h=btn.innerHTML;btn.dataset.c2="1";btn.classList.add("armed");btn.textContent=L(txt||"Confirmer ?");
-  btn._c2=setTimeout(()=>{delete btn.dataset.c2;btn.classList.remove("armed");btn.innerHTML=btn._c2h},3000);
+  if(btn.dataset.c2){c2Off(btn);fn();return}
+  btn._c2h=btn.innerHTML;btn._c2t=L(txt||"Confirmer ?");btn.dataset.c2="1";btn.classList.add("armed");btn.textContent=btn._c2t;
+  btn._c2=setTimeout(()=>c2Off(btn),3000);
 }
 const armDelete=confirm2;
 // champs de nombres : au toucher, le curseur va à la fin du nombre (pour effacer et retaper directement)
 document.addEventListener("focusin",e=>{const el=e.target;if(!(el instanceof HTMLInputElement)||!/^(numeric|decimal)$/.test(el.inputMode||""))return;
   const end=()=>{try{const n=el.value.length;el.setSelectionRange(n,n)}catch(x){}};end();setTimeout(end,0);setTimeout(end,60)});
 // même chose pour un gestionnaire de clic : faux au 1er appui (bouton armé), vrai au 2e
-const c2ok=b=>{if(b.dataset.c2){clearTimeout(b._c2);delete b.dataset.c2;b.classList.remove("armed");b.innerHTML=b._c2h;return true}confirm2(b,()=>{});return false};
+const c2ok=b=>{if(b.dataset.c2){c2Off(b);return true}confirm2(b,()=>{});return false};
 
 // v42 : logos (S signature gravé dans la silhouette de chaque app) ; couleur = currentColor, la découpe laisse voir le fond
 // (v42–44.6 : logos dessinés ici en SVG ; remplacés en 44.7 par site/icons/*.svg)
@@ -705,7 +708,7 @@ function todoRow(t){
     <button class="check" data-tg="${t.id}" aria-label="Terminer">${""}</button>${ttlBtn(t,planChip(t))}${moreBtn(t)}</div>`;
 }
 // fenêtre d'actions réutilisable : openActions(titre, [{l, fn, danger, on}])
-function openActions(title,items){$("actTitle").textContent=title;
+function openActions(title,items){$("actTitle").textContent=title;$("actList").querySelectorAll("[data-c2]").forEach(c2Off); // v70 : un bouton encore armé est remis avant le nouveau contenu
   if(shIsl("actList")){try{window.SCIslands.actList($("actList"),{items:items.map(it=>({l:it.l,danger:!!it.danger,on:!!it.on})),check:CHECK,i18n:agI18n()});$("actSheet")._items=items;$("actSheet").hidden=false;return}
     catch(e){reportErr("island actList: "+(e&&e.message));try{window.SCIslands.unmount($("actList"))}catch(_){}}}
   $("actList").innerHTML=items.map((it,i)=>`<button type="button" class="act-it ${it.danger?"danger":""}" data-act="${i}" ${it.on?'aria-pressed="true"':""}>${esc(L(it.l))}${it.on?CHECK:""}</button>`).join("");
@@ -5233,7 +5236,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v69";
+const BUILD="sidnote-v70";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

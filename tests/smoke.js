@@ -1261,6 +1261,35 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const h=await pg.evaluate(()=>{show("todo");const b=[...document.querySelectorAll("#v-todo .btn")].find(x=>x.offsetParent);return b?Math.round(b.getBoundingClientRect().height):48});
     if(h<44)err("bouton trop petit : "+h+" px");
     await ctx.close()}
+  // --- v50 (ticket #3) : premier écran migré en TypeScript + React (calendrier de la Nutrition) : même rendu que l'ancien
+  for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1280,height:800}}]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v50 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    pg.on("console",m=>{if(/Content Security Policy/i.test(m.text()))err("CSP : "+m.text().slice(0,160))});
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v50"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.waitForFunction(()=>!!window.SCIslands,null,{timeout:8000}).catch(()=>err("module React non chargé"));
+    await pg.evaluate(()=>{const d=new Date(),y=new Date();y.setDate(y.getDate()-1);
+      data.nutri={consent:new Date().toISOString(),profile:{sex:"h",age:24,height:180,weight:80,goal:"maintain",sports:[]},plan:{kcal:2000,p:150,c:200,f:70,bmr:1800,tdee:2000,text:"",warn:[]},upd:Date.now(),
+        log:[{id:"l1",day:iso(d),at:d.toISOString(),name:"Pâtes",kcal:1950,p:60,c:250,f:40,upd:1},{id:"l3",day:iso(y),at:y.toISOString(),name:"Salade",kcal:2400,p:20,c:30,f:20,upd:1}],weights:[],weeks:[]};
+      data.ui.nuTab="day";save();show("nutri");renderNutri()});
+    await pg.click("#nuDayBtn");await pg.waitForTimeout(200);
+    for(const r of ["week","month","year"]){
+      await pg.evaluate(r=>nuCalOpen(r),r);await pg.waitForTimeout(150);
+      const res=await pg.evaluate(()=>{const box=$("nuCal"),react=Object.keys(box).some(k=>k.startsWith("__reactContainer"));
+        const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.classList].sort().join(".")+"|"+(e.dataset.nuday||e.dataset.ym||e.dataset.nurange||e.dataset.nurn||"")+"|"+(e.disabled?"x":"")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+        const a=norm(box);window.__noIslands=true;const old=document.createElement("div");old.id="nuCalOld";box.after(old);
+        // ancien rendu dans un élément à part, pour comparer
+        const keep=box.id;box.id="nuCalReact";old.id="nuCal";renderNuCal();const b=norm(old);old.remove();box.id=keep;window.__noIslands=false;
+        return {react,same:a===b,a:a.split("\n").length,b:b.split("\n").length,diff:a.split("\n").find((l,i)=>l!==b.split("\n")[i])||""}});
+      if(!res.react)err(r+" : pas rendu par React");
+      if(!res.same)err(r+" : rendu différent de l'ancien ("+res.a+"/"+res.b+") "+res.diff);
+    }
+    await pg.evaluate(()=>nuCalOpen("month"));await pg.waitForTimeout(150);
+    const yIso=await pg.evaluate(()=>{const y=new Date();y.setDate(y.getDate()-1);return iso(y)});
+    if(await pg.isVisible(`#nuCal [data-nuday="${yIso}"]`)){await pg.click(`#nuCal [data-nuday="${yIso}"]`);await pg.waitForTimeout(200);
+      if(await pg.evaluate(()=>nuDay)!==yIso)err("toucher un jour (React) n'ouvre pas ce jour")}
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

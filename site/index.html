@@ -365,7 +365,7 @@
       <div data-nupane="day">
       <p class="nu-hint">Ce que tu as mangé aujourd'hui, et ce qu'il te reste.</p>
       <div class="dayv-head" style="margin-top:4px"><button type="button" class="cal-nav" id="nuPrev" aria-label="Jour précédent">‹</button><button type="button" class="dayv-title nu-daylbl" id="nuDayBtn" aria-expanded="false" aria-controls="nuCal" aria-label="Voir la semaine, le mois ou l'année"><span id="nuDayTxt"></span><span class="nu-cal-ic" aria-hidden="true">▦</span></button><input type="date" id="nuDate" hidden aria-label="Choisir le jour"><button type="button" class="cal-nav" id="nuNext" aria-label="Jour suivant">›</button></div>
-      <div class="card nu-cal" id="nuCal" hidden></div>
+      <div class="card nu-cal notr" id="nuCal" hidden></div>
       <div class="card nu-goalcard" id="nuGoalCard" hidden></div>
       <div class="card nu-sum">
         <div class="nu-ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="bgc" cx="60" cy="60" r="52" fill="none" stroke-width="10"/><circle class="fgc" id="nuRing" cx="60" cy="60" r="52" fill="none" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="326.73"/></svg><div class="nu-ring-txt"><div><div class="nu-big" id="nuKcal">0</div><div class="small muted" id="nuKcalOf"></div></div></div></div>
@@ -686,7 +686,7 @@
     <div class="card" id="stats"></div>
       </div>
     </details>
-    <p class="small muted" style="margin:18px 4px">Sid'compagnon · version 49 · une app <b>SidCorp</b></p>
+    <p class="small muted" style="margin:18px 4px">Sid'compagnon · version 50 · une app <b>SidCorp</b></p>
   </section>
 </main>
 
@@ -977,5 +977,6 @@
 <script src="exercices.js"></script>
 <script src="exercices-aide.js"></script>
 <script src="app.js"></script>
+<script type="module" src="react/islands.js"></script>
 </body>
 </html>

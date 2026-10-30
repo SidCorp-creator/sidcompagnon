@@ -103,7 +103,7 @@ async function api(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="49";const errSent=new Set();
+const APP_V="50";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -4354,6 +4354,9 @@ function nuDays(){const m={};for(const x of NU().log||[]){if(!x||!x.day)continue
 function nuSt(by,k){if(by[k]==null)return "";const t=dayTarget(k).kcal||1,r=by[k]/t;return r>1.05?"over":r>=.9?"ok":"under"}
 function nuCalOpen(mode){const d=parse(nuDay);nuRange=mode;nuRY=d.getFullYear();nuRM=d.getMonth();nuRW=wKey(nuDay);renderNuCal()}
 function renderNuCal(){const box=$("nuCal"),btn=$("nuDayBtn");if(!box)return;box.hidden=!nuRange;if(btn)btn.setAttribute("aria-expanded",String(!!nuRange));if(!nuRange)return;
+  // v50 (ticket #3) : premier écran migré en TypeScript + React (app/src/NutritionCalendar.tsx, build site/react/islands.js) ;
+  // même rendu, mêmes data-* (les clics restent gérés ici). Si le module n'est pas chargé, l'ancien rendu ci-dessous sert de secours.
+  if(window.SCIslands&&window.SCIslands.nuCal&&!window.__noIslands){try{window.SCIslands.nuCal(box,{range:nuRange,year:nuRY,month:nuRM,weekStart:nuRW,today:iso(today()),selected:nuDay,byDay:nuDays(),target:k=>dayTarget(k).kcal||0,i18n:{L,MOL,MO,DOWL}});return}catch(e){reportErr&&reportErr("island nuCal: "+(e&&e.message))}}
   const tIso=iso(today()),by=nuDays();let title="",body="",tot=0,nd=0,start="";
   const sum=()=>`<div class="small muted nu-cal-sum">${nd?`${nd} ${L(nd>1?"jours notés":"jour noté")} · ${L("moyenne")} ${r0(tot/nd)} kcal`:L("Aucun repas noté sur cette période.")}</div>`;
   const leg=`<div class="nu-leg small muted"><span><i class="nu-st ok"></i>${L("Dans l'objectif")}</span><span><i class="nu-st under"></i>${L("En dessous")}</span><span><i class="nu-st over"></i>${L("Au-dessus")}</span></div>`;
@@ -4375,6 +4378,7 @@ function renderNuCal(){const box=$("nuCal"),btn=$("nuDayBtn");if(!box)return;box
     <div class="cal-head"><button type="button" class="cal-nav" data-nurn="-1" aria-label="${L("Période précédente")}">‹</button><b class="nu-cal-t">${esc(title)}</b><button type="button" class="cal-nav" data-nurn="1" aria-label="${L("Période suivante")}" ${nx>tIso?"disabled":""}>›</button></div>
     ${body}<button type="button" class="linkbtn nu-cal-x" data-nurange="">${L("Fermer le calendrier")}</button>`}
 $("nuDayBtn").addEventListener("click",()=>{if(nuRange){nuRange=null;renderNuCal()}else nuCalOpen("month")});
+window.addEventListener("sc-islands",()=>{if(nuRange)renderNuCal()}); // module React chargé après coup : on redessine avec lui
 $("nuCal").addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled)return;
   if(b.dataset.nurange!==undefined){if(b.dataset.nurange)nuCalOpen(b.dataset.nurange);else{nuRange=null;renderNuCal()}return}
   if(b.dataset.nurn){const s=+b.dataset.nurn;if(nuRange==="week"){const d=parse(nuRW);d.setDate(d.getDate()+7*s);nuRW=iso(d)}
@@ -4953,7 +4957,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v49";
+const BUILD="sidnote-v50";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

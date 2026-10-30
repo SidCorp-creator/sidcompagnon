@@ -22,6 +22,7 @@ import { ExHelp, McpList, QuickAdd, Stats, TabsCard, TypesCard, type ExHelpVM, t
 import { Keypad, OnbDots, OnbGroups, OnbPal, type OI18n, type OnbGroup, type PalVM } from "./Onboarding";
 import { AuthFeats, FolderBar, NsBar, NuKcalOf, NuMealKcal, NuMkTot, NuSlots, NuSports, type FI18n } from "./Forms";
 import { NotePhotos, PvOpts, PvOverlay, RtMenu, type PI18n, type PvAnn } from "./PdfView";
+import { ActList, AiState, BkList, NuAiCard, TypeChips, CalLegend, CalList, HomeSync, LegalBody, SyncState, type CalVM, type WI18n } from "./Sheets";
 import type { AgTask, GrDay, I18n, Tip } from "./types";
 import { fmtN, r1 } from "./format";
 
@@ -98,6 +99,16 @@ declare global {
       pvOverlay: (el: Element, p: { anns: PvAnn[]; viewBox: string; grip: string; i18n: PI18n }) => void;
       rtMenu: (el: Element, p: { items: { c: string; l: string; sw: boolean }[]; i18n: PI18n }) => void;
       notePhotos: (el: Element, p: { photos: { id: string; u?: string | null }[]; i18n: PI18n }) => void;
+      syncState: (el: Element, p: { st: string; i18n: WI18n }) => void;
+      homeSync: (el: Element, p: { msg: string; i18n: WI18n }) => void;
+      actList: (el: Element, p: { items: { l: string; danger?: boolean; on?: boolean }[]; check: string; i18n: WI18n }) => void;
+      calList: (el: Element, p: { cals: CalVM[]; more: string; i18n: WI18n }) => void;
+      calLegend: (el: Element, p: { cals: CalVM[] }) => void;
+      bkList: (el: Element, p: { rows: { lb: string; n: number; now: number }[]; i18n: WI18n }) => void;
+      aiState: (el: Element, p: { ok: boolean; i18n: WI18n }) => void;
+      nuAiCard: (el: Element, p: { ok: boolean; icon: string; href: string; name: string; i18n: WI18n }) => void;
+      typeChips: (el: Element, p: { types: { name: string; c: string }[]; cur: string; i18n: WI18n }) => void;
+      legalBody: (el: Element, p: { parts: [string, string][]; page: string; i18n: WI18n }) => void;
       pvOpts: (el: Element, p: { cols: string[]; cur: string; size: number; dot: React.CSSProperties; i18n: PI18n }) => void;
       onbGroups: (el: Element, p: { groups: OnbGroup[]; i18n: OI18n }) => void;
       onbDots: (el: Element, p: { n: number; cur: number }) => void;
@@ -131,7 +142,7 @@ declare global {
   }
 }
 window.SCIslands = {
-  version: 16,
+  version: 17,
   nuCal: (el, p) => mount(el, <NutritionCalendar {...p} />),
   graph,
   pomoStats: (el, p) => mount(el, <PomoStats {...p} />),
@@ -191,6 +202,16 @@ window.SCIslands = {
   pvOverlay: (el, p) => mount(el, <PvOverlay {...p} />),
   pvOpts: (el, p) => mount(el, <PvOpts {...p} />),
   rtMenu: (el, p) => mount(el, <RtMenu {...p} />),
+  syncState: (el, p) => mount(el, <SyncState {...p} />),
+  homeSync: (el, p) => mount(el, <HomeSync {...p} />),
+  actList: (el, p) => mount(el, <ActList {...p} />),
+  calList: (el, p) => mount(el, <CalList {...p} />),
+  calLegend: (el, p) => mount(el, <CalLegend {...p} />),
+  bkList: (el, p) => mount(el, <BkList {...p} />),
+  legalBody: (el, p) => mount(el, <LegalBody {...p} />),
+  aiState: (el, p) => mount(el, <AiState {...p} />),
+  nuAiCard: (el, p) => mount(el, <NuAiCard {...p} />),
+  typeChips: (el, p) => mount(el, <TypeChips {...p} />),
   notePhotos: (el, p) => mount(el, <NotePhotos {...p} />),
   nuLog: (el, p) => mount(el, <NuLog {...p} />),
   nuResult: (el, p) => mount(el, <NuResult {...p} />),

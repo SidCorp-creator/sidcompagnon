@@ -2038,6 +2038,50 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(!(await pg.evaluate(()=>!!$("noteBody").querySelector('mark[data-hl="g"]'))))err("surligneur vert de la note pas appliqué");
     await shot(pg,"v65-"+nm+"-note");
     await ctx.close()}
+  // --- v66 (ticket #3) : fenêtres et cartes : synchronisation, actions « ⋯ », calendriers reliés, aperçu d'une sauvegarde, textes légaux
+  for(const [nm,dev,lg] of [["mobile",{...devices["iPhone 13"]},"fr"],["pc",{viewport:{width:1280,height:800}},"en"]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v66 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    if(lg!=="fr")await ctx.addInitScript(()=>{try{localStorage.setItem("sidnote-lang",JSON.stringify("en"))}catch(e){}});
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v66"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.waitForFunction(()=>!!(window.SCIslands&&window.SCIslands.calList),null,{timeout:8000}).catch(()=>err("module React non chargé"));
+    await pg.evaluate(()=>{window.__par=async(ids,fn,ms=300)=>{const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.getAttribute("style")?e.style.cssText:"")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+      fn();if(ms)await new Promise(r=>setTimeout(r,ms));const out={},a={},react=ids.every(id=>Object.keys($(id)).some(k=>k.startsWith("__reactContainer")));ids.forEach(id=>a[id]=norm($(id)));
+      const sv=ids.map(id=>{const el=$(id),c=el.cloneNode(false);c.classList.remove("notr");el.id=id+"R";el.after(c);c.id=id;c.innerHTML="";return[el,c,id]});
+      window.__noIslands=true;try{fn()}finally{window.__noIslands=false}if(ms)await new Promise(r=>setTimeout(r,ms));
+      sv.forEach(([el,c,id])=>{const b=norm(c);if(a[id]!==b){const al=a[id].split("\n"),bl=b.split("\n");out[id]=al.length+"/"+bl.length+" "+(al.find((l,i)=>l!==bl[i])||"")+" <> "+(bl.find((l,i)=>l!==al[i])||"")}c.remove();el.id=id});return{react,out}}});
+    const check=async(lbl,ids,fnSrc,ms)=>{const r=await pg.evaluate(([ids,src,ms])=>window.__par(ids,eval(src),ms),[ids,fnSrc,ms]);
+      if(!r.react)err(lbl+" : pas rendu par React");for(const[id,d]of Object.entries(r.out))err(lbl+" : "+id+" différent : "+d.slice(0,300))};
+    await check("synchronisé",["syncState"],"()=>{syncErr=null;cache.dirty=false;setSync()}",0);
+    await check("synchronisation…",["syncState"],"()=>{syncErr=null;cache.dirty=true;setSync()}",0);
+    await check("synchronisation en échec",["syncState","homeSync"],"()=>{syncErr={message:'refusé <x>'};cache.dirty=true;setSync()}",0);
+    await pg.evaluate(()=>{syncErr=null;cache.dirty=false;setSync()});
+    if(await pg.evaluate(()=>!$("homeSync").hidden))err("bandeau de synchro resté affiché");
+    await check("fenêtre d'actions",["actList"],"()=>openActions('Titre',[{l:'Modifier'},{l:'Déplacer',on:true},{l:'Supprimer',danger:true}])");
+    const act=await pg.evaluate(()=>new Promise(r=>{let hit=null;openActions("T",[{l:"Un",fn:()=>{hit="un"}},{l:"Deux",fn:()=>{hit="deux"}}]);document.querySelector('#actList [data-act="1"]').click();setTimeout(()=>r({hit,closed:$("actSheet").hidden}),100)}));
+    if(act.hit!=="deux"||!act.closed)err("fenêtre d'actions : "+JSON.stringify(act));
+    await pg.evaluate(()=>{data.prefs.icals=[{id:"c1",name:"Travail",url:"https://x/travail.ics",c:"--x2",on:true,upd:1},{id:"c2",name:"",url:"https://x/autre.ics",on:false,upd:1}];icalErr.c2="Adresse introuvable";icalAll.c1={url:"https://x/travail.ics",at:1,events:[{id:"e1",title:"A"},{id:"e2",title:"B",canc:true},{id:"e3",title:"C"}]};show("plan")});
+    await check("calendriers reliés",["calList","calLegend"],"()=>renderCals()");
+    const tg=await pg.evaluate(()=>{const i=document.querySelector('#calList [data-calon="c1"]');i.click();return{on:CALS().find(c=>c.id==="c1").on,pill:document.querySelector('#calLegend [data-calon2="c1"]').getAttribute("aria-pressed"),row:document.querySelector('#calList .cal-row').classList.contains("off")}});
+    if(tg.on!==false||tg.pill!=="false"||!tg.row)err("calendrier masqué : "+JSON.stringify(tg));
+    await pg.evaluate(()=>{icalErr={};data.prefs.icals=[];save();renderCals()});
+    await check("aucun calendrier",["calList","calLegend"],"()=>renderCals()");
+    await pg.evaluate(()=>{data.todos=[{id:"t1",title:"A",done:false}];save()});
+    await check("aperçu d'une sauvegarde",["bkList"],"()=>{const j=JSON.stringify({app:'sidnote',v:2,exported:new Date().toISOString(),data:{todos:[{id:'x',title:'X'},{id:'y',title:'Y'}],notes:[{id:'n',title:'N',body:''}]}});const dt=new DataTransfer();dt.items.add(new File([j],'b.json',{type:'application/json'}));const i=$('restoreIn');i.files=dt.files;i.dispatchEvent(new Event('change',{bubbles:true}))}");
+    await shot(pg,"v66-"+nm+"-sauvegarde");await pg.evaluate(()=>bkClose());
+    for(const k of ["privacy","terms","cookies"])await check("textes légaux "+k,["legalBody"],`()=>openLegal('${k}')`);
+    await shot(pg,"v66-"+nm+"-legal");
+    // état de Claude (Réglages, Nutrition) et pastilles de types sous le champ « Type »
+    await check("Claude pas branché",["aiState","nuAiCard"],"()=>{data.prefs.ai='claude';data.prefs.aiOk=false;renderAiCards()}",0);
+    await check("Claude branché",["aiState","nuAiCard"],"()=>{data.prefs.ai='claude';data.prefs.aiOk=true;renderAiCards()}",0);
+    await pg.evaluate(()=>{data.prefs.aiOk=false;renderAiCards()});
+    await pg.evaluate(()=>{show("plan");openTaskSheet(iso(today()));const box=document.querySelector("#taskSheet .tchips");box.id="tchTest"});
+    await check("pastilles de types",["tchTest"],"()=>fillTypeChips($('tchTest'))",0);
+    const tc=await pg.evaluate(()=>{const b=document.querySelector("#tchTest [data-tchip]"),inp=$(b.closest(".tchips").dataset.for);b.click();return{v:inp.value,name:b.dataset.tchip,on:document.querySelector(`#tchTest [data-tchip="${b.dataset.tchip}"]`).getAttribute("aria-pressed")}});
+    if(tc.v!==tc.name||tc.on!=="true")err("pastille de type : "+JSON.stringify(tc));
+    await pg.evaluate(()=>{$("tchTest").id="";document.querySelector("#taskSheet .x").click()});
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

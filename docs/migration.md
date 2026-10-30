@@ -22,6 +22,7 @@ Décision de Sid (29 oct. 2026) : passer progressivement à TypeScript + React +
 | v52 | Musculation : barre « Mon objectif » · Nutrition : barres des macros | `app/src/Small.tsx` |
 | v64 | Atouts de l'écran de connexion, barre des notes secrètes, barre du classeur ouvert, profil Nutrition (sports), réglages du menu (repas, calories par repas, total), calories du jour | `app/src/Forms.tsx` |
 | v65 | Lecteur de PDF : calque d'annotations de chaque page (traits, surlignages, zones de texte) et réglages du stylo / surligneur ; éditeur de notes : menus de la barre de mise en forme et vignettes des photos | `app/src/PdfView.tsx` |
+| v66 | État de la synchronisation (Réglages, accueil), fenêtre d'actions « ⋯ », calendriers reliés (liste, pastilles), aperçu d'une sauvegarde, textes légaux, état de Claude (Réglages, Nutrition), pastilles de types | `app/src/Sheets.tsx` |
 | v63 | Présentation : diapositives des apps (état `onbSel`, redessinées à chaque choix puis `onbStep` remet la diapositive active), points, couleurs · claviers de code | `app/src/Onboarding.tsx` |
 | v62 | Réglages : statistiques, onglets affichés, types d'activités, adresses du connecteur · fenêtres : ajout rapide, fiche d'un exercice | `app/src/Settings.tsx` |
 | v61 | Coquille, étape 3 : appels au serveur, session, écriture synchronisée (`core/sync.ts`) ; barres de navigation : bas, en-tête d'app, barre latérale (`Shell.tsx`) | `app/src/core/sync.ts`, `app/src/Shell.tsx` |
@@ -58,7 +59,7 @@ Du plus isolé au plus central, un écran par version, chacun avec son test « m
 Tout ce qui s'affiche dans les écrans principaux est dessiné par React : Agenda (mois, année, jour, listes), Tâches, Focus (résumé, durées, frise), Musculation, Nutrition (journée, analyse, sport, menu, profil, copie, calendrier, macros), Graphiques, Notes (liste), Documents (liste), Mots de passe (liste), accueil.
 
 Reste dans `app.js` (la « coquille ») — mis à jour après la v62 :
-- ~~présentation~~, ~~claviers de code~~ (v63) ; ~~barres notes secrètes / classeur, sports du profil, réglages du menu~~ (v64) ; ~~calque et réglages du lecteur PDF, menus de mise en forme et photos des notes~~ (v65) ;
+- ~~présentation~~, ~~claviers de code~~ (v63) ; ~~barres notes secrètes / classeur, sports du profil, réglages du menu~~ (v64) ; ~~calque et réglages du lecteur PDF, menus de mise en forme et photos des notes~~ (v65) ; ~~synchronisation, actions, calendriers reliés, sauvegarde, textes légaux, état de Claude, types~~ (v66) ;
 - champs fixes de index.html (e-mail et mot de passe de la connexion : gardés tels quels pour les gestionnaires de mots de passe et le remplissage automatique ; autres champs du profil Nutrition et du menu) ;
 - connexion, inscription, session, mode essai ;
 - synchronisation et fusion à 3 voies (`push`, `pull`, `mergeData`, `merge3`) ;

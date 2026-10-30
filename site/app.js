@@ -108,7 +108,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="65";const errSent=new Set();
+const APP_V="66";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -308,11 +308,15 @@ function applyRemote(d){
 }
 function setSync(){
   const el=document.getElementById("syncState");if(!el||!session)return;
+  const wait=cache&&cache.dirty,bad=!isTrial()&&!!(syncErr&&wait&&navigator.onLine),hb=document.getElementById("homeSync");
+  if(shIsl("syncState")){try{ // v66 (#3)
+    window.SCIslands.syncState(el,{st:isTrial()?"trial":bad?"bad":!navigator.onLine?"off":wait?"wait":"ok",i18n:agI18n()});
+    if(isTrial()){const t=document.getElementById("homeTrial");if(t)t.hidden=false;return}
+    if(hb){hb.hidden=!bad;if(bad)window.SCIslands.homeSync(hb,{msg:syncErr&&syncErr.message?String(syncErr.message).slice(0,80):"",i18n:agI18n()})}return}
+    catch(e){reportErr("island sync: "+(e&&e.message));try{window.SCIslands.unmount(el);if(hb)window.SCIslands.unmount(hb)}catch(_){}}}
   if(isTrial()){el.innerHTML=`<span class="syncdot wait"></span>${L("Mode essai : tes données restent sur cet appareil")}`;const t=document.getElementById("homeTrial");if(t)t.hidden=false;return}
-  const wait=cache&&cache.dirty,bad=!!(syncErr&&wait&&navigator.onLine);
   el.innerHTML=bad?`<span class="syncdot err"></span>${L("Synchronisation en échec")} · <button type="button" class="linkbtn" data-syncretry="1">${L("Réessayer")}</button>`
     :`<span class="syncdot ${wait?"wait":""}"></span>`+(!navigator.onLine?"Hors connexion · tes modifications seront envoyées plus tard":wait?"Synchronisation…":"Synchronisé");
-  const hb=document.getElementById("homeSync");
   if(hb){hb.hidden=!bad;if(bad)hb.innerHTML=`<span class="grow"><b>${L("Pas encore enregistré en ligne")}</b><span class="small">${L("Tes dernières modifications sont gardées sur cet appareil, mais le serveur les a refusées. Nouvel essai automatique.")}${syncErr&&syncErr.message?` <span class="muted notr">(${esc(String(syncErr.message).slice(0,80))})</span>`:""}</span></span><button type="button" class="mini" data-syncretry="1">${L("Réessayer")}</button>`}
 }
 function endSession(msg,keepCache){
@@ -330,6 +334,7 @@ function ensureType(n){n=String(n||"").trim().replace(/\s+/g," ");if(!n)return "
 function fillTypeList(){$("typeList").innerHTML=data.types.map(t=>`<option value="${esc(t.name)}"></option>`).join("");document.querySelectorAll(".tchips").forEach(fillTypeChips)}
 // sous chaque champ « Type » : les types déjà créés, à toucher pour les choisir
 function fillTypeChips(box){const inp=document.getElementById(box.dataset.for);const cur=norm(inp&&inp.value);
+  if(shIsl("typeChips")){try{window.SCIslands.typeChips(box,{types:data.types.map(t=>({name:t.name,c:t.c})),cur,i18n:agI18n()});return}catch(e){reportErr("island typeChips: "+(e&&e.message));try{window.SCIslands.unmount(box)}catch(_){}}}
   box.innerHTML=data.types.map(t=>`<button type="button" class="pill" data-tchip="${esc(t.name)}" aria-pressed="${norm(t.name)===cur}"><span class="dot" style="background:var(${t.c})"></span>${esc(t.name)}</button>`).join("")}
 function typeChipsFor(inp){if(!inp||inp.dataset.chips)return;inp.dataset.chips="1";
   const box=document.createElement("div");box.className="chips tchips";box.dataset.for=inp.id;(inp.closest(".two")||inp.closest("label")).after(box);fillTypeChips(box);
@@ -699,6 +704,8 @@ function todoRow(t){
 }
 // fenêtre d'actions réutilisable : openActions(titre, [{l, fn, danger, on}])
 function openActions(title,items){$("actTitle").textContent=title;
+  if(shIsl("actList")){try{window.SCIslands.actList($("actList"),{items:items.map(it=>({l:it.l,danger:!!it.danger,on:!!it.on})),check:CHECK,i18n:agI18n()});$("actSheet")._items=items;$("actSheet").hidden=false;return}
+    catch(e){reportErr("island actList: "+(e&&e.message));try{window.SCIslands.unmount($("actList"))}catch(_){}}}
   $("actList").innerHTML=items.map((it,i)=>`<button type="button" class="act-it ${it.danger?"danger":""}" data-act="${i}" ${it.on?'aria-pressed="true"':""}>${esc(L(it.l))}${it.on?CHECK:""}</button>`).join("");
   $("actSheet")._items=items;$("actSheet").hidden=false}
 const closeActions=()=>{$("actSheet").hidden=true};
@@ -1273,6 +1280,10 @@ function icalInfo(id){
 // liste des calendriers (Agenda → « Calendriers reliés ») + pastilles au-dessus du calendrier pour afficher / masquer chacun
 function renderCals(){
   const box=$("calList");if(!box)return;const l=CALS();
+  if(shIsl("calList")){try{const vm=l.map(c=>({id:c.id,name:c.name||ICAL_CAT,c:c.c||"--x4",on:c.on!==false,n:(icalAll[c.id]&&icalAll[c.id].url===c.url)?icalAll[c.id].events.filter(t=>!t.canc).length:null,err:icalErr[c.id]||"",priv:!!icalAuth(c.id)}));
+    window.SCIslands.calList(box,{cals:vm,more:MORE,i18n:agI18n()});box.querySelectorAll("[data-calon]").forEach(i=>{const c=vm.find(x=>x.id===i.dataset.calon);if(c&&i.checked!==c.on)i.checked=c.on});
+    const lg=$("calLegend");if(lg){lg.hidden=l.length<1;window.SCIslands.calLegend(lg,{cals:vm})}icalState();return}
+    catch(e){reportErr("island calList: "+(e&&e.message));try{window.SCIslands.unmount(box);$("calLegend")&&window.SCIslands.unmount($("calLegend"))}catch(_){}}}
   box.innerHTML=l.map(c=>{const n=(icalAll[c.id]&&icalAll[c.id].url===c.url)?icalAll[c.id].events.filter(t=>!t.canc).length:null,err=icalErr[c.id];
     return `<div class="cal-row${c.on===false?" off":""}"><button type="button" class="cal-dot" data-calcolor="${c.id}" style="--c:var(${c.c||"--x4"})" aria-label="${L("Changer la couleur")}"></button>
       <div class="grow cal-main"><b class="notr">${esc(c.name||ICAL_CAT)}</b><span class="small ${err?"cal-err":"muted"}"><span>${err?esc(err):n===null?L("Pas encore mis à jour."):`${n} ${n>1?"événements":"événement"}`}</span>${icalAuth(c.id)?` · <span>${L("privé")}</span>`:""}</span></div>
@@ -1395,7 +1406,8 @@ $("restoreIn").addEventListener("change",async e=>{
   if(!p){toast("Ce fichier n'est pas une sauvegarde Sid'note");return}
   bkCur=bkPrepare(p.d);const d=bkCur.d;bkCur.v1=!!p.v1;
   $("bkWhen").textContent=p.at?`${L("Sauvegarde du")} ${fmtDay(p.at)}`:L("Ancienne sauvegarde (tâches et agenda seulement)");
-  $("bkList").innerHTML=`<div class="row small muted"><span class="grow"></span><span class="n">${L("Fichier")}</span><span class="now">${L("Maintenant")}</span></div>`+
+  if(shIsl("bkList")){try{window.SCIslands.bkList($("bkList"),{rows:BK_LISTS.filter(x=>x[1]).map(([k,lb])=>({lb,n:bkGet(d,k).length,now:bkGet(data,k).length})),i18n:agI18n()})}catch(e){reportErr("island bkList: "+(e&&e.message))}}
+  else $("bkList").innerHTML=`<div class="row small muted"><span class="grow"></span><span class="n">${L("Fichier")}</span><span class="now">${L("Maintenant")}</span></div>`+
     BK_LISTS.filter(x=>x[1]).map(([k,lb])=>`<div class="row"><span class="grow">${L(lb)}</span><span class="n">${bkGet(d,k).length}</span><span class="now muted">${bkGet(data,k).length}</span></div>`).join("");
   $("bkNote").hidden=!bkCur.skipped;$("bkNote").textContent=bkCur.skipped?`${bkCur.skipped} ${L("élément(s) protégé(s) par un autre coffre ne seront pas repris : ton coffre actuel est gardé.")}`:"";
   const r=$("bkReplace");delete r.dataset.armed;r.textContent=L("Remplacer mes données");$("bkSheet").hidden=false});
@@ -1443,7 +1455,8 @@ const LEGAL={privacy:[
 const LEGAL_PAGE={privacy:"confidentialite.html",terms:"conditions.html",cookies:"cookies.html"};
 function openLegal(k){k=LEGAL[k]?k:"privacy";
   document.querySelectorAll("#legalSeg [data-legal]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.legal===k)));
-  $("legalBody").innerHTML=LEGAL[k].map(([h,t])=>`<h3>${esc(L(h))}</h3><p>${esc(L(t))}</p>`).join("")+`<p><a href="${LEGAL_PAGE[k]}" target="_blank" rel="noopener">${L("Lire la version complète")} ↗</a></p><p class="small muted">${esc(L("Mis à jour le 22 octobre 2026."))}</p>`;
+  if(shIsl("legalBody")){try{window.SCIslands.legalBody($("legalBody"),{parts:LEGAL[k],page:LEGAL_PAGE[k],i18n:agI18n()})}catch(e){reportErr("island legalBody: "+(e&&e.message))}}
+  else $("legalBody").innerHTML=LEGAL[k].map(([h,t])=>`<h3>${esc(L(h))}</h3><p>${esc(L(t))}</p>`).join("")+`<p><a href="${LEGAL_PAGE[k]}" target="_blank" rel="noopener">${L("Lire la version complète")} ↗</a></p><p class="small muted">${esc(L("Mis à jour le 22 octobre 2026."))}</p>`;
   $("legalBody").scrollTop=0;$("legalSheet").hidden=false}
 document.addEventListener("click",e=>{const b=e.target.closest("[data-openlegal]");if(b){e.preventDefault();openLegal(b.dataset.openlegal)}});
 $("legalSeg").addEventListener("click",e=>{const b=e.target.closest("[data-legal]");if(b)openLegal(b.dataset.legal)});
@@ -3546,10 +3559,12 @@ $("aaClose").addEventListener("click",()=>$("aiAskSheet").hidden=true);
 $("aiAskSheet").addEventListener("click",e=>{if(e.target.id==="aiAskSheet")$("aiAskSheet").hidden=true});
 // cartes « Mon IA » : Nutrition, Réglages
 function renderAiCards(){const ai=aiCur(),ok=!!(ai&&data.prefs.aiOk);
-  const st=$("aiState");if(st){st.classList.toggle("on",ok);st.innerHTML=ok?`<span class="ai-dot"></span><b>${L("Claude est branché")}</b>`:`<span class="ai-dot"></span><b>${L("Claude n'est pas branché")}</b>`}
+  const st=$("aiState");if(st&&shIsl("aiState")){st.classList.toggle("on",ok);try{window.SCIslands.aiState(st,{ok,i18n:agI18n()})}catch(e){reportErr("island aiState: "+(e&&e.message))}}
+  else if(st){st.classList.toggle("on",ok);st.innerHTML=ok?`<span class="ai-dot"></span><b>${L("Claude est branché")}</b>`:`<span class="ai-dot"></span><b>${L("Claude n'est pas branché")}</b>`}
   const mb=$("aiMain");if(mb)mb.textContent=L(ok?"Tester la connexion":"Brancher Claude");
   const c=$("nuAiCard");if(!c)return;c.hidden=isTrial()||ok; // v43 : Claude branché → la carte cède la place à « Ajouter ce que tu manges » (en haut)
   const lk=$("nuAiLink");if(lk){lk.hidden=!ok||isTrial();if(ok)lk.href=convUrl("nutri")||ai.ask(T3("J'ai mangé : ","I ate: ","Ik heb gegeten: "))}renderConv();
+  if(shIsl("nuAiCard")){try{window.SCIslands.nuAiCard(c,{ok,icon:IC("sparkle")||"",href:ok?ai.ask(T3("J'ai mangé : ","I ate: ","Ik heb gegeten: ")):"",name:ok?ai.name:"",i18n:agI18n()});return}catch(e){reportErr("island nuAiCard: "+(e&&e.message));try{window.SCIslands.unmount(c)}catch(_){}}}
   c.innerHTML=ok?`<div class="grow"><b>${IC("sparkle")||""} ${L("Claude calcule pour toi")}</b><div class="small muted">${L("Dis-lui ce que tu as mangé ou envoie-lui la photo de ton assiette : tout arrive ici.")}</div></div><a class="btn" href="${ai.ask(T3("J'ai mangé : ","I ate: ","Ik heb gegeten: "))}" target="_blank" rel="noopener">${L("Ouvrir")} ${esc(ai.name)}</a>`
     :`<div class="grow"><b>${L("Branche Claude")}</b><div class="small muted">${L("Calories, menus et bilans sont calculés par Claude, même avec la version gratuite. 2 minutes, une seule fois.")}</div></div><button type="button" class="btn" data-aiwiz="1">${L("Brancher")}</button>`}
 
@@ -4544,7 +4559,7 @@ function renderNuCal(){const box=$("nuCal"),btn=$("nuDayBtn");if(!box)return;box
     <div class="cal-head"><button type="button" class="cal-nav" data-nurn="-1" aria-label="${L("Période précédente")}">‹</button><b class="nu-cal-t">${esc(title)}</b><button type="button" class="cal-nav" data-nurn="1" aria-label="${L("Période suivante")}" ${nx>tIso?"disabled":""}>›</button></div>
     ${body}<button type="button" class="linkbtn nu-cal-x" data-nurange="">${L("Fermer le calendrier")}</button>`}
 $("nuDayBtn").addEventListener("click",()=>{if(nuRange){nuRange=null;renderNuCal()}else nuCalOpen("month")});
-window.addEventListener("sc-islands",()=>{if(nuRange)renderNuCal();if(data&&data.ui&&data.ui.view==="graph")renderGraph();if(data&&data.ui&&data.ui.view==="pomo")renderPomo();if(data&&data.ui&&data.ui.view==="muscu")renderMuscu();if(session&&data&&data.tasks){renderPlan();renderTodos();renderHome()}if(session&&data&&data.ui){const v=data.ui.view||"home";renderNav(v);renderVhead(v);renderSide(v)}
+window.addEventListener("sc-islands",()=>{if(nuRange)renderNuCal();if(data&&data.ui&&data.ui.view==="graph")renderGraph();if(data&&data.ui&&data.ui.view==="pomo")renderPomo();if(data&&data.ui&&data.ui.view==="muscu")renderMuscu();if(session&&data&&data.tasks){renderPlan();renderTodos();renderHome();try{setSync();renderCals()}catch(e){}}if(session&&data&&data.ui){const v=data.ui.view||"home";renderNav(v);renderVhead(v);renderSide(v)}
   // v63 : claviers de code dessinés au démarrage par l'ancien code (avant le module) : React les reprend (touches gérées par padTap sur le conteneur)
   if(!session&&$("authFeats")&&$("authFeats").children.length)renderAuthFeats();
   for(const [id,attr] of [["pinPad","pin"],["psPad","ps"]]){const el=$(id);if(el&&el.children.length&&!Object.keys(el).some(k=>k.startsWith("__reactContainer"))){const old=el.innerHTML;try{el.innerHTML="";window.SCIslands.keypad(el,{attr,del:attr==="ps"?agI18n().tr(L("Effacer")):agI18n().tr("Effacer")})}catch(e){el.innerHTML=old;reportErr("island keypad: "+(e&&e.message))}}}}); // en cas d'erreur, l'ancien clavier revient // module React chargé après coup : on redessine avec lui
@@ -5180,7 +5195,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v65";
+const BUILD="sidnote-v66";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

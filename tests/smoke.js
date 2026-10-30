@@ -2310,11 +2310,11 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const fonts=await pg.evaluate(async()=>{const r={};for(const v of ["todo","pomo","muscu","nutri","graph","notes","docs","pwd"]){show(v);await new Promise(z=>setTimeout(z,80));r[v]=getComputedStyle(document.querySelector("#v-"+v+" h1")).fontFamily}return r});
     const want={todo:/Instrument Serif/,pomo:/Manrope/,muscu:/Barlow Condensed/,nutri:/Archivo/,notes:/Newsreader/,docs:/Public Sans/,pwd:/JetBrains Mono/};
     for(const[k,re]of Object.entries(want))if(!re.test(fonts[k]))err("police du titre de "+k+" : "+fonts[k]);
-    await pg.evaluate(()=>show("more"));await pg.click('#fxSel [data-fx="0"]');await pg.waitForTimeout(200);
+    await pg.evaluate(()=>{show("more");const d=$("fxSel").closest("details");if(d)d.open=true});await pg.click('#fxSel [data-fx="0"]');await pg.waitForTimeout(200);
     if(await pg.evaluate(()=>document.documentElement.hasAttribute("data-fx")||data.prefs.fx!==false))err("« Sobre » ne retire pas le style unique");
     await pg.evaluate(()=>show("plan"));await pg.waitForTimeout(200);if(await pg.isVisible("#plEph"))err("éphéméride visible en style sobre");
     await pg.evaluate(()=>show("todo"));if(/Instrument/.test(await pg.evaluate(()=>getComputedStyle(document.querySelector("#v-todo h1")).fontFamily)))err("police unique en style sobre");
-    await pg.evaluate(()=>show("more"));await pg.click('#fxSel [data-fx="1"]');await pg.waitForTimeout(200);
+    await pg.evaluate(()=>{show("more");const d=$("fxSel").closest("details");if(d)d.open=true});await pg.click('#fxSel [data-fx="1"]');await pg.waitForTimeout(200);
     if(!(await pg.evaluate(()=>document.documentElement.hasAttribute("data-fx"))))err("« Unique » ne remet pas le style");
     const ov=await pg.evaluate(async()=>{const bad=[];for(const v of ["plan","todo","pomo","muscu","nutri","graph","notes","docs","pwd"]){show(v);await new Promise(z=>setTimeout(z,80));if(document.documentElement.scrollWidth>innerWidth+1)bad.push(v)}return bad});
     if(ov.length)err("débordement horizontal : "+ov.join(","));

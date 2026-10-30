@@ -427,7 +427,7 @@ const TOOLS = [
             properties: {
               name: { type: "string", description: "ex. Séance A · Haut du corps" },
               exercises: { type: "array", items: { type: "object", required: ["name", "sets", "reps"],
-                properties: { name: { type: "string" }, sets: { type: "number" }, reps: { type: "string", description: "ex. 8–10" }, rest_s: { type: "number", description: "Repos en secondes" }, rir: { type: "string", description: "Répétitions en réserve, ex. 1–2" }, note: { type: "string" } } } },
+                properties: { name: { type: "string" }, sets: { type: "number" }, reps: { type: "string", description: "ex. 8–10" }, rest_s: { type: "number", description: "Repos en secondes" }, rir: { type: "string", description: "Répétitions en réserve, ex. 1–2" }, intensity: { type: "string", description: "Intensité, ex. 80–90 %" }, rpe: { type: "string", description: "RPE visé, ex. 8–9" }, tempo: { type: "string", description: "Tempo descente-pause-montée, ex. 3-0-1 (X = explosif)" }, note: { type: "string" } } } },
             },
           },
         },
@@ -440,12 +440,20 @@ const TOOLS = [
     inputSchema: {
       type: "object", required: ["exercises"],
       properties: {
-        name: { type: "string", description: "Nom de la séance" }, date: { type: "string", description: "AAAA-MM-JJ (par défaut aujourd'hui)" }, minutes: { type: "number" },
+        name: { type: "string", description: "Nom de la séance" }, date: { type: "string", description: "AAAA-MM-JJ (par défaut aujourd'hui)" }, minutes: { type: "number" }, rest_s: { type: "number", description: "Repos moyen entre les séries, en secondes (facultatif)" },
         exercises: { type: "array", items: { type: "object", required: ["name", "sets"], properties: { name: { type: "string" }, sets: { type: "array", items: { type: "object", properties: { kg: { type: "number" }, reps: { type: "number" } } } } } } },
       },
     },
   },
 ];
+// v14 : paramètres de référence par objectif (mêmes valeurs que MU_PARAMS dans l'app, app/src/shell/24-…js)
+const REF: Data = {
+  force: "polyarticulaires 4–5 séries × 3–6, repos 3–5 min ; isolation 2–3 × 6–10, repos 2 min ; intensité 80–90 % du max, RPE 8–9 ; tempo 2-0-X (descente 2 s, montée explosive). Progression : toutes les séries réussies au haut de la fourchette → +2,5 kg (haut du corps) ou +5 kg (bas du corps).",
+  muscle: "polyarticulaires 3–4 séries × 6–10, repos 2–3 min ; isolation 3–4 × 10–15, repos 60–90 s ; intensité 65–80 %, RPE 7–9 (1 à 3 répétitions en réserve) ; tempo 3-0-1 ; 10 à 20 séries par groupe musculaire et par semaine. Progression : double progression (répétitions jusqu'au haut de la fourchette sur toutes les séries, puis charge).",
+  gras: "garder les charges lourdes (c'est le déficit calorique qui fait sécher) ; 3 séries (volume -20 à 30 % par rapport à la prise de masse) ; polyarticulaires 6–10, repos 90 s – 2 min ; isolation 10–15, repos 45–60 s, supersets possibles ; RPE 7–8 ; tempo 2-0-1. Objectif : maintenir les charges.",
+  endu: "2–3 séries de préférence en circuit × 15–25 ; intensité 40–60 %, RPE 6–7 ; repos 30–60 s entre exercices, 1–2 min entre les tours ; tempo 1-0-1. Progression : d'abord plus de répétitions, puis moins de repos, puis plus de charge.",
+};
+REF.forme = REF.muscle;
 // v12 : chaque outil porte le logo de son app (sid'agenda, sid'fit, sid'note), le connecteur lui-même le logo Sid'compagnon (choix de Sid)
 // (champ « icons » du protocole MCP ; une IA qui ne le connaît pas l'ignore). Images servies par le site.
 const ICON = (app: string) => [
@@ -791,14 +799,16 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
         const rem = (Array.isArray(pr.remarks) ? pr.remarks : []).slice(-5);
         if (rem.length) out += `Remarques de la personne sur son programme (à respecter, la plus récente compte le plus) :\n` + rem.map((r: Data) => `- ${String(r.at || "").slice(0, 10)} : ${String(r.text || "").slice(0, 600)}`).join("\n") + "\n";
         else if (pr.notes) out += `Remarques de la personne : ${String(pr.notes).slice(0, 600)}\n`;
-        out += `Programme${p.src === "ia" ? " (ajusté par une IA)" : ""} :\n` + ses.map((d: Data) => `## ${d.name}\n` + (d.exercises || []).map((e: Data) => `- ${e.name} : ${(e.sets || []).length} séries${e.reps ? ` × ${e.reps}` : ""}, repos ${e.rest || 120} s${e.rir ? `, RIR ${e.rir}` : ""}${e.note ? ` (${e.note})` : ""}`).join("\n")).join("\n") + "\n";
+        out += `Programme${p.src === "ia" ? " (ajusté par une IA)" : ""} :\n` + ses.map((d: Data) => `## ${d.name}\n` + (d.exercises || []).map((e: Data) => `- ${e.name} : ${(e.sets || []).length} séries${e.reps ? ` × ${e.reps}` : ""}, repos ${e.rest || 120} s${e.int ? `, ${e.int}` : ""}${e.rpe ? `, RPE ${e.rpe}` : ""}${e.tempo ? `, tempo ${e.tempo}` : ""}${e.rir ? `, RIR ${e.rir}` : ""}${e.note ? ` (${e.note})` : ""}`).join("\n")).join("\n") + "\n";
+        // v14 (Sid'compagnon v73) : paramètres de référence de l'objectif (points de départ, ajustables exercice par exercice)
+        if (REF[pr.goal]) out += `Paramètres de référence pour l'objectif (points de départ ; chaque exercice peut avoir les siens) : ${REF[pr.goal]}\n`;
       }
       const logs = m.log.filter((l: Data) => l && !del[l.id]).sort((x: Data, y: Data) => String(y.date || "").localeCompare(String(x.date || ""))).slice(0, 10);
       const other = m.sessions.filter((s: Data) => s && !del[s.id] && !(p && s.grp && s.grp.id === p.id));
       if (other.length) out += `Autres séances de la personne (libres ou importées) : ${other.slice(0, 15).map((s: Data) => s.name).join(", ")}.\n`;
       const exo = await exoList();
       if (exo) out += `Exercices autorisés pour un programme (n'utilise QUE ceux-ci, avec leur nom exact ; (P) = à privilégier en premier dans son groupe musculaire ; un autre exercice seulement si la personne le demande elle-même) :\n${exo}\n`;
-      out += logs.length ? "Dernières séances :\n" + logs.map((l: Data) => `- ${l.date} ${l.name || ""}${l.min ? ` (${l.min} min)` : ""} : ` + (l.ex || []).map((e: Data) => `${e.name} ${(e.sets || []).map((s: Data) => `${s.reps || "?"}${s.kg ? `×${s.kg}kg` : ""}`).join(", ")}`).join(" ; ")).join("\n") : "Aucune séance notée.";
+      out += logs.length ? "Dernières séances :\n" + logs.map((l: Data) => `- ${l.date} ${l.name || ""}${l.min ? ` (${l.min} min${l.rest ? `, repos moyen ${l.rest} s` : ""})` : ""} : ` + (l.ex || []).map((e: Data) => `${e.name} ${(e.sets || []).map((s: Data) => `${s.reps || "?"}${s.kg ? `×${s.kg}kg` : ""}`).join(", ")}`).join(" ; ")).join("\n") : "Aucune séance notée.";
       return out;
     }
     case "enregistrer_programme": {
@@ -806,7 +816,8 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
         id: uid(), name: String(d.name || `Séance ${"ABCDEFG"[i]}`).slice(0, 80),
         ex: d.exercises.slice(0, 12).filter((e: Data) => e && String(e.name || "").trim()).map((e: Data) => ({
           name: String(e.name).trim().slice(0, 80), pat: "", sets: Math.min(10, Math.max(1, r0(e.sets) || 3)), reps: String(e.reps || "8–12").slice(0, 12),
-          rest: Math.min(600, Math.max(15, r0(e.rest_s) || 180)), rir: String(e.rir || "").slice(0, 8), note: String(e.note || "").slice(0, 160) })),
+          rest: Math.min(600, Math.max(15, r0(e.rest_s) || 180)), rir: String(e.rir || "").slice(0, 8), note: String(e.note || "").slice(0, 160),
+          int: String(e.intensity || "").slice(0, 16), rpe: String(e.rpe || "").slice(0, 9), tempo: String(e.tempo || "").slice(0, 9) })),
       }));
       if (!days.length) throw new Error("Le programme est vide.");
       await writeData(user, (d) => {
@@ -819,7 +830,7 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
         if (op) m.sessions = m.sessions.filter((s: Data) => !(s && s.grp && s.grp.id === op.id));
         const id = uid(), grp = { id, name: "Mon programme", src: "claude" };
         days.forEach((dy: Data, i: number) => m.sessions.push({ id: dy.id, name: dy.name, grp, ord: i, upd: now,
-          exercises: dy.ex.map((e: Data) => ({ id: uid(), name: e.name, pat: "", reps: e.reps, rest: e.rest, rir: e.rir, note: e.note, sets: Array.from({ length: e.sets }, () => ({ kg: "", reps: "" })) })) }));
+          exercises: dy.ex.map((e: Data) => ({ id: uid(), name: e.name, pat: "", reps: e.reps, rest: e.rest, rir: e.rir, note: e.note, ...(e.int ? { int: e.int } : {}), ...(e.rpe ? { rpe: e.rpe } : {}), ...(e.tempo ? { tempo: e.tempo } : {}), sets: Array.from({ length: e.sets }, () => ({ kg: "", reps: "" })) })) }));
         m.plan = { id, v: 2, profile, at: new Date().toISOString(), upd: now, src: "ia" };
         m.upd = now;
       });
@@ -833,7 +844,7 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
       await writeData(user, (d) => {
         const m = MU(d), p = m.plan && !m.plan.deleted ? m.plan : null;
         const day = (p ? planSe(m, p) : []).concat(m.sessions).find((x: Data) => x && norm(x.name) === norm(a.name));
-        m.log.push({ id: uid(), date, day: day ? day.id : "", name: String(a.name || "Séance").slice(0, 80), min: r0(a.minutes) || undefined, ex, upd: Date.now() });
+        m.log.push({ id: uid(), date, day: day ? day.id : "", name: String(a.name || "Séance").slice(0, 80), min: r0(a.minutes) || undefined, rest: r0(a.rest_s) || undefined, ex, upd: Date.now() });
         m.upd = Date.now();
       });
       return `Séance notée le ${date} : ${ex.map((e: Data) => e.name).join(", ")}.`;
@@ -864,7 +875,7 @@ Deno.serve(async (req) => {
       return rpcOk(id, {
         protocolVersion: params?.protocolVersion || "2025-06-18",
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "sidnote", title: "Sid'note", version: "1.6.1", icons: ICON("home"), websiteUrl: "https://sidcompagnon.com" },
+        serverInfo: { name: "sidnote", title: "Sid'note", version: "1.7.0", icons: ICON("home"), websiteUrl: "https://sidcompagnon.com" },
         instructions: "Sid'note est l'application d'organisation de la personne (agenda, cours, tâches, notes, nutrition, musculation). Dates en AAAA-MM-JJ, heure de Bruxelles. Quand la personne demande un rappel pour une activité (ex. 1 h avant), passe-le dans reminders (en minutes) avec ajouter_activite ou modifier_activite : c'est une notification sur son téléphone. Quand la personne dit ce qu'elle a mangé ou envoie la photo de son assiette (si elle parle d'une photo envoyée depuis Sid'note, elle est jointe à nutrition_journee, ou lis-la avec photo_repas), estime toi-même calories et macros puis note-le avec noter_repas (sans redemander, sauf doute sur la quantité). Pour un menu, lis d'abord nutrition_journee puis enregistre-le avec enregistrer_menu. Après un bilan ou un commentaire nutrition (jour ou semaine), enregistre-le avec enregistrer_commentaire pour qu'il s'affiche dans l'app. Quand la personne parle d'une chose à faire un jour précis, ajoute la tâche avec sa date (ajouter_tache) : elle apparaîtra ce jour-là dans son agenda et passera au lendemain si elle n'est pas faite. Pour une note, propose un dossier (folder) si c'est utile ; pour corriger, compléter ou remettre au propre une note qui existe déjà, utilise modifier_note (ne crée pas de doublon). Pour la musculation, lis muscu_programme avant d'ajuster, puis enregistre avec enregistrer_programme ; une séance racontée se note avec noter_seance. Les mots de passe, documents et notes secrètes sont chiffrés et jamais accessibles.",
       });
     case "ping":

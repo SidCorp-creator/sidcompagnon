@@ -657,7 +657,8 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const mn=await pg.evaluate(()=>{const a=PLD().flatMap(d=>d.exercises.map(e=>e.name));return[a.includes("Curl marteau"),a.includes("Rowing avec appui")]});
     if(!mn[0])err("exercice imposé absent du programme");if(mn[1])err("exercice exclu présent dans le programme");
     const dup=await pg.evaluate(()=>PLD().some(d=>{const s=new Set();return d.exercises.some(e=>{const x=EXN(e.name),k=x.m+":"+x.pat;if(s.has(k)||s.has(x.g))return true;s.add(k);s.add(x.g)})}));if(dup)err("doublon dans une séance");
-    if(await pg.evaluate(()=>PLD().some(d=>d.exercises.some(e=>e.rest<120))))err("repos trop court");
+    // v73 : repos selon les paramètres de référence de l'objectif (prise de masse : 2 min 30 polyarticulaires, 1 min 15 isolation)
+    if(await pg.evaluate(()=>PLD().some(d=>d.exercises.some(e=>e.rest!==(exKind(e.name)==="I"?75:150)))))err("repos différent des paramètres de référence");
     // v44 : les séances du programme sont des cartes comme les autres (repos et séries modifiables sur la carte)
     const d0=await pg.evaluate(()=>PLD()[0].id);
     await pg.click(`#msList [data-ms="${d0}"] summary`);
@@ -1192,11 +1193,11 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.click("#muGoal [data-mugoal=force]");await pg.waitForTimeout(200);
     await pg.evaluate(()=>{msOpenId="sa";renderMuscu()});await pg.waitForTimeout(200);
     const adv=await pg.evaluate(()=>[...document.querySelectorAll('[data-ms="sa"] .ex-adv b')].map(x=>x.textContent));
-    if(adv.join("|")!=="5 × 3–5|3 × 8–10")err("séries conseillées (force) : "+adv.join("|"));
+    if(adv.join("|")!=="5 × 3–6 · RPE 8–9 · 4 min|3 × 6–10 · RPE 8–9 · 2 min")err("séries conseillées (force) : "+adv.join("|"));
     await pg.evaluate(()=>$("msList").scrollIntoView());await shot(pg,"v47-"+nm+"-musculation");await pg.evaluate(()=>$("muGoal").scrollIntoView());await shot(pg,"v47-"+nm+"-objectif");
     await pg.click('[data-ms="sa"] [data-msadv]');await pg.waitForTimeout(200);
     const ap=await pg.evaluate(()=>{const e=msFind("sa").exercises[0];return e.sets.length+":"+e.reps});
-    if(ap!=="5:3–5")err("« Appliquer » : "+ap);
+    if(ap!=="5:3–6")err("« Appliquer » : "+ap);
     if(await pg.evaluate(()=>data.prefs.muGoal)!=="force")err("objectif pas gardé");
     // champ Claude en haut de Musculation (avec l'accord santé) et de Notes
     await pg.evaluate(()=>{data.nutri=data.nutri||{};data.nutri.consent=new Date().toISOString();save()});
@@ -2231,6 +2232,67 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
       const late=b2.textContent.trim();b2.click();b2.click();await w(50);return{armed,after,late,hit}});
     const want=nm==="pc"?"Remove":"Retirer";
     if(!c2.armed||c2.after.armed||c2.after.txt!==want||c2.late!==want||c2.hit!==1)err("confirmation en deux appuis : "+JSON.stringify(c2));
+    await ctx.close()}
+  // --- v73 : musculation : paramètres de référence par objectif, réglages par exercice, séance terminée + chrono, statistiques
+  for(const [nm,dev,lg] of [["mobile",{...devices["iPhone 13"]},"fr"],["pc",{viewport:{width:1280,height:800}},"en"]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v73 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    if(lg!=="fr")await ctx.addInitScript(()=>{try{localStorage.setItem("sidnote-lang",JSON.stringify("en"))}catch(e){}});
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v73"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.waitForFunction(()=>!!(window.SCIslands&&window.SCIslands.muStats),null,{timeout:8000}).catch(()=>err("module React non chargé"));
+    await pg.evaluate(()=>{window.__par=async(ids,fn,ms=300)=>{const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.getAttribute("style")?e.style.cssText:"")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+      fn();if(ms)await new Promise(r=>setTimeout(r,ms));const out={},a={},react=ids.every(id=>Object.keys($(id)).some(k=>k.startsWith("__reactContainer")));ids.forEach(id=>a[id]=norm($(id)));
+      const sv=ids.map(id=>{const el=$(id),c=el.cloneNode(false);c.classList.remove("notr");el.id=id+"R";el.after(c);c.id=id;c.innerHTML="";return[el,c,id]});
+      window.__noIslands=true;try{fn()}finally{window.__noIslands=false}if(ms)await new Promise(r=>setTimeout(r,ms));
+      sv.forEach(([el,c,id])=>{const b=norm(c);if(a[id]!==b){const al=a[id].split("\n"),bl=b.split("\n");out[id]=al.length+"/"+bl.length+" "+(al.find((l,i)=>l!==bl[i])||"")+" <> "+(bl.find((l,i)=>l!==al[i])||"")}c.remove();el.id=id});return{react,out}}});
+    const check=async(lbl,ids,fnSrc,ms)=>{const r=await pg.evaluate(([ids,src,ms])=>window.__par(ids,eval(src),ms),[ids,fnSrc,ms]);
+      if(!r.react)err(lbl+" : pas rendu par React");for(const[id,d]of Object.entries(r.out))err(lbl+" : "+id+" différent : "+d.slice(0,300))};
+    const today=await pg.evaluate(()=>iso(today()));
+    await pg.evaluate(()=>{data.prefs.muGoal="muscle";const m=M();m.plan=null;m.log=[];m.sessions=[{id:"s73",name:"Haut du corps",upd:1,exercises:[{id:"e1",name:"Développé couché",ps:1,reps:"8–12",rest:120,sets:[{kg:"",reps:""},{kg:"",reps:""}]},{id:"e2",name:"Curl biceps",ps:1,sets:[{kg:"",reps:""}]}]}];msOpenId="s73";save();show("muscu")});
+    // conseil selon l'objectif + Appliquer (séries, répétitions, repos, intensité, RPE, tempo)
+    const adv=await pg.evaluate(()=>{const se=msFind("s73"),ex=se.exercises[0];const a=exAdv(ex.name);exAdvApply(se,ex);return{a,ex:{n:ex.sets.length,reps:ex.reps,rest:ex.rest,int:ex.int,rpe:ex.rpe,tempo:ex.tempo},ok:!!document.querySelector('[data-ex="e1"] .ex-adv .ok')}});
+    if(adv.a.k!=="H"||adv.ex.n!==4||adv.ex.reps!=="6–10"||adv.ex.rest!==150||adv.ex.int!=="65–80 %"||adv.ex.rpe!=="7–9"||adv.ex.tempo!=="3-0-1"||!adv.ok)err("Appliquer (prise de masse) : "+JSON.stringify(adv));
+    const iso2=await pg.evaluate(()=>exAdv("Curl biceps"));if(iso2.k!=="I"||iso2.reps!=="10–15"||iso2.rest!==75)err("isolation : "+JSON.stringify(iso2));
+    const fo=await pg.evaluate(()=>{data.prefs.muGoal="force";const a=exAdv("Squat"),b=exAdv("Curl biceps");data.prefs.muGoal="endu";const c=exAdv("Squat");data.prefs.muGoal="gras";const d=exAdv("Squat");data.prefs.muGoal="muscle";return[a,b,c,d]});
+    if(fo[0].sets!==5||fo[0].reps!=="3–6"||fo[0].rest!==240||fo[0].rpe!=="8–9"||fo[0].tempo!=="2-0-X"||fo[1].reps!=="6–10"||fo[1].rest!==120||fo[2].reps!=="15–25"||fo[2].rest!==45||fo[3].int!==""||fo[3].rpe!=="7–8")err("paramètres par objectif : "+JSON.stringify(fo));
+    // réglages propres à l'exercice : modifiés à la main, résumé mis à jour
+    const pr=await pg.evaluate(()=>{renderMuscu();const d=document.querySelector('[data-prm="e2"]');d.open=true;const i=d.querySelector('[data-f="xrest"]');i.value="90";i.dispatchEvent(new Event("input",{bubbles:true}));
+      const t=document.querySelector('[data-prm="e2"] [data-f="xtempo"]');t.value="4-1-1";t.dispatchEvent(new Event("input",{bubbles:true}));
+      const ex=msFind("s73").exercises[1];return{rest:ex.rest,tempo:ex.tempo,sum:document.querySelector('[data-prm="e2"] summary').textContent,open:document.querySelector('[data-prm="e2"]').open}});
+    if(pr.rest!==90||pr.tempo!=="4-1-1"||!/4-1-1/.test(pr.sum)||!pr.open)err("réglages de l'exercice : "+JSON.stringify(pr));
+    await check("séance (React / ancien rendu)",["msList"],"()=>renderMuscu()");
+    // chrono : démarre au premier poids saisi ; « Séance terminée » enregistre la séance (puis la met à jour)
+    await pg.evaluate(()=>{const i=document.querySelector('[data-ex="e1"] [data-si="0"] [data-f="setkg"]');i.value="60";i.dispatchEvent(new Event("input",{bubbles:true}));
+      const r=document.querySelector('[data-ex="e1"] [data-si="0"] [data-f="setreps"]');r.value="10";r.dispatchEvent(new Event("input",{bubbles:true}));data.ui.msRun.t0-=25*60e3;data.ui.msRun.marks["e1:0"]-=120e3;
+      const r2=document.querySelector('[data-ex="e1"] [data-si="1"] [data-f="setreps"]');r2.value="9";r2.dispatchEvent(new Event("input",{bubbles:true}));renderMuscu()});
+    const run=await pg.evaluate(()=>({r:!!data.ui.msRun,sub:document.querySelector('[data-ms="s73"] summary .small').textContent}));
+    if(!run.r||!/⏱ 2[56] min/.test(run.sub))err("chrono : "+JSON.stringify(run));
+    await pg.evaluate(()=>{document.querySelector('[data-ms="s73"]').scrollIntoView()});await shot(pg,"v73-"+nm+"-seance");
+    await pg.evaluate(()=>{document.querySelector('[data-ms="s73"] [data-msdone]').click()});await pg.waitForTimeout(200);
+    const lgx=await pg.evaluate(()=>({log:ML().map(l=>({date:l.date,day:l.day,min:l.min,rest:l.rest,n:l.ex.length,sets:l.ex[0].sets.length})),run:!!data.ui.msRun,btn:document.querySelector('[data-ms="s73"] [data-msdone]').textContent}));
+    if(lgx.log.length!==1||lgx.log[0].date!==today||lgx.log[0].day!=="s73"||!(lgx.log[0].min>=25)||!(lgx.log[0].rest>=100)||lgx.log[0].n!==1||lgx.log[0].sets!==2||lgx.run)err("séance terminée : "+JSON.stringify(lgx));
+    if(!/(Mettre à jour|Update)/.test(lgx.btn))err("bouton après la séance : "+lgx.btn);
+    await pg.evaluate(()=>{document.querySelector('[data-ms="s73"] [data-msdone]').click()});await pg.waitForTimeout(150);
+    if(await pg.evaluate(()=>ML().length)!==1)err("la séance du jour est enregistrée deux fois");
+    // statistiques par objectif
+    const st=await pg.evaluate(()=>{const d=n=>{const x=today();x.setDate(x.getDate()-n);return iso(x)},S=(kg,r,n)=>Array.from({length:n},()=>({kg:String(kg),reps:String(r)}));
+      M().log=[{id:"l1",date:d(9),name:"A",ex:[{name:"Développé couché",sets:S(100,5,3)},{name:"Squat",sets:S(140,5,3)}],min:60,rest:150,upd:1},
+        {id:"l2",date:d(6),name:"A",ex:[{name:"Développé couché",sets:S(97.5,6,3)},{name:"Squat",sets:S(140,5,3)}],min:50,rest:120,upd:2},
+        {id:"l3",date:d(0),name:"A",ex:[{name:"Développé couché",sets:S(95,6,3)},{name:"Curl biceps",sets:S(12,12,3)}],min:40,rest:60,upd:3}];
+      const out={};for(const g of ["force","muscle","gras","endu"]){data.prefs.muGoal=g;out[g]=muStatsVM()}data.prefs.muGoal="muscle";save();renderMuscu();return out});
+    const f=st.force.rows.find(r=>/Développé/.test(r.l));if(!f||!/^100 kg/.test(f.v)||!/max \S* ?117 kg|117 kg/.test(f.v))err("force : "+JSON.stringify(st.force.rows));
+    const gr=st.gras.rows.find(r=>/Développé/.test(r.l));if(!gr||!gr.warn||!/^95 \/ 100 kg/.test(gr.v)||!st.gras.rows.some(r=>/50 min|min/.test(r.v)))err("sèche : "+JSON.stringify(st.gras.rows));
+    if(!st.endu.rows.some(r=>/^\d+$/.test(r.v))||!st.endu.rows.some(r=>/ s$/.test(r.v)))err("endurance : "+JSON.stringify(st.endu.rows));
+    if(!st.muscle.rows.length||!/kg$/.test(st.muscle.rows[0].v)||!st.muscle.rows.some(r=>/^(Pectoraux|Chest|Borst|Pecs)/.test(r.l))||st.muscle.rows.some(r=>/^(Autres|Other|Overige)$/.test(r.l)))err("prise de masse : "+JSON.stringify(st.muscle.rows));
+    await check("statistiques",["muStats"],"()=>renderMuStats()");
+    await pg.evaluate(()=>{$("muStats").scrollIntoView()});await shot(pg,"v73-"+nm+"-stats");
+    // progression : la dernière séance a tout réussi au haut de la fourchette → conseil sur l'exercice
+    const pro=await pg.evaluate(()=>{const ex=msFind("s73").exercises[1];ex.reps="10–12";renderMuscu();return exProg(ex)});
+    if(!pro)err("conseil de progression absent");
+    // programme généré : suit les paramètres de l'objectif
+    const cb=await pg.evaluate(()=>{const pl=coachBuild({level:"inter",goal:"force",days:3,dur:60,equip:"gym",avoid:[],prio:[],must:[],never:[]});const ex=(pl.days||[])[0].ex[0];return{reps:ex.reps,rpe:ex.rpe,tempo:ex.tempo,rest:ex.rest}});
+    if(cb.rpe!=="8–9"||cb.tempo!=="2-0-X"||!(cb.rest===240||cb.rest===120))err("programme généré : "+JSON.stringify(cb));
     await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");

@@ -4,12 +4,34 @@
 // Les calculs propres au sport (conseil séries × répétitions, type de séance, fiche d'aide) restent dans app.js et arrivent déjà faits.
 
 export interface MuSet { kg: string; reps: string }
-export interface MuEx { id: string; name: string; help: boolean; adv: { txt: string; val: string; same: boolean } | null; sets: MuSet[] }
-export interface MuSe { id: string; name: string; shown: string; letter: string; ty: string; tag: string; open: boolean; sub: string; ex: MuEx[] }
+export interface MuPrm { reps: string; rest: string; int: string; rpe: string; tempo: string; sum: string; open: boolean }
+export interface MuEx { id: string; name: string; help: boolean; adv: { txt: string; val: string; same: boolean } | null; prm: MuPrm; pro: string; sets: MuSet[] }
+export interface MuSe { id: string; name: string; shown: string; letter: string; ty: string; tag: string; open: boolean; sub: string; done: boolean; ex: MuEx[] }
 export interface MuGrp { id: string; name: string; free: boolean; sub: string; more: boolean; empty: string; ses: MuSe[] }
 export interface MuI18n { tr: (fr: string) => string; L: (fr: string) => string }
 
 const MORE = <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.9" /><circle cx="12" cy="12" r="1.9" /><circle cx="19" cy="12" r="1.9" /></svg>;
+
+// v73 : réglages propres à l'exercice (répétitions visées, repos, intensité, RPE, tempo), repliés par défaut
+function ExPrm({ ex, i18n }: { ex: MuEx; i18n: MuI18n }) {
+  const { tr, L } = i18n, p = ex.prm;
+  return <details className="ex-prm" data-prm={ex.id} open={p.open}><summary className="small">{tr(p.sum)}</summary><div className="ex-prm-g">
+    <label><span>{tr(L("Répétitions visées"))}</span><input data-f="xreps" defaultValue={p.reps} placeholder="8–12" maxLength={9} autoComplete="off" /></label>
+    <label><span>{tr(L("Repos (secondes)"))}</span><input data-f="xrest" defaultValue={p.rest} placeholder="120" inputMode="numeric" maxLength={3} autoComplete="off" /></label>
+    <label><span>{tr(L("Intensité"))}</span><input data-f="xint" defaultValue={p.int} placeholder="70 %" maxLength={16} autoComplete="off" /></label>
+    <label><span>RPE</span><input data-f="xrpe" defaultValue={p.rpe} placeholder="8" maxLength={9} autoComplete="off" /></label>
+    <label><span>{tr(L("Tempo"))}</span><input data-f="xtempo" defaultValue={p.tempo} placeholder="3-0-1" maxLength={9} autoComplete="off" /></label></div></details>;
+}
+
+// v73 : carte « Mes statistiques » (#muStats) : statistique mise en avant selon l'objectif, règle de progression
+export interface MuStatsVM { title: string; prog: string; empty: string; rows: { l: string; v: string; u?: boolean; warn?: boolean }[] }
+export function MuStats({ vm, i18n }: { vm: MuStatsVM; i18n: MuI18n }) {
+  const { tr, L } = i18n;
+  return <><div className="mu-st-h"><span className="eyebrow">{tr(L("Mes statistiques"))}</span><span className="small muted">{tr(vm.title)}</span></div>
+    {vm.rows.length ? <div className="mu-st-rows">{vm.rows.map((r, i) => <div key={i} className="row"><span className={r.u ? "grow notr" : "grow"}>{r.u ? r.l : tr(r.l)}</span><b className={r.warn ? "warn" : undefined}>{tr(r.v)}</b></div>)}</div>
+      : <p className="small muted">{tr(vm.empty)}</p>}
+    <p className="small muted mu-st-prog"><b>{tr(L("Progression"))}</b>{tr(` : ${vm.prog}`)}</p></>;
+}
 
 function SeCard({ se, trash, i18n }: { se: MuSe; trash: string; i18n: MuI18n }) {
   const { tr, L } = i18n;
@@ -26,6 +48,8 @@ function SeCard({ se, trash, i18n }: { se: MuSe; trash: string; i18n: MuI18n }) 
           <button type="button" className="x" data-msdelex={ex.id} aria-label={tr(L("Supprimer l'exercice"))}>×</button></div>
         {ex.adv ? <div className="ex-adv"><span className="grow">{tr(ex.adv.txt)}<b>{ex.adv.val}</b></span>{ex.adv.same ? <span className="ok">✓</span> : <button type="button" className="linkbtn" data-msadv="1">{tr(L("Appliquer"))}</button>}</div>
           : <div className="ex-adv" hidden></div>}
+        <ExPrm ex={ex} i18n={i18n} />
+        {ex.pro ? <div className="ex-pro small">{tr(`↑ ${ex.pro}`)}</div> : null}
         <div className="set-rows">{ex.sets.map((st, j) => <div key={j} className="set-row" data-si={j}><span className="set-l">{tr(`${L("Série")} ${j + 1}`)}</span>
           <input className="set-in" data-f="setkg" defaultValue={st.kg} placeholder={tr("kg")} aria-label={tr(`${L("Série")} ${j + 1} : kg`)} autoComplete="off" inputMode="decimal" />
           <span className="set-sep" aria-hidden="true">–</span>
@@ -36,6 +60,7 @@ function SeCard({ se, trash, i18n }: { se: MuSe; trash: string; i18n: MuI18n }) 
       </div>)}
       <button type="button" className="qbtn" data-msaddex="1">{tr(`+ ${L("Ajouter un exercice")}`)}</button>
       <div className="ms-actions">
+        <button type="button" className="btn" data-msdone="1">{tr(L(se.done ? "Mettre à jour la séance faite" : "Séance terminée"))}</button>
         <button type="button" className="btn ghost" data-msshare="1">{tr(L("Partager"))}</button>
         <button type="button" className="btn stop" data-msdel="1">{tr(L("Supprimer"))}</button>
       </div>

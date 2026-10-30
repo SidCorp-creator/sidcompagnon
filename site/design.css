@@ -1034,3 +1034,20 @@ html[data-ds] .sp-tag{font-family:var(--display);font-weight:300;font-size:18px;
 @media (min-width:768px){html[data-ds] main{padding-left:48px;padding-right:48px}}
 html[data-ds] label.btn{display:inline-flex;align-items:center;justify-content:center}
 html[data-ds] .yr-grid{gap:12px 6px}html[data-ds] .ym{min-width:0;padding:4px 0}html[data-ds] .ym-g,html[data-ds] .ym-g i{min-width:0}
+
+/* v73 : réglages par exercice, progression, statistiques de la musculation */
+.ex-prm{margin:0 2px 8px;border-radius:6px}
+.ex-prm>summary{list-style:none;cursor:pointer;color:var(--muted);padding:6px 0;display:flex;align-items:center;gap:6px}
+.ex-prm>summary::-webkit-details-marker{display:none}
+.ex-prm>summary::before{content:"›";display:inline-block;transition:transform .15s;font-size:15px;line-height:1}
+.ex-prm[open]>summary::before{transform:rotate(90deg)}
+.ex-prm-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(130px,100%),1fr));gap:8px 10px;padding:4px 0 6px}
+.ex-prm-g label{display:grid;gap:4px;min-width:0;font-size:12px;color:var(--muted)}
+.ex-prm-g input{min-width:0;width:100%;height:40px;font-size:16px}
+.ex-pro{color:var(--app,var(--ink));padding:0 2px 6px}
+.mu-stats{display:grid;gap:10px;margin:16px 0}
+.mu-st-h{display:grid;gap:2px}
+.mu-st-rows .row{min-height:40px;gap:10px}
+.mu-st-rows b{font-family:var(--mono,inherit);font-weight:500;text-align:right;font-size:14px;letter-spacing:-.01em}
+.mu-st-rows b.warn{color:var(--late,#C2410C)}
+.mu-st-prog{margin:0}

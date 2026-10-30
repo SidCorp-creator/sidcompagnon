@@ -110,7 +110,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="72";const errSent=new Set();
+const APP_V="73";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -2107,7 +2107,7 @@ function muMigrate(){const m=M(),p=m.plan;if(!Array.isArray(m.sessions))m.sessio
   if(p&&!p.deleted&&Array.isArray(p.days)){const grp={id:p.id,name:L("Mon programme"),src:p.src==="ia"?"claude":"app"};
     p.days.forEach((d,i)=>{if(m.sessions.some(s=>s.id===d.id)||(data.del&&data.del[d.id]))return; // v44.6 : jamais une séance supprimée
       m.sessions.push({id:d.id,name:d.name||`${L("Séance")} ${"ABCDEFG"[i]||i+1}`,grp,ord:i,upd:Date.now(),
-        exercises:(d.ex||[]).map(e=>({id:uid(),name:e.name||"",pat:e.pat||"",reps:e.reps||"",rest:+e.rest||120,rir:e.rir||"",note:e.note||"",sets:Array.from({length:Math.max(1,Math.min(20,+e.sets||3))},newSet)}))})});
+        exercises:(d.ex||[]).map(e=>({id:uid(),name:e.name||"",pat:e.pat||"",reps:e.reps||"",rest:+e.rest||120,rir:e.rir||"",note:e.note||"",...(e.int?{int:e.int}:{}),...(e.rpe?{rpe:e.rpe}:{}),...(e.tempo?{tempo:e.tempo}:{}),sets:Array.from({length:Math.max(1,Math.min(20,+e.sets||3))},newSet)}))})});
     delete p.days;p.v=2;p.upd=Date.now();ch=true}
   for(const se of m.sessions)if(se&&!Array.isArray(se.exercises)){se.exercises=[];ch=true}
   // v44.7 : retour à une ligne par série (kg puis répétitions). Un poids / un nombre de répétitions communs tapés en 44.6
@@ -2148,18 +2148,21 @@ function parseShared(txt){
 // une carte par séance, la même pour toutes (libre, programme de Sid'compagnon, de Claude ou importé)
 // v44.7 (demande de Sid) : une seule interface, modifiée directement ; pour chaque exercice, une ligne par série :
 // « Série 1 : [kg] – [reps] », « + Ajouter une série », × pour retirer une série. Rien n'est pré-rempli.
+// v73 : résumé d'une séance (exercices, séries, chrono en cours ou « faite aujourd'hui »)
+function seSub(se,nS){const r=msRunGet(se.id);return `${se.exercises.length} ${L(se.exercises.length>1?"exercices":"exercice")} · ${nS} ${L(nS>1?"séries":"série")}`+
+  (r?` · ⏱ ${msRunMin(r)} min`:msDoneToday(se)?` · ✓ ${L("faite aujourd'hui")}`:"")}
 const exKg=x=>String(x==null?"":x).replace(".",LANG==="en"?".":",");
 function seCard(se,letter){const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0),ty=seType(se),T=ty&&SE_T[ty];
   // v47 (#14) : lettre de la séance dans son programme + type (poussée, tirage, jambes…) en couleur ; séance libre en pointillés
   const tag=letter||T?`<span class="se-tag">${letter?`<b>${letter}</b>`:""}${T?`<span>${L(T[0])}</span>`:""}</span>`:`<span class="se-tag se-free">${L("Libre")}</span>`;
   const shown=String(se.name||"").replace(/^(?:Séance|Session|Training)\s+[A-F]\s*·\s*/i,"")||L("Séance");
   return `<details class="ms${letter?"":" ms-free"}" data-ms="${se.id}" ${ty?`data-se="${ty}"`:""} ${se.id===msOpenId?"open":""}>
-    <summary><span class="chev">›</span><span class="grow">${tag}<span class="ms-name notr">${esc(shown)}</span><br><span class="small muted">${se.exercises.length} ${L(se.exercises.length>1?"exercices":"exercice")} · ${nS} ${L(nS>1?"séries":"série")}</span></span><button type="button" class="x ms-del" data-msdel="1" aria-label="${L("Supprimer la séance")}">${IC("trash")}</button></summary>
+    <summary><span class="chev">›</span><span class="grow">${tag}<span class="ms-name notr">${esc(shown)}</span><br><span class="small muted">${esc(seSub(se,nS))}</span></span><button type="button" class="x ms-del" data-msdel="1" aria-label="${L("Supprimer la séance")}">${IC("trash")}</button></summary>
     <div class="ms-body">
       <label class="small muted" style="display:grid;gap:4px">${L("Nom de la séance")}<input data-f="msname" value="${esc(se.name)}" autocomplete="off"></label>
       ${se.exercises.map((ex,i)=>`<div class="ex ex3" data-ex="${ex.id}">
         <div class="ex-head"><span class="num">${i+1}</span><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><button type="button" class="mini ex-help" data-exhelp="1" aria-label="${L("Comment faire cet exercice")}" title="${L("Comment faire cet exercice")}"${exAide(ex.name)?"":" hidden"}>?</button><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">×</button></div>
-        ${exAdvHtml(ex)}
+        ${exAdvHtml(ex)}${exPrmHtml(ex)}${(p=>p?`<div class="ex-pro small">↑ ${esc(p)}</div>`:"")(exProg(ex))}
         <div class="set-rows">${ex.sets.map((st,j)=>`<div class="set-row" data-si="${j}"><span class="set-l">${L("Série")} ${j+1}</span>
           <input class="set-in" data-f="setkg" value="${esc(exKg(st&&st.kg))}" placeholder="kg" aria-label="${L("Série")} ${j+1} : kg" autocomplete="off" inputmode="decimal">
           <span class="set-sep" aria-hidden="true">–</span>
@@ -2169,6 +2172,7 @@ function seCard(se,letter){const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0
       </div>`).join("")}
       <button type="button" class="qbtn" data-msaddex="1">+ ${L("Ajouter un exercice")}</button>
       <div class="ms-actions">
+        <button type="button" class="btn" data-msdone="1">${L(msDoneToday(se)?"Mettre à jour la séance faite":"Séance terminée")}</button>
         <button type="button" class="btn ghost" data-msshare="1">${L("Partager")}</button>
         <button type="button" class="btn stop" data-msdel="1">${L("Supprimer")}</button>
       </div>
@@ -2180,23 +2184,24 @@ function renderMuscu(){muMigrate();try{renderCoach()}catch(e){}
   for(const s of S)if(s.grp&&!seen.has(s.grp.id)){seen.add(s.grp.id);groups.push({id:s.grp.id,name:s.grp.name||L("Programme"),src:s.grp.src||"import",ses:grpSe(s.grp.id)})}
   const free=S.filter(s=>!s.grp||!seen.has(s.grp.id));
   // v55 (#3) : liste dessinée par React (app/src/Muscu.tsx) à partir de ce modèle ; ancien rendu en secours
-  if(window.SCIslands&&window.SCIslands.muList&&!window.__noIslands){try{msIsland(groups,free);renderMuGoal();const dl=$("exList");if(dl&&!dl.childElementCount)dl.innerHTML=EXDB.map(e=>`<option value="${esc(e.n)}"></option>`).join("");return}
+  if(window.SCIslands&&window.SCIslands.muList&&!window.__noIslands){try{msIsland(groups,free);renderMuGoal();renderMuStats();const dl=$("exList");if(dl&&!dl.childElementCount)dl.innerHTML=EXDB.map(e=>`<option value="${esc(e.n)}"></option>`).join("");return}
     catch(e){reportErr("island muList: "+(e&&e.message))}}
   const gHtml=g=>`<section class="ms-grp" data-msgrp="${g.id}"><div class="ms-grp-h"><div class="grow"><span class="eyebrow notr">${esc(g.name)}</span><span class="small muted">${L(GSRC[g.src]||"Importé")} · ${g.ses.length} ${L(g.ses.length>1?"séances":"séance")}${g.plan?` · ${L("suivi")}`:""}</span></div><button type="button" class="pen" data-msgact="${g.id}" aria-label="${L("Actions du programme")}">${MORE}</button></div>
     ${g.ses.map((se,i)=>seCard(se,"ABCDEFGHIJ"[i]||"")).join("")||`<div class="small muted">${L("Aucune séance dans ce programme.")}</div>`}</section>`;
   $("msList").innerHTML=groups.map(gHtml).join("")+
     `<section class="ms-grp" data-msgrp=""><div class="ms-grp-h"><div class="grow"><span class="eyebrow">${L("Séances libres")}</span><span class="small muted">${free.length} ${L(free.length>1?"séances":"séance")}</span></div>${free.length?`<button type="button" class="pen" data-msgact="" aria-label="${L("Actions des séances libres")}">${MORE}</button>`:""}</div>
     ${free.map(se=>seCard(se)).join("")||`<div class="small muted">${L("Aucune séance libre. Crée-en une ci-dessous.")}</div>`}</section>`;
-  renderMuGoal();
+  renderMuGoal();renderMuStats();
   const dl=$("exList");if(dl&&!dl.childElementCount)dl.innerHTML=EXDB.map(e=>`<option value="${esc(e.n)}"></option>`).join("")}
 // modèle de la liste pour React : mêmes textes et mêmes calculs que seCard / exAdvHtml
 let msLast=null;
 function msIsland(groups,free){msLast=[groups,free];
   const seVM=(se,letter)=>{const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0),ty=seType(se),T=ty&&SE_T[ty];
     return{id:se.id,name:se.name||"",shown:String(se.name||"").replace(/^(?:Séance|Session|Training)\s+[A-F]\s*·\s*/i,"")||L("Séance"),letter:letter||"",ty:ty||"",tag:T?T[0]:"",open:se.id===msOpenId,
-      sub:`${se.exercises.length} ${L(se.exercises.length>1?"exercices":"exercice")} · ${nS} ${L(nS>1?"séries":"série")}`,
+      sub:seSub(se,nS),done:msDoneToday(se),
       ex:se.exercises.map(ex=>{const a=exAdv(ex.name);return{id:ex.id,name:ex.name||"",help:!!exAide(ex.name),
-        adv:a?{txt:`${L("Conseillé")} (${L(MU_GOALS[muGoal()])}) : `,val:`${a.sets} × ${a.reps}`,same:ex.sets.length===a.sets&&ex.reps===a.reps}:null,
+        adv:a?{txt:`${L("Conseillé")} (${L(MU_GOALS[muGoal()])}) : `,val:exAdvVal(a),same:exAdvSame(ex,a)}:null,
+        prm:{reps:ex.reps||"",rest:+ex.rest?String(+ex.rest):"",int:ex.int||"",rpe:ex.rpe||"",tempo:ex.tempo||"",sum:exPrmSum(ex),open:msPrmOpen.has(ex.id)},pro:exProg(ex),
         sets:ex.sets.map(st=>({kg:exKg(st&&st.kg),reps:String((st&&st.reps)||"")}))}})}};
   const G=groups.map(g=>({id:g.id,name:g.name,free:false,more:true,sub:`${L(GSRC[g.src]||"Importé")} · ${g.ses.length} ${L(g.ses.length>1?"séances":"séance")}${g.plan?` · ${L("suivi")}`:""}`,
     empty:"Aucune séance dans ce programme.",ses:g.ses.map((se,i)=>seVM(se,"ABCDEFGHIJ"[i]||""))}));
@@ -2209,7 +2214,8 @@ const msRedraw=()=>{if(msLast&&window.SCIslands&&window.SCIslands.muList&&!windo
 function msSaveSoon(se){if(se)seTouch(se);clearTimeout(msTimer);msTimer=setTimeout(save,500)}
 $("msForm").addEventListener("submit",e=>{e.preventDefault();const n=$("msName").value.trim();if(!n)return;
   const se={id:uid(),name:n,exercises:[newEx()],upd:Date.now()};M().sessions.push(se);msOpenId=se.id;save();renderMuscu();$("msName").value="";toast("Séance créée")});
-$("msList").addEventListener("toggle",e=>{const d=e.target.closest("[data-ms]");if(d&&d.open)msOpenId=d.dataset.ms},true);
+$("msList").addEventListener("toggle",e=>{const t=e.target;if(t.matches&&t.matches("[data-prm]")){if(t.open)msPrmOpen.add(t.dataset.prm);else msPrmOpen.delete(t.dataset.prm);return}
+  const d=t.closest("[data-ms]");if(d&&d.open)msOpenId=d.dataset.ms},true);
 $("msList").addEventListener("input",e=>{
   const inp=e.target,f=inp.dataset.f;if(!f)return;
   const se=msFind(inp.closest("[data-ms]").dataset.ms);if(!se)return;
@@ -2217,8 +2223,12 @@ $("msList").addEventListener("input",e=>{
   else{const ex=se.exercises.find(x=>x.id===inp.closest("[data-ex]").dataset.ex);if(!ex)return;
     if(f==="exname"){ex.name=inp.value;if(msRedraw()){msSaveSoon(se);return}const h=inp.parentElement.querySelector("[data-exhelp]");if(h)h.hidden=!exAide(ex.name);
       const av=inp.closest("[data-ex]").querySelector(".ex-adv");if(av)av.outerHTML=exAdvHtml(ex)}
-    else if(f==="setkg"||f==="setreps"){const st=ex.sets[+inp.closest("[data-si]").dataset.si];if(!st)return;
-      if(f==="setkg")st.kg=inp.value.replace(",",".").replace(/[^0-9.]/g,"").slice(0,7);else st.reps=inp.value.replace(/[^0-9]/g,"").slice(0,4)}}
+    else if(/^x(reps|rest|int|rpe|tempo)$/.test(f)){const k=f.slice(1); // v73 : réglages propres à l'exercice
+      if(k==="rest"){const v=parseInt(inp.value.replace(/[^0-9]/g,""));if(v)ex.rest=Math.min(900,v);else delete ex.rest}else{const v=inp.value.slice(0,16).trim();if(v)ex[k]=v;else delete ex[k]}
+      if(!msRedraw()){const d=inp.closest("[data-prm]");if(d)d.querySelector("summary").textContent=exPrmSum(ex);const av=inp.closest("[data-ex]").querySelector(".ex-adv");if(av)av.outerHTML=exAdvHtml(ex)}}
+    else if(f==="setkg"||f==="setreps"){const j=+inp.closest("[data-si]").dataset.si,st=ex.sets[j];if(!st)return;
+      if(f==="setkg")st.kg=inp.value.replace(",",".").replace(/[^0-9.]/g,"").slice(0,7);else st.reps=inp.value.replace(/[^0-9]/g,"").slice(0,4);
+      const was=msRunGet(se.id);if(String(st.kg||"").trim()||String(st.reps||"").trim()){msRunTouch(se,ex,j,!!String(st.reps||"").trim());if(!was)msRedraw()}}}
   msSaveSoon(se)});
 // v44.7 : fiche « comment faire » de chaque exercice proposé (site/exercices-aide.js), dans la langue de l'app
 function exAide(name){const A=window.SIDFIT_AIDE||{},k=fold(String(name||"").trim());if(!k)return null;
@@ -2257,6 +2267,7 @@ $("msList").addEventListener("click",e=>{
     const ins=document.querySelectorAll(`#msList [data-ex="${ex.id}"] [data-f="setkg"]`);ins[ins.length-1]?.focus()}
   else if(b.dataset.msdelset!==undefined){const ex=exOf();if(!ex||ex.sets.length<=1)return;ex.sets.splice(+b.dataset.msdelset,1);seTouch(se);save();renderMuscu()}
   else if(b.dataset.msshare)copyText(shareTxt([se]),"se");
+  else if(b.dataset.msdone)msDone(se);
   // v44.4 : aussi depuis l'en-tête de la séance (poubelle, 2 appuis)
   else if(b.dataset.msdel&&c2ok(b))undoable("Séance supprimée",[se.id],()=>{tomb(se.id);M().sessions=M().sessions.filter(x=>x!==se)},{after:renderMuscu});
 });
@@ -2327,8 +2338,10 @@ function coachBuild(p){const split={2:["full1","full2"],3:p.level==="deb"?["full
   const rir={deb:"2–3",inter:"1–2",conf:"0–1"}[p.level]||"2",prio=new Set((p.prio||[]).flatMap(k=>PRIO[k]||[])),turn={};
   let relax=false; // v44 : la liste d'exercices est surtout faite pour la salle : si le matériel laisse une séance presque vide, on l'ignore pour cette séance
   const ok=e=>(relax||e.eq.includes(eq))&&!never.has(e.n)&&!av.some(z=>e.z.includes(z));
-  const mk=e=>{let sets=p.level==="deb"?3:EXHEAVY(e)?4:3;if(prio.has(e.m))sets++;if(p.level==="conf"&&EXHEAVY(e))sets=Math.max(sets,4);
-    return{name:e.n,pat:e.m+":"+e.pat,sets,reps:EXHEAVY(e)?R[0]:R[1],rest:REST[e.t]||120,rir,note:[e.note,p.level==="conf"&&!EXHEAVY(e)?"Dernière série au plus près de l'échec":""].filter(Boolean).join(". ")}};
+  // v73 : séries, répétitions, repos, intensité, RPE et tempo suivent les paramètres de référence de l'objectif (MU_PARAMS)
+  const PP=MU_PARAMS[p.goal]||MU_PARAMS.muscle;
+  const mk=e=>{const x=PP[EXHEAVY(e)?"H":"I"];let sets=p.level==="deb"?Math.min(3,x.sets):x.sets;if(prio.has(e.m))sets++;
+    return{name:e.n,pat:e.m+":"+e.pat,sets,reps:x.reps,rest:x.rest,rir,...(PP.int?{int:PP.int}:{}),rpe:PP.rpe,tempo:PP.tempo,note:[e.note,p.level==="conf"&&!EXHEAVY(e)?"Dernière série au plus près de l'échec":""].filter(Boolean).join(". ")}};
   // exercices imposés : chacun va dans la séance qui travaille déjà ce muscle (la moins chargée en imposés)
   const forced=split.map(()=>[]);
   for(const n of p.must||[]){const e=EXN(n);if(!e||never.has(n))continue;
@@ -2426,21 +2439,74 @@ async function coachAdjust(text){text=String(text||"").trim();if(!text){toast("�
 /* ---------- v47 : objectif visible, séries conseillées, types de séances, demande à Claude (#13, #14, #17) ---------- */
 // objectif d'entraînement (data.prefs.muGoal, synchronisé ; repris du programme suivi s'il n'est pas réglé)
 const MU_GOALS={force:"Force",muscle:"Prise de masse",gras:"Sèche",endu:"Endurance",forme:"Forme"};
-// séries × répétitions conseillées : H = exercice polyarticulaire (lourd), I = isolation
-const MU_SCHEME={force:{H:[5,"3–5"],I:[3,"8–10"]},muscle:{H:[4,"6–10"],I:[3,"10–15"]},gras:{H:[3,"8–12"],I:[3,"12–15"]},endu:{H:[3,"12–15"],I:[3,"15–20"]},forme:{H:[3,"8–12"],I:[3,"12–15"]}};
-const muGoal=()=>{const g=data.prefs.muGoal||(PL()&&PL().profile&&PL().profile.goal);return MU_SCHEME[g]?g:"muscle"};
+// v73 (demande de Sid du 30 oct. 2026) : paramètres de référence par objectif. H = polyarticulaire (squat, développé, rowing, tractions…),
+// I = isolation (curl, extensions, élévations…). sets = nombre appliqué, setsTxt = fourchette affichée, rest = repos appliqué (s).
+// Ce sont des points de départ : chaque exercice garde ses propres réglages (ex.reps, ex.rest, ex.int, ex.rpe, ex.tempo), modifiables à la main ou par Claude.
+const MU_PARAMS={
+  force:{H:{sets:5,setsTxt:"4–5",reps:"3–6",rest:240,restTxt:"3–5 min"},I:{sets:3,setsTxt:"2–3",reps:"6–10",rest:120,restTxt:"2 min"},
+    int:"80–90 %",rpe:"8–9",tempo:"2-0-X",tempoTxt:"descente contrôlée 2 s, montée explosive",
+    prog:"Quand toutes les séries sont réussies au haut de la fourchette : +2,5 kg (haut du corps) ou +5 kg (bas du corps).",stat:"Charge maximale et max estimé (1RM)"},
+  muscle:{H:{sets:4,setsTxt:"3–4",reps:"6–10",rest:150,restTxt:"2–3 min"},I:{sets:3,setsTxt:"3–4",reps:"10–15",rest:75,restTxt:"60–90 s"},
+    int:"65–80 %",rpe:"7–9",tempo:"3-0-1",tempoTxt:"descente lente 3 s, pause 0, montée 1 s",
+    prog:"Double progression : monte les répétitions jusqu'au haut de la fourchette sur toutes les séries, puis augmente la charge et repars du bas.",stat:"Volume total et séries par muscle sur la semaine"},
+  gras:{H:{sets:3,setsTxt:"3",reps:"6–10",rest:105,restTxt:"90 s – 2 min"},I:{sets:3,setsTxt:"3",reps:"10–15",rest:60,restTxt:"45–60 s"},
+    int:"",intTxt:"charges habituelles",rpe:"7–8",tempo:"2-0-1",tempoTxt:"descente contrôlée 2 s, montée 1 s",
+    prog:"Garde tes charges lourdes : c'est le déficit calorique qui fait sécher. L'objectif est de maintenir les charges.",stat:"Maintien de la force et durée de la séance"},
+  endu:{H:{sets:3,setsTxt:"2–3",reps:"15–25",rest:45,restTxt:"30–60 s"},I:{sets:3,setsTxt:"2–3",reps:"15–25",rest:45,restTxt:"30–60 s"},
+    int:"40–60 %",rpe:"6–7",tempo:"1-0-1",tempoTxt:"régulier, 1 s descente, 1 s montée",
+    prog:"D'abord plus de répétitions, puis moins de repos, et seulement ensuite plus de charge.",stat:"Répétitions totales et temps de repos moyen"}};
+MU_PARAMS.forme=MU_PARAMS.muscle;
+const muGoal=()=>{const g=data.prefs.muGoal||(PL()&&PL().profile&&PL().profile.goal);return MU_PARAMS[g]?g:"muscle"};
 const HEAVY_RE=/squat|souleve|developpe|rowing|traction|presse|dips|hip thrust|fente|military|bench|deadlift|\brow\b|press|pull-?up|lunge/;
-function exAdv(name){const n=String(name||"").trim();if(!n)return null;const e=EXN(n)||EXDB.find(x=>fold(x.n)===fold(n));
-  const k=e?(e.t==="I"?"I":"H"):(HEAVY_RE.test(fold(n))?"H":"I");const[sets,reps]=MU_SCHEME[muGoal()][k];return{sets,reps}}
+const LOWER_RE=/squat|souleve|deadlift|fente|lunge|presse a cuisses|leg press|hip thrust|mollet|calf|ischio|leg curl|leg extension|adducteur|abducteur|fessier|glute/;
+const exKind=name=>{const n=String(name||"").trim();if(!n)return null;const e=EXN(n)||EXDB.find(x=>fold(x.n)===fold(n));
+  return e?(e.t==="I"?"I":"H"):(HEAVY_RE.test(fold(n))?"H":"I")};
+// muscle principal d'un exercice : d'après la liste d'exercices, sinon d'après son nom (pour les statistiques par muscle)
+const MUS_RE=/** @type {[RegExp,string][]} */([[/curl|biceps/,"biceps"],[/triceps|extension (?:verticale|horizontale|nuque)|barre au front|kick ?back|dips? (?:entre|sur banc)/,"triceps"],
+  [/couche|pec|bench|ecarte|fly|pompe|push-?up|dips/,"chest"],[/militaire|military|overhead|elevation|epaule|shoulder|oiseau|face pull|arnold/,"shoulders"],
+  [/shrug|trap/,"traps"],[/rowing|row|traction|pull-?up|chin-?up|tirage|pull-?down|lat/,"back"],[/mollet|calf/,"calves"],
+  [/hip thrust|fessier|glute|kickback/,"glutes"],[/souleve|deadlift|ischio|leg curl|good morning/,"hams"],[/adducteur|adductor/,"adductors"],
+  [/squat|fente|lunge|presse|leg press|leg extension|step-?up/,"quads"],[/abdo|crunch|gainage|plank|planche|releve de jambes/,"abs"]]);
+function exMus(name){const n=String(name||"").trim();if(!n)return "";const e=EXN(n)||EXDB.find(x=>fold(x.n)===fold(n));if(e&&e.m)return e.m;
+  const f=fold(n),r=MUS_RE.find(([re])=>re.test(f));return r?r[1]:""}
+const exLower=name=>{const e=EXN(String(name||"").trim());return e?["quads","hams","glutes","adductors","calves"].includes(e.m):LOWER_RE.test(fold(name))};
+// paramètres conseillés pour un exercice selon l'objectif
+function exAdv(name){const k=exKind(name);if(!k)return null;const P=MU_PARAMS[muGoal()],x=P[k];
+  return{k,sets:x.sets,setsTxt:x.setsTxt,reps:x.reps,rest:x.rest,restTxt:x.restTxt,int:P.int,intTxt:P.intTxt||P.int,rpe:P.rpe,tempo:P.tempo}}
+const exAdvSame=(ex,a)=>ex.sets.length===a.sets&&ex.reps===a.reps&&(+ex.rest||0)===a.rest&&(ex.int||"")===a.int&&(ex.rpe||"")===a.rpe&&(ex.tempo||"")===a.tempo;
+// repos lisible : 45 s, 2 min, 2 min 30
+const restFmt=r=>{r=Math.round(+r||0);if(r<60)return r+" s";const m=Math.floor(r/60),x=r%60;return x?`${m} min ${String(x).padStart(2,"0")}`:`${m} min`};
+const exAdvVal=a=>`${a.sets} × ${a.reps} · RPE ${a.rpe} · ${restFmt(a.rest)}`;
 function exAdvHtml(ex){const a=exAdv(ex.name);if(!a)return `<div class="ex-adv" hidden></div>`;
-  const same=ex.sets.length===a.sets&&ex.reps===a.reps;
-  return `<div class="ex-adv"><span class="grow">${L("Conseillé")} (${L(MU_GOALS[muGoal()])}) : <b>${a.sets} × ${a.reps}</b></span>${same?`<span class="ok">✓</span>`:`<button type="button" class="linkbtn" data-msadv="1">${L("Appliquer")}</button>`}</div>`}
-// applique le conseil : nombre de séries (seules des séries vides sont retirées) et répétitions visées ; annulable
-function exAdvApply(se,ex){const a=exAdv(ex.name);if(!a)return;const before={sets:ex.sets.map(x=>({...x})),reps:ex.reps};
+  return `<div class="ex-adv"><span class="grow">${L("Conseillé")} (${L(MU_GOALS[muGoal()])}) : <b>${exAdvVal(a)}</b></span>${exAdvSame(ex,a)?`<span class="ok">✓</span>`:`<button type="button" class="linkbtn" data-msadv="1">${L("Appliquer")}</button>`}</div>`}
+// applique le conseil : séries (seules des séries vides sont retirées), répétitions visées, repos, intensité, RPE, tempo ; annulable
+function exAdvApply(se,ex){const a=exAdv(ex.name);if(!a)return;const K=["reps","rest","int","rpe","tempo"],before={sets:ex.sets.map(x=>({...x}))};K.forEach(k=>before[k]=ex[k]);
   while(ex.sets.length<a.sets)ex.sets.push(newSet());
   for(let j=ex.sets.length-1;j>=a.sets;j--){const x=ex.sets[j];if(!String(x.kg||"").trim()&&!String(x.reps||"").trim())ex.sets.splice(j,1)}
-  ex.reps=a.reps;seTouch(se);save();renderMuscu();
-  toastAct(`${a.sets} ${L("séries")} × ${a.reps}`,"Annuler",()=>{ex.sets=before.sets;ex.reps=before.reps;seTouch(se);save();renderMuscu()})}
+  ex.reps=a.reps;ex.rest=a.rest;ex.int=a.int;ex.rpe=a.rpe;ex.tempo=a.tempo;seTouch(se);save();renderMuscu();
+  toastAct(`${a.sets} ${L("séries")} × ${a.reps}`,"Annuler",()=>{ex.sets=before.sets;K.forEach(k=>{if(before[k]===undefined)delete ex[k];else ex[k]=before[k]});seTouch(se);save();renderMuscu()})}
+// réglages propres à l'exercice (panneau « Réglages » sous le conseil) : résumé affiché quand il est replié
+const msPrmOpen=new Set();
+function exPrmSum(ex){const p=[];if(ex.reps)p.push(`${ex.reps} reps`);if(+ex.rest)p.push(`${L("repos")} ${restFmt(+ex.rest)}`);if(ex.int)p.push(ex.int);if(ex.rpe)p.push(`RPE ${ex.rpe}`);if(ex.tempo)p.push(`${L("tempo")} ${ex.tempo}`);
+  return p.length?`${L("Réglages")} : ${p.join(" · ")}`:L("Réglages de l'exercice")}
+function exPrmHtml(ex){const v=k=>esc(String(ex[k]==null?"":ex[k]));
+  return `<details class="ex-prm" data-prm="${ex.id}"${msPrmOpen.has(ex.id)?" open":""}><summary class="small">${esc(exPrmSum(ex))}</summary><div class="ex-prm-g">
+    <label><span>${L("Répétitions visées")}</span><input data-f="xreps" value="${v("reps")}" placeholder="8–12" maxlength="9" autocomplete="off"></label>
+    <label><span>${L("Repos (secondes)")}</span><input data-f="xrest" value="${+ex.rest||""}" placeholder="120" inputmode="numeric" maxlength="3" autocomplete="off"></label>
+    <label><span>${L("Intensité")}</span><input data-f="xint" value="${v("int")}" placeholder="70 %" maxlength="16" autocomplete="off"></label>
+    <label><span>RPE</span><input data-f="xrpe" value="${v("rpe")}" placeholder="8" maxlength="9" autocomplete="off"></label>
+    <label><span>${L("Tempo")}</span><input data-f="xtempo" value="${v("tempo")}" placeholder="3-0-1" maxlength="9" autocomplete="off"></label></div></details>`}
+// progression (v73) : d'après la dernière séance faite qui contient cet exercice
+const repTop=r=>{const m=String(r||"").match(/(\d+)\s*$/);return m?+m[1]:0};
+function exLastLog(name){const k=fold(String(name||"").trim());if(!k)return null;
+  const L0=ML().filter(l=>l&&!(data.del&&data.del[l.id])&&(l.ex||[]).some(x=>fold(x.name)===k)).sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.upd||0)-(a.upd||0));
+  return L0.length?(L0[0].ex||[]).find(x=>fold(x.name)===k):null}
+function exProg(ex){const top=repTop(ex.reps),last=exLastLog(ex.name),g=muGoal();if(!top||!last||!last.sets||!last.sets.length)return "";
+  if(!last.sets.every(s=>(+s.reps||0)>=top))return "";
+  if(g==="force")return `${L("Toutes les séries réussies au haut de la fourchette")} : +${exLower(ex.name)?"5":LANG==="en"?"2.5":"2,5"} kg`;
+  if(g==="endu")return L("Haut de la fourchette atteint : réduis le repos, puis augmente la charge");
+  if(g==="gras")return "";
+  return L("Haut de la fourchette atteint : augmente la charge et repars du bas")}
 function renderMuGoal(){const box=$("muGoal");if(!box)return;const g=muGoal(),keys=["force","muscle","gras","endu"].concat(g==="forme"?["forme"]:[]);
   // v52 (ticket #3) : dessiné par React (app/src/Small.tsx) ; ancien rendu en secours
   if(window.SCIslands&&window.SCIslands.muGoal&&!window.__noIslands){try{window.SCIslands.muGoal(box,{keys,goal:g,names:MU_GOALS,i18n:{L,MOL,MO,DOWL}});return}catch(e){reportErr("island muGoal: "+(e&&e.message))}}
@@ -2449,6 +2515,61 @@ function renderMuGoal(){const box=$("muGoal");if(!box)return;const g=muGoal(),ke
 $("muGoal").addEventListener("click",e=>{const b=e.target.closest("[data-mugoal]");if(!b)return;const g=b.dataset.mugoal;if(g===muGoal()&&data.prefs.muGoal)return;
   data.prefs.muGoal=g;const pl=PL();if(pl){pl.profile=pl.profile||{};pl.profile.goal=g;pl.upd=Date.now();M().upd=Date.now()}save();renderMuscu();
   toast(`${L("Objectif")} : ${L(MU_GOALS[g])}`)});
+/* ---- v73 : séance faite (« Séance terminée »), chrono automatique, statistiques par objectif ---- */
+// chrono propre à l'appareil : data.ui.msRun = {se, t0, last, marks:{"exId:série": ms}} ; il démarre au premier poids ou répétition saisi
+// et s'efface après 4 h sans activité. Repos moyen = écart moyen entre deux séries remplies (de 10 s à 15 min ; au-delà, c'est une pause).
+const RUN_MAX=4*3600e3;
+function msRunGet(id){const r=data.ui&&data.ui.msRun;if(!r)return null;if(Date.now()-(r.last||r.t0)>RUN_MAX){delete data.ui.msRun;saveUI();return null}return id&&r.se!==id?null:r}
+function msRunTouch(se,ex,j,done){let r=msRunGet();const now=Date.now();
+  if(!r||r.se!==se.id)r=data.ui.msRun={se:se.id,t0:now,last:now,marks:{}};
+  r.last=now;const k=ex.id+":"+j;if(done&&!r.marks[k])r.marks[k]=now;saveUI()}
+function msRunRest(r){const t=Object.values(r.marks||{}).map(Number).sort((a,b)=>a-b),g=[];
+  for(let i=1;i<t.length;i++){const d=(t[i]-t[i-1])/1000;if(d>=10&&d<=900)g.push(d)}return g.length?Math.round(g.reduce((a,b)=>a+b,0)/g.length):0}
+const msRunMin=r=>Math.max(1,Math.round((Date.now()-r.t0)/60000));
+const msDoneToday=se=>ML().some(l=>l&&l.day===se.id&&l.date===iso(today())&&!(data.del&&data.del[l.id]));
+// « Séance terminée » : les séries remplies partent dans l'historique (data.muscu.log), avec la durée et le repos moyen mesurés
+function msDone(se){const ex=se.exercises.map(x=>({name:String(x.name||"").trim(),sets:(x.sets||[]).filter(s=>String(s.kg||"").trim()||String(s.reps||"").trim()).map(s=>({kg:String(s.kg||""),reps:String(s.reps||"")}))})).filter(x=>x.name&&x.sets.length);
+  if(!ex.length){toast("Remplis au moins une série avant de terminer");return}
+  const r=msRunGet(se.id),now=Date.now(),date=iso(today()),L0=ML(),old=L0.find(l=>l&&l.day===se.id&&l.date===date&&!(data.del&&data.del[l.id]));
+  const ent={id:old?old.id:uid(),date,day:se.id,name:se.name||"",ex,goal:muGoal(),upd:now};
+  if(r){ent.min=Math.min(240,msRunMin(r));const rest=msRunRest(r);if(rest)ent.rest=rest}else if(old&&old.min){ent.min=old.min;if(old.rest)ent.rest=old.rest}
+  const before=old?JSON.parse(JSON.stringify(old)):null;
+  if(old){Object.keys(old).forEach(k=>delete old[k]);Object.assign(old,ent)}else L0.push(ent);
+  if(r){delete data.ui.msRun;saveUI()}M().upd=now;save();renderMuscu();
+  toastAct(old?"Séance mise à jour":"Séance enregistrée","Annuler",()=>{const i=ML().findIndex(l=>l&&l.id===ent.id);
+    if(before&&i>=0){ML()[i]=before}else{tomb(ent.id);M().log=ML().filter(l=>l&&l.id!==ent.id)}M().upd=Date.now();save();renderMuscu()})}
+// statistiques mises en avant selon l'objectif, calculées sur l'historique (8 dernières semaines ; « cette semaine » = depuis lundi)
+const kgOf=s=>parseFloat(String(s&&s.kg||"").replace(",","."))||0,repsOf=s=>parseInt(String(s&&s.reps||""))||0;
+const fmtKg=v=>{const r=Math.round(v*10)/10;return LANG==="en"?String(r):String(r).replace(".",",")};
+const daysAgo=n=>{const d=today();d.setDate(d.getDate()-n);return iso(d)};
+const wkStart=()=>{const d=today();d.setDate(d.getDate()-(d.getDay()+6)%7);return iso(d)};
+function muStatsVM(){const g=muGoal(),P=MU_PARAMS[g],logs=ML().filter(l=>l&&l.date&&!(data.del&&data.del[l.id])).sort((a,b)=>a.date.localeCompare(b.date)||(a.upd||0)-(b.upd||0)),rows=/** @type {{l:string,v:string,u?:boolean,warn?:boolean}[]} */([]);
+  const recent=logs.filter(l=>l.date>=daysAgo(56)),week=logs.filter(l=>l.date>=wkStart());
+  if(g==="force"){ // par exercice : meilleure charge et max estimé (formule d'Epley, séries de 12 répétitions au plus)
+    const by=new Map();for(const l of recent)for(const x of l.ex||[]){const k=fold(x.name);if(!k)continue;const o=by.get(k)||{n:x.name,best:0,orm:0,c:0};o.c++;
+      for(const s of x.sets||[]){const kg=kgOf(s),r=repsOf(s);if(!kg||!r)continue;o.best=Math.max(o.best,kg);if(r<=12)o.orm=Math.max(o.orm,kg*(1+r/30))}by.set(k,o)}
+    [...by.values()].filter(o=>o.best).sort((a,b)=>b.c-a.c||b.orm-a.orm).slice(0,5).forEach(o=>rows.push({l:o.n,u:true,v:`${fmtKg(o.best)} kg · ${L("max estimé")} ${fmtKg(Math.round((o.orm||o.best)*2)/2)} kg`}))}
+  else if(g==="endu"){const reps=week.reduce((a,l)=>a+(l.ex||[]).reduce((b,x)=>b+(x.sets||[]).reduce((c,s)=>c+repsOf(s),0),0),0),rs=recent.filter(l=>+l.rest>0).slice(-8);
+    if(week.length)rows.push({l:L("Répétitions cette semaine"),v:String(reps)});
+    if(rs.length)rows.push({l:L("Repos moyen entre les séries"),v:`${Math.round(rs.reduce((a,l)=>a+(+l.rest),0)/rs.length)} s`})}
+  else if(g==="gras"){ // maintien : charge de la dernière séance / meilleure charge des séances précédentes ; alerte après 2 baisses d'affilée
+    const by=new Map();for(const l of recent)for(const x of l.ex||[]){const k=fold(x.name),top=Math.max(0,...(x.sets||[]).map(kgOf));if(!k||!top)continue;const o=by.get(k)||{n:x.name,h:[]};o.h.push(top);by.set(k,o)}
+    [...by.values()].sort((a,b)=>b.h.length-a.h.length).slice(0,5).forEach(o=>{const cur=o.h[o.h.length-1],ref=Math.max(cur,...o.h.slice(0,-1)),h=o.h.slice(-3),down=h.length===3&&h[1]<h[0]&&h[2]<h[1];
+      rows.push({l:o.n,u:true,v:`${fmtKg(cur)} / ${fmtKg(ref)} kg${down?` · ⚠ ${L("en baisse")}`:""}`,warn:down})});
+    const dm=recent.filter(l=>+l.min>0).slice(-8);if(dm.length)rows.push({l:L("Durée moyenne d'une séance"),v:`${Math.round(dm.reduce((a,l)=>a+(+l.min),0)/dm.length)} min`})}
+  else{ // prise de masse (et forme) : volume de la semaine (séries × répétitions × poids) et séries par muscle (cible : 10 à 20)
+    let vol=0;const mus=new Map();
+    for(const l of week)for(const x of l.ex||[]){const m=MUS[exMus(x.name)]||"Autres";for(const s of x.sets||[]){vol+=kgOf(s)*repsOf(s);if(repsOf(s))mus.set(m,(mus.get(m)||0)+1)}}
+    if(week.length){rows.push({l:L("Volume cette semaine"),v:`${fmtFull(vol)} kg`});
+      [...mus.entries()].sort((a,b)=>b[1]-a[1]).forEach(([m,n])=>rows.push({l:L(m),v:`${n} ${L(n>1?"séries":"série")}${n<10?` · ${L("objectif")} 10–20`:n>20?` · ${L("plus de 20")}`:" ✓"}`,warn:n>20}))}}
+  return{title:L(P.stat),prog:L(P.prog),rows,empty:L("Termine une séance (bouton « Séance terminée ») pour voir tes statistiques ici.")}}
+function renderMuStats(){const box=$("muStats");if(!box)return;const vm=muStatsVM();
+  if(shIsl("muStats")){try{window.SCIslands.muStats(box,{vm,i18n:agI18n()});return}catch(e){reportErr("island muStats: "+(e&&e.message));try{window.SCIslands.unmount(box)}catch(_){}}}
+  box.innerHTML=`<div class="mu-st-h"><span class="eyebrow">${L("Mes statistiques")}</span><span class="small muted">${esc(vm.title)}</span></div>`+
+    (vm.rows.length?`<div class="mu-st-rows">${vm.rows.map(r=>`<div class="row"><span class="grow${r.u?" notr":""}">${esc(r.l)}</span><b${r.warn?' class="warn"':""}>${esc(r.v)}</b></div>`).join("")}</div>`:`<p class="small muted">${esc(vm.empty)}</p>`)+
+    `<p class="small muted mu-st-prog"><b>${L("Progression")}</b> : ${esc(vm.prog)}</p>`}
+// chrono visible : la ligne de la séance en cours est redessinée chaque minute (jamais pendant une saisie)
+setInterval(()=>{if(data&&data.ui&&data.ui.view==="muscu"&&msRunGet()&&!(document.activeElement&&document.activeElement.matches("input,textarea")))renderMuscu()},60e3);
 // type d'une séance : d'après son nom, sinon d'après les muscles de ses exercices
 const SE_T={push:["Poussée"],pull:["Tirage"],legs:["Jambes"],upper:["Haut du corps"],lower:["Bas du corps"],full:["Corps complet"]};
 function seType(se){const n=fold(se.name||"");
@@ -2461,9 +2582,9 @@ function seType(se){const n=fold(se.name||"");
   if(c.legs&&up)return c.legs>=2&&up>=2?"full":c.legs>up?"legs":"upper";
   if(c.legs)return "legs";return c.push&&c.pull?(c.push>=c.pull*3?"push":c.pull>=c.push*3?"pull":"upper"):c.push?"push":"pull"}
 // v47 (#17) : un champ en haut de Musculation et de Notes, comme « Planifier » : la demande part chez Claude, le résultat revient par le connecteur
-function muPrompt(q){const g=L(MU_GOALS[muGoal()]);return T3(`Avec Sid'note, pour ma musculation : ${q}\n(Lis d'abord mon programme et mes séances avec muscu_programme. Pour changer le programme, enregistre-le avec enregistrer_programme ; pour une séance faite, note-la avec noter_seance. Utilise les exercices de la liste donnée par muscu_programme. Mon objectif : ${g}.)`,
-  `With Sid'note, for my workouts: ${q}\n(First read my program and sessions with muscu_programme. To change the program, save it with enregistrer_programme; for a finished session, log it with noter_seance. Use the exercises listed by muscu_programme. My goal: ${g}.)`,
-  `Met Sid'note, voor mijn training: ${q}\n(Lees eerst mijn schema en trainingen met muscu_programme. Om het schema te wijzigen: sla het op met enregistrer_programme; een gedane training noteer je met noter_seance. Gebruik de oefeningen uit de lijst van muscu_programme. Mijn doel: ${g}.)`)}
+function muPrompt(q){const g=L(MU_GOALS[muGoal()]);return T3(`Avec Sid'note, pour ma musculation : ${q}\n(Lis d'abord mon programme et mes séances avec muscu_programme. Pour changer le programme, enregistre-le avec enregistrer_programme ; pour une séance faite, note-la avec noter_seance. Utilise les exercices de la liste donnée par muscu_programme. Mon objectif : ${g}. Pars des paramètres de référence de cet objectif donnés par muscu_programme et ajuste-les exercice par exercice si je le demande : séries, répétitions, repos (rest_s), intensité, RPE et tempo.)`,
+  `With Sid'note, for my workouts: ${q}\n(First read my program and sessions with muscu_programme. To change the program, save it with enregistrer_programme; for a finished session, log it with noter_seance. Use the exercises listed by muscu_programme. My goal: ${g}. Start from the reference parameters for this goal given by muscu_programme and adjust them per exercise if I ask: sets, reps, rest (rest_s), intensity, RPE and tempo.)`,
+  `Met Sid'note, voor mijn training: ${q}\n(Lees eerst mijn schema en trainingen met muscu_programme. Om het schema te wijzigen: sla het op met enregistrer_programme; een gedane training noteer je met noter_seance. Gebruik de oefeningen uit de lijst van muscu_programme. Mijn doel: ${g}. Vertrek van de referentiewaarden voor dit doel uit muscu_programme en pas ze per oefening aan als ik dat vraag: sets, herhalingen, rust (rest_s), intensiteit, RPE en tempo.)`)}
 function ntPrompt(q){return T3(`Avec Sid'note, dans mes notes : ${q}\n(Retrouve les notes avec notes et lire_note. Pour une nouvelle note, utilise ajouter_note et propose un dossier si c'est utile ; pour changer une note qui existe, utilise modifier_note, sans créer de doublon. Tu ne vois pas mes notes secrètes.)`,
   `With Sid'note, in my notes: ${q}\n(Find notes with notes and lire_note. For a new note, use ajouter_note and suggest a folder if useful; to change an existing note, use modifier_note without creating a duplicate. You can't see my secret notes.)`,
   `Met Sid'note, in mijn notities: ${q}\n(Zoek notities met notes en lire_note. Voor een nieuwe notitie: ajouter_note en stel een map voor als dat helpt; om een bestaande notitie te wijzigen: modifier_note, zonder dubbel. Je ziet mijn geheime notities niet.)`)}
@@ -5241,7 +5362,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v72";
+const BUILD="sidnote-v73";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

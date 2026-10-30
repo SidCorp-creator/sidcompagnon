@@ -10,7 +10,7 @@ import { MuGoal, NuMacros, PlanBar, PomoPresets, type MacroRow } from "./Small";
 import { AgendaChips, AgendaList, AgendaMonth, AgendaNext, AgendaYear, type AgI18n, type Chip } from "./Agenda";
 import { CatBar, TodoCats, TodoDone, TodoOpen, TodoPaused, rowCtx, type TodosProps } from "./Todos";
 import { DayView, type DayViewProps } from "./DayView";
-import { MuList, type MuGrp, type MuI18n } from "./Muscu";
+import { MuList, MuStats, type MuGrp, type MuI18n, type MuStatsVM } from "./Muscu";
 import { NuLog, NuResult, NuWeek, type Dish, type Mac, type NuI18n, type NuResultVM, type WeekSport } from "./Nutrition";
 import { NoteList, NotesPath, type Icons, type NfVM, type NoteVM, type NotesI18n } from "./Notes";
 import { DocFolders, DocList, PwList, type DocFolderVM, type DocVM, type PwVM, type VI18n } from "./Vault";
@@ -127,6 +127,7 @@ declare global {
       nuEHint: (el: Element, p: { st: "ok" | "none" | "busy"; i18n: MI18n }) => void;
       spotEmbed: (el: Element, p: { ok: boolean; src: string; i18n: MI18n }) => void;
       appStatus: (el: Element, p: { ok: boolean; i18n: MI18n }) => void;
+      muStats: (el: Element, p: { vm: MuStatsVM; i18n: MuI18n }) => void;
       legalBody: (el: Element, p: { parts: [string, string][]; page: string; i18n: WI18n }) => void;
       pvOpts: (el: Element, p: { cols: string[]; cur: string; size: number; dot: React.CSSProperties; i18n: PI18n }) => void;
       onbGroups: (el: Element, p: { groups: OnbGroup[]; i18n: OI18n }) => void;
@@ -161,7 +162,7 @@ declare global {
   }
 }
 window.SCIslands = {
-  version: 20,
+  version: 21,
   nuCal: (el, p) => mount(el, <NutritionCalendar {...p} />),
   graph,
   pomoStats: (el, p) => mount(el, <PomoStats {...p} />),
@@ -228,6 +229,7 @@ window.SCIslands = {
   calLegend: (el, p) => mount(el, <CalLegend {...p} />),
   bkList: (el, p) => mount(el, <BkList {...p} />),
   legalBody: (el, p) => mount(el, <LegalBody {...p} />),
+  muStats: (el, p) => mount(el, <MuStats {...p} />),
   toast: (el, p) => mount(el, <Toast {...p} />),
   calTitle: (el, p) => mount(el, <CalTitle {...p} />),
   quickHint: (el, p) => mount(el, <QuickHint {...p} />),

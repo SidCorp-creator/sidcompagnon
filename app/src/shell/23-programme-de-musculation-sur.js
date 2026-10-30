@@ -41,8 +41,10 @@ function coachBuild(p){const split={2:["full1","full2"],3:p.level==="deb"?["full
   const rir={deb:"2–3",inter:"1–2",conf:"0–1"}[p.level]||"2",prio=new Set((p.prio||[]).flatMap(k=>PRIO[k]||[])),turn={};
   let relax=false; // v44 : la liste d'exercices est surtout faite pour la salle : si le matériel laisse une séance presque vide, on l'ignore pour cette séance
   const ok=e=>(relax||e.eq.includes(eq))&&!never.has(e.n)&&!av.some(z=>e.z.includes(z));
-  const mk=e=>{let sets=p.level==="deb"?3:EXHEAVY(e)?4:3;if(prio.has(e.m))sets++;if(p.level==="conf"&&EXHEAVY(e))sets=Math.max(sets,4);
-    return{name:e.n,pat:e.m+":"+e.pat,sets,reps:EXHEAVY(e)?R[0]:R[1],rest:REST[e.t]||120,rir,note:[e.note,p.level==="conf"&&!EXHEAVY(e)?"Dernière série au plus près de l'échec":""].filter(Boolean).join(". ")}};
+  // v73 : séries, répétitions, repos, intensité, RPE et tempo suivent les paramètres de référence de l'objectif (MU_PARAMS)
+  const PP=MU_PARAMS[p.goal]||MU_PARAMS.muscle;
+  const mk=e=>{const x=PP[EXHEAVY(e)?"H":"I"];let sets=p.level==="deb"?Math.min(3,x.sets):x.sets;if(prio.has(e.m))sets++;
+    return{name:e.n,pat:e.m+":"+e.pat,sets,reps:x.reps,rest:x.rest,rir,...(PP.int?{int:PP.int}:{}),rpe:PP.rpe,tempo:PP.tempo,note:[e.note,p.level==="conf"&&!EXHEAVY(e)?"Dernière série au plus près de l'échec":""].filter(Boolean).join(". ")}};
   // exercices imposés : chacun va dans la séance qui travaille déjà ce muscle (la moins chargée en imposés)
   const forced=split.map(()=>[]);
   for(const n of p.must||[]){const e=EXN(n);if(!e||never.has(n))continue;

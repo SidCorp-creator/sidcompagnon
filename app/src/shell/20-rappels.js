@@ -6,7 +6,7 @@ const standalone=()=>window.matchMedia("(display-mode: standalone)").matches||na
 function b64u(s){const p="=".repeat((4-s.length%4)%4),b=atob((s+p).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from(b,c=>c.charCodeAt(0))}
 async function currentSub(){if(!pushOK())return null;const r=await navigator.serviceWorker.ready;return r.pushManager.getSubscription()}
 // le bloc « notifications » existe à deux endroits (Réglages et Planning) : même contenu, mêmes réglages
-let nfState={kind:"off",msg:""},nfCustom=false;
+let nfState=/** @type {{kind:string,msg?:string}} */({kind:"off",msg:""}),nfCustom=false;
 async function renderNotif(){
   if(!pushOK())nfState={kind:"na",msg:isIOS&&!standalone()?"Pour activer les notifications, ouvre Sid'compagnon depuis l'icône de ton écran d'accueil.":"Ce navigateur ne gère pas les notifications."};
   else if(Notification.permission==="denied")nfState={kind:"na",msg:"Notifications bloquées. Autorise-les dans les réglages de ton smartphone (Notifications > Sid'compagnon)."};

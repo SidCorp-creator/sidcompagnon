@@ -119,7 +119,7 @@ const DF=()=>data.docFolders||(data.docFolders=[]);
 let dfQ="",dfEditing=false,dvOpen=false;
 const folderOf=d=>d.folder&&DF().find(f=>f.id===d.folder);
 const curFolder=()=>DF().find(x=>x.id===data.ui.docFolder)||null;
-const docHidden=()=>false; // v22 : tout l'onglet est protégé par le code, plus de classeur verrouillé à part
+const docHidden=(_d)=>false; // v22 : tout l'onglet est protégé par le code, plus de classeur verrouillé à part
 function renderDocs(){
   if(!$("docList"))return;
   if(dvOpen&&(!data.docVault||data.docVault.id!==dvVid))dvLock(); // coffre remplacé ailleurs : on reverrouille

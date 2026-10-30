@@ -39,7 +39,7 @@ const shareTxt=(list,prog)=>prog?`Programme « ${prog} » (Sid'compagnon)\n\n${l
 // lecture tolérante : texte de Sid'compagnon (ancien et nouveau), ou programme écrit par Claude (titres « ## Séance … », puces, « 4 × 8–10 »)
 function parseShared(txt){
   const lines=String(txt||"").split(/\r?\n/).map(l=>l.replace(/\*\*/g,"").trim()).filter(Boolean);if(!lines.length)return null;
-  let prog="",cur=null;const out=[];
+  let prog="",cur=/** @type {any} */(null);const out=/** @type {any[]} */([]);
   // titre « Séance « Push » » (format de Sid'compagnon : le nom est entre guillemets) ou « ## Séance A — Haut du corps » (on garde tout le titre)
   const head=(l,w)=>{const t=l.replace(/^#{1,4}\s*/,"").replace(/\s*\((?:sid'?(?:note|home|compagnon))\)\s*:?\s*$/i,"").replace(/\s*:\s*$/,"");
     if(!new RegExp(`^(?:${w})\\b`,"i").test(t))return null;const q=t.match(/[«"“]\s*(.+?)\s*[»"”]/);return q?q[1]:t};
@@ -177,7 +177,7 @@ function grpActions(id){
   if(!id){const free=M().sessions.filter(s=>s&&!s.grp);
     openActions(L("Séances libres"),[{l:"Partager toutes les séances libres",fn:()=>copyText(shareTxt(free,L("Séances libres")),"prog")}]);return}
   const ses=grpSe(id),pl=PL(),isPlan=pl&&pl.id===id,name=(ses[0]&&ses[0].grp&&ses[0].grp.name)||L("Mon programme");
-  const it=[{l:"Partager le programme",fn:()=>copyText(shareTxt(ses,isPlan?L("Mon programme"):name),"prog")}];
+  const it=/** @type {any[]} */([{l:"Partager le programme",fn:()=>copyText(shareTxt(ses,isPlan?L("Mon programme"):name),"prog")}]);
   if(!isPlan&&ses.length)it.push({l:"Suivre ce programme",fn:()=>{const old=M().plan;M().plan={id,v:2,profile:(old&&!old.deleted&&old.profile)||{},at:new Date().toISOString(),upd:Date.now(),src:ses[0].grp.src==="claude"?"ia":ses[0].grp.src||"import"};M().upd=Date.now();save();renderMuscu();toast("Programme suivi : la prochaine séance est proposée en haut")}});
   if(!isPlan)it.push({l:"Renommer",fn:()=>{const n=prompt(L("Nom du programme"),name);if(!n||!n.trim())return;ses.forEach(s=>{s.grp={...s.grp,name:n.trim().slice(0,80)};seTouch(s)});save();renderMuscu()}});
   it.push({l:"Supprimer le programme",danger:true,fn:()=>{const ids=ses.map(s=>s.id),oldPlan=M().plan;

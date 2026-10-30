@@ -176,8 +176,8 @@ $("nuOneKcal").addEventListener("change",e=>{const mp=nuMP();mp.one[mp.type]=Mat
 function autoGrow(t){if(!t||t.tagName!=="TEXTAREA")return;t.style.height="auto";t.style.height=Math.min(t.scrollHeight+2,220)+"px"}
 document.addEventListener("input",e=>{if(e.target.classList&&e.target.classList.contains("autogrow"))autoGrow(e.target)});
 // huiles, beurre, miel, sauces… : exprimés en cuillères plutôt qu'en grammes
-const SPOONS=[[/huile|oil/i,13.5,4.5],[/beurre de cacahu|peanut butter|pur[ée]e d'amande|tahin|tahini/i,16,5],[/beurre|butter|margarine|ghee/i,14,5],
-  [/miel|honey|sirop|syrup|confiture|jam/i,21,7],[/vinaigre|vinegar|sauce soja|soy sauce|moutarde|mustard|ketchup|mayonnaise|mayo|pesto|cr[eè]me fra[iî]che/i,15,5]];
+const SPOONS=/** @type {[RegExp,number,number][]} */([[/huile|oil/i,13.5,4.5],[/beurre de cacahu|peanut butter|pur[ée]e d'amande|tahin|tahini/i,16,5],[/beurre|butter|margarine|ghee/i,14,5],
+  [/miel|honey|sirop|syrup|confiture|jam/i,21,7],[/vinaigre|vinegar|sauce soja|soy sauce|moutarde|mustard|ketchup|mayonnaise|mayo|pesto|cr[eè]me fra[iî]che/i,15,5]]);
 function spoonQty(name,g){if(!(g>0)||g>80)return"";const s=SPOONS.find(([re])=>re.test(name||""));if(!s)return"";
   const half=x=>Math.max(.5,Math.round(x*2)/2),fr=x=>String(x).replace(".",LANG==="en"?".":",");
   const tb=g/s[1];if(tb>=.75)return `${fr(half(tb))} ${L("c. à soupe")}`;return `${fr(half(g/s[2]))} ${L("c. à café")}`}

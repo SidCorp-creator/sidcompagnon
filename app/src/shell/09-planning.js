@@ -173,7 +173,7 @@ function renderPlan(){
   // v29 : chaque mois se replie (toucher son nom) ; v44.6 : tous repliés par défaut, ouverts à la demande (en mémoire seulement, planOpenMem)
   const pf=new Proxy({},{get:(o,k)=>!planOpenMem[k]}),ks=Object.keys(g).sort(),allF=ks.every(k=>pf[k]);
   $("tasks").innerHTML=(ks.length>1&&!q?`<div class="mfold-all"><button type="button" class="mini" data-mfoldall="1">${L(allF?"Tout déplier":"Tout replier")}</button></div>`:"")+ks.map(k=>{const shut=!q&&pf[k];
-    return `<button type="button" class="mfold" data-mfold="${k}" aria-expanded="${!shut}"><span class="mf-chev">${CHEV}</span><span class="grow">${L(MOL[k%100])} ${Math.floor(k/100)}</span><span class="mf-n">${g[k].length}</span></button>`+(shut?"":`<div class="card">${g[k].map(t=>{
+    return `<button type="button" class="mfold" data-mfold="${k}" aria-expanded="${!shut}"><span class="mf-chev">${CHEV}</span><span class="grow">${L(MOL[+k%100])} ${Math.floor(+k/100)}</span><span class="mf-n">${g[k].length}</span></button>`+(shut?"":`<div class="card">${g[k].map(t=>{
     // v44.4 : ligne aérée : jour à gauche, titre + détails au milieu, statut et « ⋯ » à droite (toucher le titre = modifier)
     const d=parse(t.date),dd=`<div class="pr-date" aria-hidden="true"><b>${d.getDate()}</b><span class="notr">${d.toLocaleDateString(LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE",{weekday:"short"})}</span></div>`;
     if(t.src==="ical")return `<div class="row task prow ${t.canc?"isfait":""}" style="--c:var(${colorOf(t)})" data-icalinfo="${esc(t.id)}">${dd}

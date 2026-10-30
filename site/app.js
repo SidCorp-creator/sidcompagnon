@@ -71,7 +71,7 @@ const ssGet=k=>{try{return sessionStorage.getItem(k)}catch(e){return null}},ssSe
 // « Rester connecté » décoché : la session s'arrête quand l'app est fermée
 const ephExpired=!!(session&&session.eph&&!ssGet("sidnote-alive"));
 if(session&&!ephExpired)ssSet("sidnote-alive","1");
-let data=cache?cache.data:blank();
+let data=/** @type {any} */(cache?cache.data:blank());
 if(cache&&!("base" in cache)){cache.base="";cache.dirty=true;ls.set(cacheKey(session.user.id),cache)}
 data.ui=data.ui||defaultUI();
 if(!Array.isArray(data.types))data.types=Object.entries(CATS).map(([name,c])=>({name,c}));
@@ -101,6 +101,7 @@ const forServer=d=>{const c={...d};delete c.ui;return c};
 const CS=()=>window.SCCore&&window.SCCore.sync&&!window.__noCore?window.SCCore.sync:null;
 let coreApi=null;
 async function api(path,opt={}){if(CS()){coreApi=coreApi||CS().createApi(SUPABASE_URL,SUPABASE_KEY);return coreApi(path,opt)}return apiOld(path,opt)}
+/** @param {string} path @param {{method?:string,body?:any,token?:string,headers?:any}} [o] */
 async function apiOld(path,{method="GET",body,token,headers={}}={}){
   const r=await fetch(SUPABASE_URL+path,{method,headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{}),...headers},body:body?JSON.stringify(body):undefined});
   const txt=await r.text();let j=null;try{j=txt?JSON.parse(txt):null}catch(e){}
@@ -109,7 +110,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="71";const errSent=new Set();
+const APP_V="72";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -345,16 +346,17 @@ document.addEventListener("click",e=>{const c=e.target.closest("[data-tchip]");i
 if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
 
 /* ---------- utilitaires ---------- */
-const $=id=>document.getElementById(id);
+const $=/** @type {(id:string)=>any} */(id=>document.getElementById(id));
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-const parse=d=>{const[y,m,x]=d.split("-").map(Number);return new Date(y,m-1,x)};
-const today=()=>{const t=new Date();return new Date(t.getFullYear(),t.getMonth(),t.getDate())};
+const parse=/** @type {(d:string)=>any} */(d=>{const[y,m,x]=d.split("-").map(Number);return new Date(y,m-1,x)});
+const today=/** @type {()=>any} */(()=>{const t=new Date();return new Date(t.getFullYear(),t.getMonth(),t.getDate())});
 const fmt=d=>{const x=parse(d);return x.getDate()+" "+MO[x.getMonth()]};
 const daysTo=d=>Math.round((parse(d)-today())/864e5);
 // v69 (#3) : message du bas dessiné par React (shIsl est déclaré plus bas : on teste window.SCIslands directement)
 const toastIsl=(t,p)=>{if(!(window.SCIslands&&window.SCIslands.toast&&!window.__noIslands))return false;try{window.SCIslands.toast(t,{...p,i18n:agI18n()});return true}catch(e){try{window.SCIslands.unmount(t)}catch(_){}return false}};
 function toast(m,ms){const t=$("toast");if(!toastIsl(t,{m:String(m),label:"",onAct:null}))t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,ms||2200)}
+/** @type {any} */ toast.h=undefined; // minuterie du message (déclarée pour TypeScript)
 // v34 : message avec un bouton (ex. « Annuler »)
 function toastAct(m,label,fn,ms){const t=$("toast");let used=false;const act=()=>{if(used)return;used=true;t.hidden=true;clearTimeout(toast.h);fn()};
   if(!toastIsl(t,{m,label,onAct:act})){t.innerHTML=`<span>${esc(L(m))}</span><button type="button" class="toast-act">${esc(L(label))}</button>`;t.querySelector(".toast-act").addEventListener("click",act,{once:true})}t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,ms||5000)}
@@ -607,14 +609,14 @@ function renderHome(){if(!$("homeBody"))return;
   $("homeHello").textContent=`${L(now.getHours()>=18?"Bonsoir":"Bonjour")}${nm?" "+nm:""}.`;
   $("homeAvatar").textContent=(nm||"S").slice(0,2).toUpperCase();
   const vis=visibleTabs(),T=vis.includes("plan")?allT().filter(t=>t.status!=="fait"&&!t.canc):[];
-  const start=t=>{const d=parse(t.date);const[h,m]=(t.time||"08:00").split(":").map(Number);d.setHours(h,m);return d};
+  const start=/** @type {(t:any)=>any} */(t=>{const d=parse(t.date);const[h,m]=(t.time||"08:00").split(":").map(Number);d.setHours(h,m);return d});
   const next=T.filter(t=>t.time&&start(t)>now).sort((a,b)=>start(a)-start(b))[0]||T.filter(t=>!t.time&&t.date>t0).sort((a,b)=>a.date.localeCompare(b.date))[0];
   // v44.7 : Sid'compagnon = 3 grandes cartes, une par app (nom, identité, ce qu'elle fait en une ligne, 1 ou 2 repères du jour) ;
   // toucher une carte ouvre l'app. Tout le reste a quitté cette page (il est dans chaque app).
   const cards=[];
   {const g=APP_GROUPS.find(x=>x.app==="agenda");if(groupTabs(g).length){const it=[];
     if(next){const s=start(next),same=next.date===t0,tm=parse(next.date);tm.setDate(tm.getDate()-1);
-      const when=next.time&&same?inCount(s-now):next.time&&iso(tm)===t0?`${L("demain")} · ${next.time}`:`${DOW[s.getDay()]} ${s.getDate()} ${MO[s.getMonth()]}${next.time?" · "+next.time:""}`;
+      const when=next.time&&same?inCount(s-(+now)):next.time&&iso(tm)===t0?`${L("demain")} · ${next.time}`:`${DOW[s.getDay()]} ${s.getDate()} ${MO[s.getMonth()]}${next.time?" · "+next.time:""}`;
       it.push([L("Prochain"),{u:next.title},when])}
     if(vis.includes("todo")){const n=dayTodos(t0).filter(t=>!t.done).length;it.push([L("Tâches"),n?`${n} ${L(n>1?"tâches aujourd'hui":"tâche aujourd'hui")}`:L("Aucune tâche aujourd'hui"),""])}
     if(!it.length)it.push([L("Prochain"),L("Rien de prévu"),""]);
@@ -1097,7 +1099,7 @@ function renderPlan(){
   // v29 : chaque mois se replie (toucher son nom) ; v44.6 : tous repliés par défaut, ouverts à la demande (en mémoire seulement, planOpenMem)
   const pf=new Proxy({},{get:(o,k)=>!planOpenMem[k]}),ks=Object.keys(g).sort(),allF=ks.every(k=>pf[k]);
   $("tasks").innerHTML=(ks.length>1&&!q?`<div class="mfold-all"><button type="button" class="mini" data-mfoldall="1">${L(allF?"Tout déplier":"Tout replier")}</button></div>`:"")+ks.map(k=>{const shut=!q&&pf[k];
-    return `<button type="button" class="mfold" data-mfold="${k}" aria-expanded="${!shut}"><span class="mf-chev">${CHEV}</span><span class="grow">${L(MOL[k%100])} ${Math.floor(k/100)}</span><span class="mf-n">${g[k].length}</span></button>`+(shut?"":`<div class="card">${g[k].map(t=>{
+    return `<button type="button" class="mfold" data-mfold="${k}" aria-expanded="${!shut}"><span class="mf-chev">${CHEV}</span><span class="grow">${L(MOL[+k%100])} ${Math.floor(+k/100)}</span><span class="mf-n">${g[k].length}</span></button>`+(shut?"":`<div class="card">${g[k].map(t=>{
     // v44.4 : ligne aérée : jour à gauche, titre + détails au milieu, statut et « ⋯ » à droite (toucher le titre = modifier)
     const d=parse(t.date),dd=`<div class="pr-date" aria-hidden="true"><b>${d.getDate()}</b><span class="notr">${d.toLocaleDateString(LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE",{weekday:"short"})}</span></div>`;
     if(t.src==="ical")return `<div class="row task prow ${t.canc?"isfait":""}" style="--c:var(${colorOf(t)})" data-icalinfo="${esc(t.id)}">${dd}
@@ -1211,7 +1213,7 @@ function icalCacheSave(){const keep={};CALS().forEach(c=>{if(icalAll[c.id])keep[
 // lecture d'un fichier iCal (.ics)
 function parseICS(text,now=new Date()){
   const lines=String(text).replace(/\r?\n[ \t]/g,"").split(/\r?\n/);
-  const out=[];let ev=null;
+  const out=[];let ev=/** @type {any} */(null);
   const unesc=v=>v.replace(/\\n/gi,"\n").replace(/\\,/g,",").replace(/\;/g,";").replace(/\\\\/g,"\\");
   const toLocal=(v,params)=>{
     const m=v.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})?(Z)?)?$/);if(!m)return null;
@@ -1402,7 +1404,7 @@ function bkParse(j){
 function bkPrepare(src){const d=JSON.parse(JSON.stringify(src));delete d.ui;delete d.wipe;delete d.del;delete d.res;let skipped=0;
   const drop=(lk,keep)=>{const a=bkGet(d,lk),b=a.filter(keep);skipped+=a.length-b.length;if(lk==="pwds")d.pwds=b;else d.notes=b};
   const phx=data.phx||d.phx||null,phxOk=v=>!isV2(v)||!!(phx&&d.phx&&phx.id===d.phx.id);
-  for(const [vk,lk,secret] of [["vault","pwds",false],["noteVault","notes",true]]){const cur=data[vk],iv=d[vk];
+  for(const [vk,lk,secret] of /** @type {[string,string,boolean][]} */([["vault","pwds",false],["noteVault","notes",true]])){const cur=data[vk],iv=d[vk];
     if(cur&&cur.chk){if(!iv||iv.id!==cur.id)drop(lk,x=>secret&&!x.secret||x.vid===cur.id);d[vk]=cur}
     else if(iv&&!phxOk(iv)){drop(lk,x=>secret&&!x.secret);d[vk]=null}}
   if(data.docVault&&data.docVault.chk)d.docVault=data.docVault;else if(d.docVault&&!phxOk(d.docVault))d.docVault=null;
@@ -1942,7 +1944,7 @@ const standalone=()=>window.matchMedia("(display-mode: standalone)").matches||na
 function b64u(s){const p="=".repeat((4-s.length%4)%4),b=atob((s+p).replace(/-/g,"+").replace(/_/g,"/"));return Uint8Array.from(b,c=>c.charCodeAt(0))}
 async function currentSub(){if(!pushOK())return null;const r=await navigator.serviceWorker.ready;return r.pushManager.getSubscription()}
 // le bloc « notifications » existe à deux endroits (Réglages et Planning) : même contenu, mêmes réglages
-let nfState={kind:"off",msg:""},nfCustom=false;
+let nfState=/** @type {{kind:string,msg?:string}} */({kind:"off",msg:""}),nfCustom=false;
 async function renderNotif(){
   if(!pushOK())nfState={kind:"na",msg:isIOS&&!standalone()?"Pour activer les notifications, ouvre Sid'compagnon depuis l'icône de ton écran d'accueil.":"Ce navigateur ne gère pas les notifications."};
   else if(Notification.permission==="denied")nfState={kind:"na",msg:"Notifications bloquées. Autorise-les dans les réglages de ton smartphone (Notifications > Sid'compagnon)."};
@@ -2125,7 +2127,7 @@ const shareTxt=(list,prog)=>prog?`Programme « ${prog} » (Sid'compagnon)\n\n${l
 // lecture tolérante : texte de Sid'compagnon (ancien et nouveau), ou programme écrit par Claude (titres « ## Séance … », puces, « 4 × 8–10 »)
 function parseShared(txt){
   const lines=String(txt||"").split(/\r?\n/).map(l=>l.replace(/\*\*/g,"").trim()).filter(Boolean);if(!lines.length)return null;
-  let prog="",cur=null;const out=[];
+  let prog="",cur=/** @type {any} */(null);const out=/** @type {any[]} */([]);
   // titre « Séance « Push » » (format de Sid'compagnon : le nom est entre guillemets) ou « ## Séance A — Haut du corps » (on garde tout le titre)
   const head=(l,w)=>{const t=l.replace(/^#{1,4}\s*/,"").replace(/\s*\((?:sid'?(?:note|home|compagnon))\)\s*:?\s*$/i,"").replace(/\s*:\s*$/,"");
     if(!new RegExp(`^(?:${w})\\b`,"i").test(t))return null;const q=t.match(/[«"“]\s*(.+?)\s*[»"”]/);return q?q[1]:t};
@@ -2263,7 +2265,7 @@ function grpActions(id){
   if(!id){const free=M().sessions.filter(s=>s&&!s.grp);
     openActions(L("Séances libres"),[{l:"Partager toutes les séances libres",fn:()=>copyText(shareTxt(free,L("Séances libres")),"prog")}]);return}
   const ses=grpSe(id),pl=PL(),isPlan=pl&&pl.id===id,name=(ses[0]&&ses[0].grp&&ses[0].grp.name)||L("Mon programme");
-  const it=[{l:"Partager le programme",fn:()=>copyText(shareTxt(ses,isPlan?L("Mon programme"):name),"prog")}];
+  const it=/** @type {any[]} */([{l:"Partager le programme",fn:()=>copyText(shareTxt(ses,isPlan?L("Mon programme"):name),"prog")}]);
   if(!isPlan&&ses.length)it.push({l:"Suivre ce programme",fn:()=>{const old=M().plan;M().plan={id,v:2,profile:(old&&!old.deleted&&old.profile)||{},at:new Date().toISOString(),upd:Date.now(),src:ses[0].grp.src==="claude"?"ia":ses[0].grp.src||"import"};M().upd=Date.now();save();renderMuscu();toast("Programme suivi : la prochaine séance est proposée en haut")}});
   if(!isPlan)it.push({l:"Renommer",fn:()=>{const n=prompt(L("Nom du programme"),name);if(!n||!n.trim())return;ses.forEach(s=>{s.grp={...s.grp,name:n.trim().slice(0,80)};seTouch(s)});save();renderMuscu()}});
   it.push({l:"Supprimer le programme",danger:true,fn:()=>{const ids=ses.map(s=>s.id),oldPlan=M().plan;
@@ -2465,7 +2467,7 @@ function muPrompt(q){const g=L(MU_GOALS[muGoal()]);return T3(`Avec Sid'note, pou
 function ntPrompt(q){return T3(`Avec Sid'note, dans mes notes : ${q}\n(Retrouve les notes avec notes et lire_note. Pour une nouvelle note, utilise ajouter_note et propose un dossier si c'est utile ; pour changer une note qui existe, utilise modifier_note, sans créer de doublon. Tu ne vois pas mes notes secrètes.)`,
   `With Sid'note, in my notes: ${q}\n(Find notes with notes and lire_note. For a new note, use ajouter_note and suggest a folder if useful; to change an existing note, use modifier_note without creating a duplicate. You can't see my secret notes.)`,
   `Met Sid'note, in mijn notities: ${q}\n(Zoek notities met notes en lire_note. Voor een nieuwe notitie: ajouter_note en stel een map voor als dat helpt; om een bestaande notitie te wijzigen: modifier_note, zonder dubbel. Je ziet mijn geheime notities niet.)`)}
-for(const[k,topic,mk,health]of[["mu","muscu",muPrompt,true],["nt","note",ntPrompt,false]]){const f=$(k+"AskForm"),t=$(k+"Ask");
+for(const[k,topic,mk,health]of/** @type {[string,string,(q:string)=>string,boolean][]} */([["mu","muscu",muPrompt,true],["nt","note",ntPrompt,false]])){const f=$(k+"AskForm"),t=$(k+"Ask");
   $(k+"Mic").addEventListener("click",e=>dictate(e.currentTarget,t));t.addEventListener("input",()=>grow(t));
   t.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();f.requestSubmit()}});
   f.addEventListener("submit",async e=>{e.preventDefault();const q=t.value.trim();if(!q)return;dictStop();
@@ -2636,7 +2638,7 @@ const DF=()=>data.docFolders||(data.docFolders=[]);
 let dfQ="",dfEditing=false,dvOpen=false;
 const folderOf=d=>d.folder&&DF().find(f=>f.id===d.folder);
 const curFolder=()=>DF().find(x=>x.id===data.ui.docFolder)||null;
-const docHidden=()=>false; // v22 : tout l'onglet est protégé par le code, plus de classeur verrouillé à part
+const docHidden=(_d)=>false; // v22 : tout l'onglet est protégé par le code, plus de classeur verrouillé à part
 function renderDocs(){
   if(!$("docList"))return;
   if(dvOpen&&(!data.docVault||data.docVault.id!==dvVid))dvLock(); // coffre remplacé ailleurs : on reverrouille
@@ -3060,6 +3062,7 @@ function renderNotes(){
     return `<div class="note-row"><span class="ngrip" data-ngrip="${x.id}" aria-hidden="true" title="${L("Maintenir et glisser")}">${GRIP}</span><button class="note" data-note="${x.id}"><b class="notr">${x.secret?IC("lock")+" ":""}${esc(t)}</b>${fp}<span class="prev notr">${esc(lines.join(" · ")||"")}</span>${x.photos&&x.photos.length?`<span class="np-count">${IC("camera")} ${x.photos.length} ${L(x.photos.length>1?"photos":"photo")}</span>`:""}${x.pdf?`<span class="np-count pdf-badge">PDF${x.pdf.pages?` · ${x.pdf.pages} ${L(x.pdf.pages>1?"pages":"page")}`:""}${(()=>{const k=pvAnns(x.id).length;return k?` · ${k} ${L(k>1?"annotations":"annotation")}`:""})()}</span>`:""}${when}</button>${more}</div>`}).join("")+`</div>`
     :dirs?"":`<div class="empty">${L(q?"Aucune note ne correspond.":noteDir?"Ce dossier est vide. Touche « + Note » pour y écrire.":"Aucune note pour l'instant. Touche « + Note » pour écrire.")}</div>`);
 }
+/** @type {any} */ renderNotes.phk=undefined; // déclaré pour TypeScript (même valeur de départ)
 function openNote(id){noteOpenId=id;renderNotes();window.scrollTo(0,0)}
 async function closeNote(){
   await noteFlush();const n=noteOpenId&&noteFind(noteOpenId),v=noteView(n);
@@ -3176,6 +3179,7 @@ function renderNotePhotos(n){const box=$("notePhotos");if(!box)return;const ps=(
     catch(e){reportErr("island notePhotos: "+(e&&e.message));try{window.SCIslands.unmount(box)}catch(_){}}}
   box.innerHTML=ps.map(p=>`<button type="button" class="np" data-np="${p.id}" aria-label="${L("Voir la photo")}"><span class="np-load"></span></button>`).join("");
   ps.forEach(async p=>{const u=await npGet(p.id),el=box.querySelector(`[data-np="${p.id}"]`);if(el)el.innerHTML=u?`<img src="${u}" alt="">`:`<span class="small muted">${L("Indisponible")}</span>`})}
+/** @type {any} */ renderNotePhotos.tk=undefined; // déclaré pour TypeScript (même valeur de départ)
 $("notePhotoIn").addEventListener("change",async e=>{const files=[...e.target.files];e.target.value="";const n=noteFind(noteOpenId);if(!n||!files.length)return;
   if(n.secret){toast("Pas de photo dans une note secrète");return}
   n.photos=n.photos||[];
@@ -3211,7 +3215,7 @@ async function pdfOpen(id){const n=noteFind(id);if(!n||!n.pdf)return;const tok=+
     pv.pdf=pdf;body.innerHTML="";if(pv.io)pv.io.disconnect();
     pv.io=new IntersectionObserver(es=>es.forEach(en=>{const w=en.target;if(en.isIntersecting)pvRender(w,tok);else if(w._c&&Math.abs(en.boundingClientRect.top)>innerHeight*3){w._c.remove();w._c=null}}),{root:body,rootMargin:"120% 0px"});
     for(let i=1;i<=pdf.numPages;i++){if(tok!==pv.tok)return;const pg=await pdf.getPage(i),v=pg.getViewport({scale:1});
-      const w=document.createElement("div");w.className="pv-page";w.dataset.pg=i;w.style.aspectRatio=`${v.width} / ${v.height}`;w.innerHTML=`<div class="pv-ov" data-pg="${i}"></div><span class="pv-num">${i}</span>`;
+      const w=document.createElement("div");w.className="pv-page";w.dataset.pg=String(i);w.style.aspectRatio=`${v.width} / ${v.height}`;w.innerHTML=`<div class="pv-ov" data-pg="${i}"></div><span class="pv-num">${i}</span>`;
       body.appendChild(w);pvOverlay(w);pv.io.observe(w)}
     if(n.pdf.pages!==pdf.numPages){n.pdf.pages=pdf.numPages;save();renderNotes()}
   }catch(ex){if(tok===pv.tok)body.innerHTML=`<p class="muted pv-wait">${L("Ce PDF ne peut pas être affiché.")}</p>`}}
@@ -3651,9 +3655,9 @@ async function bioEnable(pre){
   const ctxs=pre?Object.keys(pre):bioCtxs();if(!ctxs.length)return toast("Choisis d'abord un code (Mots de passe ou Documents)");
   // 1) la passkey (tout de suite, pendant le toucher : Safari l'exige)
   let cred,first;const salt=crypto.getRandomValues(new Uint8Array(32));
-  const opts=ev=>({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rp:{name:"Sid'note",id:location.hostname},
+  const opts=/** @type {(ev:boolean)=>any} */(ev=>({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rp:{name:"Sid'note",id:location.hostname},
       user:{id:crypto.getRandomValues(new Uint8Array(16)),name:accEmail()||"Sid'note",displayName:"Sid'note"},pubKeyCredParams:[{type:"public-key",alg:-7},{type:"public-key",alg:-257}],
-      authenticatorSelection:{authenticatorAttachment:"platform",residentKey:"preferred",userVerification:"required"},timeout:60000,attestation:"none",extensions:{prf:ev?{eval:{first:salt}}:{}}}});
+      authenticatorSelection:{authenticatorAttachment:"platform",residentKey:"preferred",userVerification:"required"},timeout:60000,attestation:"none",extensions:{prf:ev?{eval:{first:salt}}:{}}}}));
   try{let c;try{c=await navigator.credentials.create(opts(true))}catch(e){if(e&&e.name==="NotAllowedError")throw e;bioErr("create-eval",e);c=await navigator.credentials.create(opts(false))}
     const p=c.getClientExtensionResults().prf||{};if(!p.enabled&&!(p.results&&p.results.first))throw new Error("noprf");
     cred=b64e(c.rawId);first=p.results&&p.results.first}
@@ -4195,8 +4199,8 @@ async function nuCall(kind,payload){payload=payload||{};
   throw aiNeed(kind,payload)}
 function aiNeed(kind,p){aiHandoff(aiPrompt(kind,p),"nutri",p&&p.image?{img:"data:image/jpeg;base64,"+p.image}:null);const e=new Error(L("Claude s'en charge : suis les étapes à l'écran, le résultat arrivera ici."));e.ai=true;return e}
 // profil : métabolisme (Mifflin-St Jeor), dépense avec le sport, objectif selon le rythme, macros (mêmes règles prudentes qu'avant)
-const SPORT_MET=[[/muscu|fitness|gym|halt|crossfit|weight|kracht/,5.5],[/course|running|jogg|run|lopen|hardlo/,9.8],[/v[eé]lo|cycl|bike|fiets|spinning/,7.5],[/nata|swim|zwem|piscine/,7],
-  [/foot|basket|tennis|padel|hand|volley|rugby|hockey/,7],[/marche|walk|wandel|randon/,3.8],[/boxe|box|mma|judo|karat|combat|lutte/,9],[/yoga|pilates|stretch/,3],[/danse|dance|dans/,5.5]];
+const SPORT_MET=/** @type {[RegExp,number][]} */([[/muscu|fitness|gym|halt|crossfit|weight|kracht/,5.5],[/course|running|jogg|run|lopen|hardlo/,9.8],[/v[eé]lo|cycl|bike|fiets|spinning/,7.5],[/nata|swim|zwem|piscine/,7],
+  [/foot|basket|tennis|padel|hand|volley|rugby|hockey/,7],[/marche|walk|wandel|randon/,3.8],[/boxe|box|mma|judo|karat|combat|lutte/,9],[/yoga|pilates|stretch/,3],[/danse|dance|dans/,5.5]]);
 function nuProfileLocal(d){const w=+d.weight_kg||70,h=+d.height_cm||170,a=+d.age||30,male=d.sex==="male",goal=d.goal||"maintain";
   const bmr=Math.round(10*w+6.25*h-5*a+(male?5:-161));
   const sports=(d.sports||[]).map(x=>{const n=fold(x.sport||""),met=(SPORT_MET.find(([re])=>re.test(n))||[0,6])[1];return{sport:x.sport,kcal:Math.round(met*w*(+x.minutes_per_session||60)/60),freq:+x.times_per_week||0}});
@@ -4320,7 +4324,7 @@ const NU_MAC=()=>MAC.map(([k,label,c])=>({k,label,c}));
 const qtyVM=(key,x)=>({key,label:qtyTxt(x)||"",value:x.qty||"",editing:qtyEd===key});
 function renderNuWeek(){
   const ws=weekSports(wKey(nuDay)),el=$("nuWeek");el.hidden=!ws.length;if(!ws.length)return;
-  const m=parse(wKey(nuDay)),e=new Date(m);e.setDate(e.getDate()+6),t=dayTarget(nuDay);
+  const m=parse(wKey(nuDay)),e=new Date(m),t=dayTarget(nuDay);e.setDate(e.getDate()+6);
   if(nuIsl("nuWeek")){try{window.SCIslands.nuWeek(el,{sports:ws.map(s=>({name:s.name,kps:s.kps,count:s.count,base:s.base})),range:`${m.getDate()} ${MO[m.getMonth()]} – ${e.getDate()} ${MO[e.getMonth()]}`,
     target:fmtFull(t.kcal),delta:t.delta||0,actIcon:IC("activity"),i18n:agI18n()});return}catch(x){reportErr("island nuWeek: "+(x&&x.message))}}
   el.innerHTML=`<div class="nu-week-h"><b>${IC("activity")} ${L("Ton sport cette semaine")}</b><span class="small muted">${m.getDate()} ${MO[m.getMonth()]} – ${e.getDate()} ${MO[e.getMonth()]}</span></div>`+
@@ -4742,8 +4746,8 @@ $("nuOneKcal").addEventListener("change",e=>{const mp=nuMP();mp.one[mp.type]=Mat
 function autoGrow(t){if(!t||t.tagName!=="TEXTAREA")return;t.style.height="auto";t.style.height=Math.min(t.scrollHeight+2,220)+"px"}
 document.addEventListener("input",e=>{if(e.target.classList&&e.target.classList.contains("autogrow"))autoGrow(e.target)});
 // huiles, beurre, miel, sauces… : exprimés en cuillères plutôt qu'en grammes
-const SPOONS=[[/huile|oil/i,13.5,4.5],[/beurre de cacahu|peanut butter|pur[ée]e d'amande|tahin|tahini/i,16,5],[/beurre|butter|margarine|ghee/i,14,5],
-  [/miel|honey|sirop|syrup|confiture|jam/i,21,7],[/vinaigre|vinegar|sauce soja|soy sauce|moutarde|mustard|ketchup|mayonnaise|mayo|pesto|cr[eè]me fra[iî]che/i,15,5]];
+const SPOONS=/** @type {[RegExp,number,number][]} */([[/huile|oil/i,13.5,4.5],[/beurre de cacahu|peanut butter|pur[ée]e d'amande|tahin|tahini/i,16,5],[/beurre|butter|margarine|ghee/i,14,5],
+  [/miel|honey|sirop|syrup|confiture|jam/i,21,7],[/vinaigre|vinegar|sauce soja|soy sauce|moutarde|mustard|ketchup|mayonnaise|mayo|pesto|cr[eè]me fra[iî]che/i,15,5]]);
 function spoonQty(name,g){if(!(g>0)||g>80)return"";const s=SPOONS.find(([re])=>re.test(name||""));if(!s)return"";
   const half=x=>Math.max(.5,Math.round(x*2)/2),fr=x=>String(x).replace(".",LANG==="en"?".":",");
   const tb=g/s[1];if(tb>=.75)return `${fr(half(tb))} ${L("c. à soupe")}`;return `${fr(half(g/s[2]))} ${L("c. à café")}`}
@@ -5237,7 +5241,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v71";
+const BUILD="sidnote-v72";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

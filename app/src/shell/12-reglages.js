@@ -47,7 +47,7 @@ function bkParse(j){
 function bkPrepare(src){const d=JSON.parse(JSON.stringify(src));delete d.ui;delete d.wipe;delete d.del;delete d.res;let skipped=0;
   const drop=(lk,keep)=>{const a=bkGet(d,lk),b=a.filter(keep);skipped+=a.length-b.length;if(lk==="pwds")d.pwds=b;else d.notes=b};
   const phx=data.phx||d.phx||null,phxOk=v=>!isV2(v)||!!(phx&&d.phx&&phx.id===d.phx.id);
-  for(const [vk,lk,secret] of [["vault","pwds",false],["noteVault","notes",true]]){const cur=data[vk],iv=d[vk];
+  for(const [vk,lk,secret] of /** @type {[string,string,boolean][]} */([["vault","pwds",false],["noteVault","notes",true]])){const cur=data[vk],iv=d[vk];
     if(cur&&cur.chk){if(!iv||iv.id!==cur.id)drop(lk,x=>secret&&!x.secret||x.vid===cur.id);d[vk]=cur}
     else if(iv&&!phxOk(iv)){drop(lk,x=>secret&&!x.secret);d[vk]=null}}
   if(data.docVault&&data.docVault.chk)d.docVault=data.docVault;else if(d.docVault&&!phxOk(d.docVault))d.docVault=null;

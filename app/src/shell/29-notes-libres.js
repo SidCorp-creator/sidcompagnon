@@ -99,6 +99,7 @@ function renderNotes(){
     return `<div class="note-row"><span class="ngrip" data-ngrip="${x.id}" aria-hidden="true" title="${L("Maintenir et glisser")}">${GRIP}</span><button class="note" data-note="${x.id}"><b class="notr">${x.secret?IC("lock")+" ":""}${esc(t)}</b>${fp}<span class="prev notr">${esc(lines.join(" · ")||"")}</span>${x.photos&&x.photos.length?`<span class="np-count">${IC("camera")} ${x.photos.length} ${L(x.photos.length>1?"photos":"photo")}</span>`:""}${x.pdf?`<span class="np-count pdf-badge">PDF${x.pdf.pages?` · ${x.pdf.pages} ${L(x.pdf.pages>1?"pages":"page")}`:""}${(()=>{const k=pvAnns(x.id).length;return k?` · ${k} ${L(k>1?"annotations":"annotation")}`:""})()}</span>`:""}${when}</button>${more}</div>`}).join("")+`</div>`
     :dirs?"":`<div class="empty">${L(q?"Aucune note ne correspond.":noteDir?"Ce dossier est vide. Touche « + Note » pour y écrire.":"Aucune note pour l'instant. Touche « + Note » pour écrire.")}</div>`);
 }
+/** @type {any} */ renderNotes.phk=undefined; // déclaré pour TypeScript (même valeur de départ)
 function openNote(id){noteOpenId=id;renderNotes();window.scrollTo(0,0)}
 async function closeNote(){
   await noteFlush();const n=noteOpenId&&noteFind(noteOpenId),v=noteView(n);
@@ -215,6 +216,7 @@ function renderNotePhotos(n){const box=$("notePhotos");if(!box)return;const ps=(
     catch(e){reportErr("island notePhotos: "+(e&&e.message));try{window.SCIslands.unmount(box)}catch(_){}}}
   box.innerHTML=ps.map(p=>`<button type="button" class="np" data-np="${p.id}" aria-label="${L("Voir la photo")}"><span class="np-load"></span></button>`).join("");
   ps.forEach(async p=>{const u=await npGet(p.id),el=box.querySelector(`[data-np="${p.id}"]`);if(el)el.innerHTML=u?`<img src="${u}" alt="">`:`<span class="small muted">${L("Indisponible")}</span>`})}
+/** @type {any} */ renderNotePhotos.tk=undefined; // déclaré pour TypeScript (même valeur de départ)
 $("notePhotoIn").addEventListener("change",async e=>{const files=[...e.target.files];e.target.value="";const n=noteFind(noteOpenId);if(!n||!files.length)return;
   if(n.secret){toast("Pas de photo dans une note secrète");return}
   n.photos=n.photos||[];
@@ -250,7 +252,7 @@ async function pdfOpen(id){const n=noteFind(id);if(!n||!n.pdf)return;const tok=+
     pv.pdf=pdf;body.innerHTML="";if(pv.io)pv.io.disconnect();
     pv.io=new IntersectionObserver(es=>es.forEach(en=>{const w=en.target;if(en.isIntersecting)pvRender(w,tok);else if(w._c&&Math.abs(en.boundingClientRect.top)>innerHeight*3){w._c.remove();w._c=null}}),{root:body,rootMargin:"120% 0px"});
     for(let i=1;i<=pdf.numPages;i++){if(tok!==pv.tok)return;const pg=await pdf.getPage(i),v=pg.getViewport({scale:1});
-      const w=document.createElement("div");w.className="pv-page";w.dataset.pg=i;w.style.aspectRatio=`${v.width} / ${v.height}`;w.innerHTML=`<div class="pv-ov" data-pg="${i}"></div><span class="pv-num">${i}</span>`;
+      const w=document.createElement("div");w.className="pv-page";w.dataset.pg=String(i);w.style.aspectRatio=`${v.width} / ${v.height}`;w.innerHTML=`<div class="pv-ov" data-pg="${i}"></div><span class="pv-num">${i}</span>`;
       body.appendChild(w);pvOverlay(w);pv.io.observe(w)}
     if(n.pdf.pages!==pdf.numPages){n.pdf.pages=pdf.numPages;save();renderNotes()}
   }catch(ex){if(tok===pv.tok)body.innerHTML=`<p class="muted pv-wait">${L("Ce PDF ne peut pas être affiché.")}</p>`}}

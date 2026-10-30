@@ -29,7 +29,7 @@ function icalCacheSave(){const keep={};CALS().forEach(c=>{if(icalAll[c.id])keep[
 // lecture d'un fichier iCal (.ics)
 function parseICS(text,now=new Date()){
   const lines=String(text).replace(/\r?\n[ \t]/g,"").split(/\r?\n/);
-  const out=[];let ev=null;
+  const out=[];let ev=/** @type {any} */(null);
   const unesc=v=>v.replace(/\\n/gi,"\n").replace(/\\,/g,",").replace(/\;/g,";").replace(/\\\\/g,"\\");
   const toLocal=(v,params)=>{
     const m=v.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})?(Z)?)?$/);if(!m)return null;

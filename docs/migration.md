@@ -27,6 +27,7 @@ Décision de Sid (29 oct. 2026) : passer progressivement à TypeScript + React +
 | v68 | Notifications (Réglages, Agenda) et « Me prévenir » des fiches d'activité, assistant « Brancher Claude », fenêtre « Envoyer à Claude », vignette de la photo du plat, pages du scanner | `app/src/Notif.tsx`, `app/src/AiWizard.tsx` |
 | v69 | Message du bas (avec « Annuler »), titre du mois de l'Agenda, aperçu « Compris : … » de l'ajout rapide, aide au recalcul des calories, lecteur Spotify, état de l'installation | `app/src/Misc.tsx` |
 | v71 | « Cerveau » de l'app : `site/app.js` découpé en 47 sources `app/src/shell/` et reconstruit par `npm run build` (identique octet pour octet) | `app/src/shell/`, `app/scripts/build-shell.mjs` |
+| v72 | Les 47 sources du « cerveau » vérifiées par TypeScript à chaque construction (`tsconfig.shell.json`, types JSDoc, `globals.d.ts`) | `app/src/shell/` |
 | v63 | Présentation : diapositives des apps (état `onbSel`, redessinées à chaque choix puis `onbStep` remet la diapositive active), points, couleurs · claviers de code | `app/src/Onboarding.tsx` |
 | v62 | Réglages : statistiques, onglets affichés, types d'activités, adresses du connecteur · fenêtres : ajout rapide, fiche d'un exercice | `app/src/Settings.tsx` |
 | v61 | Coquille, étape 3 : appels au serveur, session, écriture synchronisée (`core/sync.ts`) ; barres de navigation : bas, en-tête d'app, barre latérale (`Shell.tsx`) | `app/src/core/sync.ts`, `app/src/Shell.tsx` |
@@ -104,5 +105,5 @@ cd .. && node tests/smoke.js
 ## Étape « cerveau » (v71 et suivantes)
 
 1. v71 : découpage de `site/app.js` en sources `app/src/shell/` (fait, sans aucun changement de code).
-2. Ensuite : chaque source passe en TypeScript, domaine par domaine, du moins risqué au plus sensible (le coffre en dernier), avec les tests à chaque fois.
+2. v72 : toutes les sources sont vérifiées par TypeScript (fait). Ensuite : chaque source passe en TypeScript, domaine par domaine, du moins risqué au plus sensible (le coffre en dernier), avec les tests à chaque fois.
 3. Fin : plus aucun fichier du site écrit à la main.

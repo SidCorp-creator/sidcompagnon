@@ -1,14 +1,15 @@
 /* ---------- utilitaires ---------- */
-const $=id=>document.getElementById(id);
+const $=/** @type {(id:string)=>any} */(id=>document.getElementById(id));
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-const parse=d=>{const[y,m,x]=d.split("-").map(Number);return new Date(y,m-1,x)};
-const today=()=>{const t=new Date();return new Date(t.getFullYear(),t.getMonth(),t.getDate())};
+const parse=/** @type {(d:string)=>any} */(d=>{const[y,m,x]=d.split("-").map(Number);return new Date(y,m-1,x)});
+const today=/** @type {()=>any} */(()=>{const t=new Date();return new Date(t.getFullYear(),t.getMonth(),t.getDate())});
 const fmt=d=>{const x=parse(d);return x.getDate()+" "+MO[x.getMonth()]};
 const daysTo=d=>Math.round((parse(d)-today())/864e5);
 // v69 (#3) : message du bas dessiné par React (shIsl est déclaré plus bas : on teste window.SCIslands directement)
 const toastIsl=(t,p)=>{if(!(window.SCIslands&&window.SCIslands.toast&&!window.__noIslands))return false;try{window.SCIslands.toast(t,{...p,i18n:agI18n()});return true}catch(e){try{window.SCIslands.unmount(t)}catch(_){}return false}};
 function toast(m,ms){const t=$("toast");if(!toastIsl(t,{m:String(m),label:"",onAct:null}))t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,ms||2200)}
+/** @type {any} */ toast.h=undefined; // minuterie du message (déclarée pour TypeScript)
 // v34 : message avec un bouton (ex. « Annuler »)
 function toastAct(m,label,fn,ms){const t=$("toast");let used=false;const act=()=>{if(used)return;used=true;t.hidden=true;clearTimeout(toast.h);fn()};
   if(!toastIsl(t,{m,label,onAct:act})){t.innerHTML=`<span>${esc(L(m))}</span><button type="button" class="toast-act">${esc(L(label))}</button>`;t.querySelector(".toast-act").addEventListener("click",act,{once:true})}t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,ms||5000)}

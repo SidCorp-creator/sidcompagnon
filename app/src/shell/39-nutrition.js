@@ -24,8 +24,8 @@ async function nuCall(kind,payload){payload=payload||{};
   throw aiNeed(kind,payload)}
 function aiNeed(kind,p){aiHandoff(aiPrompt(kind,p),"nutri",p&&p.image?{img:"data:image/jpeg;base64,"+p.image}:null);const e=new Error(L("Claude s'en charge : suis les étapes à l'écran, le résultat arrivera ici."));e.ai=true;return e}
 // profil : métabolisme (Mifflin-St Jeor), dépense avec le sport, objectif selon le rythme, macros (mêmes règles prudentes qu'avant)
-const SPORT_MET=[[/muscu|fitness|gym|halt|crossfit|weight|kracht/,5.5],[/course|running|jogg|run|lopen|hardlo/,9.8],[/v[eé]lo|cycl|bike|fiets|spinning/,7.5],[/nata|swim|zwem|piscine/,7],
-  [/foot|basket|tennis|padel|hand|volley|rugby|hockey/,7],[/marche|walk|wandel|randon/,3.8],[/boxe|box|mma|judo|karat|combat|lutte/,9],[/yoga|pilates|stretch/,3],[/danse|dance|dans/,5.5]];
+const SPORT_MET=/** @type {[RegExp,number][]} */([[/muscu|fitness|gym|halt|crossfit|weight|kracht/,5.5],[/course|running|jogg|run|lopen|hardlo/,9.8],[/v[eé]lo|cycl|bike|fiets|spinning/,7.5],[/nata|swim|zwem|piscine/,7],
+  [/foot|basket|tennis|padel|hand|volley|rugby|hockey/,7],[/marche|walk|wandel|randon/,3.8],[/boxe|box|mma|judo|karat|combat|lutte/,9],[/yoga|pilates|stretch/,3],[/danse|dance|dans/,5.5]]);
 function nuProfileLocal(d){const w=+d.weight_kg||70,h=+d.height_cm||170,a=+d.age||30,male=d.sex==="male",goal=d.goal||"maintain";
   const bmr=Math.round(10*w+6.25*h-5*a+(male?5:-161));
   const sports=(d.sports||[]).map(x=>{const n=fold(x.sport||""),met=(SPORT_MET.find(([re])=>re.test(n))||[0,6])[1];return{sport:x.sport,kcal:Math.round(met*w*(+x.minutes_per_session||60)/60),freq:+x.times_per_week||0}});
@@ -149,7 +149,7 @@ const NU_MAC=()=>MAC.map(([k,label,c])=>({k,label,c}));
 const qtyVM=(key,x)=>({key,label:qtyTxt(x)||"",value:x.qty||"",editing:qtyEd===key});
 function renderNuWeek(){
   const ws=weekSports(wKey(nuDay)),el=$("nuWeek");el.hidden=!ws.length;if(!ws.length)return;
-  const m=parse(wKey(nuDay)),e=new Date(m);e.setDate(e.getDate()+6),t=dayTarget(nuDay);
+  const m=parse(wKey(nuDay)),e=new Date(m),t=dayTarget(nuDay);e.setDate(e.getDate()+6);
   if(nuIsl("nuWeek")){try{window.SCIslands.nuWeek(el,{sports:ws.map(s=>({name:s.name,kps:s.kps,count:s.count,base:s.base})),range:`${m.getDate()} ${MO[m.getMonth()]} – ${e.getDate()} ${MO[e.getMonth()]}`,
     target:fmtFull(t.kcal),delta:t.delta||0,actIcon:IC("activity"),i18n:agI18n()});return}catch(x){reportErr("island nuWeek: "+(x&&x.message))}}
   el.innerHTML=`<div class="nu-week-h"><b>${IC("activity")} ${L("Ton sport cette semaine")}</b><span class="small muted">${m.getDate()} ${MO[m.getMonth()]} – ${e.getDate()} ${MO[e.getMonth()]}</span></div>`+

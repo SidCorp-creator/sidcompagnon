@@ -11,7 +11,7 @@ const ssGet=k=>{try{return sessionStorage.getItem(k)}catch(e){return null}},ssSe
 // « Rester connecté » décoché : la session s'arrête quand l'app est fermée
 const ephExpired=!!(session&&session.eph&&!ssGet("sidnote-alive"));
 if(session&&!ephExpired)ssSet("sidnote-alive","1");
-let data=cache?cache.data:blank();
+let data=/** @type {any} */(cache?cache.data:blank());
 if(cache&&!("base" in cache)){cache.base="";cache.dirty=true;ls.set(cacheKey(session.user.id),cache)}
 data.ui=data.ui||defaultUI();
 if(!Array.isArray(data.types))data.types=Object.entries(CATS).map(([name,c])=>({name,c}));
@@ -41,6 +41,7 @@ const forServer=d=>{const c={...d};delete c.ui;return c};
 const CS=()=>window.SCCore&&window.SCCore.sync&&!window.__noCore?window.SCCore.sync:null;
 let coreApi=null;
 async function api(path,opt={}){if(CS()){coreApi=coreApi||CS().createApi(SUPABASE_URL,SUPABASE_KEY);return coreApi(path,opt)}return apiOld(path,opt)}
+/** @param {string} path @param {{method?:string,body?:any,token?:string,headers?:any}} [o] */
 async function apiOld(path,{method="GET",body,token,headers={}}={}){
   const r=await fetch(SUPABASE_URL+path,{method,headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{}),...headers},body:body?JSON.stringify(body):undefined});
   const txt=await r.text();let j=null;try{j=txt?JSON.parse(txt):null}catch(e){}
@@ -49,7 +50,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="71";const errSent=new Set();
+const APP_V="72";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},

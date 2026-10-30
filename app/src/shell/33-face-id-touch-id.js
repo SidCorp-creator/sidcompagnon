@@ -47,9 +47,9 @@ async function bioEnable(pre){
   const ctxs=pre?Object.keys(pre):bioCtxs();if(!ctxs.length)return toast("Choisis d'abord un code (Mots de passe ou Documents)");
   // 1) la passkey (tout de suite, pendant le toucher : Safari l'exige)
   let cred,first;const salt=crypto.getRandomValues(new Uint8Array(32));
-  const opts=ev=>({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rp:{name:"Sid'note",id:location.hostname},
+  const opts=/** @type {(ev:boolean)=>any} */(ev=>({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rp:{name:"Sid'note",id:location.hostname},
       user:{id:crypto.getRandomValues(new Uint8Array(16)),name:accEmail()||"Sid'note",displayName:"Sid'note"},pubKeyCredParams:[{type:"public-key",alg:-7},{type:"public-key",alg:-257}],
-      authenticatorSelection:{authenticatorAttachment:"platform",residentKey:"preferred",userVerification:"required"},timeout:60000,attestation:"none",extensions:{prf:ev?{eval:{first:salt}}:{}}}});
+      authenticatorSelection:{authenticatorAttachment:"platform",residentKey:"preferred",userVerification:"required"},timeout:60000,attestation:"none",extensions:{prf:ev?{eval:{first:salt}}:{}}}}));
   try{let c;try{c=await navigator.credentials.create(opts(true))}catch(e){if(e&&e.name==="NotAllowedError")throw e;bioErr("create-eval",e);c=await navigator.credentials.create(opts(false))}
     const p=c.getClientExtensionResults().prf||{};if(!p.enabled&&!(p.results&&p.results.first))throw new Error("noprf");
     cred=b64e(c.rawId);first=p.results&&p.results.first}

@@ -8,6 +8,8 @@ import { PomoStats } from "./PomoStats";
 import { RevCard, WeeksHistory, type PastRev, type Rev } from "./Reviews";
 import { MuGoal, NuMacros, type MacroRow } from "./Small";
 import { AgendaChips, AgendaList, AgendaMonth, AgendaNext, AgendaYear, type AgI18n, type Chip } from "./Agenda";
+import { CatBar, TodoCats, TodoDone, TodoOpen, TodoPaused, rowCtx, type TodosProps } from "./Todos";
+import { DayView, type DayViewProps } from "./DayView";
 import type { AgTask, GrDay, I18n, Tip } from "./types";
 import { fmtN, r1 } from "./format";
 
@@ -71,11 +73,13 @@ declare global {
       agMonth: (el: Element, p: { y: number; m: number; today: string; tasks: AgTask[]; color: (t: AgTask) => string; i18n: AgI18n }) => void;
       agYear: (el: Element, p: { y: number; today: string; tasks: AgTask[]; i18n: AgI18n }) => void;
       agPlan: (els: { next: Element; chips: Element; list: Element }, p: AgPlanProps) => void;
+      dayView: (el: Element, p: DayViewProps) => void;
+      todos: (els: { cats: Element; bar: Element; open: Element; paused: Element; done: Element }, p: TodosProps) => void;
     };
   }
 }
 window.SCIslands = {
-  version: 4,
+  version: 5,
   nuCal: (el, p) => mount(el, <NutritionCalendar {...p} />),
   graph,
   pomoStats: (el, p) => mount(el, <PomoStats {...p} />),
@@ -92,6 +96,15 @@ window.SCIslands = {
     mount(els.next, <AgendaNext tasks={p.tasks} today={p.today} color={p.color} i18n={p.i18n} />);
     mount(els.chips, <AgendaChips chips={p.chips} active={p.filter} i18n={p.i18n} />);
     mount(els.list, <AgendaList list={p.list} search={p.search} open={p.open} today={p.today} color={p.color} icalCat={p.icalCat} i18n={p.i18n} />);
+  },
+  dayView: (el, p) => mount(el, <DayView {...p} />),
+  todos: (els, p) => {
+    const x = rowCtx(p);
+    mount(els.cats, <TodoCats p={p} />);
+    mount(els.bar, <CatBar p={p} />);
+    mount(els.open, <TodoOpen p={p} x={x} />);
+    mount(els.paused, <TodoPaused p={p} x={x} />);
+    mount(els.done, <TodoDone p={p} x={x} />);
   },
 };
 window.dispatchEvent(new Event("sc-islands"));

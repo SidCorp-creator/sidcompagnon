@@ -103,7 +103,7 @@ async function api(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="53";const errSent=new Set();
+const APP_V="54";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -746,13 +746,14 @@ function renderTodos(){
   // une catégorie dont toutes les tâches sont réalisées quitte la rangée du haut (rangée dans « ✓ Terminées »)
   const finished=c=>!openN(c.id)&&!data.todos.some(t=>t.cat===c.id&&t.paused)&&data.todos.some(t=>t.cat===c.id&&t.done);
   const fin=cats.filter(finished),showFin=!!TV().showFin||fin.some(c=>c.id===cc);
-  $("todoCats").innerHTML=`<button class="pill" data-tcat="all" aria-pressed="${cc==="all"}">${L("Toutes")}</button>`+
+  const isl=window.SCIslands&&window.SCIslands.todos&&!window.__noIslands;
+  if(!isl)$("todoCats").innerHTML=`<button class="pill" data-tcat="all" aria-pressed="${cc==="all"}">${L("Toutes")}</button>`+
     cats.filter(c=>!finished(c)).map(c=>`<button class="pill" data-tcat="${c.id}" aria-pressed="${cc===c.id}">${esc(c.name)} <span class="cnt">${openN(c.id)||""}</span></button>`).join("")+
     (fin.length?`<button class="pill" data-tcatfin="1" aria-pressed="${showFin}">✓ ${fin.length} ${L(fin.length>1?"terminées":"terminée")}</button>`+(showFin?fin.map(c=>`<button class="pill" data-tcat="${c.id}" aria-pressed="${cc===c.id}" style="opacity:.75">✓ ${esc(c.name)}</button>`).join(""):""):"")+
     `<button class="pill add" data-tcatnew="1">+ ${L("Catégorie")}</button>`;
   const cat=catOf(cc);
   $("catBar").hidden=!cat;
-  if(cat){const tot=data.todos.filter(t=>t.cat===cat.id&&!t.paused).length,dn=data.todos.filter(t=>t.cat===cat.id&&t.done).length;
+  if(cat&&!isl){const tot=data.todos.filter(t=>t.cat===cat.id&&!t.paused).length,dn=data.todos.filter(t=>t.cat===cat.id&&t.done).length;
     $("catBar").innerHTML=catEditing?`<form id="catRename" style="display:flex;gap:8px;width:100%"><input id="catRenIn" value="${esc(cat.name)}" aria-label="Nouveau nom" autocomplete="off"><button class="btn" type="submit">OK</button></form>`
       :`<div class="grow"><b>${esc(cat.name)}</b><div class="small muted">${tot?`${dn}/${tot} ${L("réalisées")}`:L("Aucune tâche pour l'instant")}</div></div>
         <div class="cat-prog" style="width:70px"><i style="width:${tot?dn/tot*100:0}%"></i></div>
@@ -760,7 +761,8 @@ function renderTodos(){
   $("todoIn").placeholder=cat?`${L("Nouvelle tâche dans")} « ${cat.name} »…`:L("Nouvelle tâche…");
   // liste à faire
   const emptyMsg=`<div class="card"><div class="empty">${q?"Aucune tâche à faire ne correspond.":all.some(t=>t.done)?"Tout est réalisé. Bravo !":cat?"Aucune tâche dans cette catégorie. Ajoute-en une ci-dessus.":"Aucune tâche. Ajoute-en une ci-dessus."}</div></div>`;
-  if(cc==="all"&&cats.length&&open.length){
+  if(isl){}
+  else if(cc==="all"&&cats.length&&open.length){
     // v44.6 : les tâches sans catégorie d'abord, puis les catégories
     const groups=[{c:null,items:open.filter(t=>!(t.cat&&catOf(t.cat)))},...cats.map(c=>({c,items:open.filter(t=>t.cat===c.id)}))].filter(g=>g.items.length);
     // chaque catégorie peut être repliée (réglage propre à cet appareil)
@@ -775,15 +777,21 @@ function renderTodos(){
   }else $("todoOpen").innerHTML=open.length?`<div class="card" data-group="${cc}">${open.map(todoRow).join("")}</div>`:emptyMsg;
   $("foldPaused").hidden=!paused.length;
   $("pausedTitle").textContent=`${L("En suspens")} (${paused.length})`;$("pausedArrow").textContent=L(pausedOpen?"Masquer":"Afficher");
-  $("todoPaused").innerHTML=pausedOpen?paused.map(todoRow).join(""):"";$("todoPaused").hidden=!pausedOpen||!paused.length;
+  if(!isl)$("todoPaused").innerHTML=pausedOpen?paused.map(todoRow).join(""):"";$("todoPaused").hidden=!pausedOpen||!paused.length;
   $("foldDone").hidden=!done.length;
   $("doneTitle").textContent=`${L("Réalisées")} (${done.length})`;$("doneArrow").textContent=L(doneOpen?"Masquer":"Afficher");
   $("doneView").hidden=!doneOpen||!done.length||!!q;$("doneView").querySelectorAll("[data-dv]").forEach(b=>b.setAttribute("aria-pressed",String((b.dataset.dv==="cal")===!!TV().doneCal)));
-  $("todoDone").innerHTML=doneOpen?(TV().doneCal&&!q?doneCal(done):doneGroups(done)):"";$("todoDone").hidden=!doneOpen||!done.length;
+  if(!isl)$("todoDone").innerHTML=doneOpen?(TV().doneCal&&!q?doneCal(done):doneGroups(done)):"";$("todoDone").hidden=!doneOpen||!done.length;
   const n=all.length,nd=all.filter(t=>t.done).length,no=data.todos.filter(t=>!t.done&&!t.paused).length;
   $("pfill").style.width=n?(nd/n*100)+"%":"0";
   $("ptext").textContent=n?`${nd}/${n}`:"";
   setBadge("todo",no);
+  // v54 (#3) : listes rendues par React (même rendu) ; en cas d'erreur, ancien rendu
+  if(isl){try{const v=TV();if(dcMonth===null){const n=new Date();dcMonth=n.getFullYear()*12+n.getMonth()}
+      window.SCIslands.todos({cats:$("todoCats"),bar:$("catBar"),open:$("todoOpen"),paused:$("todoPaused"),done:$("todoDone")},
+        {todos:data.todos,cats,open,paused,done,view:{cat:cc,fold:v.fold,doneOpen:!!v.doneOpen,pausedOpen:v.pausedOpen!==false,showFin:!!v.showFin,doneCal:!!v.doneCal},
+         search:!!q,grip:!todoQ,catEditing,freshId,today:iso(today()),dcMonth,dcSel,i18n:{...agI18n(),DOW,DOWL,lang:LANG||"fr"}})}
+    catch(e){reportErr("island todos: "+(e&&e.message));window.__noIslands=true;try{renderTodos()}finally{window.__noIslands=false}return}}
   freshId=null;
 }
 $("todoSearch").addEventListener("input",e=>{todoQ=e.target.value;renderTodos()});
@@ -864,6 +872,7 @@ $("todoOpen").addEventListener("pointerdown",e=>{
   const up=()=>{
     g.removeEventListener("pointermove",mv);g.removeEventListener("pointerup",up);g.removeEventListener("pointercancel",up);
     cancelAnimationFrame(raf);todoDragging=false;document.body.classList.remove("todo-dragging");
+    rows.forEach(r=>{r.classList.remove("dragging","drop-anim");r.style.transform=""});
     if(pill){const t=data.todos.find(x=>x.id===row.dataset.tid),k=pill.dataset.tcat,c=catOf(k);pill.classList.remove("drop");
       if(t&&k!=="all"&&(c?t.cat!==c.id:t.cat)){if(c)t.cat=c.id;else delete t.cat;delete t.ord;freshId=t.id;save();toast(c?`${L("Rangée dans")} « ${c.name} »`:L("Tâche sortie de sa catégorie"))}
       todoRenderPending=false;renderTodos();return}
@@ -911,6 +920,9 @@ function dayTasksBox(k){if(!visibleTabs().includes("todo"))return"";const list=d
     ${list.map(row).join("")||`<div class="small muted dt-empty">${L(past?"Aucune tâche ce jour-là.":"Aucune tâche prévue. Ajoute-en une ci-dessous.")}</div>`}
     ${past?"":`<form class="dt-add" data-dtadd="${k}"><input placeholder="${L("+ Tâche pour ce jour")}" aria-label="${L("Nouvelle tâche pour ce jour")}" autocomplete="off" enterkeyhint="done"></form>`}</div>`}
 function renderDayView(){
+  if(window.SCIslands&&window.SCIslands.dayView&&!window.__noIslands){try{const n=new Date();
+    window.SCIslands.dayView($("calDayView"),{day:selDay,today:iso(today()),tasks:allT(),todos:visibleTabs().includes("todo")?dayTodos(selDay):null,qOpen,nowMin:n.getHours()*60+n.getMinutes(),
+      color:colorOf,checkIcon:IC("check")||"",i18n:{...agI18n(),DOW,lang:LANG||"fr"}});return}catch(e){reportErr("island dayView: "+(e&&e.message))}}
   const T=allT(),k=selDay,tIso=iso(today()),sd=parse(k);
   const items=T.filter(t=>onDay(t,k)).sort((a,b)=>sk(a).localeCompare(sk(b)));
   const timed=items.filter(t=>t.time&&t.date===k),allday=items.filter(t=>!(t.time&&t.date===k));
@@ -989,7 +1001,7 @@ $("calDayView").addEventListener("click",e=>{
 });
 $("calDayView").addEventListener("submit",e=>{
   e.preventDefault();
-  const da=e.target.closest("[data-dtadd]");if(da){const i=da.querySelector("input"),v=i.value.trim();if(!v)return;
+  const da=e.target.closest("[data-dtadd]");if(da){const i=da.querySelector("input"),v=i.value.trim();if(!v)return;i.value="";
     data.todos.push({id:uid(),title:v,createdAt:new Date().toISOString(),done:false,day:da.dataset.dtadd});save();renderTodos();renderCal();
     const ni=$("calDayView").querySelector("[data-dtadd] input");if(ni)ni.focus();return}const title=$("qTitle").value.trim();if(!title)return;
   const t={id:uid(),title,date:selDay,status:"à faire",tbc:false,cat:ensureType($("qCat").value)};
@@ -4394,7 +4406,7 @@ function renderNuCal(){const box=$("nuCal"),btn=$("nuDayBtn");if(!box)return;box
     <div class="cal-head"><button type="button" class="cal-nav" data-nurn="-1" aria-label="${L("Période précédente")}">‹</button><b class="nu-cal-t">${esc(title)}</b><button type="button" class="cal-nav" data-nurn="1" aria-label="${L("Période suivante")}" ${nx>tIso?"disabled":""}>›</button></div>
     ${body}<button type="button" class="linkbtn nu-cal-x" data-nurange="">${L("Fermer le calendrier")}</button>`}
 $("nuDayBtn").addEventListener("click",()=>{if(nuRange){nuRange=null;renderNuCal()}else nuCalOpen("month")});
-window.addEventListener("sc-islands",()=>{if(nuRange)renderNuCal();if(data&&data.ui&&data.ui.view==="graph")renderGraph();if(data&&data.ui&&data.ui.view==="pomo")renderPomoStats();if(session&&data&&data.tasks)renderPlan()}); // module React chargé après coup : on redessine avec lui
+window.addEventListener("sc-islands",()=>{if(nuRange)renderNuCal();if(data&&data.ui&&data.ui.view==="graph")renderGraph();if(data&&data.ui&&data.ui.view==="pomo")renderPomoStats();if(session&&data&&data.tasks){renderPlan();renderTodos()}}); // module React chargé après coup : on redessine avec lui
 $("nuCal").addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled)return;
   if(b.dataset.nurange!==undefined){if(b.dataset.nurange)nuCalOpen(b.dataset.nurange);else{nuRange=null;renderNuCal()}return}
   if(b.dataset.nurn){const s=+b.dataset.nurn;if(nuRange==="week"){const d=parse(nuRW);d.setDate(d.getDate()+7*s);nuRW=iso(d)}
@@ -4988,7 +5000,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v53";
+const BUILD="sidnote-v54";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

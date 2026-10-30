@@ -1408,6 +1408,90 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>{const t=today();calY=t.getFullYear();calM=t.getMonth();calMode="month";renderCal();document.querySelectorAll('#tasks [data-mfold]').forEach(x=>planOpenMem[x.dataset.mfold]=1);renderPlan();$("toast").hidden=true;$("toast").style.display="none";$("calDays").scrollIntoView()});
     await shot(pg,"v53-"+nm+"-agenda");
     await ctx.close()}
+  // --- v54 (ticket #3) : Tâches (catégories, barre de catégorie, à faire, en suspens, réalisées en liste et en calendrier) : même rendu, FR et EN
+  for(const [nm,dev,lg] of [["mobile",{...devices["iPhone 13"]},"fr"],["pc",{viewport:{width:1280,height:800}},"en"]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v54 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v54"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    if(lg!=="fr"){await pg.evaluate(l=>setLang(l),lg);await pg.waitForTimeout(2500)}
+    await pg.waitForFunction(()=>!!(window.SCIslands&&window.SCIslands.todos),null,{timeout:8000}).catch(()=>err("module React non chargé"));
+    await pg.evaluate(()=>{window.__par=async(ids,fn)=>{const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.getAttribute("style")?e.style.cssText:"")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+      fn();await new Promise(r=>setTimeout(r,60));const out={},a={},react=ids.every(id=>Object.keys($(id)).some(k=>k.startsWith("__reactContainer")));ids.forEach(id=>a[id]=norm($(id)));
+      const sv=ids.map(id=>{const el=$(id),c=el.cloneNode(false);c.classList.remove("notr");el.id=id+"R";el.after(c);c.id=id;c.innerHTML="";return[el,c,id]});
+      window.__noIslands=true;try{fn()}finally{window.__noIslands=false}await new Promise(r=>setTimeout(r,60));
+      sv.forEach(([el,c,id])=>{const b=norm(c);if(a[id]!==b){const al=a[id].split("\n"),bl=b.split("\n");out[id]=al.length+"/"+bl.length+" "+(al.find((l,i)=>l!==bl[i])||"")+" <> "+(bl.find((l,i)=>l!==al[i])||"")}c.remove();el.id=id});return{react,out}}});
+    const IDS=["todoCats","catBar","todoOpen","todoPaused","todoDone"];
+    const check=async(lbl,fnSrc)=>{const r=await pg.evaluate(([ids,src])=>window.__par(ids,eval(src)),[IDS,fnSrc]);
+      if(!r.react)err(lbl+" : pas rendu par React");for(const[id,d]of Object.entries(r.out))err(lbl+" : "+id+" différent : "+d.slice(0,300))};
+    await pg.evaluate(()=>{const d=n=>{const x=today();x.setDate(x.getDate()+n);return iso(x)},at=(n,h)=>{const x=today();x.setDate(x.getDate()+n);x.setHours(h,7);return x.toISOString()};
+      data.todoCats=[{id:"cA",name:"Courses"},{id:"cB",name:"Travail"},{id:"cF",name:"Fini"}];
+      data.todos=[{id:"a1",title:"Pain",createdAt:at(-2,9),done:false,cat:"cA",ord:0},{id:"a2",title:"Lait",createdAt:at(-2,9),done:false,cat:"cA",day:d(0),ord:1},
+        {id:"b1",title:"Rapport",createdAt:at(-5,9),done:false,cat:"cB",day:d(-3)},{id:"b2",title:"Mail",createdAt:at(-1,9),done:false,cat:"cB",day:d(1)},{id:"b3",title:"Réunion",createdAt:at(-1,9),done:false,cat:"cB",day:d(9)},
+        {id:"n1",title:"Appeler maman",createdAt:at(-1,8),done:false},{id:"p1",title:"Lire un livre",createdAt:at(-9,8),done:false,paused:true,pausedAt:at(-3,8),cat:"cB"},
+        {id:"f1",title:"Fini 1",createdAt:at(-30,8),done:true,doneAt:at(-20,10),cat:"cF"},{id:"d1",title:"Sport",createdAt:at(-3,8),done:true,doneAt:at(0,7)},
+        {id:"d2",title:"Courses faites",createdAt:at(-40,8),done:true,doneAt:at(-35,18),cat:"cA"},{id:"d3",title:"Ancien",createdAt:at(-400,8),done:true,doneAt:at(-380,12)}];
+      data.prefs.todoView={fold:{},doneOpen:false,pausedOpen:true,cat:"all",showFin:false,doneCal:false};dcMonth=null;dcSel=null;save();show("todo")});
+    await check("toutes","()=>{freshId='a2';renderTodos()}");
+    await check("réalisées en liste","()=>{TV().doneOpen=true;TV().doneCal=false;renderTodos()}");
+    await check("réalisées en calendrier","()=>{TV().doneCal=true;dcSel=null;renderTodos()}");
+    await check("calendrier, jour choisi","()=>{dcSel=iso(today());renderTodos()}");
+    await check("calendrier, mois précédent","()=>{dcMonth=today().getFullYear()*12+today().getMonth()-1;dcSel=null;renderTodos()}");
+    await check("catégories repliées","()=>{TV().fold={cA:1,none:1};TV().pausedOpen=false;renderTodos()}");
+    await check("terminées affichées","()=>{TV().showFin=true;renderTodos()}");
+    await check("une catégorie","()=>{TV().cat='cB';catEditing=false;renderTodos()}");
+    await check("renommer","()=>{catEditing=true;renderTodos()}");
+    await check("catégorie finie","()=>{catEditing=false;TV().cat='cF';renderTodos()}");
+    await check("sans catégorie","()=>{TV().cat='none';renderTodos()}");
+    await check("recherche","()=>{TV().cat='all';todoQ='ra';renderTodos()}");
+    await check("recherche vide","()=>{todoQ='zzz';renderTodos()}");
+    await pg.evaluate(()=>{todoQ="";TV().fold={};TV().pausedOpen=true;TV().doneCal=false;TV().doneOpen=false;TV().showFin=false;catEditing=false;tvSave();renderTodos()});
+    // les clics restent gérés par app.js
+    await pg.locator('#todoOpen [data-tg="n1"]').scrollIntoViewIfNeeded();await pg.click('#todoOpen [data-tg="n1"]');
+    if(!(await pg.evaluate(()=>data.todos.find(t=>t.id==="n1").done)))err("cocher une tâche ne marche plus");
+    await pg.locator('#todoOpen [data-tfold="cA"]').scrollIntoViewIfNeeded();await pg.click('#todoOpen [data-tfold="cA"]');
+    if(!(await pg.evaluate(()=>!!TV().fold.cA&&!document.querySelector('#todoOpen [data-group="cA"]'))))err("replier une catégorie ne marche plus");
+    await pg.evaluate(()=>window.scrollTo(0,0));await pg.click('#todoCats [data-tcat="cB"]');
+    if(await pg.evaluate(()=>TV().cat)!=="cB")err("choisir une catégorie ne marche plus");
+    await pg.click('#catBar [data-catren]');await pg.fill("#catRenIn","Boulot");await pg.press("#catRenIn","Enter");
+    if(await pg.evaluate(()=>catOf("cB").name)!=="Boulot")err("renommer une catégorie ne marche plus");
+    // glisser une tâche (poignée) : l'ordre change et la ligne n'est plus marquée « en cours de glisser »
+    await pg.evaluate(()=>{data.todos.forEach(t=>{if(t.cat==="cB")t.day=undefined});renderTodos()});
+    const g=pg.locator('#todoOpen .row[data-tid="b1"] [data-grip]'),bx=await g.boundingBox(),tg=await pg.locator('#todoOpen .row[data-tid="b3"]').boundingBox();
+    await pg.mouse.move(bx.x+bx.width/2,bx.y+bx.height/2);await pg.mouse.down();
+    for(let i=1;i<=8;i++){await pg.mouse.move(bx.x+bx.width/2,bx.y+bx.height/2+(tg.y+tg.height-bx.y)*i/8);await pg.waitForTimeout(30)}
+    await pg.mouse.up();await pg.waitForTimeout(300);
+    const ord=await pg.evaluate(()=>[...document.querySelectorAll('#todoOpen .row[data-tid]')].map(r=>r.dataset.tid).join(","));
+    if(ord.indexOf("b1")<ord.indexOf("b3"))err("glisser une tâche ne change plus l'ordre : "+ord);
+    if(await pg.evaluate(()=>!!document.querySelector("#todoOpen .dragging,#todoOpen .drop-anim")||[...document.querySelectorAll("#todoOpen .row")].some(r=>r.style.transform)))err("classes du glisser restées sur les lignes");
+    await pg.evaluate(()=>{TV().cat="all";TV().doneOpen=true;TV().doneCal=true;dcMonth=null;dcSel=null;tvSave();renderTodos()});
+    await pg.locator(`#todoDone [data-dcday="${await pg.evaluate(()=>iso(today()))}"]`).scrollIntoViewIfNeeded();await pg.click(`#todoDone [data-dcday="${await pg.evaluate(()=>iso(today()))}"]`);
+    if(!(await pg.evaluate(()=>dcSel===iso(today())&&!!document.querySelector("#todoDone .card .row.done"))))err("choisir un jour des réalisées ne marche plus");
+    if(lg==="en"&&/Toutes|Reprendre|Sans catégorie|réalisées|Tout replier/.test(await pg.evaluate(()=>["todoCats","catBar","todoOpen","todoPaused","todoDone"].map(i=>$(i).textContent).join(" "))))err("textes non traduits en anglais");
+    await pg.evaluate(()=>{TV().cat="all";TV().doneCal=false;tvSave();renderTodos();$("toast").style.display="none";window.scrollTo(0,0)});
+    await shot(pg,"v54-"+nm+"-taches");
+    // vue d'un jour de l'Agenda
+    await pg.evaluate(()=>{const d=n=>{const x=today();x.setDate(x.getDate()+n);return iso(x)};
+      data.tasks=[{id:"j1",title:"Cours",date:d(0),time:"09:00",timeEnd:"11:00",status:"à faire",cat:"Travail",loc:"Mons"},{id:"j2",title:"Réunion",date:d(0),time:"10:00",timeEnd:"10:45",status:"fait",cat:"Travail"},
+        {id:"j3",title:"Stage",date:d(-2),end:d(3),status:"en cours"},{id:"j4",title:"Anniv",date:d(0),status:"fait"},{id:"j5",title:"Tôt",date:d(0),time:"06:30",status:"à faire"}];
+      icalEvents=[{id:"ij1",src:"ical",title:"TP annulé",date:d(0),time:"14:00",timeEnd:"16:00",status:"à faire",canc:true},{id:"ij2",src:"ical",title:"Férié",date:d(0),status:"à faire",canc:true}];
+      data.todos.push({id:"dd1",title:"Payer loyer",createdAt:new Date().toISOString(),done:false,day:d(-2)},{id:"dd2",title:"Faite",createdAt:new Date().toISOString(),done:true,doneAt:new Date().toISOString(),day:d(0)});
+      save();show("plan");selDay=d(0);calMode="day";qOpen=false;renderCal()});
+    const day=async(lbl,src)=>{const r=await pg.evaluate(([ids,src])=>window.__par(ids,eval(src)),[["calDayView"],src]);
+      if(!r.react)err(lbl+" : pas rendu par React");for(const[id,d]of Object.entries(r.out))err(lbl+" : "+id+" différent : "+d.slice(0,300))};
+    await day("jour","()=>{selDay=iso(today());qOpen=false;renderCal()}");
+    await day("jour, ajout ouvert","()=>{qOpen=true;renderCal()}");
+    await day("jour passé","()=>{const x=today();x.setDate(x.getDate()-2);selDay=iso(x);qOpen=false;renderCal()}");
+    await day("jour vide","()=>{const x=today();x.setDate(x.getDate()+40);selDay=iso(x);renderCal()}");
+    await pg.evaluate(()=>{selDay=iso(today());qOpen=false;renderCal();$("calDayView").scrollIntoView()});
+    await pg.fill("#calDayView [data-dtadd] input","Acheter du pain");await pg.press("#calDayView [data-dtadd] input","Enter");await pg.waitForTimeout(200);
+    if(!(await pg.evaluate(()=>data.todos.some(t=>t.title==="Acheter du pain"&&t.day===iso(today()))&&$("calDayView").querySelector("[data-dtadd] input").value==="")))err("tâche du jour : ajout ou champ pas vidé");
+    await pg.click("#qOpen");await pg.fill("#qTitle","Dentiste");await pg.fill("#qTime","15:00");await pg.click("#qForm button[type=submit]");await pg.waitForTimeout(200);
+    if(!(await pg.evaluate(()=>data.tasks.some(t=>t.title==="Dentiste"&&t.time==="15:00")&&!!document.querySelector("#calDayView .blk"))))err("ajout rapide d'une activité ne marche plus");
+    await pg.click('#calDayView [data-dayjump]');if(await pg.evaluate(()=>selDay)===await pg.evaluate(()=>iso(today())))err("jour précédent ne marche plus");
+    await pg.evaluate(()=>{selDay=iso(today());renderCal();$("toast").style.display="none";$("calDayView").scrollIntoView()});
+    await shot(pg,"v54-"+nm+"-jour");
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

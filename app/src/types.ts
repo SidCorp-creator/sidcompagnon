@@ -63,3 +63,18 @@ export interface AgTask {
   canc?: boolean; // événement annulé (calendrier relié)
   cal?: string;
 }
+
+/** Une tâche (data.todos). */
+export interface Todo {
+  id: string;
+  title: string;
+  createdAt: string; // ISO
+  done: boolean;
+  doneAt?: string;
+  paused?: boolean;
+  pausedAt?: string;
+  cat?: string; // id d'une catégorie (data.todoCats)
+  day?: string; // AAAA-MM-JJ : tâche prévue ce jour-là
+  ord?: number;
+}
+export interface TodoCat { id: string; name: string }

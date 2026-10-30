@@ -110,7 +110,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="73";const errSent=new Set();
+const APP_V="74";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -1070,7 +1070,15 @@ function plPrompt(q){const d=today(),day=`${d.toLocaleDateString(LANG==="en"?"en
 $("plAskForm").addEventListener("submit",e=>{e.preventDefault();const q=$("plAsk").value.trim();if(!q)return;dictStop();
   aiHandoff(plPrompt(q),"agenda");$("plAsk").value="";grow($("plAsk"))});
 let planOpenMem={}; // mois ouverts dans « Toutes les dates » ; v44.6 : tous repliés par défaut (à l'ouverture de sid'agenda et au rechargement)
+// v74 : éphéméride en haut de l'Agenda (style « Unique ») : mois, semaine, grand chiffre du jour, jour de la semaine, activités du jour
+function ephFill(){const el=$("plEph");if(!el)return;const d=today(),loc=LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE",k=iso(d);
+  const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())),wd=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-wd);
+  const wk=Math.ceil(((+t-Date.UTC(t.getUTCFullYear(),0,1))/864e5+1)/7);
+  const n=data.tasks.filter(x=>x.date===k&&x.status!=="annulé").length;
+  const sig=[k,LANG,n].join("|");if(el.dataset.sig===sig)return;el.dataset.sig=sig;
+  el.innerHTML=`<div class="eph-band"><span>${esc(d.toLocaleDateString(loc,{month:"long",year:"numeric"}))}</span><span>${esc(L("Semaine"))} ${wk}</span></div><div class="eph-body"><b class="eph-d">${d.getDate()}</b><span class="eph-r"><span class="eph-wd">${esc(d.toLocaleDateString(loc,{weekday:"long"}))}</span><span class="eph-n">${esc(n?`${n} ${L(n>1?"activités":"activité")}`:L("Aucune activité aujourd'hui"))}</span></span></div>`}
 function renderPlan(){
+  ephFill();
   const T=data.tasks,q=norm(planQ);
   $("planTop").hidden=!!q;
   const isl=window.SCIslands&&window.SCIslands.agPlan&&!window.__noIslands;
@@ -4162,15 +4170,19 @@ function applyLook(){
   const dark=theme==="dark"||(theme==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);
   document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content",dark?"#111214":"#F4F0E8"));
   ls.set("sidnote-look",{theme,palette:pal}); // pour l'écran de connexion
+  // v74 : identité propre à chaque fonction (ident.css), « Sobre » = l'apparence commune d'avant
+  document.documentElement.toggleAttribute("data-fx",p.fx!==false);
 }
 function renderLook(){
   const th=data.prefs.theme||"dark",dark=document.documentElement.dataset.theme==="dark"||(!document.documentElement.dataset.theme&&matchMedia("(prefers-color-scheme: dark)").matches);
   document.querySelectorAll("#themeSel button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.theme===th));
+  document.querySelectorAll("#fxSel button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.fx===(data.prefs.fx===false?"0":"1"))));
   const pal=data.prefs.palette||"or";
   $("palSel").innerHTML=Object.entries(PALETTES).map(([k,a])=>`<button type="button" class="pal" data-pal="${k}" aria-pressed="${k===pal}"><span class="pal-dot" style="--pa:${dark?a[3]:a[1]};--pb:${dark?a[4]:a[2]}">${k===pal?CHECK:""}</span><span class="pal-n">${L(a[0])}</span></button>`).join("");
 }
 $("palSel").addEventListener("click",e=>{const b=e.target.closest("[data-pal]");if(!b)return;data.prefs.palette=b.dataset.pal;save();applyLook();renderLook()});
 $("themeSel").addEventListener("click",e=>{const b=e.target.closest("[data-theme]");if(!b)return;data.prefs.theme=b.dataset.theme;save();applyLook();renderLook()});
+$("fxSel").addEventListener("click",e=>{const b=e.target.closest("[data-fx]");if(!b)return;data.prefs.fx=b.dataset.fx==="1";save();applyLook();renderLook();if(data.ui.view==="plan")ephFill()});
 applyLook();
 // sections des réglages : on se souvient de celles qui sont ouvertes (sur cet appareil)
 // v39 : les sections de Réglages s'ouvrent fermées à chaque lancement (demande de Sid : « quand je reviens, tout est fermé »)
@@ -5362,7 +5374,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v73";
+const BUILD="sidnote-v74";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

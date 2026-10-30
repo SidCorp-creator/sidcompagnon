@@ -30,6 +30,7 @@
 <link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="app.css">
 <link rel="stylesheet" href="design.css">
+<link rel="stylesheet" href="ident.css">
 </head>
 <body>
 <a class="skip-link" href="#main">Aller au contenu</a>
@@ -131,6 +132,7 @@
   <section class="view" id="v-plan" hidden>
     <div class="brand"><img src="logo-192.png" alt="">Sid'compagnon</div>
     <h1>Agenda</h1>
+    <div class="eph notr" id="plEph" aria-hidden="true"></div>
     <!-- v45.3 : ajout d'activités par Claude (comme « Ajouter ce que tu manges » en Nutrition) ; la recherche passe derrière la loupe -->
     <form class="card form nu-ask pl-ask" id="plAskForm" style="margin-top:6px">
       <textarea id="plAsk" rows="2" placeholder="Ton activité : quoi, quel jour, à quelle heure, quel type…" aria-label="Activité à planifier" enterkeyhint="send"></textarea>
@@ -589,6 +591,7 @@
     <div class="card">
       <div class="row" style="display:block" hidden><div style="margin-bottom:10px">Couleurs</div><div class="pals" id="palSel" role="group" aria-label="Couleurs"></div></div>
       <div class="row"><span class="grow">Thème</span><div class="seg" id="themeSel" role="group" aria-label="Thème" style="grid-template-columns:repeat(3,auto);padding:2px"><button type="button" data-theme="auto">Auto</button><button type="button" data-theme="light">Clair</button><button type="button" data-theme="dark">Sombre</button></div></div>
+      <div class="row"><span class="grow">Style des fonctions<span class="small muted" style="display:block">Chaque fonction a sa propre apparence : polices, matières et détails.</span></span><div class="seg" id="fxSel" role="group" aria-label="Style des fonctions" style="grid-template-columns:repeat(2,auto);padding:2px"><button type="button" data-fx="1">Unique</button><button type="button" data-fx="0">Sobre</button></div></div>
       <label class="row"><span class="grow">Langue</span><select id="langSel" class="sel"><option value="fr">Français</option><option value="en">English</option><option value="nl">Nederlands</option></select></label>
       <label class="row" hidden><span class="grow">Page d'accueil</span><select id="homeSel" class="sel"></select></label>
     </div>
@@ -687,7 +690,7 @@
     <div class="card" id="stats"></div>
       </div>
     </details>
-    <p class="small muted" style="margin:18px 4px">Sid'compagnon · version 73 · une app <b>SidCorp</b></p>
+    <p class="small muted" style="margin:18px 4px">Sid'compagnon · version 74 · une app <b>SidCorp</b></p>
   </section>
 </main>
 

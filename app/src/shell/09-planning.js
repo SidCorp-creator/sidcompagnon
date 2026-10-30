@@ -144,7 +144,15 @@ function plPrompt(q){const d=today(),day=`${d.toLocaleDateString(LANG==="en"?"en
 $("plAskForm").addEventListener("submit",e=>{e.preventDefault();const q=$("plAsk").value.trim();if(!q)return;dictStop();
   aiHandoff(plPrompt(q),"agenda");$("plAsk").value="";grow($("plAsk"))});
 let planOpenMem={}; // mois ouverts dans « Toutes les dates » ; v44.6 : tous repliés par défaut (à l'ouverture de sid'agenda et au rechargement)
+// v74 : éphéméride en haut de l'Agenda (style « Unique ») : mois, semaine, grand chiffre du jour, jour de la semaine, activités du jour
+function ephFill(){const el=$("plEph");if(!el)return;const d=today(),loc=LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE",k=iso(d);
+  const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())),wd=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-wd);
+  const wk=Math.ceil(((+t-Date.UTC(t.getUTCFullYear(),0,1))/864e5+1)/7);
+  const n=data.tasks.filter(x=>x.date===k&&x.status!=="annulé").length;
+  const sig=[k,LANG,n].join("|");if(el.dataset.sig===sig)return;el.dataset.sig=sig;
+  el.innerHTML=`<div class="eph-band"><span>${esc(d.toLocaleDateString(loc,{month:"long",year:"numeric"}))}</span><span>${esc(L("Semaine"))} ${wk}</span></div><div class="eph-body"><b class="eph-d">${d.getDate()}</b><span class="eph-r"><span class="eph-wd">${esc(d.toLocaleDateString(loc,{weekday:"long"}))}</span><span class="eph-n">${esc(n?`${n} ${L(n>1?"activités":"activité")}`:L("Aucune activité aujourd'hui"))}</span></span></div>`}
 function renderPlan(){
+  ephFill();
   const T=data.tasks,q=norm(planQ);
   $("planTop").hidden=!!q;
   const isl=window.SCIslands&&window.SCIslands.agPlan&&!window.__noIslands;

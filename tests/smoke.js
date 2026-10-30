@@ -2294,6 +2294,32 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const cb=await pg.evaluate(()=>{const pl=coachBuild({level:"inter",goal:"force",days:3,dur:60,equip:"gym",avoid:[],prio:[],must:[],never:[]});const ex=(pl.days||[])[0].ex[0];return{reps:ex.reps,rpe:ex.rpe,tempo:ex.tempo,rest:ex.rest}});
     if(cb.rpe!=="8–9"||cb.tempo!=="2-0-X"||!(cb.rest===240||cb.rest===120))err("programme généré : "+JSON.stringify(cb));
     await ctx.close()}
+  // --- v74 : une identité par fonction (ident.css) ; « Sobre » remet l'apparence commune
+  for(const [nm,dev,lg] of [["mobile",{...devices["iPhone 13"]},"fr"],["pc",{viewport:{width:1280,height:800}},"en"]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v74 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    pg.on("console",m=>{if(/Content Security Policy/i.test(m.text()))err("CSP : "+m.text().slice(0,200))});
+    if(lg!=="fr")await ctx.addInitScript(()=>{try{localStorage.setItem("sidnote-lang",JSON.stringify("en"))}catch(e){}});
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v74"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    if(!(await pg.evaluate(()=>document.documentElement.hasAttribute("data-fx"))))err("style unique pas actif par défaut");
+    await pg.evaluate(()=>{data.tasks.push({id:"e74",title:"Cours",date:iso(today()),status:"à faire",tbc:false});save();show("plan");renderPlan()});await pg.waitForTimeout(300);
+    if(!(await pg.isVisible("#plEph")))err("éphéméride de l'Agenda absente");
+    const ep=await pg.textContent("#plEph");if(!ep.includes(String(new Date().getDate()))||!/1 (activité|activity|event|activiteit)/.test(ep))err("éphéméride : "+ep);
+    if(lg==="en"&&!/Week \d+/.test(ep))err("éphéméride non traduite : "+ep);
+    const fonts=await pg.evaluate(async()=>{const r={};for(const v of ["todo","pomo","muscu","nutri","graph","notes","docs","pwd"]){show(v);await new Promise(z=>setTimeout(z,80));r[v]=getComputedStyle(document.querySelector("#v-"+v+" h1")).fontFamily}return r});
+    const want={todo:/Instrument Serif/,pomo:/Manrope/,muscu:/Barlow Condensed/,nutri:/Archivo/,notes:/Newsreader/,docs:/Public Sans/,pwd:/JetBrains Mono/};
+    for(const[k,re]of Object.entries(want))if(!re.test(fonts[k]))err("police du titre de "+k+" : "+fonts[k]);
+    await pg.evaluate(()=>show("more"));await pg.click('#fxSel [data-fx="0"]');await pg.waitForTimeout(200);
+    if(await pg.evaluate(()=>document.documentElement.hasAttribute("data-fx")||data.prefs.fx!==false))err("« Sobre » ne retire pas le style unique");
+    await pg.evaluate(()=>show("plan"));await pg.waitForTimeout(200);if(await pg.isVisible("#plEph"))err("éphéméride visible en style sobre");
+    await pg.evaluate(()=>show("todo"));if(/Instrument/.test(await pg.evaluate(()=>getComputedStyle(document.querySelector("#v-todo h1")).fontFamily)))err("police unique en style sobre");
+    await pg.evaluate(()=>show("more"));await pg.click('#fxSel [data-fx="1"]');await pg.waitForTimeout(200);
+    if(!(await pg.evaluate(()=>document.documentElement.hasAttribute("data-fx"))))err("« Unique » ne remet pas le style");
+    const ov=await pg.evaluate(async()=>{const bad=[];for(const v of ["plan","todo","pomo","muscu","nutri","graph","notes","docs","pwd"]){show(v);await new Promise(z=>setTimeout(z,80));if(document.documentElement.scrollWidth>innerWidth+1)bad.push(v)}return bad});
+    if(ov.length)err("débordement horizontal : "+ov.join(","));
+    await pg.evaluate(()=>{show("plan");scrollTo(0,0)});await shot(pg,"v74-"+nm+"-agenda");
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

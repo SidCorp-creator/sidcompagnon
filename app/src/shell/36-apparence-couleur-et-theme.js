@@ -13,15 +13,19 @@ function applyLook(){
   const dark=theme==="dark"||(theme==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);
   document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content",dark?"#111214":"#F4F0E8"));
   ls.set("sidnote-look",{theme,palette:pal}); // pour l'écran de connexion
+  // v74 : identité propre à chaque fonction (ident.css), « Sobre » = l'apparence commune d'avant
+  document.documentElement.toggleAttribute("data-fx",p.fx!==false);
 }
 function renderLook(){
   const th=data.prefs.theme||"dark",dark=document.documentElement.dataset.theme==="dark"||(!document.documentElement.dataset.theme&&matchMedia("(prefers-color-scheme: dark)").matches);
   document.querySelectorAll("#themeSel button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.theme===th));
+  document.querySelectorAll("#fxSel button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.fx===(data.prefs.fx===false?"0":"1"))));
   const pal=data.prefs.palette||"or";
   $("palSel").innerHTML=Object.entries(PALETTES).map(([k,a])=>`<button type="button" class="pal" data-pal="${k}" aria-pressed="${k===pal}"><span class="pal-dot" style="--pa:${dark?a[3]:a[1]};--pb:${dark?a[4]:a[2]}">${k===pal?CHECK:""}</span><span class="pal-n">${L(a[0])}</span></button>`).join("");
 }
 $("palSel").addEventListener("click",e=>{const b=e.target.closest("[data-pal]");if(!b)return;data.prefs.palette=b.dataset.pal;save();applyLook();renderLook()});
 $("themeSel").addEventListener("click",e=>{const b=e.target.closest("[data-theme]");if(!b)return;data.prefs.theme=b.dataset.theme;save();applyLook();renderLook()});
+$("fxSel").addEventListener("click",e=>{const b=e.target.closest("[data-fx]");if(!b)return;data.prefs.fx=b.dataset.fx==="1";save();applyLook();renderLook();if(data.ui.view==="plan")ephFill()});
 applyLook();
 // sections des réglages : on se souvient de celles qui sont ouvertes (sur cet appareil)
 // v39 : les sections de Réglages s'ouvrent fermées à chaque lancement (demande de Sid : « quand je reviens, tout est fermé »)

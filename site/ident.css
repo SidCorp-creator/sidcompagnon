@@ -1,0 +1,140 @@
+/* Sid'compagnon v74 · une identité par fonction (maquettes validées par Sid le 30 oct. 2026 :
+   https://claude.ai/artifact/SuBzFgx86P2dder19KDEhX).
+   Actif quand <html data-fx> (Réglages > Apparence > Style des fonctions : « Unique » ; « Sobre » retire l'attribut).
+   Chaque fonction garde la même structure (en-tête, barre du bas, tailles tactiles) : seuls polices, matières et détails changent.
+   Couleurs : celles des 9 ambiances de design.css (--app, --bg, --surface-2…), clair et sombre. Polices : fonts.css. */
+
+/* ---------- Agenda · éphéméride (Fraunces, terre cuite) ---------- */
+.eph{display:none}
+html[data-fx] body[data-v]{font-family:var(--font)}
+html[data-fx] body[data-v="plan"] .eph{display:block;margin:4px 0 22px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface-2)}
+html[data-fx] body[data-v="plan"] .eph-band{display:flex;justify-content:space-between;gap:12px;padding:8px 16px;background:var(--app);color:var(--bg);font:600 12px/1.3 var(--font);letter-spacing:.18em;text-transform:uppercase}
+html[data-fx] body[data-v="plan"] .eph-body{display:flex;align-items:center;gap:18px;padding:8px 18px 16px;border-bottom:2px dashed var(--line);margin:0 10px 10px}
+html[data-fx] body[data-v="plan"] .eph-d{font:600 88px/1 var(--display);letter-spacing:-.04em;color:var(--ink)}
+html[data-fx] body[data-v="plan"] .eph-r{display:grid;gap:4px;min-width:0}
+html[data-fx] body[data-v="plan"] .eph-wd{font:italic 400 24px/1.15 var(--display);color:var(--ink);text-transform:capitalize}
+html[data-fx] body[data-v="plan"] .eph-n{font-size:14px;color:var(--muted)}
+html[data-fx] body[data-v="plan"] #v-plan h1{font-weight:600;letter-spacing:-.01em}
+html[data-fx] body[data-v="plan"] #v-plan h2{font:italic 400 20px/1.2 var(--display);letter-spacing:0;text-transform:none;color:var(--ink)}
+html[data-fx] body[data-v="plan"] .cal-title{font-family:var(--display);font-weight:600}
+html[data-fx] body[data-v="plan"] .cal-grid .day,html[data-fx] body[data-v="plan"] .pr-date b{font-family:var(--display);font-variant-numeric:lining-nums}
+html[data-fx] body[data-v="plan"] .pr-date b{font-weight:600;color:var(--app)}
+html[data-fx] body[data-v="plan"] .pr-time,html[data-fx] body[data-v="plan"] .next .when{font-family:var(--display);font-weight:600;color:var(--app)}
+html[data-fx] body[data-v="plan"] .ym .yr-title,html[data-fx] body[data-v="plan"] .mfold .m{font-family:var(--display)}
+
+/* ---------- Tâches · carnet à points (Instrument Serif / Sans, laiton) ---------- */
+html[data-fx] body[data-v="todo"]{--font:"Instrument Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;--display:"Instrument Serif",Georgia,serif;
+  background-image:radial-gradient(var(--line) 1.1px,transparent 1.3px)!important;background-size:20px 20px!important}
+html[data-fx] body[data-v="todo"] #v-todo h1{font-weight:400;font-size:44px;letter-spacing:0}
+html[data-fx] body[data-v="todo"] #v-todo .card,html[data-fx] body[data-v="todo"] #todoOpen>div{background:var(--bg)}
+html[data-fx] body[data-v="todo"] .todo-new input{border-style:dashed;border-width:1.5px}
+html[data-fx] body[data-v="todo"] .prog .track{height:6px;border-radius:3px}
+html[data-fx] body[data-v="todo"] .prog .fill{border-radius:3px}
+html[data-fx] body[data-v="todo"] #todoCats .pill{border-radius:3px}
+html[data-fx] body[data-v="todo"] .check{border-radius:3px;border-width:2px;border-color:var(--ink)}
+html[data-fx] body[data-v="todo"] .done .check,html[data-fx] body[data-v="todo"] .check[aria-checked="true"]{border-color:var(--app);color:var(--app)}
+html[data-fx] body[data-v="todo"] .row.done .ttl,html[data-fx] body[data-v="todo"] .done .ttl-btn{text-decoration:line-through;text-decoration-color:var(--app);text-decoration-thickness:2px;text-decoration-skip-ink:none}
+html[data-fx] body[data-v="todo"] .cat-h,html[data-fx] body[data-v="todo"] .foldbtn{letter-spacing:.14em}
+
+/* ---------- Focus · zen (Manrope, lavande) ---------- */
+html[data-fx] body[data-v="pomo"]{--font:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+html[data-fx] body[data-v="pomo"] #v-pomo h1{font:200 36px/1.1 var(--font);letter-spacing:.22em;text-transform:lowercase;text-align:center;margin-bottom:18px}
+html[data-fx] body[data-v="pomo"] #v-pomo .sub{text-align:center}
+html[data-fx] body[data-v="pomo"] #v-pomo h2{text-align:center;font-weight:500;letter-spacing:.24em}
+html[data-fx] body[data-v="pomo"] .pomo-stage{background:transparent;border:0}
+html[data-fx] body[data-v="pomo"] .ringwrap .bgc{stroke-width:1.5}
+html[data-fx] body[data-v="pomo"] .ringwrap .fgc{stroke-width:3;stroke:var(--app)}
+html[data-fx] body[data-v="pomo"] .ringtxt .big{font-family:var(--font);font-weight:200;letter-spacing:-.02em}
+html[data-fx] body[data-v="pomo"] .phase{letter-spacing:.3em;font-weight:500;color:var(--app)}
+html[data-fx] body[data-v="pomo"] .ctrls .btn{border-radius:999px}
+html[data-fx] body[data-v="pomo"] #pomoStart{border-radius:999px}
+html[data-fx] body[data-v="pomo"] .preset{border-radius:999px}
+html[data-fx] body[data-v="pomo"] .pomo-meta b{font-family:var(--font);font-weight:300}
+
+/* ---------- Musculation · tableau de salle (Barlow Condensed, sauge) ---------- */
+html[data-fx] body[data-v="muscu"]{--cond:"Barlow Condensed","Arial Narrow",var(--font)}
+html[data-fx] body[data-v="muscu"] #v-muscu h1{font:800 46px/.95 var(--cond);text-transform:uppercase;letter-spacing:.01em}
+html[data-fx] body[data-v="muscu"] #v-muscu h2{font:700 20px/1.1 var(--cond);letter-spacing:.12em;color:var(--app)}
+html[data-fx] body[data-v="muscu"] .ms{border-radius:8px;overflow:hidden}
+html[data-fx] body[data-v="muscu"] .ms .ms-name,html[data-fx] body[data-v="muscu"] .ms input.ms-name{font:800 24px/1.1 var(--cond);text-transform:uppercase;letter-spacing:.04em}
+html[data-fx] body[data-v="muscu"] .ms>summary,html[data-fx] body[data-v="muscu"] .ms-head{border-bottom:3px solid var(--app)}
+html[data-fx] body[data-v="muscu"] .ex-head input,html[data-fx] body[data-v="muscu"] .ex-head .ex-n{font:700 18px/1.15 var(--cond);text-transform:uppercase;letter-spacing:.01em}
+html[data-fx] body[data-v="muscu"] .ex3 .set-in{font:700 18px var(--cond);text-align:center;border-radius:4px}
+html[data-fx] body[data-v="muscu"] .ex3 .set-in:placeholder-shown{border-style:dashed}
+html[data-fx] body[data-v="muscu"] .ex3 .set-in:not(:placeholder-shown){background:var(--app);color:var(--bg);border-color:var(--app)}
+html[data-fx] body[data-v="muscu"] .set-l{font:700 15px var(--cond);letter-spacing:.06em;text-transform:uppercase}
+html[data-fx] body[data-v="muscu"] .mu-goal-seg button,html[data-fx] body[data-v="muscu"] .mu-goal button{font:700 17px var(--cond);text-transform:uppercase;letter-spacing:.06em}
+html[data-fx] body[data-v="muscu"] .mu-st-rows b{font:700 18px var(--cond)}
+html[data-fx] body[data-v="muscu"] [data-msdone]{font:800 18px var(--cond);letter-spacing:.14em;text-transform:uppercase}
+html[data-fx] body[data-v="muscu"] .se-tag{font:700 13px var(--cond);letter-spacing:.08em;text-transform:uppercase}
+
+/* ---------- Nutrition · étiquette nutritionnelle (Archivo, olive) ---------- */
+html[data-fx] body[data-v="nutri"]{--font:"Archivo",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+html[data-fx] body[data-v="nutri"] #v-nutri h1{font:900 40px/1 var(--font);letter-spacing:-.03em}
+html[data-fx] body[data-v="nutri"] #v-nutri h2{font-weight:800;letter-spacing:.12em}
+html[data-fx] body[data-v="nutri"] .nu-sum{border:2px solid var(--ink);border-radius:0;background:var(--surface-2);box-shadow:inset 0 10px 0 var(--ink);padding-top:22px}
+html[data-fx] body[data-v="nutri"] .nu-big{font:900 34px/1 var(--font)}
+html[data-fx] body[data-v="nutri"] .nu-macros .nu-m{border-bottom:1px solid var(--ink)}
+html[data-fx] body[data-v="nutri"] .nu-macros .nu-m:last-child{border-bottom-width:3px}
+html[data-fx] body[data-v="nutri"] .dish{border-radius:0;border-color:var(--ink)}
+html[data-fx] body[data-v="nutri"] .dish-kcal{font:900 22px/1 var(--font)}
+html[data-fx] body[data-v="nutri"] .dish-t{font-weight:700}
+html[data-fx] body[data-v="nutri"] .dish-ic{border-radius:0}
+html[data-fx] body[data-v="nutri"] .nu-tabs,html[data-fx] body[data-v="nutri"] .nu-tabs button{border-radius:0}
+html[data-fx] body[data-v="nutri"] .nu-tabs button[aria-pressed="true"]{font-weight:800}
+html[data-fx] body[data-v="nutri"] #nuAskForm textarea,html[data-fx] body[data-v="nutri"] #v-nutri .btn{border-radius:0}
+
+/* ---------- Graphiques · papier millimétré (IBM Plex Mono, eau profonde) ---------- */
+html[data-fx] body[data-v="graph"]{background-image:linear-gradient(var(--surface-2) 1px,transparent 1px),linear-gradient(90deg,var(--surface-2) 1px,transparent 1px)!important;background-size:16px 16px!important}
+html[data-fx] body[data-v="graph"] #v-graph h1{font:600 34px/1.05 var(--font);letter-spacing:-.02em}
+html[data-fx] body[data-v="graph"] #v-graph h2{font-family:var(--mono);letter-spacing:.06em}
+html[data-fx] body[data-v="graph"] .gr-card,html[data-fx] body[data-v="graph"] .gr-rev{border-radius:3px;background:var(--bg)}
+html[data-fx] body[data-v="graph"] .gr-h b{font-weight:600}
+html[data-fx] body[data-v="graph"] .gr-h .small,html[data-fx] body[data-v="graph"] .gr-legend,html[data-fx] body[data-v="graph"] .gr-x,html[data-fx] body[data-v="graph"] .gr-tbl{font-family:var(--mono)}
+html[data-fx] body[data-v="graph"] #grRange,html[data-fx] body[data-v="graph"] #grRange button{border-radius:3px;font-family:var(--mono)}
+html[data-fx] body[data-v="graph"] .gr-tip{font-family:var(--mono);border-radius:3px}
+
+/* ---------- Notes · cahier ligné (Newsreader, papier) ---------- */
+html[data-fx] body[data-v="notes"]{--display:"Newsreader",Georgia,serif;--margin:#C46A5E}
+html[data-fx] body[data-v="notes"] #notesList h1{font:500 42px/1.05 var(--display);letter-spacing:-.01em}
+html[data-fx] body[data-v="notes"] .nl-h,html[data-fx] body[data-v="notes"] #v-notes h2{font:italic 400 17px/1.2 var(--display);letter-spacing:0;text-transform:none;color:var(--muted)}
+html[data-fx] body[data-v="notes"] .nf-tile{position:relative;border-radius:4px;background:var(--surface-2)}
+html[data-fx] body[data-v="notes"] .nf-tile::after{content:"";position:absolute;top:-1px;right:-1px;border-top:16px solid var(--bg);border-left:16px solid var(--line);pointer-events:none}
+html[data-fx] body[data-v="notes"] .nf-n{font:500 18px/1.2 var(--display)}
+html[data-fx] body[data-v="notes"] #noteList .note-row{position:relative}
+html[data-fx] body[data-v="notes"] #noteList .note-row::before{content:"";position:absolute;top:0;bottom:0;left:34px;width:1px;background:var(--margin);opacity:.65;pointer-events:none}
+html[data-fx] body[data-v="notes"] #noteList .note-row .ttl,html[data-fx] body[data-v="notes"] #noteList .note-row b{font:600 19px/1.35 var(--display)}
+html[data-fx] body[data-v="notes"] #noteList .note-row .small:not(.when){font:italic 400 15px/1.4 var(--display)}
+html[data-fx] body[data-v="notes"] #noteTitle{font:600 28px/1.2 var(--display)}
+html[data-fx] body[data-v="notes"] .note-rt{font-family:var(--display);font-size:19px;line-height:1.6}
+html[data-fx] body[data-v="notes"] .note-ed{border-left:1px solid var(--margin);padding-left:14px}
+
+/* ---------- Documents · classeur à chemises (Public Sans, ardoise) ---------- */
+html[data-fx] body[data-v="docs"]{--font:"Public Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+html[data-fx] body[data-v="docs"] #v-docs h1{font:700 34px/1.05 var(--font);letter-spacing:-.02em}
+html[data-fx] body[data-v="docs"] #docFolders .pill{position:relative;border-radius:0 4px 4px 4px;margin-top:10px;background:var(--surface-2)}
+html[data-fx] body[data-v="docs"] #docFolders .pill::before{content:"";position:absolute;left:-1px;top:-10px;width:44px;height:10px;border:1px solid var(--line);border-bottom:0;border-radius:4px 4px 0 0;background:inherit;box-sizing:border-box}
+html[data-fx] body[data-v="docs"] #docFolders .pill[aria-pressed="true"]{background:var(--app);color:var(--bg);border-color:var(--app)}
+html[data-fx] body[data-v="docs"] #docFolders .pill[aria-pressed="true"]::before{border-color:var(--app)}
+html[data-fx] body[data-v="docs"] .doc-ic{position:relative;border-radius:0;background:var(--bg);border:1px solid var(--line)}
+html[data-fx] body[data-v="docs"] .doc-ic::after{content:"";position:absolute;top:-1px;right:-1px;border-top:9px solid var(--surface-2);border-left:9px solid var(--line)}
+html[data-fx] body[data-v="docs"] #docList{border-radius:4px}
+html[data-fx] body[data-v="docs"] .doc b,html[data-fx] body[data-v="docs"] .doc .ttl{font-weight:600}
+
+/* ---------- Mots de passe · coffre-fort (JetBrains Mono, or) ---------- */
+html[data-fx] body[data-v="pwd"]{--mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+html[data-fx] body[data-v="pwd"] #v-pwd h1{font:700 32px/1.05 var(--mono);letter-spacing:-.04em;display:flex;align-items:center;gap:16px}
+html[data-fx] body[data-v="pwd"] #v-pwd h1::before{content:"";flex:0 0 64px;height:64px;border-radius:50%;
+  background:radial-gradient(circle,var(--app) 0 4px,transparent 4.5px),conic-gradient(from 38deg,var(--app) 0 3deg,transparent 3deg 360deg),
+    radial-gradient(circle,var(--surface-2) 0 18px,var(--app) 18px 19.5px,transparent 20px),
+    repeating-conic-gradient(var(--muted) 0 1.6deg,transparent 1.6deg 15deg),var(--surface-2);
+  -webkit-mask:radial-gradient(circle,#000 31px,transparent 32px);mask:radial-gradient(circle,#000 31px,transparent 32px);border:1px solid var(--line)}
+html[data-fx] body[data-v="pwd"] .pw-av{background:transparent;border:1.5px solid var(--app);color:var(--app);font-family:var(--mono);font-weight:700}
+html[data-fx] body[data-v="pwd"] .pw-sec{font-family:var(--mono);letter-spacing:.12em}
+html[data-fx] body[data-v="pwd"] .pw-row b{font-weight:600}
+html[data-fx] body[data-v="pwd"] .pin-t{font-family:var(--mono);font-weight:700;letter-spacing:-.02em}
+html[data-fx] body[data-v="pwd"] .pad button{font-family:var(--mono);border-radius:50%}
+html[data-fx] body[data-v="pwd"] .pin-dots i{border-radius:2px}
+html[data-fx] body[data-v="pwd"] #pwSort,html[data-fx] body[data-v="pwd"] #pwSort button{font-family:var(--mono)}
+
+/* moins d'animations : rien ne bouge dans ces habillages ; « Sobre » : ce fichier ne s'applique pas */

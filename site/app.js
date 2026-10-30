@@ -95,7 +95,12 @@ function save(){
 }
 function saveUI(){if(session&&cache){cache.data=data;ls.set(cacheKey(session.user.id),cache)}} // préférences d'affichage : pas de synchro
 const forServer=d=>{const c={...d};delete c.ui;return c};
-async function api(path,{method="GET",body,token,headers={}}={}){
+// v61 (#3, coquille étape 3) : appels au serveur, session et écriture synchronisée en TypeScript (app/src/core/sync.ts, window.SCCore.sync) ;
+// l'ancien code reste en secours (core.js absent, window.__noCore)
+const CS=()=>window.SCCore&&window.SCCore.sync&&!window.__noCore?window.SCCore.sync:null;
+let coreApi=null;
+async function api(path,opt={}){if(CS()){coreApi=coreApi||CS().createApi(SUPABASE_URL,SUPABASE_KEY);return coreApi(path,opt)}return apiOld(path,opt)}
+async function apiOld(path,{method="GET",body,token,headers={}}={}){
   const r=await fetch(SUPABASE_URL+path,{method,headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{}),...headers},body:body?JSON.stringify(body):undefined});
   const txt=await r.text();let j=null;try{j=txt?JSON.parse(txt):null}catch(e){}
   if(!r.ok){const err=new Error((j&&(j.msg||j.message||j.error_description||j.error))||("Erreur "+r.status));err.status=r.status;err.code=j&&(j.error_code||j.code);throw err}
@@ -103,7 +108,7 @@ async function api(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="60";const errSent=new Set();
+const APP_V="61";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -113,6 +118,7 @@ addEventListener("unhandledrejection",e=>{const r=e.reason;if(r&&(r.trial||r ins
 // v32 : fonctions réservées (ex. Nutrition), décidées par le serveur dans app_metadata.features
 const userFeat=u=>u&&u.app_metadata&&Array.isArray(u.app_metadata.features)?u.app_metadata.features.map(String):null;
 function storeSession(j,name){
+  if(CS()){session=CS().sessionFrom(j,name,session);ls.set(SESSION_KEY,session);return}
   session={access_token:j.access_token,refresh_token:j.refresh_token,
     expires_at:j.expires_at||Math.floor(Date.now()/1000)+(j.expires_in||3600),user:{id:j.user.id},name,
     email:(j.user&&j.user.email)||(session&&session.email)||"",eph:!!(session&&session.eph),
@@ -237,7 +243,8 @@ async function push(){
     // v31 : écriture « à condition que personne n'ait écrit entre-temps » : si un autre appareil a enregistré
     // pendant qu'on fusionnait, on relit, on refusionne et on réessaie (sinon ses suppressions ou les nôtres seraient perdues)
     let rev=null,sent=null,known=cache.base||"",base=baseGet(uid0,known); // v44.6 : dernière version du serveur connue ici (fusion à 3 voies)
-    for(let attempt=0;attempt<4&&!rev;attempt++){
+    if(CS())({rev,sent}=await CS().pushLoop(uid0,t,known,base,since,{api,fetchRow:()=>fetchRow(uid0,t),getData:()=>data,mergeData,applyRemote,setDel:d=>{data.del=d},forServer}));
+    else for(let attempt=0;attempt<4&&!rev;attempt++){
       const row=await fetchRow(uid0,t);
       if(row&&row.updated_at!==known){const m=mergeData(data,row.data,{since,base});
         if(JSON.stringify(forServer(m))!==JSON.stringify(forServer(data)))applyRemote(m);else data.del=m.del;
@@ -464,9 +471,12 @@ function navPad(){const n=document.querySelector("nav"),h=n&&!n.hidden&&getCompu
   document.documentElement.style.setProperty("--navh",h+"px")}
 addEventListener("resize",()=>requestAnimationFrame(navPad));
 if(window.ResizeObserver)new ResizeObserver(()=>navPad()).observe(document.querySelector("nav"));
+const shIsl=k=>!!(window.SCIslands&&window.SCIslands[k]&&!window.__noIslands);
 function renderNav(v){requestAnimationFrame(navPad);const nav=document.querySelector("nav"),a=appOf(v);
   if(a==="home"){nav.hidden=true;document.body.classList.remove("has-nav");return}
   const ts=groupTabs(groupOf(v));nav.hidden=false;document.body.classList.add("has-nav");$("navIn").style.gridTemplateColumns=`repeat(${ts.length},minmax(0,1fr))`;
+  // v61 (#3) : barres de navigation dessinées par React (app/src/Shell.tsx) ; ancien rendu en secours
+  if(shIsl("nav")){try{window.SCIslands.nav($("navIn"),{cur:v,i18n:agI18n(),items:ts.map(k=>({k,icon:ICON(k)||"",label:SHORT[k],badge:BADGES[k]||0}))});return}catch(e){reportErr("island nav: "+(e&&e.message))}}
   $("navIn").innerHTML=ts.map(k=>`<button type="button" class="tab" data-go="${k}"${k===v?' aria-current="page"':""}><span class="tabicon">${ICON(k)}</span><span class="tab-l">${L(SHORT[k])}</span>${badgeHtml(k)}</button>`).join("")}
 // page affichée → bouton du dock allumé
 const dockOf=v=>v==="home"?"home":v==="more"||v==="app"?"more":v==="spaces"?"":groupOf(v).k;
@@ -479,6 +489,7 @@ function openGroup(k){const g=GROUPS.find(x=>x.k===k);if(!g)return;const ts=grou
 const BADGES={};
 const badgeHtml=k=>{const b=BADGES[k];return !b?"":b==="dot"?`<i class="sbadge dot" aria-label="${L("En cours")}"></i>`:`<i class="sbadge">${b>99?"99+":b}</i>`};
 function setBadge(k,v){if(BADGES[k]===v)return;BADGES[k]=v;
+  if(shIsl("nav")&&Object.keys($("navIn")).some(x=>x.startsWith("__reactContainer"))){const cv=data.ui&&data.ui.view;if(cv)renderNav(cv);renderGroupBadges();return} // React : on redessine la barre
   const sb=document.querySelector(`#navIn [data-go="${k}"]`);if(sb)sb.querySelector(".sbadge")?.remove(),sb.insertAdjacentHTML("beforeend",badgeHtml(k));
   renderGroupBadges()}
 // en bas : seulement si la catégorie n'a qu'une fonction affichée (sinon la pastille est en haut)
@@ -523,6 +534,7 @@ function applyTabs(){
 function renderVhead(v){const el=$("vhead");
   if(v==="home"||v==="spaces"){el.hidden=true;return}
   const g=groupOf(v);el.hidden=false;el.classList.remove("many");
+  if(shIsl("appHead")){try{window.SCIslands.appHead(el,{app:g.app,label:g.label,gridIcon:GRIDIC,i18n:agI18n()});return}catch(e){reportErr("island appHead: "+(e&&e.message))}}
   el.innerHTML=`<span class="ah-brand">${LOGO(g.app,"ah-logo")}<span class="eyebrow">${esc(g.label)}</span></span><button type="button" class="ah-home" data-go="home" aria-label="${L("Retour à Sid'compagnon")}">${GRIDIC}<span>Sid'compagnon</span></button>`}
 $("vhead").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
 // --- page Espaces et barre latérale (ordinateur) : tous les modules, rangés par espace, avec un chiffre utile ---
@@ -551,6 +563,9 @@ function sideApply(){requestAnimationFrame(navPad);const wide=matchMedia("(min-w
 function sideToggle(show){data.ui.sideOff=!show;saveUI();sideApply();const f=show?document.querySelector("#side .side-tog"):$("sideShow");if(f)f.focus({preventScroll:true})}
 addEventListener("resize",()=>sideApply());
 function renderSide(v){const el=$("side");if(!el)return;v=v||data.ui.view;
+  if(shIsl("side")){try{window.SCIslands.side(el,{cur:v,i18n:agI18n(),icons:{side:SIDEIC,home:HOMEIC,plus:PLUSIC,user:USERIC},
+      groups:GROUPS.map(g=>({app:g.app,label:g.label,items:groupTabs(g).map(k=>({k,icon:ICON(k)||"",label:SHORT[k],badge:0,meta:spaceMeta(k)}))})).filter(g=>g.items.length)});sideApply();return}
+    catch(e){reportErr("island side: "+(e&&e.message))}}
   el.innerHTML=`<div class="side-brand">${LOGO("home","side-logo")}<span class="grow">Sid'compagnon</span><button type="button" class="side-tog" aria-label="${L("Masquer la barre latérale")}" title="${L("Masquer la barre latérale")}" aria-expanded="true" aria-controls="side">${SIDEIC}</button></div>
     <button type="button" class="side-it" data-go="home" aria-current="${v==="home"}"><span class="sp-ic">${HOMEIC}</span><span class="grow">${L("Aujourd'hui")}</span></button>
     <button type="button" class="side-add" data-sadd="1"><span class="sp-ic">${PLUSIC}</span><span class="grow">${L("Ajouter")}</span></button>`+
@@ -4496,7 +4511,7 @@ function renderNuCal(){const box=$("nuCal"),btn=$("nuDayBtn");if(!box)return;box
     <div class="cal-head"><button type="button" class="cal-nav" data-nurn="-1" aria-label="${L("Période précédente")}">‹</button><b class="nu-cal-t">${esc(title)}</b><button type="button" class="cal-nav" data-nurn="1" aria-label="${L("Période suivante")}" ${nx>tIso?"disabled":""}>›</button></div>
     ${body}<button type="button" class="linkbtn nu-cal-x" data-nurange="">${L("Fermer le calendrier")}</button>`}
 $("nuDayBtn").addEventListener("click",()=>{if(nuRange){nuRange=null;renderNuCal()}else nuCalOpen("month")});
-window.addEventListener("sc-islands",()=>{if(nuRange)renderNuCal();if(data&&data.ui&&data.ui.view==="graph")renderGraph();if(data&&data.ui&&data.ui.view==="pomo")renderPomo();if(data&&data.ui&&data.ui.view==="muscu")renderMuscu();if(session&&data&&data.tasks){renderPlan();renderTodos();renderHome()}}); // module React chargé après coup : on redessine avec lui
+window.addEventListener("sc-islands",()=>{if(nuRange)renderNuCal();if(data&&data.ui&&data.ui.view==="graph")renderGraph();if(data&&data.ui&&data.ui.view==="pomo")renderPomo();if(data&&data.ui&&data.ui.view==="muscu")renderMuscu();if(session&&data&&data.tasks){renderPlan();renderTodos();renderHome()}if(session&&data&&data.ui){const v=data.ui.view||"home";renderNav(v);renderVhead(v);renderSide(v)}}); // module React chargé après coup : on redessine avec lui
 $("nuCal").addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled)return;
   if(b.dataset.nurange!==undefined){if(b.dataset.nurange)nuCalOpen(b.dataset.nurange);else{nuRange=null;renderNuCal()}return}
   if(b.dataset.nurn){const s=+b.dataset.nurn;if(nuRange==="week"){const d=parse(nuRW);d.setDate(d.getDate()+7*s);nuRW=iso(d)}
@@ -5105,7 +5120,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v60";
+const BUILD="sidnote-v61";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

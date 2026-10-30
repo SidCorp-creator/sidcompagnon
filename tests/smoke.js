@@ -1762,6 +1762,70 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
       return out});
     for(const[k,v]of Object.entries(r))if(!v)err("core : "+k+" en échec");
     await ctx.close()}
+  // --- v61 (ticket #3, coquille étape 3) : appels au serveur, session et synchro en TypeScript ; deux appareils, l'un sur l'ancien code
+  {const err=m=>errs.push("v61 : "+m);const em="v61sync@test.be";
+    const mk=async(noCore)=>{const ctx=await b.newContext({...devices["iPhone 13"]});if(noCore)await ctx.addInitScript(()=>{window.__noCore=true});const pg=await ctx.newPage();pg.on("pageerror",e=>err(e.message));await pg.goto(U);await pg.waitForTimeout(800);return{ctx,pg}};
+    const A=await mk(false),B=await mk(true);
+    await A.pg.click("#mSignup");await A.pg.fill("#aName","Sid");await A.pg.fill("#aEmail",em);await A.pg.fill("#aPw","secret11");await A.pg.fill("#aPw2","secret11");await A.pg.check("#aAgree");await A.pg.click("#aBtn");await A.pg.waitForTimeout(1500);
+    if(await A.pg.isVisible("#onb"))await A.pg.click("#onbSkip");if(await A.pg.isVisible("#notifAsk"))await A.pg.click("#naNo");
+    if(!(await A.pg.evaluate(()=>!!(window.SCCore&&window.SCCore.sync&&session&&session.access_token&&session.user.id))))err("connexion : session absente (nouveau code)");
+    await B.pg.click("#mLogin");await B.pg.fill("#aEmail",em);await B.pg.fill("#aPw","secret11");await B.pg.click("#aBtn");await B.pg.waitForTimeout(1500);
+    if(await B.pg.isVisible("#onb"))await B.pg.click("#onbSkip");if(await B.pg.isVisible("#notifAsk"))await B.pg.click("#naNo");
+    if(!(await B.pg.evaluate(()=>!!(session&&session.access_token))))err("connexion : session absente (ancien code)");
+    // A (nouveau code) et B (ancien code) ajoutent chacun une tâche sans s'être vus : rien ne doit se perdre
+    let used=0;await A.pg.exposeFunction("__pl",()=>{used++});
+    await A.pg.evaluate(()=>{const ns=window.SCCore.sync,r=ns.pushLoop;window.SCCore.sync={...ns,pushLoop:(...x)=>{window.__pl();return r(...x)}}}); // (le module est figé : on le remplace par une copie)
+    await A.pg.evaluate(()=>{data.todos.push({id:"ta",title:"Tâche A",createdAt:new Date().toISOString(),done:false});save()});
+    await B.pg.evaluate(()=>{data.todos.push({id:"tb",title:"Tâche B",createdAt:new Date().toISOString(),done:false});save()});
+    await A.pg.waitForTimeout(2500);await B.pg.waitForTimeout(2500);
+    for(const P of [A,B])await P.pg.evaluate(()=>pull());await A.pg.waitForTimeout(800);
+    // un deuxième tour, cette fois une suppression d'un côté et une modification de l'autre
+    await A.pg.evaluate(()=>{data.todos=data.todos.filter(t=>t.id!=="tb");tomb("tb");save()});await A.pg.waitForTimeout(2500);
+    await B.pg.evaluate(()=>{const t=data.todos.find(x=>x.id==="ta");if(t){t.title="Tâche A modifiée"}save()});await B.pg.waitForTimeout(2500);
+    for(const P of [A,B])await P.pg.evaluate(()=>pull());await A.pg.waitForTimeout(800);
+    const ra=await A.pg.evaluate(()=>data.todos.map(t=>t.id+":"+t.title).sort().join("|")),rb=await B.pg.evaluate(()=>data.todos.map(t=>t.id+":"+t.title).sort().join("|"));
+    if(ra!==rb)err("les deux appareils ne sont pas d'accord : "+ra+" <> "+rb);
+    if(ra!=="ta:Tâche A modifiée")err("résultat de la synchro inattendu : "+ra);
+    if(!used)err("la synchro n'est pas passée par core.js");
+    if(await A.pg.evaluate(()=>!!syncErr)||await B.pg.evaluate(()=>!!syncErr))err("erreur de synchro affichée");
+    // jeton expiré : renouvelé par le nouveau code
+    const tok=await A.pg.evaluate(async()=>{session.expires_at=0;const t=await token();return {t:!!t,exp:session.expires_at>Date.now()/1000}});
+    if(!tok.t||!tok.exp)err("renouvellement du jeton : "+JSON.stringify(tok));
+    // erreur du serveur : même message et même code qu'avant
+    const e1=await A.pg.evaluate(async()=>{const r=[];for(const nc of [false,true]){window.__noCore=nc;try{await api("/auth/v1/token?grant_type=password",{method:"POST",body:{email:"x@y.be",password:"faux"}})}catch(e){r.push(e.message+"|"+e.status)}}window.__noCore=false;return r});
+    if(e1.length!==2||e1[0]!==e1[1])err("message d'erreur du serveur différent : "+JSON.stringify(e1));
+    await A.ctx.close();await B.ctx.close()}
+  // --- v61 : barres de navigation (bas, en-tête d'app, barre latérale) : même rendu, FR et EN ; pastilles
+  for(const [nm,dev,lg] of [["mobile",{...devices["iPhone 13"]},"fr"],["pc",{viewport:{width:1280,height:800}},"en"]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v61 nav "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v61n"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    if(lg!=="fr"){await pg.evaluate(l=>setLang(l),lg);await pg.waitForTimeout(2500)}
+    await pg.waitForFunction(()=>!!(window.SCIslands&&window.SCIslands.side),null,{timeout:8000}).catch(()=>err("module React non chargé"));
+    await pg.evaluate(()=>{window.__par=async(ids,fn)=>{const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.getAttribute("style")?e.style.cssText:"")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+      fn();await new Promise(r=>setTimeout(r,60));const out={},a={},react=ids.every(id=>Object.keys($(id)).some(k=>k.startsWith("__reactContainer")));ids.forEach(id=>a[id]=norm($(id)));
+      const sv=ids.map(id=>{const el=$(id),c=el.cloneNode(false);c.classList.remove("notr");el.id=id+"R";el.after(c);c.id=id;c.innerHTML="";return[el,c,id]});
+      window.__noIslands=true;try{fn()}finally{window.__noIslands=false}await new Promise(r=>setTimeout(r,60));
+      sv.forEach(([el,c,id])=>{const b=norm(c);if(a[id]!==b){const al=a[id].split("\n"),bl=b.split("\n");out[id]=al.length+"/"+bl.length+" "+(al.find((l,i)=>l!==bl[i])||"")+" <> "+(bl.find((l,i)=>l!==al[i])||"")}c.remove();el.id=id});return{react,out}}});
+    const check=async(lbl,ids,fnSrc)=>{const r=await pg.evaluate(([ids,src])=>window.__par(ids,eval(src)),[ids,fnSrc]);
+      if(!r.react)err(lbl+" : pas rendu par React");for(const[id,d]of Object.entries(r.out))err(lbl+" : "+id+" différent : "+d.slice(0,300))};
+    await pg.evaluate(()=>{data.todos=[{id:"x",title:"x",createdAt:new Date().toISOString(),done:false}];save();show("todo")});
+    for(const v of ["todo","nutri","notes"])await check("navigation "+v,["navIn","vhead","side"],`()=>{show("${v}")}`);
+    await pg.evaluate(()=>show("todo"));
+    // pastilles : nombre puis point « en cours »
+    await pg.evaluate(()=>setBadge("todo",7));if(await pg.evaluate(()=>{const b=document.querySelector('#navIn [data-go="todo"] .sbadge');return b&&b.textContent})!=="7")err("pastille 7 absente");
+    await pg.evaluate(()=>setBadge("todo","dot"));if(!(await pg.evaluate(()=>!!document.querySelector('#navIn [data-go="todo"] .sbadge.dot'))))err("pastille « en cours » absente");
+    await pg.evaluate(()=>setBadge("todo",0));if(await pg.evaluate(()=>!!document.querySelector('#navIn [data-go="todo"] .sbadge')))err("pastille pas retirée");
+    // clics : barre du bas, retour à l'accueil, barre latérale
+    if(nm==="mobile"){await pg.click('#navIn [data-go="plan"]');if(await pg.evaluate(()=>data.ui.view)!=="plan")err("barre du bas : clic sans effet");
+      await pg.click('#vhead [data-go="home"]');await pg.waitForTimeout(400);if(await pg.evaluate(()=>data.ui.view)!=="home")err("retour à l'accueil sans effet")}
+    else{await pg.click('#side [data-go="notes"]');if(await pg.evaluate(()=>data.ui.view)!=="notes")err("barre latérale : clic sans effet");
+      await pg.click('#side .side-tog');if(!(await pg.evaluate(()=>document.body.classList.contains("side-off"))))err("masquer la barre latérale sans effet");
+      await pg.click("#sideShow");if(!(await pg.evaluate(()=>document.body.classList.contains("side-on"))))err("réafficher la barre latérale sans effet")}
+    if(lg==="en"&&/Aujourd'hui|Ajouter|Tâches|Masquer/.test(await pg.evaluate(()=>$("side").textContent+$("navIn").textContent)))err("textes non traduits en anglais");
+    await pg.evaluate(()=>{show("todo");$("toast").style.display="none"});await shot(pg,"v61-"+nm+"-navigation");
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

@@ -20,6 +20,7 @@ Décision de Sid (29 oct. 2026) : passer progressivement à TypeScript + React +
 | v51 | Focus : temps de travail concentré (jour, 7 jours) | `app/src/PomoStats.tsx` |
 | v52 | Graphiques : commentaires du jour et de la semaine, historique des semaines | `app/src/Reviews.tsx` |
 | v52 | Musculation : barre « Mon objectif » · Nutrition : barres des macros | `app/src/Small.tsx` |
+| v61 | Coquille, étape 3 : appels au serveur, session, écriture synchronisée (`core/sync.ts`) ; barres de navigation : bas, en-tête d'app, barre latérale (`Shell.tsx`) | `app/src/core/sync.ts`, `app/src/Shell.tsx` |
 | v60 | Coquille, étapes 1 et 2 : fusion des données entre appareils et briques de chiffrement en TypeScript (script `site/react/core.js`, chargé avant app.js) | `app/src/core/merge.ts`, `app/src/core/crypto.ts` |
 | v59 | Nutrition : copie d'un repas (fenêtre), résumé du profil, objectif de poids | `app/src/NuExtra.tsx` |
 | v58 | Nutrition : menu (repas, quantités, recette, « Autre idée ») · Accueil Sid'compagnon : 3 cartes | `app/src/NuMenu.tsx`, `app/src/Home.tsx` |
@@ -66,6 +67,7 @@ Sauvegardes faites avant : branche git `sauvegarde-v59`, table Supabase `sauvega
 
 - Étape 1 (v60) : `mergeData` / `merge3` → `app/src/core/merge.ts`. `app.js` appelle `window.SCCore.mergeData` ; l'ancien code (`mergeDataOld`) sert si core.js manque ou lève une erreur. `tests/merge.test.js` passe les mêmes scénarios aux deux versions puis compare 5 000 cas tirés au hasard (graine fixe) : identiques ; une erreur volontaire est détectée des centaines de fois.
 - Étape 2 (v60) : briques de chiffrement → `app/src/core/crypto.ts` (b64, `pinKey`, `encJ`/`decJ`, `rawKey`, `phDerive`, documents « SNE1 », `bioKey`). Mêmes algorithmes et formats ; `tests/crypto.test.js` : chiffré par l'un, ouvert par l'autre, dans les deux sens ; mêmes clés maîtres. Bloc « v60 » du smoke : la même vérification dans l'app, avec les vraies 600 000 itérations. La logique du coffre (codes, appareils, récupération) reste dans app.js et utilise ces briques.
+- Étape 3 (v61) : `api()`, `storeSession()` et la boucle d'écriture à condition de `push()` → `app/src/core/sync.ts` (`createApi`, `sessionFrom`, `pushLoop`, avec les fonctions de l'app passées en paramètres) ; barres de navigation → `app/src/Shell.tsx` (`SCIslands.nav`, `appHead`, `side` ; `setBadge` redessine la barre). Bloc « v61 » du smoke : deux appareils sur le même compte, l'un avec le nouveau code et l'autre avec l'ancien (`__noCore`), ajouts / suppression / modification croisés → les deux ont le même résultat ; jeton expiré renouvelé ; même message d'erreur du serveur ; parité des barres FR/EN, pastilles, clics.
 - `core.js` est un script classique (IIFE, `vite.core.config.ts`), pas un module : il doit être prêt avant le démarrage de l'app (la synchro commence tout de suite).
 
 ### Pourquoi la dernière étape n'avait pas été faite seule

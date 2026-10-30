@@ -1596,6 +1596,65 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>{$("toast").style.display="none";$("nuLog").scrollIntoView()});
     await shot(pg,"v56-"+nm+"-nutrition");
     await ctx.close()}
+  // --- v57 (ticket #3) : Notes (chemin, dossiers, notes), Documents (classeurs, liste), Mots de passe (liste) : même rendu, FR et EN
+  for(const [nm,dev,lg] of [["mobile",{...devices["iPhone 13"]},"fr"],["pc",{viewport:{width:1280,height:800}},"en"]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v57 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v57"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    if(lg!=="fr"){await pg.evaluate(l=>setLang(l),lg);await pg.waitForTimeout(2500)}
+    await pg.waitForFunction(()=>!!(window.SCIslands&&window.SCIslands.pwList),null,{timeout:8000}).catch(()=>err("module React non chargé"));
+    await pg.evaluate(()=>{window.__par=async(ids,fn)=>{const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.getAttribute("style")?e.style.cssText:"")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+      fn();await new Promise(r=>setTimeout(r,60));const out={},a={},react=ids.every(id=>Object.keys($(id)).some(k=>k.startsWith("__reactContainer")));ids.forEach(id=>a[id]=norm($(id)));
+      const sv=ids.map(id=>{const el=$(id),c=el.cloneNode(false);c.classList.remove("notr");el.id=id+"R";el.after(c);c.id=id;c.innerHTML="";return[el,c,id]});
+      window.__noIslands=true;try{fn()}finally{window.__noIslands=false}await new Promise(r=>setTimeout(r,60));
+      sv.forEach(([el,c,id])=>{const b=norm(c);if(a[id]!==b){const al=a[id].split("\n"),bl=b.split("\n");out[id]=al.length+"/"+bl.length+" "+(al.find((l,i)=>l!==bl[i])||"")+" <> "+(bl.find((l,i)=>l!==al[i])||"")}c.remove();el.id=id});return{react,out}}});
+    const check=async(lbl,ids,fnSrc)=>{const r=await pg.evaluate(([ids,src])=>window.__par(ids,eval(src)),[ids,fnSrc]);
+      if(!r.react)err(lbl+" : pas rendu par React");for(const[id,d]of Object.entries(r.out))err(lbl+" : "+id+" différent : "+d.slice(0,300))};
+    // Notes
+    await pg.evaluate(()=>{const now=Date.now();data.noteFolders=[{id:"fA",name:"Cours",parent:null},{id:"fB",name:"Chimie",parent:"fA"},{id:"fC",name:"Perso",parent:null}];
+      data.notes=[{id:"n1",title:"Liste de courses",body:"Pain\nLait\nOeufs",createdAt:new Date(now-864e5*40).toISOString(),upd:now-864e5*40},{id:"n2",title:"",body:"Idée sans titre\nsuite",createdAt:new Date().toISOString(),upd:now-60000},
+        {id:"n3",title:"Atomes",body:"Protons",folder:"fB",createdAt:new Date().toISOString(),upd:now-3600e3,photos:[{id:"p1"},{id:"p2"}]},{id:"n4",title:"Cours 1",body:"",folder:"fA",createdAt:new Date().toISOString(),upd:now-7200e3,pdf:{name:"c.pdf",size:1000,pages:3}},
+        {id:"n5",secret:true,vid:"vx",iv:"aa",ct:"bb",upd:now-5000}];data.pdfAnns=[{id:"a1",note:"n4",page:1,t:"text",x:.1,y:.1,w:.2,h:.1,txt:"x",upd:1}];noteDir=null;noteQ="";noteOpenId=null;save();show("notes")});
+    await check("notes",["nfPath","noteList"],"()=>{noteDir=null;noteQ='';renderNotes()}");
+    await check("dans un dossier",["nfPath","noteList"],"()=>{noteDir='fA';renderNotes()}");
+    await check("sous-dossier",["nfPath","noteList"],"()=>{noteDir='fB';renderNotes()}");
+    await check("dossier vide",["nfPath","noteList"],"()=>{noteDir='fC';renderNotes()}");
+    await check("recherche",["nfPath","noteList"],"()=>{noteDir=null;noteQ='o';renderNotes()}");
+    await check("recherche vide",["nfPath","noteList"],"()=>{noteQ='zzzz';renderNotes()}");
+    await pg.evaluate(()=>{noteQ="";noteDir=null;renderNotes()});
+    await pg.click('#noteList [data-nfopen="fA"]');if(await pg.evaluate(()=>noteDir)!=="fA")err("ouvrir un dossier de notes ne marche plus");
+    await pg.click('#nfPath [data-nfgo=""]');if(await pg.evaluate(()=>noteDir)!==null)err("revenir à Notes par le chemin ne marche plus");
+    await pg.click('#noteList [data-note="n1"]');await pg.waitForTimeout(200);if(await pg.evaluate(()=>noteOpenId)!=="n1")err("ouvrir une note ne marche plus");
+    await pg.evaluate(()=>closeNote());await pg.waitForTimeout(300);
+    // Documents
+    await pg.evaluate(()=>{const d=new Date().toISOString();data.docFolders=[{id:"cl1",name:"Logement"},{id:"cl2",name:"Santé"}];
+      data.docs=[{id:"d1",title:"Bail",size:1200000,pages:6,createdAt:d,up:true,folder:"cl1"},{id:"d2",title:"Carte d'identité",size:420000,pages:1,createdAt:"2026-01-05T10:00:00Z",up:false},{id:"d3",title:"Mutuelle",size:180000,createdAt:d,up:true,folder:"cl2"}];
+      data.ui.docFolder=null;docQ="";dfQ="";save();show("docs")});
+    await check("documents",["docFolders","docList"],"()=>{docQ='';renderDocs()}");
+    await check("documents, envoi en cours",["docFolders","docList"],"()=>{docBusy.add('d2');renderDocs();docBusy.delete('d2')}");
+    await check("documents, recherche",["docFolders","docList"],"()=>{docQ='bai';renderDocs()}");
+    await check("documents, aucun",["docFolders","docList"],"()=>{docQ='zzzz';renderDocs()}");
+    await pg.evaluate(()=>{docQ="";renderDocs()});
+    // Mots de passe (coffre ouvert simulé : la liste ne lit que les entrées déjà déchiffrées en mémoire)
+    // compte sans coffre : show("pwd") reverrouille ; on simule ensuite un coffre ouvert (clé factice, entrées « déchiffrées » en mémoire) et on ne dessine que la liste
+    await pg.evaluate(()=>{show("pwd")});await pg.waitForTimeout(300);
+    await pg.evaluate(()=>{vaultKey={};$("vault").hidden=false;$("pinBox").hidden=true;vaultItems=new Map([["w1",{site:"Banque",user:"sid",pw:"S3cret!",note:"code client 42"}],["w2",{site:"E-mail",user:"",pw:"abc"}],["w3",{site:"Université",user:"msidki",pw:"xyz"}]]);pwShown.clear();pwQ="";renderPwList()});
+    if(await pg.evaluate(()=>$("pwList").querySelectorAll(".pw-row").length)!==3)err("liste des mots de passe : 3 entrées attendues");
+    await check("mots de passe",["pwList"],"()=>{pwQ='';renderPwList()}");
+    await check("mot de passe affiché",["pwList"],"()=>{pwShown.add('w1');renderPwList()}");
+    await check("mots de passe, recherche",["pwList"],"()=>{pwShown.clear();pwQ='univ';renderPwList()}");
+    await check("mots de passe, aucun",["pwList"],"()=>{pwQ='zzzz';renderPwList()}");
+    await pg.evaluate(()=>{pwQ="";renderPwList()});
+    if(await pg.evaluate(()=>$("pwList").textContent.includes("S3cret!")))err("mot de passe visible sans « Afficher »");
+    await pg.evaluate(()=>document.querySelector('#pwList [data-pweye="w1"]').click());
+    if(!(await pg.evaluate(()=>$("pwList").textContent.includes("S3cret!"))))err("« Afficher » ne montre plus le mot de passe");
+    await pg.evaluate(()=>{pinBuf="";pwdLock()});
+    if(await pg.evaluate(()=>/S3cret|Banque/.test($("pwList").textContent)))err("liste des mots de passe pas vidée au verrouillage");
+    if(lg==="en"&&/Dossiers|Tous|Classeur|Sur cet appareil/.test(await pg.evaluate(()=>{show("docs");renderDocs();return $("docFolders").textContent+$("docList").textContent})))err("textes non traduits en anglais");
+    await pg.evaluate(()=>{$("toast").style.display="none";show("notes");noteDir="fA";renderNotes();window.scrollTo(0,0)});
+    await shot(pg,"v57-"+nm+"-notes");
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

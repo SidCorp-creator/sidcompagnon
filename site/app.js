@@ -103,7 +103,7 @@ async function api(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="56";const errSent=new Set();
+const APP_V="57";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -583,24 +583,28 @@ function renderHome(){if(!$("homeBody"))return;
   {const g=APP_GROUPS.find(x=>x.app==="agenda");if(groupTabs(g).length){const it=[];
     if(next){const s=start(next),same=next.date===t0,tm=parse(next.date);tm.setDate(tm.getDate()-1);
       const when=next.time&&same?inCount(s-now):next.time&&iso(tm)===t0?`${L("demain")} · ${next.time}`:`${DOW[s.getDay()]} ${s.getDate()} ${MO[s.getMonth()]}${next.time?" · "+next.time:""}`;
-      it.push([L("Prochain"),`<span class="notr">${esc(next.title)}</span>`,esc(when)])}
+      it.push([L("Prochain"),{u:next.title},when])}
     if(vis.includes("todo")){const n=dayTodos(t0).filter(t=>!t.done).length;it.push([L("Tâches"),n?`${n} ${L(n>1?"tâches aujourd'hui":"tâche aujourd'hui")}`:L("Aucune tâche aujourd'hui"),""])}
     if(!it.length)it.push([L("Prochain"),L("Rien de prévu"),""]);
     cards.push({g,desc:"Ton agenda et tes tâches, jour après jour.",it})}}
   {const g=APP_GROUPS.find(x=>x.app==="fit");if(groupTabs(g).length){const it=[];
     if(vis.includes("nutri")&&nutriAllowed()&&NU().plan&&NU().plan.kcal){const tg=dayTarget(t0).kcal,eat=sumOf(dayLog(t0)).kcal;it.push([L("Nutrition"),`${fmtFull(Math.round(eat))} / ${fmtFull(tg)} kcal`,""])}
-    if(vis.includes("muscu")){const nd=coachNext();if(nd)it.push([L("Séance"),`<span class="notr">${esc(nd.name)}</span>`,""])}
+    if(vis.includes("muscu")){const nd=coachNext();if(nd)it.push([L("Séance"),{u:nd.name},""])}
     if(!it.length)it.push([L("Pour commencer"),L("Crée ton profil ou ta première séance"),""]);
     cards.push({g,desc:"Musculation, nutrition et graphiques de ta forme.",it:it.slice(0,2)})}}
   {const g=APP_GROUPS.find(x=>x.app==="note");if(groupTabs(g).length){const it=[];
     const last=NT().filter(n=>!n.secret&&(n.title||n.body)).sort((a,b)=>(b.upd||0)-(a.upd||0))[0];
-    if(last)it.push([L("Dernière note"),`<span class="notr">${esc(last.title||String(last.body||"").slice(0,40))}</span>`,""]);
+    if(last)it.push([L("Dernière note"),{u:last.title||String(last.body||"").slice(0,40)},""]);
     const nN=NT().length;it.push([L("Classeur"),`${nN} ${L(nN>1?"notes":"note")} · ${NF().length} ${L(NF().length>1?"dossiers":"dossier")}`,""]);
     cards.push({g,desc:"Notes, documents et mots de passe, à l'abri.",it:it.slice(0,2)})}}
+  // v58 (#3) : cartes dessinées par React (app/src/Home.tsx) ; {u:…} = contenu de la personne (jamais traduit)
+  if(window.SCIslands&&window.SCIslands.home&&!window.__noIslands){try{window.SCIslands.home($("homeBody"),{i18n:agI18n(),
+    cards:cards.map(({g,desc,it})=>({app:g.app,k:g.k,label:g.label,desc,items:it.map(([k,v,w])=>({k,v:typeof v==="object"?v.u:v,user:typeof v==="object",w:w||""}))}))});return}
+    catch(e){reportErr("island home: "+(e&&e.message))}}
   let h=`<div class="hc-list">${cards.map(({g,desc,it})=>`<button type="button" class="hc" data-app="${g.app}" data-gapp="${g.k}">
     <span class="hc-top">${LOGO(g.app,"home-applogo hc-logo")}<span class="hc-name">${esc(g.label)}</span><span class="hc-go" aria-hidden="true">›</span></span>
     <span class="hc-desc">${L(desc)}</span>
-    <span class="hc-items">${it.map(([k,v,w])=>`<span class="hc-it"><span class="hc-k">${k}</span><span class="hc-v">${v}${w?` <span class="hc-w">· ${w}</span>`:""}</span></span>`).join("")}</span>
+    <span class="hc-items">${it.map(([k,v,w])=>`<span class="hc-it"><span class="hc-k">${k}</span><span class="hc-v">${typeof v==="object"?`<span class="notr">${esc(v.u)}</span>`:v}${w?` <span class="hc-w">· ${esc(w)}</span>`:""}</span></span>`).join("")}</span>
   </button>`).join("")}</div>`;
   $("homeBody").innerHTML=h}
 $("homeBody").addEventListener("click",e=>{
@@ -2576,8 +2580,9 @@ function renderDocs(){
   const alpha=data.prefs.docSort==="alpha";
   // classeurs
   const cnt=id=>all.filter(d=>d.folder===id).length;
-  $("docFolders").innerHTML=`<button class="pill" data-dfold="all" aria-pressed="${!cf}">${L("Tous")}</button>`+
-    DF().map(f=>`<button class="pill" data-dfold="${f.id}" aria-pressed="${cf&&cf.id===f.id}">${IC("folder")} ${esc(f.name)} <span class="cnt">${cnt(f.id)||""}</span></button>`).join("")+
+  const isl=window.SCIslands&&window.SCIslands.docs&&!window.__noIslands;
+  if(!isl)$("docFolders").innerHTML=`<button class="pill" data-dfold="all" aria-pressed="${!cf}">${L("Tous")}</button>`+
+    DF().map(f=>`<button class="pill" data-dfold="${f.id}" aria-pressed="${!!(cf&&cf.id===f.id)}">${IC("folder")} ${esc(f.name)} <span class="cnt">${cnt(f.id)||""}</span></button>`).join("")+
     `<button class="pill add" data-dfoldnew="1">+ ${L("Classeur")}</button>`;
   $("folderBar").hidden=!cf;
   if(cf)$("folderBar").innerHTML=dfEditing?`<form id="folderRename" style="display:flex;gap:8px;width:100%"><input id="folderRenIn" value="${esc(cf.name)}" aria-label="${L("Nouveau nom")}" autocomplete="off"><button class="btn" type="submit">OK</button></form>`
@@ -2594,7 +2599,13 @@ function renderDocs(){
   const sq=q||(scope==="folder"?fq:"");
   if(sq)list=list.map(d=>({d,s:fuzzyScore(d.title,sq)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).map(x=>x.d);
   const SHARE=`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7.5 7.5L12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>`;
-  $("docList").innerHTML=list.length?list.map(d=>{
+  // v57 (#3) : classeurs et liste dessinés par React (app/src/Vault.tsx) ; affichage seulement, le chiffrement ne change pas
+  if(isl){try{window.SCIslands.docs({folders:$("docFolders"),list:$("docList")},{folders:DF().map(f=>({id:f.id,name:f.name,count:cnt(f.id)})),cur:cf?cf.id:"",icon:IC("folder"),grip:!!DF().length,i18n:agI18n(),
+      empty:sq?"Aucun document ne correspond.":scope==="folder"?"Ce classeur est vide. Importe ou scanne un document : il sera rangé ici.":"Aucun document pour l'instant. Importe un PDF ou scanne une feuille.",
+      docs:list.map(d=>{const f=folderOf(d);return{id:d.id,title:d.title,folder:f&&scope==="all"?f.name:"",meta:`${d.pages?`${d.pages} ${L(d.pages>1?"pages":"page")} · `:""}${fmtSize(d.size||0)} · ${fmtDay(d.createdAt)}`,
+        status:docBusy.has(d.id)?L("Envoi…"):d.up?"":L("Sur cet appareil seulement")}})})}
+    catch(e){reportErr("island docs: "+(e&&e.message));window.__noIslands=true;try{renderDocs()}finally{window.__noIslands=false}return}}
+  else $("docList").innerHTML=list.length?list.map(d=>{
     const st=docBusy.has(d.id)?L("Envoi…"):d.up?"":L("Sur cet appareil seulement"),f=folderOf(d);
     return `<div class="doc" data-doc="${d.id}">${DF().length?`<button class="grip" data-dgrip="${d.id}" aria-label="${L("Glisser vers un classeur")}" title="${L("Glisser vers un classeur")}">${GRIP}</button>`:""}<button class="doc-ic" data-docopen="${d.id}" aria-label="Ouvrir">PDF</button>
       <button class="doc-open" data-docopen="${d.id}"><b>${esc(d.title)}</b><span class="small muted">${f&&scope==="all"?`${IC("folder")} <span class="notr">${esc(f.name)}</span> · `:""}${d.pages?`${d.pages} ${L(d.pages>1?"pages":"page")} · `:""}${fmtSize(d.size||0)} · ${fmtDay(d.createdAt)}${st?` · <span style="color:var(--warn)">${st}</span>`:""}</span></button>
@@ -2950,7 +2961,8 @@ function renderNotes(){
   const path=nfPath(noteDir);$("nfPath").hidden=!!q||!noteDir;
   // v41 : dans un dossier, un vrai bouton retour (vers le dossier parent) + le chemin complet ; on peut y déposer une note ou un dossier
   const up=path.length>1?path[path.length-2]:null;
-  $("nfPath").innerHTML=noteDir?`<button type="button" class="back nf-back" data-nfgo="${up?up.id:""}">‹ ${esc(up?up.name:L("Notes"))}</button>
+  const isl=window.SCIslands&&window.SCIslands.notes&&!window.__noIslands;
+  if(isl){}else $("nfPath").innerHTML=noteDir?`<button type="button" class="back nf-back" data-nfgo="${up?up.id:""}">‹ ${esc(up?up.name:L("Notes"))}</button>
     <div class="nf-crumbs"><button type="button" class="nf-crumb" data-nfgo="">${L("Notes")}</button>`+path.map((f,i)=>`<span aria-hidden="true">›</span>${i===path.length-1?`<b class="notr">${esc(f.name)}</b>`:`<button type="button" class="nf-crumb notr" data-nfgo="${f.id}">${esc(f.name)}</button>`}`).join("")+`</div>`:"";
   $("notesList").classList.toggle("in-dir",!!noteDir&&!q);const h1=$("notesList").querySelector("h1");if(h1){h1.textContent=noteDir&&!q?path[path.length-1].name:L("Notes");h1.classList.toggle("notr",!!noteDir)}
   // v42 : les dossiers en tuiles (section « Dossiers »), bien distincts des notes en lignes (section « Notes »)
@@ -2958,6 +2970,16 @@ function renderNotes(){
   const dirs=kids.length?`<h2 class="nl-h">${L(noteDir?"Sous-dossiers":"Dossiers")}</h2><div class="nf-grid">`+kids.map(f=>`<div class="nf-row nf-tile"><span class="ngrip" data-fgrip="${f.id}" aria-hidden="true" title="${L("Maintenir et glisser")}">${GRIP}</span><button type="button" class="nf-open" data-nfopen="${f.id}"><span class="nf-ic">${IC("folder")}</span><b class="grow notr">${esc(f.name)}</b><span class="nf-n">${nfCount(f.id)||"0"}</span></button><button type="button" class="pen" data-nfmore="${f.id}" aria-label="${L("Plus d'actions")}">${MORE}</button></div>`).join("")+`</div>`:"";
   if(!q)list=list.filter(x=>noteDirOf(x)===noteDir);
   if(q)list=list.filter(x=>noteView(x)).map(x=>{const w=noteView(x);return{x,s:Math.max(fuzzyScore(w.title||"",q),fold(w.body).includes(fold(q))?11:0)}}).filter(o=>o.s>0).sort((a,b)=>b.s-a.s).map(o=>o.x);
+  // v57 (#3) : chemin et liste dessinés par React (app/src/Notes.tsx) ; les notes secrètes arrivent déchiffrées (en mémoire) ou « locked »
+  if(isl){try{const ic={folder:IC("folder"),lock:IC("lock"),camera:IC("camera")};
+    window.SCIslands.notes({path:$("nfPath"),list:$("noteList")},{path:noteDir?path.map(f=>({id:f.id,name:f.name,count:0})):[],dirs:kids.map(f=>({id:f.id,name:f.name,count:nfCount(f.id)})),inDir:!!noteDir,search:!!q,
+      empty:q?"Aucune note ne correspond.":noteDir?"Ce dossier est vide. Touche « + Note » pour y écrire.":"Aucune note pour l'instant. Touche « + Note » pour écrire.",icons:ic,i18n:agI18n(),
+      notes:list.map(x=>{const w=noteView(x),when=fmtWhen(x.upd||Date.parse(x.createdAt));
+        if(!w)return{id:x.id,locked:true,secret:true,title:"",prev:"",path:"",photos:0,pdf:null,when};
+        const lines=String(w.body||"").trim().split("\n").filter(Boolean),t=w.title&&w.title.trim()?w.title:(lines.shift()||L("Nouvelle note"));
+        return{id:x.id,locked:false,secret:!!x.secret,title:t,prev:lines.join(" · ")||"",path:q&&noteDirOf(x)?nfPath(x.folder).map(f=>f.name).join(" › "):"",
+          photos:x.photos&&x.photos.length||0,pdf:x.pdf?{pages:x.pdf.pages||0,anns:pvAnns(x.id).length}:null,when}})});return}
+    catch(e){reportErr("island notes: "+(e&&e.message))}}
   $("noteList").innerHTML=dirs+(list.length&&dirs?`<h2 class="nl-h">${L("Notes")}</h2>`:"")+(list.length?`<div class="nl-notes">`+list.map(x=>{const w=noteView(x),when=`<span class="when">${fmtWhen(x.upd||Date.parse(x.createdAt))}</span>`;
     const more=`<button type="button" class="pen note-more" data-nmore="${x.id}" aria-label="${L("Plus d'actions")}">${MORE}</button>`;
     if(!w)return `<div class="note-row"><button class="note note-lock" data-note="${x.id}"><b>${IC("lock")} ${L("Note secrète")}</b><span class="prev">${L("Touche pour l'ouvrir avec ton code")}</span>${when}</button>${more}</div>`;
@@ -3744,7 +3766,8 @@ async function v2Upgrade(kind,code,oldKey){
   if(!mkHas(ctx))await mkWrap(ctx,code,mk);
   else{try{await mkUnwrap(ctx,code)}catch(e){await mkWrap(ctx,code,mk)}} // le dernier code tapé ouvre ce coffre sur cet appareil
   save();toast("Protection renforcée");if(r.created)await phRecOffer(r.ph);return nk}
-function pwdLock(){if(!vaultKey&&!pinBuf)return;vaultKey=null;vaultItems=new Map();pwShown.clear();pinBuf="";pinStep="";closePwSheet();if(data.ui.view==="pwd")renderPwd()}
+function pwdLock(){if(!vaultKey&&!pinBuf)return;vaultKey=null;vaultItems=new Map();pwShown.clear();
+  {const pl=$("pwList");if(window.SCIslands&&Object.keys(pl).some(k=>k.startsWith("__reactContainer")))window.SCIslands.pwList(pl,{items:[],empty:"",i18n:agI18n()});else pl.innerHTML=""} /* v57 : plus rien de déchiffré à l'écran une fois verrouillé */pinBuf="";pinStep="";closePwSheet();if(data.ui.view==="pwd")renderPwd()}
 // déchiffre les entrées (après déverrouillage ou après une synchro)
 async function vaultLoad(){
   if(!vaultKey)return;const k=vaultKey,vid=data.vault.id,m=new Map();
@@ -3842,6 +3865,10 @@ function renderPwList(){
   $("pwSort").querySelectorAll("[data-pwsort]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.pwsort===srt)));
   list.sort(srt==="date"?(a,b)=>at(b.id)-at(a.id):(a,b)=>String(a.site).localeCompare(String(b.site),LANG,{sensitivity:"base",numeric:true}));
   if(q)list=list.map(x=>({x,s:fuzzyScore(`${x.site} ${x.user||""}`,q)})).filter(o=>o.s>0).sort((a,b)=>b.s-a.s).map(o=>o.x);
+  // v57 (#3) : liste dessinée par React ; le mot de passe et la note ne sont transmis que pour les entrées affichées
+  if(window.SCIslands&&window.SCIslands.pwList&&!window.__noIslands){try{window.SCIslands.pwList($("pwList"),{empty:q?"Aucun site ne correspond.":"Aucun mot de passe pour l'instant. Touche « + Ajouter ».",i18n:agI18n(),
+      items:list.map(x=>{const show=pwShown.has(x.id);return show?{id:x.id,site:String(x.site),user:x.user||"",show,pw:x.pw||"",note:x.note||""}:{id:x.id,site:String(x.site),user:x.user||"",show}})});return}
+    catch(e){reportErr("island pwList: "+(e&&e.message))}}
   $("pwList").innerHTML=list.length?list.map(x=>{const show=pwShown.has(x.id);
     return `<div class="pw-row"><div class="pw-av notr">${esc((String(x.site).trim()[0]||"?"))}</div>
       <div class="pw-main notr"><b>${esc(x.site)}</b>${x.user?`<span class="small muted">${esc(x.user)}</span>`:""}<span class="pw-sec">${show?esc(x.pw):"••••••••"}</span>${x.note&&show?`<span class="small muted">${esc(x.note)}</span>`:""}</div>
@@ -5044,7 +5071,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v56";
+const BUILD="sidnote-v57";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

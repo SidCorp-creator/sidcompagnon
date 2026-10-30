@@ -20,6 +20,7 @@ Décision de Sid (29 oct. 2026) : passer progressivement à TypeScript + React +
 | v51 | Focus : temps de travail concentré (jour, 7 jours) | `app/src/PomoStats.tsx` |
 | v52 | Graphiques : commentaires du jour et de la semaine, historique des semaines | `app/src/Reviews.tsx` |
 | v52 | Musculation : barre « Mon objectif » · Nutrition : barres des macros | `app/src/Small.tsx` |
+| v57 | Notes : chemin du dossier, dossiers, notes · Documents : classeurs, liste · Mots de passe : liste | `app/src/Notes.tsx`, `app/src/Vault.tsx` |
 | v56 | Nutrition : plats de la journée (vignettes, quantités modifiables), résultat d'une analyse, sport de la semaine | `app/src/Nutrition.tsx` |
 | v55 | Musculation : programmes, séances, exercices, une ligne par série · Focus : durées, frise travail / pause | `app/src/Muscu.tsx`, `app/src/Small.tsx` |
 | v54 | Tâches : catégories, barre de la catégorie, à faire (groupes repliables), en suspens, réalisées (liste et calendrier) · Agenda : vue d'un jour | `app/src/Todos.tsx`, `app/src/DayView.tsx` |
@@ -41,7 +42,7 @@ Du plus isolé au plus central, un écran par version, chacun avec son test « m
 2. ~~Musculation~~ (v52, v55). Champs non contrôlés (`defaultValue`) : app.js enregistre à chaque frappe et redessine (`msRedraw`) ; après chaque rendu, les champs qui ne sont pas en cours de saisie reprennent la valeur enregistrée (sinon un « Annuler » ne se verrait pas dans un champ déjà touché).
 3. ~~Nutrition : barres des macros~~ (v52) · ~~journée, analyse, sport de la semaine~~ (v56) ; reste : menus (l'animation de chargement et le bouton « ↻ Autre idée » écrivent directement dans #nuMenu : à faire comme #nuResult, avec `SCIslands.unmount`), profil.
 5. ~~Agenda~~ (v53–v54) · ~~Tâches~~ (v54).
-6. Notes, Documents, Mots de passe (le coffre en dernier, avec une revue sécurité).
+6. ~~Notes, Documents, Mots de passe : listes~~ (v57). Revue sécurité faite : affichage seulement, aucune clé ni texte chiffré dans React ; le mot de passe et la note d'une entrée ne sont transmis que si la personne a touché « Afficher » ; au verrouillage, la liste est vidée (avant : elle restait dans la page, cachée). Restent dans app.js : l'éditeur de notes (contenteditable), le lecteur PDF, les claviers de code, le chiffrement.
 7. Enfin la coquille (connexion, synchronisation, navigation) : à ce moment `app.js` disparaît et l'app devient une app Vite complète.
 
 ## Commandes

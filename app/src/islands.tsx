@@ -12,6 +12,8 @@ import { CatBar, TodoCats, TodoDone, TodoOpen, TodoPaused, rowCtx, type TodosPro
 import { DayView, type DayViewProps } from "./DayView";
 import { MuList, type MuGrp, type MuI18n } from "./Muscu";
 import { NuLog, NuResult, NuWeek, type Dish, type Mac, type NuI18n, type NuResultVM, type WeekSport } from "./Nutrition";
+import { NoteList, NotesPath, type Icons, type NfVM, type NoteVM, type NotesI18n } from "./Notes";
+import { DocFolders, DocList, PwList, type DocFolderVM, type DocVM, type PwVM, type VI18n } from "./Vault";
 import type { AgTask, GrDay, I18n, Tip } from "./types";
 import { fmtN, r1 } from "./format";
 
@@ -77,6 +79,9 @@ declare global {
       agPlan: (els: { next: Element; chips: Element; list: Element }, p: AgPlanProps) => void;
       dayView: (el: Element, p: DayViewProps) => void;
       unmount: (el: Element) => void;
+      docs: (els: { folders: Element; list: Element }, p: { folders: DocFolderVM[]; cur: string; icon: string; grip: boolean; empty: string; docs: DocVM[]; i18n: VI18n }) => void;
+      pwList: (el: Element, p: { items: PwVM[]; empty: string; i18n: VI18n }) => void;
+      notes: (els: { path: Element; list: Element }, p: { path: NfVM[]; dirs: NfVM[]; inDir: boolean; search: boolean; empty: string; notes: NoteVM[]; icons: Icons; i18n: NotesI18n }) => void;
       nuLog: (el: Element, p: { dishes: Dish[]; mac: Mac[]; today: boolean; i18n: NuI18n }) => void;
       nuResult: (el: Element, p: { p: NuResultVM | null; mac: Mac[]; boltIcon: string; i18n: NuI18n }) => void;
       nuWeek: (el: Element, p: { sports: WeekSport[]; range: string; target: string; delta: number; actIcon: string; i18n: NuI18n }) => void;
@@ -88,7 +93,7 @@ declare global {
   }
 }
 window.SCIslands = {
-  version: 7,
+  version: 9,
   nuCal: (el, p) => mount(el, <NutritionCalendar {...p} />),
   graph,
   pomoStats: (el, p) => mount(el, <PomoStats {...p} />),
@@ -110,6 +115,15 @@ window.SCIslands = {
   muList: (el, p) => mount(el, <MuList {...p} />),
   // rend l'élément à l'ancien code (ex. #nuResult, où app.js pose aussi l'animation de chargement)
   unmount: (el) => { const r = roots.get(el); if (r) { r.unmount(); roots.delete(el); el.classList.remove("notr"); } },
+  notes: (els, p) => {
+    mount(els.path, <NotesPath path={p.path} i18n={p.i18n} />);
+    mount(els.list, <NoteList dirs={p.dirs} inDir={p.inDir} notes={p.notes} search={p.search} empty={p.empty} icons={p.icons} i18n={p.i18n} />);
+  },
+  docs: (els, p) => {
+    mount(els.folders, <DocFolders folders={p.folders} cur={p.cur} icon={p.icon} i18n={p.i18n} />);
+    mount(els.list, <DocList docs={p.docs} grip={p.grip} empty={p.empty} icon={p.icon} i18n={p.i18n} />);
+  },
+  pwList: (el, p) => mount(el, <PwList {...p} />),
   nuLog: (el, p) => mount(el, <NuLog {...p} />),
   nuResult: (el, p) => mount(el, <NuResult {...p} />),
   nuWeek: (el, p) => mount(el, <NuWeek {...p} />),

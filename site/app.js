@@ -108,7 +108,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="64";const errSent=new Set();
+const APP_V="65";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -2982,8 +2982,11 @@ function renderNotes(){
     if(document.activeElement!==$("noteBody"))rtSet(v);
     $("noteWhen").textContent=fmtWhen(n.upd||Date.parse(n.createdAt));
     $("noteSecBar").hidden=!n.secret;
+    // v65 : les photos s'affichent aussi en rouvrant la note (avant : seulement juste après l'ajout)
+    const pk=n.id+":"+(n.secret?"":(n.photos||[]).map(p=>p.id).join());if(renderNotes.phk!==pk){renderNotes.phk=pk;renderNotePhotos(n.secret?null:n)}
     $("noteLock").setAttribute("aria-label",L(n.secret?"Verrouiller la note":"Rendre la note secrète"));$("noteLock").title=$("noteLock").getAttribute("aria-label");
     return}
+  renderNotes.phk=null;
   const q=noteQ.trim(),secN=NT().filter(x=>x.secret).length;
   $("nsBar").hidden=!(nsKey&&secN);
   if(shIsl("nsBar")){try{window.SCIslands.nsBar($("nsBar"),{unlock:IC("unlock"),lock:IC("lock"),i18n:agI18n()})}catch(e){reportErr("island nsBar: "+(e&&e.message))}}
@@ -3131,6 +3134,10 @@ async function npUpload(n,p){if(p.up||npBusy.has(p.id))return;const u=await idb.
   npBusy.delete(p.id)}
 function notesPhotosPending(){if(!session)return;NT().forEach(n=>{(n.photos||[]).forEach(p=>{if(!p.up)npUpload(n,p)});if(n.pdf&&!n.pdf.up)pdfUpload(n)})}
 function renderNotePhotos(n){const box=$("notePhotos");if(!box)return;const ps=(n&&n.photos)||[];box.hidden=!ps.length;
+  if(shIsl("notePhotos")){try{const tk=renderNotePhotos.tk=(renderNotePhotos.tk||0)+1,got={};ps.forEach(p=>{if(npCache.has(p.id))got[p.id]=npCache.get(p.id)});
+    const draw=()=>{if(tk===renderNotePhotos.tk)window.SCIslands.notePhotos(box,{photos:ps.map(p=>({id:p.id,u:got[p.id]})),i18n:agI18n()})};draw(); // v65 (#3)
+    ps.forEach(async p=>{if(p.id in got)return;got[p.id]=(await npGet(p.id))||null;draw()});return}
+    catch(e){reportErr("island notePhotos: "+(e&&e.message));try{window.SCIslands.unmount(box)}catch(_){}}}
   box.innerHTML=ps.map(p=>`<button type="button" class="np" data-np="${p.id}" aria-label="${L("Voir la photo")}"><span class="np-load"></span></button>`).join("");
   ps.forEach(async p=>{const u=await npGet(p.id),el=box.querySelector(`[data-np="${p.id}"]`);if(el)el.innerHTML=u?`<img src="${u}" alt="">`:`<span class="small muted">${L("Indisponible")}</span>`})}
 $("notePhotoIn").addEventListener("change",async e=>{const files=[...e.target.files];e.target.value="";const n=noteFind(noteOpenId);if(!n||!files.length)return;
@@ -3176,7 +3183,8 @@ async function pvRender(w,tok){if(w._c||w._busy||!pv.pdf)return;w._busy=true;
   try{const pg=await pv.pdf.getPage(+w.dataset.pg),v0=pg.getViewport({scale:1}),W=w.clientWidth||600,dpr=Math.min(2,window.devicePixelRatio||1),vp=pg.getViewport({scale:W/v0.width*dpr});
     const c=document.createElement("canvas");c.width=vp.width;c.height=vp.height;await pg.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;
     if(tok!==pv.tok)return;w.prepend(c);w._c=c}catch(e){}w._busy=false}
-function pvClose(){pvFlushTxt();pv.tok++;pv.note=null;pv.pdf=null;if(pv.io)pv.io.disconnect();$("pdfv").hidden=true;$("pvBody").innerHTML="";document.body.style.overflow="";renderNotes()}
+function pvClose(){pvFlushTxt();pv.tok++;pv.note=null;pv.pdf=null;if(pv.io)pv.io.disconnect();$("pdfv").hidden=true;
+  if(window.SCIslands)document.querySelectorAll("#pvBody .pv-ov").forEach(ov=>{try{window.SCIslands.unmount(ov)}catch(_){}});$("pvBody").innerHTML="";document.body.style.overflow="";renderNotes()}
 // annotations placées en fraction de la page (même rendu sur iPhone et sur PC). v45 : zones de texte déplaçables et
 // redimensionnables (× pour supprimer), traits libres au stylo et au surligneur ({t:"ink", pts:[[x,y]…], c, w, hl}), gomme.
 const pct=v=>(Math.round(v*10000)/100)+"%";
@@ -3185,7 +3193,14 @@ const pvPen=k=>{const u=(data.ui.pvPen=data.ui.pvPen||{});return u[k]=u[k]||{c:P
 const pvW=(k,s)=>k==="hl"?.008+s*.005:.0015+s*.0012; // épaisseur en fraction de la largeur de la page (réglage 1 à 10)
 const pvRatio=w=>{const m=String(w.style.aspectRatio||"1 / 1.4").split("/").map(Number);return m[1]/m[0]||1.4};
 const pvPath=(pts,r)=>pts.map((p,i)=>(i?"L":"M")+(p[0]*1000).toFixed(1)+" "+(p[1]*1000*r).toFixed(1)).join(" ")+(pts.length===1?" l0.1 0":"");
+// v65 (#3) : calque dessiné par React (PdfView.tsx) ; la zone de texte qui a le focus est gardée, les autres reprennent le texte enregistré
+const pvVM=(a,r)=>a.t==="ink"&&Array.isArray(a.pts)&&a.pts.length?{id:a.id,t:"ink",cls:a.hl?"ink-hl":"ink-pen",d:pvPath(a.pts,r),stroke:/^#[0-9a-f]{6}$/i.test(a.c||"")?a.c:"#1C1A17",sw:((a.w||.004)*1000).toFixed(1)}
+  :a.t==="hl"?{id:a.id,t:"hl",style:{left:pct(a.x),top:pct(a.y),width:pct(a.w),height:pct(a.h)}}
+  :a.t==="text"?{id:a.id,t:"text",on:pv.sel===a.id,style:{left:pct(a.x),top:pct(a.y),width:pct(a.w||.4),...(a.h?{height:pct(a.h)}:{})},txt:a.txt||""}:null;
 function pvOverlay(w){const ov=w.querySelector(".pv-ov"),pg=+w.dataset.pg,act=document.activeElement,keep=act&&ov.contains(act)?act.closest("[data-ann]"):null,r=pvRatio(w);
+  if(shIsl("pvOverlay")){try{window.SCIslands.pvOverlay(ov,{anns:pvAnns(pv.note,pg).map(a=>pvVM(a,r)).filter(Boolean),viewBox:`0 0 1000 ${(1000*r).toFixed(1)}`,grip:GRIP,i18n:agI18n()});
+    ov.querySelectorAll(".pv-txt textarea").forEach(t=>{if(t!==act){const a=PA().find(x=>x.id===t.parentElement.dataset.ann),v=a&&a.txt||"";if(t.value!==v)t.value=v}pvGrow(t)});return}
+    catch(e){reportErr("island pvOverlay: "+(e&&e.message));try{window.SCIslands.unmount(ov)}catch(_){}}}
   ov.querySelectorAll("[data-ann]").forEach(el=>{if(el!==keep)el.remove()});
   let svg=ov.querySelector("svg.pv-ink");if(!svg){ov.insertAdjacentHTML("afterbegin",`<svg class="pv-ink" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"></svg>`);svg=ov.querySelector("svg.pv-ink")}
   svg.setAttribute("viewBox",`0 0 1000 ${(1000*r).toFixed(1)}`);
@@ -3201,11 +3216,14 @@ function pvTool(t){if(t==="notes"){const op=$("pvNotes").hidden;$("pvNotes").hid
   pv.tool=t;$("pdfv").dataset.tool=t;document.querySelectorAll("[data-pvt]").forEach(b=>{if(b.dataset.pvt!=="notes")b.setAttribute("aria-pressed",b.dataset.pvt===t)});
   const h=$("pvHint");h.hidden=!PV_HINT[t];h.textContent=L(PV_HINT[t]||"");pvOpts()}
 // couleurs et épaisseur du surligneur et du stylo (gardées sur l'appareil)
+const pvDot=(k,st)=>({"--d":Math.round(pvW(k,st.s)*360)+"px","--sw":st.c,...(k==="hl"?{opacity:.55}:{})});
 function pvOpts(){const o=$("pvOpts"),k=pv.tool==="hl"||pv.tool==="pen"?pv.tool:null;o.hidden=!k;if(!k)return;const st=pvPen(k);
+  if(shIsl("pvOpts")){try{window.SCIslands.pvOpts(o,{cols:PV_COL[k],cur:st.c,size:st.s,dot:pvDot(k,st),i18n:agI18n()});const sz=$("pvSize");if(sz&&document.activeElement!==sz&&+sz.value!==st.s)sz.value=st.s;return}
+    catch(e){reportErr("island pvOpts: "+(e&&e.message));try{window.SCIslands.unmount(o)}catch(_){}}}
   o.innerHTML=`<div class="pv-sw" role="group" aria-label="${L("Couleur")}">${PV_COL[k].map(c=>`<button type="button" data-pvc="${c}" style="--sw:${c}" aria-pressed="${st.c===c}" aria-label="${L("Couleur")} ${c}"></button>`).join("")}</div>
     <label class="pv-size"><span>${L("Épaisseur")}</span><input type="range" id="pvSize" min="1" max="10" step="1" value="${st.s}" aria-label="${L("Épaisseur")}"><i class="pv-dot" style="--d:${Math.round(pvW(k,st.s)*360)}px;--sw:${st.c}${k==="hl"?";opacity:.55":""}"></i></label>`}
 $("pvOpts").addEventListener("click",e=>{const b=e.target.closest("[data-pvc]");if(!b)return;const k=pv.tool;if(!PV_COL[k])return;pvPen(k).c=b.dataset.pvc;saveUI();pvOpts()});
-$("pvOpts").addEventListener("input",e=>{if(e.target.id!=="pvSize")return;const k=pv.tool;if(!PV_COL[k])return;pvPen(k).s=+e.target.value;saveUI();
+$("pvOpts").addEventListener("input",e=>{if(e.target.id!=="pvSize")return;const k=pv.tool;if(!PV_COL[k])return;pvPen(k).s=+e.target.value;saveUI();if(shIsl("pvOpts")){pvOpts();return}
   const d=$("pvOpts").querySelector(".pv-dot");if(d)d.style.setProperty("--d",Math.round(pvW(k,+e.target.value)*360)+"px")});
 document.querySelector(".pv-tools").addEventListener("click",e=>{const b=e.target.closest("[data-pvt]");if(b)pvTool(b.dataset.pvt)});
 $("pvNotesClose").addEventListener("click",()=>pvTool("notes"));
@@ -3225,7 +3243,7 @@ $("pvBody").addEventListener("input",e=>{const ta=e.target.closest(".pv-txt text
 $("pvBody").addEventListener("focusin",e=>{const t=e.target.closest(".pv-txt");if(t)pvSelect(t.dataset.ann)});
 $("pvBody").addEventListener("focusout",e=>{const ta=e.target.closest(".pv-txt textarea");if(!ta)return;pvTxtEl=ta;pvFlushTxt();
   if(!ta.value.trim()){const id=ta.closest("[data-ann]").dataset.ann;setTimeout(()=>{if(document.activeElement===ta)return;const a=PA().find(x=>x.id===id);if(a&&!String(a.txt||"").trim()){tomb(id);data.pdfAnns=PA().filter(x=>x!==a);save();pvRefresh()}},150)}});
-function pvSelect(id){pv.sel=id||null;document.querySelectorAll("#pvBody .pv-txt").forEach(t=>t.classList.toggle("pv-on",t.dataset.ann===pv.sel))}
+function pvSelect(id){pv.sel=id||null;if(shIsl("pvOverlay")){if(!$("pdfv").hidden)document.querySelectorAll("#pvBody .pv-page").forEach(pvOverlay);return}document.querySelectorAll("#pvBody .pv-txt").forEach(t=>t.classList.toggle("pv-on",t.dataset.ann===pv.sel))}
 function pvDel(id,msg){const a=PA().find(x=>x.id===id);if(!a)return;if(pv.sel===id)pv.sel=null;undoable(msg,[id],()=>{tomb(id);data.pdfAnns=PA().filter(x=>x!==a)},{after:pvRefresh})}
 const PV_DELMSG={text:"Texte supprimé",hl:"Surlignage supprimé",ink:"Trait supprimé"};
 // les poignées des zones de texte ne prennent pas le focus (sinon la zone se ferme avant le clic)
@@ -4061,7 +4079,8 @@ const RT_MENUS={style:[["h2","Titre"],["h3","Sous-titre"],["p","Texte normal"],[
 let rtRange=null;
 function rtMenu(btn){const pop=$("rtPop"),k=btn.dataset.rtm;if(!pop.hidden&&pop.dataset.for===k){pop.hidden=true;return}
   const s=getSelection();rtRange=s.rangeCount&&$("noteBody").contains(s.anchorNode)?s.getRangeAt(0).cloneRange():null;
-  pop.dataset.for=k;pop.innerHTML=RT_MENUS[k].map(([c,l])=>`<button type="button" role="menuitem" data-rtc="${c}"${/^(hl|tc):/.test(c)?` data-sw="${c}"`:""}>${/^(hl|tc):/.test(c)?`<i class="rt-sw"></i>`:""}${esc(L(l))}</button>`).join("");
+  pop.dataset.for=k;let isl=false;if(shIsl("rtMenu")){try{window.SCIslands.rtMenu(pop,{items:RT_MENUS[k].map(([c,l])=>({c,l,sw:/^(hl|tc):/.test(c)})),i18n:agI18n()});isl=true}catch(e){reportErr("island rtMenu: "+(e&&e.message));try{window.SCIslands.unmount(pop)}catch(_){}}}
+  if(!isl)pop.innerHTML=RT_MENUS[k].map(([c,l])=>`<button type="button" role="menuitem" data-rtc="${c}"${/^(hl|tc):/.test(c)?` data-sw="${c}"`:""}>${/^(hl|tc):/.test(c)?`<i class="rt-sw"></i>`:""}${esc(L(l))}</button>`).join("");
   const b=btn.getBoundingClientRect();pop.hidden=false;const w=pop.offsetWidth;pop.style.left=Math.max(8,Math.min(innerWidth-w-8,b.left))+"px";pop.style.top=(b.bottom+6)+"px"}
 $("rtPop").addEventListener("pointerdown",e=>e.preventDefault());$("rtPop").addEventListener("mousedown",e=>e.preventDefault());
 $("rtPop").addEventListener("click",e=>{const b=e.target.closest("[data-rtc]");if(!b)return;$("rtPop").hidden=true;
@@ -5161,7 +5180,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v64";
+const BUILD="sidnote-v65";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

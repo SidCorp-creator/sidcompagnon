@@ -21,6 +21,7 @@ import { AppHead, NavBar, SideBar, type NavItem, type NavI18n, type SideGroup, t
 import { ExHelp, McpList, QuickAdd, Stats, TabsCard, TypesCard, type ExHelpVM, type SI18n, type TabGroup } from "./Settings";
 import { Keypad, OnbDots, OnbGroups, OnbPal, type OI18n, type OnbGroup, type PalVM } from "./Onboarding";
 import { AuthFeats, FolderBar, NsBar, NuKcalOf, NuMealKcal, NuMkTot, NuSlots, NuSports, type FI18n } from "./Forms";
+import { NotePhotos, PvOpts, PvOverlay, RtMenu, type PI18n, type PvAnn } from "./PdfView";
 import type { AgTask, GrDay, I18n, Tip } from "./types";
 import { fmtN, r1 } from "./format";
 
@@ -94,6 +95,10 @@ declare global {
       nuMealKcal: (el: Element, p: { rows: { icon: string; name: string; kcal: number }[]; i18n: FI18n }) => void;
       nuMkTot: (el: Element, p: { tot: string; tg: string; reset: boolean; i18n: FI18n }) => void;
       nuKcalOf: (el: Element, p: { target: number; over: number; left: number; i18n: FI18n }) => void;
+      pvOverlay: (el: Element, p: { anns: PvAnn[]; viewBox: string; grip: string; i18n: PI18n }) => void;
+      rtMenu: (el: Element, p: { items: { c: string; l: string; sw: boolean }[]; i18n: PI18n }) => void;
+      notePhotos: (el: Element, p: { photos: { id: string; u?: string | null }[]; i18n: PI18n }) => void;
+      pvOpts: (el: Element, p: { cols: string[]; cur: string; size: number; dot: React.CSSProperties; i18n: PI18n }) => void;
       onbGroups: (el: Element, p: { groups: OnbGroup[]; i18n: OI18n }) => void;
       onbDots: (el: Element, p: { n: number; cur: number }) => void;
       keypad: (el: Element, p: { attr: "pin" | "ps"; del: string }) => void;
@@ -126,7 +131,7 @@ declare global {
   }
 }
 window.SCIslands = {
-  version: 15,
+  version: 16,
   nuCal: (el, p) => mount(el, <NutritionCalendar {...p} />),
   graph,
   pomoStats: (el, p) => mount(el, <PomoStats {...p} />),
@@ -183,6 +188,10 @@ window.SCIslands = {
   nuMealKcal: (el, p) => mount(el, <NuMealKcal {...p} />),
   nuMkTot: (el, p) => mount(el, <NuMkTot {...p} />),
   nuKcalOf: (el, p) => mount(el, <NuKcalOf {...p} />),
+  pvOverlay: (el, p) => mount(el, <PvOverlay {...p} />),
+  pvOpts: (el, p) => mount(el, <PvOpts {...p} />),
+  rtMenu: (el, p) => mount(el, <RtMenu {...p} />),
+  notePhotos: (el, p) => mount(el, <NotePhotos {...p} />),
   nuLog: (el, p) => mount(el, <NuLog {...p} />),
   nuResult: (el, p) => mount(el, <NuResult {...p} />),
   nuWeek: (el, p) => mount(el, <NuWeek {...p} />),

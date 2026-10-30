@@ -1962,6 +1962,82 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(await pg.evaluate(()=>nuMP().pick.lunch)!==false)err("décocher un repas ne marche plus");
     await pg.evaluate(()=>{$("toast").style.display="none";$("nuSlots").scrollIntoView()});await shot(pg,"v64-"+nm+"-menu");
     await ctx.close()}
+  // --- v65 (ticket #3) : lecteur de PDF : calque d'annotations (traits, surlignages, zones de texte) et réglages du stylo en React
+  for(const [nm,dev,lg] of [["mobile",{...devices["iPhone 13"]},"fr"],["pc",{viewport:{width:1280,height:800}},"en"]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v65 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    if(lg!=="fr")await ctx.addInitScript(()=>{try{localStorage.setItem("sidnote-lang",JSON.stringify("en"))}catch(e){}});
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v65"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.waitForFunction(()=>!!(window.SCIslands&&window.SCIslands.pvOverlay),null,{timeout:8000}).catch(()=>err("module React non chargé"));
+    await pg.evaluate(()=>{show("notes");noteDir=null;renderNotes()});await pg.waitForTimeout(200);
+    await pg.setInputFiles("#pdfIn",path.join(__dirname,"fixtures","cours.pdf"));
+    await pg.waitForFunction(()=>!$("pdfv").hidden&&document.querySelectorAll("#pvBody .pv-page canvas").length>0,null,{timeout:15000}).catch(()=>err("PDF pas affiché"));
+    // parité du calque : React contre l'ancien rendu, dans une copie de la page
+    const par=await pg.evaluate(()=>{const nid=pv.note;
+      data.pdfAnns=[{id:"i1",note:nid,page:1,t:"ink",hl:false,c:"#D62828",w:.005,pts:[[.1,.1],[.2,.15],[.3,.12]],upd:1},{id:"i2",note:nid,page:1,t:"ink",hl:true,c:"bad",w:.05,pts:[[.5,.5]],upd:1},
+        {id:"h1",note:nid,page:1,t:"hl",x:.1,y:.3,w:.4,h:.03,upd:1},{id:"t1",note:nid,page:1,t:"text",x:.2,y:.6,w:.3,txt:"Bonjour <b>",upd:1},{id:"t2",note:nid,page:1,t:"text",x:.5,y:.7,w:.25,h:.1,txt:"",upd:1},
+        {id:"t3",note:nid,page:2,t:"text",x:.1,y:.1,w:.3,txt:"page 2",upd:1}];pv.sel="t2";save();pvRefresh();
+      const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.getAttribute("style")&&e.tagName!=="TEXTAREA"?e.style.cssText:"")+"|"+(e.children.length?"":e.tagName==="TEXTAREA"?e.value:e.textContent.trim())).join("\n");
+      const out=[];let react=true;
+      document.querySelectorAll("#pvBody .pv-page").forEach(w=>{const ov=w.querySelector(".pv-ov");if(!Object.keys(ov).some(k=>k.startsWith("__reactContainer")))react=false;
+        const w2=document.createElement("div");w2.className="pv-page";w2.dataset.pg=w.dataset.pg;w2.style.aspectRatio=w.style.aspectRatio;w2.innerHTML=`<div class="pv-ov" data-pg="${w.dataset.pg}"></div>`;
+        window.__noIslands=true;try{pvOverlay(w2)}finally{window.__noIslands=false}
+        const a=norm(ov),b=norm(w2.querySelector(".pv-ov"));if(a!==b){const al=a.split("\n"),bl=b.split("\n");out.push("page "+w.dataset.pg+" "+al.length+"/"+bl.length+" "+(al.find((l,i)=>l!==bl[i])||"")+" <> "+(bl.find((l,i)=>l!==al[i])||""))}});
+      return{react,out,on:!!document.querySelector('.pv-txt[data-ann="t2"].pv-on')}});
+    if(!par.react)err("calque pas rendu par React");par.out.forEach(d=>err("calque différent : "+d.slice(0,300)));if(!par.on)err("zone sélectionnée pas marquée");
+    // réglages du stylo : parité, puis épaisseur et changement d'outil
+    await pg.click('[data-pvt="pen"]');
+    const op=await pg.evaluate(()=>{const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.getAttribute("style")?e.style.cssText:"")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+      const el=$("pvOpts"),react=Object.keys(el).some(k=>k.startsWith("__reactContainer")),a=norm(el),c=el.cloneNode(false);el.id="pvOptsR";el.after(c);c.id="pvOpts";c.classList.remove("notr");
+      window.__noIslands=true;try{pvOpts()}finally{window.__noIslands=false}const b=norm(c);c.remove();el.id="pvOpts";return{react,same:a===b,a:a.slice(0,300),b:b.slice(0,300)}});
+    if(!op.react)err("réglages du stylo pas rendus par React");if(!op.same)err("réglages du stylo différents : "+op.a+" <> "+op.b);
+    const sl=await pg.evaluate(()=>{const r=$("pvSize");r.value=9;r.dispatchEvent(new Event("input",{bubbles:true}));const d1=$("pvOpts").querySelector(".pv-dot").style.getPropertyValue("--d");
+      pvTool("hl");const v=$("pvSize").value;pvTool("pen");return{d1,want:Math.round(pvW("pen",9)*360)+"px",hl:v,want2:String(pvPen("hl").s),pen:$("pvSize").value}});
+    if(sl.d1!==sl.want||sl.hl!==sl.want2||sl.pen!=="9")err("épaisseur : "+JSON.stringify(sl));
+    await pg.click('#pvOpts [data-pvc="#1D4ED8"]');if(await pg.evaluate(()=>pvPen("pen").c+"|"+document.querySelector('#pvOpts [data-pvc="#1D4ED8"]').getAttribute("aria-pressed"))!=="#1D4ED8|true")err("couleur du stylo");
+    // dessin au stylo : le trait est enregistré et dessiné (un seul chemin, celui de React)
+    await pg.evaluate(()=>{$("pvBody").scrollTop=0});const ov=pg.locator('#pvBody .pv-page[data-pg="1"] .pv-ov');let bb=await ov.boundingBox();
+    await pg.mouse.move(bb.x+bb.width*.3,bb.y+bb.height*.45);await pg.mouse.down();for(let i=1;i<=6;i++)await pg.mouse.move(bb.x+bb.width*(.3+i*.04),bb.y+bb.height*.46);await pg.mouse.up();await pg.waitForTimeout(200);
+    const dr=await pg.evaluate(()=>{const a=PA().find(x=>x.t==="ink"&&x.c==="#1D4ED8");return{ok:!!a,n:a?document.querySelectorAll(`#pvBody path[data-ann="${a.id}"]`).length:0,stray:document.querySelectorAll("#pvBody svg.pv-ink path:not([data-ann])").length}});
+    if(!dr.ok||dr.n!==1||dr.stray)err("trait au stylo : "+JSON.stringify(dr));
+    // zone de texte : on écrit, une synchro redessine sans faire perdre le focus ni le texte tapé
+    await pg.click('[data-pvt="text"]');await pg.mouse.click(bb.x+bb.width*.6,bb.y+bb.height*.2);await pg.waitForTimeout(150);await pg.keyboard.type("abc");
+    const fk=await pg.evaluate(()=>{const ta=document.activeElement;pvRefresh();return{same:document.activeElement===ta,val:ta.value,tag:ta.tagName}});
+    if(!fk.same||fk.val!=="abc"||fk.tag!=="TEXTAREA")err("zone de texte pendant la synchro : "+JSON.stringify(fk));
+    await pg.keyboard.type("d");await pg.waitForTimeout(700);if(!(await pg.evaluate(()=>PA().some(a=>a.t==="text"&&a.txt==="abcd"))))err("texte de la zone pas enregistré");
+    // texte modifié ailleurs (autre appareil) : la zone sans focus le reprend
+    const rem=await pg.evaluate(()=>{document.activeElement.blur();const a=PA().find(x=>x.id==="t1");a.txt="Changé";pvRefresh();return document.querySelector('.pv-txt[data-ann="t1"] textarea').value});
+    if(rem!=="Changé")err("texte venu d'ailleurs pas affiché : "+rem);
+    // gomme sur le trait bleu, puis Annuler le fait revenir
+    await pg.click('[data-pvt="erase"]');bb=await ov.boundingBox();await pg.mouse.move(bb.x+bb.width*.4,bb.y+bb.height*.41);await pg.mouse.down();await pg.mouse.move(bb.x+bb.width*.4,bb.y+bb.height*.5,{steps:6});await pg.mouse.up();await pg.waitForTimeout(250);
+    if(await pg.evaluate(()=>PA().some(x=>x.c==="#1D4ED8")||!!document.querySelector("#pvBody .pv-gone")))err("la gomme n'efface pas le trait bleu");
+    await shot(pg,"v65-"+nm+"-pdf");
+    if(!(await pg.evaluate(()=>{const b=document.querySelector("#toast .toast-act");if(!b||$("toast").hidden)return false;b.click();return true})))err("pas de bouton Annuler");await pg.waitForTimeout(250);
+    if(await pg.evaluate(()=>{const a=PA().find(x=>x.c==="#1D4ED8");return !a||!document.querySelector(`#pvBody path[data-ann="${a.id}"]`)||!!document.querySelector("#pvBody .pv-gone")}))err("Annuler ne fait pas revenir le trait");
+    // sélection d'une zone (classe pv-on) en mode Lire, puis fermeture du lecteur
+    await pg.click('[data-pvt="read"]');await pg.evaluate(()=>pvSelect("t1"));
+    if(await pg.evaluate(()=>[...document.querySelectorAll("#pvBody .pv-txt.pv-on")].map(x=>x.dataset.ann).join())!=="t1")err("sélection d'une zone");
+    await pg.evaluate(()=>pvClose());if(await pg.evaluate(()=>$("pvBody").children.length||!$("pdfv").hidden))err("lecteur pas refermé");
+    // éditeur de notes : vignettes des photos (une sur l'appareil, une introuvable) et menus de la barre de mise en forme
+    const ph=await pg.evaluate(async()=>{const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+      const img="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";npCache.set("ph1",img);
+      NT().push({id:"nph",title:"Photos",body:"x",html:"<p>x</p>",createdAt:new Date().toISOString(),upd:Date.now(),photos:[{id:"ph1",up:true},{id:"ph2",up:true}]});save();show("notes");openNote("nph");
+      await new Promise(r=>setTimeout(r,800));const el=$("notePhotos"),react=Object.keys(el).some(k=>k.startsWith("__reactContainer")),a=norm(el);
+      const c=el.cloneNode(false);c.classList.remove("notr");el.id="notePhotosR";el.after(c);c.id="notePhotos";window.__noIslands=true;try{renderNotePhotos(noteFind("nph"))}finally{window.__noIslands=false}
+      await new Promise(r=>setTimeout(r,800));const b=norm(c);c.remove();el.id="notePhotos";
+      const out=[];for(const k of Object.keys(RT_MENUS)){const btn=document.querySelector(`#rtBar [data-rtm="${k}"]`),pop=$("rtPop");pop.hidden=true;rtMenu(btn);const ra=Object.keys(pop).some(x=>x.startsWith("__reactContainer")),pa=norm(pop);
+        const pc=pop.cloneNode(false);pc.hidden=true;pc.classList.remove("notr");pop.id="rtPopR";pop.after(pc);pc.id="rtPop";window.__noIslands=true;try{rtMenu(btn)}finally{window.__noIslands=false}
+        const pb=norm(pc);pc.remove();pop.id="rtPop";pop.hidden=true;if(!ra)out.push(k+" pas React");if(pa!==pb)out.push(k+" : "+pa.slice(0,200)+" <> "+pb.slice(0,200))}
+      return{react,same:a===b,a,b,out,img:!!el.querySelector('[data-np="ph1"] img'),na:!!el.querySelector('[data-np="ph2"] .muted')}});
+    if(!ph.react)err("photos de la note pas rendues par React");if(!ph.same)err("photos de la note différentes : "+ph.a+" <> "+ph.b);if(!ph.img||!ph.na)err("photos de la note : "+JSON.stringify(ph));
+    ph.out.forEach(x=>err("menu de mise en forme : "+x));
+    // un menu choisi agit toujours sur le texte sélectionné
+    await pg.evaluate(()=>{const nb=$("noteBody");nb.focus();const r=document.createRange();r.selectNodeContents(nb.querySelector("p")||nb);const s=getSelection();s.removeAllRanges();s.addRange(r)});
+    await pg.click('#rtBar [data-rtm="hl"]');await pg.click('#rtPop [data-rtc="hl:g"]');await pg.waitForTimeout(200);
+    if(!(await pg.evaluate(()=>!!$("noteBody").querySelector('mark[data-hl="g"]'))))err("surligneur vert de la note pas appliqué");
+    await shot(pg,"v65-"+nm+"-note");
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

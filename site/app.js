@@ -110,7 +110,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="74";const errSent=new Set();
+const APP_V="74.1";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -2180,7 +2180,6 @@ function seCard(se,letter){const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0
       </div>`).join("")}
       <button type="button" class="qbtn" data-msaddex="1">+ ${L("Ajouter un exercice")}</button>
       <div class="ms-actions">
-        <button type="button" class="btn" data-msdone="1">${L(msDoneToday(se)?"Mettre à jour la séance faite":"Séance terminée")}</button>
         <button type="button" class="btn ghost" data-msshare="1">${L("Partager")}</button>
         <button type="button" class="btn stop" data-msdel="1">${L("Supprimer")}</button>
       </div>
@@ -2236,7 +2235,7 @@ $("msList").addEventListener("input",e=>{
       if(!msRedraw()){const d=inp.closest("[data-prm]");if(d)d.querySelector("summary").textContent=exPrmSum(ex);const av=inp.closest("[data-ex]").querySelector(".ex-adv");if(av)av.outerHTML=exAdvHtml(ex)}}
     else if(f==="setkg"||f==="setreps"){const j=+inp.closest("[data-si]").dataset.si,st=ex.sets[j];if(!st)return;
       if(f==="setkg")st.kg=inp.value.replace(",",".").replace(/[^0-9.]/g,"").slice(0,7);else st.reps=inp.value.replace(/[^0-9]/g,"").slice(0,4);
-      const was=msRunGet(se.id);if(String(st.kg||"").trim()||String(st.reps||"").trim()){msRunTouch(se,ex,j,!!String(st.reps||"").trim());if(!was)msRedraw()}}}
+      const was=msRunGet(se.id);if(String(st.kg||"").trim()||String(st.reps||"").trim()){msRunTouch(se,ex,j,!!String(st.reps||"").trim());msAutoLog(se);if(!was)msRedraw()}}}
   msSaveSoon(se)});
 // v44.7 : fiche « comment faire » de chaque exercice proposé (site/exercices-aide.js), dans la langue de l'app
 function exAide(name){const A=window.SIDFIT_AIDE||{},k=fold(String(name||"").trim());if(!k)return null;
@@ -2373,6 +2372,7 @@ function planApply(pl){const m=M(),old=PL();if(old)for(const s of grpSe(old.id))
 const ML=()=>{const m=M();if(!Array.isArray(m.log))m.log=[];return m.log};
 const coachNext=()=>{const ds=PLD();if(!ds.length)return null;const last=ML().filter(l=>ds.some(d=>d.id===l.day)).sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0];
   const i=last?ds.findIndex(d=>d.id===last.day):-1;return ds[(i+1)%ds.length]};
+// v74.1 (demande de Sid) : la section « Mon programme » n'est plus affichée (#coachBox caché) ; le programme et ses séances restent dans « Mes séances »
 function renderCoach(){const box=$("coachBox");if(!box)return;const pl=PL(),ds=PLD();
   const rmk=$("coRemark")?$("coRemark").value:""; // v43 : le rendu garde la remarque en cours
   if(shIsl("coach")){try{const p=(pl&&pl.profile)||{},G={muscle:"Prendre du muscle",force:"Gagner en force",gras:"Perdre du gras",forme:"Être en forme",endu:"Gagner en endurance"},LV={deb:"Débutant",inter:"Intermédiaire",conf:"Confirmé"};
@@ -2535,17 +2535,21 @@ function msRunRest(r){const t=Object.values(r.marks||{}).map(Number).sort((a,b)=
   for(let i=1;i<t.length;i++){const d=(t[i]-t[i-1])/1000;if(d>=10&&d<=900)g.push(d)}return g.length?Math.round(g.reduce((a,b)=>a+b,0)/g.length):0}
 const msRunMin=r=>Math.max(1,Math.round((Date.now()-r.t0)/60000));
 const msDoneToday=se=>ML().some(l=>l&&l.day===se.id&&l.date===iso(today())&&!(data.del&&data.del[l.id]));
-// « Séance terminée » : les séries remplies partent dans l'historique (data.muscu.log), avec la durée et le repos moyen mesurés
-function msDone(se){const ex=se.exercises.map(x=>({name:String(x.name||"").trim(),sets:(x.sets||[]).filter(s=>String(s.kg||"").trim()||String(s.reps||"").trim()).map(s=>({kg:String(s.kg||""),reps:String(s.reps||"")}))})).filter(x=>x.name&&x.sets.length);
-  if(!ex.length){toast("Remplis au moins une série avant de terminer");return}
+// les séries remplies partent dans l'historique (data.muscu.log), avec la durée et le repos moyen mesurés.
+// v74.1 (demande de Sid) : plus de bouton « Séance terminée » : l'enregistrement se fait tout seul (quiet), 1,5 s après la dernière série saisie
+function msDone(se,quiet){const ex=se.exercises.map(x=>({name:String(x.name||"").trim(),sets:(x.sets||[]).filter(s=>String(s.kg||"").trim()||String(s.reps||"").trim()).map(s=>({kg:String(s.kg||""),reps:String(s.reps||"")}))})).filter(x=>x.name&&x.sets.length);
+  if(!ex.length){if(!quiet)toast("Remplis au moins une série avant de terminer");return}
   const r=msRunGet(se.id),now=Date.now(),date=iso(today()),L0=ML(),old=L0.find(l=>l&&l.day===se.id&&l.date===date&&!(data.del&&data.del[l.id]));
   const ent={id:old?old.id:uid(),date,day:se.id,name:se.name||"",ex,goal:muGoal(),upd:now};
   if(r){ent.min=Math.min(240,msRunMin(r));const rest=msRunRest(r);if(rest)ent.rest=rest}else if(old&&old.min){ent.min=old.min;if(old.rest)ent.rest=old.rest}
   const before=old?JSON.parse(JSON.stringify(old)):null;
   if(old){Object.keys(old).forEach(k=>delete old[k]);Object.assign(old,ent)}else L0.push(ent);
+  if(quiet){M().upd=now;save();renderMuStats();return}
   if(r){delete data.ui.msRun;saveUI()}M().upd=now;save();renderMuscu();
   toastAct(old?"Séance mise à jour":"Séance enregistrée","Annuler",()=>{const i=ML().findIndex(l=>l&&l.id===ent.id);
     if(before&&i>=0){ML()[i]=before}else{tomb(ent.id);M().log=ML().filter(l=>l&&l.id!==ent.id)}M().upd=Date.now();save();renderMuscu()})}
+/** @type {any} */ let msAutoT=null;
+function msAutoLog(se){clearTimeout(msAutoT);msAutoT=setTimeout(()=>{try{const x=msFind(se.id);if(x)msDone(x,true)}catch(e){reportErr("msAutoLog: "+(e&&e.message))}},1500)}
 // statistiques mises en avant selon l'objectif, calculées sur l'historique (8 dernières semaines ; « cette semaine » = depuis lundi)
 const kgOf=s=>parseFloat(String(s&&s.kg||"").replace(",","."))||0,repsOf=s=>parseInt(String(s&&s.reps||""))||0;
 const fmtKg=v=>{const r=Math.round(v*10)/10;return LANG==="en"?String(r):String(r).replace(".",",")};
@@ -2570,7 +2574,7 @@ function muStatsVM(){const g=muGoal(),P=MU_PARAMS[g],logs=ML().filter(l=>l&&l.da
     for(const l of week)for(const x of l.ex||[]){const m=MUS[exMus(x.name)]||"Autres";for(const s of x.sets||[]){vol+=kgOf(s)*repsOf(s);if(repsOf(s))mus.set(m,(mus.get(m)||0)+1)}}
     if(week.length){rows.push({l:L("Volume cette semaine"),v:`${fmtFull(vol)} kg`});
       [...mus.entries()].sort((a,b)=>b[1]-a[1]).forEach(([m,n])=>rows.push({l:L(m),v:`${n} ${L(n>1?"séries":"série")}${n<10?` · ${L("objectif")} 10–20`:n>20?` · ${L("plus de 20")}`:" ✓"}`,warn:n>20}))}}
-  return{title:L(P.stat),prog:L(P.prog),rows,empty:L("Termine une séance (bouton « Séance terminée ») pour voir tes statistiques ici.")}}
+  return{title:L(P.stat),prog:L(P.prog),rows,empty:L("Remplis les séries de tes séances pour voir tes statistiques ici.")}}
 function renderMuStats(){const box=$("muStats");if(!box)return;const vm=muStatsVM();
   if(shIsl("muStats")){try{window.SCIslands.muStats(box,{vm,i18n:agI18n()});return}catch(e){reportErr("island muStats: "+(e&&e.message));try{window.SCIslands.unmount(box)}catch(_){}}}
   box.innerHTML=`<div class="mu-st-h"><span class="eyebrow">${L("Mes statistiques")}</span><span class="small muted">${esc(vm.title)}</span></div>`+
@@ -5374,7 +5378,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v74";
+const BUILD="sidnote-v74-1";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

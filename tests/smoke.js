@@ -645,7 +645,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(!(await pg.textContent("#hello")).includes("La loutre"))err("surnom coupé : "+await pg.textContent("#hello"));
     // programme : débutant, 3 séances, haltères, genoux à ménager
     await pg.evaluate(()=>show("muscu"));await pg.waitForTimeout(200);await shot(pg,"v41-muscu-vide");
-    await pg.click('#coachBox [data-coach="new"]');
+    await pg.evaluate(()=>{$("coachBox").hidden=false});await pg.click('#coachBox [data-coach="new"]');
     // v43 : les précisions facultatives sont repliées
     if(!(await pg.isVisible('#coachForm [data-cf="avoid"]')))err("précisions pas ouvertes d'emblée (v44.4)");
     
@@ -672,7 +672,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
       await pg.click(`${sel} [data-msaddset]`);await pg.click(`${sel} [data-msaddset]`);await pg.click(`${sel} [data-msdelset="0"]`);
       if(await pg.evaluate(()=>PLD()[0].exercises[0].sets.length)!==s0+1)err("séries du programme pas modifiables")}
     // v43 : remarque → ajustement par Claude (le message part dans son Claude, comme Nutrition)
-    await pg.fill("#coRemark","remplace la 2e séance jambes par une séance haut du corps");await pg.click('#coachBox [data-coach="adjust"]');await pg.waitForTimeout(300);
+    await pg.evaluate(()=>{$("coachBox").hidden=false});await pg.fill("#coRemark","remplace la 2e séance jambes par une séance haut du corps");await pg.click('#coachBox [data-coach="adjust"]');await pg.waitForTimeout(300);
     if(await pg.isVisible("#consentSheet")){await pg.click("#consentYes");await pg.waitForTimeout(300)}
     if(!(await pg.isVisible("#aiAskSheet"))||!(await pg.textContent("#aaPrompt")).includes("remplace la 2e séance jambes"))err("l'ajustement n'envoie pas la remarque à Claude");
     if(!(await pg.evaluate(()=>PL().aiWait&&PL().profile.remarks.length===1)))err("remarque pas gardée / attente non signalée");
@@ -759,7 +759,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v43 programme "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
     await pg.goto(U);await pg.waitForTimeout(800);await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v43co"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
-    await pg.evaluate(()=>show("muscu"));await pg.click('#coachBox [data-coach="new"]');await pg.waitForTimeout(200);await shot(pg,"v43-"+nm+"-programme-questions");
+    await pg.evaluate(()=>{$("coachBox").hidden=false});await pg.evaluate(()=>show("muscu"));await pg.click('#coachBox [data-coach="new"]');await pg.waitForTimeout(200);await shot(pg,"v43-"+nm+"-programme-questions");
     await pg.fill("#cfNotes","je veux faire abdos tous les jours");await pg.fill("#cfAvoidTxt","poignet droit");
     if(!(await pg.textContent("#cfMoreSum")).includes("2"))err("le résumé des précisions ne compte pas");
     await pg.click('#coachForm [data-cfgo="ai"]');await pg.waitForTimeout(300);if(await pg.isVisible("#consentSheet")){await pg.click("#consentYes");await pg.waitForTimeout(300)}
@@ -864,7 +864,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.fill("#convMuscu","https://claude.ai/project/2222-bbbb");await pg.click('.conv-f[data-conv="muscu"] button');await shot(pg,"v44-"+nm+"-conversations");
     if(await pg.evaluate(()=>JSON.stringify(data.prefs.aiConv))!=='{"nutri":"https://claude.ai/chat/1111-aaaa","muscu":"https://claude.ai/project/2222-bbbb"}')err("liens des conversations pas enregistrés");
     await pg.evaluate(()=>{data.prefs.aiOk=1;data.prefs.ai="claude";data.nutri.consent=new Date().toISOString();save();show("muscu");renderMuscu()});
-    await pg.fill("#coRemark","plus de dos");await pg.click('#coachBox [data-coach="adjust"]');await pg.waitForTimeout(300);
+    await pg.evaluate(()=>{$("coachBox").hidden=false});await pg.fill("#coRemark","plus de dos");await pg.click('#coachBox [data-coach="adjust"]');await pg.waitForTimeout(300);
     if(!(await pg.isVisible('#aaActs [data-aaconv]')))err("pas de bouton « Ouvrir la conversation Musculation »");
     await pg.click('#aaActs [data-aaconv]');await pg.waitForTimeout(300);
     const o1=await pg.evaluate(()=>({o:window.__open.slice(-1)[0],c:window.__clip.slice(-1)[0]}));
@@ -2110,7 +2110,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     // la remarque en cours de saisie survit à un rendu
     const rk=await pg.evaluate(()=>{const t=$("coRemark");t.value="ajoute du gainage";renderCoach();return{same:$("coRemark")===t,v:$("coRemark").value}});
     if(!rk.same||rk.v!=="ajoute du gainage")err("remarque perdue au rendu : "+JSON.stringify(rk));
-    await pg.evaluate(()=>{const c=$("consentSheet");if(c)c.hidden=true;$("coachBox").scrollIntoView()});await shot(pg,"v67-"+nm+"-programme");
+    await pg.evaluate(()=>{const c=$("consentSheet");if(c)c.hidden=true;$("coachBox").hidden=false;$("coachBox").scrollIntoView()});await shot(pg,"v67-"+nm+"-programme");
     // recherche d'exercices : pastilles choisies + résultats
     await pg.evaluate(()=>{coachOpen();cfDraft.must=["Squat","Développé couché"];const box=document.querySelector('#coachForm .cf-pick[data-cfx="must"]');box.id="cfMustT";box.querySelector(".cf-sel").id="cfSelT";box.querySelector(".cf-res").id="cfResT";box.querySelector("input").value="tir"});
     // (le rendu agit sur tout le bloc : on compare React puis l'ancien rendu au même endroit)
@@ -2262,18 +2262,19 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
       const ex=msFind("s73").exercises[1];return{rest:ex.rest,tempo:ex.tempo,sum:document.querySelector('[data-prm="e2"] summary').textContent,open:document.querySelector('[data-prm="e2"]').open}});
     if(pr.rest!==90||pr.tempo!=="4-1-1"||!/4-1-1/.test(pr.sum)||!pr.open)err("réglages de l'exercice : "+JSON.stringify(pr));
     await check("séance (React / ancien rendu)",["msList"],"()=>renderMuscu()");
-    // chrono : démarre au premier poids saisi ; « Séance terminée » enregistre la séance (puis la met à jour)
+    // chrono : démarre au premier poids saisi ; v74.1 : plus de bouton « Séance terminée », la séance du jour s'enregistre toute seule
     await pg.evaluate(()=>{const i=document.querySelector('[data-ex="e1"] [data-si="0"] [data-f="setkg"]');i.value="60";i.dispatchEvent(new Event("input",{bubbles:true}));
       const r=document.querySelector('[data-ex="e1"] [data-si="0"] [data-f="setreps"]');r.value="10";r.dispatchEvent(new Event("input",{bubbles:true}));data.ui.msRun.t0-=25*60e3;data.ui.msRun.marks["e1:0"]-=120e3;
       const r2=document.querySelector('[data-ex="e1"] [data-si="1"] [data-f="setreps"]');r2.value="9";r2.dispatchEvent(new Event("input",{bubbles:true}));renderMuscu()});
     const run=await pg.evaluate(()=>({r:!!data.ui.msRun,sub:document.querySelector('[data-ms="s73"] summary .small').textContent}));
     if(!run.r||!/⏱ 2[56] min/.test(run.sub))err("chrono : "+JSON.stringify(run));
     await pg.evaluate(()=>{document.querySelector('[data-ms="s73"]').scrollIntoView()});await shot(pg,"v73-"+nm+"-seance");
-    await pg.evaluate(()=>{document.querySelector('[data-ms="s73"] [data-msdone]').click()});await pg.waitForTimeout(200);
-    const lgx=await pg.evaluate(()=>({log:ML().map(l=>({date:l.date,day:l.day,min:l.min,rest:l.rest,n:l.ex.length,sets:l.ex[0].sets.length})),run:!!data.ui.msRun,btn:document.querySelector('[data-ms="s73"] [data-msdone]').textContent}));
-    if(lgx.log.length!==1||lgx.log[0].date!==today||lgx.log[0].day!=="s73"||!(lgx.log[0].min>=25)||!(lgx.log[0].rest>=100)||lgx.log[0].n!==1||lgx.log[0].sets!==2||lgx.run)err("séance terminée : "+JSON.stringify(lgx));
-    if(!/(Mettre à jour|Update)/.test(lgx.btn))err("bouton après la séance : "+lgx.btn);
-    await pg.evaluate(()=>{document.querySelector('[data-ms="s73"] [data-msdone]').click()});await pg.waitForTimeout(150);
+    if(await pg.$("[data-msdone]"))err("le bouton « Séance terminée » existe encore");
+    await pg.waitForTimeout(2000);
+    const lgx=await pg.evaluate(()=>({log:ML().map(l=>({date:l.date,day:l.day,min:l.min,rest:l.rest,n:l.ex.length,sets:l.ex[0].sets.length})),run:!!data.ui.msRun}));
+    if(lgx.log.length!==1||lgx.log[0].date!==today||lgx.log[0].day!=="s73"||!(lgx.log[0].min>=25)||!(lgx.log[0].rest>=100)||lgx.log[0].n!==1||lgx.log[0].sets!==2||!lgx.run)err("séance enregistrée toute seule : "+JSON.stringify(lgx));
+    await pg.evaluate(()=>{const r=document.querySelector('[data-ex="e1"] [data-si="1"] [data-f="setkg"]');r.value="60";r.dispatchEvent(new Event("input",{bubbles:true}))});await pg.waitForTimeout(2000);
+    if(await pg.evaluate(()=>ML()[0].ex[0].sets[1].kg)!=="60")err("la séance du jour n'est pas mise à jour");
     if(await pg.evaluate(()=>ML().length)!==1)err("la séance du jour est enregistrée deux fois");
     // statistiques par objectif
     const st=await pg.evaluate(()=>{const d=n=>{const x=today();x.setDate(x.getDate()-n);return iso(x)},S=(kg,r,n)=>Array.from({length:n},()=>({kg:String(kg),reps:String(r)}));
@@ -2305,6 +2306,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(!(await pg.evaluate(()=>document.documentElement.hasAttribute("data-fx"))))err("style unique pas actif par défaut");
     await pg.evaluate(()=>{data.tasks.push({id:"e74",title:"Cours",date:iso(today()),status:"à faire",tbc:false});save();show("plan");renderPlan()});await pg.waitForTimeout(300);
     if(!(await pg.isVisible("#plEph")))err("éphéméride de l'Agenda absente");
+    await pg.evaluate(()=>show("muscu"));await pg.waitForTimeout(150);if(await pg.isVisible("#coachBox"))err("la section « Mon programme » est encore affichée");await pg.evaluate(()=>show("plan"));
     const ep=await pg.textContent("#plEph");if(!ep.includes(String(new Date().getDate()))||!/1 (activité|activity|event|activiteit)/.test(ep))err("éphéméride : "+ep);
     if(lg==="en"&&!/Week \d+/.test(ep))err("éphéméride non traduite : "+ep);
     const fonts=await pg.evaluate(async()=>{const r={};for(const v of ["todo","pomo","muscu","nutri","graph","notes","docs","pwd"]){show(v);await new Promise(z=>setTimeout(z,80));r[v]=getComputedStyle(document.querySelector("#v-"+v+" h1")).fontFamily}return r});

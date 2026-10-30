@@ -89,17 +89,21 @@ function msRunRest(r){const t=Object.values(r.marks||{}).map(Number).sort((a,b)=
   for(let i=1;i<t.length;i++){const d=(t[i]-t[i-1])/1000;if(d>=10&&d<=900)g.push(d)}return g.length?Math.round(g.reduce((a,b)=>a+b,0)/g.length):0}
 const msRunMin=r=>Math.max(1,Math.round((Date.now()-r.t0)/60000));
 const msDoneToday=se=>ML().some(l=>l&&l.day===se.id&&l.date===iso(today())&&!(data.del&&data.del[l.id]));
-// « Séance terminée » : les séries remplies partent dans l'historique (data.muscu.log), avec la durée et le repos moyen mesurés
-function msDone(se){const ex=se.exercises.map(x=>({name:String(x.name||"").trim(),sets:(x.sets||[]).filter(s=>String(s.kg||"").trim()||String(s.reps||"").trim()).map(s=>({kg:String(s.kg||""),reps:String(s.reps||"")}))})).filter(x=>x.name&&x.sets.length);
-  if(!ex.length){toast("Remplis au moins une série avant de terminer");return}
+// les séries remplies partent dans l'historique (data.muscu.log), avec la durée et le repos moyen mesurés.
+// v74.1 (demande de Sid) : plus de bouton « Séance terminée » : l'enregistrement se fait tout seul (quiet), 1,5 s après la dernière série saisie
+function msDone(se,quiet){const ex=se.exercises.map(x=>({name:String(x.name||"").trim(),sets:(x.sets||[]).filter(s=>String(s.kg||"").trim()||String(s.reps||"").trim()).map(s=>({kg:String(s.kg||""),reps:String(s.reps||"")}))})).filter(x=>x.name&&x.sets.length);
+  if(!ex.length){if(!quiet)toast("Remplis au moins une série avant de terminer");return}
   const r=msRunGet(se.id),now=Date.now(),date=iso(today()),L0=ML(),old=L0.find(l=>l&&l.day===se.id&&l.date===date&&!(data.del&&data.del[l.id]));
   const ent={id:old?old.id:uid(),date,day:se.id,name:se.name||"",ex,goal:muGoal(),upd:now};
   if(r){ent.min=Math.min(240,msRunMin(r));const rest=msRunRest(r);if(rest)ent.rest=rest}else if(old&&old.min){ent.min=old.min;if(old.rest)ent.rest=old.rest}
   const before=old?JSON.parse(JSON.stringify(old)):null;
   if(old){Object.keys(old).forEach(k=>delete old[k]);Object.assign(old,ent)}else L0.push(ent);
+  if(quiet){M().upd=now;save();renderMuStats();return}
   if(r){delete data.ui.msRun;saveUI()}M().upd=now;save();renderMuscu();
   toastAct(old?"Séance mise à jour":"Séance enregistrée","Annuler",()=>{const i=ML().findIndex(l=>l&&l.id===ent.id);
     if(before&&i>=0){ML()[i]=before}else{tomb(ent.id);M().log=ML().filter(l=>l&&l.id!==ent.id)}M().upd=Date.now();save();renderMuscu()})}
+/** @type {any} */ let msAutoT=null;
+function msAutoLog(se){clearTimeout(msAutoT);msAutoT=setTimeout(()=>{try{const x=msFind(se.id);if(x)msDone(x,true)}catch(e){reportErr("msAutoLog: "+(e&&e.message))}},1500)}
 // statistiques mises en avant selon l'objectif, calculées sur l'historique (8 dernières semaines ; « cette semaine » = depuis lundi)
 const kgOf=s=>parseFloat(String(s&&s.kg||"").replace(",","."))||0,repsOf=s=>parseInt(String(s&&s.reps||""))||0;
 const fmtKg=v=>{const r=Math.round(v*10)/10;return LANG==="en"?String(r):String(r).replace(".",",")};
@@ -124,7 +128,7 @@ function muStatsVM(){const g=muGoal(),P=MU_PARAMS[g],logs=ML().filter(l=>l&&l.da
     for(const l of week)for(const x of l.ex||[]){const m=MUS[exMus(x.name)]||"Autres";for(const s of x.sets||[]){vol+=kgOf(s)*repsOf(s);if(repsOf(s))mus.set(m,(mus.get(m)||0)+1)}}
     if(week.length){rows.push({l:L("Volume cette semaine"),v:`${fmtFull(vol)} kg`});
       [...mus.entries()].sort((a,b)=>b[1]-a[1]).forEach(([m,n])=>rows.push({l:L(m),v:`${n} ${L(n>1?"séries":"série")}${n<10?` · ${L("objectif")} 10–20`:n>20?` · ${L("plus de 20")}`:" ✓"}`,warn:n>20}))}}
-  return{title:L(P.stat),prog:L(P.prog),rows,empty:L("Termine une séance (bouton « Séance terminée ») pour voir tes statistiques ici.")}}
+  return{title:L(P.stat),prog:L(P.prog),rows,empty:L("Remplis les séries de tes séances pour voir tes statistiques ici.")}}
 function renderMuStats(){const box=$("muStats");if(!box)return;const vm=muStatsVM();
   if(shIsl("muStats")){try{window.SCIslands.muStats(box,{vm,i18n:agI18n()});return}catch(e){reportErr("island muStats: "+(e&&e.message));try{window.SCIslands.unmount(box)}catch(_){}}}
   box.innerHTML=`<div class="mu-st-h"><span class="eyebrow">${L("Mes statistiques")}</span><span class="small muted">${esc(vm.title)}</span></div>`+

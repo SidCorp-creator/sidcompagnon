@@ -60,7 +60,6 @@ function SeCard({ se, trash, i18n }: { se: MuSe; trash: string; i18n: MuI18n }) 
       </div>)}
       <button type="button" className="qbtn" data-msaddex="1">{tr(`+ ${L("Ajouter un exercice")}`)}</button>
       <div className="ms-actions">
-        <button type="button" className="btn" data-msdone="1">{tr(L(se.done ? "Mettre à jour la séance faite" : "Séance terminée"))}</button>
         <button type="button" className="btn ghost" data-msshare="1">{tr(L("Partager"))}</button>
         <button type="button" className="btn stop" data-msdel="1">{tr(L("Supprimer"))}</button>
       </div>

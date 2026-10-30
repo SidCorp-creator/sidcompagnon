@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 74.** L'app s'appelle **Sid'compagnon** depuis la v45 (avant : Sid'home, v42–44). Adresse : **https://sidcompagnon.com** depuis la 44.8 (sidnote.netlify.app répond encore).
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 74.1.** L'app s'appelle **Sid'compagnon** depuis la v45 (avant : Sid'home, v42–44). Adresse : **https://sidcompagnon.com** depuis la 44.8 (sidnote.netlify.app répond encore).
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -341,6 +341,7 @@ assets/               ← logo
   - Réglages > Apparence > « Style des fonctions » : Unique (défaut) / Sobre (`#fxSel`, `data.prefs.fx`, `false` = sobre ; `applyLook` pose `data-fx`). Sobre = l'apparence commune de la v73.
   - Pièges : le fond de `body` est en `background:…!important` dans design.css → motifs (points, quadrillage) en `background-image:…!important`. `background-attachment:fixed` évité (iOS).
   - Test « v74 » (smartphone FR + ordinateur EN) : style actif par défaut, éphéméride (jour, nombre d'activités, traduction), police du titre de chaque fonction, Sobre / Unique, aucun débordement horizontal.
+- 74.1 (retours de Sid, 30 oct. 2026) : Musculation : **bouton « Séance terminée » retiré** (« je n'aime pas, c'est moche ») ; la séance du jour s'enregistre toute seule dans `data.muscu.log` 1,5 s après la dernière série saisie (`msAutoLog` → `msDone(se, true)` : sans message, sans redessiner la liste, le chrono continue), donc statistiques et conseil de progression restent à jour. **Section « Mon programme » cachée** (`#coachBox hidden`) : le code (`renderCoach`, fiche du programme) et les données restent, les séances du programme sont toujours dans « Mes séances » ; les anciens tests rendent la section visible avant de s'en servir.
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

@@ -68,6 +68,7 @@ function planApply(pl){const m=M(),old=PL();if(old)for(const s of grpSe(old.id))
 const ML=()=>{const m=M();if(!Array.isArray(m.log))m.log=[];return m.log};
 const coachNext=()=>{const ds=PLD();if(!ds.length)return null;const last=ML().filter(l=>ds.some(d=>d.id===l.day)).sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0];
   const i=last?ds.findIndex(d=>d.id===last.day):-1;return ds[(i+1)%ds.length]};
+// v74.1 (demande de Sid) : la section « Mon programme » n'est plus affichée (#coachBox caché) ; le programme et ses séances restent dans « Mes séances »
 function renderCoach(){const box=$("coachBox");if(!box)return;const pl=PL(),ds=PLD();
   const rmk=$("coRemark")?$("coRemark").value:""; // v43 : le rendu garde la remarque en cours
   if(shIsl("coach")){try{const p=(pl&&pl.profile)||{},G={muscle:"Prendre du muscle",force:"Gagner en force",gras:"Perdre du gras",forme:"Être en forme",endu:"Gagner en endurance"},LV={deb:"Débutant",inter:"Intermédiaire",conf:"Confirmé"};

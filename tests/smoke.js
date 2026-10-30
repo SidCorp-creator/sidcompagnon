@@ -1290,6 +1290,41 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(await pg.isVisible(`#nuCal [data-nuday="${yIso}"]`)){await pg.click(`#nuCal [data-nuday="${yIso}"]`);await pg.waitForTimeout(200);
       if(await pg.evaluate(()=>nuDay)!==yIso)err("toucher un jour (React) n'ouvre pas ce jour")}
     await ctx.close()}
+  // --- v51 (ticket #3) : Graphiques (courbes, colonnes, légendes, tableau) et résumé du Focus migrés en React : même rendu que l'ancien
+  for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1280,height:800}}]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v51 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v51"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.waitForFunction(()=>!!(window.SCIslands&&window.SCIslands.graph),null,{timeout:8000}).catch(()=>err("module React non chargé"));
+    await pg.evaluate(()=>{const log=[],weights=[];for(let i=0;i<30;i++){const d=new Date();d.setDate(d.getDate()-i);if(i%4===3)continue;
+        log.push({id:"g"+i,day:iso(d),at:d.toISOString(),name:"Repas",kcal:1500+(i*137)%1100,p:90+i,c:180+(i*7)%90,f:50+(i%9),upd:1});if(i%2===0)weights.push({id:"w"+i,day:iso(d),kg:80-i*0.1,upd:1})}
+      data.nutri={consent:new Date().toISOString(),profile:{sex:"h",age:24,height:180,weight:80,goal:"lose",target:76,sports:[]},plan:{kcal:2000,p:150,c:200,f:70,bmr:1800,tdee:2200,text:"",warn:[]},upd:Date.now(),log,weights,weeks:[]};
+      P.log[dayKey(new Date())]=37*MIN;const y=new Date();y.setDate(y.getDate()-2);P.log[dayKey(y)]=95*MIN;save()});
+    const norm=`el=>[el,...el.querySelectorAll("*")].slice(1).map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.getAttribute("style")?e.style.cssText:"")+"|"+(e.children.length?"":e.textContent.trim())).join("\\n")`;
+    for(const range of [7,30]){
+      const res=await pg.evaluate(([range,ns])=>{const norm=eval(ns);data.ui.grRange=range;show("graph");renderGraph();
+        const ids=["grMacros","grWeight","grKcal","grTable","grMacroLeg","grKcalLeg"],out={};
+        const react=ids.every(id=>Object.keys($(id)).some(k=>k.startsWith("__reactContainer")));
+        const a={};ids.forEach(id=>a[id]=norm($(id)));
+        const saved=ids.map(id=>{const el=$(id),c=el.cloneNode(false);el.id=id+"R";el.after(c);c.id=id;c.innerHTML="";return[el,c,id]});
+        window.__noIslands=true;renderGraph();window.__noIslands=false;
+        saved.forEach(([el,c,id])=>{const b=norm(c);if(a[id]!==b){const al=a[id].split("\n"),bl=b.split("\n");out[id]=al.length+"/"+bl.length+" "+(al.find((l,i)=>l!==bl[i])||"")+" <> "+(bl.find((l,i)=>l!==al[i])||"")}c.remove();el.id=id});
+        return {react,out}},[range,norm]);
+      if(!res.react)err(range+" j : graphiques pas rendus par React");
+      for(const [id,d] of Object.entries(res.out))err(range+" j : "+id+" différent de l'ancien : "+d.slice(0,300));
+    }
+    await pg.evaluate(()=>{data.ui.grRange=7;show("graph");renderGraph()});await pg.waitForTimeout(200);
+    await pg.locator("#grKcal svg").scrollIntoViewIfNeeded();await pg.waitForTimeout(200);
+    const box=await pg.locator("#grKcal svg").boundingBox();
+    if(box){await pg.mouse.move(box.x+box.width-30,box.y+box.height/2);await pg.waitForTimeout(150);
+      if(!(await pg.isVisible("#grTip"))||!(await pg.textContent("#grTip")).includes("kcal"))err("infobulle des calories absente")}
+    await shot(pg,"v51-"+nm+"-graphiques");
+    const po=await pg.evaluate(([ns])=>{const norm=eval(ns);show("pomo");renderPomoStats();const el=$("pomoStats"),react=Object.keys(el).some(k=>k.startsWith("__reactContainer")),a=norm(el);
+      const c=el.cloneNode(false);el.id="pomoStatsR";el.after(c);c.id="pomoStats";window.__noIslands=true;renderPomoStats();window.__noIslands=false;const b=norm(c);c.remove();el.id="pomoStats";
+      return {react,same:a===b,a,b}},[norm]);
+    if(!po.react)err("Focus : résumé pas rendu par React");if(!po.same)err("Focus : rendu différent : "+po.a+" <> "+po.b);
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

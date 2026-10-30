@@ -103,7 +103,7 @@ async function api(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="50";const errSent=new Set();
+const APP_V="51";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -1632,6 +1632,8 @@ function renderPomoStats(){
   const today=P.log[dayKey(new Date())]||0;
   let week=0;for(let i=0;i<7;i++){const d=new Date();d.setDate(d.getDate()-i);week+=P.log[dayKey(d)]||0}
   const live=P.run?workDone(P.run,elapsed(P.run)):0;
+  // v51 (ticket #3) : résumé dessiné par React (app/src/PomoStats.tsx) ; ancien rendu en secours
+  if(window.SCIslands&&window.SCIslands.pomoStats&&!window.__noIslands){try{window.SCIslands.pomoStats($("pomoStats"),{todayMin:(today+live)/MIN,weekMin:(week+live)/MIN,i18n:{L,MOL,MO,DOWL}});return}catch(e){reportErr("island pomo: "+(e&&e.message))}}
   $("pomoStats").innerHTML=`<div class="row"><div class="grow">Travail concentré aujourd'hui</div><b>${hm((today+live)/MIN)}</b></div>
     <div class="row"><div class="grow">Sur les 7 derniers jours</div><b>${hm((week+live)/MIN)}</b></div>`;
 }
@@ -4378,7 +4380,7 @@ function renderNuCal(){const box=$("nuCal"),btn=$("nuDayBtn");if(!box)return;box
     <div class="cal-head"><button type="button" class="cal-nav" data-nurn="-1" aria-label="${L("Période précédente")}">‹</button><b class="nu-cal-t">${esc(title)}</b><button type="button" class="cal-nav" data-nurn="1" aria-label="${L("Période suivante")}" ${nx>tIso?"disabled":""}>›</button></div>
     ${body}<button type="button" class="linkbtn nu-cal-x" data-nurange="">${L("Fermer le calendrier")}</button>`}
 $("nuDayBtn").addEventListener("click",()=>{if(nuRange){nuRange=null;renderNuCal()}else nuCalOpen("month")});
-window.addEventListener("sc-islands",()=>{if(nuRange)renderNuCal()}); // module React chargé après coup : on redessine avec lui
+window.addEventListener("sc-islands",()=>{if(nuRange)renderNuCal();if(data&&data.ui&&data.ui.view==="graph")renderGraph();if(data&&data.ui&&data.ui.view==="pomo")renderPomoStats()}); // module React chargé après coup : on redessine avec lui
 $("nuCal").addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled)return;
   if(b.dataset.nurange!==undefined){if(b.dataset.nurange)nuCalOpen(b.dataset.nurange);else{nuRange=null;renderNuCal()}return}
   if(b.dataset.nurn){const s=+b.dataset.nurn;if(nuRange==="week"){const d=parse(nuRW);d.setDate(d.getDate()+7*s);nuRW=iso(d)}
@@ -4683,6 +4685,15 @@ function renderGraph(){
   if(!$("grMacros"))return;applySoon();
   grRange=data.ui.grRange||7;document.querySelectorAll("#grRange button").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.range===grRange));
   const days=grDays(grRange),D=grData(days),n=NU(),pl=n.plan||{};
+  // v51 (ticket #3) : courbes, colonnes, légendes et tableau dessinés par React (app/src/Charts.tsx) ; ancien rendu en secours
+  if(window.SCIslands&&window.SCIslands.graph&&!window.__noIslands){try{
+    window.SCIslands.graph({macros:$("grMacros"),weight:$("grWeight"),kcal:$("grKcal"),table:$("grTable"),macroLeg:$("grMacroLeg"),kcalLeg:$("grKcalLeg")},
+      {days,D,macros:MAC.map(([k,l,v])=>({k,label:l,c:v,goal:pl[k]||undefined})),targetWeight:(n.profile&&n.profile.target)||null,
+       widths:{macros:$("grMacros").clientWidth,weight:$("grWeight").clientWidth,kcal:$("grKcal").clientWidth},
+       i18n:{L,MOL,MO,DOWL,DOW,lang:LANG},tip:{show:grTipShow,hide:grTipHide}});
+    const tw=n.profile&&n.profile.target;$("grWeightSub").textContent=tw?`${L("en kg")} · ${L("objectif")} ${fmtN(tw)} kg`:L("en kg");
+    const tk=D.find(d=>d.k===iso(today()));if(document.activeElement!==$("grWIn"))$("grWIn").value=tk&&tk.kg!=null?String(tk.kg).replace(".",LANG==="en"?".":","):"";
+    renderReviews();return}catch(e){reportErr("island graph: "+(e&&e.message))}}
   $("grMacroLeg").innerHTML=MAC.map(([k,l,v])=>`<span><i style="--c:var(${v})"></i>${L(l)}${pl[k]?` <span>(${L("objectif")} ${pl[k]} g)</span>`:""}</span>`).join("");
   lineChart($("grMacros"),days,MAC.map(([k,l,v])=>({label:l,c:v,vals:D.map(d=>d.has?r1(d[k]):null)})),{zero:true,unit:" g",aria:L("Macros par jour")});
   const tw=n.profile&&n.profile.target;$("grWeightSub").textContent=tw?`${L("en kg")} · ${L("objectif")} ${fmtN(tw)} kg`:L("en kg");
@@ -4957,7 +4968,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v50";
+const BUILD="sidnote-v51";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

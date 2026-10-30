@@ -1867,6 +1867,47 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(lg==="en"&&/Tâches réalisées|Nouveau type|toujours affiché|Muscles travaillés/.test(await pg.evaluate(()=>{exHelpOpen('Développé couché haltères');return $("stats").textContent+$("typesCard").innerHTML+$("tabsCard").textContent+$("exHelpBody").textContent})))err("textes non traduits en anglais");
     await pg.evaluate(()=>{$("toast").style.display="none"});await shot(pg,"v62-"+nm+"-fiche");
     await ctx.close()}
+  // --- v63 (ticket #3) : présentation (diapositives des apps, points, couleurs) : même rendu, FR et EN ; parcours complet
+  for(const [nm,dev,lg] of [["mobile",{...devices["iPhone 13"]},"fr"],["pc",{viewport:{width:1280,height:800}},"en"]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v63 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v63"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    if(lg!=="fr"){await pg.evaluate(l=>setLang(l),lg);await pg.waitForTimeout(2500);if(await pg.isVisible("#onb"))await pg.click("#onbSkip")}
+    await pg.waitForFunction(()=>!!(window.SCIslands&&window.SCIslands.onbGroups),null,{timeout:8000}).catch(()=>err("module React non chargé"));
+    await pg.evaluate(()=>{window.__par=async(ids,fn)=>{const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.getAttribute("style")?e.style.cssText:"")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+      fn();await new Promise(r=>setTimeout(r,60));const out={},a={},react=ids.every(id=>Object.keys($(id)).some(k=>k.startsWith("__reactContainer")));ids.forEach(id=>a[id]=norm($(id)));
+      const sv=ids.map(id=>{const el=$(id),c=el.cloneNode(false);c.classList.remove("notr");el.id=id+"R";el.after(c);c.id=id;c.innerHTML="";return[el,c,id]});
+      window.__noIslands=true;try{fn()}finally{window.__noIslands=false}await new Promise(r=>setTimeout(r,60));
+      sv.forEach(([el,c,id])=>{const b=norm(c);if(a[id]!==b){const al=a[id].split("\n"),bl=b.split("\n");out[id]=al.length+"/"+bl.length+" "+(al.find((l,i)=>l!==bl[i])||"")+" <> "+(bl.find((l,i)=>l!==al[i])||"")}c.remove();el.id=id});return{react,out}}});
+    const check=async(lbl,ids,fnSrc)=>{const r=await pg.evaluate(([ids,src])=>window.__par(ids,eval(src)),[ids,fnSrc]);
+      if(!r.react)err(lbl+" : pas rendu par React");for(const[id,d]of Object.entries(r.out))err(lbl+" : "+id+" différent : "+d.slice(0,300))};
+    await pg.evaluate(()=>{data.prefs.tabs.pomo=false;save();openOnb()});await pg.waitForTimeout(300);
+    await check("diapositives",["onbGroups"],"()=>{onbRenderGroups();onbAllLbl();document.querySelectorAll('#onbGroups section').forEach(x=>x.removeAttribute('inert'))}"); // inert = diapositive active, posé ensuite par onbStep
+    await check("points",["onbDots"],"()=>onbStep()");
+    await check("couleurs",["onbPal"],"()=>onbLook()");
+    // parcours : aller sur sid'agenda, décocher Agenda, « Tout cocher », terminer
+    const idx=await pg.evaluate(()=>onbSlides().findIndex(s=>s.dataset.app==="agenda"));
+    await pg.evaluate(i=>onbGoTo(i),idx);await pg.waitForTimeout(400);
+    await pg.click('#onbGroups [data-onb="plan"]');await pg.waitForTimeout(200);
+    const st=await pg.evaluate(i=>({sel:onbSel.plan,off:document.querySelector('#onbGroups [data-onb="plan"]').classList.contains("off"),shown:onbSlides()[i].classList.contains("on"),
+      all:document.querySelector('#onbGroups [data-onball="orga"]').textContent}),idx);
+    if(st.sel!==false||!st.off||!st.shown)err("décocher une fonction : "+JSON.stringify(st));
+    await pg.click('#onbGroups [data-onball="orga"]');await pg.waitForTimeout(200);
+    const st2=await pg.evaluate(i=>({sel:["plan","todo","pomo"].map(k=>onbSel[k]),shown:onbSlides()[i].classList.contains("on"),all:document.querySelector('#onbGroups [data-onball="orga"]').textContent}),idx);
+    if(st2.sel.some(x=>x!==false&&x!==true)||!st2.shown)err("« Tout cocher » : "+JSON.stringify(st2));
+    await pg.click('#onbGroups [data-onball="orga"]');await pg.waitForTimeout(200);
+    const want=await pg.evaluate(()=>({...onbSel}));
+    await pg.evaluate(()=>onbFinish());await pg.waitForTimeout(300);
+    const got=await pg.evaluate(w=>Object.keys(w).every(k=>data.prefs.tabs[k]===w[k]),want);if(!got)err("terminer la présentation : choix pas enregistrés");
+    // claviers de code : dessinés par React, mêmes touches que l'ancien rendu
+    const kp=await pg.evaluate(()=>{show("pwd");const el=$("pinPad");return{react:Object.keys(el).some(k=>k.startsWith("__reactContainer")),keys:[...el.querySelectorAll("button")].map(b=>(b.dataset.pin||"·")+":"+b.textContent).join(" ")}});
+    if(!kp.react)err("clavier du coffre pas rendu par React");
+    if(kp.keys!==`1:1 2:2 3:3 4:4 5:5 6:6 7:7 8:8 9:9 ·: 0:0 del:${lg==="en"?"Delete":"Effacer"}`)err("clavier du coffre : "+kp.keys);
+    await pg.evaluate(()=>show("home"));
+    await pg.evaluate(()=>{openOnb()});await pg.waitForTimeout(300);await pg.evaluate(i=>onbGoTo(i),idx);await pg.waitForTimeout(400);
+    await pg.evaluate(()=>{$("toast").style.display="none"});await shot(pg,"v63-"+nm+"-presentation");
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

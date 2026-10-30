@@ -19,6 +19,7 @@ import { HomeCards, type HcCard } from "./Home";
 import { GoalBody, NuCopy, NuPlan, type GoalVM, type NuCopyVM, type PlanVM } from "./NuExtra";
 import { AppHead, NavBar, SideBar, type NavItem, type NavI18n, type SideGroup, type SideIcons } from "./Shell";
 import { ExHelp, McpList, QuickAdd, Stats, TabsCard, TypesCard, type ExHelpVM, type SI18n, type TabGroup } from "./Settings";
+import { Keypad, OnbDots, OnbGroups, OnbPal, type OI18n, type OnbGroup, type PalVM } from "./Onboarding";
 import type { AgTask, GrDay, I18n, Tip } from "./types";
 import { fmtN, r1 } from "./format";
 
@@ -84,6 +85,10 @@ declare global {
       agPlan: (els: { next: Element; chips: Element; list: Element }, p: AgPlanProps) => void;
       dayView: (el: Element, p: DayViewProps) => void;
       unmount: (el: Element) => void;
+      onbGroups: (el: Element, p: { groups: OnbGroup[]; i18n: OI18n }) => void;
+      onbDots: (el: Element, p: { n: number; cur: number }) => void;
+      keypad: (el: Element, p: { attr: "pin" | "ps"; del: string }) => void;
+      onbPal: (el: Element, p: { pals: PalVM[]; check: string; i18n: OI18n }) => void;
       stats: (el: Element, p: { rows: [string, string | number][]; i18n: SI18n }) => void;
       tabsCard: (el: Element, p: { groups: TabGroup[]; i18n: SI18n }) => void;
       typesCard: (el: Element, p: { types: { name: string; c: string; n: number }[]; i18n: SI18n }) => void;
@@ -112,7 +117,7 @@ declare global {
   }
 }
 window.SCIslands = {
-  version: 13,
+  version: 14,
   nuCal: (el, p) => mount(el, <NutritionCalendar {...p} />),
   graph,
   pomoStats: (el, p) => mount(el, <PomoStats {...p} />),
@@ -157,6 +162,10 @@ window.SCIslands = {
   mcpList: (el, p) => mount(el, <McpList {...p} />),
   quickAdd: (el, p) => mount(el, <QuickAdd {...p} />),
   exHelp: (el, p) => mount(el, <ExHelp {...p} />),
+  onbGroups: (el, p) => mount(el, <OnbGroups {...p} />),
+  onbDots: (el, p) => mount(el, <OnbDots {...p} />),
+  keypad: (el, p) => mount(el, <Keypad {...p} />),
+  onbPal: (el, p) => mount(el, <OnbPal {...p} />),
   nuLog: (el, p) => mount(el, <NuLog {...p} />),
   nuResult: (el, p) => mount(el, <NuResult {...p} />),
   nuWeek: (el, p) => mount(el, <NuWeek {...p} />),

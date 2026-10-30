@@ -108,7 +108,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="62";const errSent=new Set();
+const APP_V="63";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -3332,6 +3332,7 @@ function askPin(o){return new Promise(res=>{
   if(ps)psEnd(null);
   const host=data.ui.view==="docs"&&$("docPinHost");
   ps={...o,step:o.mode,buf:"",first:"",fails:0,wait:0,busy:false,resolve:res,host:host||null};
+  if(!$("psPad").children.length&&shIsl("keypad")){try{window.SCIslands.keypad($("psPad"),{attr:"ps",del:agI18n().tr(L("Effacer"))})}catch(e){reportErr("island keypad: "+(e&&e.message))}} // v63 (#3) : clavier dessiné par React
   if(!$("psPad").children.length)$("psPad").innerHTML=[1,2,3,4,5,6,7,8,9].map(d=>`<button type="button" data-ps="${d}">${d}</button>`).join("")+
     `<button type="button" class="blank" tabindex="-1" aria-hidden="true"></button><button type="button" data-ps="0">0</button><button type="button" class="del" data-ps="del">${L("Effacer")}</button>`;
   $("psErr").textContent="";psRender();
@@ -3825,6 +3826,7 @@ function renderPwd(){
   $("pinDev").textContent=L(phPw()?"Entrer le mot de passe de mon compte":"Entrer ma phrase secrète");
   $("pinTitle").textContent=L(T[0]);$("pinSub").textContent=L(T[1]);$("pinForgot").hidden=pinStep!=="unlock";
   $("pinBio").hidden=!(pinStep==="unlock"&&bioHas("main"));$("pinBio").textContent=bioUse();
+  if(!$("pinPad").children.length&&shIsl("keypad")){try{window.SCIslands.keypad($("pinPad"),{attr:"pin",del:agI18n().tr("Effacer")})}catch(e){reportErr("island keypad: "+(e&&e.message))}}
   if(!$("pinPad").children.length)$("pinPad").innerHTML=[1,2,3,4,5,6,7,8,9].map(d=>`<button type="button" data-pin="${d}">${d}</button>`).join("")+
     `<button type="button" class="blank" tabindex="-1" aria-hidden="true"></button><button type="button" data-pin="0">0</button><button type="button" class="del" data-pin="del">Effacer</button>`;
   pinDots();
@@ -4518,7 +4520,9 @@ function renderNuCal(){const box=$("nuCal"),btn=$("nuDayBtn");if(!box)return;box
     <div class="cal-head"><button type="button" class="cal-nav" data-nurn="-1" aria-label="${L("Période précédente")}">‹</button><b class="nu-cal-t">${esc(title)}</b><button type="button" class="cal-nav" data-nurn="1" aria-label="${L("Période suivante")}" ${nx>tIso?"disabled":""}>›</button></div>
     ${body}<button type="button" class="linkbtn nu-cal-x" data-nurange="">${L("Fermer le calendrier")}</button>`}
 $("nuDayBtn").addEventListener("click",()=>{if(nuRange){nuRange=null;renderNuCal()}else nuCalOpen("month")});
-window.addEventListener("sc-islands",()=>{if(nuRange)renderNuCal();if(data&&data.ui&&data.ui.view==="graph")renderGraph();if(data&&data.ui&&data.ui.view==="pomo")renderPomo();if(data&&data.ui&&data.ui.view==="muscu")renderMuscu();if(session&&data&&data.tasks){renderPlan();renderTodos();renderHome()}if(session&&data&&data.ui){const v=data.ui.view||"home";renderNav(v);renderVhead(v);renderSide(v)}}); // module React chargé après coup : on redessine avec lui
+window.addEventListener("sc-islands",()=>{if(nuRange)renderNuCal();if(data&&data.ui&&data.ui.view==="graph")renderGraph();if(data&&data.ui&&data.ui.view==="pomo")renderPomo();if(data&&data.ui&&data.ui.view==="muscu")renderMuscu();if(session&&data&&data.tasks){renderPlan();renderTodos();renderHome()}if(session&&data&&data.ui){const v=data.ui.view||"home";renderNav(v);renderVhead(v);renderSide(v)}
+  // v63 : claviers de code dessinés au démarrage par l'ancien code (avant le module) : React les reprend (touches gérées par padTap sur le conteneur)
+  for(const [id,attr] of [["pinPad","pin"],["psPad","ps"]]){const el=$(id);if(el&&el.children.length&&!Object.keys(el).some(k=>k.startsWith("__reactContainer"))){const old=el.innerHTML;try{el.innerHTML="";window.SCIslands.keypad(el,{attr,del:attr==="ps"?agI18n().tr(L("Effacer")):agI18n().tr("Effacer")})}catch(e){el.innerHTML=old;reportErr("island keypad: "+(e&&e.message))}}}}); // en cas d'erreur, l'ancien clavier revient // module React chargé après coup : on redessine avec lui
 $("nuCal").addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled)return;
   if(b.dataset.nurange!==undefined){if(b.dataset.nurange)nuCalOpen(b.dataset.nurange);else{nuRange=null;renderNuCal()}return}
   if(b.dataset.nurn){const s=+b.dataset.nurn;if(nuRange==="week"){const d=parse(nuRW);d.setDate(d.getDate()+7*s);nuRW=iso(d)}
@@ -4987,6 +4991,15 @@ const ONB_GROUP={orga:["agenda","Organise tes journées","Ton agenda, tes tâche
 function openOnb(){
   onbSel={};TABS.forEach(([k])=>{if(!OFF_TABS.includes(k))onbSel[k]=data.prefs.tabs[k]!==false});
   document.querySelectorAll("#onbLang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG));
+  onbRenderGroups();onbAllLbl();onbLook();$("onb").hidden=false;document.body.style.overflow="hidden";onbGoTo(0);
+}
+// v63 (#3) : diapositives des apps dessinées par React (app/src/Onboarding.tsx) à partir de onbSel ; ancien rendu en secours
+const onbIsl=()=>shIsl("onbGroups");
+function onbRenderGroups(){
+  const sub=g=>g.k==="sport"&&!tabAllowed("nutri")?"Tes séances, ton chrono et ton minuteur.":ONB_GROUP[g.k][2];
+  if(onbIsl()){try{window.SCIslands.onbGroups($("onbGroups"),{i18n:agI18n(),groups:GROUPS.filter(g=>ONB_GROUP[g.k]).map(g=>({k:g.k,app:ONB_GROUP[g.k][0],label:g.label,title:ONB_GROUP[g.k][1],sub:sub(g),
+    tabs:TABS.filter(([k])=>g.tabs.includes(k)&&tabAllowed(k)).map(([k,l])=>({k,icon:ICON(k)||"",label:l,desc:ONB_DESC[k]||"",on:!!onbSel[k]}))}))});return}
+    catch(e){reportErr("island onb: "+(e&&e.message))}}
   const it=([k,l])=>`<label class="onb-it ${onbSel[k]?"":"off"}" data-onb="${k}"><span class="ic">${ICON(k)}</span><span class="grow"><b>${L(l)}</b><span class="small muted">${L(ONB_DESC[k])}</span></span><input type="checkbox" class="switch" data-onbk="${k}" ${onbSel[k]?"checked":""} aria-label="${L("Garder")} ${L(l)}"></label>`;
   $("onbGroups").innerHTML=GROUPS.filter(g=>ONB_GROUP[g.k]).map(g=>{const ts=TABS.filter(([k])=>g.tabs.includes(k)&&tabAllowed(k)),[em,t,sub0]=ONB_GROUP[g.k],sub=g.k==="sport"&&!tabAllowed("nutri")?"Tes séances, ton chrono et ton minuteur.":sub0;
     // v43 : une diapositive par app, dans sa couleur : à gauche l'app (logo, nom, promesse), à droite ses fonctions à garder
@@ -4996,13 +5009,13 @@ function openOnb(){
       <div class="onb-pick"><div class="onb-pick-h"><span class="eyebrow">${L("Ce que tu gardes")}</span>${ts.length>1?`<button type="button" class="linkbtn onb-all" data-onball="${g.k}"></button>`:""}</div>
         <div class="onb-list">${ts.map(it).join("")}</div><p class="small muted onb-hint">${L("Touche une ligne pour la garder ou la masquer. Tout reste modifiable dans Réglages.")}</p></div>
     </div></section>`}).join("");
-  onbAllLbl();onbLook();$("onb").hidden=false;document.body.style.overflow="hidden";onbGoTo(0);
 }
 const onbSlides=()=>[...document.querySelectorAll("#onbTrack .onb-slide")];
 // v43 : diapositive affichée selon son numéro, jamais selon la position de défilement
 let onbI=0;const onbIdx=()=>onbI;
 function onbStep(){const sl=onbSlides(),i=Math.min(sl.length-1,onbIdx());sl.forEach((x,j)=>{x.classList.toggle("on",j===i);x.inert=j!==i});const ap=sl[i]&&sl[i].dataset.app;if(ap)$("onb").dataset.app=ap;else delete $("onb").dataset.app;
-  $("onbDots").innerHTML=sl.map((_,j)=>`<i class="${j===i?"on":""}"></i>`).join("");$("onbPrev").style.visibility=i?"visible":"hidden";$("onbNext").hidden=i===sl.length-1}
+  if(shIsl("onbDots")){try{window.SCIslands.onbDots($("onbDots"),{n:sl.length,cur:i})}catch(e){$("onbDots").innerHTML=sl.map((_,j)=>`<i class="${j===i?"on":""}"></i>`).join("")}}
+  else $("onbDots").innerHTML=sl.map((_,j)=>`<i class="${j===i?"on":""}"></i>`).join("");$("onbPrev").style.visibility=i?"visible":"hidden";$("onbNext").hidden=i===sl.length-1}
 function onbGoTo(i){const sl=onbSlides();onbI=Math.max(0,Math.min(sl.length-1,i));const t=$("onbTrack");t.scrollLeft=0;t.style.setProperty("--i",onbI);onbStep();const s=sl[onbI];if(s)s.scrollTop=0}
 $("onbTrack").addEventListener("scroll",()=>{if($("onbTrack").scrollLeft)$("onbTrack").scrollLeft=0});
 $("onbNext").addEventListener("click",()=>onbGoTo(onbIdx()+1));$("onbPrev").addEventListener("click",()=>onbGoTo(onbIdx()-1));
@@ -5010,15 +5023,18 @@ $("onbNext").addEventListener("click",()=>onbGoTo(onbIdx()+1));$("onbPrev").addE
 function onbLook(){const th=data.prefs.theme||"dark";document.querySelectorAll("#onbTheme button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.otheme===th));
   // v36 : les couleurs (ambiances) se choisissent aussi ici
   const pal=data.prefs.palette||"or",dark=document.documentElement.dataset.theme==="dark"||(!document.documentElement.dataset.theme&&matchMedia("(prefers-color-scheme: dark)").matches);
+  if(shIsl("onbPal")){try{window.SCIslands.onbPal($("onbPal"),{check:CHECK,i18n:agI18n(),pals:Object.entries(PALETTES).map(([k,a])=>({k,name:a[0],a:dark?a[3]:a[1],b:dark?a[4]:a[2],on:k===pal}))});return}catch(e){reportErr("island onbPal: "+(e&&e.message))}}
   $("onbPal").innerHTML=Object.entries(PALETTES).map(([k,a])=>`<button type="button" class="pal" data-opal="${k}" aria-pressed="${k===pal}"><span class="pal-dot" style="--pa:${dark?a[3]:a[1]};--pb:${dark?a[4]:a[2]}">${k===pal?CHECK:""}</span><span class="pal-n">${L(a[0])}</span></button>`).join("")}
 $("onbPal").addEventListener("click",e=>{const b=e.target.closest("[data-opal]");if(!b)return;data.prefs.palette=b.dataset.opal;applyLook();onbLook()});
 $("onbTheme").addEventListener("click",e=>{const b=e.target.closest("[data-otheme]");if(!b)return;data.prefs.theme=b.dataset.otheme;applyLook();onbLook()});
-$("onbGroups").addEventListener("change",e=>{const c=e.target.closest("[data-onbk]");if(!c)return;onbSel[c.dataset.onbk]=c.checked;const card=c.closest(".onb-it");card.classList.toggle("off",!c.checked);card.classList.remove("bump");void card.offsetWidth;card.classList.add("bump");if(navigator.vibrate)navigator.vibrate(8)});
+$("onbGroups").addEventListener("change",e=>{const c=e.target.closest("[data-onbk]");if(!c)return;onbSel[c.dataset.onbk]=c.checked;
+  if(onbIsl()&&Object.keys($("onbGroups")).some(x=>x.startsWith("__reactContainer"))){onbRenderGroups();onbStep()} // React redessine (classe « off », « Tout cocher »), puis la diapositive affichée est remise
+  const card=c.closest(".onb-it");card.classList.toggle("off",!c.checked);card.classList.remove("bump");void card.offsetWidth;card.classList.add("bump");if(navigator.vibrate)navigator.vibrate(8)});
 // v36 : « Tout décocher » / « Tout cocher » sur chaque diapositive de modules
-function onbAllLbl(){document.querySelectorAll("#onbGroups [data-onball]").forEach(b=>{const ks=[...b.closest(".onb-slide").querySelectorAll("[data-onbk]")];
+function onbAllLbl(){if(onbIsl())return;document.querySelectorAll("#onbGroups [data-onball]").forEach(b=>{const ks=[...b.closest(".onb-slide").querySelectorAll("[data-onbk]")];
   b.textContent=L(ks.some(c=>c.checked)?"Tout décocher":"Tout cocher")})}
 $("onbGroups").addEventListener("click",e=>{const b=e.target.closest("[data-onball]");if(!b)return;const ks=[...b.closest(".onb-slide").querySelectorAll("[data-onbk]")],on=!ks.some(c=>c.checked);
-  ks.forEach(c=>{c.checked=on;onbSel[c.dataset.onbk]=on;c.closest(".onb-it").classList.toggle("off",!on)});onbAllLbl()});
+  ks.forEach(c=>{c.checked=on;onbSel[c.dataset.onbk]=on;c.closest(".onb-it").classList.toggle("off",!on)});onbAllLbl();if(onbIsl()){onbRenderGroups();onbStep()}});
 $("onbGroups").addEventListener("change",()=>setTimeout(onbAllLbl));
 $("onbLang").addEventListener("click",e=>{const b=e.target.closest("[data-lang]");if(!b||b.dataset.lang===LANG)return;data.prefs.onbPending=true;setLang(b.dataset.lang)});
 function onbFinish(){
@@ -5127,7 +5143,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v62";
+const BUILD="sidnote-v63";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

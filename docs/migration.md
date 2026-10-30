@@ -20,6 +20,7 @@ Décision de Sid (29 oct. 2026) : passer progressivement à TypeScript + React +
 | v51 | Focus : temps de travail concentré (jour, 7 jours) | `app/src/PomoStats.tsx` |
 | v52 | Graphiques : commentaires du jour et de la semaine, historique des semaines | `app/src/Reviews.tsx` |
 | v52 | Musculation : barre « Mon objectif » · Nutrition : barres des macros | `app/src/Small.tsx` |
+| v63 | Présentation : diapositives des apps (état `onbSel`, redessinées à chaque choix puis `onbStep` remet la diapositive active), points, couleurs · claviers de code | `app/src/Onboarding.tsx` |
 | v62 | Réglages : statistiques, onglets affichés, types d'activités, adresses du connecteur · fenêtres : ajout rapide, fiche d'un exercice | `app/src/Settings.tsx` |
 | v61 | Coquille, étape 3 : appels au serveur, session, écriture synchronisée (`core/sync.ts`) ; barres de navigation : bas, en-tête d'app, barre latérale (`Shell.tsx`) | `app/src/core/sync.ts`, `app/src/Shell.tsx` |
 | v60 | Coquille, étapes 1 et 2 : fusion des données entre appareils et briques de chiffrement en TypeScript (script `site/react/core.js`, chargé avant app.js) | `app/src/core/merge.ts`, `app/src/core/crypto.ts` |
@@ -55,8 +56,7 @@ Du plus isolé au plus central, un écran par version, chacun avec son test « m
 Tout ce qui s'affiche dans les écrans principaux est dessiné par React : Agenda (mois, année, jour, listes), Tâches, Focus (résumé, durées, frise), Musculation, Nutrition (journée, analyse, sport, menu, profil, copie, calendrier, macros), Graphiques, Notes (liste), Documents (liste), Mots de passe (liste), accueil.
 
 Reste dans `app.js` (la « coquille ») — mis à jour après la v62 :
-- présentation (elle change elle-même classes, cases et diapositives dans son DOM : à réécrire avec un état React avant de la migrer) ;
-- claviers de code (`#pinPad`, `#psPad`, statiques), barre des notes secrètes, barre du classeur ouvert (champ de recherche) ;
+- ~~présentation~~, ~~claviers de code~~ (v63) ; barre des notes secrètes, barre du classeur ouvert (champ de recherche) ;
 - formulaire du profil Nutrition et réglages du menu (champs fixes de index.html) ;
 - connexion, inscription, session, mode essai ;
 - synchronisation et fusion à 3 voies (`push`, `pull`, `mergeData`, `merge3`) ;

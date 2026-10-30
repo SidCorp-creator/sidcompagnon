@@ -5,6 +5,8 @@ import { flushSync } from "react-dom";
 import { NutritionCalendar, type NuCalProps } from "./NutritionCalendar";
 import { ColChart, GrTable, KcalLegend, LineChart, MacroLegend, type LineOpt, type Serie } from "./Charts";
 import { PomoStats } from "./PomoStats";
+import { RevCard, WeeksHistory, type PastRev, type Rev } from "./Reviews";
+import { MuGoal, NuMacros, type MacroRow } from "./Small";
 import type { GrDay, I18n, Tip } from "./types";
 import { fmtN, r1 } from "./format";
 
@@ -49,13 +51,23 @@ declare global {
       nuCal: (el: Element, p: NuCalProps) => void;
       graph: (els: GraphEls, p: GraphProps) => void;
       pomoStats: (el: Element, p: { todayMin: number; weekMin: number; i18n: I18n }) => void;
+      reviews: (els: { day: Element; week: Element; weeks: Element }, p: { day: Rev | null; week: Rev | null; weeks: PastRev[]; busy: string; i18n: I18n }) => void;
+      muGoal: (el: Element, p: { keys: string[]; goal: string; names: Record<string, string>; i18n: I18n }) => void;
+      nuMacros: (el: Element, p: { rows: MacroRow[]; i18n: I18n }) => void;
     };
   }
 }
 window.SCIslands = {
-  version: 2,
+  version: 3,
   nuCal: (el, p) => mount(el, <NutritionCalendar {...p} />),
   graph,
   pomoStats: (el, p) => mount(el, <PomoStats {...p} />),
+  reviews: (els, p) => {
+    mount(els.day, <RevCard r={p.day} scope="day" busy={p.busy === "day"} i18n={p.i18n} />);
+    mount(els.week, <RevCard r={p.week} scope="week" busy={p.busy === "week"} i18n={p.i18n} />);
+    mount(els.weeks, <WeeksHistory weeks={p.weeks} i18n={p.i18n} />);
+  },
+  muGoal: (el, p) => mount(el, <MuGoal {...p} />),
+  nuMacros: (el, p) => mount(el, <NuMacros {...p} />),
 };
 window.dispatchEvent(new Event("sc-islands"));

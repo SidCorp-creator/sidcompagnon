@@ -1325,6 +1325,36 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
       return {react,same:a===b,a,b}},[norm]);
     if(!po.react)err("Focus : résumé pas rendu par React");if(!po.same)err("Focus : rendu différent : "+po.a+" <> "+po.b);
     await ctx.close()}
+  // --- v52 (ticket #3) : commentaires des Graphiques, objectif de la Musculation, barres des macros : même rendu que l'ancien
+  for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1280,height:800}}]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v52 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v52"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.waitForFunction(()=>!!(window.SCIslands&&window.SCIslands.reviews),null,{timeout:8000}).catch(()=>err("module React non chargé"));
+    await pg.evaluate(()=>{window.__par=(ids,fn)=>{const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.getAttribute("style")?e.style.cssText:"")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+      fn();const out={},a={},react=ids.every(id=>Object.keys($(id)).some(k=>k.startsWith("__reactContainer")));ids.forEach(id=>a[id]=norm($(id)));
+      const sv=ids.map(id=>{const el=$(id),c=el.cloneNode(false);el.id=id+"R";el.after(c);c.id=id;c.innerHTML="";return[el,c,id]});
+      window.__noIslands=true;try{fn()}finally{window.__noIslands=false}
+      sv.forEach(([el,c,id])=>{const b=norm(c);if(a[id]!==b){const al=a[id].split("\n"),bl=b.split("\n");out[id]=al.length+"/"+bl.length+" "+(al.find((l,i)=>l!==bl[i])||"")+" <> "+(bl.find((l,i)=>l!==al[i])||"")}c.remove();el.id=id});return{react,out}}});
+    const check=async(lbl,ids,fnSrc)=>{const r=await pg.evaluate(([ids,src])=>window.__par(ids,eval(src)),[ids,fnSrc]);
+      if(!r.react)err(lbl+" : pas rendu par React");for(const[id,d]of Object.entries(r.out))err(lbl+" : "+id+" différent : "+d.slice(0,300))};
+    await pg.evaluate(()=>{const d=new Date();data.nutri={consent:new Date().toISOString(),profile:{sex:"h",age:24,height:180,weight:80,goal:"lose",sports:[]},plan:{kcal:2000,p:150,c:200,f:70,bmr:1800,tdee:2200,text:"",warn:[]},upd:Date.now(),
+      log:[{id:"a1",day:iso(d),at:d.toISOString(),name:"Riz",kcal:700,p:30,c:120,f:9,upd:1}],weights:[],weeks:[]};save();show("graph")});
+    await check("commentaires vides",["grDay","grWeek","grWeeks"],"()=>renderReviews()");
+    await pg.evaluate(()=>{const n=NU(),now=new Date().toISOString();n.rev={day:{key:iso(today()),summary:"Bonne journée <b>équilibrée</b>.",good:["Protéines OK"],improve:[],tips:["Boire plus"],at:now},
+      week:{key:weekKey(),summary:"Semaine régulière.",good:["5 jours notés"],improve:["Moins de sucre"],tips:[],at:"2025-03-02T10:00:00Z"}};
+      n.weeks=[{id:"2026-10-19",summary:"Semaine 1",good:["a"],improve:["b"],tips:["c"],at:"2026-10-25T09:00:00Z",upd:1},{id:"2026-10-12",summary:"Semaine 0",good:[],improve:[],tips:[],at:"2026-10-18T09:00:00Z",upd:1}];save()});
+    await check("commentaires remplis",["grDay","grWeek","grWeeks"],"()=>renderReviews()");
+    await pg.evaluate(()=>{revBusy="day";renderReviews()});await pg.waitForTimeout(200);
+    if(!(await pg.evaluate(()=>{const el=$("revLoad-day");return !!el&&el.childElementCount>0})))err("animation de chargement absente pendant le calcul");
+    await pg.evaluate(()=>{(revStops.day||(()=>{}))();revBusy="";renderReviews()});
+    await pg.evaluate(()=>{show("muscu")});
+    for(const g of ["force","forme"])await check("objectif "+g,["muGoal"],`()=>{data.prefs.muGoal="${g}";renderMuGoal()}`);
+    await pg.evaluate(()=>{data.ui.nuTab="day";show("nutri")});
+    await check("macros",["nuMacros"],"()=>renderNutri()");
+    await shot(pg,"v52-"+nm+"-nutrition");
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

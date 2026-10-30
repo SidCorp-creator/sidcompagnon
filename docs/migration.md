@@ -18,18 +18,20 @@ Décision de Sid (29 oct. 2026) : passer progressivement à TypeScript + React +
 | v50 | Nutrition : calendrier Semaine / Mois / Année | `app/src/NutritionCalendar.tsx` |
 | v51 | Graphiques : courbes macros et poids, colonnes des calories (avec l'infobulle), légendes, tableau des chiffres | `app/src/Charts.tsx` |
 | v51 | Focus : temps de travail concentré (jour, 7 jours) | `app/src/PomoStats.tsx` |
+| v52 | Graphiques : commentaires du jour et de la semaine, historique des semaines | `app/src/Reviews.tsx` |
+| v52 | Musculation : barre « Mon objectif » · Nutrition : barres des macros | `app/src/Small.tsx` |
 
 Socle : `app/src/types.ts` (types des données, à compléter), `app/src/dates.ts` (dates locales), `app/src/format.ts` (nombres, durées, jours), `app/src/islands.tsx` (montage synchrone avec `flushSync`, classe `notr` posée au montage).
 
-Encore dans l'ancien code pour Graphiques : les commentaires du jour / de la semaine et l'historique des semaines (leur animation de chargement `nuLoading` écrit dans le DOM), la saisie du poids.
+Graphiques : tout l'affichage est en React depuis la v52 ; restent dans l'ancien code la saisie du poids et l'animation de chargement des commentaires (`nuLoading`, posée dans `#revLoad-…` que React laisse vide).
 
 ## Ordre proposé pour la suite
 
 Du plus isolé au plus central, un écran par version, chacun avec son test « même rendu » :
 
-1. ~~Graphiques~~ (v51, sauf commentaires) · ~~Focus, résumé~~ (v51) ; reste du Focus (minuteur).
-2. Commentaires de Graphiques (avec une animation de chargement en React).
-3. Musculation (séances, objectif).
+1. ~~Graphiques~~ (v51–v52) · ~~Focus, résumé~~ (v51) ; reste du Focus (minuteur).
+2. ~~Musculation : objectif~~ (v52) ; séances (champs de saisie : à faire avec des composants contrôlés et l'enregistrement dans React).
+3. ~~Nutrition : barres des macros~~ (v52) ; journée, menus, profil.
 4. Nutrition (journée, menus, profil).
 5. Tâches, puis Agenda.
 6. Notes, Documents, Mots de passe (le coffre en dernier, avec une revue sécurité).

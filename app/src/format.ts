@@ -33,3 +33,10 @@ export const hm = (m: number) => {
 };
 export const esc = (s: unknown) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string);
+const two = (n: number) => String(n).padStart(2, "0");
+/** Heure si c'est aujourd'hui, sinon « 12 mars » (et l'année si ce n'est pas l'année en cours). Même règle que fmtWhen de app.js. */
+export const fmtWhen = (t: number, MO: string[]) => {
+  const d = new Date(t), n = new Date();
+  if (d.toDateString() === n.toDateString()) return `${two(d.getHours())}:${two(d.getMinutes())}`;
+  return `${d.getDate()} ${MO[d.getMonth()]}${d.getFullYear() !== n.getFullYear() ? " " + d.getFullYear() : ""}`;
+};

@@ -2082,6 +2082,48 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(tc.v!==tc.name||tc.on!=="true")err("pastille de type : "+JSON.stringify(tc));
     await pg.evaluate(()=>{$("tchTest").id="";document.querySelector("#taskSheet .x").click()});
     await ctx.close()}
+  // --- v67 (ticket #3) : Musculation : carte « Mon programme » et recherche d'exercices de la fiche
+  for(const [nm,dev,lg] of [["mobile",{...devices["iPhone 13"]},"fr"],["pc",{viewport:{width:1280,height:800}},"en"]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v67 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    if(lg!=="fr")await ctx.addInitScript(()=>{try{localStorage.setItem("sidnote-lang",JSON.stringify("en"))}catch(e){}});
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v67"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.waitForFunction(()=>!!(window.SCIslands&&window.SCIslands.coach),null,{timeout:8000}).catch(()=>err("module React non chargé"));
+    await pg.evaluate(()=>{window.__par=async(ids,fn,ms=300)=>{const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.getAttribute("style")?e.style.cssText:"")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+      fn();if(ms)await new Promise(r=>setTimeout(r,ms));const out={},a={},react=ids.every(id=>Object.keys($(id)).some(k=>k.startsWith("__reactContainer")));ids.forEach(id=>a[id]=norm($(id)));
+      const sv=ids.map(id=>{const el=$(id),c=el.cloneNode(false);c.classList.remove("notr");el.id=id+"R";el.after(c);c.id=id;c.innerHTML="";return[el,c,id]});
+      window.__noIslands=true;try{fn()}finally{window.__noIslands=false}if(ms)await new Promise(r=>setTimeout(r,ms));
+      sv.forEach(([el,c,id])=>{const b=norm(c);if(a[id]!==b){const al=a[id].split("\n"),bl=b.split("\n");out[id]=al.length+"/"+bl.length+" "+(al.find((l,i)=>l!==bl[i])||"")+" <> "+(bl.find((l,i)=>l!==al[i])||"")}c.remove();el.id=id});return{react,out}}});
+    const check=async(lbl,ids,fnSrc,ms)=>{const r=await pg.evaluate(([ids,src,ms])=>window.__par(ids,eval(src),ms),[ids,fnSrc,ms]);
+      if(!r.react)err(lbl+" : pas rendu par React");for(const[id,d]of Object.entries(r.out))err(lbl+" : "+id+" différent : "+d.slice(0,300))};
+    await pg.evaluate(()=>{const m=M();m.plan=null;save();show("muscu")});
+    await check("sans programme",["coachBox"],"()=>renderCoach()",0);
+    await pg.evaluate(()=>{coachOpen();cfDraft.goal="force";cfDraft.level="inter";cfDraft.days=2;coachBuild?0:0});
+    await pg.evaluate(()=>{const b=document.querySelector('#coachForm [data-cfgo],#coachSave,#coachForm button[type="submit"]');if(b)b.click()});await pg.waitForTimeout(400);
+    if(!(await pg.evaluate(()=>!!PL())))await pg.evaluate(()=>{const m=M();m.plan={id:"pX",v:2,profile:{goal:"force",level:"inter"},at:new Date().toISOString(),upd:Date.now(),src:"app"};save()});
+    await pg.evaluate(()=>{$("coachSheet").hidden=true;const p=PL();p.profile.remarks=[{text:"Moins de jambes",at:new Date(Date.now()-864e5).toISOString()},{text:"Plus de dos <b>",at:new Date().toISOString()}];p.src="ia";save();renderMuscu()});
+    await check("avec programme",["coachBox"],"()=>renderCoach()",0);
+    await check("programme en attente de Claude",["coachBox"],"()=>{PL().aiWait=Date.now();renderCoach()}",0);
+    await pg.evaluate(()=>{delete PL().aiWait;save();renderCoach()});
+    // la remarque en cours de saisie survit à un rendu
+    const rk=await pg.evaluate(()=>{const t=$("coRemark");t.value="ajoute du gainage";renderCoach();return{same:$("coRemark")===t,v:$("coRemark").value}});
+    if(!rk.same||rk.v!=="ajoute du gainage")err("remarque perdue au rendu : "+JSON.stringify(rk));
+    await pg.evaluate(()=>{const c=$("consentSheet");if(c)c.hidden=true;$("coachBox").scrollIntoView()});await shot(pg,"v67-"+nm+"-programme");
+    // recherche d'exercices : pastilles choisies + résultats
+    await pg.evaluate(()=>{coachOpen();cfDraft.must=["Squat","Développé couché"];const box=document.querySelector('#coachForm .cf-pick[data-cfx="must"]');box.id="cfMustT";box.querySelector(".cf-sel").id="cfSelT";box.querySelector(".cf-res").id="cfResT";box.querySelector("input").value="tir"});
+    // (le rendu agit sur tout le bloc : on compare React puis l'ancien rendu au même endroit)
+    for(const [lbl,src] of [["recherche d'exercices","()=>cfRender()"],["recherche sans résultat","()=>{const b=$('cfMustT');b.querySelector('input').value='zzzz';cfSearch(b)}"]]){
+      const r=await pg.evaluate(src=>{const fn=eval(src),norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+        fn();const els=(/cfSearch/.test(src)?["cfResT"]:["cfSelT","cfResT"]).map(id=>$(id)),react=els.every(e=>Object.keys(e).some(k=>k.startsWith("__reactContainer"))),a=els.map(norm);
+        document.querySelectorAll("#coachForm .cf-sel,#coachForm .cf-res").forEach(e=>window.SCIslands.unmount(e));window.__noIslands=true;try{fn()}finally{window.__noIslands=false}
+        const b=els.map(norm);fn();return{react,a,b}},src);
+      if(!r.react)err(lbl+" : pas rendu par React");r.a.forEach((x,i)=>{if(x!==r.b[i])err(lbl+" : "+i+" différent : "+x.slice(0,200)+" <> "+r.b[i].slice(0,200))})}
+    const add=await pg.evaluate(()=>{const b=$("cfMustT");b.querySelector("input").value="tir";cfSearch(b);const h=b.querySelector("[data-cfadd]");if(!h)return null;const n=h.dataset.cfadd;h.click();return{n,in:cfDraft.must.includes(n),chip:!!b.querySelector(`.cf-sel [data-cfrm="${n}"]`)}});
+    if(!add||!add.in||!add.chip)err("ajout d'un exercice : "+JSON.stringify(add));
+    await shot(pg,"v67-"+nm+"-recherche");
+    await pg.evaluate(()=>{["cfMustT","cfSelT","cfResT"].forEach(id=>$(id).removeAttribute("id"));$("coachSheet").hidden=true});
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

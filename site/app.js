@@ -108,7 +108,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="66";const errSent=new Set();
+const APP_V="67";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -2338,6 +2338,10 @@ const coachNext=()=>{const ds=PLD();if(!ds.length)return null;const last=ML().fi
   const i=last?ds.findIndex(d=>d.id===last.day):-1;return ds[(i+1)%ds.length]};
 function renderCoach(){const box=$("coachBox");if(!box)return;const pl=PL(),ds=PLD();
   const rmk=$("coRemark")?$("coRemark").value:""; // v43 : le rendu garde la remarque en cours
+  if(shIsl("coach")){try{const p=(pl&&pl.profile)||{},G={muscle:"Prendre du muscle",force:"Gagner en force",gras:"Perdre du gras",forme:"Être en forme",endu:"Gagner en endurance"},LV={deb:"Débutant",inter:"Intermédiaire",conf:"Confirmé"};
+    window.SCIslands.coach(box,{c:pl?{goal:G[p.goal]||"Sur mesure",ia:pl.src==="ia",level:p.level?LV[p.level]||"":"",n:ds.length,wait:!!pl.aiWait,remarks:(p.remarks||[]).slice().reverse().map(r=>({text:r.text,when:fmtWhen(Date.parse(r.at))}))}:null,more:MORE,i18n:agI18n()});
+    const ta=$("coRemark"),want=pl&&pl.aiWait?"":rmk;if(ta&&ta.value!==want)ta.value=want;return} // v67 (#3)
+    catch(e){reportErr("island coach: "+(e&&e.message));try{window.SCIslands.unmount(box)}catch(_){}}}
   if(!pl){box.innerHTML=`<div class="card coach-card"><div class="grow"><b>${L("Ton programme sur mesure")}</b><div class="small muted">${L("Quelques questions (niveau, objectif, jours, matériel) et Sid'compagnon crée tes séances.")}</div></div><button type="button" class="btn" data-coach="new">${L("Créer mon programme")}</button></div>`;return}
   const p=pl.profile||{},G={muscle:"Prendre du muscle",force:"Gagner en force",gras:"Perdre du gras",forme:"Être en forme",endu:"Gagner en endurance"},LV={deb:"Débutant",inter:"Intermédiaire",conf:"Confirmé"};
   box.innerHTML=`<div class="card coach-card coach-on"><div class="coach-top"><div class="grow"><span class="eyebrow">${L("Mon programme")}</span><b>${esc(L(G[p.goal]||"Sur mesure"))}${pl.src==="ia"?` · ${L("ajusté par Claude")}`:""}</b><div class="small muted">${p.level?esc(L(LV[p.level]||""))+" · ":""}${ds.length} ${L(ds.length>1?"séances":"séance")}</div></div><button type="button" class="pen" data-coach="more" aria-label="${L("Plus d'actions")}">${MORE}</button></div>
@@ -2355,12 +2359,14 @@ const cfOptN=()=>["prio","avoid","must","never"].reduce((n,k)=>n+((cfDraft[k]||[
 function cfRender(){{const n=cfOptN();$("cfMoreSum").textContent=n?`${n} ${L(n>1?"précisions":"précision")}`:L("facultatif")}
   document.querySelectorAll("#coachForm [data-cf]").forEach(g=>{const k=g.dataset.cf,v=cfDraft[k];g.querySelectorAll("[data-v]").forEach(b=>b.setAttribute("aria-pressed",String(Array.isArray(v)?v.includes(b.dataset.v):String(v)===b.dataset.v)))});
   document.querySelectorAll("#coachForm .cf-pick").forEach(box=>{const k=box.dataset.cfx,a=cfDraft[k]||[];
+    if(shIsl("cfSel")){try{window.SCIslands.cfSel(box.querySelector(".cf-sel"),{names:a,i18n:agI18n()});cfSearch(box);return}catch(e){reportErr("island cfSel: "+(e&&e.message))}}
     box.querySelector(".cf-sel").innerHTML=a.map(n=>`<span class="pill on cf-chip"><span class="notr">${esc(n)}</span><button type="button" class="x" data-cfrm="${esc(n)}" aria-label="${L("Retirer")}">×</button></span>`).join("");cfSearch(box)})}
 // v42 : recherche d'exercices (sans accents, un morceau de mot suffit) pour « je veux absolument » / « je ne veux pas du tout »
 const cfFold=x=>String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
 function cfSearch(box){const q=cfFold(box.querySelector("input").value).trim(),k=box.dataset.cfx,a=cfDraft[k]||[],res=box.querySelector(".cf-res");
-  if(!q){res.innerHTML="";return}const w=q.split(/\s+/);
-  const hits=EXDB.filter(e=>!a.includes(e.n)&&w.every(x=>cfFold(e.n+" "+MUS[e.m]+" "+e.part).includes(x))).slice(0,8);
+  const hits=q?EXDB.filter(e=>!a.includes(e.n)&&q.split(/\s+/).every(x=>cfFold(e.n+" "+MUS[e.m]+" "+e.part).includes(x))).slice(0,8):[];
+  if(shIsl("cfRes")){try{window.SCIslands.cfRes(res,{q:!!q,hits:hits.map(e=>({n:e.n,grp:e.grp,p:!!e.p})),i18n:agI18n()});return}catch(e){reportErr("island cfRes: "+(e&&e.message));try{window.SCIslands.unmount(res)}catch(_){}}}
+  if(!q){res.innerHTML="";return}
   res.innerHTML=hits.length?hits.map(e=>`<button type="button" class="cf-hit" data-cfadd="${esc(e.n)}"><span class="notr">${esc(e.n)}</span><small>${esc(L(e.grp))}${e.p?` · ${L("prioritaire")}`:""}</small></button>`).join(""):`<div class="small muted">${L("Aucun exercice trouvé")}</div>`}
 $("coachForm").addEventListener("input",e=>{const box=e.target.closest(".cf-pick");if(box)cfSearch(box);
   if(e.target.id==="cfNotes"||e.target.id==="cfAvoidTxt"){cfDraft[e.target.id==="cfNotes"?"notes":"avoidTxt"]=e.target.value.slice(0,600);const n=cfOptN();$("cfMoreSum").textContent=n?`${n} ${L(n>1?"précisions":"précision")}`:L("facultatif")}});
@@ -5195,7 +5201,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v66";
+const BUILD="sidnote-v67";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

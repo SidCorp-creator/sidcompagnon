@@ -23,6 +23,7 @@ import { Keypad, OnbDots, OnbGroups, OnbPal, type OI18n, type OnbGroup, type Pal
 import { AuthFeats, FolderBar, NsBar, NuKcalOf, NuMealKcal, NuMkTot, NuSlots, NuSports, type FI18n } from "./Forms";
 import { NotePhotos, PvOpts, PvOverlay, RtMenu, type PI18n, type PvAnn } from "./PdfView";
 import { ActList, AiState, BkList, NuAiCard, TypeChips, CalLegend, CalList, HomeSync, LegalBody, SyncState, type CalVM, type WI18n } from "./Sheets";
+import { CfRes, CfSel, CoachCard, type CI18n, type CoachVM } from "./Coach";
 import type { AgTask, GrDay, I18n, Tip } from "./types";
 import { fmtN, r1 } from "./format";
 
@@ -108,6 +109,9 @@ declare global {
       aiState: (el: Element, p: { ok: boolean; i18n: WI18n }) => void;
       nuAiCard: (el: Element, p: { ok: boolean; icon: string; href: string; name: string; i18n: WI18n }) => void;
       typeChips: (el: Element, p: { types: { name: string; c: string }[]; cur: string; i18n: WI18n }) => void;
+      coach: (el: Element, p: { c: CoachVM | null; more: string; i18n: CI18n }) => void;
+      cfSel: (el: Element, p: { names: string[]; i18n: CI18n }) => void;
+      cfRes: (el: Element, p: { q: boolean; hits: { n: string; grp: string; p: boolean }[]; i18n: CI18n }) => void;
       legalBody: (el: Element, p: { parts: [string, string][]; page: string; i18n: WI18n }) => void;
       pvOpts: (el: Element, p: { cols: string[]; cur: string; size: number; dot: React.CSSProperties; i18n: PI18n }) => void;
       onbGroups: (el: Element, p: { groups: OnbGroup[]; i18n: OI18n }) => void;
@@ -142,7 +146,7 @@ declare global {
   }
 }
 window.SCIslands = {
-  version: 17,
+  version: 18,
   nuCal: (el, p) => mount(el, <NutritionCalendar {...p} />),
   graph,
   pomoStats: (el, p) => mount(el, <PomoStats {...p} />),
@@ -209,6 +213,9 @@ window.SCIslands = {
   calLegend: (el, p) => mount(el, <CalLegend {...p} />),
   bkList: (el, p) => mount(el, <BkList {...p} />),
   legalBody: (el, p) => mount(el, <LegalBody {...p} />),
+  coach: (el, p) => mount(el, <CoachCard {...p} />),
+  cfSel: (el, p) => mount(el, <CfSel {...p} />),
+  cfRes: (el, p) => mount(el, <CfRes {...p} />),
   aiState: (el, p) => mount(el, <AiState {...p} />),
   nuAiCard: (el, p) => mount(el, <NuAiCard {...p} />),
   typeChips: (el, p) => mount(el, <TypeChips {...p} />),

@@ -1492,6 +1492,63 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>{selDay=iso(today());renderCal();$("toast").style.display="none";$("calDayView").scrollIntoView()});
     await shot(pg,"v54-"+nm+"-jour");
     await ctx.close()}
+  // --- v55 (ticket #3) : Musculation (programmes, séances, exercices, séries) et Focus (durées, frise) : même rendu, FR et EN ; saisie fluide
+  for(const [nm,dev,lg] of [["mobile",{...devices["iPhone 13"]},"fr"],["pc",{viewport:{width:1280,height:800}},"en"]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v55 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v55"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    if(lg!=="fr"){await pg.evaluate(l=>setLang(l),lg);await pg.waitForTimeout(2500)}
+    await pg.waitForFunction(()=>!!(window.SCIslands&&window.SCIslands.muList),null,{timeout:8000}).catch(()=>err("module React non chargé"));
+    await pg.evaluate(()=>{window.__par=async(ids,fn)=>{const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.getAttribute("style")?e.style.cssText:"")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+      fn();await new Promise(r=>setTimeout(r,60));const out={},a={},react=ids.every(id=>Object.keys($(id)).some(k=>k.startsWith("__reactContainer")));ids.forEach(id=>a[id]=norm($(id)));
+      const sv=ids.map(id=>{const el=$(id),c=el.cloneNode(false);c.classList.remove("notr");el.id=id+"R";el.after(c);c.id=id;c.innerHTML="";return[el,c,id]});
+      window.__noIslands=true;try{fn()}finally{window.__noIslands=false}await new Promise(r=>setTimeout(r,60));
+      sv.forEach(([el,c,id])=>{const b=norm(c);if(a[id]!==b){const al=a[id].split("\n"),bl=b.split("\n");out[id]=al.length+"/"+bl.length+" "+(al.find((l,i)=>l!==bl[i])||"")+" <> "+(bl.find((l,i)=>l!==al[i])||"")}c.remove();el.id=id});return{react,out}}});
+    const check=async(lbl,ids,fnSrc)=>{const r=await pg.evaluate(([ids,src])=>window.__par(ids,eval(src)),[ids,fnSrc]);
+      if(!r.react)err(lbl+" : pas rendu par React");for(const[id,d]of Object.entries(r.out))err(lbl+" : "+id+" différent : "+d.slice(0,300))};
+    await pg.evaluate(()=>{const m=M(),now=Date.now(),g={id:"g1",name:"Mon prog",src:"claude"},ex=(n,sets,reps)=>({id:uid(),name:n,ps:1,sets:sets.map(([kg,r])=>({kg,reps:r})),...(reps?{reps}:{})});
+      m.plan={id:"g1",v:2,profile:{goal:"muscle"},at:new Date().toISOString(),upd:now,src:"ia"};
+      m.sessions=[{id:"s1",name:"Séance A · Push",upd:now,grp:g,ord:0,exercises:[ex("Développé couché haltères",[["40","10"],["42.5","8"],["",""],["",""]],"6–10"),ex("Pec deck",[["","12"]])]},
+        {id:"s2",name:"Jambes",upd:now,grp:g,ord:1,exercises:[ex("Squat",[["80",""],["80",""],["80",""]])]},
+        {id:"s3",name:"Import",upd:now,grp:{id:"g2",name:"Programme importé",src:"import"},exercises:[ex("Tirage poitrine",[["",""]])]},
+        {id:"s4",name:"Libre du dimanche",upd:now,exercises:[ex("Mon exo inventé",[["10","5"],["10","5"]]),ex("",[["",""]])]}];
+      data.prefs.muGoal="muscle";msOpenId="s1";save();show("muscu")});
+    await check("séances",["msList"],"()=>renderMuscu()");
+    await check("autre objectif, une séance ouverte",["msList"],"()=>{data.prefs.muGoal='force';msOpenId='s4';renderMuscu()}");
+    await check("autre séance ouverte",["msList"],"()=>{msOpenId='s2';renderMuscu()}");
+    // saisie : le champ garde le focus et la carte se met à jour (nom de la séance, nom d'un exercice → conseil et fiche « ? »)
+    await pg.evaluate(()=>{msOpenId="s4";renderMuscu();document.querySelector('[data-ms="s4"]').scrollIntoView()});
+    const nameIn='[data-ms="s4"] input[data-f="msname"]';await pg.click(nameIn);await pg.keyboard.type(" bis");
+    const st=await pg.evaluate(s=>({foc:document.activeElement===document.querySelector(s),shown:document.querySelector('[data-ms="s4"] .ms-name').textContent,data:msFind("s4").name}),nameIn);
+    if(!st.foc||st.shown!=="Libre du dimanche bis"||st.data!=="Libre du dimanche bis")err("saisie du nom de séance : "+JSON.stringify(st));
+    const exIn='[data-ms="s4"] .ex3:nth-of-type(2) input[data-f="exname"]';
+    const exSel=await pg.evaluate(()=>{const e=msFind("s4").exercises[1];return `[data-ex="${e.id}"] input[data-f="exname"]`});
+    await pg.click(exSel);await pg.keyboard.type("Pec deck");
+    const st2=await pg.evaluate(s=>{const i=document.querySelector(s),box=i.closest("[data-ex]");return{foc:document.activeElement===i,help:!box.querySelector("[data-exhelp]").hidden,adv:!box.querySelector(".ex-adv").hidden}},exSel);
+    if(!st2.foc||!st2.help||!st2.adv)err("saisie du nom d'exercice : "+JSON.stringify(st2));
+    // série 1 sur toutes puis Annuler : les champs déjà touchés reprennent la valeur enregistrée
+    const e1=await pg.evaluate(()=>msFind("s4").exercises[0].id);
+    // (pas de fill : l'app place le curseur en fin de champ numérique, fill ajouterait au texte)
+    await pg.evaluate(id=>{for(const[j,v]of [[1,"7"],[0,"12"]]){const i=document.querySelector(`[data-ex="${id}"] [data-si="${j}"] input[data-f="setkg"]`);i.focus();i.value=v;i.dispatchEvent(new Event("input",{bubbles:true}))}},e1);
+    await pg.click(`[data-ex="${e1}"] [data-mscopy1]`);await pg.waitForTimeout(200);
+    if(await pg.inputValue(`[data-ex="${e1}"] [data-si="1"] input[data-f="setkg"]`)!==(lg==="en"?"12":"12"))err("série 1 sur toutes : champ pas mis à jour");
+    await pg.evaluate(()=>{const b=[...document.querySelectorAll("#toast button")].find(x=>x.offsetParent);if(b)b.click()});await pg.waitForTimeout(200);
+    if(await pg.inputValue(`[data-ex="${e1}"] [data-si="1"] input[data-f="setkg"]`)!=="7")err("Annuler : le champ de la série 2 ne reprend pas sa valeur ("+await pg.inputValue(`[data-ex="${e1}"] [data-si="1"] input[data-f="setkg"]`)+")");
+    await pg.click(`[data-ex="${e1}"] [data-msaddset]`);
+    if(await pg.evaluate(id=>msFind("s4").exercises.find(e=>e.id===id).sets.length,e1)!==3)err("ajouter une série ne marche plus");
+    if(lg==="en"&&/Séances libres|Ajouter une série|Supprimer|Série 1/.test(await pg.evaluate(()=>$("msList").textContent)))err("textes non traduits en anglais");
+    await pg.evaluate(()=>{$("toast").style.display="none";document.querySelector('[data-ms="s1"]').scrollIntoView()});
+    await shot(pg,"v55-"+nm+"-muscu");
+    // Focus
+    await pg.evaluate(()=>{P.run=null;P.cfg={work:25,brk:5,total:120};save();show("pomo")});
+    await check("focus réglages",["presets","planBar"],"()=>renderSetup()");
+    await check("focus autre durée",["presets","planBar"],"()=>{P.cfg.total=90;renderSetup()}");
+    await pg.evaluate(()=>{P.run={segs:buildSegs(P.cfg),startAt:Date.now()-40*60000,pausedAt:Date.now(),pausedTotal:0};renderPomo()});
+    await check("focus en cours",["runBar"],"()=>tickPomo()");
+    await pg.evaluate(()=>{P.run=null;save();renderPomo()});await pg.click('#presets [data-total="180"]');
+    if(await pg.evaluate(()=>P.cfg.total)!==180)err("choisir une durée du Focus ne marche plus");
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

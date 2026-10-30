@@ -21,3 +21,12 @@ export function NuMacros({ rows, i18n }: { rows: MacroRow[]; i18n: I18n }) {
     <div className="bar"><i style={{ "--c": `var(${m.c})`, width: `${Math.min(100, m.target ? m.val / m.target * 100 : 0)}%` } as React.CSSProperties}></i></div>
   </div>)}</>;
 }
+
+// v55 : Focus : boutons de durée totale et frise travail / pause (renderSetup, planBar de site/app.js)
+export function PomoPresets({ presets, total, labels }: { presets: number[]; total: number; labels: string[] }) {
+  return <>{presets.map((m, i) => <button key={m} className="preset" data-total={m} aria-pressed={total === m}>{labels[i]}</button>)}</>;
+}
+export function PlanBar({ segs, doneIdx }: { segs: { t: string; d: number }[]; doneIdx: number }) {
+  const tot = segs.reduce((a, s) => a + s.d, 0);
+  return <>{segs.map((s, i) => <i key={i} className={`${s.t === "w" ? "w" : "b"} ${i < doneIdx ? "past" : ""}`} style={{ flex: s.d / tot }}></i>)}</>;
+}

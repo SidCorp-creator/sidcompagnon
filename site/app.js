@@ -108,7 +108,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="68";const errSent=new Set();
+const APP_V="69";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -351,10 +351,12 @@ const parse=d=>{const[y,m,x]=d.split("-").map(Number);return new Date(y,m-1,x)};
 const today=()=>{const t=new Date();return new Date(t.getFullYear(),t.getMonth(),t.getDate())};
 const fmt=d=>{const x=parse(d);return x.getDate()+" "+MO[x.getMonth()]};
 const daysTo=d=>Math.round((parse(d)-today())/864e5);
-function toast(m,ms){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,ms||2200)}
+// v69 (#3) : message du bas dessiné par React (shIsl est déclaré plus bas : on teste window.SCIslands directement)
+const toastIsl=(t,p)=>{if(!(window.SCIslands&&window.SCIslands.toast&&!window.__noIslands))return false;try{window.SCIslands.toast(t,{...p,i18n:agI18n()});return true}catch(e){try{window.SCIslands.unmount(t)}catch(_){}return false}};
+function toast(m,ms){const t=$("toast");if(!toastIsl(t,{m:String(m),label:"",onAct:null}))t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,ms||2200)}
 // v34 : message avec un bouton (ex. « Annuler »)
-function toastAct(m,label,fn,ms){const t=$("toast");t.innerHTML=`<span>${esc(L(m))}</span><button type="button" class="toast-act">${esc(L(label))}</button>`;t.hidden=false;
-  t.querySelector(".toast-act").addEventListener("click",()=>{t.hidden=true;clearTimeout(toast.h);fn()},{once:true});clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,ms||5000)}
+function toastAct(m,label,fn,ms){const t=$("toast");let used=false;const act=()=>{if(used)return;used=true;t.hidden=true;clearTimeout(toast.h);fn()};
+  if(!toastIsl(t,{m,label,onAct:act})){t.innerHTML=`<span>${esc(L(m))}</span><button type="button" class="toast-act">${esc(L(label))}</button>`;t.querySelector(".toast-act").addEventListener("click",act,{once:true})}t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,ms||5000)}
 // v34 : suppression immédiate, « Annuler » pendant 5 s (plus de double appui pour confirmer).
 // L'annulation remet l'état d'avant ; data.res annule la pierre tombale, même si elle est déjà partie vers les autres appareils.
 // o.later : action définitive (fichiers en ligne…) faite seulement quand on ne peut plus annuler ; o.revert : ce que la fusion ne remet pas seule.
@@ -936,7 +938,8 @@ function yearGrid(y,cls){const now=today();let h="";
 const agI18n=()=>({tr:x=>LANG&&LANG!=="fr"?trStr(x):x,L,MOL,MO,locale:LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE"});
 function renderMonth(){
   const T=allT(),tIso=iso(today());
-  $("calTitle").innerHTML=`${MOL[calM]} ${calY} <span class="yr-ic">▦ ${L("Année")}</span>`;$("calTitle").setAttribute("aria-label",`${MOL[calM]} ${calY}, ${L("voir toute l'année")}`);
+  if(shIsl("calTitle")){try{window.SCIslands.calTitle($("calTitle"),{mo:MOL[calM],y:calY,i18n:agI18n()})}catch(e){reportErr("island calTitle: "+(e&&e.message))}}
+  else $("calTitle").innerHTML=`${MOL[calM]} ${calY} <span class="yr-ic">▦ ${L("Année")}</span>`;$("calTitle").setAttribute("aria-label",`${MOL[calM]} ${calY}, ${L("voir toute l'année")}`);
   if(window.SCIslands&&window.SCIslands.agMonth&&!window.__noIslands){try{window.SCIslands.agMonth($("calDays"),{y:calY,m:calM,today:tIso,tasks:T,color:colorOf,i18n:agI18n()});return}catch(e){reportErr("island agMonth: "+(e&&e.message))}}
   const h=monthGrid(calY,calM,(k,d)=>{
     const per=T.filter(t=>t.end&&t.date<=k&&t.end>=k).slice(0,2);
@@ -1151,6 +1154,7 @@ function quickPreview(){const v=$("fTitle").value,h=$("fHint");if(!v.trim()){h.h
   const q=parseQuick(v);if(!q.date&&!q.time){h.hidden=true;return}
   if(!fTouched){if(q.date)$("fDate").value=q.date;$("fTime").value=q.time||""}
   const d=q.date?new Date(q.date+"T12:00"):null;
+  if(shIsl("quickHint")){try{window.SCIslands.quickHint(h,{icon:ICS.calendar||"",title:q.title,when:`${d?d.toLocaleDateString(LANG==="fr"?"fr-BE":LANG==="nl"?"nl-BE":"en-GB",{weekday:"long",day:"numeric",month:"long"}):""}${q.time?` ${d?"· ":""}${q.time}`:""}`,i18n:agI18n()});h.hidden=false;return}catch(e){reportErr("island quickHint: "+(e&&e.message));try{window.SCIslands.unmount(h)}catch(_){}}}
   h.innerHTML=`${IC("calendar")||""}<span>${L("Compris")} : <b class="notr">${esc(q.title)}</b> · ${d?esc(d.toLocaleDateString(LANG==="fr"?"fr-BE":LANG==="nl"?"nl-BE":"en-GB",{weekday:"long",day:"numeric",month:"long"})):""}${q.time?` ${d?"· ":""}${q.time}`:""}</span>`;h.hidden=false}
 $("fTitle").addEventListener("input",quickPreview);
 ["fDate","fTime"].forEach(id=>$(id).addEventListener("input",()=>{fTouched=true}));
@@ -2491,6 +2495,8 @@ function parseSpot(v){
 function renderSpotify(){
   const ref=(data.prefs&&data.prefs.spotify)||SPOT_DEFAULT;
   $("spotOpen").href=`https://open.spotify.com/${ref}`;$("spotName").textContent=ref===SPOT_DEFAULT?"Playlist par défaut : Deep Focus":"Ta musique";
+  if(shIsl("spotEmbed")){try{if(data.ui.spotOk&&spotShown===ref)return;spotShown=data.ui.spotOk?ref:null;
+    window.SCIslands.spotEmbed($("spotEmbed"),{ok:!!data.ui.spotOk,src:`https://open.spotify.com/embed/${ref}?utm_source=generator`,i18n:agI18n()});return}catch(e){reportErr("island spotEmbed: "+(e&&e.message));try{window.SCIslands.unmount($("spotEmbed"))}catch(_){}}}
   if(!data.ui.spotOk){spotShown=null;$("spotEmbed").innerHTML=`<div class="spot-gate"><p class="small">${L("Le lecteur est fourni par Spotify. En le chargeant, Spotify reçoit ton adresse IP et peut déposer ses propres cookies sur cet appareil.")} <button type="button" class="linkbtn" data-openlegal="cookies">${L("En savoir plus")}</button></p><button type="button" class="btn" data-spotok="1">${L("Charger le lecteur Spotify")}</button></div>`;return}
   if(spotShown===ref)return;spotShown=ref;
   $("spotEmbed").innerHTML=`<div class="small spot-off"><button type="button" class="linkbtn" data-spotno="1">${L("Ne plus charger Spotify sur cet appareil")}</button></div><iframe title="Lecteur Spotify" src="https://open.spotify.com/embed/${ref}?utm_source=generator" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
@@ -4639,13 +4645,16 @@ function qtyNum(t){t=String(t||"").replace(/½/g,"1/2").replace(/¼/g,"1/4").rep
 let nuEBase=null;
 $("nuEQty").addEventListener("input",()=>{if(!nuEBase)return;const a=qtyNum(nuEBase.qty),b=qtyNum($("nuEQty").value),h=$("nuEHint");
   if(a>0&&b>0){const k=b/a;$("nuEKcal").value=r0(nuEBase.kcal*k);$("nuEP").value=r1(nuEBase.p*k);$("nuEC").value=r1(nuEBase.c*k);$("nuEF").value=r1(nuEBase.f*k);
-    h.hidden=k===1;h.innerHTML=`✓ ${L("Calories recalculées selon la quantité")}`}
-  else{h.hidden=false;h.innerHTML=`${L("Quantité sans chiffre : je ne peux pas recalculer seul.")}<button type="button" class="mini" id="nuERecalc">↻ ${L("Recalculer")}</button>`}});
+    h.hidden=k===1;nuEHintSet("ok")}
+  else{h.hidden=false;nuEHintSet("none")}});
+// v69 (#3) : aide du recalcul (React, ancien rendu en secours)
+function nuEHintSet(st){const h=$("nuEHint");if(shIsl("nuEHint")){try{window.SCIslands.nuEHint(h,{st,i18n:agI18n()});return}catch(e){reportErr("island nuEHint: "+(e&&e.message));try{window.SCIslands.unmount(h)}catch(_){}}}
+  h.innerHTML=st==="ok"?`✓ ${L("Calories recalculées selon la quantité")}`:`${L("Quantité sans chiffre : je ne peux pas recalculer seul.")}<button type="button" class="mini" id="nuERecalc">${st==="busy"?`<span class="spin"></span>`:`↻ ${L("Recalculer")}`}</button>`}
 $("nuEHint").addEventListener("click",async e=>{if(!e.target.closest("#nuERecalc")||nuBusy)return;const q=`${$("nuEQty").value.trim()} ${$("nuEName").value.trim()}`.trim();if(!q)return;
-  nuBusy="recalc";e.target.innerHTML=`<span class="spin"></span>`;
+  nuBusy="recalc";nuEHintSet("busy");
   try{const r=await nuCall("aliment",{text:q}),t=(r.items||[]).reduce((s,x)=>({k:s.k+(+x.kcal||0),p:s.p+(+x.protein_g||0),c:s.c+(+x.carbs_g||0),f:s.f+(+x.fat_g||0)}),{k:0,p:0,c:0,f:0});
-    $("nuEKcal").value=r0(t.k);$("nuEP").value=r1(t.p);$("nuEC").value=r1(t.c);$("nuEF").value=r1(t.f);$("nuEHint").innerHTML=`✓ ${L("Calories recalculées selon la quantité")}`}
-  catch(ex){toast(nuErrMsg(ex))}nuBusy=""});
+    $("nuEKcal").value=r0(t.k);$("nuEP").value=r1(t.p);$("nuEC").value=r1(t.c);$("nuEF").value=r1(t.f);nuEHintSet("ok")}
+  catch(ex){toast(nuErrMsg(ex));nuEHintSet("none")}nuBusy=""});
 $("nuSheetClose").addEventListener("click",()=>{$("nuSheet").hidden=true});
 $("nuSheet").addEventListener("click",e=>{if(e.target.id==="nuSheet")$("nuSheet").hidden=true});
 $("nuEntryForm").addEventListener("submit",e=>{
@@ -4987,6 +4996,7 @@ document.addEventListener("click",async e=>{const b=e.target.closest("[data-rev]
 /* ---------- onglet Appli ---------- */
 function renderApp(){
   const ok=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+  if(shIsl("appStatus")){try{window.SCIslands.appStatus($("appStatus"),{ok,i18n:agI18n()})}catch(e){reportErr("island appStatus: "+(e&&e.message))}}else
   $("appStatus").innerHTML=ok?'<span class="syncdot"></span><span>Tu utilises déjà Sid\'note comme application.</span>'
     :'<span class="syncdot wait"></span><span>Tu es dans le navigateur. Suis les étapes ci-dessous pour installer l\'app.</span>';
   const ai=$("authInstall");if(ai)ai.hidden=ok;
@@ -5223,7 +5233,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v68";
+const BUILD="sidnote-v69";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

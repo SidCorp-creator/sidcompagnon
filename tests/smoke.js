@@ -2172,6 +2172,42 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await check("pages du scanner",["scanPages"],"()=>{scanPages=[{out:{url:'IMG'}},{out:{url:'IMG'}}];renderScan()}".replace(/IMG/g,"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="));
     await pg.evaluate(()=>{scanPages=[];renderScan()});
     await ctx.close()}
+  // --- v69 (ticket #3) : message du bas, titre du mois, aperçu de l'ajout rapide, recalcul des calories, Spotify, installation
+  for(const [nm,dev,lg] of [["mobile",{...devices["iPhone 13"]},"fr"],["pc",{viewport:{width:1280,height:800}},"en"]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v69 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    if(lg!=="fr")await ctx.addInitScript(()=>{try{localStorage.setItem("sidnote-lang",JSON.stringify("en"))}catch(e){}});
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v69"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.waitForFunction(()=>!!(window.SCIslands&&window.SCIslands.toast),null,{timeout:8000}).catch(()=>err("module React non chargé"));
+    await pg.evaluate(()=>{window.__par=async(ids,fn,ms=300)=>{const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.getAttribute("style")?e.style.cssText:"")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+      fn();if(ms)await new Promise(r=>setTimeout(r,ms));const out={},a={},react=ids.every(id=>Object.keys($(id)).some(k=>k.startsWith("__reactContainer")));ids.forEach(id=>a[id]=norm($(id)));
+      const sv=ids.map(id=>{const el=$(id),c=el.cloneNode(false);c.classList.remove("notr");el.id=id+"R";el.after(c);c.id=id;c.innerHTML="";return[el,c,id]});
+      window.__noIslands=true;try{fn()}finally{window.__noIslands=false}if(ms)await new Promise(r=>setTimeout(r,ms));
+      sv.forEach(([el,c,id])=>{const b=norm(c);if(a[id]!==b){const al=a[id].split("\n"),bl=b.split("\n");out[id]=al.length+"/"+bl.length+" "+(al.find((l,i)=>l!==bl[i])||"")+" <> "+(bl.find((l,i)=>l!==al[i])||"")}c.remove();el.id=id});return{react,out}}});
+    const check=async(lbl,ids,fnSrc,ms)=>{const r=await pg.evaluate(([ids,src,ms])=>window.__par(ids,eval(src),ms),[ids,fnSrc,ms]);
+      if(!r.react)err(lbl+" : pas rendu par React");for(const[id,d]of Object.entries(r.out))err(lbl+" : "+id+" différent : "+d.slice(0,300))};
+    await check("message",["toast"],"()=>toast('Photo supprimée')");
+    await check("message avec Annuler",["toast"],"()=>toastAct('Tâche supprimée','Annuler',()=>{})");
+    const ta=await pg.evaluate(()=>new Promise(r=>{let n=0;toastAct("Tâche supprimée","Annuler",()=>{n++});const b=$("toast").querySelector(".toast-act");b.click();b.click();setTimeout(()=>r({n,hidden:$("toast").hidden}),50)}));
+    if(ta.n!==1||!ta.hidden)err("bouton Annuler du message : "+JSON.stringify(ta));
+    await pg.evaluate(()=>{toast("Bonjour")});if(await pg.evaluate(()=>$("toast").textContent.trim()==="")) err("message vide");
+    await pg.evaluate(()=>{show("plan")});
+    await check("titre du mois",["calTitle"],"()=>{calMode='month';renderMonth()}",0);
+    await pg.evaluate(()=>{openTaskSheet(iso(today()))});
+    await check("aperçu de l'ajout rapide",["fHint"],"()=>{const t=$('fTitle');t.value='Réunion demain 14h';quickPreview()}",0);
+    const qh=await pg.evaluate(()=>({hidden:$("fHint").hidden,b:($("fHint").querySelector("b")||{}).textContent,svg:!!$("fHint").querySelector("svg.i")}));
+    if(qh.hidden||!qh.b||!qh.svg)err("aperçu de l'ajout rapide : "+JSON.stringify(qh));
+    await pg.evaluate(()=>{$("fTitle").value="";quickPreview();document.querySelector("#taskSheet .x").click()});
+    await check("recalcul : fait",["nuEHint"],"()=>nuEHintSet('ok')",0);
+    await check("recalcul : impossible",["nuEHint"],"()=>nuEHintSet('none')",0);
+    await check("recalcul : en cours",["nuEHint"],"()=>nuEHintSet('busy')",0);
+    await pg.evaluate(()=>{show("pomo")});
+    await check("Spotify : accord",["spotEmbed"],"()=>{delete data.ui.spotOk;spotShown=null;renderSpotify()}",0);
+    const sp=await pg.evaluate(()=>{data.ui.spotOk=Date.now();renderSpotify();const f1=$("spotEmbed").querySelector("iframe");renderSpotify();const f2=$("spotEmbed").querySelector("iframe");delete data.ui.spotOk;renderSpotify();return{f:!!f1,same:f1===f2,gone:!$("spotEmbed").querySelector("iframe")}});
+    if(!sp.f||!sp.same||!sp.gone)err("Spotify : "+JSON.stringify(sp));
+    await check("installation",["appStatus"],"()=>renderApp()");
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

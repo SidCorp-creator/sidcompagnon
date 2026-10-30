@@ -26,6 +26,7 @@ import { ActList, AiState, BkList, NuAiCard, TypeChips, CalLegend, CalList, Home
 import { CfRes, CfSel, CoachCard, type CI18n, type CoachVM } from "./Coach";
 import { NotifBox, RemBox, type Lead, type NI18n } from "./Notif";
 import { AaActs, AiWizard, NuPhotoPrev, ScanPages, type AaVM, type AI18n, type AiVM } from "./AiWizard";
+import { AppStatus, CalTitle, NuEHint, QuickHint, SpotEmbed, Toast, type MI18n } from "./Misc";
 import type { AgTask, GrDay, I18n, Tip } from "./types";
 import { fmtN, r1 } from "./format";
 
@@ -120,6 +121,12 @@ declare global {
       aaActs: (el: Element, p: { a: AaVM; i18n: AI18n }) => void;
       nuPhotoPrev: (el: Element, p: { src: string; i18n: AI18n }) => void;
       scanPages: (el: Element, p: { pages: string[]; i18n: AI18n }) => void;
+      toast: (el: Element, p: { m: string; label: string; onAct: (() => void) | null; i18n: MI18n }) => void;
+      calTitle: (el: Element, p: { mo: string; y: number; i18n: MI18n }) => void;
+      quickHint: (el: Element, p: { icon: string; title: string; when: string; i18n: MI18n }) => void;
+      nuEHint: (el: Element, p: { st: "ok" | "none" | "busy"; i18n: MI18n }) => void;
+      spotEmbed: (el: Element, p: { ok: boolean; src: string; i18n: MI18n }) => void;
+      appStatus: (el: Element, p: { ok: boolean; i18n: MI18n }) => void;
       legalBody: (el: Element, p: { parts: [string, string][]; page: string; i18n: WI18n }) => void;
       pvOpts: (el: Element, p: { cols: string[]; cur: string; size: number; dot: React.CSSProperties; i18n: PI18n }) => void;
       onbGroups: (el: Element, p: { groups: OnbGroup[]; i18n: OI18n }) => void;
@@ -154,7 +161,7 @@ declare global {
   }
 }
 window.SCIslands = {
-  version: 19,
+  version: 20,
   nuCal: (el, p) => mount(el, <NutritionCalendar {...p} />),
   graph,
   pomoStats: (el, p) => mount(el, <PomoStats {...p} />),
@@ -221,6 +228,12 @@ window.SCIslands = {
   calLegend: (el, p) => mount(el, <CalLegend {...p} />),
   bkList: (el, p) => mount(el, <BkList {...p} />),
   legalBody: (el, p) => mount(el, <LegalBody {...p} />),
+  toast: (el, p) => mount(el, <Toast {...p} />),
+  calTitle: (el, p) => mount(el, <CalTitle {...p} />),
+  quickHint: (el, p) => mount(el, <QuickHint {...p} />),
+  nuEHint: (el, p) => mount(el, <NuEHint {...p} />),
+  spotEmbed: (el, p) => mount(el, <SpotEmbed {...p} />),
+  appStatus: (el, p) => mount(el, <AppStatus {...p} />),
   aaActs: (el, p) => mount(el, <AaActs {...p} />),
   nuPhotoPrev: (el, p) => mount(el, <NuPhotoPrev {...p} />),
   scanPages: (el, p) => mount(el, <ScanPages {...p} />),

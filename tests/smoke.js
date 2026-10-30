@@ -1908,6 +1908,60 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>{openOnb()});await pg.waitForTimeout(300);await pg.evaluate(i=>onbGoTo(i),idx);await pg.waitForTimeout(400);
     await pg.evaluate(()=>{$("toast").style.display="none"});await shot(pg,"v63-"+nm+"-presentation");
     await ctx.close()}
+  // --- v64 (ticket #3) : formulaires : atouts de la connexion, barres notes secrètes / classeur, profil Nutrition (sports), réglages du menu, calories du jour
+  for(const [nm,dev,lg] of [["mobile",{...devices["iPhone 13"]},"fr"],["pc",{viewport:{width:1280,height:800}},"en"]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v64 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    if(lg!=="fr")await ctx.addInitScript(()=>{try{localStorage.setItem("sidnote-lang",JSON.stringify("en"))}catch(e){}});
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.waitForFunction(()=>!!(window.SCIslands&&window.SCIslands.authFeats),null,{timeout:8000}).catch(()=>err("module React non chargé"));
+    const defPar=()=>pg.evaluate(()=>{window.__par=async(ids,fn)=>{const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.getAttribute("style")?e.style.cssText:"")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+      fn();await new Promise(r=>setTimeout(r,60));const out={},a={},react=ids.every(id=>Object.keys($(id)).some(k=>k.startsWith("__reactContainer")));ids.forEach(id=>a[id]=norm($(id)));
+      const sv=ids.map(id=>{const el=$(id),c=el.cloneNode(false);c.classList.remove("notr");el.id=id+"R";el.after(c);c.id=id;c.innerHTML="";return[el,c,id]});
+      window.__noIslands=true;try{fn()}finally{window.__noIslands=false}await new Promise(r=>setTimeout(r,60));
+      sv.forEach(([el,c,id])=>{const b=norm(c);if(a[id]!==b){const al=a[id].split("\n"),bl=b.split("\n");out[id]=al.length+"/"+bl.length+" "+(al.find((l,i)=>l!==bl[i])||"")+" <> "+(bl.find((l,i)=>l!==al[i])||"")}c.remove();el.id=id});return{react,out}}});
+    await defPar();
+    const check=async(lbl,ids,fnSrc)=>{const r=await pg.evaluate(([ids,src])=>window.__par(ids,eval(src)),[ids,fnSrc]);
+      if(!r.react)err(lbl+" : pas rendu par React");for(const[id,d]of Object.entries(r.out))err(lbl+" : "+id+" différent : "+d.slice(0,300))};
+    await check("atouts de la connexion",["authFeats"],"()=>renderAuthFeats()");
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v64"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.waitForFunction(()=>!!(window.SCIslands&&window.SCIslands.nuSports),null,{timeout:8000}).catch(()=>err("module React non chargé (connecté)"));
+    await defPar(); // l'inscription recharge la page
+    // barre des notes secrètes (affichée dès que des notes secrètes sont ouvertes), barre du classeur ouvert
+    await pg.evaluate(()=>{show("notes")});await check("barre des notes secrètes",["nsBar","nfPath","noteList"],"()=>renderNotes()");
+    await pg.evaluate(()=>{data.docFolders=[{id:"c1",name:"Logement"}];data.docs=[{id:"d1",title:"Bail",size:1000,createdAt:new Date().toISOString(),up:true,folder:"c1"}];data.ui.docFolder="c1";dfEditing=false;dfQ="";save();show("docs")});
+    await check("barre du classeur",["folderBar","docFolders","docList"],"()=>{dfEditing=false;renderDocs()}");
+    await check("classeur, renommer",["folderBar","docFolders","docList"],"()=>{dfEditing=true;renderDocs()}");
+    await pg.evaluate(()=>{dfEditing=false;renderDocs();$("docLocked")&&($("docLocked").hidden=true);$("folderBar").hidden=false});
+    // recherche dans le classeur : le champ garde le focus et filtre
+    // (coffre fermé dans ce test : le champ est caché, on vérifie donc que c'est le même champ, toujours rempli)
+    const fs=await pg.evaluate(()=>{const i=$("folderSearch");i.value="zz";i.dispatchEvent(new Event("input",{bubbles:true}));return{same:$("folderSearch")===i,val:$("folderSearch").value,q:dfQ,empty:!document.querySelector("#docList .doc")}});
+    if(!fs.same||fs.val!=="zz"||fs.q!=="zz"||!fs.empty)err("recherche dans le classeur : "+JSON.stringify(fs));
+    // profil Nutrition : sports ; retirer le sport du milieu garde les bons noms dans les champs
+    await pg.evaluate(()=>{data.nutri={consent:new Date().toISOString(),profile:{sex:"h",age:24,height:180,weight:80,goal:"lose",sports:[{name:"Course",freq:2,dur:"45"},{name:"Vélo",freq:1,dur:"1h"},{name:"Natation",freq:3,dur:"30"}]},plan:{kcal:2000,p:150,c:200,f:70,bmr:1800,tdee:2200,text:"",warn:[]},upd:Date.now(),log:[],weights:[],weeks:[]};
+      save();show("nutri");nuEditing=true;nuFillForm();renderNutri()});
+    await check("sports du profil",["nuSports"],"()=>nuDraftRender()");
+    await pg.evaluate(()=>{const i=document.querySelector('#nuSports [data-sp="1"][data-f="name"]');i.focus();i.value="Vélo route";i.dispatchEvent(new Event("input",{bubbles:true}));i.blur()});
+    await pg.evaluate(()=>document.querySelector('#nuSports [data-sprm="0"]').click());
+    const sp=await pg.evaluate(()=>[...document.querySelectorAll('#nuSports [data-f="name"]')].map(i=>i.value).join("|")+" / "+nuDraft.sports.map(x=>x.name).join("|"));
+    if(sp!=="Vélo route|Natation / Vélo route|Natation")err("retirer un sport : "+sp);
+    await pg.evaluate(()=>{nuEditing=false;renderNutri()});
+    // calories du jour
+    await check("calories du jour",["nuKcalOf","nuMacros","nuLog","nuGoalCard","nuPlan","nuMenu","nuSlots","nuMealKcal","nuMkTot"],"()=>renderNutri()");
+    await check("calories du jour, dépassées",["nuKcalOf","nuMacros","nuLog","nuGoalCard","nuPlan","nuMenu","nuSlots","nuMealKcal","nuMkTot"],"()=>{NU().log=[{id:'x',day:iso(today()),at:new Date().toISOString(),name:'Pizza',kcal:2600,p:90,c:300,f:110,upd:1}];renderNutri()}");
+    // réglages du menu : journée, repas cochés, calories par repas, total ; changer une valeur rééquilibre les autres
+    await pg.evaluate(()=>{const mp=nuMP();mp.type="day";mp.pick={breakfast:true,lunch:true,dinner:true};mp.snacks=1;mp.kcals=null;data.ui.nuTab="menu";save();show("nutri")});
+    await check("réglages du menu",["nuSlots","nuMealKcal","nuMkTot"],"()=>{nuMkForce=true;renderMenuForm()}");
+    await pg.evaluate(()=>{$("nuMealKcal").scrollIntoView()});
+    const before=await pg.evaluate(()=>[...document.querySelectorAll("#nuMealKcal input")].map(i=>i.value));
+    await pg.evaluate(()=>{const i=document.querySelector('#nuMealKcal [data-mk="0"]');i.focus();i.value="700";i.dispatchEvent(new Event("change",{bubbles:true}))});
+    const after=await pg.evaluate(()=>({vals:[...document.querySelectorAll("#nuMealKcal input")].map(i=>i.value),saved:nuMP().kcals,reset:!!document.querySelector("#nuMkTot [data-mkreset]")}));
+    if(!after.saved||String(after.saved[0])!==after.vals[0]||after.vals.join()===before.join()||!after.reset)err("calories par repas : "+JSON.stringify({before,after}));
+    await check("réglages du menu, répartition changée",["nuSlots","nuMealKcal","nuMkTot"],"()=>{nuMkForce=true;renderMenuForm()}");
+    await pg.evaluate(()=>document.querySelector('#nuSlots [data-pick="lunch"]').click());
+    if(await pg.evaluate(()=>nuMP().pick.lunch)!==false)err("décocher un repas ne marche plus");
+    await pg.evaluate(()=>{$("toast").style.display="none";$("nuSlots").scrollIntoView()});await shot(pg,"v64-"+nm+"-menu");
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

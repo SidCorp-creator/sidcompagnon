@@ -20,6 +20,7 @@ import { GoalBody, NuCopy, NuPlan, type GoalVM, type NuCopyVM, type PlanVM } fro
 import { AppHead, NavBar, SideBar, type NavItem, type NavI18n, type SideGroup, type SideIcons } from "./Shell";
 import { ExHelp, McpList, QuickAdd, Stats, TabsCard, TypesCard, type ExHelpVM, type SI18n, type TabGroup } from "./Settings";
 import { Keypad, OnbDots, OnbGroups, OnbPal, type OI18n, type OnbGroup, type PalVM } from "./Onboarding";
+import { AuthFeats, FolderBar, NsBar, NuKcalOf, NuMealKcal, NuMkTot, NuSlots, NuSports, type FI18n } from "./Forms";
 import type { AgTask, GrDay, I18n, Tip } from "./types";
 import { fmtN, r1 } from "./format";
 
@@ -85,6 +86,14 @@ declare global {
       agPlan: (els: { next: Element; chips: Element; list: Element }, p: AgPlanProps) => void;
       dayView: (el: Element, p: DayViewProps) => void;
       unmount: (el: Element) => void;
+      authFeats: (el: Element, p: { items: { icon: string; t: string; d: string }[]; i18n: FI18n }) => void;
+      nsBar: (el: Element, p: { unlock: string; lock: string; i18n: FI18n }) => void;
+      folderBar: (el: Element, p: { name: string; count: number; editing: boolean; q: string; icon: string; i18n: FI18n }) => void;
+      nuSports: (el: Element, p: { sports: { name: string; freq: string; dur: string }[]; i18n: FI18n }) => void;
+      nuSlots: (el: Element, p: { slots: { k: string; on: boolean; icon: string; name: string }[]; i18n: FI18n }) => void;
+      nuMealKcal: (el: Element, p: { rows: { icon: string; name: string; kcal: number }[]; i18n: FI18n }) => void;
+      nuMkTot: (el: Element, p: { tot: string; tg: string; reset: boolean; i18n: FI18n }) => void;
+      nuKcalOf: (el: Element, p: { target: number; over: number; left: number; i18n: FI18n }) => void;
       onbGroups: (el: Element, p: { groups: OnbGroup[]; i18n: OI18n }) => void;
       onbDots: (el: Element, p: { n: number; cur: number }) => void;
       keypad: (el: Element, p: { attr: "pin" | "ps"; del: string }) => void;
@@ -117,7 +126,7 @@ declare global {
   }
 }
 window.SCIslands = {
-  version: 14,
+  version: 15,
   nuCal: (el, p) => mount(el, <NutritionCalendar {...p} />),
   graph,
   pomoStats: (el, p) => mount(el, <PomoStats {...p} />),
@@ -166,6 +175,14 @@ window.SCIslands = {
   onbDots: (el, p) => mount(el, <OnbDots {...p} />),
   keypad: (el, p) => mount(el, <Keypad {...p} />),
   onbPal: (el, p) => mount(el, <OnbPal {...p} />),
+  authFeats: (el, p) => mount(el, <AuthFeats {...p} />),
+  nsBar: (el, p) => mount(el, <NsBar {...p} />),
+  folderBar: (el, p) => mount(el, <FolderBar {...p} />),
+  nuSports: (el, p) => mount(el, <NuSports {...p} />),
+  nuSlots: (el, p) => mount(el, <NuSlots {...p} />),
+  nuMealKcal: (el, p) => mount(el, <NuMealKcal {...p} />),
+  nuMkTot: (el, p) => mount(el, <NuMkTot {...p} />),
+  nuKcalOf: (el, p) => mount(el, <NuKcalOf {...p} />),
   nuLog: (el, p) => mount(el, <NuLog {...p} />),
   nuResult: (el, p) => mount(el, <NuResult {...p} />),
   nuWeek: (el, p) => mount(el, <NuWeek {...p} />),

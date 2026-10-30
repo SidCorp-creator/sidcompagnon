@@ -20,6 +20,7 @@ Décision de Sid (29 oct. 2026) : passer progressivement à TypeScript + React +
 | v51 | Focus : temps de travail concentré (jour, 7 jours) | `app/src/PomoStats.tsx` |
 | v52 | Graphiques : commentaires du jour et de la semaine, historique des semaines | `app/src/Reviews.tsx` |
 | v52 | Musculation : barre « Mon objectif » · Nutrition : barres des macros | `app/src/Small.tsx` |
+| v64 | Atouts de l'écran de connexion, barre des notes secrètes, barre du classeur ouvert, profil Nutrition (sports), réglages du menu (repas, calories par repas, total), calories du jour | `app/src/Forms.tsx` |
 | v63 | Présentation : diapositives des apps (état `onbSel`, redessinées à chaque choix puis `onbStep` remet la diapositive active), points, couleurs · claviers de code | `app/src/Onboarding.tsx` |
 | v62 | Réglages : statistiques, onglets affichés, types d'activités, adresses du connecteur · fenêtres : ajout rapide, fiche d'un exercice | `app/src/Settings.tsx` |
 | v61 | Coquille, étape 3 : appels au serveur, session, écriture synchronisée (`core/sync.ts`) ; barres de navigation : bas, en-tête d'app, barre latérale (`Shell.tsx`) | `app/src/core/sync.ts`, `app/src/Shell.tsx` |
@@ -56,8 +57,8 @@ Du plus isolé au plus central, un écran par version, chacun avec son test « m
 Tout ce qui s'affiche dans les écrans principaux est dessiné par React : Agenda (mois, année, jour, listes), Tâches, Focus (résumé, durées, frise), Musculation, Nutrition (journée, analyse, sport, menu, profil, copie, calendrier, macros), Graphiques, Notes (liste), Documents (liste), Mots de passe (liste), accueil.
 
 Reste dans `app.js` (la « coquille ») — mis à jour après la v62 :
-- ~~présentation~~, ~~claviers de code~~ (v63) ; barre des notes secrètes, barre du classeur ouvert (champ de recherche) ;
-- formulaire du profil Nutrition et réglages du menu (champs fixes de index.html) ;
+- ~~présentation~~, ~~claviers de code~~ (v63) ; ~~barres notes secrètes / classeur, sports du profil, réglages du menu~~ (v64) ;
+- champs fixes de index.html (e-mail et mot de passe de la connexion : gardés tels quels pour les gestionnaires de mots de passe et le remplissage automatique ; autres champs du profil Nutrition et du menu) ;
 - connexion, inscription, session, mode essai ;
 - synchronisation et fusion à 3 voies (`push`, `pull`, `mergeData`, `merge3`) ;
 - chiffrement et coffre (codes, phrase / mot de passe, Face ID, documents chiffrés) ;

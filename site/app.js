@@ -108,7 +108,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="63";const errSent=new Set();
+const APP_V="64";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -2615,7 +2615,8 @@ function renderDocs(){
     DF().map(f=>`<button class="pill" data-dfold="${f.id}" aria-pressed="${!!(cf&&cf.id===f.id)}">${IC("folder")} ${esc(f.name)} <span class="cnt">${cnt(f.id)||""}</span></button>`).join("")+
     `<button class="pill add" data-dfoldnew="1">+ ${L("Classeur")}</button>`;
   $("folderBar").hidden=!cf;
-  if(cf)$("folderBar").innerHTML=dfEditing?`<form id="folderRename" style="display:flex;gap:8px;width:100%"><input id="folderRenIn" value="${esc(cf.name)}" aria-label="${L("Nouveau nom")}" autocomplete="off"><button class="btn" type="submit">OK</button></form>`
+  if(cf&&shIsl("folderBar")){try{window.SCIslands.folderBar($("folderBar"),{name:cf.name,count:cnt(cf.id),editing:!!dfEditing,q:dfQ,icon:IC("folder"),i18n:agI18n()})}catch(e){reportErr("island folderBar: "+(e&&e.message))}}
+  else if(cf)$("folderBar").innerHTML=dfEditing?`<form id="folderRename" style="display:flex;gap:8px;width:100%"><input id="folderRenIn" value="${esc(cf.name)}" aria-label="${L("Nouveau nom")}" autocomplete="off"><button class="btn" type="submit">OK</button></form>`
     :`<div class="grow"><b class="notr">${IC("folder")} ${esc(cf.name)}</b><div class="small muted">${cnt(cf.id)} ${L(cnt(cf.id)>1?"documents":"document")}</div></div>
       <button class="mini" data-dfren="1">${L("Renommer")}</button><button class="x" data-dfdel="1" aria-label="${L("Supprimer le classeur")}">×</button>
       <input type="search" class="search" id="folderSearch" style="margin:8px 0 0;width:100%" placeholder="${L("Rechercher dans ce classeur")}" aria-label="${L("Rechercher dans ce classeur")}" value="${esc(dfQ)}" autocomplete="off">`;
@@ -2985,7 +2986,8 @@ function renderNotes(){
     return}
   const q=noteQ.trim(),secN=NT().filter(x=>x.secret).length;
   $("nsBar").hidden=!(nsKey&&secN);
-  $("nsBar").innerHTML=`<span class="grow">${IC("unlock")} ${L("Notes secrètes déverrouillées")}</span><button type="button" class="mini" data-nslock="1">${IC("lock")} ${L("Verrouiller")}</button>`;
+  if(shIsl("nsBar")){try{window.SCIslands.nsBar($("nsBar"),{unlock:IC("unlock"),lock:IC("lock"),i18n:agI18n()})}catch(e){reportErr("island nsBar: "+(e&&e.message))}}
+  else $("nsBar").innerHTML=`<span class="grow">${IC("unlock")} ${L("Notes secrètes déverrouillées")}</span><button type="button" class="mini" data-nslock="1">${IC("lock")} ${L("Verrouiller")}</button>`;
   let list=NT().slice().sort((a,b)=>(b.upd||0)-(a.upd||0));
   if(noteDir&&!nfOf(noteDir))noteDir=null;$("nfNew").textContent=L(noteDir?"+ Sous-dossier":"+ Dossier");
   const path=nfPath(noteDir);$("nfPath").hidden=!!q||!noteDir;
@@ -4186,6 +4188,8 @@ function nuDraftRender(){
   document.querySelectorAll("#nuGoal button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.goal===nuDraft.goal));
   document.querySelectorAll("#nuPace button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.pace===nuDraft.pace));
   $("nuPaceWrap").hidden=!nuDraft.goal||nuDraft.goal==="maintain";
+  if(shIsl("nuSports")){try{window.SCIslands.nuSports($("nuSports"),{i18n:agI18n(),sports:nuDraft.sports.map(x=>({name:String(x.name||""),freq:String(x.freq||""),dur:String(x.dur||"")}))});
+      $("nuSports").querySelectorAll("input").forEach(i=>{if(i!==document.activeElement&&i.value!==i.defaultValue)i.value=i.defaultValue});return}catch(e){reportErr("island nuSports: "+(e&&e.message))}} // champs hors saisie = valeur enregistrée (ex. après « × »)
   $("nuSports").innerHTML=nuDraft.sports.map((x,i)=>`<div class="nu-sport">
     <input class="nu-name" data-sp="${i}" data-f="name" value="${esc(x.name)}" placeholder="${L("Ex. Musculation")}" aria-label="${L("Sport")}" autocomplete="off">
     <button type="button" class="x" data-sprm="${i}" aria-label="${L("Retirer ce sport")}">×</button>
@@ -4289,7 +4293,8 @@ function renderNutri(){try{renderAiCards()}catch(e){}
   const pct=Math.min(1,s.kcal/tg.kcal);$("nuRing").style.strokeDashoffset=326.73*(1-pct);
   $("nuRing").closest(".nu-ring").classList.toggle("over",s.kcal>tg.kcal*1.05);
   $("nuKcal").textContent=r0(s.kcal);
-  $("nuKcalOf").innerHTML=`${L("sur")} ${tg.kcal} kcal<br>`+(s.kcal>tg.kcal?`<b style="color:var(--late)">+${r0(s.kcal-tg.kcal)}</b>`:`${L("reste")} ${r0(tg.kcal-s.kcal)}`);
+  if(shIsl("nuKcalOf")){try{window.SCIslands.nuKcalOf($("nuKcalOf"),{target:tg.kcal,over:s.kcal>tg.kcal?r0(s.kcal-tg.kcal):0,left:r0(tg.kcal-s.kcal),i18n:agI18n()})}catch(e){reportErr("island nuKcalOf: "+(e&&e.message))}}
+  else $("nuKcalOf").innerHTML=`${L("sur")} ${tg.kcal} kcal<br>`+(s.kcal>tg.kcal?`<b style="color:var(--late)">+${r0(s.kcal-tg.kcal)}</b>`:`${L("reste")} ${r0(tg.kcal-s.kcal)}`);
   // v52 (ticket #3) : barres des macros dessinées par React (app/src/Small.tsx) ; ancien rendu en secours
   if(window.SCIslands&&window.SCIslands.nuMacros&&!window.__noIslands){try{window.SCIslands.nuMacros($("nuMacros"),{rows:MAC.map(([k,l,v])=>({k,label:l,c:v,val:s[k],target:tg[k]})),i18n:{L,MOL,MO,DOWL}})}catch(e){reportErr("island nuMacros: "+(e&&e.message));$("nuMacros").innerHTML=nuMacrosHtml(s,tg)}}
   else $("nuMacros").innerHTML=nuMacrosHtml(s,tg);
@@ -4522,6 +4527,7 @@ function renderNuCal(){const box=$("nuCal"),btn=$("nuDayBtn");if(!box)return;box
 $("nuDayBtn").addEventListener("click",()=>{if(nuRange){nuRange=null;renderNuCal()}else nuCalOpen("month")});
 window.addEventListener("sc-islands",()=>{if(nuRange)renderNuCal();if(data&&data.ui&&data.ui.view==="graph")renderGraph();if(data&&data.ui&&data.ui.view==="pomo")renderPomo();if(data&&data.ui&&data.ui.view==="muscu")renderMuscu();if(session&&data&&data.tasks){renderPlan();renderTodos();renderHome()}if(session&&data&&data.ui){const v=data.ui.view||"home";renderNav(v);renderVhead(v);renderSide(v)}
   // v63 : claviers de code dessinés au démarrage par l'ancien code (avant le module) : React les reprend (touches gérées par padTap sur le conteneur)
+  if(!session&&$("authFeats")&&$("authFeats").children.length)renderAuthFeats();
   for(const [id,attr] of [["pinPad","pin"],["psPad","ps"]]){const el=$(id);if(el&&el.children.length&&!Object.keys(el).some(k=>k.startsWith("__reactContainer"))){const old=el.innerHTML;try{el.innerHTML="";window.SCIslands.keypad(el,{attr,del:attr==="ps"?agI18n().tr(L("Effacer")):agI18n().tr("Effacer")})}catch(e){el.innerHTML=old;reportErr("island keypad: "+(e&&e.message))}}}}); // en cas d'erreur, l'ancien clavier revient // module React chargé après coup : on redessine avec lui
 $("nuCal").addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.disabled)return;
   if(b.dataset.nurange!==undefined){if(b.dataset.nurange)nuCalOpen(b.dataset.nurange);else{nuRange=null;renderNuCal()}return}
@@ -4625,16 +4631,23 @@ function rebalance(k,i,v,tg){v=Math.max(0,Math.min(tg,v));const rest=tg-v,others
   let big=-1;out.forEach((x,j)=>{if(j!==i&&(big<0||x>out[big]))big=j});
   if(big>=0)out[big]=Math.max(0,out[big]+tg-out.reduce((a,b)=>a+b,0));return out}
 const oneKcal=slot=>{const mp=nuMP();return mp.one[slot]||splitKcal(dayTarget(iso(today())).kcal,slotsFor(4))[["breakfast","lunch","snack","dinner"].indexOf(slot)]};
+let nuMkForce=false; // v64 : redessiner les calories par repas même pendant la saisie (après un changement de répartition)
+const nuMkClear=()=>{if(Object.keys($("nuMealKcal")).some(k=>k.startsWith("__reactContainer")))nuMkForce=true;else $("nuMealKcal").innerHTML=""};
 function renderMenuForm(){
   const mp=nuMP(),day=mp.type==="day";
   document.querySelectorAll("#nuMType button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mtype===mp.type));
   $("nuMDay").hidden=!day;$("nuMOne").hidden=day;$("nuSnacks").textContent=mp.snacks||0;
-  $("nuSlots").innerHTML=MAINS.map(s=>`<button type="button" class="pill meal-tg" data-pick="${s}" aria-pressed="${!!mp.pick[s]}"><span class="tg-box" aria-hidden="true">${mp.pick[s]?"✓":""}</span>${IC(SLOT[s][1])} ${L(SLOT[s][0])}</button>`).join("");
+  if(shIsl("nuSlots")){try{window.SCIslands.nuSlots($("nuSlots"),{i18n:agI18n(),slots:MAINS.map(s=>({k:s,on:!!mp.pick[s],icon:IC(SLOT[s][1]),name:SLOT[s][0]}))})}catch(e){reportErr("island nuSlots: "+(e&&e.message))}}
+  else $("nuSlots").innerHTML=MAINS.map(s=>`<button type="button" class="pill meal-tg" data-pick="${s}" aria-pressed="${!!mp.pick[s]}"><span class="tg-box" aria-hidden="true">${mp.pick[s]?"✓":""}</span>${IC(SLOT[s][1])} ${L(SLOT[s][0])}</button>`).join("");
   const sl=mpSlots();
   $("nuMenuBtn").textContent=L(day?(sl.length===1&&sl[0]==="meal"?"Générer mon repas unique":"Générer ma journée"):{breakfast:"Générer un petit-déjeuner",lunch:"Générer un déjeuner",snack:"Générer une collation",dinner:"Générer un dîner"}[mp.type]);
   if(day){const k=mpKcals(),tot=k.reduce((a,b)=>a+b,0),tg=dayTarget(iso(today())).kcal;
-    if(!$("nuMealKcal").contains(document.activeElement))$("nuMealKcal").innerHTML=sl.map((s,i)=>`<div class="row"><span class="em">${IC(SLOT[s][1])}</span><span class="grow">${L(slotName(s))}</span><span class="nu-in"><input data-mk="${i}" type="text" inputmode="numeric" maxlength="4" value="${k[i]}" aria-label="${L("Calories")} ${L(slotName(s))}"><i>kcal</i></span></div>`).join("");
-    $("nuMkTot").innerHTML=`${L("Total")} <b>${fmtFull(tot)}</b> / ${fmtFull(tg)} kcal ✓${mp.kcals?` <button type="button" class="mini" data-mkreset="1">${L("Répartition conseillée")}</button>`:""}`;
+    const mkIsl=shIsl("nuMealKcal");
+    if(mkIsl&&(nuMkForce||!$("nuMealKcal").contains(document.activeElement))){nuMkForce=false;try{window.SCIslands.nuMealKcal($("nuMealKcal"),{i18n:agI18n(),rows:sl.map((s,i)=>({icon:IC(SLOT[s][1]),name:slotName(s),kcal:k[i]}))});
+      $("nuMealKcal").querySelectorAll("input").forEach(i=>{if(i!==document.activeElement&&i.value!==i.defaultValue)i.value=i.defaultValue})}catch(e){reportErr("island nuMealKcal: "+(e&&e.message))}}
+    else if(!mkIsl&&!$("nuMealKcal").contains(document.activeElement))$("nuMealKcal").innerHTML=sl.map((s,i)=>`<div class="row"><span class="em">${IC(SLOT[s][1])}</span><span class="grow">${L(slotName(s))}</span><span class="nu-in"><input data-mk="${i}" type="text" inputmode="numeric" maxlength="4" value="${k[i]}" aria-label="${L("Calories")} ${L(slotName(s))}"><i>kcal</i></span></div>`).join("");
+    if(shIsl("nuMkTot")){try{window.SCIslands.nuMkTot($("nuMkTot"),{tot:fmtFull(tot),tg:fmtFull(tg),reset:!!mp.kcals,i18n:agI18n()})}catch(e){reportErr("island nuMkTot: "+(e&&e.message))}}
+    else $("nuMkTot").innerHTML=`${L("Total")} <b>${fmtFull(tot)}</b> / ${fmtFull(tg)} kcal ✓${mp.kcals?` <button type="button" class="mini" data-mkreset="1">${L("Répartition conseillée")}</button>`:""}`;
     document.querySelector(".nu-mk-note").hidden=sl.length<2}
   else if(document.activeElement!==$("nuOneKcal"))$("nuOneKcal").value=oneKcal(mp.type);
   if(document.activeElement!==$("nuInclude"))$("nuInclude").value=mpPref(mp,mp.type,"include");if(document.activeElement!==$("nuExclude"))$("nuExclude").value=mpPref(mp,mp.type,"exclude");autoGrow($("nuInclude"));autoGrow($("nuExclude"));
@@ -4644,10 +4657,10 @@ $("nuMenuSec").addEventListener("click",e=>{const b=e.target.closest("[data-pick
   if(b.dataset.mkreset)mp.kcals=null;
   else if(b.dataset.pick){const s=b.dataset.pick;mp.pick[s]=!mp.pick[s];if(!MAINS.some(x=>mp.pick[x])&&!mp.snacks){mp.pick[s]=true;toast("Garde au moins un repas");return}mp.kcals=null}
   else{mp.snacks=Math.min(4,Math.max(0,(mp.snacks||0)+ +b.dataset.snacks));if(!MAINS.some(x=>mp.pick[x])&&!mp.snacks)mp.snacks=1;mp.kcals=null}
-  NU().upd=Date.now();save();$("nuMealKcal").innerHTML="";renderMenuForm()});
+  NU().upd=Date.now();save();nuMkClear();renderMenuForm()});
 $("nuMealKcal").addEventListener("change",e=>{const i=e.target.dataset.mk;if(i===undefined)return;const mp=nuMP(),tg=dayTarget(iso(today())).kcal,k=mpKcals().slice();
   const v=Math.round(numIn(e.target.value)/10)*10;if(v>tg)toast(`${L("Maximum")} ${fmtFull(tg)} kcal`);
-  mp.kcals=k.length>1?rebalance(k,+i,v,tg):[tg];mp.kcalsFor=mpSlots().join();NU().upd=Date.now();save();$("nuMealKcal").innerHTML="";renderMenuForm()});
+  mp.kcals=k.length>1?rebalance(k,+i,v,tg):[tg];mp.kcalsFor=mpSlots().join();NU().upd=Date.now();save();nuMkClear();renderMenuForm()});
 $("nuOneKcal").addEventListener("change",e=>{const mp=nuMP();mp.one[mp.type]=Math.max(0,Math.round(numIn(e.target.value)));NU().upd=Date.now();save()});
 ["nuInclude","nuExclude"].forEach(id=>$(id).addEventListener("change",e=>{const mp=nuMP();mpSet(mp,mp.type,id==="nuInclude"?"include":"exclude",e.target.value.trim());NU().upd=Date.now();save()}));
 // champs qui grandissent avec le texte
@@ -4919,6 +4932,14 @@ function renderApp(){
 renderApp();
 
 /* ---------- langue, présentation, page d'accueil ---------- */
+// v64 (#3) : atouts de l'écran de connexion (React quand le module est là ; repris à son arrivée)
+const AUTH_FEATS=[["plan","Organise tes journées","Agenda et tâches du jour, avec des rappels."],
+  ["pwd","Garde tout à l'abri","Notes, documents scannés et mots de passe, chiffrés sur ton appareil."],
+  ["muscu","Ta santé","Programme de musculation sur mesure, nutrition et graphiques."],
+  ["app","Partout avec toi","Sur smartphone et sur ordinateur, même sans connexion."]];
+function renderAuthFeats(){const el=$("authFeats");if(!el)return;
+  if(shIsl("authFeats")){const old=el.innerHTML;try{if(!Object.keys(el).some(k=>k.startsWith("__reactContainer")))el.innerHTML="";window.SCIslands.authFeats(el,{i18n:agI18n(),items:AUTH_FEATS.map(([k,t,d])=>({icon:ICON(k)||"",t,d}))});return}catch(e){el.innerHTML=old;reportErr("island authFeats: "+(e&&e.message))}}
+  el.innerHTML=AUTH_FEATS.map(([k,t,d])=>`<li><span class="af-ic">${ICON(k)}</span><span><b>${L(t)}</b><span class="small muted">${L(d)}</span></span></li>`).join("")}
 function setLang(v){LANG=v;ls.set("sidnote-lang",v);if(session){data.prefs.lang=v;save()}location.reload()}
 // traduction de l'interface : on remplace les textes français affichés par leur version anglaise
 const NOTR=".ttl,.ms-name,.doc-open b,#vwTitle,.blk b,.next .t,.notr,#accName,textarea,input,select option[data-user]";
@@ -5107,10 +5128,7 @@ if(ephExpired){
   $("aEmail").value=ls.get(LAST_KEY)||"";
   // v34 : nouveau visiteur → « Créer un compte » en premier ; on montre ce que fait l'app
   setMode(ls.get(LAST_KEY)&&!ls.get("sidnote-trial-carry")?"login":"signup");authWait();
-  $("authFeats").innerHTML=[["plan","Organise tes journées","Agenda et tâches du jour, avec des rappels."],
-    ["pwd","Garde tout à l'abri","Notes, documents scannés et mots de passe, chiffrés sur ton appareil."],
-    ["muscu","Ta santé","Programme de musculation sur mesure, nutrition et graphiques."],
-    ["app","Partout avec toi","Sur smartphone et sur ordinateur, même sans connexion."]].map(([k,t,d])=>`<li><span class="af-ic">${ICON(k)}</span><span><b>${L(t)}</b><span class="small muted">${L(d)}</span></span></li>`).join("");
+  renderAuthFeats();
   $("aTrial").addEventListener("click",startTrial);if(ls.get("sidnote-trial-carry")){$("aTrial").textContent=L("Revenir à l'essai");$("authSub").textContent=L("Crée ton compte : les données de ton essai seront reprises.")}
   if(!CONFIGURED){$("authSub").textContent="L'app n'est pas encore reliée à son serveur.";}
   try{const m=sessionStorage.getItem("sidnote-msg");if(m){$("aErr").textContent=m;$("aErr").hidden=false;sessionStorage.removeItem("sidnote-msg")}}catch(e){}
@@ -5143,7 +5161,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v63";
+const BUILD="sidnote-v64";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

@@ -11,6 +11,7 @@ import { AgendaChips, AgendaList, AgendaMonth, AgendaNext, AgendaYear, type AgI1
 import { CatBar, TodoCats, TodoDone, TodoOpen, TodoPaused, rowCtx, type TodosProps } from "./Todos";
 import { DayView, type DayViewProps } from "./DayView";
 import { MuList, type MuGrp, type MuI18n } from "./Muscu";
+import { NuLog, NuResult, NuWeek, type Dish, type Mac, type NuI18n, type NuResultVM, type WeekSport } from "./Nutrition";
 import type { AgTask, GrDay, I18n, Tip } from "./types";
 import { fmtN, r1 } from "./format";
 
@@ -75,6 +76,10 @@ declare global {
       agYear: (el: Element, p: { y: number; today: string; tasks: AgTask[]; i18n: AgI18n }) => void;
       agPlan: (els: { next: Element; chips: Element; list: Element }, p: AgPlanProps) => void;
       dayView: (el: Element, p: DayViewProps) => void;
+      unmount: (el: Element) => void;
+      nuLog: (el: Element, p: { dishes: Dish[]; mac: Mac[]; today: boolean; i18n: NuI18n }) => void;
+      nuResult: (el: Element, p: { p: NuResultVM | null; mac: Mac[]; boltIcon: string; i18n: NuI18n }) => void;
+      nuWeek: (el: Element, p: { sports: WeekSport[]; range: string; target: string; delta: number; actIcon: string; i18n: NuI18n }) => void;
       muList: (el: Element, p: { groups: MuGrp[]; trash: string; i18n: MuI18n }) => void;
       pomoPresets: (el: Element, p: { presets: number[]; total: number; labels: string[] }) => void;
       planBar: (el: Element, p: { segs: { t: string; d: number }[]; doneIdx: number }) => void;
@@ -83,7 +88,7 @@ declare global {
   }
 }
 window.SCIslands = {
-  version: 6,
+  version: 7,
   nuCal: (el, p) => mount(el, <NutritionCalendar {...p} />),
   graph,
   pomoStats: (el, p) => mount(el, <PomoStats {...p} />),
@@ -103,6 +108,11 @@ window.SCIslands = {
   },
   dayView: (el, p) => mount(el, <DayView {...p} />),
   muList: (el, p) => mount(el, <MuList {...p} />),
+  // rend l'élément à l'ancien code (ex. #nuResult, où app.js pose aussi l'animation de chargement)
+  unmount: (el) => { const r = roots.get(el); if (r) { r.unmount(); roots.delete(el); el.classList.remove("notr"); } },
+  nuLog: (el, p) => mount(el, <NuLog {...p} />),
+  nuResult: (el, p) => mount(el, <NuResult {...p} />),
+  nuWeek: (el, p) => mount(el, <NuWeek {...p} />),
   pomoPresets: (el, p) => mount(el, <PomoPresets {...p} />),
   planBar: (el, p) => mount(el, <PlanBar {...p} />),
   todos: (els, p) => {

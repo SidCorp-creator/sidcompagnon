@@ -1549,6 +1549,53 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>{P.run=null;save();renderPomo()});await pg.click('#presets [data-total="180"]');
     if(await pg.evaluate(()=>P.cfg.total)!==180)err("choisir une durée du Focus ne marche plus");
     await ctx.close()}
+  // --- v56 (ticket #3) : Nutrition (plats du jour, résultat d'une analyse, sport de la semaine) : même rendu, FR et EN ; quantités et vignettes
+  for(const [nm,dev,lg] of [["mobile",{...devices["iPhone 13"]},"fr"],["pc",{viewport:{width:1280,height:800}},"en"]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v56 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v56"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    if(lg!=="fr"){await pg.evaluate(l=>setLang(l),lg);await pg.waitForTimeout(2500)}
+    await pg.waitForFunction(()=>!!(window.SCIslands&&window.SCIslands.nuLog),null,{timeout:8000}).catch(()=>err("module React non chargé"));
+    await pg.evaluate(()=>{window.__par=async(ids,fn)=>{const norm=el=>[...el.querySelectorAll("*")].map(e=>e.tagName+"|"+[...e.attributes].filter(a=>a.name!=="style").map(a=>a.name+"="+a.value).sort().join(",")+"|"+(e.getAttribute("style")?e.style.cssText:"")+"|"+(e.children.length?"":e.textContent.trim())).join("\n");
+      fn();await new Promise(r=>setTimeout(r,60));const out={},a={},react=ids.every(id=>Object.keys($(id)).some(k=>k.startsWith("__reactContainer")));ids.forEach(id=>a[id]=norm($(id)));
+      const sv=ids.map(id=>{const el=$(id),c=el.cloneNode(false);c.classList.remove("notr");el.id=id+"R";el.after(c);c.id=id;c.innerHTML="";return[el,c,id]});
+      window.__noIslands=true;try{fn()}finally{window.__noIslands=false}await new Promise(r=>setTimeout(r,60));
+      sv.forEach(([el,c,id])=>{const b=norm(c);if(a[id]!==b){const al=a[id].split("\n"),bl=b.split("\n");out[id]=al.length+"/"+bl.length+" "+(al.find((l,i)=>l!==bl[i])||"")+" <> "+(bl.find((l,i)=>l!==al[i])||"")}c.remove();el.id=id});return{react,out}}});
+    const check=async(lbl,ids,fnSrc)=>{const r=await pg.evaluate(([ids,src])=>window.__par(ids,eval(src)),[ids,fnSrc]);
+      if(!r.react)err(lbl+" : pas rendu par React");for(const[id,d]of Object.entries(r.out))err(lbl+" : "+id+" différent : "+d.slice(0,300))};
+    await pg.evaluate(()=>{const d=new Date(),k=iso(d),at=h=>{const x=new Date();x.setHours(h,5,0,0);return x.toISOString()};
+      data.nutri={consent:new Date().toISOString(),profile:{sex:"h",age:24,height:180,weight:80,goal:"maintain",sports:[{name:"Course",freq:2,min:45},{name:"Muscu",freq:3,min:60}]},plan:{kcal:2200,p:150,c:250,f:70,bmr:1800,tdee:2200,text:"",warn:[],kps:{course:450}},upd:Date.now(),
+        log:[{id:"l1",day:k,at:at(8),grp:"g1",gname:"Petit-déjeuner",name:"Flocons d'avoine",qty:"60 g",kcal:230,p:8,c:40,f:4,upd:1},{id:"l2",day:k,at:at(8),grp:"g1",gname:"Petit-déjeuner",name:"Lait",qty:"200 ml",kcal:90,p:7,c:10,f:2,upd:1},
+          {id:"l3",day:k,at:at(12),grp:"g2",gname:"Riz au poulet",name:"Riz au poulet",qty:"",kcal:650,p:45,c:80,f:12,upd:1},{id:"l4",day:k,at:at(19),name:"Huile d'olive",qty:"10 g",g:10,kcal:90,p:0,c:0,f:10,upd:1}],weights:[],weeks:[],
+        wsports:{[wKey(k)]:{Course:3}}};data.ui.nuTab="day";nuDay=k;save();show("nutri")});
+    await check("journée",["nuLog","nuWeek","nuMacros"],"()=>renderNutri()");
+    await check("quantité ouverte",["nuLog","nuMacros"],"()=>{qtyEd='log:l1';renderNutri()}");
+    await pg.evaluate(()=>{qtyEd=null;renderNutri()});
+    await check("jour vide",["nuLog","nuMacros"],"()=>{const x=today();x.setDate(x.getDate()-3);nuDay=iso(x);renderNutri()}");
+    await check("aujourd'hui vide",["nuLog","nuMacros"],"()=>{NU().log=[];nuDay=iso(today());renderNutri()}");
+    await check("résultat",["nuResult"],"()=>{nuPending={q:'riz',mem:true,title:'Bol de riz',em:'🍚',note:'Portion estimée',photo:null,items:[{name:'Riz',qty:'150 g',kcal:200,p:4,c:44,f:0.5},{name:'Sauce soja',qty:'1 c. à soupe',kcal:10,p:1,c:1,f:0,extra:true}]};qtyEd=null;renderNuResult()}");
+    await check("résultat, quantité ouverte",["nuResult"],"()=>{qtyEd='res:0';renderNuResult()}");
+    // quantité modifiée depuis le résultat : calories recalculées ; puis ajout à la journée
+    await pg.evaluate(()=>{qtyEd=null;renderNuResult();$("nuResult").scrollIntoView()});
+    await pg.click('#nuResult [data-qed="res:0"]');await pg.fill("#qtyEdIn","300 g");await pg.press("#qtyEdIn","Enter");
+    if(await pg.evaluate(()=>nuPending&&nuPending.items[0].kcal)!==400)err("quantité du résultat : calories pas recalculées");
+    await pg.click('#nuResult [data-nuadd]');await pg.waitForTimeout(300);
+    if(!(await pg.evaluate(()=>NU().log.some(x=>x.name==="Riz"&&x.kcal===400)&&!!document.querySelector("#nuLog .dish")&&!document.querySelector("#nuResult .dish"))))err("ajouter le résultat à la journée ne marche plus");
+    // chargement (ancien code) puis nouveau résultat : #nuResult passe de l'un à l'autre sans erreur
+    await pg.evaluate(()=>{nuBusy="aliment";nuPending=null;renderNuResult();const stop=nuLoading($("nuResult"),["Analyse du plat…"]);stop();nuBusy="";
+      nuPending={q:'x',title:'Pomme',em:'🍎',note:'',items:[{name:'Pomme',qty:'1',kcal:80,p:0,c:20,f:0}]};renderNuResult()});
+    if(!(await pg.evaluate(()=>!!document.querySelector("#nuResult .dish"))))err("résultat après chargement absent");
+    await pg.evaluate(()=>{nuPending=null;renderNuResult()});
+    // vignette : chargée après coup, dessinée par React
+    await pg.evaluate(async()=>{const g=NU().log.find(x=>x.name==="Riz").grp;await idb.put(thumbKey(g),"data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7");thumbs.delete(g);renderNutri()});await pg.waitForTimeout(400);
+    if(!(await pg.evaluate(()=>!!document.querySelector("#nuLog .dish-ic img"))))err("vignette du plat absente");
+    await pg.locator('#nuWeek [data-d="1"]').first().scrollIntoViewIfNeeded();await pg.click('#nuWeek [data-d="1"]');
+    if(await pg.evaluate(()=>NU().wsports[wKey(iso(today()))].Course)!==4)err("sport de la semaine : + ne marche plus");
+    if(lg==="en"&&/Ton sport|Ajouter une quantité|Supprimer|aliments|par séance/.test(await pg.evaluate(()=>$("nuLog").textContent+$("nuWeek").textContent)))err("textes non traduits en anglais");
+    await pg.evaluate(()=>{$("toast").style.display="none";$("nuLog").scrollIntoView()});
+    await shot(pg,"v56-"+nm+"-nutrition");
+    await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");
   await b.close();process.exit(real.length?1:0);

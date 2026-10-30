@@ -977,3 +977,60 @@ html[data-ds] .pdfv input.pv-title{border:0!important;background:transparent!imp
 #nuCopyBody .day.sel{background:var(--app,var(--accent));color:var(--on-app,#fff)}
 #nuCopyBody .day.nu-cp-src .num{outline:1px dashed var(--muted);border-radius:50%}
 @media (max-width:520px){.mu-goal-seg{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+
+/* ---------- v49 : les 9 ambiances validées par Sid (30 oct. 2026) ----------
+   Une couleur par fonction (body[data-v]), même fond graphite légèrement teinté en sombre ; en clair, la même teinte en plus foncé (lisible sur l'ivoire).
+   Seules la couleur d'accent et la teinte du fond changent : la structure, les polices et les tailles restent les mêmes partout. */
+html[data-ds] body[data-v="plan"]{--app:#9C3B26}
+html[data-ds][data-theme="dark"] body[data-v="plan"]{--app:#D77A5E;--bg:#15110F;--surface:#15110F;--surface-2:#1E1815;--field:#1E1815;--bar:#15110F}
+@media (prefers-color-scheme:dark){html[data-ds]:not([data-theme="light"]) body[data-v="plan"]{--app:#D77A5E;--bg:#15110F;--surface:#15110F;--surface-2:#1E1815;--field:#1E1815;--bar:#15110F}}
+html[data-ds] body[data-v="todo"]{--app:#7A5A1C}
+html[data-ds][data-theme="dark"] body[data-v="todo"]{--app:#CDA55E;--bg:#14120D;--surface:#14120D;--surface-2:#1D1A13;--field:#1D1A13;--bar:#14120D}
+@media (prefers-color-scheme:dark){html[data-ds]:not([data-theme="light"]) body[data-v="todo"]{--app:#CDA55E;--bg:#14120D;--surface:#14120D;--surface-2:#1D1A13;--field:#1D1A13;--bar:#14120D}}
+html[data-ds] body[data-v="pomo"]{--app:#4A469E}
+html[data-ds][data-theme="dark"] body[data-v="pomo"]{--app:#9A97E0;--bg:#0F1015;--surface:#0F1015;--surface-2:#171822;--field:#171822;--bar:#0F1015}
+@media (prefers-color-scheme:dark){html[data-ds]:not([data-theme="light"]) body[data-v="pomo"]{--app:#9A97E0;--bg:#0F1015;--surface:#0F1015;--surface-2:#171822;--field:#171822;--bar:#0F1015}}
+html[data-ds] body[data-v="muscu"]{--app:#2F4A3A}
+html[data-ds][data-theme="dark"] body[data-v="muscu"]{--app:#86AE95;--bg:#0E1311;--surface:#0E1311;--surface-2:#151C18;--field:#151C18;--bar:#0E1311}
+@media (prefers-color-scheme:dark){html[data-ds]:not([data-theme="light"]) body[data-v="muscu"]{--app:#86AE95;--bg:#0E1311;--surface:#0E1311;--surface-2:#151C18;--field:#151C18;--bar:#0E1311}}
+html[data-ds] body[data-v="nutri"]{--app:#545A1C}
+html[data-ds][data-theme="dark"] body[data-v="nutri"]{--app:#BFC36E;--bg:#12130C;--surface:#12130C;--surface-2:#1A1C12;--field:#1A1C12;--bar:#12130C}
+@media (prefers-color-scheme:dark){html[data-ds]:not([data-theme="light"]) body[data-v="nutri"]{--app:#BFC36E;--bg:#12130C;--surface:#12130C;--surface-2:#1A1C12;--field:#1A1C12;--bar:#12130C}}
+html[data-ds] body[data-v="graph"]{--app:#1F5F75}
+html[data-ds][data-theme="dark"] body[data-v="graph"]{--app:#74AEC2;--bg:#0D1215;--surface:#0D1215;--surface-2:#141B1F;--field:#141B1F;--bar:#0D1215}
+@media (prefers-color-scheme:dark){html[data-ds]:not([data-theme="light"]) body[data-v="graph"]{--app:#74AEC2;--bg:#0D1215;--surface:#0D1215;--surface-2:#141B1F;--field:#141B1F;--bar:#0D1215}}
+html[data-ds] body[data-v="notes"]{--app:#1C1A17}
+html[data-ds][data-theme="dark"] body[data-v="notes"]{--app:#E8DFCC;--bg:#121212;--surface:#121212;--surface-2:#1B1B1A;--field:#1B1B1A;--bar:#121212}
+@media (prefers-color-scheme:dark){html[data-ds]:not([data-theme="light"]) body[data-v="notes"]{--app:#E8DFCC;--bg:#121212;--surface:#121212;--surface-2:#1B1B1A;--field:#1B1B1A;--bar:#121212}}
+html[data-ds] body[data-v="docs"]{--app:#34507A}
+html[data-ds][data-theme="dark"] body[data-v="docs"]{--app:#93A8C6;--bg:#0F1115;--surface:#0F1115;--surface-2:#171A20;--field:#171A20;--bar:#0F1115}
+@media (prefers-color-scheme:dark){html[data-ds]:not([data-theme="light"]) body[data-v="docs"]{--app:#93A8C6;--bg:#0F1115;--surface:#0F1115;--surface-2:#171A20;--field:#171A20;--bar:#0F1115}}
+html[data-ds] body[data-v="pwd"]{--app:#6E5416}
+html[data-ds][data-theme="dark"] body[data-v="pwd"]{--app:#CFAE5B;--bg:#12100B;--surface:#12100B;--surface-2:#1B1810;--field:#1B1810;--bar:#12100B}
+@media (prefers-color-scheme:dark){html[data-ds]:not([data-theme="light"]) body[data-v="pwd"]{--app:#CFAE5B;--bg:#12100B;--surface:#12100B;--surface-2:#1B1810;--field:#1B1810;--bar:#12100B}}
+
+/* ---------- v49 : plus d'espace, interface standard (demande de Sid : « rien de collé », facile à comprendre) ----------
+   Mêmes hauteurs partout : champs et boutons 48 px ; lignes de liste 56 px ; 24 px entre les blocs. */
+html[data-ds] main{padding-left:20px;padding-right:20px}
+html[data-ds] .sub{margin-bottom:24px;line-height:1.5}
+html[data-ds] h2{margin:40px 0 14px}
+html[data-ds] .view > .card,html[data-ds] .view > form.card,html[data-ds] .view > .addbar{margin-bottom:24px}
+html[data-ds] .row{padding-top:16px;padding-bottom:16px;min-height:56px;gap:14px}
+html[data-ds] .form{gap:14px;padding:18px 0}
+html[data-ds] .two{gap:12px}
+html[data-ds] .chips,html[data-ds] .tchips{gap:10px}
+html[data-ds] input:not([type=checkbox]):not([type=radio]):not([type=range]):not(.set-in):not(.search-mini),html[data-ds] select{min-height:48px}
+html[data-ds] .btn{min-height:48px}
+html[data-ds] .btn.mini,html[data-ds] .mini{min-height:40px}
+html[data-ds] .seg{margin:6px 0 20px}
+html[data-ds] .setsec > summary{padding-top:20px;padding-bottom:20px}
+html[data-ds] .setsec-in{padding-bottom:12px}
+html[data-ds] .pl-ask,html[data-ds] .nu-ask,html[data-ds] .ask-mu,html[data-ds] .ask-nt{margin-bottom:24px}
+html[data-ds] .ms{margin-bottom:14px}
+html[data-ds] .ms-body{gap:16px;padding:16px}
+html[data-ds] .dish{margin-bottom:12px}
+html[data-ds] .slogan{font-family:var(--display);font-weight:300;font-size:22px;color:var(--muted);margin:2px 0 14px}
+html[data-ds] .sp-tag{font-family:var(--display);font-weight:300;font-size:18px;opacity:.75;margin-top:6px}
+@media (min-width:768px){html[data-ds] main{padding-left:48px;padding-right:48px}}
+html[data-ds] label.btn{display:inline-flex;align-items:center;justify-content:center}
+html[data-ds] .yr-grid{gap:12px 6px}html[data-ds] .ym{min-width:0;padding:4px 0}html[data-ds] .ym-g,html[data-ds] .ym-g i{min-width:0}

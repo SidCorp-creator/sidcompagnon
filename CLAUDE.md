@@ -1,7 +1,7 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 48.** L'app s'appelle **Sid'compagnon** depuis la v45 (avant : Sid'home, v42–44). Adresse : **https://sidcompagnon.com** depuis la 44.8 (sidnote.netlify.app répond encore).
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 49.** L'app s'appelle **Sid'compagnon** depuis la v45 (avant : Sid'home, v42–44). Adresse : **https://sidcompagnon.com** depuis la 44.8 (sidnote.netlify.app répond encore).
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
 
@@ -297,6 +297,11 @@ assets/               ← logo
   - Anciens comptes à phrase : rien n'est rechiffré ; au premier déverrouillage par le code, `phPwOffer` demande le mot de passe une fois (« Plus besoin de phrase secrète ») et ajoute `phx.pw`. La phrase reste valable en secours (annuler la fenêtre du mot de passe → `askPhrase`). Réversible : retirer `phx.pw` remet l'ancien fonctionnement.
   - Changement de mot de passe : `recRewrap` rechiffre aussi `phx.pw`. Remise à zéro par e-mail : `finishLogin(…,{pwReset:true})` pose `phx.pwStale` ; au prochain déverrouillage sur un appareil (clé en mémoire), `phPwOffer` redemande le nouveau mot de passe. Sans aucun appareil ouvert ni phrase, les coffres ne peuvent plus être rouverts (dit dans les conditions et la confidentialité).
   - Mode essai : phrase comme avant (pas de compte). Textes visibles, `LEGAL`, pages publiques (où « Sid'home » restait) mis à jour. Tests : blocs principal, coffre (passage, nouvel appareil, code oublié, changement / remise à zéro du mot de passe, ancien compte à phrase) et Face ID.
+- v49 (phase 4, tickets #19 et #20, choix de Sid du 30 oct. 2026) :
+  - **Slogan « Ta vie, en ordre. »** (n° 2) : écran de connexion (`.slogan`), animation d'ouverture (`.sp-tag`), `og:description`, données structurées (`slogan`), manifest. Maquettes et 7 autres propositions : https://claude.ai/artifact/1TPVNPRoBNnzBhrpabShqr
+  - **9 ambiances** (validées) : une couleur par fonction via `body[data-v]` (fin de design.css) : Agenda terre cuite, Tâches laiton, Focus lavande, Musculation sauge, Nutrition olive, Graphiques eau profonde, Notes papier, Documents ardoise, Mots de passe or. En sombre, fond graphite très légèrement teinté (`--bg`, `--surface`, `--surface-2`, `--field`, `--bar`) ; en clair, la même teinte plus foncée (contraste ≥ 4,5:1 sur l'ivoire). Seul l'accent change : même structure, mêmes polices, mêmes tailles.
+  - **Plus d'espace, interface standard** (demande de Sid : « rien de collé », « pas de cliché ni d'extravagance », « facile à comprendre ») : marges de page 20 px (48 px sur ordinateur), 24 px entre les blocs, titres de section 40 px au-dessus, lignes de liste 56 px, champs et boutons 48 px, petits boutons 40 px. Grille de l'année resserrée (rien ne déborde).
+  - Test Face ID du smoke : attend 3 s que l'ouverture précédente finisse avant de reverrouiller.
 - Pomodoro : enchaînement travail / pause sur une durée totale, son (WebAudio débloqué au clic), maintien de l'écran allumé, lecteur Spotify intégré (playlist dans prefs).
 
 ## Pièges iPhone déjà rencontrés

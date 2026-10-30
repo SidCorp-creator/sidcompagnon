@@ -541,7 +541,8 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>{renderPwd();$("pinBio").click()}); // le bouton peut clignoter pendant une synchro : on vise directement l'actionawait pg.waitForFunction(()=>!!vaultKey,null,{timeout:15000}).catch(()=>err("Face ID n'ouvre pas les mots de passe"));
     // code changé ailleurs : Face ID se retire proprement, le code reste possible
     await pg.evaluate(async()=>{const s=ls.get(bioLsKey());const k=await bioPrf(s);s.main=await encJ(k,{c:"11111"});ls.set(bioLsKey(),s);pwdLock();bioAutoAt.main=Date.now();show("pwd")});await pg.waitForTimeout(300);
-    await pg.waitForFunction(()=>{if(vaultKey)pwdLock();return !vaultKey&&pinStep==="unlock"&&!$("pinBio").hidden},null,{timeout:5000}).catch(()=>{});await pg.click("#pinBio");await pg.waitForTimeout(2500);
+    await pg.waitForTimeout(3000); // laisse finir l'ouverture Face ID précédente (sinon le coffre se rouvre pendant le test)
+    await pg.waitForFunction(()=>{if(vaultKey)pwdLock();return !vaultKey&&pinStep==="unlock"&&!$("pinBio").hidden},null,{timeout:5000}).catch(()=>{});await pg.evaluate(()=>{if(vaultKey)pwdLock();renderPwd()});await pg.click("#pinBio");await pg.waitForTimeout(2500);
     if(await pg.evaluate(()=>!!vaultKey||bioHas("main")))err("mauvais code Face ID mal géré");
     // adresse pour Claude
     await pg.evaluate(()=>{show("more");document.querySelector('[data-sec="claude"]').open=true;$("aiAdv").open=true});await pg.waitForTimeout(500);
@@ -1238,6 +1239,27 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>{show("plan");calMode="month";renderCal()});await pg.waitForTimeout(150);
     if(await pg.locator("#calDays .day[data-day]").count()<28)err("calendrier de l'agenda cassé");
     await pg.evaluate(()=>{calMode="year";renderCal()});if(await pg.locator("#calYear .ym").count()!==12)err("vue année de l'agenda cassée");
+    await ctx.close()}
+  // --- v49 (phase 4) : slogan, une couleur par fonction (9 ambiances), plus d'espace, rien qui déborde
+  for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1280,height:800}}]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v49 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.waitForSelector("#splash",{state:"hidden",timeout:6000}).catch(()=>{});
+    if(!(await pg.isVisible("#auth .slogan"))||(await pg.textContent("#auth .slogan")).trim()!=="Ta vie, en ordre.")err("slogan absent de l'accueil");
+    await shot(pg,"v49-"+nm+"-connexion");
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v49"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    await pg.waitForSelector("#splash",{state:"hidden",timeout:6000}).catch(()=>{});await pg.evaluate(()=>{const t=$("toast");if(t)t.hidden=true});
+    await pg.evaluate(()=>{data.todos.push({id:"t1",title:"Payer la facture",createdAt:new Date().toISOString(),done:false},{id:"t2",title:"Réviser le chapitre 4",createdAt:new Date().toISOString(),done:false});save()});
+    const seen=new Set();
+    for(const v of ["plan","todo","pomo","muscu","nutri","graph","notes","docs","pwd"]){
+      const r=await pg.evaluate(v=>{show(v);const cs=getComputedStyle(document.body);return {app:cs.getPropertyValue("--app").trim(),bg:cs.getPropertyValue("--bg").trim(),ov:document.documentElement.scrollWidth>innerWidth+1}},v);
+      await pg.waitForTimeout(150);
+      if(!r.app)err("pas de couleur pour "+v);seen.add(r.app);if(r.ov)err("la page déborde sur le côté : "+v);
+      if(["plan","todo","muscu","nutri","notes"].includes(v))await shot(pg,"v49-"+nm+"-"+v)}
+    if(seen.size!==9)err("les 9 fonctions n'ont pas 9 couleurs différentes : "+[...seen].join(" "));
+    const h=await pg.evaluate(()=>{show("todo");const b=[...document.querySelectorAll("#v-todo .btn")].find(x=>x.offsetParent);return b?Math.round(b.getBoundingClientRect().height):48});
+    if(h<44)err("bouton trop petit : "+h+" px");
     await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");

@@ -1,7 +1,7 @@
 {
   "name": "Sid'compagnon",
   "short_name": "Sid'compagnon",
-  "description": "Sid'compagnon : sid'agenda, sid'fit et sid'note réunis — par SidCorp",
+  "description": "Ta vie, en ordre. sid'agenda, sid'fit et sid'note réunis — par SidCorp",
   "lang": "fr",
   "start_url": "./",
   "scope": "./",

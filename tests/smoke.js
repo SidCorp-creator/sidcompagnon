@@ -2165,6 +2165,8 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     // fenêtre « Envoyer à Claude »
     await check("envoyer : pas branché",["aaActs"],"()=>{data.prefs.aiOk=false;aiHandoff('Bonjour','nutri')}",0);
     await check("envoyer : branché, formulaire",["aaActs"],"()=>{data.prefs.aiOk=new Date().toISOString();data.prefs.aiConv={};aiHandoff('Bonjour','agenda')}",0);
+    // v74.2 : sans geste en cours (réponse arrivée plus tard), la fenêtre d'envoi s'affiche même avec une conversation reliée
+    await pg.evaluate(()=>{Object.defineProperty(navigator,"userActivation",{value:{isActive:false},configurable:true})});
     await check("envoyer : conversation réglée",["aaActs"],"()=>{data.prefs.aiConv={note:'https://claude.ai/chat/abc'};aiHandoff('Bonjour','note')}",0);
     await check("envoyer : photo",["aaActs"],"()=>{aiHandoff('Bonjour','nutri',{img:'IMG'})}".replace("IMG","data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="),0);
     await shot(pg,"v68-"+nm+"-envoyer");await pg.evaluate(()=>{$("aiAskSheet").hidden=true});

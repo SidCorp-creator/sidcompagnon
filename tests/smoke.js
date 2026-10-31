@@ -859,14 +859,14 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     // conversations fixes : réglages (lien public refusé), message copié puis la conversation s'ouvre
     await pg.evaluate(()=>{window.__open=[];window.__clip=[];window.open=u=>{window.__open.push(u);return null};navigator.clipboard.writeText=t=>{window.__clip.push(t);return Promise.resolve()};convSettings()});await pg.waitForTimeout(300);
     if(!(await pg.isVisible("#convNutri")))err("réglage des conversations introuvable");
-    await pg.fill("#convNutri","https://claude.ai/share/abc");await pg.click('.conv-f[data-conv="nutri"] button');if(await pg.evaluate(()=>(data.prefs.aiConv||{}).nutri))err("lien de partage public accepté");
-    await pg.fill("#convNutri","https://claude.ai/chat/1111-aaaa");await pg.click('.conv-f[data-conv="nutri"] button');
-    await pg.fill("#convMuscu","https://claude.ai/project/2222-bbbb");await pg.click('.conv-f[data-conv="muscu"] button');await shot(pg,"v44-"+nm+"-conversations");
+    await pg.fill("#convNutri","https://claude.ai/share/abc");await pg.click('.conv-f[data-conv="nutri"]:not(.conv-tab-f) button');if(await pg.evaluate(()=>(data.prefs.aiConv||{}).nutri))err("lien de partage public accepté");
+    await pg.fill("#convNutri","https://claude.ai/chat/1111-aaaa");await pg.click('.conv-f[data-conv="nutri"]:not(.conv-tab-f) button');
+    await pg.fill("#convMuscu","https://claude.ai/project/2222-bbbb");await pg.click('.conv-f[data-conv="muscu"]:not(.conv-tab-f) button');await shot(pg,"v44-"+nm+"-conversations");
     if(await pg.evaluate(()=>JSON.stringify(data.prefs.aiConv))!=='{"nutri":"https://claude.ai/chat/1111-aaaa","muscu":"https://claude.ai/project/2222-bbbb"}')err("liens des conversations pas enregistrés");
     await pg.evaluate(()=>{data.prefs.aiOk=1;data.prefs.ai="claude";data.nutri.consent=new Date().toISOString();save();show("muscu");renderMuscu()});
     await pg.evaluate(()=>{$("coachBox").hidden=false});await pg.fill("#coRemark","plus de dos");await pg.click('#coachBox [data-coach="adjust"]');await pg.waitForTimeout(300);
-    if(!(await pg.isVisible('#aaActs [data-aaconv]')))err("pas de bouton « Ouvrir la conversation Musculation »");
-    await pg.click('#aaActs [data-aaconv]');await pg.waitForTimeout(300);
+    // v74.2 : conversation reliée → envoi direct, sans la fenêtre d'envoi
+    if(await pg.isVisible("#aiAskSheet"))err("la fenêtre d'envoi s'ouvre alors qu'une conversation Musculation est reliée");
     const o1=await pg.evaluate(()=>({o:window.__open.slice(-1)[0],c:window.__clip.slice(-1)[0]}));
     // projet : nouvelle discussion dans le projet, message déjà écrit (rien à coller)
     if(!String(o1.o).startsWith("https://claude.ai/new?project=2222-bbbb&q=")||!decodeURIComponent(o1.o).includes("plus de dos"))err("musculation : pas ouvert dans le projet avec le message : "+JSON.stringify(o1));

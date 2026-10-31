@@ -142,6 +142,7 @@
         <button class="btn" type="submit" id="plAskBtn">Planifier</button>
       </div>
     </form>
+    <details class="conv-tab" data-convtab="agenda"><summary><span>Conversation Claude</span><span class="conv-st small muted" data-convst="agenda"></span></summary><form class="conv-f conv-tab-f" data-conv="agenda"><p class="small muted">Colle ici le lien d'une conversation Claude : toutes tes demandes iront directement dedans. Le message est copié, il ne reste qu'à le coller et l'envoyer.</p><div class="conv-row"><input type="url" inputmode="url" class="conv-tab-in" data-convin="agenda" placeholder="https://claude.ai/chat/…" aria-label="Lien de la conversation Claude" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div><button type="button" class="linkbtn conv-del" data-convdel="agenda" hidden>Retirer</button></form></details>
     <input type="search" class="search" id="planSearch" placeholder="Rechercher une activité" aria-label="Rechercher une activité" autocomplete="off" style="margin-top:6px" hidden>
     <div id="planTop">
     <button type="button" class="btn ghost add-act" id="taskAdd">+ Activité</button>
@@ -270,8 +271,9 @@
         <button class="btn" type="submit">Envoyer</button>
       </div>
     </form>
+    <details class="conv-tab" data-convtab="muscu"><summary><span>Conversation Claude</span><span class="conv-st small muted" data-convst="muscu"></span></summary><form class="conv-f conv-tab-f" data-conv="muscu"><p class="small muted">Colle ici le lien d'une conversation Claude : toutes tes demandes iront directement dedans. Le message est copié, il ne reste qu'à le coller et l'envoyer.</p><div class="conv-row"><input type="url" inputmode="url" class="conv-tab-in" data-convin="muscu" placeholder="https://claude.ai/chat/…" aria-label="Lien de la conversation Claude" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div><button type="button" class="linkbtn conv-del" data-convdel="muscu" hidden>Retirer</button></form></details>
     <div class="mu-goal" id="muGoal"></div>
-    <div class="card mu-stats" id="muStats"></div>
+    <details class="mu-stats-d" id="muStatsD"><summary><span>Mes statistiques</span></summary><div class="card mu-stats" id="muStats"></div></details>
     <div id="coachBox" hidden></div>
     <h2 class="ms-free-h">Mes séances</h2>
     <div id="msList"></div>
@@ -359,6 +361,7 @@
         <div id="nuResult"></div>
         <button type="button" class="linkbtn" id="nuManual" style="background:none;border:0;cursor:pointer;font-size:14px;justify-self:center">Saisir les valeurs à la main</button>
       </form>
+    <details class="conv-tab" data-convtab="nutri"><summary><span>Conversation Claude</span><span class="conv-st small muted" data-convst="nutri"></span></summary><form class="conv-f conv-tab-f" data-conv="nutri"><p class="small muted">Colle ici le lien d'une conversation Claude : toutes tes demandes iront directement dedans. Le message est copié, il ne reste qu'à le coller et l'envoyer.</p><div class="conv-row"><input type="url" inputmode="url" class="conv-tab-in" data-convin="nutri" placeholder="https://claude.ai/chat/…" aria-label="Lien de la conversation Claude" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div><button type="button" class="linkbtn conv-del" data-convdel="nutri" hidden>Retirer</button></form></details>
       </div>
       <div class="nu-tabs" id="nuTabs" role="group" aria-label="Nutrition">
         <button type="button" data-nutab="day"><i class="ic" data-i="calendar"></i>Ma journée</button>
@@ -494,6 +497,7 @@
         <button class="btn" type="submit">Envoyer</button>
       </div>
     </form>
+    <details class="conv-tab" data-convtab="note"><summary><span>Conversation Claude</span><span class="conv-st small muted" data-convst="note"></span></summary><form class="conv-f conv-tab-f" data-conv="note"><p class="small muted">Colle ici le lien d'une conversation Claude : toutes tes demandes iront directement dedans. Le message est copié, il ne reste qu'à le coller et l'envoyer.</p><div class="conv-row"><input type="url" inputmode="url" class="conv-tab-in" data-convin="note" placeholder="https://claude.ai/chat/…" aria-label="Lien de la conversation Claude" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div><button type="button" class="linkbtn conv-del" data-convdel="note" hidden>Retirer</button></form></details>
       <div class="pw-top"><input type="search" class="search" id="noteSearch" placeholder="Rechercher une note" aria-label="Rechercher une note" autocomplete="off"><button type="button" class="btn ghost" id="nfNew">+ Dossier</button><label class="btn ghost" id="pdfNew" title="Importer un PDF de cours">+ PDF<input type="file" id="pdfIn" accept="application/pdf,.pdf" multiple hidden></label><button type="button" class="btn" id="noteNew">+ Note</button></div>
       <form id="nfForm" class="nf-form" hidden><input id="nfIn" placeholder="Nom du dossier" aria-label="Nom du dossier" autocomplete="off" enterkeyhint="done"><button class="btn" type="submit">Créer</button><button type="button" class="btn ghost" id="nfCancel">Annuler</button></form>
       <div class="ns-bar" id="nsBar" hidden></div>
@@ -690,7 +694,7 @@
     <div class="card" id="stats"></div>
       </div>
     </details>
-    <p class="small muted" style="margin:18px 4px">Sid'compagnon · version 74.1 · une app <b>SidCorp</b></p>
+    <p class="small muted" style="margin:18px 4px">Sid'compagnon · version 74.2 · une app <b>SidCorp</b></p>
   </section>
 </main>
 

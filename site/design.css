@@ -1051,3 +1051,24 @@ html[data-ds] .yr-grid{gap:12px 6px}html[data-ds] .ym{min-width:0;padding:4px 0}
 .mu-st-rows b{font-family:var(--mono,inherit);font-weight:500;text-align:right;font-size:14px;letter-spacing:-.01em}
 .mu-st-rows b.warn{color:var(--late,#C2410C)}
 .mu-st-prog{margin:0}
+
+/* v74.2 : onglet « Conversation Claude » sous le champ de chaque fonction ; statistiques de la musculation repliées */
+.conv-tab,.mu-stats-d{margin:-8px 0 24px;border:var(--rule,1px) solid var(--line);border-radius:6px}
+.conv-tab>summary,.mu-stats-d>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:44px;padding:0 14px;font-size:14px;color:var(--muted)}
+.conv-tab>summary::-webkit-details-marker,.mu-stats-d>summary::-webkit-details-marker{display:none}
+.conv-tab>summary::before,.mu-stats-d>summary::before{content:"›";display:inline-block;transition:transform .15s;font-size:16px;line-height:1}
+.conv-tab[open]>summary::before,.mu-stats-d[open]>summary::before{transform:rotate(90deg)}
+.conv-tab>summary>span:first-child,.mu-stats-d>summary>span:first-child{flex:1;color:var(--ink)}
+.conv-tab .conv-st{color:var(--app,var(--muted))}
+.conv-tab-f{display:grid;gap:10px;padding:0 14px 14px}
+.conv-tab-f p{margin:0}
+.conv-tab-f .conv-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.conv-tab-f .conv-row input{min-width:0}
+.conv-tab-f .conv-del{justify-self:start;background:none;border:0;padding:4px 0;cursor:pointer;font-size:14px}
+.mu-stats-d{margin:16px 0 24px}
+.mu-stats-d>.mu-stats{margin:0;border:0;border-top:var(--rule,1px) solid var(--line);border-radius:0 0 6px 6px}
+.mu-stats-d .mu-st-h .eyebrow{display:none}
+/* v74.2 : « + Ajouter une série » et « Série 1 sur toutes » toujours côte à côte, quel que soit l'écran */
+.ex3 .set-acts{display:grid;grid-template-columns:repeat(2,minmax(0,max-content));gap:8px}
+.ex3 .set-acts .set-add{white-space:normal;text-align:center;min-width:0}
+@media (max-width:420px){.ex3 .set-acts{margin-left:0;grid-template-columns:repeat(2,minmax(0,1fr))}.ex3 .set-acts .set-add{padding:8px 8px}}

@@ -110,7 +110,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="74.1";const errSent=new Set();
+const APP_V="74.2";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -514,7 +514,8 @@ function show(v){
   const wasApp=document.documentElement.dataset.app;
   {const was=wasApp,nx=appOf(v);if(introReady&&was&&nx!=="home"&&was!==nx)appIntro(nx)}
   data.ui.view=v;if(GROUPS.some(x=>x.tabs.includes(v))){data.ui.glast=data.ui.glast||{};data.ui.glast[g.k]=v}saveUI();
-  document.body.dataset.g=g.k;document.body.dataset.v=v;if(v!=="notes")document.body.classList.remove("note-full");if(v==="more"){try{renderBio();renderAiCards();$("mcpSec").hidden=!session||isTrial()}catch(e){}}
+  document.body.dataset.g=g.k;document.body.dataset.v=v;if(v==="muscu"){const sd=$("muStatsD");if(sd)sd.open=false} // v74.2 : statistiques toujours refermées
+if(v!=="notes")document.body.classList.remove("note-full");if(v==="more"){try{renderBio();renderAiCards();$("mcpSec").hidden=!session||isTrial()}catch(e){}}
   document.querySelectorAll(".view").forEach(s=>s.hidden=s.id!=="v-"+v);
   document.documentElement.dataset.app=appOf(v);renderNav(v);renderVhead(v);renderSide(v);
   if(v==="home")renderHome();
@@ -1722,7 +1723,7 @@ function renderPomoStats(){
 setInterval(()=>{if(P.run){tickPomo();if(!$("v-pomo").hidden)renderPomoStats()}},500);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&P.run){unlockAudio();if(!P.run.pausedAt)keepAwake(true);tickPomo();pomoPlan()}});
 
-function renderAll(){renderTodos();renderPlan();renderStats();renderPomo();renderTypes();renderMuscu();renderDocs();renderNotes();renderPwd();renderNutri();if(data.ui.view==="graph")renderGraph();if(data.ui.view==="home")renderHome();if(data.ui.view==="spaces")renderSpaces();renderSide()}
+function renderAll(){renderTodos();renderPlan();renderStats();renderPomo();renderTypes();renderMuscu();renderDocs();renderNotes();renderPwd();renderNutri();if(data.ui.view==="graph")renderGraph();if(data.ui.view==="home")renderHome();if(data.ui.view==="spaces")renderSpaces();renderSide();convTabs()}
 
 /* ---------- écran de connexion ---------- */
 let authMode="login";
@@ -3683,11 +3684,19 @@ function aiGo(topic,prompt,quiet){const u=topic&&convUrl(topic),ai=aiCur()||AIS.
   if(u){copyNow(prompt);extOpen(u);if(!quiet)toast("Prompt copié, colle-le dans la conversation");return "chat"}
   extOpen(ai.ask(convFirst(topic,prompt)));return ""}
 function convSettings(t){show("more");const d=$("mcpSec"),a=$("aiAdv");if(d){d.open=true;if(a)a.open=true;setTimeout(()=>{const i=$(CONV_IN[t]||"convAgenda");(i?i.closest(".conv-f"):a).scrollIntoView({block:"center",behavior:"smooth"});if(i&&!i.value&&!matchMedia("(pointer:coarse)").matches)i.focus({preventScroll:true})},120)}}
-function renderConv(){const c=data.prefs.aiConv||{};for(const[t,id]of Object.entries(CONV_IN)){const i=$(id);if(i&&document.activeElement!==i)i.value=c[t]||""}}
+function renderConv(){const c=data.prefs.aiConv||{};for(const[t,id]of Object.entries(CONV_IN)){const i=$(id);if(i&&document.activeElement!==i)i.value=c[t]||""}convTabs()}
+// v74.2 (demande de Sid) : un petit onglet « Conversation Claude » sous le champ de chaque fonction (Agenda, Musculation, Nutrition, Notes) :
+// on y colle le lien d'une conversation et toutes les demandes de cette fonction y vont directement (sans passer par la fenêtre d'envoi)
+function convTabs(){const c=data.prefs.aiConv||{};
+  document.querySelectorAll("[data-convin]").forEach(i=>{const el=/** @type {HTMLInputElement} */(i);if(document.activeElement!==el)el.value=c[el.dataset.convin]||""});
+  document.querySelectorAll("[data-convst]").forEach(e=>{const u=convUrl(e.dataset.convst);e.textContent=u?`✓ ${L("reliée")}`:L("aucune")});
+  document.querySelectorAll("[data-convdel]").forEach(b=>{b.hidden=!(data.prefs.aiConv||{})[b.dataset.convdel]})}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-convdel]");if(!b)return;const t=b.dataset.convdel,c=data.prefs.aiConv||{};delete c[t];data.prefs.aiConv=c;save();renderConv();renderAiCards();
+  toast(`${L("Conversation")} ${L(CONV_NAME[t])} ${L("retirée : une nouvelle conversation s'ouvrira à chaque fois")}`)});
 document.addEventListener("submit",e=>{const f=e.target.closest(".conv-f");if(!f)return;e.preventDefault();const t=f.dataset.conv,v=f.querySelector("input").value.trim();
   if(v&&/^https:\/\/claude\.ai\/share\//.test(v)){toast("Ce lien de partage est public : copie plutôt l'adresse de la conversation (https://claude.ai/chat/…)");return}
   if(v&&!CONV_OK(v)){toast("Colle le lien complet de la conversation (https://claude.ai/chat/…)");return}
-  const c=data.prefs.aiConv=data.prefs.aiConv||{};if(v)c[t]=v;else delete c[t];save();renderAiCards();
+  const c=data.prefs.aiConv=data.prefs.aiConv||{};if(v)c[t]=v;else delete c[t];save();renderAiCards();renderConv();
   if(f.closest("#aaActs"))$("aiAskSheet").hidden=true;
   toast(v?`${L("Conversation")} ${L(CONV_NAME[t])} ${L("enregistrée")}`:`${L("Conversation")} ${L(CONV_NAME[t])} ${L("retirée : une nouvelle conversation s'ouvrira à chaque fois")}`)});
 // v43 : une photo ne passe pas dans un lien (?q= ne prend que du texte). On la partage avec la feuille de partage
@@ -3699,11 +3708,14 @@ async function aaImgPrep(dataUrl){aaImg={url:dataUrl,file:null,png:null};
     aaImg.png=await new Promise(r=>c.toBlob(r,"image/png"))}catch(e){}
   const can=!!(aaImg.file&&navigator.canShare&&navigator.canShare({files:[aaImg.file]}));
   const sh=$("aaShare");if(sh)sh.hidden=!can;const cp=$("aaImgCopy");if(cp)cp.hidden=can||!(aaImg.png&&window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write)}
-function aiHandoff(prompt,topic,opt){const ai=aiCur()||AIS.claude,cv=topic&&convUrl(topic),img=opt&&opt.img;$("aaPrompt").textContent=prompt;aaImg=null;
+function aiHandoff(prompt,topic,opt){const ai=aiCur()||AIS.claude,cv=topic&&convUrl(topic),img=opt&&opt.img;
+  // v74.2 : conversation reliée + geste en cours (copie et ouverture permises) → directement dans la conversation, sans fenêtre
+  const ua=/** @type {any} */(navigator).userActivation;if(cv&&!img&&ua&&ua.isActive){aiGo(topic,prompt);return}
+  $("aaPrompt").textContent=prompt;aaImg=null;
   $("aaActs").dataset.topic=topic||"";
   if(shIsl("aaActs")){try{const proj=!!cv&&convKind(topic)==="proj"; // v68 (#3)
     window.SCIslands.aaActs($("aaActs"),{a:{wiz:!(ai&&data.prefs.aiOk),img:img||"",conv:!!cv,proj,convName:CONV_NAME[topic]||"",ask:ai&&!cv&&!img?ai.ask(convFirst(topic,prompt)):"",askOk:!!data.prefs.aiOk,name:ai?ai.name:"",
-      form:!!(CONV_TITLE[topic]&&!cv&&!img&&ai&&data.prefs.aiOk),topic:topic||""},i18n:agI18n()});const ci=$("aaConvIn");if(ci&&document.activeElement!==ci)ci.value="";
+      form:false,topic:topic||""},i18n:agI18n()});const ci=$("aaConvIn");if(ci&&document.activeElement!==ci)ci.value="";
     $("aiAskSheet").hidden=false;if(img)aaImgPrep(img);return}catch(e){reportErr("island aaActs: "+(e&&e.message));try{window.SCIslands.unmount($("aaActs"))}catch(_){}}}
   $("aaActs").innerHTML=(ai&&data.prefs.aiOk?"":`<button type="button" class="btn" data-aiwiz="1">${L("Brancher Claude")}</button>`)+
     (img?`<div class="aa-img"><img src="${img}" alt="${L("Photo de ton plat")}"><span class="small muted">${L("La photo part avec le message : choisis Claude dans la liste de partage.")}</span></div>
@@ -3713,7 +3725,7 @@ function aiHandoff(prompt,topic,opt){const ai=aiCur()||AIS.claude,cv=topic&&conv
     (cv&&!img?`<button type="button" class="btn" data-aaconv="1">${L(convKind(topic)==="proj"?"Ouvrir dans le projet":"Ouvrir la conversation")} ${L(CONV_NAME[topic])}</button><div class="small muted" style="text-align:center">${L(convKind(topic)==="proj"?"Le message sera déjà écrit dans ton projet : il ne reste qu'à l'envoyer.":"Le message sera copié : colle-le dans la conversation.")}</div>`:"")+
     (ai&&!cv&&!img?`<a class="btn ${data.prefs.aiOk?"":"ghost"}" href="${ai.ask(convFirst(topic,prompt))}" target="_blank" rel="noopener">${L("Envoyer avec")} ${esc(ai.name)}</a>`:"")+
     `<button type="button" class="btn ghost" id="aaCopy">${L("Copier le message")}</button>`+
-    (CONV_TITLE[topic]&&!cv&&!img&&ai&&data.prefs.aiOk?`<form class="conv-f aa-conv" data-conv="${topic}"><label class="small muted" for="aaConvIn">${L("Ensuite, pour que toutes les demandes")} ${L(CONV_NAME[topic])} ${L("arrivent dans cette même conversation, colle ici son lien :")}</label>
+    (false?`<form class="conv-f aa-conv" data-conv="${topic}"><label class="small muted" for="aaConvIn">${L("Ensuite, pour que toutes les demandes")} ${L(CONV_NAME[topic])} ${L("arrivent dans cette même conversation, colle ici son lien :")}</label>
       <div class="conv-row"><input id="aaConvIn" type="url" inputmode="url" placeholder="https://claude.ai/chat/…" autocomplete="off"><button class="btn ghost" type="submit">${L("Enregistrer")}</button></div></form>`:"");
   $("aiAskSheet").hidden=false;if(img)aaImgPrep(img)}
 $("aaActs").addEventListener("click",e=>{
@@ -5378,7 +5390,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v74-1";
+const BUILD="sidnote-v74-2";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

@@ -1162,10 +1162,12 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     // sans lien : nouvelle conversation qui commence par le titre de l'app ; le lien collé dans la fenêtre est gardé
     const o=await pg.evaluate(()=>{aiGo("agenda","Ajoute dentiste demain");return decodeURIComponent(window.__open.slice(-1)[0])});
     if(!o.startsWith("https://claude.ai/new?q=sid'agenda — discussion avec Claude\n\nAjoute dentiste"))err("nouvelle conversation sid'agenda sans titre : "+o);
+    // v74.2 : le lien se colle dans l'onglet « Conversation Claude » de la fonction (plus dans la fenêtre d'envoi)
     await pg.evaluate(()=>{show("plan");aiHandoff("Note mon cours","note")});await pg.waitForTimeout(200);
-    if(!(await pg.isVisible("#aaConvIn")))err("pas de champ pour garder la conversation sid'note");
-    await shot(pg,"v461-"+nm+"-garder-conversation");
-    await pg.fill("#aaConvIn","https://claude.ai/chat/3333-cccc");await pg.click(".aa-conv button");await pg.waitForTimeout(200);
+    if(await pg.isVisible("#aaConvIn"))err("le champ du lien est encore dans la fenêtre d'envoi");
+    await pg.evaluate(()=>{$("aiAskSheet").hidden=true;show("notes")});await pg.waitForTimeout(200);
+    await pg.click('[data-convtab="note"] summary');await shot(pg,"v461-"+nm+"-garder-conversation");
+    await pg.fill('[data-convin="note"]',"https://claude.ai/chat/3333-cccc");await pg.click('[data-convtab="note"] [type=submit]');await pg.waitForTimeout(200);
     if(await pg.evaluate(()=>(data.prefs.aiConv||{}).note)!=="https://claude.ai/chat/3333-cccc"||await pg.isVisible("#aiAskSheet"))err("lien de la conversation sid'note pas gardé");
     if(await pg.evaluate(()=>aiGo("note","x",true))!=="chat"||await pg.evaluate(()=>window.__open.slice(-1)[0])!=="https://claude.ai/chat/3333-cccc")err("sid'note n'ouvre pas sa conversation");
     // l'ancien dossier Santé ne sert pas à sid'note ni à sid'agenda
@@ -2287,7 +2289,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(!st.endu.rows.some(r=>/^\d+$/.test(r.v))||!st.endu.rows.some(r=>/ s$/.test(r.v)))err("endurance : "+JSON.stringify(st.endu.rows));
     if(!st.muscle.rows.length||!/kg$/.test(st.muscle.rows[0].v)||!st.muscle.rows.some(r=>/^(Pectoraux|Chest|Borst|Pecs)/.test(r.l))||st.muscle.rows.some(r=>/^(Autres|Other|Overige)$/.test(r.l)))err("prise de masse : "+JSON.stringify(st.muscle.rows));
     await check("statistiques",["muStats"],"()=>renderMuStats()");
-    await pg.evaluate(()=>{$("muStats").scrollIntoView()});await shot(pg,"v73-"+nm+"-stats");
+    await pg.evaluate(()=>{$("muStatsD").open=true;$("muStats").scrollIntoView()});await shot(pg,"v73-"+nm+"-stats");
     // progression : la dernière séance a tout réussi au haut de la fourchette → conseil sur l'exercice
     const pro=await pg.evaluate(()=>{const ex=msFind("s73").exercises[1];ex.reps="10–12";renderMuscu();return exProg(ex)});
     if(!pro)err("conseil de progression absent");
@@ -2320,6 +2322,24 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(!(await pg.evaluate(()=>document.documentElement.hasAttribute("data-fx"))))err("« Unique » ne remet pas le style");
     const ov=await pg.evaluate(async()=>{const bad=[];for(const v of ["plan","todo","pomo","muscu","nutri","graph","notes","docs","pwd"]){show(v);await new Promise(z=>setTimeout(z,80));if(document.documentElement.scrollWidth>innerWidth+1)bad.push(v)}return bad});
     if(ov.length)err("débordement horizontal : "+ov.join(","));
+    // v74.2 : onglet « Conversation Claude » sous le champ de chaque fonction ; demande envoyée directement dans la conversation reliée
+    for(const[v,t]of [["plan","agenda"],["muscu","muscu"],["nutri","nutri"],["notes","note"]]){await pg.evaluate(v=>{if(v==="nutri"){data.nutri={consent:new Date().toISOString(),profile:{sex:"h",age:24,height:180,weight:80,goal:"maintain",sports:[]},plan:{kcal:2000,p:150,c:200,f:70},upd:Date.now(),log:[]};save()}show(v);renderAll()},v);await pg.waitForTimeout(200);
+      const tb=await pg.evaluate(t=>{const d=document.querySelector(`[data-convtab="${t}"]`);return d?{vis:d.getBoundingClientRect().height>0,open:d.open}:null},t);if(!tb||!tb.vis||tb.open)err("onglet « Conversation Claude » de "+v+" : "+JSON.stringify(tb))}
+    await pg.evaluate(()=>{window.__open=[];window.open=u=>{window.__open.push(u);return null};data.prefs.ai="claude";data.prefs.aiOk=new Date().toISOString();save();show("plan")});await pg.click('[data-convtab="agenda"] summary');
+    await pg.fill('[data-convin="agenda"]',"https://claude.ai/chat/7777-agenda");await pg.click('[data-convtab="agenda"] [type=submit]');await pg.waitForTimeout(200);
+    if(await pg.evaluate(()=>(data.prefs.aiConv||{}).agenda)!=="https://claude.ai/chat/7777-agenda")err("lien de la conversation agenda pas gardé");
+    if(!/(reliée|linked)/.test(await pg.textContent('[data-convst="agenda"]')))err("état « reliée » absent");
+    await pg.fill("#plAsk","dentiste jeudi 14h");await pg.click("#plAskBtn");await pg.waitForTimeout(300);
+    const dr=await pg.evaluate(()=>({o:(window.__open||[]).slice(-1)[0],sheet:!$("aiAskSheet").hidden}));
+    if(dr.o!=="https://claude.ai/chat/7777-agenda"||dr.sheet)err("la demande ne part pas directement dans la conversation : "+JSON.stringify(dr));
+    await pg.click('[data-convdel="agenda"]');await pg.waitForTimeout(150);if(await pg.evaluate(()=>(data.prefs.aiConv||{}).agenda))err("« Retirer » ne retire pas le lien");
+    // v74.2 : statistiques repliées à chaque ouverture ; « + Ajouter une série » et « Série 1 sur toutes » côte à côte
+    await pg.evaluate(()=>{M().sessions=[{id:"s742",name:"Push",upd:1,exercises:[{id:"e1",name:"Développé couché",reps:"6–10",sets:[{kg:"35",reps:"7"},{kg:"35",reps:"7"}]}]}];save();show("muscu");renderMuscu()});await pg.waitForTimeout(200);
+    if(await pg.evaluate(()=>$("muStatsD").open))err("statistiques ouvertes d'office");
+    await pg.evaluate(()=>{$("muStatsD").open=true;show("plan");show("muscu")});if(await pg.evaluate(()=>$("muStatsD").open))err("statistiques pas refermées au retour");
+    await pg.locator("#msList details.ms > summary").first().click();await pg.waitForTimeout(200);
+    const sa=await pg.evaluate(()=>[...document.querySelectorAll(".set-acts .set-add")].map(x=>Math.round(x.getBoundingClientRect().top)));
+    if(sa.length!==2||sa[0]!==sa[1])err("boutons des séries pas côte à côte : "+sa);
     await pg.evaluate(()=>{show("plan");scrollTo(0,0)});await shot(pg,"v74-"+nm+"-agenda");
     await ctx.close()}
   const real=errs.filter(Boolean);

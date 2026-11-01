@@ -1218,7 +1218,8 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
       data.ui.nuTab="day";save();show("nutri");renderNutri()});await pg.waitForTimeout(300);
     await pg.click("#nuDayBtn");await pg.waitForTimeout(200);
     const mo=await pg.evaluate(()=>({vis:!$("nuCal").hidden,ok:document.querySelectorAll("#nuCal .nu-st.ok").length,under:document.querySelectorAll("#nuCal .nu-mgrid .nu-st.under").length}));
-    if(!mo.vis||mo.ok<1||mo.under<1)err("vue mois : "+JSON.stringify(mo));
+    // le 1er du mois, « hier » tombe dans le mois précédent : pas de jour « en dessous » visible dans la vue du mois
+    if(!mo.vis||mo.ok<1||(mo.under<1&&new Date().getDate()>1))err("vue mois : "+JSON.stringify(mo));
     await pg.evaluate(()=>$("nuCal").scrollIntoView());await shot(pg,"v47-"+nm+"-nutrition-mois");
     await pg.click('#nuCal [data-nurange=week]');await pg.waitForTimeout(150);
     if(await pg.locator("#nuCal .nwk-row").count()!==7)err("vue semaine : pas 7 jours");

@@ -26,7 +26,7 @@ function muMigrate(){const m=M(),p=m.plan;if(!Array.isArray(m.sessions))m.sessio
   // (ex.kg, ex.reps) sont recopiés dans les séries seulement si toutes étaient vides ; la fourchette visée d'un programme (« 8–12 ») n'est jamais recopiée
   for(const se of m.sessions)for(const ex of (se&&se.exercises)||[]){if(!ex||ex.ps)continue;if(!Array.isArray(ex.sets)||!ex.sets.length)ex.sets=[newSet()];
     const kg=String(ex.kg==null?"":ex.kg).trim(),rp=String(ex.reps||"").trim(),empty=k=>ex.sets.every(x=>!x||String(x[k]==null?"":x[k]).trim()==="");
-    if(kg&&empty("kg"))ex.sets.forEach(x=>{x.kg=kg});if(/^\d+$/.test(rp)&&empty("reps"))ex.sets.forEach(x=>{x.reps=rp});
+    if(kg&&empty("kg"))ex.sets.forEach(x=>{x.kg=kg});if(kg&&/^\d+$/.test(rp)&&empty("reps"))ex.sets.forEach(x=>{x.reps=rp}); // v74.3 : sans poids (programme de Claude), les répétitions visées restent visées
     delete ex.kg;ex.ps=1;ch=true}
   if(ch){m.upd=Date.now();save()}}
 const PL=()=>{const p=M().plan;return p&&!p.deleted&&(p.v===2||Array.isArray(p.days))?p:null}; // supprimé = {deleted, upd} pour que la suppression gagne à la fusion
@@ -139,7 +139,7 @@ $("msList").addEventListener("input",e=>{
       if(!msRedraw()){const d=inp.closest("[data-prm]");if(d)d.querySelector("summary").textContent=exPrmSum(ex);const av=inp.closest("[data-ex]").querySelector(".ex-adv");if(av)av.outerHTML=exAdvHtml(ex)}}
     else if(f==="setkg"||f==="setreps"){const j=+inp.closest("[data-si]").dataset.si,st=ex.sets[j];if(!st)return;
       if(f==="setkg")st.kg=inp.value.replace(",",".").replace(/[^0-9.]/g,"").slice(0,7);else st.reps=inp.value.replace(/[^0-9]/g,"").slice(0,4);
-      const was=msRunGet(se.id);if(String(st.kg||"").trim()||String(st.reps||"").trim()){msRunTouch(se,ex,j,!!String(st.reps||"").trim());msAutoLog(se);if(!was)msRedraw()}}}
+      const was=msRunGet(se.id);if(String(st.kg||"").trim()||String(st.reps||"").trim()||was){msRunTouch(se,ex,j,!!String(st.reps||"").trim());msAutoLog(se);if(!was)msRedraw()}}}
   msSaveSoon(se)});
 // v44.7 : fiche « comment faire » de chaque exercice proposé (site/exercices-aide.js), dans la langue de l'app
 function exAide(name){const A=window.SIDFIT_AIDE||{},k=fold(String(name||"").trim());if(!k)return null;
@@ -166,17 +166,18 @@ $("msList").addEventListener("click",e=>{
   const box=b.closest("[data-ms]");if(!box)return;const se=msFind(box.dataset.ms);if(!se)return;if(!b.closest("summary"))msOpenId=se.id;
   const exOf=()=>se.exercises.find(x=>x.id===b.closest("[data-ex]").dataset.ex);
   if(b.dataset.msaddex){se.exercises.push(newEx());seTouch(se);save();renderMuscu();const ins=$("msList").querySelectorAll(`[data-ms="${se.id}"] [data-f=exname]`);ins[ins.length-1]?.focus()}
-  else if(b.dataset.msdelex){armDelete(b,()=>{se.exercises=se.exercises.filter(x=>x.id!==b.dataset.msdelex);seTouch(se);save();renderMuscu()})}
+  else if(b.dataset.msdelex){armDelete(b,()=>{se.exercises=se.exercises.filter(x=>x.id!==b.dataset.msdelex);seTouch(se);save();renderMuscu();if(msRunGet(se.id))msAutoLog(se)})}
   else if(b.dataset.exhelp){const ex=exOf();if(ex)exHelpOpen(ex.name)}
   else if(b.dataset.msadv){const ex=exOf();if(ex)exAdvApply(se,ex)}
   else if(b.dataset.mscopy1){const ex=exOf();if(!ex||ex.sets.length<2)return;const f=ex.sets[0]||{};
     // v45 : la série 1 (poids et répétitions) est recopiée dans toutes les autres séries de l'exercice
     if(!String(f.kg||"").trim()&&!String(f.reps||"").trim()){toast("Remplis d'abord la série 1");return}
-    const before=ex.sets.map(x=>({...x}));ex.sets.forEach((x,j)=>{if(j)ex.sets[j]={...x,kg:f.kg||"",reps:f.reps||""}});seTouch(se);save();renderMuscu();
+    const before=ex.sets.map(x=>({...x}));ex.sets.forEach((x,j)=>{if(j)ex.sets[j]={...x,kg:f.kg||"",reps:f.reps||""}});
+    ex.sets.forEach((x,j)=>msRunTouch(se,ex,j,!!String(x.reps||"").trim()));msAutoLog(se);seTouch(se);save();renderMuscu();
     toastAct("Série 1 recopiée sur toutes les séries","Annuler",()=>{ex.sets=before;seTouch(se);save();renderMuscu()})}
   else if(b.dataset.msaddset){const ex=exOf();if(!ex||ex.sets.length>=20)return;ex.sets.push(newSet());seTouch(se);save();renderMuscu();
     const ins=document.querySelectorAll(`#msList [data-ex="${ex.id}"] [data-f="setkg"]`);ins[ins.length-1]?.focus()}
-  else if(b.dataset.msdelset!==undefined){const ex=exOf();if(!ex||ex.sets.length<=1)return;ex.sets.splice(+b.dataset.msdelset,1);seTouch(se);save();renderMuscu()}
+  else if(b.dataset.msdelset!==undefined){const ex=exOf();if(!ex||ex.sets.length<=1)return;const j=+b.dataset.msdelset;ex.sets.splice(j,1);msRunShift(se.id,ex.id,j);seTouch(se);save();renderMuscu();if(msRunGet(se.id))msAutoLog(se)}
   else if(b.dataset.msshare)copyText(shareTxt([se]),"se");
   else if(b.dataset.msdone)msDone(se);
   // v44.4 : aussi depuis l'en-tête de la séance (poubelle, 2 appuis)

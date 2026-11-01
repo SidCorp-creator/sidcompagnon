@@ -110,7 +110,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="74.2";const errSent=new Set();
+const APP_V="74.3";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -2123,7 +2123,7 @@ function muMigrate(){const m=M(),p=m.plan;if(!Array.isArray(m.sessions))m.sessio
   // (ex.kg, ex.reps) sont recopiés dans les séries seulement si toutes étaient vides ; la fourchette visée d'un programme (« 8–12 ») n'est jamais recopiée
   for(const se of m.sessions)for(const ex of (se&&se.exercises)||[]){if(!ex||ex.ps)continue;if(!Array.isArray(ex.sets)||!ex.sets.length)ex.sets=[newSet()];
     const kg=String(ex.kg==null?"":ex.kg).trim(),rp=String(ex.reps||"").trim(),empty=k=>ex.sets.every(x=>!x||String(x[k]==null?"":x[k]).trim()==="");
-    if(kg&&empty("kg"))ex.sets.forEach(x=>{x.kg=kg});if(/^\d+$/.test(rp)&&empty("reps"))ex.sets.forEach(x=>{x.reps=rp});
+    if(kg&&empty("kg"))ex.sets.forEach(x=>{x.kg=kg});if(kg&&/^\d+$/.test(rp)&&empty("reps"))ex.sets.forEach(x=>{x.reps=rp}); // v74.3 : sans poids (programme de Claude), les répétitions visées restent visées
     delete ex.kg;ex.ps=1;ch=true}
   if(ch){m.upd=Date.now();save()}}
 const PL=()=>{const p=M().plan;return p&&!p.deleted&&(p.v===2||Array.isArray(p.days))?p:null}; // supprimé = {deleted, upd} pour que la suppression gagne à la fusion
@@ -2236,7 +2236,7 @@ $("msList").addEventListener("input",e=>{
       if(!msRedraw()){const d=inp.closest("[data-prm]");if(d)d.querySelector("summary").textContent=exPrmSum(ex);const av=inp.closest("[data-ex]").querySelector(".ex-adv");if(av)av.outerHTML=exAdvHtml(ex)}}
     else if(f==="setkg"||f==="setreps"){const j=+inp.closest("[data-si]").dataset.si,st=ex.sets[j];if(!st)return;
       if(f==="setkg")st.kg=inp.value.replace(",",".").replace(/[^0-9.]/g,"").slice(0,7);else st.reps=inp.value.replace(/[^0-9]/g,"").slice(0,4);
-      const was=msRunGet(se.id);if(String(st.kg||"").trim()||String(st.reps||"").trim()){msRunTouch(se,ex,j,!!String(st.reps||"").trim());msAutoLog(se);if(!was)msRedraw()}}}
+      const was=msRunGet(se.id);if(String(st.kg||"").trim()||String(st.reps||"").trim()||was){msRunTouch(se,ex,j,!!String(st.reps||"").trim());msAutoLog(se);if(!was)msRedraw()}}}
   msSaveSoon(se)});
 // v44.7 : fiche « comment faire » de chaque exercice proposé (site/exercices-aide.js), dans la langue de l'app
 function exAide(name){const A=window.SIDFIT_AIDE||{},k=fold(String(name||"").trim());if(!k)return null;
@@ -2263,17 +2263,18 @@ $("msList").addEventListener("click",e=>{
   const box=b.closest("[data-ms]");if(!box)return;const se=msFind(box.dataset.ms);if(!se)return;if(!b.closest("summary"))msOpenId=se.id;
   const exOf=()=>se.exercises.find(x=>x.id===b.closest("[data-ex]").dataset.ex);
   if(b.dataset.msaddex){se.exercises.push(newEx());seTouch(se);save();renderMuscu();const ins=$("msList").querySelectorAll(`[data-ms="${se.id}"] [data-f=exname]`);ins[ins.length-1]?.focus()}
-  else if(b.dataset.msdelex){armDelete(b,()=>{se.exercises=se.exercises.filter(x=>x.id!==b.dataset.msdelex);seTouch(se);save();renderMuscu()})}
+  else if(b.dataset.msdelex){armDelete(b,()=>{se.exercises=se.exercises.filter(x=>x.id!==b.dataset.msdelex);seTouch(se);save();renderMuscu();if(msRunGet(se.id))msAutoLog(se)})}
   else if(b.dataset.exhelp){const ex=exOf();if(ex)exHelpOpen(ex.name)}
   else if(b.dataset.msadv){const ex=exOf();if(ex)exAdvApply(se,ex)}
   else if(b.dataset.mscopy1){const ex=exOf();if(!ex||ex.sets.length<2)return;const f=ex.sets[0]||{};
     // v45 : la série 1 (poids et répétitions) est recopiée dans toutes les autres séries de l'exercice
     if(!String(f.kg||"").trim()&&!String(f.reps||"").trim()){toast("Remplis d'abord la série 1");return}
-    const before=ex.sets.map(x=>({...x}));ex.sets.forEach((x,j)=>{if(j)ex.sets[j]={...x,kg:f.kg||"",reps:f.reps||""}});seTouch(se);save();renderMuscu();
+    const before=ex.sets.map(x=>({...x}));ex.sets.forEach((x,j)=>{if(j)ex.sets[j]={...x,kg:f.kg||"",reps:f.reps||""}});
+    ex.sets.forEach((x,j)=>msRunTouch(se,ex,j,!!String(x.reps||"").trim()));msAutoLog(se);seTouch(se);save();renderMuscu();
     toastAct("Série 1 recopiée sur toutes les séries","Annuler",()=>{ex.sets=before;seTouch(se);save();renderMuscu()})}
   else if(b.dataset.msaddset){const ex=exOf();if(!ex||ex.sets.length>=20)return;ex.sets.push(newSet());seTouch(se);save();renderMuscu();
     const ins=document.querySelectorAll(`#msList [data-ex="${ex.id}"] [data-f="setkg"]`);ins[ins.length-1]?.focus()}
-  else if(b.dataset.msdelset!==undefined){const ex=exOf();if(!ex||ex.sets.length<=1)return;ex.sets.splice(+b.dataset.msdelset,1);seTouch(se);save();renderMuscu()}
+  else if(b.dataset.msdelset!==undefined){const ex=exOf();if(!ex||ex.sets.length<=1)return;const j=+b.dataset.msdelset;ex.sets.splice(j,1);msRunShift(se.id,ex.id,j);seTouch(se);save();renderMuscu();if(msRunGet(se.id))msAutoLog(se)}
   else if(b.dataset.msshare)copyText(shareTxt([se]),"se");
   else if(b.dataset.msdone)msDone(se);
   // v44.4 : aussi depuis l'en-tête de la séance (poubelle, 2 appuis)
@@ -2511,7 +2512,7 @@ function exLastLog(name){const k=fold(String(name||"").trim());if(!k)return null
   const L0=ML().filter(l=>l&&!(data.del&&data.del[l.id])&&(l.ex||[]).some(x=>fold(x.name)===k)).sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.upd||0)-(a.upd||0));
   return L0.length?(L0[0].ex||[]).find(x=>fold(x.name)===k):null}
 function exProg(ex){const top=repTop(ex.reps),last=exLastLog(ex.name),g=muGoal();if(!top||!last||!last.sets||!last.sets.length)return "";
-  if(!last.sets.every(s=>(+s.reps||0)>=top))return "";
+  if(last.sets.length<(ex.sets||[]).length||!last.sets.every(s=>(+s.reps||0)>=top))return ""; // v74.3 : toutes les séries prévues, pas une seule
   if(g==="force")return `${L("Toutes les séries réussies au haut de la fourchette")} : +${exLower(ex.name)?"5":LANG==="en"?"2.5":"2,5"} kg`;
   if(g==="endu")return L("Haut de la fourchette atteint : réduis le repos, puis augmente la charge");
   if(g==="gras")return "";
@@ -2531,16 +2532,21 @@ const RUN_MAX=4*3600e3;
 function msRunGet(id){const r=data.ui&&data.ui.msRun;if(!r)return null;if(Date.now()-(r.last||r.t0)>RUN_MAX){delete data.ui.msRun;saveUI();return null}return id&&r.se!==id?null:r}
 function msRunTouch(se,ex,j,done){let r=msRunGet();const now=Date.now();
   if(!r||r.se!==se.id)r=data.ui.msRun={se:se.id,t0:now,last:now,marks:{}};
-  r.last=now;const k=ex.id+":"+j;if(done&&!r.marks[k])r.marks[k]=now;saveUI()}
+  r.last=now;const k=ex.id+":"+j;if(done&&!r.marks[k])r.marks[k]=now;r.t=r.t||{};r.t[k]=1;saveUI()}
+// une série retirée : les repères des séries suivantes de l'exercice reculent d'un rang
+function msRunShift(seId,exId,j){const r=msRunGet(seId);if(!r)return;for(const o of [r.marks||{},r.t||{}]){const nw={};
+  for(const[k,v]of Object.entries(o)){const[e,s]=k.split(":");const n=+s;if(e!==exId||n<j)nw[k]=v;else if(n>j)nw[e+":"+(n-1)]=v}
+  Object.keys(o).forEach(k=>delete o[k]);Object.assign(o,nw)}saveUI()}
 function msRunRest(r){const t=Object.values(r.marks||{}).map(Number).sort((a,b)=>a-b),g=[];
   for(let i=1;i<t.length;i++){const d=(t[i]-t[i-1])/1000;if(d>=10&&d<=900)g.push(d)}return g.length?Math.round(g.reduce((a,b)=>a+b,0)/g.length):0}
 const msRunMin=r=>Math.max(1,Math.round((Date.now()-r.t0)/60000));
 const msDoneToday=se=>ML().some(l=>l&&l.day===se.id&&l.date===iso(today())&&!(data.del&&data.del[l.id]));
 // les séries remplies partent dans l'historique (data.muscu.log), avec la durée et le repos moyen mesurés.
 // v74.1 (demande de Sid) : plus de bouton « Séance terminée » : l'enregistrement se fait tout seul (quiet), 1,5 s après la dernière série saisie
-function msDone(se,quiet){const ex=se.exercises.map(x=>({name:String(x.name||"").trim(),sets:(x.sets||[]).filter(s=>String(s.kg||"").trim()||String(s.reps||"").trim()).map(s=>({kg:String(s.kg||""),reps:String(s.reps||"")}))})).filter(x=>x.name&&x.sets.length);
-  if(!ex.length){if(!quiet)toast("Remplis au moins une série avant de terminer");return}
-  const r=msRunGet(se.id),now=Date.now(),date=iso(today()),L0=ML(),old=L0.find(l=>l&&l.day===se.id&&l.date===date&&!(data.del&&data.del[l.id]));
+function msDone(se,quiet){const r=msRunGet(se.id),tt=quiet&&r&&r.t?r.t:null; // v74.3 : en automatique, seulement les séries touchées aujourd'hui
+  const ex=se.exercises.map(x=>({name:String(x.name||"").trim(),sets:(x.sets||[]).filter((s,j)=>(!tt||tt[x.id+":"+j])&&(String(s.kg||"").trim()||String(s.reps||"").trim())).map(s=>({kg:String(s.kg||""),reps:String(s.reps||"")}))})).filter(x=>x.name&&x.sets.length);
+  const now=Date.now(),date=iso(today()),L0=ML(),old=L0.find(l=>l&&l.day===se.id&&l.date===date&&!(data.del&&data.del[l.id]));
+  if(!ex.length){if(quiet&&old){tomb(old.id);M().log=L0.filter(l=>l!==old);M().upd=now;save();renderMuStats();return}if(!quiet)toast("Remplis au moins une série avant de terminer");return}
   const ent={id:old?old.id:uid(),date,day:se.id,name:se.name||"",ex,goal:muGoal(),upd:now};
   if(r){ent.min=Math.min(240,msRunMin(r));const rest=msRunRest(r);if(rest)ent.rest=rest}else if(old&&old.min){ent.min=old.min;if(old.rest)ent.rest=old.rest}
   const before=old?JSON.parse(JSON.stringify(old)):null;
@@ -5391,7 +5397,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v74-2";
+const BUILD="sidnote-v74-3";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

@@ -2342,6 +2342,31 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.locator("#msList details.ms > summary").first().click();await pg.waitForTimeout(200);
     const sa=await pg.evaluate(()=>[...document.querySelectorAll(".set-acts .set-add")].map(x=>Math.round(x.getBoundingClientRect().top)));
     if(sa.length!==2||sa[0]!==sa[1])err("boutons des séries pas côte à côte : "+sa);
+    // v74.3 (relecture de Codex) : enregistrement automatique de la séance du jour
+    const au=await pg.evaluate(async()=>{const W=ms=>new Promise(r=>setTimeout(r,ms)),inp=(se,ex,j,f,v)=>{const i=document.querySelector(`[data-ms="${se}"] [data-ex="${ex}"] [data-si="${j}"] [data-f="${f}"]`);i.value=v;i.dispatchEvent(new Event("input",{bubbles:true}))};
+      delete data.ui.msRun;M().log=[];
+      M().sessions=[{id:"sa",name:"A",upd:1,exercises:[{id:"a1",name:"Développé couché",reps:"8–12",sets:[{kg:"50",reps:"12"},{kg:"50",reps:"12"},{kg:"",reps:""}]},{id:"a2",name:"Rowing",sets:[{kg:"40",reps:"10"}]}]},
+        {id:"sb",name:"B",upd:1,exercises:[{id:"b1",name:"Squat",sets:[{kg:"",reps:""}]}]}];save();show("muscu");renderMuscu();document.querySelectorAll("#msList details.ms").forEach(d=>d.open=true);renderMuscu();await W(100);
+      const r={};
+      // 1 : seule la série remplie aujourd'hui est enregistrée, pas les anciennes valeurs restées dans les cases
+      inp("sa","a1",2,"setkg","50");inp("sa","a1",2,"setreps","12");await W(1800);
+      const la=ML().find(l=>l.day==="sa");r.one=la?la.ex.map(x=>x.name+":"+x.sets.length).join(","):"aucune";
+      // 2 : pas de conseil de progression avec 1 série sur 3
+      r.prog=exProg(msFind("sa").exercises[0]);
+      // 5 : deux séances remplies coup sur coup sont toutes les deux enregistrées
+      delete data.ui.msRun;M().log=[];inp("sa","a1",0,"setreps","11");await W(200);delete data.ui.msRun;
+      document.querySelectorAll("#msList details.ms").forEach(d=>d.open=true);renderMuscu();await W(50);inp("sb","b1",0,"setkg","100");inp("sb","b1",0,"setreps","5");await W(1800);
+      r.both=["sa","sb"].map(d=>ML().some(l=>l.day===d)).join(",");
+      // 3 : vider la seule série remplie aujourd'hui retire l'entrée du jour
+      inp("sb","b1",0,"setkg","");inp("sb","b1",0,"setreps","");await W(1800);r.clear=ML().some(l=>l.day==="sb");
+      // 4 : des répétitions exactes venues d'un programme de Claude ne remplissent pas les cases
+      M().sessions.push({id:"sc",name:"C",upd:1,exercises:[{id:"c1",name:"Curl",reps:"10",sets:[{kg:"",reps:""},{kg:"",reps:""}]}]});muMigrate();
+      r.claude=msFind("sc").exercises[0].sets.map(x=>x.reps).join("|");return r});
+    if(au.one!=="Développé couché:1")err("séance auto : anciennes valeurs enregistrées : "+au.one);
+    if(au.prog)err("conseil de progression avec une seule série faite : "+au.prog);
+    if(au.both!=="true,true")err("deux séances remplies coup sur coup : "+au.both);
+    if(au.clear)err("série vidée encore dans la séance du jour");
+    if(au.claude!=="|")err("répétitions du programme recopiées dans les cases : "+au.claude);
     await pg.evaluate(()=>{show("plan");scrollTo(0,0)});await shot(pg,"v74-"+nm+"-agenda");
     await ctx.close()}
   const real=errs.filter(Boolean);

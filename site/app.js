@@ -2549,8 +2549,9 @@ function msDone(se,quiet){const ex=se.exercises.map(x=>({name:String(x.name||"")
   if(r){delete data.ui.msRun;saveUI()}M().upd=now;save();renderMuscu();
   toastAct(old?"Séance mise à jour":"Séance enregistrée","Annuler",()=>{const i=ML().findIndex(l=>l&&l.id===ent.id);
     if(before&&i>=0){ML()[i]=before}else{tomb(ent.id);M().log=ML().filter(l=>l&&l.id!==ent.id)}M().upd=Date.now();save();renderMuscu()})}
-/** @type {any} */ let msAutoT=null;
-function msAutoLog(se){clearTimeout(msAutoT);msAutoT=setTimeout(()=>{try{const x=msFind(se.id);if(x)msDone(x,true)}catch(e){reportErr("msAutoLog: "+(e&&e.message))}},1500)}
+// un minuteur par séance (avant : un seul pour toutes, remplir une autre séance dans la seconde et demie annulait l'enregistrement de la première)
+/** @type {Record<string, any>} */ const msAutoT={};
+function msAutoLog(se){const id=se.id;clearTimeout(msAutoT[id]);msAutoT[id]=setTimeout(()=>{delete msAutoT[id];try{const x=msFind(id);if(x)msDone(x,true)}catch(e){reportErr("msAutoLog: "+(e&&e.message))}},1500)}
 // statistiques mises en avant selon l'objectif, calculées sur l'historique (8 dernières semaines ; « cette semaine » = depuis lundi)
 const kgOf=s=>parseFloat(String(s&&s.kg||"").replace(",","."))||0,repsOf=s=>parseInt(String(s&&s.reps||""))||0;
 const fmtKg=v=>{const r=Math.round(v*10)/10;return LANG==="en"?String(r):String(r).replace(".",",")};

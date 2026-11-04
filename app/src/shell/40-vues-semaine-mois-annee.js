@@ -122,6 +122,9 @@ const splitKcal=(total,slots)=>{const w=slots.map(s=>SLOT[s][2]),t=w.reduce((a,b
 // v31 : « à inclure » et « à éviter » sont propres à chaque type de repas (journée, petit-déj, déjeuner…) : rien n'est recopié d'un repas à l'autre
 const mpPref=(mp,type,k)=>{const p=mp.pp&&mp.pp[type];if(p&&p[k]!=null)return p[k];return type==="day"?(k==="include"?mp.include:mp.exclude)||"":""};
 const mpSet=(mp,type,k,v)=>{mp.pp=mp.pp||{};mp.pp[type]={...(mp.pp[type]||{}),[k]:v}};
+// v74.5 (demande de Sid) : une fois le menu généré, « à inclure » et « à éviter » sont vidés pour TOUS les types de menu
+// (journée, petit-déjeuner, déjeuner…) et l'ancien format ; avant, seul le type affiché l'était et l'ancien texte revenait ailleurs
+const mpWipe=mp=>{for(const t of Object.keys(mp.pp||{}))mp.pp[t]={...mp.pp[t],include:"",exclude:""};delete mp.include;delete mp.exclude};
 const nuMP=()=>{const n=NU();n.menuPrefs=n.menuPrefs||{};const m=n.menuPrefs;m.type=m.type||"day";m.one=m.one||{};
   // ancien réglage « repas par jour » → choix des repas
   if(!m.pick){const sl=slotsFor(m.meals||3);m.pick={breakfast:sl.includes("breakfast"),lunch:sl.includes("lunch")||sl.includes("meal"),dinner:sl.includes("dinner")};m.snacks=sl.filter(s=>s==="snack").length}
@@ -159,8 +162,12 @@ function renderMenuForm(){
     else $("nuMkTot").innerHTML=`${L("Total")} <b>${fmtFull(tot)}</b> / ${fmtFull(tg)} kcal ✓${mp.kcals?` <button type="button" class="mini" data-mkreset="1">${L("Répartition conseillée")}</button>`:""}`;
     document.querySelector(".nu-mk-note").hidden=sl.length<2}
   else if(document.activeElement!==$("nuOneKcal"))$("nuOneKcal").value=oneKcal(mp.type);
-  if(document.activeElement!==$("nuInclude"))$("nuInclude").value=mpPref(mp,mp.type,"include");if(document.activeElement!==$("nuExclude"))$("nuExclude").value=mpPref(mp,mp.type,"exclude");autoGrow($("nuInclude"));autoGrow($("nuExclude"));
+  // v74.5 (relu par Codex) : un NOUVEAU menu (menu.at a changé, par exemple enregistré par Claude puis reçu par la synchro) remet les deux
+  // champs à jour même s'ils ont le focus ; sinon un champ focalisé garde sa saisie en cours
+  const mAt=String((NU().menu&&NU().menu.at)||""),fresh=nuMenuSeen!==null&&mAt!==nuMenuSeen;nuMenuSeen=mAt;
+  if(fresh||document.activeElement!==$("nuInclude"))$("nuInclude").value=mpPref(mp,mp.type,"include");if(fresh||document.activeElement!==$("nuExclude"))$("nuExclude").value=mpPref(mp,mp.type,"exclude");autoGrow($("nuInclude"));autoGrow($("nuExclude"));
 }
+/** @type {string|null} */ var nuMenuSeen=null; // var : lisible même si renderMenuForm est appelé avant cette ligne
 $("nuMType").addEventListener("click",e=>{const b=e.target.closest("[data-mtype]");if(!b)return;nuMP().type=b.dataset.mtype;NU().upd=Date.now();save();renderMenuForm()});
 $("nuMenuSec").addEventListener("click",e=>{const b=e.target.closest("[data-pick],[data-snacks],[data-mkreset]");if(!b)return;const mp=nuMP();
   if(b.dataset.mkreset)mp.kcals=null;
@@ -219,16 +226,17 @@ async function getRecipe(ml){
     r=>r&&(r.tips||(r.meals&&r.meals[0]&&(r.meals[0].steps||r.meals[0].recipe))));
   const m=r.meals&&r.meals[0]||{};return recipeSteps(m.steps||m.recipe||m.instructions)||recipeSteps(r.tips)}
 $("nuMenuBtn").addEventListener("click",async()=>{
-  if(nuBusy||!nutriAllowed())return;const n=NU(),mp=nuMP();mpSet(mp,mp.type,"include",$("nuInclude").value.trim());mpSet(mp,mp.type,"exclude",$("nuExclude").value.trim());
+  if(nuBusy||!nutriAllowed())return;const mp=nuMP();mpSet(mp,mp.type,"include",$("nuInclude").value.trim());mpSet(mp,mp.type,"exclude",$("nuExclude").value.trim());
   if(mp.type!=="day")mp.one[mp.type]=Math.max(0,Math.round(numIn($("nuOneKcal").value)))||oneKcal(mp.type);
   const slots=mp.type==="day"?mpSlots():[mp.type],kcals=mp.type==="day"?mpKcals():[mp.one[mp.type]];
   nuBusy="menu";const btn=$("nuMenuBtn");btn.disabled=true;nuMenuFree();const stop=nuLoading($("nuMenu"),["Préparation du menu…","Choix des recettes…","Calcul des grammages…","Équilibrage des macros…"]);
   // v43 (demande de Sid) : « à inclure » / « à éviter » ne servent qu'à cette demande ; ils repartent vides ensuite
-  const mpClear=()=>{mpSet(mp,mp.type,"include","");mpSet(mp,mp.type,"exclude","");if(mp.type==="day"){delete mp.include;delete mp.exclude}$("nuInclude").value="";$("nuExclude").value="";autoGrow($("nuInclude"));autoGrow($("nuExclude"));n.upd=Date.now();save()};
-  try{const g=await genMeals(slots,kcals);mpClear();
-    if(mp.type==="day"||!n.menu||!n.menu.meals)n.menu={meals:g.meals,tips:g.tips,at:new Date().toISOString()};
-    else{const i=n.menu.meals.findIndex(m=>m.slot===mp.type);if(i>=0)n.menu.meals[i]=g.meals[0];else n.menu.meals.push(g.meals[0]);n.menu.at=new Date().toISOString()}
-    n.upd=Date.now();save();toast("Menu prêt");
+  // v74.5 (relu par Codex) : après l'attente, la synchro a pu remplacer data.nutri : on relit toujours NU() / nuMP() au moment d'écrire
+  const ty=mp.type,mpClear=()=>{mpWipe(nuMP());$("nuInclude").value="";$("nuExclude").value="";autoGrow($("nuInclude"));autoGrow($("nuExclude"));NU().upd=Date.now();save()};
+  try{const g=await genMeals(slots,kcals);mpClear();const n=NU(),at=new Date().toISOString();
+    if(ty==="day"||!n.menu||!n.menu.meals)n.menu={meals:g.meals,tips:g.tips,at};
+    else{const i=n.menu.meals.findIndex(m=>m.slot===ty);if(i>=0)n.menu.meals[i]=g.meals[0];else n.menu.meals.push(g.meals[0]);n.menu.at=at}
+    nuMenuSeen=at;n.upd=Date.now();save();toast("Menu prêt");
   }catch(ex){toast(nuErrMsg(ex));if(ex.ai)mpClear()}
   stop();nuBusy="";btn.disabled=false;renderNuMenu();
   const f=$("nuMenu").querySelector(".dish");if(f)f.scrollIntoView({behavior:"smooth",block:"start"});
@@ -281,7 +289,10 @@ $("nuMenu").addEventListener("click",async e=>{const b=e.target.closest("button"
   if(b.dataset.medel){armDelete(b,()=>{M.meals.splice(+b.dataset.medel,1);n.upd=Date.now();save();renderNuMenu()});return}
   if(b.dataset.meadd){meAdd=+b.dataset.meadd;meEdit=null;renderNuMenu();return}
   if(b.dataset.meregen&&!nuBusy){const i=+b.dataset.meregen,ml=M.meals[i];nuBusy="regen";meRegen=i;if(nuIsl("nuMenu")&&$("nuMenu")._isl)renderNuMenu();else b.innerHTML=`<span class="spin"></span>`;
-    try{const g=await genMeals([ml.slot||"lunch"],[ml.target||ml.kcal]);if(g.meals[0])M.meals[i]=g.meals[0];n.upd=Date.now();save();toast("Nouvelle idée prête")}catch(ex){toast(nuErrMsg(ex))}
+    // v74.5 : comme pour le menu, « à inclure » / « à éviter » sont vidés une fois l'idée générée (ou confiée à Claude)
+    const wipe=()=>{mpWipe(nuMP());["nuInclude","nuExclude"].forEach(id=>{$(id).value="";autoGrow($(id))});NU().upd=Date.now();save()};
+    try{const g=await genMeals([ml.slot||"lunch"],[ml.target||ml.kcal]);const cm=NU().menu; // menu courant (la synchro a pu le remplacer pendant l'attente)
+      if(g.meals[0]&&cm&&Array.isArray(cm.meals)&&cm.meals[i])cm.meals[i]=g.meals[0];wipe();toast("Nouvelle idée prête")}catch(ex){toast(nuErrMsg(ex));if(ex.ai)wipe()}
     nuBusy="";meRegen=null;renderNuMenu()}
 });
 $("nuMenu").addEventListener("keydown",e=>{if(e.target.id==="meQtyIn"&&e.key==="Enter"){e.preventDefault();const[i,j]=meEdit.split(":").map(Number);meScale(i,j,numIn(e.target.value));meEdit=null;renderNuMenu()}});

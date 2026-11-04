@@ -326,13 +326,13 @@ const TOOLS = [
   {
     name: "nutrition_journee",
     description: "Journée Nutrition d'un jour (par défaut aujourd'hui) : objectif du jour (calories, protéines, glucides, lipides), repas déjà notés, total et ce qu'il reste. Joint aussi la photo d'assiette que la personne vient d'envoyer depuis Sid'note, s'il y en a une (à noter avec noter_repas). À lire avant de proposer un repas ou un menu.",
-    inputSchema: { type: "object", properties: { date: { type: "string", description: "Date AAAA-MM-JJ (facultatif)" } } },
+    inputSchema: { type: "object", properties: { date: { type: "string", description: "Date AAAA-MM-JJ (facultatif)" }, photo: { type: "number", description: "Numéro de la photo donné dans le message de Sid'note (facultatif) : elle est attendue quelques secondes si elle n'est pas encore arrivée" } } },
     annotations: { readOnlyHint: true },
   },
   {
     name: "photo_repas",
     description: "Donne la dernière photo d'assiette que la personne vient d'envoyer depuis Sid'note (bouton « Envoyer à Claude »). Regarde-la, estime toi-même aliments, quantités, calories et macros, puis note le repas avec noter_repas (date et heure fournies). La photo est effacée de Sid'note dès qu'elle a été lue.",
-    inputSchema: { type: "object", properties: {} },
+    inputSchema: { type: "object", properties: { photo: { type: "number", description: "Numéro de la photo donné dans le message de Sid'note (facultatif)" } } },
   },
   {
     name: "noter_repas",
@@ -495,7 +495,33 @@ async function exoList(): Promise<string> {
 // Claude connaît déjà (sa liste d'outils peut dater d'avant photo_repas), et à photo_repas. Une fois lue, elle est effacée ; tout ce qui
 // a plus de 24 h aussi : rien n'est gardé.
 const b64 = (u: Uint8Array) => { let s = ""; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode(...u.subarray(i, i + 0x8000)); return btoa(s); };
-async function mealPhotos(user: string, any: boolean): Promise<unknown[]> {
+// v16 (Sid'compagnon 74.5, relu par Codex) : quand la personne touche « Envoyer à Claude », l'app donne à la photo un numéro stable
+// (envoi-<n>.jpg), le met dans le message pour Claude (argument « photo » de nutrition_journee / photo_repas) et dans data.nutri.photoId.
+// Si Claude lit avant la fin du dépôt, on attend CETTE photo (jusqu'à 15 s, l'annonce est relue à chaque essai) ; data.nutri.photoRead
+// n'est écrit que quand cette photo-là a vraiment été renvoyée.
+async function photoAwaited(user: string): Promise<number> {
+  try { const { data } = await readData(user); const n = data.nutri || {}, id = Number(n.photoId) || 0;
+    return id && Date.now() - id < 10 * 6e4 && Number(n.photoRead) !== id ? id : 0; } catch { return 0; }
+}
+async function photoDone(user: string, id: number) {
+  await writeData(user, (d) => { const n = NU(d); if (Number(n.photoRead) !== id && Number(n.photoId) === id) { n.photoRead = id; n.upd = Date.now(); } }).catch(() => {});
+}
+async function mealPhotosWait(user: string, any: boolean, asked: unknown): Promise<unknown[]> {
+  let want = Number(asked) > 0 ? Math.round(Number(asked)) : await photoAwaited(user);
+  // chaque photo lue est effacée du dossier : on garde donc tout ce qui a été lu au fil des essais (par nom de fichier, sans doublon)
+  const got = new Map<string, unknown[]>(), read = new Set<number>();
+  const take = (r: Data) => { for (const g of r.got) { if (!got.has(g.name)) got.set(g.name, g.parts); if (g.sent) read.add(g.id); } };
+  let r = await mealPhotos(user, any, want); take(r);
+  // sans numéro, une photo prise il y a peu (repas-…) laisse penser qu'un envoi est en route : on relit l'annonce quelques secondes
+  for (let i = 0; i < 10 && !(want && read.has(want)) && (want || (i < 3 && r.recent)); i++) {
+    await new Promise((z) => setTimeout(z, 1500));
+    if (!want) want = await photoAwaited(user);
+    r = await mealPhotos(user, any, want); take(r);
+  }
+  if (want && read.has(want)) await photoDone(user, want);
+  return [...got.values()].flat();
+}
+async function mealPhotos(user: string, any: boolean, want = 0): Promise<{ got: { name: string; id: number; sent: boolean; parts: unknown[] }[]; recent: boolean }> {
   const ls = async (pre: string) => {
     const { data, error } = await db.storage.from("documents").list(user, { search: pre, limit: 100 });
     if (error) throw new Error("Photos illisibles pour l'instant : réessaie.");
@@ -505,21 +531,26 @@ async function mealPhotos(user: string, any: boolean): Promise<unknown[]> {
   const fresh = all.filter((f) => now - f.at < 864e5);
   // photos envoyées (2 au plus, les plus récentes) ; à défaut, pour photo_repas seulement, la dernière photo prise
   let pick = fresh.filter((f) => f.sent).sort((a, b) => b.at - a.at).slice(0, 2);
+  const w = want && fresh.find((f) => f.sent && f.at === want); // la photo attendue passe toujours, même s'il y en a d'autres
+  if (w && !pick.includes(w)) pick = [w, ...pick].slice(0, 2);
   if (!pick.length && any) pick = fresh.sort((a, b) => b.at - a.at).slice(0, 1);
-  const out: unknown[] = [];
+  const got: { name: string; id: number; sent: boolean; parts: unknown[] }[] = [], read = new Set<string>();
   for (const f of pick.sort((a, b) => a.at - b.at)) {
-    const { data: blob } = await db.storage.from("documents").download(`${user}/${f.name}`);
-    if (!blob) continue;
+    const { data: blob, error } = await db.storage.from("documents").download(`${user}/${f.name}`);
+    if (!blob) { console.error("photo illisible", f.name, error && error.message); continue; } // gardée : relue à la prochaine demande
     const p = Object.fromEntries(BXL.formatToParts(new Date(f.at)).map((x) => [x.type, x.value]));
-    out.push({ type: "image", data: b64(new Uint8Array(await blob.arrayBuffer())), mimeType: "image/jpeg" });
-    out.push({ type: "text", text: `↑ Photo de l'assiette envoyée depuis Sid'note, prise le ${p.year}-${p.month}-${p.day} à ${p.hour}:${p.minute} (heure de Bruxelles). Estime toi-même aliments, quantités, calories et macros, puis appelle noter_repas avec date ${p.year}-${p.month}-${p.day} et time ${p.hour}:${p.minute}.` });
+    const parts: unknown[] = [{ type: "image", data: b64(new Uint8Array(await blob.arrayBuffer())), mimeType: "image/jpeg" }];
+    read.add(f.name); got.push({ name: f.name, id: f.at, sent: f.sent, parts });
+    parts.push({ type: "text", text: `↑ Photo de l'assiette envoyée depuis Sid'note, prise le ${p.year}-${p.month}-${p.day} à ${p.hour}:${p.minute} (heure de Bruxelles). Estime toi-même aliments, quantités, calories et macros, puis appelle noter_repas avec date ${p.year}-${p.month}-${p.day} et time ${p.hour}:${p.minute}.` });
   }
-  const gone = all.filter((f) => pick.includes(f) || now - f.at >= 864e5 || (pick.length && !f.sent && f.at <= Math.max(...pick.map((x) => x.at))));
+  // v16 (relecture de Codex) : seules les photos vraiment lues sont effacées (plus une photo d'assiette pas encore envoyée, ni une photo
+  // dont le téléchargement a échoué), plus tout ce qui a plus de 24 h
+  const gone = all.filter((f) => read.has(f.name) || now - f.at >= 864e5);
   if (gone.length) await db.storage.from("documents").remove(gone.map((f) => `${user}/${f.name}`));
-  return out;
+  return { got, recent: fresh.some((f) => !f.sent && now - f.at < 10 * 6e4) };
 }
-async function photoRepas(user: string): Promise<unknown[]> {
-  const out = await mealPhotos(user, true);
+async function photoRepas(user: string, asked?: unknown): Promise<unknown[]> {
+  const out = await mealPhotosWait(user, true, asked);
   if (!out.length) out.push({ type: "text", text: "Aucune photo d'assiette en attente (elle a peut-être déjà été lue). Demande à la personne de la renvoyer depuis Sid'note (Nutrition → photo → Envoyer à Claude) ou de décrire son repas." });
   return out;
 }
@@ -742,6 +773,8 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
         const n = NU(d), at = new Date().toISOString();
         if (meals.length > 1 || !n.menu || !Array.isArray(n.menu.meals)) n.menu = { meals, tips: String(a.tips || ""), at };
         else { const i = n.menu.meals.findIndex((m: Data) => m.slot === meals[0].slot); if (i >= 0) n.menu.meals[i] = meals[0]; else n.menu.meals.push(meals[0]); n.menu.at = at; }
+        // v16 (Sid'compagnon 74.5, demande de Sid) : menu généré → « à inclure » / « à éviter » vidés (comme mpWipe dans l'app)
+        const mp = n.menuPrefs; if (mp && typeof mp === "object") { for (const t of Object.keys(mp.pp || {})) mp.pp[t] = { ...mp.pp[t], include: "", exclude: "" }; delete mp.include; delete mp.exclude; }
         n.upd = Date.now();
       });
       const t = dayTot(meals.flatMap((m: Data) => m.items));
@@ -823,7 +856,7 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
       await writeData(user, (d) => {
         const m = MU(d), op = m.plan && !m.plan.deleted ? m.plan : null, old = op ? op.profile || {} : {};
         const profile = { ...old, days: days.length };
-        if (["muscle", "force", "gras", "forme", "endu"].includes(a.goal)) profile.goal = a.goal;
+        if (["muscle", "force", "gras", "forme", "endu"].includes(a.goal)) { profile.goal = a.goal; (d.prefs || (d.prefs = {})).muGoal = a.goal; } // v15 : l'objectif choisi dans l'app (prefs.muGoal) passe avant celui du programme, il suit donc aussi
         // les séances de l'ancien programme suivi sont retirées (pierres tombales, comme dans l'app), les nouvelles prennent le format commun
         const del = d.del || (d.del = {}), now = Date.now();
         if (op) for (const s of m.sessions) if (s && s.grp && s.grp.id === op.id) del[s.id] = now;
@@ -875,7 +908,7 @@ Deno.serve(async (req) => {
       return rpcOk(id, {
         protocolVersion: params?.protocolVersion || "2025-06-18",
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "sidnote", title: "Sid'note", version: "1.7.0", icons: ICON("home"), websiteUrl: "https://sidcompagnon.com" },
+        serverInfo: { name: "sidnote", title: "Sid'note", version: "1.8.0", icons: ICON("home"), websiteUrl: "https://sidcompagnon.com" },
         instructions: "Sid'note est l'application d'organisation de la personne (agenda, cours, tâches, notes, nutrition, musculation). Dates en AAAA-MM-JJ, heure de Bruxelles. Quand la personne demande un rappel pour une activité (ex. 1 h avant), passe-le dans reminders (en minutes) avec ajouter_activite ou modifier_activite : c'est une notification sur son téléphone. Quand la personne dit ce qu'elle a mangé ou envoie la photo de son assiette (si elle parle d'une photo envoyée depuis Sid'note, elle est jointe à nutrition_journee, ou lis-la avec photo_repas), estime toi-même calories et macros puis note-le avec noter_repas (sans redemander, sauf doute sur la quantité). Pour un menu, lis d'abord nutrition_journee puis enregistre-le avec enregistrer_menu. Après un bilan ou un commentaire nutrition (jour ou semaine), enregistre-le avec enregistrer_commentaire pour qu'il s'affiche dans l'app. Quand la personne parle d'une chose à faire un jour précis, ajoute la tâche avec sa date (ajouter_tache) : elle apparaîtra ce jour-là dans son agenda et passera au lendemain si elle n'est pas faite. Pour une note, propose un dossier (folder) si c'est utile ; pour corriger, compléter ou remettre au propre une note qui existe déjà, utilise modifier_note (ne crée pas de doublon). Pour la musculation, lis muscu_programme avant d'ajuster, puis enregistre avec enregistrer_programme ; une séance racontée se note avec noter_seance. Les mots de passe, documents et notes secrètes sont chiffrés et jamais accessibles.",
       });
     case "ping":
@@ -884,9 +917,9 @@ Deno.serve(async (req) => {
       return rpcOk(id, { tools: TOOLS });
     case "tools/call": {
       try {
-        if (params?.name === "photo_repas") return rpcOk(id, { content: await photoRepas(tok.user_id) });
+        if (params?.name === "photo_repas") return rpcOk(id, { content: await photoRepas(tok.user_id, params?.arguments?.photo) });
         const text = await callTool(tok.user_id, params?.name, params?.arguments, tok.label || "Claude");
-        const pics = params?.name === "nutrition_journee" ? await mealPhotos(tok.user_id, false).catch(() => []) : [];
+        const pics = params?.name === "nutrition_journee" ? await mealPhotosWait(tok.user_id, false, params?.arguments?.photo).catch(() => []) : [];
         return rpcOk(id, { content: [{ type: "text", text }, ...pics] });
       } catch (e) {
         return rpcOk(id, { content: [{ type: "text", text: (e as Error).message || String(e) }], isError: true });

@@ -87,12 +87,13 @@ async function docDelete(d){
   undoable("Document supprimé",[d.id],()=>{tomb(d.id);data.docs=docsArr().filter(x=>x.id!==d.id)},{after:renderDocs,
     later:()=>{if(docsArr().some(x=>x.id===d.id))return;idb.del(docKey(d));if(d.up)stor("DELETE","documents/"+(d.path||docPath(d))).catch(()=>{})}});
 }
+// v74.5 : partage d'un PDF commun aux Documents et au lecteur PDF de Sid'note : partage natif du fichier, sinon téléchargement
+const pdfName=t=>(String(t||"").replace(/\.pdf$/i,"").replace(/[\\/:*?"<>|]+/g," ").trim()||"document")+".pdf";
+async function fileShare(b,title){const name=pdfName(title),f=new File([b],name,{type:"application/pdf"});
+  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:String(title||name)});return}}catch(e){if(e&&e.name==="AbortError")return}
+  const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
 async function docShare(d){
-  try{const b=await docBlob(d);const name=(d.title.replace(/[\\/:*?"<>|]+/g," ").trim()||"document")+".pdf";
-    const f=new File([b],name,{type:"application/pdf"});
-    try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:d.title});return}}catch(e){if(e.name==="AbortError")return}
-    const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
-  }catch(ex){toast(ex instanceof TypeError?"Pas de connexion internet":ex.message)}
+  try{await fileShare(await docBlob(d),d.title)}catch(ex){toast(ex instanceof TypeError?"Pas de connexion internet":ex.message)}
 }
 // recherche tolérante : sans accents, un seul mot suffit, fautes de frappe acceptées
 const fold=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();

@@ -31,10 +31,11 @@ $("legalSeg").addEventListener("click",e=>{const b=e.target.closest("[data-legal
 $("legalClose").addEventListener("click",()=>$("legalSheet").hidden=true);
 $("legalSheet").addEventListener("click",e=>{if(e.target.id==="legalSheet")$("legalSheet").hidden=true});
 // accord explicite avant le premier envoi de données de santé à l'IA (data.nutri.consent = date) ; retirable dans Réglages
-let consentRes=null;
-function nuConsent(){if(NU().consent)return Promise.resolve(true);
-  return new Promise(res=>{consentRes=res;$("consentSheet").hidden=false})}
-const consentEnd=v=>{$("consentSheet").hidden=true;const r=consentRes;consentRes=null;if(r)r(v)};
+// v74.5 (relecture de Codex) : une seule demande à la fois ; un deuxième appel reçoit la même réponse (avant : la première restait sans réponse)
+let consentRes=null,consentP=null;
+function nuConsent(){if(NU().consent)return Promise.resolve(true);if(consentP)return consentP;
+  consentP=new Promise(res=>{consentRes=res;$("consentSheet").hidden=false});return consentP}
+const consentEnd=v=>{$("consentSheet").hidden=true;const r=consentRes;consentRes=null;consentP=null;if(r)r(v)};
 $("consentYes").addEventListener("click",()=>{const n=NU();n.consent=new Date().toISOString();n.upd=Date.now();save();renderConsent();consentEnd(true)});
 $("consentNo").addEventListener("click",()=>consentEnd(false));$("consentClose").addEventListener("click",()=>consentEnd(false));
 function renderLockSel(){const v=data.ui&&data.ui.lockDelay,d=String(v===undefined||v===null?-1:v);document.querySelectorAll("#lockSel [data-lock]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.lock===d)))}

@@ -178,7 +178,10 @@ function renderHome(){if(!$("homeBody"))return;
     cards.push({g,desc:"Musculation, nutrition et graphiques de ta forme.",it:it.slice(0,2)})}}
   {const g=APP_GROUPS.find(x=>x.app==="note");if(groupTabs(g).length){const it=[];
     const last=NT().filter(n=>!n.secret&&(n.title||n.body)).sort((a,b)=>(b.upd||0)-(a.upd||0))[0];
-    if(last)it.push([L("Dernière note"),{u:last.title||String(last.body||"").slice(0,40)},""]);
+    // v74.5 : titre nettoyé (espaces, retours à la ligne), sinon la première ligne du texte ; coupé proprement au mot
+    const nTxt=n=>{const t=String(n.title||"").replace(/\s+/g," ").trim()||(String(n.body||"").split(/\n/).map(x=>x.replace(/\s+/g," ").trim()).find(Boolean)||"");
+      return t.length>90?t.slice(0,90).replace(/\s+\S*$/,"")+"…":t};
+    if(last&&nTxt(last))it.push([L("Dernière note"),{u:nTxt(last)},""]);
     const nN=NT().length;it.push([L("Classeur"),`${nN} ${L(nN>1?"notes":"note")} · ${NF().length} ${L(NF().length>1?"dossiers":"dossier")}`,""]);
     cards.push({g,desc:"Notes, documents et mots de passe, à l'abri.",it:it.slice(0,2)})}}
   // v58 (#3) : cartes dessinées par React (app/src/Home.tsx) ; {u:…} = contenu de la personne (jamais traduit)

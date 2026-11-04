@@ -73,7 +73,7 @@ function seCard(se,letter){const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0
     <div class="ms-body">
       <label class="small muted" style="display:grid;gap:4px">${L("Nom de la séance")}<input data-f="msname" value="${esc(se.name)}" autocomplete="off"></label>
       ${se.exercises.map((ex,i)=>`<div class="ex ex3" data-ex="${ex.id}">
-        <div class="ex-head"><span class="num">${i+1}</span><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><button type="button" class="mini ex-help" data-exhelp="1" aria-label="${L("Comment faire cet exercice")}" title="${L("Comment faire cet exercice")}"${exAide(ex.name)?"":" hidden"}>?</button><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">×</button></div>
+        <div class="ex-head"><span class="num">${i+1}</span><span class="ex-nm"><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><span class="ex-n notr" aria-hidden="true">${esc(ex.name)}</span></span><button type="button" class="mini ex-help" data-exhelp="1" aria-label="${L("Comment faire cet exercice")}" title="${L("Comment faire cet exercice")}"${exAide(ex.name)?"":" hidden"}>?</button><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">×</button></div>
         ${exAdvHtml(ex)}${exPrmHtml(ex)}${(p=>p?`<div class="ex-pro small">↑ ${esc(p)}</div>`:"")(exProg(ex))}
         <div class="set-rows">${ex.sets.map((st,j)=>`<div class="set-row" data-si="${j}"><span class="set-l">${L("Série")} ${j+1}</span>
           <input class="set-in" data-f="setkg" value="${esc(exKg(st&&st.kg))}" placeholder="kg" aria-label="${L("Série")} ${j+1} : kg" autocomplete="off" inputmode="decimal">
@@ -132,7 +132,8 @@ $("msList").addEventListener("input",e=>{
   const se=msFind(inp.closest("[data-ms]").dataset.ms);if(!se)return;
   if(f==="msname"){se.name=inp.value;if(!msRedraw()){const n=inp.closest("[data-ms]").querySelector(".ms-name");if(n)n.textContent=inp.value||L("Séance")}}
   else{const ex=se.exercises.find(x=>x.id===inp.closest("[data-ex]").dataset.ex);if(!ex)return;
-    if(f==="exname"){ex.name=inp.value;if(msRedraw()){msSaveSoon(se);return}const h=inp.parentElement.querySelector("[data-exhelp]");if(h)h.hidden=!exAide(ex.name);
+    if(f==="exname"){ex.name=inp.value;const sp=inp.parentElement.querySelector(".ex-n");if(sp)sp.textContent=inp.value; // v74.5 : nom complet affiché sur plusieurs lignes
+      if(msRedraw()){msSaveSoon(se);return}const h=inp.closest(".ex-head").querySelector("[data-exhelp]");if(h)h.hidden=!exAide(ex.name);
       const av=inp.closest("[data-ex]").querySelector(".ex-adv");if(av)av.outerHTML=exAdvHtml(ex)}
     else if(/^x(reps|rest|int|rpe|tempo)$/.test(f)){const k=f.slice(1); // v73 : réglages propres à l'exercice
       if(k==="rest"){const v=parseInt(inp.value.replace(/[^0-9]/g,""));if(v)ex.rest=Math.min(900,v);else delete ex.rest}else{const v=inp.value.slice(0,16).trim();if(v)ex[k]=v;else delete ex[k]}
@@ -166,18 +167,29 @@ $("msList").addEventListener("click",e=>{
   const box=b.closest("[data-ms]");if(!box)return;const se=msFind(box.dataset.ms);if(!se)return;if(!b.closest("summary"))msOpenId=se.id;
   const exOf=()=>se.exercises.find(x=>x.id===b.closest("[data-ex]").dataset.ex);
   if(b.dataset.msaddex){se.exercises.push(newEx());seTouch(se);save();renderMuscu();const ins=$("msList").querySelectorAll(`[data-ms="${se.id}"] [data-f=exname]`);ins[ins.length-1]?.focus()}
-  else if(b.dataset.msdelex){armDelete(b,()=>{se.exercises=se.exercises.filter(x=>x.id!==b.dataset.msdelex);seTouch(se);save();renderMuscu();if(msRunGet(se.id))msAutoLog(se)})}
+  else if(b.dataset.msdelex){armDelete(b,()=>{se.exercises=se.exercises.filter(x=>x.id!==b.dataset.msdelex);seTouch(se);save();renderMuscu();if(msTT(se.id))msAutoLog(se)})}
   else if(b.dataset.exhelp){const ex=exOf();if(ex)exHelpOpen(ex.name)}
   else if(b.dataset.msadv){const ex=exOf();if(ex)exAdvApply(se,ex)}
   else if(b.dataset.mscopy1){const ex=exOf();if(!ex||ex.sets.length<2)return;const f=ex.sets[0]||{};
     // v45 : la série 1 (poids et répétitions) est recopiée dans toutes les autres séries de l'exercice
     if(!String(f.kg||"").trim()&&!String(f.reps||"").trim()){toast("Remplis d'abord la série 1");return}
     const before=ex.sets.map(x=>({...x}));ex.sets.forEach((x,j)=>{if(j)ex.sets[j]={...x,kg:f.kg||"",reps:f.reps||""}});
+    // v74.4 (relecture de Codex) : repères gardés pour « Annuler » (séries touchées ce jour-là, heures du chrono), avec la date de la copie
+    const mine=o=>Object.fromEntries(Object.entries(o||{}).filter(([k])=>k.startsWith(ex.id+":")));
+    const d0=iso(today()),t0={...((msTT(se.id)||{}).t||{})},tb=mine(t0),mb=mine((msRunGet(se.id)||{}).marks),sid=se.id,eid=ex.id;
     ex.sets.forEach((x,j)=>msRunTouch(se,ex,j,!!String(x.reps||"").trim()));msAutoLog(se);seTouch(se);save();renderMuscu();
-    toastAct("Série 1 recopiée sur toutes les séries","Annuler",()=>{ex.sets=before;seTouch(se);save();renderMuscu()})}
+    const kr=a=>JSON.stringify((a||[]).map(x=>[String(x&&x.kg||""),String(x&&x.reps||"")])),after=kr(ex.sets);
+    toastAct("Série 1 recopiée sur toutes les séries","Annuler",()=>{
+      // la synchronisation a pu remplacer les objets : séance et exercice relus par leur id ; modifiés depuis la copie → rien n'est écrasé
+      const se2=msFind(sid),ex2=se2&&se2.exercises.find(x=>x.id===eid);if(!ex2)return;
+      if(kr(ex2.sets)!==after){toast("Les séries ont changé depuis : rien n'a été annulé");return}
+      ex2.sets=before;seTouch(se2);save();clearTimeout(msAutoT[sid]);delete msAutoT[sid];
+      if(iso(today())!==d0){msDone(se2,true,{d:d0,t:t0});renderMuscu();return} // passé minuit : on corrige la séance du jour de la copie
+      const put=(o,b)=>{if(!o)return;for(const k of Object.keys(o))if(k.startsWith(eid+":"))delete o[k];Object.assign(o,b)};
+      put(msTT(sid,true).t,tb);put((msRunGet(sid)||{}).marks,mb);saveUI();msDone(se2,true);renderMuscu()})}
   else if(b.dataset.msaddset){const ex=exOf();if(!ex||ex.sets.length>=20)return;ex.sets.push(newSet());seTouch(se);save();renderMuscu();
     const ins=document.querySelectorAll(`#msList [data-ex="${ex.id}"] [data-f="setkg"]`);ins[ins.length-1]?.focus()}
-  else if(b.dataset.msdelset!==undefined){const ex=exOf();if(!ex||ex.sets.length<=1)return;const j=+b.dataset.msdelset;ex.sets.splice(j,1);msRunShift(se.id,ex.id,j);seTouch(se);save();renderMuscu();if(msRunGet(se.id))msAutoLog(se)}
+  else if(b.dataset.msdelset!==undefined){const ex=exOf();if(!ex||ex.sets.length<=1)return;const j=+b.dataset.msdelset;ex.sets.splice(j,1);msRunShift(se.id,ex.id,j);seTouch(se);save();renderMuscu();if(msTT(se.id))msAutoLog(se)}
   else if(b.dataset.msshare)copyText(shareTxt([se]),"se");
   else if(b.dataset.msdone)msDone(se);
   // v44.4 : aussi depuis l'en-tête de la séance (poubelle, 2 appuis)

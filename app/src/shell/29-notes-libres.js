@@ -242,12 +242,12 @@ $("pdfIn").addEventListener("change",async e=>{const files=[...e.target.files];e
     try{await idb.put(pdfKey(id),f)}catch(ex){toast("Enregistrement impossible sur cet appareil");continue}
     NT().push(n);k++;last=n;pdfUpload(n)}
   if(!k)return;save();renderNotes();toast(k>1?`${k} ${L("PDF ajoutés")}`:L("PDF ajouté"));if(k===1&&last)pdfOpen(last.id)});
-let pv={note:null,tok:0,tool:"read",io:null,draw:null,sel:null};
+let pv={note:null,tok:0,tool:"read",io:null,draw:null,sel:null,/** @type {Blob|null} */ blob:null,/** @type {string|null} */ blobNote:null};
 const pvAnns=(nid,pg)=>PA().filter(a=>a&&a.note===nid&&(pg===undefined||a.page===pg)&&!(data.del&&data.del[a.id]));
-async function pdfOpen(id){const n=noteFind(id);if(!n||!n.pdf)return;const tok=++pv.tok;pv.note=n.id;pvTool("read");
+async function pdfOpen(id){const n=noteFind(id);if(!n||!n.pdf)return;const tok=++pv.tok;pv.note=n.id;pv.blob=null;pv.blobNote=null;pvTool("read");
   $("pvTitle").value=n.title||"";$("pvNoteTxt").value=n.body||"";$("pvNotes").hidden=true;$("pdfv").hidden=false;document.body.style.overflow="hidden";
   const body=$("pvBody");body.innerHTML=`<p class="muted pv-wait">${L("Ouverture…")}</p>`;
-  let blob;try{blob=await pdfBlob(n)}catch(ex){if(tok===pv.tok)body.innerHTML=`<p class="muted pv-wait">${esc(ex instanceof TypeError?L("Pas de connexion internet"):L("PDF introuvable sur cet appareil et en ligne"))}</p>`;return}
+  let blob;try{blob=await pdfBlob(n);if(tok===pv.tok){pv.blob=blob;pv.blobNote=n.id}}catch(ex){if(tok===pv.tok)body.innerHTML=`<p class="muted pv-wait">${esc(ex instanceof TypeError?L("Pas de connexion internet"):L("PDF introuvable sur cet appareil et en ligne"))}</p>`;return}
   try{const lib=await loadPdfJs(),pdf=await lib.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise;if(tok!==pv.tok)return;
     pv.pdf=pdf;body.innerHTML="";if(pv.io)pv.io.disconnect();
     pv.io=new IntersectionObserver(es=>es.forEach(en=>{const w=en.target;if(en.isIntersecting)pvRender(w,tok);else if(w._c&&Math.abs(en.boundingClientRect.top)>innerHeight*3){w._c.remove();w._c=null}}),{root:body,rootMargin:"120% 0px"});
@@ -260,7 +260,7 @@ async function pvRender(w,tok){if(w._c||w._busy||!pv.pdf)return;w._busy=true;
   try{const pg=await pv.pdf.getPage(+w.dataset.pg),v0=pg.getViewport({scale:1}),W=w.clientWidth||600,dpr=Math.min(2,window.devicePixelRatio||1),vp=pg.getViewport({scale:W/v0.width*dpr});
     const c=document.createElement("canvas");c.width=vp.width;c.height=vp.height;await pg.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;
     if(tok!==pv.tok)return;w.prepend(c);w._c=c}catch(e){}w._busy=false}
-function pvClose(){pvFlushTxt();pv.tok++;pv.note=null;pv.pdf=null;if(pv.io)pv.io.disconnect();$("pdfv").hidden=true;
+function pvClose(){pvFlushTxt();pv.tok++;pv.note=null;pv.pdf=null;pv.blob=null;pv.blobNote=null;if(pv.io)pv.io.disconnect();$("pdfv").hidden=true;
   if(window.SCIslands)document.querySelectorAll("#pvBody .pv-ov").forEach(ov=>{try{window.SCIslands.unmount(ov)}catch(_){}});$("pvBody").innerHTML="";document.body.style.overflow="";renderNotes()}
 // annotations placées en fraction de la page (même rendu sur iPhone et sur PC). v45 : zones de texte déplaçables et
 // redimensionnables (× pour supprimer), traits libres au stylo et au surligneur ({t:"ink", pts:[[x,y]…], c, w, hl}), gomme.
@@ -307,8 +307,12 @@ $("pvNotesClose").addEventListener("click",()=>pvTool("notes"));
 $("pvBack").addEventListener("click",pvClose);
 $("pvMore").innerHTML=MORE;
 $("pvMore").addEventListener("click",()=>{const n=noteFind(pv.note);if(!n)return;
-  openActions(n.title||L("PDF"),[{l:"Ranger dans un dossier",fn:()=>openActions(L("Ranger dans"),nfChoices(noteDirOf(n),null,fid=>{if(fid)n.folder=fid;else delete n.folder;n.upd=Date.now();save();toast(fid?`${L("Rangée dans")} « ${nfOf(fid).name} »`:"Rangée dans Notes")}))},
+  openActions(n.title||L("PDF"),[{l:"Partager",fn:pvShare},{l:"Ranger dans un dossier",fn:()=>openActions(L("Ranger dans"),nfChoices(noteDirOf(n),null,fid=>{if(fid)n.folder=fid;else delete n.folder;n.upd=Date.now();save();toast(fid?`${L("Rangée dans")} « ${nfOf(fid).name} »`:"Rangée dans Notes")}))},
     {l:"Supprimer ce PDF",danger:true,fn:()=>{const id=n.id;pvClose();undoable("PDF supprimé",[id],()=>{tomb(id);data.notes=NT().filter(x=>x!==n)},{after:renderNotes,later:()=>{if(!noteFind(id))npDropAll(n)}})}}])});
+// v74.5 (demande de Sid) : « Partager » le PDF ouvert ; le fichier déjà chargé à l'ouverture (pv.blob) est partagé tout de suite,
+// pendant le toucher (sinon iOS refuse le partage) ; il n'est accessible qu'une fois le PDF ouvert, donc déverrouillé
+async function pvShare(){const n=noteFind(pv.note);if(!n)return;
+  try{await fileShare(pv.blob&&pv.blobNote===n.id?pv.blob:await pdfBlob(n),n.title||(n.pdf&&n.pdf.name)||"")}catch(ex){toast(ex instanceof TypeError?"Pas de connexion internet":L("PDF introuvable sur cet appareil et en ligne"))}}
 // titre et notes liées au PDF (texte simple, enregistré au fur et à mesure)
 $("pvTitle").addEventListener("input",()=>{const n=noteFind(pv.note);if(!n)return;n.title=$("pvTitle").value.slice(0,120);n.upd=Date.now();msSaveSoon()});
 $("pvNoteTxt").addEventListener("input",()=>{const n=noteFind(pv.note);if(!n)return;n.body=$("pvNoteTxt").value;n.html=rtFromText(n.body);n.upd=Date.now();msSaveSoon()});

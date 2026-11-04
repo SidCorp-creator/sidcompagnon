@@ -1072,3 +1072,18 @@ html[data-ds] .yr-grid{gap:12px 6px}html[data-ds] .ym{min-width:0;padding:4px 0}
 .ex3 .set-acts{display:grid;grid-template-columns:repeat(2,minmax(0,max-content));gap:8px}
 .ex3 .set-acts .set-add{white-space:normal;text-align:center;min-width:0}
 @media (max-width:420px){.ex3 .set-acts{margin-left:0;grid-template-columns:repeat(2,minmax(0,1fr))}.ex3 .set-acts .set-add{padding:8px 8px}}
+/* v74.5 : nom complet de l'exercice. Le champ garde sa place (suggestions, clavier) ; hors saisie, son texte est caché et
+   un libellé posé dessous, dans la même case de grille, l'affiche en entier sur plusieurs lignes. Les boutons ? et × restent à droite. */
+.ex-head .ex-nm{flex:1 1 auto;min-width:0;display:grid;align-items:stretch}
+.ex-head .ex-nm>input,.ex-head .ex-nm>.ex-n{grid-area:1/1}
+.ex-head .ex-nm>input{height:auto;align-self:stretch}
+.ex-head .ex-n{pointer-events:none;align-self:center;padding:10px 13px;font:600 16px/1.25 var(--font);color:var(--ink);white-space:normal;overflow-wrap:anywhere;hyphens:auto;min-width:0}
+html[data-ds] .ex-head .ex-n{font-weight:500}
+.ex-head .ex-nm:not(:focus-within)>input:not(:placeholder-shown){color:transparent;-webkit-text-fill-color:transparent;caret-color:transparent}
+.ex-head .ex-nm:focus-within>.ex-n,.ex-head .ex-n:empty{visibility:hidden}
+.ex-head .ex-help,.ex-head .x{flex:none}
+/* v74.5 : cartes de l'accueil : le repère passe au-dessus de sa valeur aussi sur téléphone (avant : colonne de 96 px trop étroite pour
+   « Dernière note » ou « Pour commencer », coupés sur deux lignes) ; la valeur tient sur 2 lignes au plus, coupée proprement */
+.hc-it{flex-direction:column;align-items:stretch;gap:2px}
+.hc-k{width:auto}
+.hc-v{white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}

@@ -2345,7 +2345,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(sa.length!==2||sa[0]!==sa[1])err("boutons des séries pas côte à côte : "+sa);
     // v74.3 (relecture de Codex) : enregistrement automatique de la séance du jour
     const au=await pg.evaluate(async()=>{const W=ms=>new Promise(r=>setTimeout(r,ms)),inp=(se,ex,j,f,v)=>{const i=document.querySelector(`[data-ms="${se}"] [data-ex="${ex}"] [data-si="${j}"] [data-f="${f}"]`);i.value=v;i.dispatchEvent(new Event("input",{bubbles:true}))};
-      delete data.ui.msRun;M().log=[];
+      delete data.ui.msRun;delete data.ui.msT;M().log=[];
       M().sessions=[{id:"sa",name:"A",upd:1,exercises:[{id:"a1",name:"Développé couché",reps:"8–12",sets:[{kg:"50",reps:"12"},{kg:"50",reps:"12"},{kg:"",reps:""}]},{id:"a2",name:"Rowing",sets:[{kg:"40",reps:"10"}]}]},
         {id:"sb",name:"B",upd:1,exercises:[{id:"b1",name:"Squat",sets:[{kg:"",reps:""}]}]}];save();show("muscu");renderMuscu();document.querySelectorAll("#msList details.ms").forEach(d=>d.open=true);renderMuscu();await W(100);
       const r={};
@@ -2362,13 +2362,108 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
       inp("sb","b1",0,"setkg","");inp("sb","b1",0,"setreps","");await W(1800);r.clear=ML().some(l=>l.day==="sb");
       // 4 : des répétitions exactes venues d'un programme de Claude ne remplissent pas les cases
       M().sessions.push({id:"sc",name:"C",upd:1,exercises:[{id:"c1",name:"Curl",reps:"10",sets:[{kg:"",reps:""},{kg:"",reps:""}]}]});muMigrate();
-      r.claude=msFind("sc").exercises[0].sets.map(x=>x.reps).join("|");return r});
+      r.claude=msFind("sc").exercises[0].sets.map(x=>x.reps).join("|");
+      // 6 (v74.4, Codex) : « Série 1 sur toutes » puis « Annuler » : les anciennes séries 2 et 3 ne comptent pas comme faites aujourd'hui
+      delete data.ui.msRun;delete data.ui.msT;M().log=[];M().sessions.push({id:"sd",name:"D",upd:1,exercises:[{id:"d1",name:"Dips",sets:[{kg:"",reps:""},{kg:"30",reps:"8"},{kg:"30",reps:"8"}]}]});
+      document.querySelectorAll("#msList details.ms").forEach(d=>d.open=true);renderMuscu();await W(50);inp("sd","d1",0,"setkg","20");inp("sd","d1",0,"setreps","10");
+      document.querySelector('[data-ms="sd"] [data-mscopy1]').click();await W(100);
+      const ub=document.querySelector("#toast:not([hidden]) button");if(ub)ub.click();await W(1800);
+      const ld=ML().find(l=>l.day==="sd");r.undo=(ub?"":"pas de bouton ")+(ld?ld.ex.map(x=>x.sets.map(z=>z.kg+"/"+z.reps).join(",")).join(";"):"aucune");
+      // 8 (v74.4, Codex) : synchronisation entre la copie et « Annuler » (objets remplacés) : les vraies cases reviennent comme avant
+      delete data.ui.msRun;delete data.ui.msT;M().log=[];const s8=msFind("sd");s8.exercises[0].sets=[{kg:"",reps:""},{kg:"30",reps:"8"},{kg:"30",reps:"8"}];
+      document.querySelectorAll("#msList details.ms").forEach(d=>d.open=true);renderMuscu();await W(50);inp("sd","d1",0,"setkg","20");inp("sd","d1",0,"setreps","10");
+      document.querySelector('[data-ms="sd"] [data-mscopy1]').click();await W(100);M().sessions=JSON.parse(JSON.stringify(M().sessions));
+      const ub8=document.querySelector("#toast:not([hidden]) button");if(ub8)ub8.click();await W(300);
+      const l8=ML().find(l=>l.day==="sd");r.sync=msFind("sd").exercises[0].sets.map(z=>z.kg+"/"+z.reps).join(",")+" | "+(l8?l8.ex.map(x=>x.sets.map(z=>z.kg+"/"+z.reps).join(",")).join(";"):"aucune");
+      // 7 (v74.4) : séance A, puis B, puis retour à A le même jour : les séries de A faites avant restent dans la séance du jour
+      delete data.ui.msRun;delete data.ui.msT;M().log=[];document.querySelectorAll("#msList details.ms").forEach(d=>d.open=true);renderMuscu();await W(50);
+      inp("sa","a1",0,"setreps","9");await W(1800);inp("sb","b1",0,"setreps","6");await W(1800);inp("sa","a2",0,"setreps","11");await W(1800);
+      const la2=ML().find(l=>l.day==="sa");r.back=la2?la2.ex.map(x=>x.name+":"+x.sets.length).join(","):"aucune";return r});
     if(au.one!=="Développé couché:1")err("séance auto : anciennes valeurs enregistrées : "+au.one);
     if(au.prog)err("conseil de progression avec une seule série faite : "+au.prog);
     if(au.both!=="true,true")err("deux séances remplies coup sur coup : "+au.both);
     if(au.clear)err("série vidée encore dans la séance du jour");
     if(au.claude!=="|")err("répétitions du programme recopiées dans les cases : "+au.claude);
+    if(au.undo!=="20/10")err("Annuler après « Série 1 sur toutes » : "+au.undo);
+    if(au.sync!=="20/10,30/8,30/8 | 20/10")err("Annuler après une synchronisation : "+au.sync);
+    if(au.back!=="Développé couché:1,Rowing:1")err("retour à une séance le même jour : "+au.back);
     await pg.evaluate(()=>{show("plan");scrollTo(0,0)});await shot(pg,"v74-"+nm+"-agenda");
+    await ctx.close()}
+  // --- v74.5 (correctifs de Sid, relus par Codex) : téléphone et ordinateur, clair et sombre
+  for(const [nm,dev] of [["mobile-clair",{...devices["iPhone 13"],colorScheme:"light"}],["mobile-sombre",{...devices["iPhone 13"],colorScheme:"dark"}],["pc-clair",{viewport:{width:1280,height:800},colorScheme:"light"}],["pc-sombre",{viewport:{width:1280,height:800},colorScheme:"dark"}]]){
+    const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v74.5 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
+    await pg.goto(U);await pg.waitForTimeout(800);
+    await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v745"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
+    if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
+    const LONG="Extension au-dessus de la tête à la poulie basse avec corde";
+    // 1. Musculation : nom complet lisible, boutons ? et × visibles
+    await pg.evaluate(L=>{M().sessions=[{id:"s745",name:"Bras",upd:1,exercises:[{id:"x1",name:L,sets:[{kg:"",reps:""}]},{id:"x2",name:"Curl",sets:[{kg:"",reps:""}]}]}];save();show("muscu");renderMuscu();document.querySelectorAll("#msList details.ms").forEach(d=>d.open=true);renderMuscu()},LONG);await pg.waitForTimeout(300);
+    const mu=await pg.evaluate(()=>{const h=document.querySelector('[data-ex="x1"] .ex-head'),n=h&&h.querySelector(".ex-n"),x=h&&h.querySelector("[data-msdelex]"),q=h&&h.querySelector("[data-exhelp]"),inp=h&&h.querySelector("input");if(!n)return{none:1};
+      const r=n.getBoundingClientRect(),rx=x.getBoundingClientRect(),rq=q.getBoundingClientRect();
+      return{txt:n.textContent,vis:getComputedStyle(n).visibility,clip:n.scrollHeight>n.clientHeight+1||n.scrollWidth>n.clientWidth+1,lines:Math.round(r.height/parseFloat(getComputedStyle(n).lineHeight)),
+        xok:rx.width>20&&rx.left>=r.right-1&&rx.right<=innerWidth,qok:q.hidden||(rq.width>20&&rq.left>=r.right-1),inpH:inp.getBoundingClientRect().height>=r.height-1}});
+    if(mu.none||mu.vis!=="visible"||mu.clip||!mu.txt.includes("corde"))err("nom d'exercice pas lisible en entier : "+JSON.stringify(mu));
+    if(!mu.xok||!mu.qok)err("boutons ? / × masqués par le nom : "+JSON.stringify(mu));
+    if(nm.startsWith("mobile")&&mu.lines<2)err("le nom long ne passe pas à la ligne : "+JSON.stringify(mu));
+    await pg.focus('[data-ex="x1"] input[data-f="exname"]');const fo=await pg.evaluate(()=>{const n=document.querySelector('[data-ex="x1"] .ex-n');return getComputedStyle(n).visibility});
+    if(fo!=="hidden")err("le libellé reste par-dessus le champ pendant la saisie");
+    await pg.fill('[data-ex="x1"] input[data-f="exname"]',"Rowing");await pg.evaluate(()=>document.activeElement.blur());
+    if(await pg.evaluate(()=>document.querySelector('[data-ex="x1"] .ex-n').textContent)!=="Rowing")err("libellé pas mis à jour après la saisie");
+    await pg.evaluate(L=>{msFind("s745").exercises[0].name=L;renderMuscu()},LONG);await pg.evaluate(()=>document.querySelector('[data-ex="x1"]').scrollIntoView({block:"center"}));await shot(pg,"v745-"+nm+"-muscu");
+    // 2. Notes : plus de ligne rouge verticale dans les cartes d'aperçu
+    await pg.evaluate(()=>{data.notes=data.notes||[];data.notes.push({id:"n745",title:"Réunion de rentrée avec un titre vraiment très long pour voir la carte d'accueil",body:"Ordre du jour\nBudget",createdAt:new Date().toISOString(),upd:Date.now()});save();show("notes");renderNotes()});await pg.waitForTimeout(300);
+    const red=await pg.evaluate(()=>{const r=document.querySelector("#noteList .note-row");if(!r)return "pas de carte";const b=getComputedStyle(r,"::before");return b.content!=="none"&&b.content!=="normal"&&parseFloat(b.width)>0?b.content+" "+b.backgroundColor:""});
+    if(red)err("ligne verticale dans la carte de note : "+red);await shot(pg,"v745-"+nm+"-notes");
+    await pg.click('#noteList [data-note="n745"]');await pg.waitForTimeout(400);
+    // le cadre normal de la carte (même bordure sur les 4 côtés) reste ; plus de bord gauche particulier (marge rouge) ni de retrait
+    const edl=await pg.evaluate(()=>{const e=document.querySelector(".note-ed");if(!e)return "absent";const c=getComputedStyle(e);
+      return c.borderLeftWidth===c.borderTopWidth&&c.borderLeftColor===c.borderTopColor&&c.paddingLeft===c.paddingRight?"":`gauche ${c.borderLeftWidth} ${c.borderLeftColor} / haut ${c.borderTopWidth} ${c.borderTopColor} / retrait ${c.paddingLeft}`});
+    if(edl)err("ligne verticale dans l'éditeur de note : "+edl);await shot(pg,"v745-"+nm+"-editeur");
+    await pg.evaluate(()=>{try{closeNote()}catch(e){}show("notes")});await pg.waitForTimeout(200);
+    // 3. PDF : « Partager » dans le menu ; partage natif du fichier, sinon téléchargement
+    const sh=await pg.evaluate(async()=>{const r={};data.notes.push({id:"p745",title:"Cours de finance",body:"",createdAt:new Date().toISOString(),upd:Date.now(),pdf:{name:"finance.pdf",size:10,up:true}});pv.note="p745";pv.blob=new Blob(["%PDF-1.4"],{type:"application/pdf"});pv.blobNote="p745";
+      $("pvMore").click();await new Promise(z=>setTimeout(z,150));r.menu=[...document.querySelectorAll("#actList button")].map(x=>x.textContent.trim());$("actSheet").hidden=true;
+      navigator.canShare=d=>!!(d&&d.files);navigator.share=async d=>{r.shared={n:d.files.length,name:d.files[0].name,type:d.files[0].type}};await pvShare();
+      navigator.canShare=undefined;const oc=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){r.dl=this.download};await pvShare();HTMLAnchorElement.prototype.click=oc;pv.note=null;pv.blob=null;return r});
+    if(!sh.menu.some(t=>/^(Partager|Share)$/.test(t)))err("« Partager » absent du menu du PDF : "+sh.menu);
+    if(!sh.shared||sh.shared.n!==1||sh.shared.name!=="Cours de finance.pdf"||sh.shared.type!=="application/pdf")err("partage natif du PDF : "+JSON.stringify(sh.shared));
+    if(sh.dl!=="Cours de finance.pdf")err("téléchargement de repli du PDF : "+sh.dl);
+    // 5. Nutrition : « À éviter » vide pour un nouveau profil (exemple en placeholder), vraie préférence gardée
+    await pg.evaluate(()=>{data.nutri={consent:new Date().toISOString(),profile:{sex:"h",age:24,height:180,weight:80,goal:"maintain",sports:[]},plan:{kcal:2000,p:150,c:200,f:70,bmr:1800,tdee:2000,text:"",warn:[]},upd:Date.now(),log:[],weights:[],weeks:[]};save();show("nutri");renderNutri()});
+    await pg.click('[data-nutab="menu"]');await pg.waitForTimeout(200);
+    const ex=await pg.evaluate(()=>({v:$("nuExclude").value,ph:$("nuExclude").placeholder}));if(ex.v!=="")err("« À éviter » pré-rempli : "+ex.v);if(!ex.ph)err("« À éviter » sans exemple");
+    await pg.evaluate(()=>$("nuExclude").scrollIntoView({block:"center"}));await shot(pg,"v745-"+nm+"-a-eviter");
+    await pg.evaluate(()=>{const mp=nuMP();mpSet(mp,mp.type,"exclude","arachides");save();renderNutri();renderMenuForm()});if(await pg.inputValue("#nuExclude")!=="arachides")err("préférence « À éviter » enregistrée perdue");
+    // demande de Sid : une fois le menu généré, « à inclure » et « à éviter » sont vides, pour tous les types de menu
+    const wp=await pg.evaluate(async()=>{const n=NU();n.consent=new Date().toISOString();n.plan={kcal:2000,p:150,c:200,f:70};const mp=nuMP();
+      mpSet(mp,"lunch","include","poulet");mpSet(mp,"lunch","exclude","poisson");mp.include="ancien";mp.type="day";renderNutri();renderMenuForm();
+      $("nuInclude").value="riz";$("nuExclude").value="arachides";const keep=nuCall;
+      nuCall=async()=>({meals:[{name:"Bol",items:[{food:"riz",grams:100,kcal:130,protein_g:3,carbs_g:28,fat_g:0}]}]});$("nuMenuBtn").click();await new Promise(z=>setTimeout(z,600));nuCall=keep;
+      const r={f:[$("nuInclude").value,$("nuExclude").value],menu:!!(n.menu&&n.menu.meals&&n.menu.meals.length)};mp.type="lunch";renderNutri();renderMenuForm();r.lunch=[$("nuInclude").value,$("nuExclude").value];
+      r.left=JSON.stringify(mp.pp)+"|"+(mp.include||"");mp.type="day";renderNutri();return r});
+    // menu enregistré par Claude puis reçu par la synchro, champ « À éviter » encore focalisé : il est vidé quand même
+    const fz=await pg.evaluate(async()=>{renderNutri();const x=$("nuExclude");x.focus();x.value="vieux texte";const n=NU();mpWipe(nuMP());n.menu={...(n.menu||{}),meals:(n.menu&&n.menu.meals)||[],at:new Date(Date.now()+5000).toISOString()};renderNutri();const v=x.value;x.blur();await new Promise(z=>setTimeout(z,50));return v+"|"+mpPref(nuMP(),nuMP().type,"exclude")});
+    if(fz!=="|")err("champ focalisé pas vidé à l'arrivée d'un nouveau menu : "+fz);
+    if(!wp.menu)err("menu pas généré dans le test");if(wp.f.join("")||wp.lunch.join("")||/poulet|poisson|riz|arachides|ancien/.test(wp.left))err("« à inclure / à éviter » encore remplis après le menu : "+JSON.stringify(wp));
+    // 4. Nutrition : bouton Galerie (sans capture) à côté de Photo (onglet « Jour », où se trouve la saisie)
+    await pg.click('[data-nutab="day"]').catch(()=>{});await pg.waitForTimeout(150);
+    const ga=await pg.evaluate(()=>{const g=$("nuPhotoLib"),c=$("nuPhoto");return{g:!!g&&!g.hasAttribute("capture"),c:!!c&&c.getAttribute("capture")==="environment",lbl:g&&g.closest("label").getBoundingClientRect().width>0}});
+    if(!ga.g||!ga.c||!ga.lbl)err("boutons Photo / Galerie : "+JSON.stringify(ga));
+    // une photo lente à préparer ne remplace pas une plus récente ; la croix pendant la préparation l'emporte
+    const race=await pg.evaluate(async()=>{const mk=async n=>{const c=document.createElement("canvas");c.width=c.height=n;c.getContext("2d").fillRect(0,0,n,n);const bl=await new Promise(r=>c.toBlob(r,"image/jpeg"));return new File([bl],"p"+n+".jpg",{type:"image/jpeg"})};
+      const fire=async(id,f)=>{const dt=new DataTransfer();dt.items.add(f);const i=$(id);i.files=dt.files;i.dispatchEvent(new Event("change"))};
+      data.prefs.aiOk=0;nuPhoto=null;nuPhotoPrevSet(null);await fire("nuPhoto",await mk(3000));await fire("nuPhotoLib",await mk(50));await new Promise(z=>setTimeout(z,2500));
+      const wOf=u=>new Promise(r=>{const im=new Image();im.onload=()=>r(im.naturalWidth);im.onerror=()=>r(0);im.src=u});const big=nuPhoto?await wOf(nuPhoto.big):0;await fire("nuPhotoLib",await mk(2000));document.querySelector("#nuPhotoPrev [data-nuphrm]")?.click();await new Promise(z=>setTimeout(z,2500));
+      return{w:big,afterX:!!nuPhoto}});
+    if(race.w!==50)err("photo : la plus récente n'est pas celle gardée (largeur "+race.w+")");if(race.afterX)err("photo revenue après la croix");
+    // 6. Accueil : carte Sid'note lisible (titre long sur 2 lignes au plus, pas de débordement), cohérente avec les deux autres
+    await pg.evaluate(()=>show("home"));await pg.waitForTimeout(400);
+    const hc=await pg.evaluate(()=>{const c=document.querySelector('.hc[data-app="note"]');if(!c)return{none:1};const items=[...c.querySelectorAll(".hc-it")].map(it=>{const k=it.querySelector(".hc-k"),v=it.querySelector(".hc-v"),kr=k.getBoundingClientRect(),vr=v.getBoundingClientRect(),lh=parseFloat(getComputedStyle(v).lineHeight);
+        return{k:k.textContent,kLines:Math.round(kr.height/parseFloat(getComputedStyle(k).lineHeight)),vLines:Math.round(vr.height/lh),over:vr.right>c.getBoundingClientRect().right+1}});
+      const lay=[...document.querySelectorAll(".hc")].map(x=>getComputedStyle(x.querySelector(".hc-it")).flexDirection);return{items,lay,page:document.documentElement.scrollWidth>innerWidth+1}});
+    if(hc.none)err("carte Sid'note absente");else{for(const it of hc.items){if(it.kLines>1)err("repère coupé sur deux lignes : "+it.k);if(it.vLines>2||it.over)err("valeur qui déborde : "+JSON.stringify(it))}
+      if(new Set(hc.lay).size>1)err("cartes de l'accueil incohérentes : "+hc.lay);if(hc.page)err("débordement horizontal de l'accueil")}
+    await pg.evaluate(()=>document.querySelector('.hc[data-app="note"]').scrollIntoView({block:"center"}));await shot(pg,"v745-"+nm+"-accueil");
     await ctx.close()}
   const real=errs.filter(Boolean);
   console.log(real.length?"ERREURS :\n"+real.join("\n"):"OK : aucune erreur. Captures dans tests/out/");

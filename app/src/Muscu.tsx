@@ -43,7 +43,7 @@ function SeCard({ se, trash, i18n }: { se: MuSe; trash: string; i18n: MuI18n }) 
     <div className="ms-body">
       <label className="small muted" style={{ display: "grid", gap: "4px" }}>{tr(L("Nom de la séance"))}<input data-f="msname" defaultValue={se.name} autoComplete="off" /></label>
       {se.ex.map((ex, i) => <div key={ex.id} className="ex ex3" data-ex={ex.id}>
-        <div className="ex-head"><span className="num">{i + 1}</span><input data-f="exname" defaultValue={ex.name} placeholder={tr(L("Nom de l'exercice"))} aria-label={tr(L("Nom de l'exercice"))} autoComplete="off" list="exList" />
+        <div className="ex-head"><span className="num">{i + 1}</span><span className="ex-nm"><input data-f="exname" defaultValue={ex.name} placeholder={tr(L("Nom de l'exercice"))} aria-label={tr(L("Nom de l'exercice"))} autoComplete="off" list="exList" /><span className="ex-n notr" aria-hidden="true">{ex.name}</span></span>
           <button type="button" className="mini ex-help" data-exhelp="1" aria-label={tr(L("Comment faire cet exercice"))} title={tr(L("Comment faire cet exercice"))} hidden={!ex.help}>?</button>
           <button type="button" className="x" data-msdelex={ex.id} aria-label={tr(L("Supprimer l'exercice"))}>×</button></div>
         {ex.adv ? <div className="ex-adv"><span className="grow">{tr(ex.adv.txt)}<b>{ex.adv.val}</b></span>{ex.adv.same ? <span className="ok">✓</span> : <button type="button" className="linkbtn" data-msadv="1">{tr(L("Appliquer"))}</button>}</div>

@@ -102,12 +102,12 @@ html[data-fx] body[data-v="notes"] .nf-tile{position:relative;border-radius:4px;
 html[data-fx] body[data-v="notes"] .nf-tile::after{content:"";position:absolute;top:-1px;right:-1px;border-top:16px solid var(--bg);border-left:16px solid var(--line);pointer-events:none}
 html[data-fx] body[data-v="notes"] .nf-n{font:500 18px/1.2 var(--display)}
 html[data-fx] body[data-v="notes"] #noteList .note-row{position:relative}
-html[data-fx] body[data-v="notes"] #noteList .note-row::before{content:"";position:absolute;top:0;bottom:0;left:34px;width:1px;background:var(--margin);opacity:.65;pointer-events:none}
+/* v74.5 (demande de Sid) : plus de marge rouge verticale dans les cartes d'aperçu des notes */
 html[data-fx] body[data-v="notes"] #noteList .note-row .ttl,html[data-fx] body[data-v="notes"] #noteList .note-row b{font:600 19px/1.35 var(--display)}
 html[data-fx] body[data-v="notes"] #noteList .note-row .small:not(.when){font:italic 400 15px/1.4 var(--display)}
 html[data-fx] body[data-v="notes"] #noteTitle{font:600 28px/1.2 var(--display)}
 html[data-fx] body[data-v="notes"] .note-rt{font-family:var(--display);font-size:19px;line-height:1.6}
-html[data-fx] body[data-v="notes"] .note-ed{border-left:1px solid var(--margin);padding-left:14px}
+/* v74.5 (demande de Sid) : plus de marge rouge verticale dans l'éditeur non plus */
 
 /* ---------- Documents · classeur à chemises (Public Sans, ardoise) ---------- */
 html[data-fx] body[data-v="docs"]{--font:"Public Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}

@@ -82,11 +82,18 @@ $("muGoal").addEventListener("click",e=>{const b=e.target.closest("[data-mugoal]
 // et s'efface après 4 h sans activité. Repos moyen = écart moyen entre deux séries remplies (de 10 s à 15 min ; au-delà, c'est une pause).
 const RUN_MAX=4*3600e3;
 function msRunGet(id){const r=data.ui&&data.ui.msRun;if(!r)return null;if(Date.now()-(r.last||r.t0)>RUN_MAX){delete data.ui.msRun;saveUI();return null}return id&&r.se!==id?null:r}
-function msRunTouch(se,ex,j,done){let r=msRunGet();const now=Date.now();
+function msRunTouch(se,ex,j,done){msTT(se.id);let r=msRunGet();const now=Date.now(); // msTT d'abord : reprend les repères d'un ancien chrono avant qu'il soit remplacé
   if(!r||r.se!==se.id)r=data.ui.msRun={se:se.id,t0:now,last:now,marks:{}};
-  r.last=now;const k=ex.id+":"+j;if(done&&!r.marks[k])r.marks[k]=now;r.t=r.t||{};r.t[k]=1;saveUI()}
+  r.last=now;const k=ex.id+":"+j;if(done&&!r.marks[k])r.marks[k]=now;msTT(se.id,true).t[k]=1;saveUI()}
+// v74.4 : séries touchées aujourd'hui, par séance (data.ui.msT = {séance: {d: date, t: {"exId:série": 1}}}), indépendantes du chrono :
+// passer à une autre séance puis revenir ne fait plus oublier les séries déjà faites ; « Annuler » peut les remettre comme avant
+function msTT(id,make){const u=data.ui.msT||(data.ui.msT={}),d=iso(today()),r=data.ui.msRun;
+  // séance commencée avant la mise à jour : les repères de l'ancien chrono (msRun.t) sont repris s'ils datent d'aujourd'hui
+  if(r&&r.t){if(iso(new Date(r.t0||0))===d){const x=u[r.se]&&u[r.se].d===d?u[r.se]:(u[r.se]={d,t:{}});Object.assign(x.t,r.t)}delete r.t;saveUI()}
+  for(const k of Object.keys(u))if(!u[k]||u[k].d!==d)delete u[k];
+  if(!u[id]&&make)u[id]={d,t:{}};return u[id]||null}
 // une série retirée : les repères des séries suivantes de l'exercice reculent d'un rang
-function msRunShift(seId,exId,j){const r=msRunGet(seId);if(!r)return;for(const o of [r.marks||{},r.t||{}]){const nw={};
+function msRunShift(seId,exId,j){const r=msRunGet(seId),x=msTT(seId);for(const o of [r&&r.marks,x&&x.t]){if(!o)continue;const nw={};
   for(const[k,v]of Object.entries(o)){const[e,s]=k.split(":");const n=+s;if(e!==exId||n<j)nw[k]=v;else if(n>j)nw[e+":"+(n-1)]=v}
   Object.keys(o).forEach(k=>delete o[k]);Object.assign(o,nw)}saveUI()}
 function msRunRest(r){const t=Object.values(r.marks||{}).map(Number).sort((a,b)=>a-b),g=[];
@@ -95,9 +102,10 @@ const msRunMin=r=>Math.max(1,Math.round((Date.now()-r.t0)/60000));
 const msDoneToday=se=>ML().some(l=>l&&l.day===se.id&&l.date===iso(today())&&!(data.del&&data.del[l.id]));
 // les séries remplies partent dans l'historique (data.muscu.log), avec la durée et le repos moyen mesurés.
 // v74.1 (demande de Sid) : plus de bouton « Séance terminée » : l'enregistrement se fait tout seul (quiet), 1,5 s après la dernière série saisie
-function msDone(se,quiet){const r=msRunGet(se.id),tt=quiet&&r&&r.t?r.t:null; // v74.3 : en automatique, seulement les séries touchées aujourd'hui
+// at = {d, t} : corrige la séance d'un jour passé (« Annuler » après minuit), sans le chrono en cours
+function msDone(se,quiet,at){const r=at?null:msRunGet(se.id),tx=at||msTT(se.id);if(quiet&&!tx)return;const tt=quiet?tx.t:null; // v74.3 : en automatique, seulement les séries touchées aujourd'hui
   const ex=se.exercises.map(x=>({name:String(x.name||"").trim(),sets:(x.sets||[]).filter((s,j)=>(!tt||tt[x.id+":"+j])&&(String(s.kg||"").trim()||String(s.reps||"").trim())).map(s=>({kg:String(s.kg||""),reps:String(s.reps||"")}))})).filter(x=>x.name&&x.sets.length);
-  const now=Date.now(),date=iso(today()),L0=ML(),old=L0.find(l=>l&&l.day===se.id&&l.date===date&&!(data.del&&data.del[l.id]));
+  const now=Date.now(),date=at?at.d:iso(today()),L0=ML(),old=L0.find(l=>l&&l.day===se.id&&l.date===date&&!(data.del&&data.del[l.id]));
   if(!ex.length){if(quiet&&old){tomb(old.id);M().log=L0.filter(l=>l!==old);M().upd=now;save();renderMuStats();return}if(!quiet)toast("Remplis au moins une série avant de terminer");return}
   const ent={id:old?old.id:uid(),date,day:se.id,name:se.name||"",ex,goal:muGoal(),upd:now};
   if(r){ent.min=Math.min(240,msRunMin(r));const rest=msRunRest(r);if(rest)ent.rest=rest}else if(old&&old.min){ent.min=old.min;if(old.rest)ent.rest=old.rest}

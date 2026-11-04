@@ -285,27 +285,36 @@ $("nuAsk").addEventListener("input",e=>grow(e.target));
 $("nuAsk").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();$("nuAskForm").requestSubmit()}});
 // photo du plat : réduite (1280 px) pour l'envoi, et une vignette gardée sur l'appareil
 function shrink(file,max,q){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();
-  im.onload=()=>{const k=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement("canvas");c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);
-    const g=c.getContext("2d");g.imageSmoothingQuality="high";g.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL("image/jpeg",q))};
+  // v74.5 : une erreur du canevas (image trop grande, mémoire) rejette la promesse au lieu de la laisser en attente
+  im.onload=()=>{try{const k=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement("canvas");c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);
+    const g=c.getContext("2d");if(!g)throw new Error("canvas");g.imageSmoothingQuality="high";g.drawImage(im,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",q))}catch(e){rej(e)}finally{URL.revokeObjectURL(u)}};
   im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error("image"))};im.src=u})}
 // v43 (demande de Sid) : photo du plat → « Envoyer à Claude », et c'est tout. La photo est déposée tout de suite dans le
 // dossier privé de la personne (Storage, documents/<uid>/repas-<horodatage>.jpg) ; son Claude la lit par le connecteur
 // (outil photo_repas), estime le repas et le note ; la photo est effacée dès qu'elle a été lue (au plus tard après 24 h).
 const nuDirect=()=>!!(session&&!isTrial()&&data.prefs.aiOk&&(aiCur()||AIS.claude)&&navigator.onLine);
-function nuPhotoUp(){if(!nuPhoto||!nuDirect())return;const ph=nuPhoto,path=`documents/${session.user.id}/repas-${Date.now()}.jpg`;
-  ph.up=(async()=>{const b=await (await fetch(ph.big)).blob();await stor("POST",path,b,"image/jpeg");ph.done=path;return path})();ph.up.catch(()=>{});return ph.up}
-const nuPhotoDrop=ph=>{if(ph&&ph.up)ph.up.then(p=>stor("DELETE",p)).catch(()=>{})}
+// v74.5 (relecture de Codex) : dépôt lié à une photo précise, rejouable : un échec (réseau coupé) est oublié, la tentative suivante renvoie
+function nuPhotoUp(ph=nuPhoto){if(!ph||!nuDirect())return Promise.reject(new Error("photo indisponible"));if(ph.done)return Promise.resolve(ph.done);if(ph.up)return ph.up;
+  const path=ph.path||(ph.path=`documents/${session.user.id}/repas-${Date.now()}.jpg`);
+  ph.up=(async()=>{try{const b=await (await fetch(ph.big)).blob();await stor("POST",path,b,"image/jpeg");ph.done=path;
+    if(ph.cancelled){stor("DELETE",path).catch(()=>{});throw new Error("photo retirée")}return path}catch(e){ph.up=null;throw e}})();ph.up.catch(()=>{});return ph.up}
+// photo retirée : marquée, puis effacée du dossier une fois son dépôt terminé (même s'il est encore en cours)
+const nuPhotoDrop=ph=>{if(!ph)return;ph.cancelled=true;if(ph.sent)return;const del=p=>p&&stor("DELETE",p).catch(()=>{});if(ph.done)del(ph.done);else if(ph.up)ph.up.then(del,()=>{})}
+let nuPhotoSeq=0,nuSending=null;
 function nuAskLbl(){$("nuAskBtn").textContent=L(nuPhoto&&nuDirect()?"Envoyer à Claude":"Analyser")}
-$("nuPhoto").addEventListener("change",async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
-  try{nuPhoto={big:await shrink(f,1280,.8),small:await shrink(f,240,.7)};
-    nuPhotoPrevSet(nuPhoto.small);
-    if(nuDirect()){if(await nuConsent())nuPhotoUp()}nuAskLbl()}
-  catch(ex){toast("Photo illisible")}});
+// v74.5 : chaque choix de photo a son numéro : une photo lente à préparer ne remplace plus une plus récente, ni ne revient après la croix
+// v74.5 : deux boutons, « Photo » (appareil photo, capture) et « Galerie » (sans capture : iOS ouvre alors la photothèque)
+const nuPhotoPick=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;const seq=++nuPhotoSeq;
+  try{const [big,small]=await Promise.all([shrink(f,1280,.8),shrink(f,240,.7)]);if(seq!==nuPhotoSeq)return;
+    const ph={big,small};if(nuPhoto&&nuPhoto!==nuSending)nuPhotoDrop(nuPhoto);nuPhoto=ph;nuPhotoPrevSet(ph.small);nuAskLbl();
+    if(nuDirect()&&await nuConsent()&&seq===nuPhotoSeq&&nuPhoto===ph)nuPhotoUp(ph).catch(()=>{});nuAskLbl()}
+  catch(ex){if(seq===nuPhotoSeq)toast("Photo illisible")}};
+$("nuPhoto").addEventListener("change",nuPhotoPick);$("nuPhotoLib").addEventListener("change",nuPhotoPick);
 // v68 (#3) : vignette de la photo du plat (React, ancien rendu en secours)
 function nuPhotoPrevSet(src){const el=$("nuPhotoPrev");el.hidden=!src;
   if(shIsl("nuPhotoPrev")){try{window.SCIslands.nuPhotoPrev(el,{src:src||"",i18n:agI18n()});return}catch(e){reportErr("island nuPhotoPrev: "+(e&&e.message));try{window.SCIslands.unmount(el)}catch(_){}}}
   el.innerHTML=src?`<img src="${src}" alt="${L("Photo du plat")}"><button type="button" aria-label="${L("Retirer la photo")}" data-nuphrm="1">×</button>`:""}
-$("nuPhotoPrev").addEventListener("click",e=>{if(e.target.closest("[data-nuphrm]")){nuPhotoDrop(nuPhoto);nuPhoto=null;nuPhotoPrevSet(null);nuAskLbl()}});
+$("nuPhotoPrev").addEventListener("click",e=>{if(e.target.closest("[data-nuphrm]")){++nuPhotoSeq;nuPhotoDrop(nuPhoto);nuPhoto=null;nuPhotoPrevSet(null);nuAskLbl()}});
 // envoi direct : Claude s'ouvre avec le message ; la fenêtre est ouverte pendant le toucher (sinon le navigateur la bloque)
 // Sur iPhone (app installée), un lien vers Claude ouvre une petite fenêtre de navigateur qui passe la main à l'app Claude,
 // puis reste vide derrière : on la garde sous la main et on la ferme dès que la personne revient dans Sid'compagnon
@@ -322,28 +331,42 @@ $("nuAiLink").addEventListener("click",e=>{e.preventDefault();const dn=nuDayNote
 document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest('a[target="_blank"][href^="https://claude.ai/"]');if(!a||e.defaultPrevented)return;e.preventDefault();extOpen(a.href)});
 // « Envoyer à Claude » : la photo déposée (repas-…) est renommée envoi-… ; le connecteur la joint à nutrition_journee, un outil que
 // Claude connaît déjà (sa liste d'outils peut dater d'avant photo_repas), puis l'efface
-function nuPhotoMark(ph){const src=ph.done,dst=src.replace("/repas-","/envoi-"),key=x=>x.replace(/^documents\//,"");
-  return (async()=>{const r=await fetch(SUPABASE_URL+"/storage/v1/object/move",{method:"POST",headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+await token(),"Content-Type":"application/json"},
-    body:JSON.stringify({bucketId:"documents",sourceKey:key(src),destinationKey:key(dst)})});if(!r.ok)throw new Error("move "+r.status)})()
-    .catch(async()=>{await stor("POST",dst,await (await fetch(ph.big)).blob(),"image/jpeg")})}
+// v74.5 (relu par Codex) : attend le dépôt (ou le refait), renvoie le chemin envoi-… ; une photo retirée (croix) pendant le déplacement
+// n'est jamais « ressuscitée » : la copie envoi-… est effacée et l'envoi échoue
+async function nuPhotoMark(ph){if(ph.sent)return ph.sent;const src=await nuPhotoUp(ph),key=x=>x.replace(/^documents\//,"");
+  const drop=p=>{stor("DELETE",p).catch(()=>{});throw new Error("photo retirée")};
+  if(ph.cancelled)drop(src);
+  if(/\/envoi-\d+\.jpg$/.test(src)){ph.sent=src;return src} // déposée directement sous son nom d'envoi
+  const dst=src.replace("/repas-","/envoi-");let moved=false;
+  try{const r=await fetch(SUPABASE_URL+"/storage/v1/object/move",{method:"POST",headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+await token(),"Content-Type":"application/json"},
+    body:JSON.stringify({bucketId:"documents",sourceKey:key(src),destinationKey:key(dst)})});moved=r.ok}catch(e){}
+  if(ph.cancelled){if(moved)drop(dst);throw new Error("photo retirée")}
+  if(!moved){await stor("POST",dst,await (await fetch(ph.big)).blob(),"image/jpeg");if(ph.cancelled)drop(dst);stor("DELETE",src).catch(()=>{})}
+  ph.sent=dst;return dst}
 function nuPhotoSend(q){const ph=nuPhoto;
-  const msg=T3(`Avec Sid'note : lis ma journée nutrition (nutrition_journee) : la photo de mon assiette que je viens d'envoyer y est jointe. Estime ce que j'ai mangé, puis note-le avec noter_repas.${q?` Précision : ${q}`:""}${nuDayNote()}`,
-    `With Sid'note: read my nutrition day (nutrition_journee): the photo of my plate I just sent is attached to it. Estimate what I ate, then log it with noter_repas.${q?` Note: ${q}`:""}${nuDayNote()}`,
-    `Met Sid'note: lees mijn voedingsdag (nutrition_journee): de foto van mijn bord die ik net stuurde zit erbij. Schat wat ik gegeten heb en noteer het met noter_repas.${q?` Toelichting: ${q}`:""}${nuDayNote()}`);
-  const clear=()=>{nuPhoto=null;nuPhotoPrevSet(null);$("nuAsk").value="";grow($("nuAsk"));nuAskLbl()};
+  // v74.5 : numéro stable de la photo (nom du fichier envoi-<n>.jpg) donné à Claude ; pas encore déposée → directement sous ce nom
+  if(!ph.path)ph.path=`documents/${session.user.id}/envoi-${Date.now()}.jpg`;const pid=+(/(\d+)\.jpg$/.exec(ph.path)||[0,0])[1];
+  const msg=T3(`Avec Sid'note : lis ma journée nutrition (nutrition_journee, avec photo=${pid}) : la photo de mon assiette que je viens d'envoyer y est jointe. Estime ce que j'ai mangé, puis note-le avec noter_repas.${q?` Précision : ${q}`:""}${nuDayNote()}`,
+    `With Sid'note: read my nutrition day (nutrition_journee, with photo=${pid}): the photo of my plate I just sent is attached to it. Estimate what I ate, then log it with noter_repas.${q?` Note: ${q}`:""}${nuDayNote()}`,
+    `Met Sid'note: lees mijn voedingsdag (nutrition_journee, met photo=${pid}): de foto van mijn bord die ik net stuurde zit erbij. Schat wat ik gegeten heb en noteer het met noter_repas.${q?` Toelichting: ${q}`:""}${nuDayNote()}`);
+  // v74.5 : photo et texte restent affichés tant que l'envoi n'a pas réussi (pour pouvoir réessayer) ; la photo suivante n'est jamais effacée
+  const clear=()=>{if(nuPhoto!==ph)return;nuPhoto=null;nuPhotoPrevSet(null);$("nuAsk").value="";grow($("nuAsk"));nuAskLbl()};
+  // le connecteur sait quelle photo arrive (il l'attend quelques secondes si Claude lit la journée avant la fin du dépôt)
+  NU().photoId=pid;NU().upd=Date.now();save();clearTimeout(pushTimer);push();nuSending=ph;
   // Claude s'ouvre tout de suite, pendant le toucher (une fenêtre vide remplie plus tard reste blanche dans l'app installée sur iPhone) ;
   // la photo finit de partir pendant que Claude s'ouvre (elle est en général déjà déposée depuis la prise de vue)
   // v44 : dans la conversation Nutrition si elle est réglée (le message est copié : il suffit de coller), sinon une nouvelle conversation
-  const conv=aiGo("nutri",msg,true);clear();if(conv==="chat")toast("Prompt copié, colle-le dans la conversation");
-  (ph.up||nuPhotoUp()||Promise.reject()).then(()=>nuPhotoMark(ph)).then(()=>toast(conv==="chat"?"Photo envoyée. Prompt copié, colle-le dans la conversation":"Photo envoyée : Claude note le repas, il arrivera ici"),
-    ()=>toast("Envoi de la photo impossible : réessaie"))}
+  const conv=aiGo("nutri",msg,true);if(conv==="chat")toast("Prompt copié, colle-le dans la conversation");
+  nuPhotoMark(ph).then(()=>{clear();toast(conv==="chat"?"Photo envoyée. Prompt copié, colle-le dans la conversation":"Photo envoyée : Claude note le repas, il arrivera ici")},
+    ex=>{if(!ph.cancelled)toast("Envoi de la photo impossible : réessaie")}).finally(()=>{if(nuSending===ph)nuSending=null})}
 // un aliment renvoyé par l'IA apparaît-il dans ce que la personne a écrit ? (racine des mots, sans accents)
 const nz=x=>String(x||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
 function mentioned(q,name){const Q=nz(q),stems=nz(name).split(/[^a-z0-9]+/).filter(w=>w.length>=3&&!/^(les|des|une|avec|sans|aux|the|and|with|cuit|cuite|nature|frais|fraiche|maison)$/.test(w));
   return !stems.length||stems.some(w=>Q.includes(w.length>5?w.slice(0,5):w.replace(/[sx]$/,"")))}
 $("nuAskForm").addEventListener("submit",async e=>{
   e.preventDefault();const q=$("nuAsk").value.trim();if((!q&&!nuPhoto)||nuBusy||!nutriAllowed())return;dictStop();
-  if(nuPhoto&&nuDirect()){if(NU().consent)return nuPhotoSend(q);if(!(await nuConsent()))return;nuPhotoUp();return nuPhotoSend(q)}
+  if(nuPhoto&&nuDirect()){if(nuSending===nuPhoto)return; // v74.5 : pas de double envoi de la même photo
+    if(NU().consent)return nuPhotoSend(q);const ph=nuPhoto;if(!(await nuConsent())||nuPhoto!==ph||nuSending===ph)return;return nuPhotoSend(q)}
   nuBusy="aliment";const btn=$("nuAskBtn");btn.disabled=true;nuPending=null;renderNuResult();
   const stop=nuLoading($("nuResult"),nuPhoto?["Analyse de la photo…","Reconnaissance des aliments…","Estimation des portions…","Calcul des calories…"]:["Analyse du plat…","Calcul des calories…","Estimation des macros…"]);
   const photo=nuPhoto;

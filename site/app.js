@@ -13,6 +13,7 @@ const ICS={
   utensils:'<path d="M7 3v18M4 3v5a3 3 0 0 0 6 0V3M17 21V3c-2 1.5-3 4-3 8h3"/>',
   user:'<circle cx="12" cy="8" r="4"/><path d="M5 21v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1"/>',
   camera:'<path d="M5 7h1a2 2 0 0 0 2-2a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2"/><circle cx="12" cy="13" r="3"/>',
+  image:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/>',
   mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M9 21h6"/>',
   lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
   unlock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/>',
@@ -110,7 +111,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="74.3";const errSent=new Set();
+const APP_V="74.5";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -629,7 +630,10 @@ function renderHome(){if(!$("homeBody"))return;
     cards.push({g,desc:"Musculation, nutrition et graphiques de ta forme.",it:it.slice(0,2)})}}
   {const g=APP_GROUPS.find(x=>x.app==="note");if(groupTabs(g).length){const it=[];
     const last=NT().filter(n=>!n.secret&&(n.title||n.body)).sort((a,b)=>(b.upd||0)-(a.upd||0))[0];
-    if(last)it.push([L("Dernière note"),{u:last.title||String(last.body||"").slice(0,40)},""]);
+    // v74.5 : titre nettoyé (espaces, retours à la ligne), sinon la première ligne du texte ; coupé proprement au mot
+    const nTxt=n=>{const t=String(n.title||"").replace(/\s+/g," ").trim()||(String(n.body||"").split(/\n/).map(x=>x.replace(/\s+/g," ").trim()).find(Boolean)||"");
+      return t.length>90?t.slice(0,90).replace(/\s+\S*$/,"")+"…":t};
+    if(last&&nTxt(last))it.push([L("Dernière note"),{u:nTxt(last)},""]);
     const nN=NT().length;it.push([L("Classeur"),`${nN} ${L(nN>1?"notes":"note")} · ${NF().length} ${L(NF().length>1?"dossiers":"dossier")}`,""]);
     cards.push({g,desc:"Notes, documents et mots de passe, à l'abri.",it:it.slice(0,2)})}}
   // v58 (#3) : cartes dessinées par React (app/src/Home.tsx) ; {u:…} = contenu de la personne (jamais traduit)
@@ -1482,10 +1486,11 @@ $("legalSeg").addEventListener("click",e=>{const b=e.target.closest("[data-legal
 $("legalClose").addEventListener("click",()=>$("legalSheet").hidden=true);
 $("legalSheet").addEventListener("click",e=>{if(e.target.id==="legalSheet")$("legalSheet").hidden=true});
 // accord explicite avant le premier envoi de données de santé à l'IA (data.nutri.consent = date) ; retirable dans Réglages
-let consentRes=null;
-function nuConsent(){if(NU().consent)return Promise.resolve(true);
-  return new Promise(res=>{consentRes=res;$("consentSheet").hidden=false})}
-const consentEnd=v=>{$("consentSheet").hidden=true;const r=consentRes;consentRes=null;if(r)r(v)};
+// v74.5 (relecture de Codex) : une seule demande à la fois ; un deuxième appel reçoit la même réponse (avant : la première restait sans réponse)
+let consentRes=null,consentP=null;
+function nuConsent(){if(NU().consent)return Promise.resolve(true);if(consentP)return consentP;
+  consentP=new Promise(res=>{consentRes=res;$("consentSheet").hidden=false});return consentP}
+const consentEnd=v=>{$("consentSheet").hidden=true;const r=consentRes;consentRes=null;consentP=null;if(r)r(v)};
 $("consentYes").addEventListener("click",()=>{const n=NU();n.consent=new Date().toISOString();n.upd=Date.now();save();renderConsent();consentEnd(true)});
 $("consentNo").addEventListener("click",()=>consentEnd(false));$("consentClose").addEventListener("click",()=>consentEnd(false));
 function renderLockSel(){const v=data.ui&&data.ui.lockDelay,d=String(v===undefined||v===null?-1:v);document.querySelectorAll("#lockSel [data-lock]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.lock===d)))}
@@ -2170,7 +2175,7 @@ function seCard(se,letter){const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0
     <div class="ms-body">
       <label class="small muted" style="display:grid;gap:4px">${L("Nom de la séance")}<input data-f="msname" value="${esc(se.name)}" autocomplete="off"></label>
       ${se.exercises.map((ex,i)=>`<div class="ex ex3" data-ex="${ex.id}">
-        <div class="ex-head"><span class="num">${i+1}</span><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><button type="button" class="mini ex-help" data-exhelp="1" aria-label="${L("Comment faire cet exercice")}" title="${L("Comment faire cet exercice")}"${exAide(ex.name)?"":" hidden"}>?</button><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">×</button></div>
+        <div class="ex-head"><span class="num">${i+1}</span><span class="ex-nm"><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><span class="ex-n notr" aria-hidden="true">${esc(ex.name)}</span></span><button type="button" class="mini ex-help" data-exhelp="1" aria-label="${L("Comment faire cet exercice")}" title="${L("Comment faire cet exercice")}"${exAide(ex.name)?"":" hidden"}>?</button><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">×</button></div>
         ${exAdvHtml(ex)}${exPrmHtml(ex)}${(p=>p?`<div class="ex-pro small">↑ ${esc(p)}</div>`:"")(exProg(ex))}
         <div class="set-rows">${ex.sets.map((st,j)=>`<div class="set-row" data-si="${j}"><span class="set-l">${L("Série")} ${j+1}</span>
           <input class="set-in" data-f="setkg" value="${esc(exKg(st&&st.kg))}" placeholder="kg" aria-label="${L("Série")} ${j+1} : kg" autocomplete="off" inputmode="decimal">
@@ -2229,7 +2234,8 @@ $("msList").addEventListener("input",e=>{
   const se=msFind(inp.closest("[data-ms]").dataset.ms);if(!se)return;
   if(f==="msname"){se.name=inp.value;if(!msRedraw()){const n=inp.closest("[data-ms]").querySelector(".ms-name");if(n)n.textContent=inp.value||L("Séance")}}
   else{const ex=se.exercises.find(x=>x.id===inp.closest("[data-ex]").dataset.ex);if(!ex)return;
-    if(f==="exname"){ex.name=inp.value;if(msRedraw()){msSaveSoon(se);return}const h=inp.parentElement.querySelector("[data-exhelp]");if(h)h.hidden=!exAide(ex.name);
+    if(f==="exname"){ex.name=inp.value;const sp=inp.parentElement.querySelector(".ex-n");if(sp)sp.textContent=inp.value; // v74.5 : nom complet affiché sur plusieurs lignes
+      if(msRedraw()){msSaveSoon(se);return}const h=inp.closest(".ex-head").querySelector("[data-exhelp]");if(h)h.hidden=!exAide(ex.name);
       const av=inp.closest("[data-ex]").querySelector(".ex-adv");if(av)av.outerHTML=exAdvHtml(ex)}
     else if(/^x(reps|rest|int|rpe|tempo)$/.test(f)){const k=f.slice(1); // v73 : réglages propres à l'exercice
       if(k==="rest"){const v=parseInt(inp.value.replace(/[^0-9]/g,""));if(v)ex.rest=Math.min(900,v);else delete ex.rest}else{const v=inp.value.slice(0,16).trim();if(v)ex[k]=v;else delete ex[k]}
@@ -2263,18 +2269,29 @@ $("msList").addEventListener("click",e=>{
   const box=b.closest("[data-ms]");if(!box)return;const se=msFind(box.dataset.ms);if(!se)return;if(!b.closest("summary"))msOpenId=se.id;
   const exOf=()=>se.exercises.find(x=>x.id===b.closest("[data-ex]").dataset.ex);
   if(b.dataset.msaddex){se.exercises.push(newEx());seTouch(se);save();renderMuscu();const ins=$("msList").querySelectorAll(`[data-ms="${se.id}"] [data-f=exname]`);ins[ins.length-1]?.focus()}
-  else if(b.dataset.msdelex){armDelete(b,()=>{se.exercises=se.exercises.filter(x=>x.id!==b.dataset.msdelex);seTouch(se);save();renderMuscu();if(msRunGet(se.id))msAutoLog(se)})}
+  else if(b.dataset.msdelex){armDelete(b,()=>{se.exercises=se.exercises.filter(x=>x.id!==b.dataset.msdelex);seTouch(se);save();renderMuscu();if(msTT(se.id))msAutoLog(se)})}
   else if(b.dataset.exhelp){const ex=exOf();if(ex)exHelpOpen(ex.name)}
   else if(b.dataset.msadv){const ex=exOf();if(ex)exAdvApply(se,ex)}
   else if(b.dataset.mscopy1){const ex=exOf();if(!ex||ex.sets.length<2)return;const f=ex.sets[0]||{};
     // v45 : la série 1 (poids et répétitions) est recopiée dans toutes les autres séries de l'exercice
     if(!String(f.kg||"").trim()&&!String(f.reps||"").trim()){toast("Remplis d'abord la série 1");return}
     const before=ex.sets.map(x=>({...x}));ex.sets.forEach((x,j)=>{if(j)ex.sets[j]={...x,kg:f.kg||"",reps:f.reps||""}});
+    // v74.4 (relecture de Codex) : repères gardés pour « Annuler » (séries touchées ce jour-là, heures du chrono), avec la date de la copie
+    const mine=o=>Object.fromEntries(Object.entries(o||{}).filter(([k])=>k.startsWith(ex.id+":")));
+    const d0=iso(today()),t0={...((msTT(se.id)||{}).t||{})},tb=mine(t0),mb=mine((msRunGet(se.id)||{}).marks),sid=se.id,eid=ex.id;
     ex.sets.forEach((x,j)=>msRunTouch(se,ex,j,!!String(x.reps||"").trim()));msAutoLog(se);seTouch(se);save();renderMuscu();
-    toastAct("Série 1 recopiée sur toutes les séries","Annuler",()=>{ex.sets=before;seTouch(se);save();renderMuscu()})}
+    const kr=a=>JSON.stringify((a||[]).map(x=>[String(x&&x.kg||""),String(x&&x.reps||"")])),after=kr(ex.sets);
+    toastAct("Série 1 recopiée sur toutes les séries","Annuler",()=>{
+      // la synchronisation a pu remplacer les objets : séance et exercice relus par leur id ; modifiés depuis la copie → rien n'est écrasé
+      const se2=msFind(sid),ex2=se2&&se2.exercises.find(x=>x.id===eid);if(!ex2)return;
+      if(kr(ex2.sets)!==after){toast("Les séries ont changé depuis : rien n'a été annulé");return}
+      ex2.sets=before;seTouch(se2);save();clearTimeout(msAutoT[sid]);delete msAutoT[sid];
+      if(iso(today())!==d0){msDone(se2,true,{d:d0,t:t0});renderMuscu();return} // passé minuit : on corrige la séance du jour de la copie
+      const put=(o,b)=>{if(!o)return;for(const k of Object.keys(o))if(k.startsWith(eid+":"))delete o[k];Object.assign(o,b)};
+      put(msTT(sid,true).t,tb);put((msRunGet(sid)||{}).marks,mb);saveUI();msDone(se2,true);renderMuscu()})}
   else if(b.dataset.msaddset){const ex=exOf();if(!ex||ex.sets.length>=20)return;ex.sets.push(newSet());seTouch(se);save();renderMuscu();
     const ins=document.querySelectorAll(`#msList [data-ex="${ex.id}"] [data-f="setkg"]`);ins[ins.length-1]?.focus()}
-  else if(b.dataset.msdelset!==undefined){const ex=exOf();if(!ex||ex.sets.length<=1)return;const j=+b.dataset.msdelset;ex.sets.splice(j,1);msRunShift(se.id,ex.id,j);seTouch(se);save();renderMuscu();if(msRunGet(se.id))msAutoLog(se)}
+  else if(b.dataset.msdelset!==undefined){const ex=exOf();if(!ex||ex.sets.length<=1)return;const j=+b.dataset.msdelset;ex.sets.splice(j,1);msRunShift(se.id,ex.id,j);seTouch(se);save();renderMuscu();if(msTT(se.id))msAutoLog(se)}
   else if(b.dataset.msshare)copyText(shareTxt([se]),"se");
   else if(b.dataset.msdone)msDone(se);
   // v44.4 : aussi depuis l'en-tête de la séance (poubelle, 2 appuis)
@@ -2349,11 +2366,11 @@ function coachBuild(p){const split={2:["full1","full2"],3:p.level==="deb"?["full
   const ok=e=>(relax||e.eq.includes(eq))&&!never.has(e.n)&&!av.some(z=>e.z.includes(z));
   // v73 : séries, répétitions, repos, intensité, RPE et tempo suivent les paramètres de référence de l'objectif (MU_PARAMS)
   const PP=MU_PARAMS[p.goal]||MU_PARAMS.muscle;
-  const mk=e=>{const x=PP[EXHEAVY(e)?"H":"I"];let sets=p.level==="deb"?Math.min(3,x.sets):x.sets;if(prio.has(e.m))sets++;
-    return{name:e.n,pat:e.m+":"+e.pat,sets,reps:x.reps,rest:x.rest,rir,...(PP.int?{int:PP.int}:{}),rpe:PP.rpe,tempo:PP.tempo,note:[e.note,p.level==="conf"&&!EXHEAVY(e)?"Dernière série au plus près de l'échec":""].filter(Boolean).join(". ")}};
+  const mk=(e,far)=>{const x=PP[EXHEAVY(e)?"H":"I"];let sets=p.level==="deb"?Math.min(3,x.sets):x.sets;if(prio.has(e.m))sets++;
+    return{name:e.n,pat:e.m+":"+e.pat,sets,reps:x.reps,rest:x.rest,rir,...(PP.int?{int:PP.int}:{}),rpe:PP.rpe,tempo:PP.tempo,note:[e.note,p.level==="conf"&&!EXHEAVY(e)?"Dernière série au plus près de l'échec":"",far?L("Matériel de salle : remplace-le si tu ne l'as pas"):""].filter(Boolean).join(". ")}};
   // exercices imposés : chacun va dans la séance qui travaille déjà ce muscle (la moins chargée en imposés)
   const forced=split.map(()=>[]);
-  for(const n of p.must||[]){const e=EXN(n);if(!e||never.has(n))continue;
+  for(const n of p.must||[]){const e=EXN(n);if(!e||never.has(n)||av.some(z=>e.z.includes(z)))continue; // v74.4 : les zones à ménager passent avant les exercices imposés
     const fit=split.map((t,i)=>({i,score:(DAYT[t].includes(e.m+":"+e.pat)?2:DAYT[t].some(r=>r.startsWith(e.m+":"))?1:0)-forced[i].length*0.1})).sort((a,b)=>b.score-a.score);
     forced[fit[0].i].push(e)}
   const days=split.map((t,di)=>{relax=false;let d=buildDay(t,di);if(d.ex.length<3){relax=true;d=buildDay(t,di)}relax=false;return d});
@@ -2366,7 +2383,8 @@ function coachBuild(p){const split={2:["full1","full2"],3:p.level==="deb"?["full
       if(c.some(e=>e.p))c=c.filter(e=>e.p); // v44 : exercices prioritaires (P) d'abord
       const k=turn[role]=(turn[role]||0)+1;add(c[(k-1+di)%c.length])}
     ex.sort((a,b)=>"HCLI".indexOf(a.t)-"HCLI".indexOf(b.t));
-    return{id:uid(),name:`${L("Séance")} ${"ABCDEF"[di]} · ${L(DAYN[t])}`,ex:ex.map(mk)}}
+    // v74.4 : un exercice hors du matériel de la personne (secours « relax » ou exercice imposé) est signalé, pas glissé en silence
+    return{id:uid(),name:`${L("Séance")} ${"ABCDEF"[di]} · ${L(DAYN[t])}`,ex:ex.map(e=>mk(e,!e.eq.includes(eq)))}}
   return{id:uid(),profile:p,days,at:new Date().toISOString(),upd:Date.now(),src:"app"}}
 // v44 : le programme devient le programme suivi : ses séances passent au format commun, celles de l'ancien programme suivi sont retirées
 function planApply(pl){const m=M(),old=PL();if(old)for(const s of grpSe(old.id)){tomb(s.id);m.sessions=m.sessions.filter(x=>x!==s)}
@@ -2530,11 +2548,18 @@ $("muGoal").addEventListener("click",e=>{const b=e.target.closest("[data-mugoal]
 // et s'efface après 4 h sans activité. Repos moyen = écart moyen entre deux séries remplies (de 10 s à 15 min ; au-delà, c'est une pause).
 const RUN_MAX=4*3600e3;
 function msRunGet(id){const r=data.ui&&data.ui.msRun;if(!r)return null;if(Date.now()-(r.last||r.t0)>RUN_MAX){delete data.ui.msRun;saveUI();return null}return id&&r.se!==id?null:r}
-function msRunTouch(se,ex,j,done){let r=msRunGet();const now=Date.now();
+function msRunTouch(se,ex,j,done){msTT(se.id);let r=msRunGet();const now=Date.now(); // msTT d'abord : reprend les repères d'un ancien chrono avant qu'il soit remplacé
   if(!r||r.se!==se.id)r=data.ui.msRun={se:se.id,t0:now,last:now,marks:{}};
-  r.last=now;const k=ex.id+":"+j;if(done&&!r.marks[k])r.marks[k]=now;r.t=r.t||{};r.t[k]=1;saveUI()}
+  r.last=now;const k=ex.id+":"+j;if(done&&!r.marks[k])r.marks[k]=now;msTT(se.id,true).t[k]=1;saveUI()}
+// v74.4 : séries touchées aujourd'hui, par séance (data.ui.msT = {séance: {d: date, t: {"exId:série": 1}}}), indépendantes du chrono :
+// passer à une autre séance puis revenir ne fait plus oublier les séries déjà faites ; « Annuler » peut les remettre comme avant
+function msTT(id,make){const u=data.ui.msT||(data.ui.msT={}),d=iso(today()),r=data.ui.msRun;
+  // séance commencée avant la mise à jour : les repères de l'ancien chrono (msRun.t) sont repris s'ils datent d'aujourd'hui
+  if(r&&r.t){if(iso(new Date(r.t0||0))===d){const x=u[r.se]&&u[r.se].d===d?u[r.se]:(u[r.se]={d,t:{}});Object.assign(x.t,r.t)}delete r.t;saveUI()}
+  for(const k of Object.keys(u))if(!u[k]||u[k].d!==d)delete u[k];
+  if(!u[id]&&make)u[id]={d,t:{}};return u[id]||null}
 // une série retirée : les repères des séries suivantes de l'exercice reculent d'un rang
-function msRunShift(seId,exId,j){const r=msRunGet(seId);if(!r)return;for(const o of [r.marks||{},r.t||{}]){const nw={};
+function msRunShift(seId,exId,j){const r=msRunGet(seId),x=msTT(seId);for(const o of [r&&r.marks,x&&x.t]){if(!o)continue;const nw={};
   for(const[k,v]of Object.entries(o)){const[e,s]=k.split(":");const n=+s;if(e!==exId||n<j)nw[k]=v;else if(n>j)nw[e+":"+(n-1)]=v}
   Object.keys(o).forEach(k=>delete o[k]);Object.assign(o,nw)}saveUI()}
 function msRunRest(r){const t=Object.values(r.marks||{}).map(Number).sort((a,b)=>a-b),g=[];
@@ -2543,9 +2568,10 @@ const msRunMin=r=>Math.max(1,Math.round((Date.now()-r.t0)/60000));
 const msDoneToday=se=>ML().some(l=>l&&l.day===se.id&&l.date===iso(today())&&!(data.del&&data.del[l.id]));
 // les séries remplies partent dans l'historique (data.muscu.log), avec la durée et le repos moyen mesurés.
 // v74.1 (demande de Sid) : plus de bouton « Séance terminée » : l'enregistrement se fait tout seul (quiet), 1,5 s après la dernière série saisie
-function msDone(se,quiet){const r=msRunGet(se.id),tt=quiet&&r&&r.t?r.t:null; // v74.3 : en automatique, seulement les séries touchées aujourd'hui
+// at = {d, t} : corrige la séance d'un jour passé (« Annuler » après minuit), sans le chrono en cours
+function msDone(se,quiet,at){const r=at?null:msRunGet(se.id),tx=at||msTT(se.id);if(quiet&&!tx)return;const tt=quiet?tx.t:null; // v74.3 : en automatique, seulement les séries touchées aujourd'hui
   const ex=se.exercises.map(x=>({name:String(x.name||"").trim(),sets:(x.sets||[]).filter((s,j)=>(!tt||tt[x.id+":"+j])&&(String(s.kg||"").trim()||String(s.reps||"").trim())).map(s=>({kg:String(s.kg||""),reps:String(s.reps||"")}))})).filter(x=>x.name&&x.sets.length);
-  const now=Date.now(),date=iso(today()),L0=ML(),old=L0.find(l=>l&&l.day===se.id&&l.date===date&&!(data.del&&data.del[l.id]));
+  const now=Date.now(),date=at?at.d:iso(today()),L0=ML(),old=L0.find(l=>l&&l.day===se.id&&l.date===date&&!(data.del&&data.del[l.id]));
   if(!ex.length){if(quiet&&old){tomb(old.id);M().log=L0.filter(l=>l!==old);M().upd=now;save();renderMuStats();return}if(!quiet)toast("Remplis au moins une série avant de terminer");return}
   const ent={id:old?old.id:uid(),date,day:se.id,name:se.name||"",ex,goal:muGoal(),upd:now};
   if(r){ent.min=Math.min(240,msRunMin(r));const rest=msRunRest(r);if(rest)ent.rest=rest}else if(old&&old.min){ent.min=old.min;if(old.rest)ent.rest=old.rest}
@@ -2747,12 +2773,13 @@ async function docDelete(d){
   undoable("Document supprimé",[d.id],()=>{tomb(d.id);data.docs=docsArr().filter(x=>x.id!==d.id)},{after:renderDocs,
     later:()=>{if(docsArr().some(x=>x.id===d.id))return;idb.del(docKey(d));if(d.up)stor("DELETE","documents/"+(d.path||docPath(d))).catch(()=>{})}});
 }
+// v74.5 : partage d'un PDF commun aux Documents et au lecteur PDF de Sid'note : partage natif du fichier, sinon téléchargement
+const pdfName=t=>(String(t||"").replace(/\.pdf$/i,"").replace(/[\\/:*?"<>|]+/g," ").trim()||"document")+".pdf";
+async function fileShare(b,title){const name=pdfName(title),f=new File([b],name,{type:"application/pdf"});
+  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:String(title||name)});return}}catch(e){if(e&&e.name==="AbortError")return}
+  const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
 async function docShare(d){
-  try{const b=await docBlob(d);const name=(d.title.replace(/[\\/:*?"<>|]+/g," ").trim()||"document")+".pdf";
-    const f=new File([b],name,{type:"application/pdf"});
-    try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:d.title});return}}catch(e){if(e.name==="AbortError")return}
-    const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
-  }catch(ex){toast(ex instanceof TypeError?"Pas de connexion internet":ex.message)}
+  try{await fileShare(await docBlob(d),d.title)}catch(ex){toast(ex instanceof TypeError?"Pas de connexion internet":ex.message)}
 }
 // recherche tolérante : sans accents, un seul mot suffit, fautes de frappe acceptées
 const fold=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
@@ -3346,12 +3373,12 @@ $("pdfIn").addEventListener("change",async e=>{const files=[...e.target.files];e
     try{await idb.put(pdfKey(id),f)}catch(ex){toast("Enregistrement impossible sur cet appareil");continue}
     NT().push(n);k++;last=n;pdfUpload(n)}
   if(!k)return;save();renderNotes();toast(k>1?`${k} ${L("PDF ajoutés")}`:L("PDF ajouté"));if(k===1&&last)pdfOpen(last.id)});
-let pv={note:null,tok:0,tool:"read",io:null,draw:null,sel:null};
+let pv={note:null,tok:0,tool:"read",io:null,draw:null,sel:null,/** @type {Blob|null} */ blob:null,/** @type {string|null} */ blobNote:null};
 const pvAnns=(nid,pg)=>PA().filter(a=>a&&a.note===nid&&(pg===undefined||a.page===pg)&&!(data.del&&data.del[a.id]));
-async function pdfOpen(id){const n=noteFind(id);if(!n||!n.pdf)return;const tok=++pv.tok;pv.note=n.id;pvTool("read");
+async function pdfOpen(id){const n=noteFind(id);if(!n||!n.pdf)return;const tok=++pv.tok;pv.note=n.id;pv.blob=null;pv.blobNote=null;pvTool("read");
   $("pvTitle").value=n.title||"";$("pvNoteTxt").value=n.body||"";$("pvNotes").hidden=true;$("pdfv").hidden=false;document.body.style.overflow="hidden";
   const body=$("pvBody");body.innerHTML=`<p class="muted pv-wait">${L("Ouverture…")}</p>`;
-  let blob;try{blob=await pdfBlob(n)}catch(ex){if(tok===pv.tok)body.innerHTML=`<p class="muted pv-wait">${esc(ex instanceof TypeError?L("Pas de connexion internet"):L("PDF introuvable sur cet appareil et en ligne"))}</p>`;return}
+  let blob;try{blob=await pdfBlob(n);if(tok===pv.tok){pv.blob=blob;pv.blobNote=n.id}}catch(ex){if(tok===pv.tok)body.innerHTML=`<p class="muted pv-wait">${esc(ex instanceof TypeError?L("Pas de connexion internet"):L("PDF introuvable sur cet appareil et en ligne"))}</p>`;return}
   try{const lib=await loadPdfJs(),pdf=await lib.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise;if(tok!==pv.tok)return;
     pv.pdf=pdf;body.innerHTML="";if(pv.io)pv.io.disconnect();
     pv.io=new IntersectionObserver(es=>es.forEach(en=>{const w=en.target;if(en.isIntersecting)pvRender(w,tok);else if(w._c&&Math.abs(en.boundingClientRect.top)>innerHeight*3){w._c.remove();w._c=null}}),{root:body,rootMargin:"120% 0px"});
@@ -3364,7 +3391,7 @@ async function pvRender(w,tok){if(w._c||w._busy||!pv.pdf)return;w._busy=true;
   try{const pg=await pv.pdf.getPage(+w.dataset.pg),v0=pg.getViewport({scale:1}),W=w.clientWidth||600,dpr=Math.min(2,window.devicePixelRatio||1),vp=pg.getViewport({scale:W/v0.width*dpr});
     const c=document.createElement("canvas");c.width=vp.width;c.height=vp.height;await pg.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;
     if(tok!==pv.tok)return;w.prepend(c);w._c=c}catch(e){}w._busy=false}
-function pvClose(){pvFlushTxt();pv.tok++;pv.note=null;pv.pdf=null;if(pv.io)pv.io.disconnect();$("pdfv").hidden=true;
+function pvClose(){pvFlushTxt();pv.tok++;pv.note=null;pv.pdf=null;pv.blob=null;pv.blobNote=null;if(pv.io)pv.io.disconnect();$("pdfv").hidden=true;
   if(window.SCIslands)document.querySelectorAll("#pvBody .pv-ov").forEach(ov=>{try{window.SCIslands.unmount(ov)}catch(_){}});$("pvBody").innerHTML="";document.body.style.overflow="";renderNotes()}
 // annotations placées en fraction de la page (même rendu sur iPhone et sur PC). v45 : zones de texte déplaçables et
 // redimensionnables (× pour supprimer), traits libres au stylo et au surligneur ({t:"ink", pts:[[x,y]…], c, w, hl}), gomme.
@@ -3411,8 +3438,12 @@ $("pvNotesClose").addEventListener("click",()=>pvTool("notes"));
 $("pvBack").addEventListener("click",pvClose);
 $("pvMore").innerHTML=MORE;
 $("pvMore").addEventListener("click",()=>{const n=noteFind(pv.note);if(!n)return;
-  openActions(n.title||L("PDF"),[{l:"Ranger dans un dossier",fn:()=>openActions(L("Ranger dans"),nfChoices(noteDirOf(n),null,fid=>{if(fid)n.folder=fid;else delete n.folder;n.upd=Date.now();save();toast(fid?`${L("Rangée dans")} « ${nfOf(fid).name} »`:"Rangée dans Notes")}))},
+  openActions(n.title||L("PDF"),[{l:"Partager",fn:pvShare},{l:"Ranger dans un dossier",fn:()=>openActions(L("Ranger dans"),nfChoices(noteDirOf(n),null,fid=>{if(fid)n.folder=fid;else delete n.folder;n.upd=Date.now();save();toast(fid?`${L("Rangée dans")} « ${nfOf(fid).name} »`:"Rangée dans Notes")}))},
     {l:"Supprimer ce PDF",danger:true,fn:()=>{const id=n.id;pvClose();undoable("PDF supprimé",[id],()=>{tomb(id);data.notes=NT().filter(x=>x!==n)},{after:renderNotes,later:()=>{if(!noteFind(id))npDropAll(n)}})}}])});
+// v74.5 (demande de Sid) : « Partager » le PDF ouvert ; le fichier déjà chargé à l'ouverture (pv.blob) est partagé tout de suite,
+// pendant le toucher (sinon iOS refuse le partage) ; il n'est accessible qu'une fois le PDF ouvert, donc déverrouillé
+async function pvShare(){const n=noteFind(pv.note);if(!n)return;
+  try{await fileShare(pv.blob&&pv.blobNote===n.id?pv.blob:await pdfBlob(n),n.title||(n.pdf&&n.pdf.name)||"")}catch(ex){toast(ex instanceof TypeError?"Pas de connexion internet":L("PDF introuvable sur cet appareil et en ligne"))}}
 // titre et notes liées au PDF (texte simple, enregistré au fur et à mesure)
 $("pvTitle").addEventListener("input",()=>{const n=noteFind(pv.note);if(!n)return;n.title=$("pvTitle").value.slice(0,120);n.upd=Date.now();msSaveSoon()});
 $("pvNoteTxt").addEventListener("input",()=>{const n=noteFind(pv.note);if(!n)return;n.body=$("pvNoteTxt").value;n.html=rtFromText(n.body);n.upd=Date.now();msSaveSoon()});
@@ -4616,27 +4647,36 @@ $("nuAsk").addEventListener("input",e=>grow(e.target));
 $("nuAsk").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();$("nuAskForm").requestSubmit()}});
 // photo du plat : réduite (1280 px) pour l'envoi, et une vignette gardée sur l'appareil
 function shrink(file,max,q){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();
-  im.onload=()=>{const k=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement("canvas");c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);
-    const g=c.getContext("2d");g.imageSmoothingQuality="high";g.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL("image/jpeg",q))};
+  // v74.5 : une erreur du canevas (image trop grande, mémoire) rejette la promesse au lieu de la laisser en attente
+  im.onload=()=>{try{const k=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement("canvas");c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);
+    const g=c.getContext("2d");if(!g)throw new Error("canvas");g.imageSmoothingQuality="high";g.drawImage(im,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",q))}catch(e){rej(e)}finally{URL.revokeObjectURL(u)}};
   im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error("image"))};im.src=u})}
 // v43 (demande de Sid) : photo du plat → « Envoyer à Claude », et c'est tout. La photo est déposée tout de suite dans le
 // dossier privé de la personne (Storage, documents/<uid>/repas-<horodatage>.jpg) ; son Claude la lit par le connecteur
 // (outil photo_repas), estime le repas et le note ; la photo est effacée dès qu'elle a été lue (au plus tard après 24 h).
 const nuDirect=()=>!!(session&&!isTrial()&&data.prefs.aiOk&&(aiCur()||AIS.claude)&&navigator.onLine);
-function nuPhotoUp(){if(!nuPhoto||!nuDirect())return;const ph=nuPhoto,path=`documents/${session.user.id}/repas-${Date.now()}.jpg`;
-  ph.up=(async()=>{const b=await (await fetch(ph.big)).blob();await stor("POST",path,b,"image/jpeg");ph.done=path;return path})();ph.up.catch(()=>{});return ph.up}
-const nuPhotoDrop=ph=>{if(ph&&ph.up)ph.up.then(p=>stor("DELETE",p)).catch(()=>{})}
+// v74.5 (relecture de Codex) : dépôt lié à une photo précise, rejouable : un échec (réseau coupé) est oublié, la tentative suivante renvoie
+function nuPhotoUp(ph=nuPhoto){if(!ph||!nuDirect())return Promise.reject(new Error("photo indisponible"));if(ph.done)return Promise.resolve(ph.done);if(ph.up)return ph.up;
+  const path=ph.path||(ph.path=`documents/${session.user.id}/repas-${Date.now()}.jpg`);
+  ph.up=(async()=>{try{const b=await (await fetch(ph.big)).blob();await stor("POST",path,b,"image/jpeg");ph.done=path;
+    if(ph.cancelled){stor("DELETE",path).catch(()=>{});throw new Error("photo retirée")}return path}catch(e){ph.up=null;throw e}})();ph.up.catch(()=>{});return ph.up}
+// photo retirée : marquée, puis effacée du dossier une fois son dépôt terminé (même s'il est encore en cours)
+const nuPhotoDrop=ph=>{if(!ph)return;ph.cancelled=true;if(ph.sent)return;const del=p=>p&&stor("DELETE",p).catch(()=>{});if(ph.done)del(ph.done);else if(ph.up)ph.up.then(del,()=>{})}
+let nuPhotoSeq=0,nuSending=null;
 function nuAskLbl(){$("nuAskBtn").textContent=L(nuPhoto&&nuDirect()?"Envoyer à Claude":"Analyser")}
-$("nuPhoto").addEventListener("change",async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
-  try{nuPhoto={big:await shrink(f,1280,.8),small:await shrink(f,240,.7)};
-    nuPhotoPrevSet(nuPhoto.small);
-    if(nuDirect()){if(await nuConsent())nuPhotoUp()}nuAskLbl()}
-  catch(ex){toast("Photo illisible")}});
+// v74.5 : chaque choix de photo a son numéro : une photo lente à préparer ne remplace plus une plus récente, ni ne revient après la croix
+// v74.5 : deux boutons, « Photo » (appareil photo, capture) et « Galerie » (sans capture : iOS ouvre alors la photothèque)
+const nuPhotoPick=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;const seq=++nuPhotoSeq;
+  try{const [big,small]=await Promise.all([shrink(f,1280,.8),shrink(f,240,.7)]);if(seq!==nuPhotoSeq)return;
+    const ph={big,small};if(nuPhoto&&nuPhoto!==nuSending)nuPhotoDrop(nuPhoto);nuPhoto=ph;nuPhotoPrevSet(ph.small);nuAskLbl();
+    if(nuDirect()&&await nuConsent()&&seq===nuPhotoSeq&&nuPhoto===ph)nuPhotoUp(ph).catch(()=>{});nuAskLbl()}
+  catch(ex){if(seq===nuPhotoSeq)toast("Photo illisible")}};
+$("nuPhoto").addEventListener("change",nuPhotoPick);$("nuPhotoLib").addEventListener("change",nuPhotoPick);
 // v68 (#3) : vignette de la photo du plat (React, ancien rendu en secours)
 function nuPhotoPrevSet(src){const el=$("nuPhotoPrev");el.hidden=!src;
   if(shIsl("nuPhotoPrev")){try{window.SCIslands.nuPhotoPrev(el,{src:src||"",i18n:agI18n()});return}catch(e){reportErr("island nuPhotoPrev: "+(e&&e.message));try{window.SCIslands.unmount(el)}catch(_){}}}
   el.innerHTML=src?`<img src="${src}" alt="${L("Photo du plat")}"><button type="button" aria-label="${L("Retirer la photo")}" data-nuphrm="1">×</button>`:""}
-$("nuPhotoPrev").addEventListener("click",e=>{if(e.target.closest("[data-nuphrm]")){nuPhotoDrop(nuPhoto);nuPhoto=null;nuPhotoPrevSet(null);nuAskLbl()}});
+$("nuPhotoPrev").addEventListener("click",e=>{if(e.target.closest("[data-nuphrm]")){++nuPhotoSeq;nuPhotoDrop(nuPhoto);nuPhoto=null;nuPhotoPrevSet(null);nuAskLbl()}});
 // envoi direct : Claude s'ouvre avec le message ; la fenêtre est ouverte pendant le toucher (sinon le navigateur la bloque)
 // Sur iPhone (app installée), un lien vers Claude ouvre une petite fenêtre de navigateur qui passe la main à l'app Claude,
 // puis reste vide derrière : on la garde sous la main et on la ferme dès que la personne revient dans Sid'compagnon
@@ -4653,28 +4693,42 @@ $("nuAiLink").addEventListener("click",e=>{e.preventDefault();const dn=nuDayNote
 document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest('a[target="_blank"][href^="https://claude.ai/"]');if(!a||e.defaultPrevented)return;e.preventDefault();extOpen(a.href)});
 // « Envoyer à Claude » : la photo déposée (repas-…) est renommée envoi-… ; le connecteur la joint à nutrition_journee, un outil que
 // Claude connaît déjà (sa liste d'outils peut dater d'avant photo_repas), puis l'efface
-function nuPhotoMark(ph){const src=ph.done,dst=src.replace("/repas-","/envoi-"),key=x=>x.replace(/^documents\//,"");
-  return (async()=>{const r=await fetch(SUPABASE_URL+"/storage/v1/object/move",{method:"POST",headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+await token(),"Content-Type":"application/json"},
-    body:JSON.stringify({bucketId:"documents",sourceKey:key(src),destinationKey:key(dst)})});if(!r.ok)throw new Error("move "+r.status)})()
-    .catch(async()=>{await stor("POST",dst,await (await fetch(ph.big)).blob(),"image/jpeg")})}
+// v74.5 (relu par Codex) : attend le dépôt (ou le refait), renvoie le chemin envoi-… ; une photo retirée (croix) pendant le déplacement
+// n'est jamais « ressuscitée » : la copie envoi-… est effacée et l'envoi échoue
+async function nuPhotoMark(ph){if(ph.sent)return ph.sent;const src=await nuPhotoUp(ph),key=x=>x.replace(/^documents\//,"");
+  const drop=p=>{stor("DELETE",p).catch(()=>{});throw new Error("photo retirée")};
+  if(ph.cancelled)drop(src);
+  if(/\/envoi-\d+\.jpg$/.test(src)){ph.sent=src;return src} // déposée directement sous son nom d'envoi
+  const dst=src.replace("/repas-","/envoi-");let moved=false;
+  try{const r=await fetch(SUPABASE_URL+"/storage/v1/object/move",{method:"POST",headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+await token(),"Content-Type":"application/json"},
+    body:JSON.stringify({bucketId:"documents",sourceKey:key(src),destinationKey:key(dst)})});moved=r.ok}catch(e){}
+  if(ph.cancelled){if(moved)drop(dst);throw new Error("photo retirée")}
+  if(!moved){await stor("POST",dst,await (await fetch(ph.big)).blob(),"image/jpeg");if(ph.cancelled)drop(dst);stor("DELETE",src).catch(()=>{})}
+  ph.sent=dst;return dst}
 function nuPhotoSend(q){const ph=nuPhoto;
-  const msg=T3(`Avec Sid'note : lis ma journée nutrition (nutrition_journee) : la photo de mon assiette que je viens d'envoyer y est jointe. Estime ce que j'ai mangé, puis note-le avec noter_repas.${q?` Précision : ${q}`:""}${nuDayNote()}`,
-    `With Sid'note: read my nutrition day (nutrition_journee): the photo of my plate I just sent is attached to it. Estimate what I ate, then log it with noter_repas.${q?` Note: ${q}`:""}${nuDayNote()}`,
-    `Met Sid'note: lees mijn voedingsdag (nutrition_journee): de foto van mijn bord die ik net stuurde zit erbij. Schat wat ik gegeten heb en noteer het met noter_repas.${q?` Toelichting: ${q}`:""}${nuDayNote()}`);
-  const clear=()=>{nuPhoto=null;nuPhotoPrevSet(null);$("nuAsk").value="";grow($("nuAsk"));nuAskLbl()};
+  // v74.5 : numéro stable de la photo (nom du fichier envoi-<n>.jpg) donné à Claude ; pas encore déposée → directement sous ce nom
+  if(!ph.path)ph.path=`documents/${session.user.id}/envoi-${Date.now()}.jpg`;const pid=+(/(\d+)\.jpg$/.exec(ph.path)||[0,0])[1];
+  const msg=T3(`Avec Sid'note : lis ma journée nutrition (nutrition_journee, avec photo=${pid}) : la photo de mon assiette que je viens d'envoyer y est jointe. Estime ce que j'ai mangé, puis note-le avec noter_repas.${q?` Précision : ${q}`:""}${nuDayNote()}`,
+    `With Sid'note: read my nutrition day (nutrition_journee, with photo=${pid}): the photo of my plate I just sent is attached to it. Estimate what I ate, then log it with noter_repas.${q?` Note: ${q}`:""}${nuDayNote()}`,
+    `Met Sid'note: lees mijn voedingsdag (nutrition_journee, met photo=${pid}): de foto van mijn bord die ik net stuurde zit erbij. Schat wat ik gegeten heb en noteer het met noter_repas.${q?` Toelichting: ${q}`:""}${nuDayNote()}`);
+  // v74.5 : photo et texte restent affichés tant que l'envoi n'a pas réussi (pour pouvoir réessayer) ; la photo suivante n'est jamais effacée
+  const clear=()=>{if(nuPhoto!==ph)return;nuPhoto=null;nuPhotoPrevSet(null);$("nuAsk").value="";grow($("nuAsk"));nuAskLbl()};
+  // le connecteur sait quelle photo arrive (il l'attend quelques secondes si Claude lit la journée avant la fin du dépôt)
+  NU().photoId=pid;NU().upd=Date.now();save();clearTimeout(pushTimer);push();nuSending=ph;
   // Claude s'ouvre tout de suite, pendant le toucher (une fenêtre vide remplie plus tard reste blanche dans l'app installée sur iPhone) ;
   // la photo finit de partir pendant que Claude s'ouvre (elle est en général déjà déposée depuis la prise de vue)
   // v44 : dans la conversation Nutrition si elle est réglée (le message est copié : il suffit de coller), sinon une nouvelle conversation
-  const conv=aiGo("nutri",msg,true);clear();if(conv==="chat")toast("Prompt copié, colle-le dans la conversation");
-  (ph.up||nuPhotoUp()||Promise.reject()).then(()=>nuPhotoMark(ph)).then(()=>toast(conv==="chat"?"Photo envoyée. Prompt copié, colle-le dans la conversation":"Photo envoyée : Claude note le repas, il arrivera ici"),
-    ()=>toast("Envoi de la photo impossible : réessaie"))}
+  const conv=aiGo("nutri",msg,true);if(conv==="chat")toast("Prompt copié, colle-le dans la conversation");
+  nuPhotoMark(ph).then(()=>{clear();toast(conv==="chat"?"Photo envoyée. Prompt copié, colle-le dans la conversation":"Photo envoyée : Claude note le repas, il arrivera ici")},
+    ex=>{if(!ph.cancelled)toast("Envoi de la photo impossible : réessaie")}).finally(()=>{if(nuSending===ph)nuSending=null})}
 // un aliment renvoyé par l'IA apparaît-il dans ce que la personne a écrit ? (racine des mots, sans accents)
 const nz=x=>String(x||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
 function mentioned(q,name){const Q=nz(q),stems=nz(name).split(/[^a-z0-9]+/).filter(w=>w.length>=3&&!/^(les|des|une|avec|sans|aux|the|and|with|cuit|cuite|nature|frais|fraiche|maison)$/.test(w));
   return !stems.length||stems.some(w=>Q.includes(w.length>5?w.slice(0,5):w.replace(/[sx]$/,"")))}
 $("nuAskForm").addEventListener("submit",async e=>{
   e.preventDefault();const q=$("nuAsk").value.trim();if((!q&&!nuPhoto)||nuBusy||!nutriAllowed())return;dictStop();
-  if(nuPhoto&&nuDirect()){if(NU().consent)return nuPhotoSend(q);if(!(await nuConsent()))return;nuPhotoUp();return nuPhotoSend(q)}
+  if(nuPhoto&&nuDirect()){if(nuSending===nuPhoto)return; // v74.5 : pas de double envoi de la même photo
+    if(NU().consent)return nuPhotoSend(q);const ph=nuPhoto;if(!(await nuConsent())||nuPhoto!==ph||nuSending===ph)return;return nuPhotoSend(q)}
   nuBusy="aliment";const btn=$("nuAskBtn");btn.disabled=true;nuPending=null;renderNuResult();
   const stop=nuLoading($("nuResult"),nuPhoto?["Analyse de la photo…","Reconnaissance des aliments…","Estimation des portions…","Calcul des calories…"]:["Analyse du plat…","Calcul des calories…","Estimation des macros…"]);
   const photo=nuPhoto;
@@ -4848,6 +4902,9 @@ const splitKcal=(total,slots)=>{const w=slots.map(s=>SLOT[s][2]),t=w.reduce((a,b
 // v31 : « à inclure » et « à éviter » sont propres à chaque type de repas (journée, petit-déj, déjeuner…) : rien n'est recopié d'un repas à l'autre
 const mpPref=(mp,type,k)=>{const p=mp.pp&&mp.pp[type];if(p&&p[k]!=null)return p[k];return type==="day"?(k==="include"?mp.include:mp.exclude)||"":""};
 const mpSet=(mp,type,k,v)=>{mp.pp=mp.pp||{};mp.pp[type]={...(mp.pp[type]||{}),[k]:v}};
+// v74.5 (demande de Sid) : une fois le menu généré, « à inclure » et « à éviter » sont vidés pour TOUS les types de menu
+// (journée, petit-déjeuner, déjeuner…) et l'ancien format ; avant, seul le type affiché l'était et l'ancien texte revenait ailleurs
+const mpWipe=mp=>{for(const t of Object.keys(mp.pp||{}))mp.pp[t]={...mp.pp[t],include:"",exclude:""};delete mp.include;delete mp.exclude};
 const nuMP=()=>{const n=NU();n.menuPrefs=n.menuPrefs||{};const m=n.menuPrefs;m.type=m.type||"day";m.one=m.one||{};
   // ancien réglage « repas par jour » → choix des repas
   if(!m.pick){const sl=slotsFor(m.meals||3);m.pick={breakfast:sl.includes("breakfast"),lunch:sl.includes("lunch")||sl.includes("meal"),dinner:sl.includes("dinner")};m.snacks=sl.filter(s=>s==="snack").length}
@@ -4885,8 +4942,12 @@ function renderMenuForm(){
     else $("nuMkTot").innerHTML=`${L("Total")} <b>${fmtFull(tot)}</b> / ${fmtFull(tg)} kcal ✓${mp.kcals?` <button type="button" class="mini" data-mkreset="1">${L("Répartition conseillée")}</button>`:""}`;
     document.querySelector(".nu-mk-note").hidden=sl.length<2}
   else if(document.activeElement!==$("nuOneKcal"))$("nuOneKcal").value=oneKcal(mp.type);
-  if(document.activeElement!==$("nuInclude"))$("nuInclude").value=mpPref(mp,mp.type,"include");if(document.activeElement!==$("nuExclude"))$("nuExclude").value=mpPref(mp,mp.type,"exclude");autoGrow($("nuInclude"));autoGrow($("nuExclude"));
+  // v74.5 (relu par Codex) : un NOUVEAU menu (menu.at a changé, par exemple enregistré par Claude puis reçu par la synchro) remet les deux
+  // champs à jour même s'ils ont le focus ; sinon un champ focalisé garde sa saisie en cours
+  const mAt=String((NU().menu&&NU().menu.at)||""),fresh=nuMenuSeen!==null&&mAt!==nuMenuSeen;nuMenuSeen=mAt;
+  if(fresh||document.activeElement!==$("nuInclude"))$("nuInclude").value=mpPref(mp,mp.type,"include");if(fresh||document.activeElement!==$("nuExclude"))$("nuExclude").value=mpPref(mp,mp.type,"exclude");autoGrow($("nuInclude"));autoGrow($("nuExclude"));
 }
+/** @type {string|null} */ var nuMenuSeen=null; // var : lisible même si renderMenuForm est appelé avant cette ligne
 $("nuMType").addEventListener("click",e=>{const b=e.target.closest("[data-mtype]");if(!b)return;nuMP().type=b.dataset.mtype;NU().upd=Date.now();save();renderMenuForm()});
 $("nuMenuSec").addEventListener("click",e=>{const b=e.target.closest("[data-pick],[data-snacks],[data-mkreset]");if(!b)return;const mp=nuMP();
   if(b.dataset.mkreset)mp.kcals=null;
@@ -4945,16 +5006,17 @@ async function getRecipe(ml){
     r=>r&&(r.tips||(r.meals&&r.meals[0]&&(r.meals[0].steps||r.meals[0].recipe))));
   const m=r.meals&&r.meals[0]||{};return recipeSteps(m.steps||m.recipe||m.instructions)||recipeSteps(r.tips)}
 $("nuMenuBtn").addEventListener("click",async()=>{
-  if(nuBusy||!nutriAllowed())return;const n=NU(),mp=nuMP();mpSet(mp,mp.type,"include",$("nuInclude").value.trim());mpSet(mp,mp.type,"exclude",$("nuExclude").value.trim());
+  if(nuBusy||!nutriAllowed())return;const mp=nuMP();mpSet(mp,mp.type,"include",$("nuInclude").value.trim());mpSet(mp,mp.type,"exclude",$("nuExclude").value.trim());
   if(mp.type!=="day")mp.one[mp.type]=Math.max(0,Math.round(numIn($("nuOneKcal").value)))||oneKcal(mp.type);
   const slots=mp.type==="day"?mpSlots():[mp.type],kcals=mp.type==="day"?mpKcals():[mp.one[mp.type]];
   nuBusy="menu";const btn=$("nuMenuBtn");btn.disabled=true;nuMenuFree();const stop=nuLoading($("nuMenu"),["Préparation du menu…","Choix des recettes…","Calcul des grammages…","Équilibrage des macros…"]);
   // v43 (demande de Sid) : « à inclure » / « à éviter » ne servent qu'à cette demande ; ils repartent vides ensuite
-  const mpClear=()=>{mpSet(mp,mp.type,"include","");mpSet(mp,mp.type,"exclude","");if(mp.type==="day"){delete mp.include;delete mp.exclude}$("nuInclude").value="";$("nuExclude").value="";autoGrow($("nuInclude"));autoGrow($("nuExclude"));n.upd=Date.now();save()};
-  try{const g=await genMeals(slots,kcals);mpClear();
-    if(mp.type==="day"||!n.menu||!n.menu.meals)n.menu={meals:g.meals,tips:g.tips,at:new Date().toISOString()};
-    else{const i=n.menu.meals.findIndex(m=>m.slot===mp.type);if(i>=0)n.menu.meals[i]=g.meals[0];else n.menu.meals.push(g.meals[0]);n.menu.at=new Date().toISOString()}
-    n.upd=Date.now();save();toast("Menu prêt");
+  // v74.5 (relu par Codex) : après l'attente, la synchro a pu remplacer data.nutri : on relit toujours NU() / nuMP() au moment d'écrire
+  const ty=mp.type,mpClear=()=>{mpWipe(nuMP());$("nuInclude").value="";$("nuExclude").value="";autoGrow($("nuInclude"));autoGrow($("nuExclude"));NU().upd=Date.now();save()};
+  try{const g=await genMeals(slots,kcals);mpClear();const n=NU(),at=new Date().toISOString();
+    if(ty==="day"||!n.menu||!n.menu.meals)n.menu={meals:g.meals,tips:g.tips,at};
+    else{const i=n.menu.meals.findIndex(m=>m.slot===ty);if(i>=0)n.menu.meals[i]=g.meals[0];else n.menu.meals.push(g.meals[0]);n.menu.at=at}
+    nuMenuSeen=at;n.upd=Date.now();save();toast("Menu prêt");
   }catch(ex){toast(nuErrMsg(ex));if(ex.ai)mpClear()}
   stop();nuBusy="";btn.disabled=false;renderNuMenu();
   const f=$("nuMenu").querySelector(".dish");if(f)f.scrollIntoView({behavior:"smooth",block:"start"});
@@ -5007,7 +5069,10 @@ $("nuMenu").addEventListener("click",async e=>{const b=e.target.closest("button"
   if(b.dataset.medel){armDelete(b,()=>{M.meals.splice(+b.dataset.medel,1);n.upd=Date.now();save();renderNuMenu()});return}
   if(b.dataset.meadd){meAdd=+b.dataset.meadd;meEdit=null;renderNuMenu();return}
   if(b.dataset.meregen&&!nuBusy){const i=+b.dataset.meregen,ml=M.meals[i];nuBusy="regen";meRegen=i;if(nuIsl("nuMenu")&&$("nuMenu")._isl)renderNuMenu();else b.innerHTML=`<span class="spin"></span>`;
-    try{const g=await genMeals([ml.slot||"lunch"],[ml.target||ml.kcal]);if(g.meals[0])M.meals[i]=g.meals[0];n.upd=Date.now();save();toast("Nouvelle idée prête")}catch(ex){toast(nuErrMsg(ex))}
+    // v74.5 : comme pour le menu, « à inclure » / « à éviter » sont vidés une fois l'idée générée (ou confiée à Claude)
+    const wipe=()=>{mpWipe(nuMP());["nuInclude","nuExclude"].forEach(id=>{$(id).value="";autoGrow($(id))});NU().upd=Date.now();save()};
+    try{const g=await genMeals([ml.slot||"lunch"],[ml.target||ml.kcal]);const cm=NU().menu; // menu courant (la synchro a pu le remplacer pendant l'attente)
+      if(g.meals[0]&&cm&&Array.isArray(cm.meals)&&cm.meals[i])cm.meals[i]=g.meals[0];wipe();toast("Nouvelle idée prête")}catch(ex){toast(nuErrMsg(ex));if(ex.ai)wipe()}
     nuBusy="";meRegen=null;renderNuMenu()}
 });
 $("nuMenu").addEventListener("keydown",e=>{if(e.target.id==="meQtyIn"&&e.key==="Enter"){e.preventDefault();const[i,j]=meEdit.split(":").map(Number);meScale(i,j,numIn(e.target.value));meEdit=null;renderNuMenu()}});
@@ -5397,7 +5462,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v74-3";
+const BUILD="sidnote-v74-5";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

@@ -43,11 +43,11 @@ function coachBuild(p){const split={2:["full1","full2"],3:p.level==="deb"?["full
   const ok=e=>(relax||e.eq.includes(eq))&&!never.has(e.n)&&!av.some(z=>e.z.includes(z));
   // v73 : séries, répétitions, repos, intensité, RPE et tempo suivent les paramètres de référence de l'objectif (MU_PARAMS)
   const PP=MU_PARAMS[p.goal]||MU_PARAMS.muscle;
-  const mk=e=>{const x=PP[EXHEAVY(e)?"H":"I"];let sets=p.level==="deb"?Math.min(3,x.sets):x.sets;if(prio.has(e.m))sets++;
-    return{name:e.n,pat:e.m+":"+e.pat,sets,reps:x.reps,rest:x.rest,rir,...(PP.int?{int:PP.int}:{}),rpe:PP.rpe,tempo:PP.tempo,note:[e.note,p.level==="conf"&&!EXHEAVY(e)?"Dernière série au plus près de l'échec":""].filter(Boolean).join(". ")}};
+  const mk=(e,far)=>{const x=PP[EXHEAVY(e)?"H":"I"];let sets=p.level==="deb"?Math.min(3,x.sets):x.sets;if(prio.has(e.m))sets++;
+    return{name:e.n,pat:e.m+":"+e.pat,sets,reps:x.reps,rest:x.rest,rir,...(PP.int?{int:PP.int}:{}),rpe:PP.rpe,tempo:PP.tempo,note:[e.note,p.level==="conf"&&!EXHEAVY(e)?"Dernière série au plus près de l'échec":"",far?L("Matériel de salle : remplace-le si tu ne l'as pas"):""].filter(Boolean).join(". ")}};
   // exercices imposés : chacun va dans la séance qui travaille déjà ce muscle (la moins chargée en imposés)
   const forced=split.map(()=>[]);
-  for(const n of p.must||[]){const e=EXN(n);if(!e||never.has(n))continue;
+  for(const n of p.must||[]){const e=EXN(n);if(!e||never.has(n)||av.some(z=>e.z.includes(z)))continue; // v74.4 : les zones à ménager passent avant les exercices imposés
     const fit=split.map((t,i)=>({i,score:(DAYT[t].includes(e.m+":"+e.pat)?2:DAYT[t].some(r=>r.startsWith(e.m+":"))?1:0)-forced[i].length*0.1})).sort((a,b)=>b.score-a.score);
     forced[fit[0].i].push(e)}
   const days=split.map((t,di)=>{relax=false;let d=buildDay(t,di);if(d.ex.length<3){relax=true;d=buildDay(t,di)}relax=false;return d});
@@ -60,7 +60,8 @@ function coachBuild(p){const split={2:["full1","full2"],3:p.level==="deb"?["full
       if(c.some(e=>e.p))c=c.filter(e=>e.p); // v44 : exercices prioritaires (P) d'abord
       const k=turn[role]=(turn[role]||0)+1;add(c[(k-1+di)%c.length])}
     ex.sort((a,b)=>"HCLI".indexOf(a.t)-"HCLI".indexOf(b.t));
-    return{id:uid(),name:`${L("Séance")} ${"ABCDEF"[di]} · ${L(DAYN[t])}`,ex:ex.map(mk)}}
+    // v74.4 : un exercice hors du matériel de la personne (secours « relax » ou exercice imposé) est signalé, pas glissé en silence
+    return{id:uid(),name:`${L("Séance")} ${"ABCDEF"[di]} · ${L(DAYN[t])}`,ex:ex.map(e=>mk(e,!e.eq.includes(eq)))}}
   return{id:uid(),profile:p,days,at:new Date().toISOString(),upd:Date.now(),src:"app"}}
 // v44 : le programme devient le programme suivi : ses séances passent au format commun, celles de l'ancien programme suivi sont retirées
 function planApply(pl){const m=M(),old=PL();if(old)for(const s of grpSe(old.id)){tomb(s.id);m.sessions=m.sessions.filter(x=>x!==s)}

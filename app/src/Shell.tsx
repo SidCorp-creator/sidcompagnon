@@ -20,11 +20,13 @@ export function NavBar({ items, cur, i18n }: { items: NavItem[]; cur: string; i1
   </button>)}</>;
 }
 
-export function AppHead({ app, label, gridIcon, i18n }: { app: string; label: string; gridIcon: string; i18n: NavI18n }) {
-  return <>
-    <span className="ah-brand"><Logo app={app} cls="ah-logo" /><span className="eyebrow">{i18n.tr(label)}</span></span>
-    <button type="button" className="ah-home" data-go="home" aria-label={i18n.tr(i18n.L("Retour à Sid'compagnon"))} dangerouslySetInnerHTML={{ __html: `${gridIcon}<span>Sid'compagnon</span>` }}></button>
-  </>;
+export interface AppHeadProps {app:string;label:string;role:string;title:string;progress:string;percent:number;hasProgress:boolean;gridIcon:string;askIcon:string;i18n:NavI18n}
+export function AppHead({app,label,role,title,progress,percent,hasProgress,gridIcon,askIcon,i18n}:AppHeadProps){
+ const {tr,L}=i18n;
+ return <><div className="elan-head-row"><button type="button" className="ah-home" data-go="home" aria-label={tr(L("Toutes les apps"))}><Ic cls="ah-grid" html={gridIcon}/></button>
+ <span className="ah-brand"><Logo app={app} cls="ah-logo"/><span className="ah-names"><b>{label}</b><small>{tr(L(role))}</small></span></span>
+ <button type="button" className="ah-claude" data-app-claude="1"><Ic cls="ah-chat" html={askIcon}/>Claude</button></div>
+ <h1 className="elan-title">{tr(L(title))}</h1><div className="elan-progress"><span key={progress}>{tr(progress)}</span><span className="elan-progress-track" hidden={!hasProgress} role="progressbar" aria-label={tr(L("Progression du jour"))} aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent}><i style={{width:`${percent}%`}}/></span></div></>;
 }
 
 export interface SideIcons { side: string; home: string; plus: string; user: string }

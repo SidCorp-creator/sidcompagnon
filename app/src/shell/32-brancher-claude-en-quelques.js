@@ -67,8 +67,8 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden&&!$("aiShe
 const CONV_OK=u=>/^https:\/\/claude\.ai\/(?:chat|project)\/[\w-]+/.test(u||"");
 // v46.1 : une conversation par app (agenda, nutri, muscu, note) ; l'ancien dossier Santé ne sert qu'à sid'fit
 const convUrl=t=>{const c=(data.prefs.aiConv||{})[t];return CONV_OK(c)?c:(t==="nutri"||t==="muscu")&&CONV_OK(data.prefs.aiProj)?data.prefs.aiProj:""};
-const CONV_NAME={nutri:"Nutrition",muscu:"Musculation",agenda:"sid'agenda",note:"sid'note"};
-const CONV_TITLE={agenda:"sid'agenda — discussion avec Claude",nutri:"sid'fit — Nutrition",muscu:"sid'fit — Musculation",note:"sid'note — discussion avec Claude"};
+const CONV_NAME={nutri:"Nutrition",muscu:"Musculation",agenda:"Sid Journée",note:"Sid Coffre"};
+const CONV_TITLE={agenda:"Sid Journée — discussion avec Claude",nutri:"Sid Forme — Nutrition",muscu:"Sid Forme — Musculation",note:"Sid Coffre — discussion avec Claude"};
 const CONV_IN={agenda:"convAgenda",nutri:"convNutri",muscu:"convMuscu",note:"convNote"};
 // nouvelle conversation : le titre de l'app en tête du premier message, pour la retrouver dans Claude et la garder
 const convFirst=(t,p)=>CONV_TITLE[t]&&!convUrl(t)?`${L(CONV_TITLE[t])}\n\n${p}`:p;

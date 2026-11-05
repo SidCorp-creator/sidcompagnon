@@ -20,9 +20,9 @@ const INTRO={
     ()=>{const w=[irint(60,90),irint(70,100),irint(40,80),irint(65,95)];return `<div class="it-lines" aria-hidden="true">${w.map((v,i)=>`<i style="--w:${v}%;animation-delay:${(i*irnd(.18,.26)).toFixed(2)}s"></i>`).join("")}</div>`},
     ()=>{const k=irnd(.9,1.2).toFixed(2),y=irint(-8,8);return `<svg class="it-sign" viewBox="0 0 200 90" aria-hidden="true" style="--t:${k}s"><path d="M10 ${60+y} C 40 ${10+y}, 60 ${80-y}, 85 45 S 120 ${15+y}, 140 55 S 175 ${70-y}, 190 ${35+y}"/></svg>`},
     ()=>{const n=irint(3,5);return `<div class="it-stack" aria-hidden="true">${[...Array(n)].map((_,i)=>`<span style="animation-delay:${(i*irnd(.12,.18)).toFixed(2)}s;--x:${irint(-14,14)}px;--r:${irnd(-5,5).toFixed(1)}deg"></span>`).join("")}</div>`}]};
-const INTRO_NAME={agenda:"sid'agenda",fit:"sid'fit",note:"sid'note"};
+const INTRO_NAME={agenda:"Sid Journée",fit:"Sid Forme",note:"Sid Coffre"};
 function appIntro(app,vv){
-  if(!INTRO[app]||matchMedia("(prefers-reduced-motion: reduce)").matches||window.__noIntro)return;
+  if(document.documentElement.dataset.ds==="elan"||!INTRO[app]||matchMedia("(prefers-reduced-motion: reduce)").matches||window.__noIntro)return;
   introEnd(true);const el=document.createElement("div");el.className="app-intro";el.id="appIntro";el.dataset.app=app;el.setAttribute("role","presentation");
   const v=vv!==undefined?vv:Math.floor(Math.random()*INTRO[app].length);el.dataset.variant=v;
   el.innerHTML=`<div class="ai-art">${INTRO[app][v]()}</div><div class="ai-brand"><span class="ai-logo">${LOGO(app)}</span><span class="ai-name">${INTRO_NAME[app]}</span></div><button type="button" class="ai-skip">${L("Passer")}</button>`;
@@ -33,7 +33,7 @@ addEventListener("keydown",e=>{if($("appIntro"))introEnd()},true);
 // v44.4 : animation de sortie (retour à Sid'compagnon) : le logo de l'app, au centre, rejoint sa place parmi les 3 logos de l'accueil
 const OUT_K={agenda:"orga",fit:"sport",note:"perso"};
 function appOutro(app){
-  if(matchMedia("(prefers-reduced-motion: reduce)").matches||window.__noIntro||!document.body.animate)return;
+  if(document.documentElement.dataset.ds==="elan"||matchMedia("(prefers-reduced-motion: reduce)").matches||window.__noIntro||!document.body.animate)return;
   introEnd(true);$("appOutro")?.remove();
   const el=document.createElement("div");el.className="app-outro";el.id="appOutro";el.dataset.app=app;el.setAttribute("aria-hidden","true");
   el.innerHTML=`<div class="ao-brand"><span class="ao-logo">${LOGO(app)}</span><span class="ao-name">${INTRO_NAME[app]}</span></div>`;

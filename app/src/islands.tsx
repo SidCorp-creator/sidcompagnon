@@ -1,3 +1,4 @@
+import { JourneyDay, type JourneyVM } from "./Agenda";
 // Point d'entrée des écrans migrés : l'app actuelle (site/app.js) appelle window.SCIslands.<écran>(élément(s), props).
 // Si ce fichier ne se charge pas, l'app garde son ancien rendu : rien ne casse.
 import { createRoot, type Root } from "react-dom/client";
@@ -17,7 +18,7 @@ import { DocFolders, DocList, PwList, type DocFolderVM, type DocVM, type PwVM, t
 import { NuMenu, type MenuVM } from "./NuMenu";
 import { HomeCards, type HcCard } from "./Home";
 import { GoalBody, NuCopy, NuPlan, type GoalVM, type NuCopyVM, type PlanVM } from "./NuExtra";
-import { AppHead, NavBar, SideBar, type NavItem, type NavI18n, type SideGroup, type SideIcons } from "./Shell";
+import { AppHead, NavBar, SideBar, type NavItem, type NavI18n, type SideGroup, type SideIcons, type AppHeadProps } from "./Shell";
 import { ExHelp, McpList, QuickAdd, Stats, TabsCard, TypesCard, type ExHelpVM, type SI18n, type TabGroup } from "./Settings";
 import { Keypad, OnbDots, OnbGroups, OnbPal, type OI18n, type OnbGroup, type PalVM } from "./Onboarding";
 import { AuthFeats, FolderBar, NsBar, NuKcalOf, NuMealKcal, NuMkTot, NuSlots, NuSports, type FI18n } from "./Forms";
@@ -141,7 +142,8 @@ declare global {
       quickAdd: (el: Element, p: { acts: { k: string; t: string; s: string; icon: string }[]; i18n: SI18n }) => void;
       exHelp: (el: Element, p: { h: ExHelpVM; i18n: SI18n }) => void;
       nav: (el: Element, p: { items: NavItem[]; cur: string; i18n: NavI18n }) => void;
-      appHead: (el: Element, p: { app: string; label: string; gridIcon: string; i18n: NavI18n }) => void;
+      appHead: (el: Element, p: AppHeadProps) => void;
+      journeyDay: (el: Element, p: JourneyVM) => void;
       side: (el: Element, p: { groups: SideGroup[]; cur: string; icons: SideIcons; i18n: NavI18n }) => void;
       nuCopy: (el: Element, p: { c: NuCopyVM; MOL: string[]; i18n: NuI18n }) => void;
       nuGoal: (el: Element, p: { g: GoalVM | null; alert: string; i18n: NuI18n }) => void;
@@ -200,6 +202,7 @@ window.SCIslands = {
   nuPlan: (el, p) => mount(el, <NuPlan {...p} />),
   nav: (el, p) => mount(el, <NavBar {...p} />),
   appHead: (el, p) => mount(el, <AppHead {...p} />),
+  journeyDay: (el, p) => mount(el, <JourneyDay {...p} />),
   side: (el, p) => mount(el, <SideBar {...p} />),
   stats: (el, p) => mount(el, <Stats {...p} />),
   tabsCard: (el, p) => mount(el, <TabsCard {...p} />),

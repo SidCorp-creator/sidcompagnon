@@ -1,0 +1,814 @@
+<title>Sid'compagnon, trois directions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,500;0,600;1,500&family=Figtree:wght@400;500;600;700;800&display=swap">
+<style>
+/* Page de comparaison : colonne de lecture sobre ; les maquettes portent seules l'identité. */
+:root{
+  --pg-bg:#F7F7F8;--pg-sf:#FFFFFF;--pg-ink:#17181C;--pg-mut:#5E616B;--pg-line:#E0E1E6;--pg-acc:#2F3A8F;
+  --pg-font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--pg-bg:#121316;--pg-sf:#1A1B1F;--pg-ink:#ECEDF0;--pg-mut:#A2A5AF;--pg-line:#2C2E34;--pg-acc:#9EA8F0;color-scheme:dark}}
+:root[data-theme="dark"]{--pg-bg:#121316;--pg-sf:#1A1B1F;--pg-ink:#ECEDF0;--pg-mut:#A2A5AF;--pg-line:#2C2E34;--pg-acc:#9EA8F0;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--pg-bg);color:var(--pg-ink);font:15px/1.55 var(--pg-font)}
+.wrap{max-width:1320px;margin:0 auto;padding-block:32px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{text-wrap:balance;line-height:1.2;margin:0}
+h1{font-size:clamp(28px,4vw,40px);font-weight:700;letter-spacing:-.01em}
+h2{font-size:24px;font-weight:700;margin-top:64px;padding-top:24px;border-top:1px solid var(--pg-line)}
+h3{font-size:17px;font-weight:650}
+p{margin:0;max-width:68ch}
+.lead{color:var(--pg-mut);font-size:17px;margin-top:12px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.mut{color:var(--pg-mut)}
+.small{font-size:13px}
+a{color:var(--pg-acc)}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--pg-acc);outline-offset:2px}
+
+/* barre d'outils */
+.tools{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;margin-top:24px;padding:12px 0;border-bottom:1px solid var(--pg-line);position:sticky;top:env(safe-area-inset-top,0px);background:var(--pg-bg);z-index:5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--pg-bg)}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-sf)}
+.seg button{border:0;background:none;color:var(--pg-ink);padding:7px 12px;font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--pg-ink);color:var(--pg-bg)}
+.seg-l{font-size:13px;color:var(--pg-mut);margin-right:6px}
+
+/* les trois colonnes */
+.tri{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:24px}
+@media (max-width:1000px){.tri{grid-template-columns:minmax(0,1fr)}}
+.dcol{min-width:0;display:flex;flex-direction:column;gap:16px}
+.dname{display:flex;align-items:baseline;gap:10px}
+.dname b{font-size:20px}
+.tagr{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--pg-acc);color:var(--pg-bg);font-weight:600}
+.blk{background:var(--pg-sf);border:1px solid var(--pg-line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.blk h4{margin:0;font-size:13px;color:var(--pg-mut);font-weight:600}
+ul.pl{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.sw{display:flex;flex-wrap:wrap;gap:8px}
+.sw span{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--pg-mut);width:56px}
+.sw i{display:block;height:36px;border-radius:6px;border:1px solid var(--pg-line)}
+.logos{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.logos svg{display:block}
+.mono-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px;border-radius:8px}
+.mono-ink{background:#FFFFFF;color:#111111;border:1px solid #DDDDDD}
+.mono-pap{background:#111111;color:#FFFFFF}
+.sizes{display:flex;gap:14px;align-items:end;flex-wrap:wrap}
+.sizes figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--pg-mut)}
+.icons{display:flex;flex-wrap:wrap;gap:6px}
+.icons .ic{width:26px;height:26px}
+
+/* onglets d'écrans */
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.tabs button{border:1px solid var(--pg-line);background:var(--pg-sf);color:var(--pg-ink);border-radius:99px;padding:7px 14px;font-size:14px}
+.tabs button[aria-pressed="true"]{background:var(--pg-ink);color:var(--pg-bg);border-color:var(--pg-ink)}
+.scr-note{margin-top:12px}
+.phones{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:20px;justify-items:center}
+@media (max-width:1320px){.phones{display:flex;overflow-x:auto;justify-content:flex-start;padding-bottom:12px;scroll-snap-type:x mandatory}.phones>figure{scroll-snap-align:center;flex:none}}
+.phones figure{margin:0;display:flex;flex-direction:column;gap:10px;align-items:center}
+.phones figcaption{font-size:14px;font-weight:600}
+
+table.cmp{width:100%;border-collapse:collapse;font-size:14px;min-width:720px}
+.tblw{overflow-x:auto;margin-top:16px;border:1px solid var(--pg-line);border-radius:10px;background:var(--pg-sf)}
+table.cmp th,table.cmp td{padding:12px 14px;border-bottom:1px solid var(--pg-line);text-align:left;vertical-align:top}
+table.cmp thead th{font-size:13px;color:var(--pg-mut);font-weight:600}
+table.cmp tbody th{font-weight:600;width:170px}
+table.cmp tr:last-child td,table.cmp tr:last-child th{border-bottom:0}
+.reco{margin-top:20px;padding:20px;border-radius:10px;border:2px solid var(--pg-acc);background:var(--pg-sf);display:flex;flex-direction:column;gap:10px}
+ol.q{margin:12px 0 0;padding-left:22px;display:flex;flex-direction:column;gap:10px;max-width:75ch}
+.desks{display:flex;flex-direction:column;gap:32px;margin-top:20px}
+.deskw{overflow-x:auto;padding-bottom:6px}
+.deskw h3{margin-bottom:10px}
+
+/* ==================== MAQUETTES ==================== */
+.phone{width:406px;height:844px;border-radius:38px;overflow:hidden;position:relative;border:8px solid #0C0D10;box-shadow:0 1px 0 rgba(0,0,0,.04);flex:none}
+.mk{background:var(--bg);color:var(--ink);font-family:var(--ff);font-size:14px;line-height:1.4;-webkit-font-smoothing:antialiased;height:100%;display:flex;flex-direction:column;position:relative}
+.mk *{box-sizing:border-box}
+.mk button{font-family:inherit;color:inherit}
+.mk .flip{transform:scaleX(-1)}
+.mk .ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:var(--sw);stroke-linecap:var(--cap);stroke-linejoin:var(--join);flex:none}
+.ic{fill:none;stroke:currentColor;stroke-width:var(--sw,1.8);stroke-linecap:var(--cap,round);stroke-linejoin:var(--join,round)}
+.mk .sb{height:30px;display:flex;justify-content:space-between;align-items:center;padding:0 22px;font-size:12px;font-weight:600;flex:none}
+.mk .sb i{display:inline-block;width:22px;height:10px;border:1.5px solid currentColor;border-radius:3px;opacity:.8}
+.mk .body{flex:1;overflow-y:auto;scrollbar-width:none;padding:0 18px 18px;display:flex;flex-direction:column;gap:14px}
+.mk .body::-webkit-scrollbar{display:none}
+.mk .body>*{flex-shrink:0}
+.mk .hd{display:flex;align-items:center;justify-content:space-between;padding:6px 12px 6px 10px;flex:none;gap:8px}
+.mk .hb{display:flex;align-items:center;gap:6px;height:44px;min-width:44px;justify-content:center;border:0;background:none;padding:0 8px;border-radius:var(--rs)}
+.mk .hd-t{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px}
+.mk .ask{background:var(--sf2);font-size:13px;font-weight:600;padding:0 12px}
+.mk .ttl{font-family:var(--fft);font-size:28px;font-weight:var(--ttlw);letter-spacing:var(--ttlls);line-height:1.1;margin:2px 0 0}
+.mk .sec{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;font-weight:600;color:var(--mut);margin-top:6px}
+.mk .cnt{font-family:var(--ffn);font-variant-numeric:tabular-nums}
+.mk .btn{display:flex;align-items:center;justify-content:center;gap:8px;height:46px;border-radius:var(--rb);border:0;font-size:15px;font-weight:600;padding:0 16px;width:100%}
+.mk .pri{background:var(--a);color:var(--on)}
+.mk .sec-b{background:var(--sf2);color:var(--ink)}
+.mk .ghost{background:none;color:var(--ai)}
+.mk .row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.mk .fld{height:44px;border-radius:var(--rs);background:var(--field);border:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:0 12px;color:var(--mut);font-size:15px}
+/* listes */
+.mk ul{list-style:none;margin:0;padding:0}
+.mk .tl li{display:grid;grid-template-columns:52px minmax(0,1fr);gap:10px;padding:10px 0;border-bottom:1px solid var(--line);align-items:start}
+.mk .tl li:last-child{border-bottom:0}
+.mk .tl .t{font-family:var(--ffn);font-variant-numeric:tabular-nums;font-weight:600;font-size:14px;display:flex;flex-direction:column}
+.mk .tl .t small{font-weight:400;color:var(--mut);font-size:12px}
+.mk .tl b{font-weight:600;display:block;font-size:15px}
+.mk .tl .m{color:var(--mut);font-size:13px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.mk .tl .past{opacity:.55}
+.mk .now-tag{font-size:11px;font-weight:700;color:var(--ai);background:var(--as);padding:1px 7px;border-radius:99px}
+.mk .tk li{display:flex;gap:12px;align-items:flex-start;padding:12px 0;min-height:48px;border-bottom:1px solid var(--line)}
+.mk .tk li:last-child{border-bottom:0}
+.mk .cb{width:22px;height:22px;border:2px solid var(--mut);border-radius:var(--cbr);flex:none;display:grid;place-items:center;margin-top:1px}
+.mk .cb svg{width:14px;height:14px;stroke-width:3;stroke:var(--on);opacity:0}
+.mk .tk .done .cb{background:var(--a);border-color:var(--a)}
+.mk .tk .done .cb svg{opacity:1}
+.mk .tk .done span.x{text-decoration:line-through;color:var(--mut)}
+.mk .warn{color:var(--warn);font-size:12px;font-weight:600;display:flex;gap:4px;align-items:center;margin-top:2px}
+.mk .warn .ic{width:14px;height:14px}
+/* barre du bas */
+.mk .nv{flex:none;display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);background:var(--bar);padding:6px 6px 18px}
+.mk .nv a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--mut);padding:6px 0;min-height:50px;text-decoration:none}
+.mk .nv a.on{color:var(--ai)}
+.mk .nv .ic{width:22px;height:22px}
+/* accueil */
+.mk .apps{display:flex;flex-direction:column;gap:0}
+.mk .app-r{display:grid;grid-template-columns:44px minmax(0,1fr);gap:14px;padding:16px 0;border-bottom:1px solid var(--line);align-items:start}
+.mk .app-r:last-child{border-bottom:0}
+.mk .app-r b{font-size:16px;font-weight:700;display:block}
+.mk .app-r .fn{font-size:12px;color:var(--mut)}
+.mk .app-r .rp{font-size:14px;margin-top:6px}
+.mk .app-r .rp em{font-style:normal;color:var(--mut);display:block;font-size:12px}
+.mk .avatar{width:32px;height:32px;border-radius:50%;background:var(--sf2);display:grid;place-items:center;font-weight:700;font-size:13px}
+.mk .date{font-size:13px;color:var(--mut);font-weight:500}
+/* muscu */
+.mk .chips{display:flex;gap:8px}
+.mk .chip{height:44px;border-radius:var(--rs);padding:0 12px;display:flex;align-items:center;gap:6px;background:var(--sf2);font-size:13px;font-weight:600;border:1px solid transparent}
+.mk .chip.on{background:var(--as);color:var(--ai);border-color:var(--a)}
+.mk .chip .l{font-family:var(--ffn);font-weight:700}
+.mk .sum{display:flex;flex-direction:column;gap:8px}
+.mk .sum-t{display:flex;justify-content:space-between;align-items:baseline}
+.mk .sum-t b{font-family:var(--fft);font-size:22px;font-weight:var(--ttlw)}
+.mk .sum-t span{font-family:var(--ffn);font-variant-numeric:tabular-nums;font-size:13px;color:var(--mut)}
+.mk .bar{height:6px;border-radius:99px;background:var(--sf2);overflow:hidden}
+.mk .bar i{display:block;height:100%;background:var(--a);border-radius:inherit}
+.mk .ex{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
+.mk .ex-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.mk .ex-h b{font-size:15px;font-weight:650}
+.mk .ex-h span{font-size:12px;color:var(--mut);white-space:nowrap}
+.mk .adv{font-size:12px;color:var(--mut)}
+.mk .sets{display:flex;flex-direction:column;gap:4px}
+.mk .set{display:grid;grid-template-columns:22px minmax(0,1fr) minmax(0,1fr) 28px;gap:8px;align-items:center;height:48px;font-family:var(--ffn);font-variant-numeric:tabular-nums;font-size:14px}
+.mk .set .n{color:var(--mut);font-size:12px}
+.mk .set .v{height:44px;display:flex;align-items:center;padding:0 10px;border-radius:var(--rs)}
+.mk .set.done .v{color:var(--mut)}
+.mk .set.cur .v{background:var(--field);border:1.5px solid var(--a);color:var(--ink);font-weight:600}
+.mk .set.todo .v{background:var(--field);border:1px solid var(--line);color:var(--mut)}
+.mk .set .st{display:grid;place-items:center}
+.mk .set .st .ic{width:18px;height:18px;color:var(--ai)}
+.mk .hint{font-size:12px;color:var(--mut);display:flex;gap:6px;align-items:center}
+.mk .ex.closed .ex-h b{color:var(--mut)}
+/* notes */
+.mk .path{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--mut);flex-wrap:wrap}
+.mk .path b{color:var(--ink);font-weight:600}
+.mk .nl li{padding:12px 0;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:flex-start}
+.mk .nl li:last-child{border-bottom:0}
+.mk .nl .ic{margin-top:2px;color:var(--mut)}
+.mk .nl b{display:block;font-family:var(--ffnote);font-weight:var(--notew);font-size:15px}
+.mk .nl p{font-size:13px;color:var(--mut);margin:2px 0 0;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.mk .nl .dt{margin-left:auto;font-size:12px;color:var(--mut);white-space:nowrap;padding-left:8px}
+.mk .nl .folder b{font-family:var(--ff);font-weight:600}
+.mk .nl .folder .ic{color:var(--ai)}
+/* nutrition */
+.mk .kc{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.mk .kc b{font-family:var(--ffn);font-variant-numeric:tabular-nums;font-size:34px;font-weight:var(--ttlw);line-height:1}
+.mk .kc b small{font-size:14px;font-weight:500;color:var(--mut)}
+.mk .kc span{font-size:13px;color:var(--mut);text-align:right}
+.mk .mac{display:flex;flex-direction:column;gap:10px}
+.mk .mac-r{display:grid;grid-template-columns:84px minmax(0,1fr) auto;gap:10px;align-items:center;font-size:13px}
+.mk .mac-r .v{font-family:var(--ffn);font-variant-numeric:tabular-nums;white-space:nowrap}
+.mk .mac-r .bar{height:6px}
+.mk .meal{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.mk .meal:last-child{border-bottom:0}
+.mk .meal b{font-size:15px;font-weight:600}
+.mk .meal .k{font-family:var(--ffn);font-variant-numeric:tabular-nums;font-weight:600;text-align:right}
+.mk .meal p{grid-column:1/-1;margin:0;font-size:13px;color:var(--mut)}
+.mk .meal .pgl{grid-column:1/-1;font-family:var(--ffn);font-variant-numeric:tabular-nums;font-size:12px;color:var(--mut)}
+.mk .addm{display:flex;flex-direction:column;gap:8px}
+.mk .addm .row3{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.3fr);gap:8px}
+.mk .addm .btn{height:44px;font-size:14px}
+.mk .dsel{display:flex;justify-content:space-between;align-items:center}
+.mk .dsel button{height:44px;min-width:44px;border:1px solid var(--line);background:var(--sf);border-radius:var(--rs);display:grid;place-items:center}
+.mk .dsel b{font-size:15px}
+/* coffre */
+.mk .vault{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding-top:18px}
+.mk .vault .ic.big{width:44px;height:44px;color:var(--ai);stroke-width:var(--sw)}
+.mk .vault h2{margin:0;border:0;padding:0;font-family:var(--fft);font-size:22px;font-weight:var(--ttlw)}
+.mk .vault p{margin:0;color:var(--mut);font-size:14px;max-width:26ch}
+.mk .dots{display:flex;gap:14px;margin:6px 0}
+.mk .dots i{width:14px;height:14px;border-radius:var(--dotr,99px);border:2px solid var(--mut)}
+.mk .dots i.f{background:var(--ink);border-color:var(--ink)}
+.mk .pad{display:grid;grid-template-columns:repeat(3,64px);gap:12px 22px;justify-content:center}
+.mk .pad span{height:64px;display:grid;place-items:center;font-family:var(--ffn);font-size:24px;font-weight:500;border-radius:var(--padr,99px);background:var(--sf2)}
+.mk .pad span.e{background:none}
+.d-signal{--dotr:2px;--padr:12px}
+.d-encre{--dotr:0;--padr:4px}
+.d-encre .pad span{background:none;border:1px solid var(--line)}
+.d-encre .pad span.e{border:0}
+/* fenêtre */
+.mk .dim{position:absolute;inset:0;background:var(--scrim)}
+.mk .sheet{position:absolute;left:0;right:0;bottom:0;background:var(--sf);border-radius:var(--rsheet) var(--rsheet) 0 0;padding:10px 18px 26px;display:flex;flex-direction:column;gap:14px;border-top:1px solid var(--line)}
+.mk .grab{width:36px;height:4px;border-radius:9px;background:var(--line);margin:0 auto}
+.mk .sheet h3{font-family:var(--fft);font-size:20px;font-weight:var(--ttlw);margin:0}
+.mk .ta{min-height:64px;border-radius:var(--rs);border:1.5px solid var(--a);background:var(--field);padding:10px 12px;font-size:16px;color:var(--ink)}
+.mk .ta .caret{display:inline-block;width:2px;height:18px;background:var(--a);vertical-align:-3px;margin-left:1px}
+.mk .got{display:flex;flex-direction:column}
+.mk .got-l{font-size:12px;color:var(--mut);font-weight:600;margin-bottom:2px}
+.mk .got-r{display:grid;grid-template-columns:24px 64px minmax(0,1fr) 16px;gap:8px;align-items:center;height:48px;border-bottom:1px solid var(--line);font-size:14px}
+.mk .got-r:last-child{border-bottom:0}
+.mk .got-r .k{color:var(--mut);font-size:13px}
+.mk .got-r .ic{width:18px;height:18px;color:var(--ai)}
+.mk .got-r .chev{width:14px;height:14px;color:var(--mut)}
+.mk .toast{position:absolute;left:14px;right:14px;bottom:84px;background:var(--ink);color:var(--bg);border-radius:var(--rs);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:500}
+.mk .toast b{color:var(--toastacc);font-weight:700}
+.mk .new{background:var(--as);margin:0 -10px;padding-left:10px!important;padding-right:10px!important;border-radius:var(--rs)}
+
+/* ===== ordinateur ===== */
+.desk{width:1080px;height:640px;border-radius:12px;overflow:hidden;border:1px solid var(--pg-line);flex:none}
+.desk .mk{flex-direction:row}
+.desk aside{width:228px;flex:none;border-right:1px solid var(--line);padding:18px 14px;display:flex;flex-direction:column;gap:18px;background:var(--bar)}
+.desk .brand{display:flex;gap:10px;align-items:center;font-weight:700;font-size:15px;padding:0 6px}
+.desk .grp{display:flex;flex-direction:column;gap:2px}
+.desk .grp-h{display:flex;gap:8px;align-items:center;font-size:12px;font-weight:700;color:var(--mut);padding:0 6px 4px}
+.desk .it{display:flex;gap:10px;align-items:center;height:34px;padding:0 8px;border-radius:var(--rs);font-size:14px;color:var(--ink)}
+.desk .it .ic{width:18px;height:18px;color:var(--mut)}
+.desk .it.on{background:var(--as);color:var(--ai);font-weight:600}
+.desk .it.on .ic{color:var(--ai)}
+.desk main{flex:1;min-width:0;display:flex;flex-direction:column}
+.desk .dhd{display:flex;align-items:center;gap:12px;padding:16px 22px;border-bottom:1px solid var(--line)}
+.desk .dhd .ttl{font-size:22px;margin:0;white-space:nowrap}
+.desk .dhd .sp{flex:1}
+.desk .dhd .btn{width:auto;height:38px;font-size:14px;white-space:nowrap}
+.desk .nav2{display:flex;gap:4px}
+.desk .nav2 button{height:34px;min-width:34px;border:1px solid var(--line);background:var(--sf);border-radius:var(--rs);font-size:13px;padding:0 10px}
+.desk .dbody{flex:1;display:flex;min-height:0}
+.desk .wk{flex:1;min-width:0;display:grid;grid-template-columns:44px repeat(7,minmax(0,1fr));grid-template-rows:38px 1fr;overflow:hidden}
+.desk .wk .dh{font-size:12px;color:var(--mut);display:flex;gap:6px;align-items:baseline;justify-content:center;padding-top:10px;border-bottom:1px solid var(--line)}
+.desk .wk .dh b{font-family:var(--ffn);font-size:15px;color:var(--ink)}
+.desk .wk .dh.today b{color:var(--on);background:var(--a);border-radius:var(--rs);padding:0 6px}
+.desk .wk .hrs{position:relative;border-right:1px solid var(--line)}
+.desk .wk .hrs span{position:absolute;right:6px;font-size:11px;color:var(--mut);font-family:var(--ffn);transform:translateY(-6px)}
+.desk .wk .col{position:relative;border-right:1px solid var(--line)}
+.desk .wk .col:last-child{border-right:0}
+.desk .wk .col.today{background:var(--todaybg)}
+.desk .wk .gl{position:absolute;left:0;right:0;border-top:1px solid var(--line);opacity:.6}
+.desk .ev{position:absolute;left:3px;right:3px;border-radius:var(--rev);background:var(--as);color:var(--ai);padding:4px 6px;font-size:11px;line-height:1.25;overflow:hidden;border-left:var(--evbl) solid var(--a)}
+.desk .ev b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:600;color:var(--ink);font-size:11.5px;hyphens:auto;overflow-wrap:anywhere}
+.desk .ev.short b{-webkit-line-clamp:1}
+.desk .ev .em{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.desk .ev.sport{background:var(--fit-s);border-left-color:var(--fit);color:var(--fit-i)}
+.desk .ev .ic{width:11px;height:11px;vertical-align:-1px}
+.desk .nowl{position:absolute;left:0;right:0;border-top:2px solid var(--a)}
+.desk .side{width:250px;flex:none;border-left:1px solid var(--line);padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+
+/* ==================== DIRECTION A : SIGNAL ==================== */
+.d-signal{--ff:"Schibsted Grotesk",system-ui,sans-serif;--fft:var(--ff);--ffn:var(--ff);--ffnote:var(--ff);--notew:600;--ttlw:800;--ttlls:-.02em;
+  --r:12px;--rs:8px;--rb:10px;--rsheet:18px;--rev:4px;--evbl:0px;--cbr:5px;--sw:2;--cap:square;--join:miter;
+  --on:#FFFFFF;--agenda:#2F56D9;--agenda-i:#2446B8;--agenda-s:#E4EAFB;--fit:#C8441F;--fit-i:#9A3214;--fit-s:#FCE7E0;--note:#EBB129;--note-i:#7E5900;--note-s:#FBF0D3;
+  --bg:#F4F5F7;--sf:#FFFFFF;--sf2:#E9EBF0;--field:#FFFFFF;--ink:#14161B;--mut:#5A6170;--line:#DCDFE5;--bar:#FFFFFF;--scrim:rgba(20,22,27,.42);--warn:#9A5B00;--todaybg:#EEF2FD;--toastacc:#9DB3FF}
+.dk .d-signal{--on:#0F1114;--agenda:#6283F2;--agenda-i:#93AAF7;--agenda-s:#1B2442;--fit:#F06C47;--fit-i:#F79A80;--fit-s:#3A1E16;--note:#F0BE45;--note-i:#F4CD70;--note-s:#352A10;
+  --bg:#0F1114;--sf:#181B20;--sf2:#23272E;--field:#181B20;--ink:#F1F2F4;--mut:#9DA3AF;--line:#2A2E36;--bar:#14161A;--scrim:rgba(0,0,0,.55);--warn:#F2B04A;--todaybg:#141B30;--toastacc:#2446B8}
+.d-signal .ttl{font-size:30px}
+.d-signal[data-app="note"]{--on:#14161B}
+.d-signal .tl li.nowi .t{color:var(--ai)}
+.d-signal .tl li.nowi{position:relative}
+.d-signal .tl li.nowi::before{content:"";position:absolute;left:-18px;top:12px;width:8px;height:8px;background:var(--a)}
+.d-signal .nv a.on .ic{fill:currentColor;fill-opacity:.18}
+.d-signal .chip.on{background:var(--a);color:var(--on);border-color:var(--a)}
+.d-signal .wkstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.d-signal .wkstrip span{display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--mut);padding:6px 0;border-radius:6px}
+.d-signal .wkstrip b{font-size:16px;color:var(--ink);font-weight:700}
+.d-signal .wkstrip .on{background:var(--a);color:var(--on)}
+.d-signal .wkstrip .on b{color:var(--on)}
+
+/* ==================== DIRECTION B : ENCRE ==================== */
+.d-encre{--ff:"IBM Plex Sans",system-ui,sans-serif;--fft:"IBM Plex Sans Condensed","IBM Plex Sans",sans-serif;--ffn:"IBM Plex Mono",ui-monospace,monospace;--ffnote:"IBM Plex Serif",Georgia,serif;--notew:600;--ttlw:600;--ttlls:-.01em;
+  --r:4px;--rs:4px;--rb:4px;--rsheet:8px;--rev:2px;--evbl:2px;--cbr:2px;--sw:1.5;--cap:butt;--join:miter;
+  --on:#FFFFFF;--agenda:#3A5BA0;--agenda-i:#34528F;--agenda-s:#E8ECF4;--fit:#A3472B;--fit-i:#8F3C21;--fit-s:#F4E7E1;--note:#3F6B4A;--note-i:#365C40;--note-s:#E5EDE7;
+  --bg:#F6F6F4;--sf:#FFFFFF;--sf2:#EAEAE6;--field:#FFFFFF;--ink:#18181B;--mut:#62625D;--line:#D8D8D2;--bar:#F6F6F4;--scrim:rgba(24,24,27,.4);--warn:#985A0A;--todaybg:#EFEFEB;--toastacc:#B9C8EA}
+.dk .d-encre{--on:#141416;--agenda:#93AADB;--agenda-i:#A9BCE3;--agenda-s:#1C2233;--fit:#E08D6E;--fit-i:#E9A68D;--fit-s:#2E1D17;--note:#8EBB99;--note-i:#A5CAAE;--note-s:#18261C;
+  --bg:#141416;--sf:#1C1C1F;--sf2:#27272B;--field:#1C1C1F;--ink:#EDEDEA;--mut:#A2A29C;--line:#303034;--bar:#141416;--scrim:rgba(0,0,0,.55);--warn:#E9B25C;--todaybg:#1B1B1E;--toastacc:#34528F}
+.dk .d-encre,.dk .d-horizon{--lg-bg:#EDEDEA;--lg-fg:#141416}
+.d-encre .pri{background:var(--ink);--on:var(--bg);color:var(--bg)}
+.d-encre .cb svg{stroke:var(--bg)}
+.d-encre .tk .done .cb{background:var(--ink);border-color:var(--ink)}
+.d-encre .ttl{font-size:32px}
+.d-encre[data-app="note"] .ttl{font-family:var(--ffnote);font-weight:500;font-size:30px}
+.d-encre[data-app="fit"] .sum-t b{font-family:var(--ffn);font-weight:600;font-size:20px}
+.d-encre .sec{font-family:var(--fft);font-size:14px;color:var(--ink);border-bottom:1px solid var(--ink);padding-bottom:4px}
+.d-encre .tl li.nowi{box-shadow:inset 3px 0 0 var(--a);padding-left:10px;margin-left:-13px}
+.d-encre .nv{border-top:1px solid var(--ink)}
+.d-encre .nv a.on{color:var(--ink);box-shadow:inset 0 2px 0 var(--ink)}
+.d-encre .chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.d-encre .set.cur .v{border-color:var(--ink)}
+.d-encre .bar i{background:var(--ink)}
+.d-encre .bar{height:3px;border-radius:0}
+.d-encre .ask{background:none;border:1px solid var(--line)}
+.d-encre .now-tag{background:none;border:1px solid currentColor}
+.d-encre .bigdate{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:end}
+.d-encre .bigdate b{font-family:var(--fft);font-size:68px;line-height:.82;font-weight:700;letter-spacing:-.03em}
+.d-encre .bigdate span{display:flex;flex-direction:column;font-size:13px;color:var(--mut);padding-bottom:2px}
+.d-encre .bigdate span strong{font-size:17px;color:var(--ink);font-weight:600}
+.d-encre .ta,.d-encre .set.cur .v{border-color:var(--ink)}
+.d-encre .ta .caret{background:var(--ink)}
+.d-encre .ev{background:var(--sf);color:var(--mut);border:1px solid var(--line);border-left:2px solid var(--a)}
+.d-encre .ev.sport{background:var(--sf);color:var(--mut);border-left-color:var(--fit)}
+.d-encre .wk .dh.today b{background:var(--ink);color:var(--bg)}
+.d-encre .nowl{border-top-color:var(--ink)}
+.d-encre .it.on{background:none;box-shadow:inset 2px 0 0 var(--ink);border-radius:0;color:var(--ink)}
+.d-encre .it.on .ic{color:var(--ink)}
+
+/* ==================== DIRECTION C : HORIZON ==================== */
+.d-horizon{--ff:"Figtree",system-ui,sans-serif;--fft:var(--ff);--ffn:var(--ff);--ffnote:var(--ff);--notew:700;--ttlw:800;--ttlls:-.015em;
+  --r:20px;--rs:12px;--rb:99px;--rsheet:26px;--rev:10px;--evbl:0px;--cbr:99px;--sw:2;--cap:round;--join:round;
+  --on:#FFFFFF;--agenda:#2B61B3;--agenda-i:#234F94;--agenda-s:#E7EFFB;--fit:#AD4F1D;--fit-i:#8E3F15;--fit-s:#FCEDE3;--note:#7A5CC6;--note-i:#5D43A6;--note-s:#EFEAFA;
+  --sf:#FFFFFF;--sf2:#EEF0F4;--field:#FFFFFF;--ink:#1B1D26;--mut:#636878;--line:#E2E4EB;--scrim:rgba(27,29,38,.38);--warn:#9A5600;--toastacc:#A9C6F5}
+.dk .d-horizon{--on:#10121A;--agenda:#72A2EC;--agenda-i:#A2C1F3;--agenda-s:#121B2A;--fit:#F08C58;--fit-i:#F6AE86;--fit-s:#25190F;--note:#A38DE1;--note-i:#BEB0EB;--note-s:#1B1629;
+  --sf:#1E2230;--sf2:#2A2F3E;--field:#1E2230;--ink:#EEF0F6;--mut:#A5AABA;--line:#2E3343;--scrim:rgba(0,0,0,.5);--warn:#F2B35A;--toastacc:#2B61B3}
+.d-horizon{--bg:var(--as);--bar:var(--sf);--todaybg:var(--as)}
+.d-horizon[data-app="home"]{--bg:#F1F2F6}
+.dk .d-horizon[data-app="home"]{--bg:#12141B}
+.d-horizon .grpd{background:var(--sf);border-radius:var(--r);padding:2px 14px}
+.d-horizon .tl li.nowi .t{color:var(--ai)}
+.d-horizon .nv{border-top:0;margin:0 12px 14px;border-radius:24px;padding:6px;background:var(--sf);box-shadow:0 2px 10px rgba(20,24,40,.08)}
+.d-horizon .nv a.on{background:var(--as);border-radius:18px}
+.d-horizon .chip{border-radius:99px}
+.d-horizon .ask{border-radius:99px;background:var(--sf)}
+.d-horizon .ex{border-top:0;background:var(--sf);border-radius:var(--r);padding:12px 14px}
+.d-horizon .set .v{border-radius:10px}
+.d-horizon .arc{display:flex;flex-direction:column;gap:2px}
+.d-horizon .arc svg{width:100%;height:auto;display:block}
+.d-horizon .arc-l{display:flex;justify-content:space-between;font-size:12px;color:var(--mut)}
+.d-horizon .ev{border-radius:10px}
+.d-horizon .desk aside,.desk .d-horizon aside{background:var(--sf)}
+.d-horizon .dhd{border-bottom:0}
+.d-horizon .fld{border-radius:99px}
+
+/* Mouvement */
+.mo{border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px;min-height:300px;height:auto}
+.mo .mo-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 12px;border-radius:var(--rs);background:var(--sf);border:1px solid var(--line);position:relative;overflow:hidden}
+.mo .mo-row .n{color:var(--mut);font-size:13px}
+.mo .mo-row .v{font-family:var(--ffn);font-variant-numeric:tabular-nums;font-weight:600;font-size:16px}
+.mo .st{width:26px;height:26px;display:grid;place-items:center;position:relative}
+.mo .cntl{display:flex;align-items:baseline;gap:6px;font-size:14px;color:var(--mut)}
+.mo .roll{display:inline-flex;flex-direction:column;height:1.3em;overflow:hidden;font-family:var(--ffn);font-weight:700;color:var(--ink);font-size:22px;line-height:1.3em;font-variant-numeric:tabular-nums}
+.mo .roll span{display:block}
+.mo .rest{align-self:flex-start;font-size:13px;font-weight:600;padding:6px 12px;border-radius:99px;background:var(--as);color:var(--ai);font-family:var(--ffn);font-variant-numeric:tabular-nums}
+.mo .spec{font-size:12px;color:var(--mut);line-height:1.5;margin-top:auto}
+.mo .spec b{color:var(--ink)}
+.mo .btnr{display:flex;gap:8px}
+.mo .btnr .btn{flex:1}
+.mo .btnr .sec-b{flex:none;width:auto}
+/* A : la case se remplit depuis son coin, la barre avance d'un cran */
+.d-signal .mo .st i{position:absolute;inset:3px;border:2px solid var(--mut)}
+.d-signal .mo .st b{position:absolute;inset:3px;background:var(--a);transform:scale(0);transform-origin:0 100%;transition:transform 180ms cubic-bezier(.2,.8,.2,1)}
+.d-signal .mo .st svg{position:relative;width:16px;height:16px;stroke:var(--on);stroke-width:3;opacity:0;transition:opacity 80ms 120ms}
+.d-signal .mo.on .st b{transform:scale(1)}
+.d-signal .mo.on .st svg{opacity:1}
+.d-signal .mo .bar i{transition:width 240ms cubic-bezier(.2,.8,.2,1)}
+.d-signal .mo .rest{transform:translateY(8px);opacity:0;transition:transform 200ms 160ms cubic-bezier(.2,.8,.2,1),opacity 120ms 160ms}
+.d-signal .mo.on .rest{transform:none;opacity:1}
+.d-signal .mo .roll span{transition:transform 180ms cubic-bezier(.2,.8,.2,1)}
+.d-signal .mo.on .roll span{transform:translateY(-100%)}
+/* B : le trait se trace, les chiffres défilent */
+.d-encre .mo .st svg{width:22px;height:22px;stroke:var(--ink);stroke-width:1.8;stroke-dasharray:24;stroke-dashoffset:24;transition:stroke-dashoffset 220ms ease-out}
+.d-encre .mo.on .st svg{stroke-dashoffset:0}
+.d-encre .mo .mo-row::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--ink);transform:scaleX(0);transform-origin:left;transition:transform 260ms ease-out}
+.d-encre .mo.on .mo-row::after{transform:scaleX(1)}
+.d-encre .mo .roll span{transition:transform 260ms cubic-bezier(.3,0,.2,1) 80ms}
+.d-encre .mo.on .roll span{transform:translateY(-100%)}
+.d-encre .mo .rest{background:none;border:1px solid var(--line);color:var(--ink);opacity:0;transition:opacity 160ms 260ms}
+.d-encre .mo.on .rest{opacity:1}
+.d-encre .mo .bar i{transition:width 260ms ease-out 80ms}
+/* C : l'anneau se remplit, la pastille apparaît en douceur */
+.d-horizon .mo .ring{width:64px;height:64px;transform:rotate(-90deg)}
+.d-horizon .mo .ring circle{fill:none;stroke-width:6}
+.d-horizon .mo .ring .bg{stroke:var(--sf2)}
+.d-horizon .mo .ring .fg{stroke:var(--a);stroke-linecap:round;stroke-dasharray:176;transition:stroke-dashoffset 520ms cubic-bezier(.45,0,.2,1)}
+.d-horizon .mo .st{border-radius:99px;background:var(--sf2);transition:background 200ms}
+.d-horizon .mo .st svg{width:16px;height:16px;stroke:var(--on);stroke-width:3;transform:scale(.6);opacity:0;transition:transform 260ms cubic-bezier(.3,1.4,.5,1),opacity 160ms}
+.d-horizon .mo.on .st{background:var(--a)}
+.d-horizon .mo.on .st svg{transform:none;opacity:1}
+.d-horizon .mo .rest{opacity:0;transition:opacity 300ms 300ms}
+.d-horizon .mo.on .rest{opacity:1}
+.d-horizon .mo .roll span{transition:transform 400ms cubic-bezier(.45,0,.2,1) 120ms}
+.d-horizon .mo.on .roll span{transform:translateY(-100%)}
+.d-horizon .mo .mo-row{border:0}
+@media (prefers-reduced-motion:reduce){
+  .mo *,.mo *::after{transition-duration:1ms!important;transition-delay:0ms!important}
+}
+.rm .mo *,.rm .mo *::after{transition-duration:1ms!important;transition-delay:0ms!important}
+</style>
+
+<div class="wrap">
+  <header class="stack">
+    <p class="mut small">Refonte Sid'compagnon · étape 2 · 5 novembre 2026 · préparé par Claude Code</p>
+    <h1>Trois directions pour Sid'compagnon</h1>
+    <p class="lead">Les trois directions partagent la même structure simplifiée et les mêmes contenus. Seule l'identité change : formes, typographie, couleurs, icônes et mouvement. Comparez-les écran par écran, puis choisissez-en une. Rien ne sera généralisé avant votre choix.</p>
+  </header>
+
+  <div class="tools" role="group" aria-label="Réglages de l'aperçu">
+    <span><span class="seg-l">Maquettes</span><span class="seg" id="segTheme"><button type="button" id="thDark" aria-pressed="true">Sombre</button><button type="button" id="thLight" aria-pressed="false">Clair</button></span></span>
+    <span><span class="seg-l">Mouvement</span><span class="seg" id="segMotion"><button type="button" id="mvOn" aria-pressed="true">Normal</button><button type="button" id="mvOff" aria-pressed="false">Réduit</button></span></span>
+    <span class="mut small">L'app est en sombre par défaut. Maquettes à la taille réelle d'un iPhone 13 (390 px).</span>
+  </div>
+
+  <h2 id="identite">1. Les trois identités</h2>
+  <p class="lead">Chaque direction définit ce qui est commun à la suite, ce qui distingue Sid'agenda, Sid'fit et Sid'note, et ce qui peut varier par fonction. Dans les trois, une app ne se reconnaît jamais à sa seule couleur.</p>
+  <div class="tri" id="identity"></div>
+
+  <h2 id="ecrans">2. Mêmes écrans, trois directions</h2>
+  <p class="lead">Huit états : l'accueil, trois écrans denses (la journée dans l'agenda, une séance de musculation, la journée en nutrition), un parcours de saisie en deux temps (ajouter une activité), les notes et le coffre verrouillé.</p>
+  <div class="tabs" id="scrTabs" role="group" aria-label="Écran à comparer"></div>
+  <p class="scr-note mut" id="scrNote"></p>
+  <div class="phones" id="phones"></div>
+
+  <h2 id="mouvement">3. Une interaction animée : valider une série</h2>
+  <p class="lead">Même geste dans les trois directions. Appuyez sur « Valider la série » ; « Rejouer » remet l'état de départ. Avec le mouvement réduit, l'état change sans déplacement.</p>
+  <div class="tri" id="motion"></div>
+
+  <h2 id="ordinateur">4. Sur ordinateur : la semaine dans Sid'agenda</h2>
+  <p class="lead">Même navigation que sur téléphone : les trois apps et leurs fonctions dans la colonne de gauche. Les cours restent dans la couleur de l'agenda ; une séance de sport porte la marque de Sid'fit.</p>
+  <div class="desks" id="desks"></div>
+
+  <h2 id="logos">5. Logos en petite taille et en une couleur</h2>
+  <p class="lead">Un logo doit rester lisible à 16 px (onglet du navigateur) et en une seule couleur (impression, connecteur Claude). Les lettres des logos de la direction B sont encore du texte : elles seront vectorisées dans la version finale.</p>
+  <div class="tri" id="logoTests"></div>
+
+  <h2 id="comparaison">6. Comparaison</h2>
+  <div class="tblw"><table class="cmp">
+    <thead><tr><th scope="col"></th><th scope="col">A · Signal</th><th scope="col">B · Encre</th><th scope="col">C · Horizon</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Idée</th><td>Une forme par app : le carré (le temps découpé), le rond (le cycle, l'effort), le coin de page (l'écrit).</td><td>Une seule famille de caractères, trois voix : étroite pour l'agenda, chiffres à chasse fixe pour le sport, empattements pour l'écrit.</td><td>Trois moments de la journée : le lever pour s'organiser, le plein jour pour l'effort, le soir pour écrire.</td></tr>
+      <tr><th scope="row">Ce qui distingue les apps</th><td>Forme + couleur + nom. La forme suffit à elle seule, même en noir et blanc.</td><td>Lettre + typographie + nom. La couleur ne sert qu'aux petits repères.</td><td>Position du soleil + teinte du fond + nom.</td></tr>
+      <tr><th scope="row">Avantages</th><td>Reconnaissable au premier coup d'œil, y compris à 16 px. La forme se réutilise partout : logo, barre du bas, repère « maintenant », chargement.</td><td>La plus durable : presque monochrome, elle ne vieillit pas. Hiérarchie très nette. Les chiffres (heures, kilos, calories) s'alignent parfaitement.</td><td>La plus douce et la plus proche d'iOS. Chaque app a son atmosphère, ce qui aide à savoir où l'on est.</td></tr>
+      <tr><th scope="row">Compromis</th><td>Couleurs franches : il faut les doser. L'orange de Sid'fit est proche des couleurs d'alerte, d'où la règle « alerte = icône + texte ». Les états sélectionnés demandent un contrôle de contraste systématique (corrigé ici). Peut sembler plus technique que chaleureux.</td><td>Austère si elle est mal dosée. Les trois voix demandent de la discipline : une police par rôle, jamais mélangées. Les écrans denses paraissent plus chargés en clair.</td><td>Les fonds teintés et les grands rayons ressemblent à beaucoup d'apps de bien-être. Les logos sont fins : moins lisibles à 16 px. Plus de surfaces, donc plus de cas à tester.</td></tr>
+      <tr><th scope="row">Maintenance</th><td>1 police, 3 couleurs, 3 formes, 1 jeu d'icônes. Jetons simples.</td><td>1 famille, mais 4 sous-familles à héberger (Sans, Condensed, Mono, Serif), poids à mesurer ; lettres des logos à vectoriser. 1 encre, 3 accents discrets.</td><td>1 police, 3 couleurs × 2 teintes de fond, ombres légères : plus de jetons de surface. Les groupes arrondis prennent de la largeur (220 px utiles pour une série, contre 248 px pour A et B).</td></tr>
+      <tr><th scope="row">Par rapport à aujourd'hui</th><td>Remplace 11 polices par 1, et les 9 identités par 3 formes.</td><td>Garde l'esprit sobre de la v42, sans le crème ni le Fraunces, devenus très courants.</td><td>Garde les couleurs par app, adoucies ; abandonne les motifs par fonction.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="reco">
+    <h3>Recommandation de Claude Code : A · Signal</h3>
+    <p>C'est la direction qui répond le mieux à votre demande d'une identité « forte, simple et durable » sans effets. La forme fait le travail que font aujourd'hui dix polices et neuf ambiances. Elle reste lisible en noir et blanc et à 16 px, et la même règle sert partout. La direction B est un très bon second choix si vous préférez une app plus calme et presque sans couleur.</p>
+    <p class="mut small">Ce choix repose sur notre jugement et sur les critères de votre demande. Aucun test auprès d'utilisateurs n'a été mené.</p>
+  </div>
+
+  <h2 id="simplifier">7. Simplifications communes aux trois directions</h2>
+  <p class="lead">Ces changements d'usage sont visibles dans toutes les maquettes. Aucune fonction n'est supprimée ; ceux qui modifient un comportement attendent votre accord.</p>
+  <div class="tblw"><table class="cmp">
+    <thead><tr><th scope="col">Problème constaté</th><th scope="col">Dans les maquettes</th><th scope="col">Bénéfice attendu</th></tr></thead>
+    <tbody>
+      <tr><td>En tête d'Agenda, Musculation, Nutrition et Notes, le champ Claude et l'onglet « Conversation Claude » passent avant l'action principale.</td><td>L'action principale vient en premier (« Ajouter une activité », « Valider la série », « Nouvelle note »). Claude devient un bouton fixe, en haut à droite, à la même place dans toutes les apps.</td><td>L'action la plus courante est visible tout de suite. Claude se trouve toujours au même endroit.</td></tr>
+      <tr><td>9 fonctions ont chacune leur identité (polices, motifs), et un réglage « Unique / Sobre » double l'apparence.</td><td>Une identité par app. Une fonction se reconnaît à son icône et à son titre.</td><td>Une seule apparence à apprendre et à tester. On sait toujours dans quelle app on est.</td></tr>
+      <tr><td>Onze verbes pour « ajouter » (Créer, + Activité, Planifier…).</td><td>« Ajouter » partout. Un autre verbe seulement pour une autre action (« Analyser », « Valider »).</td><td>Un vocabulaire prévisible.</td></tr>
+      <tr><td>Le texte libre de l'agenda est compris, mais on voit peu ce qui a été compris.</td><td>Après la saisie, la fenêtre liste ce qui a été compris (type, jour, heure, rappel), chaque ligne étant modifiable. Ensuite, un message « Activité ajoutée » avec « Annuler ».</td><td>On vérifie avant d'enregistrer, et on peut annuler après.</td></tr>
+      <tr><td>Des icônes faites de caractères (☰ ▦ ⇪ ◎ ↻) côtoient des icônes dessinées.</td><td>Un seul jeu d'icônes dessinées, dans le style de la direction.</td><td>Le même rendu sur iPhone, Android et ordinateur.</td></tr>
+      <tr><td>Les alertes reposent sur la couleur.</td><td>Une alerte associe toujours une couleur, une icône et un texte (« Reportée d'hier »).</td><td>Lisible même pour qui distingue mal les couleurs.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 id="revue">8. Revue croisée</h2>
+  <div id="review" class="stack">
+    <p><b>Codex a relu les maquettes le 5 novembre</b> : rendu dans Chromium à 1280 et 400 px, contrastes mesurés. Il rejoint le choix de A, après corrections. Toutes ses corrections sont appliquées dans cette version.</p>
+    <div class="tblw"><table class="cmp">
+      <thead><tr><th scope="col">Remarque de Codex</th><th scope="col">Mesure</th><th scope="col">Suite donnée</th></tr></thead>
+      <tbody>
+        <tr><td>Texte blanc sur l'orange de A (clair) et sur le bleu et l'orange de C (clair) : sous le seuil de 4,5:1.</td><td>3,75 · 4,00 · 3,21</td><td>Corrigé : A Fit #C8441F (4,88) ; C Agenda #2B61B3 (6,06) et Fit #AD4F1D (5,37). Les logos gardent leur teinte vive, autorisée pour un graphisme (3:1).</td></tr>
+        <tr><td>La couleur du texte posé sur l'app n'était définie que pour les boutons principaux : pastilles et date sélectionnée trop pâles en sombre.</td><td>2,70 · 3,10</td><td>Corrigé : défini une fois par app et par thème.</td></tr>
+        <tr><td>Cibles tactiles trop petites (retour, Claude, pastilles, séries).</td><td>34 à 40 px</td><td>Corrigé : 44 px au moins ; lignes de liste et de tâche 48 px.</td></tr>
+        <tr><td>Les maquettes à 300 px ne réduisaient pas les tailles : rendu plus serré qu'en vrai.</td><td>—</td><td>Corrigé : maquettes à la taille réelle de 390 px.</td></tr>
+        <tr><td>Ajouter Nutrition (macros déjà tronquées aujourd'hui) et un état verrouillé avant le choix.</td><td>—</td><td>Ajoutés : « Nutrition · journée » et « Mots de passe · verrouillé ».</td></tr>
+        <tr><td>B n'est pas « une police » : 4 sous-familles à héberger. C consomme plus de largeur.</td><td>220 contre 248 px utiles</td><td>Reformulé dans la comparaison.</td></tr>
+        <tr><td>Google Fonts est interdit par la règle de sécurité de l'app : les polices devront être hébergées sur sidcompagnon.com.</td><td>CSP <code>font-src 'self'</code></td><td>Retenu pour la réalisation ; sans effet sur le choix.</td></tr>
+      </tbody>
+    </table></div>
+    <p><b>Désaccord résolu.</b> Codex demandait aussi un long formulaire avec clavier, date et heure avant le choix. Nous ne l'avons pas ajouté : ses composants (champ, sélecteur, bouton) sont les mêmes dans les trois directions, il ne les départage donc pas. Il sera traité et vérifié à 390 px dans la charte, à l'étape des états. Codex conteste aussi l'expression « très lisible » appliquée à A sans réserve : elle est retirée.</p>
+  </div>
+
+  <h2 id="questions">9. Vos décisions</h2>
+  <ol class="q">
+    <li><b>La direction</b> : A, B ou C ? Vous pouvez aussi en garder une et y prendre un élément d'une autre (par exemple : A avec la typographie des chiffres de B).</li>
+    <li><b>Les noms</b> : votre message écrit « SidAgenda, SidFit, SidNote » ; l'app affiche aujourd'hui « Sid'agenda », « sid'fit » (avec ou sans majuscule) et « Sid'compagnon ». Quelle graphie devient officielle ?</li>
+    <li><b>Les 9 styles par fonction</b> (v74) et le réglage « Unique / Sobre » seraient remplacés par une identité par app. Êtes-vous d'accord pour retirer ce réglage ?</li>
+    <li><b>Claude</b> : d'accord pour remplacer le champ en haut des écrans par un bouton fixe ? Les conversations par app resteraient réglables, mais à un seul endroit.</li>
+    <li><b>Deux changements de comportement</b> visibles dans les maquettes demandent votre accord séparé : le bouton « Valider la série » (aujourd'hui, la série s'enregistre seule 1,5 s après la saisie) et la liste « Compris » à vérifier avant d'ajouter une activité. La saisie à la main et l'import restent.</li>
+    <li><b>Icône sur l'écran d'accueil</b> : avec une nouvelle icône, vos proches devront réinstaller l'app sur iPhone pour la voir. Est-ce acceptable ?</li>
+  </ol>
+</div>
+
+<script>
+(()=>{
+const ICONS={
+calendar:'<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/>',
+check:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.5 12.5l2.5 2.5 5-6"/>',
+timer:'<circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5V9.5M10 2.5h4"/>',
+dumbbell:'<path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/>',
+plate:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/>',
+chart:'<path d="M4 4v16h16M8.5 16v-4M12.5 16V8M16.5 16v-6"/>',
+note:'<path d="M6 3.5h8l4 4v13H6z"/><path d="M14 3.5V8h4M9 12.5h6M9 16h6"/>',
+folder:'<path d="M3.5 7a1.5 1.5 0 0 1 1.5-1.5h4.2l2 2H19a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18z"/>',
+lock:'<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>',
+plus:'<path d="M12 5v14M5 12h14"/>',
+search:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>',
+ask:'<path d="M5 5.5h14a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5h-8.5l-4.5 3.5v-3.5H5A1.5 1.5 0 0 1 3.5 15V7A1.5 1.5 0 0 1 5 5.5z"/>',
+grid:'<rect x="4" y="4" width="6.5" height="6.5"/><rect x="13.5" y="4" width="6.5" height="6.5"/><rect x="4" y="13.5" width="6.5" height="6.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5"/>',
+tick:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+alert:'<path d="M12 4l9 16H3z"/><path d="M12 10v4.5M12 17.2v.3"/>',
+chev:'<path d="M9 5l7 7-7 7"/>',
+clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+bell:'<path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+pin:'<path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0C18.5 15 12 21 12 21z"/><circle cx="12" cy="10" r="2.3"/>',
+tag:'<path d="M3.5 12V4.5a1 1 0 0 1 1-1H12l8.5 8.5-8.5 8.5z"/><circle cx="8" cy="8" r="1.3"/>'
+};
+const I=(n,c="")=>`<svg class="ic ${c}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`;
+const APPS={
+  agenda:{name:"Sid'agenda",fns:[["Agenda","calendar"],["Tâches","check"],["Focus","timer"]],what:"Agenda, tâches, focus"},
+  fit:{name:"Sid'fit",fns:[["Musculation","dumbbell"],["Nutrition","plate"],["Graphiques","chart"]],what:"Musculation, nutrition, graphiques"},
+  note:{name:"Sid'note",fns:[["Notes","note"],["Documents","folder"],["Mots de passe","lock"]],what:"Notes, documents, mots de passe"}
+};
+const COL={
+  signal:{agenda:"#2F56D9",fit:"#E5532D",note:"#EBB129",home:"#14161B",onNote:"#14161B"},
+  encre:{agenda:"#3A5BA0",fit:"#A3472B",note:"#3F6B4A",home:"#18181B"},
+  horizon:{agenda:"#3F7FD9",fit:"#E07038",note:"#7A5CC6",home:"#1B1D26"}
+};
+/* ---------- logos ---------- */
+function logo(d,app,s=40,mono=false){
+  const c=mono?"currentColor":COL[d][app]||COL[d].home;
+  const paper=mono?"var(--mono-bg,#fff)":"#FFFFFF";
+  if(d==="signal"){
+    const q=(x,y,w)=>`M${x} ${y} A${w} ${w} 0 0 1 ${x+w} ${y+w} L${x} ${y+w} Z`;
+    if(app==="home"){
+      const a=mono?"currentColor":COL.signal.agenda,f=mono?"currentColor":COL.signal.fit,n=mono?"currentColor":COL.signal.note;
+      return `<svg width="${s}" height="${s}" viewBox="0 0 64 64" role="img" aria-label="Sid'compagnon"><rect x="6" y="6" width="23" height="23" rx="2" fill="${a}"/><circle cx="46.5" cy="17.5" r="11.5" fill="${f}"/><path d="${q(6,35,23)}" fill="${n}"/><circle cx="46.5" cy="46.5" r="5" fill="${mono?"currentColor":"#8C93A3"}"/></svg>`;
+    }
+    const fg=mono?"var(--mono-bg,#fff)":(app==="note"?"#14161B":"#FFFFFF");
+    const shape=app==="agenda"?`<rect x="19" y="19" width="26" height="26" rx="2" fill="${fg}"/>`:app==="fit"?`<circle cx="32" cy="32" r="14" fill="${fg}"/>`:`<path d="${q(19,19,26)}" fill="${fg}"/>`;
+    return `<svg width="${s}" height="${s}" viewBox="0 0 64 64" role="img" aria-label="${APPS[app].name}"><rect width="64" height="64" rx="14" fill="${c}"/>${shape}</svg>`;
+  }
+  if(d==="encre"){
+    const L={home:["s","'IBM Plex Sans'",600,"normal"],agenda:["a","'IBM Plex Sans Condensed'",700,"normal"],fit:["f","'IBM Plex Mono'",600,"normal"],note:["n","'IBM Plex Serif'",500,"italic"]}[app];
+    const bg=mono?"currentColor":"var(--lg-bg,#18181B)";const fgc=mono?"var(--mono-bg,#fff)":"var(--lg-fg,#F6F6F4)";
+    const acc=app==="home"?"":`<rect x="14" y="50" width="${app==="agenda"?36:app==="fit"?22:30}" height="4" fill="${mono?"var(--mono-bg,#fff)":COL.encre[app]==="#18181B"?"#fff":({agenda:"#93AADB",fit:"#E08D6E",note:"#8EBB99"})[app]}"/>`;
+    return `<svg width="${s}" height="${s}" viewBox="0 0 64 64" role="img" aria-label="${app==="home"?"Sid'compagnon":APPS[app].name}"><rect width="64" height="64" rx="6" fill="${bg}"/><text x="${app==="fit"?18:14}" y="${app==="note"?45:44}" font-family="${L[1]}" font-weight="${L[2]}" font-style="${L[3]}" font-size="${app==="agenda"?44:40}" fill="${fgc}">${L[0]}</text>${acc}</svg>`;
+  }
+  // horizon
+  const bg=mono?"currentColor":(app==="home"?"var(--lg-bg,#1B1D26)":COL.horizon[app]);const fg=mono?"var(--mono-bg,#fff)":(app==="home"?"var(--lg-fg,#FFFFFF)":"#FFFFFF");
+  let inner;
+  if(app==="home") inner=`<path d="M12 42 A20 20 0 0 1 52 42" fill="none" stroke="${fg}" stroke-width="3" stroke-dasharray="2 5" stroke-linecap="round"/><circle cx="16" cy="33" r="4" fill="${fg}"/><circle cx="32" cy="22" r="4" fill="${fg}"/><circle cx="48" cy="33" r="4" fill="${fg}"/><path d="M10 44h44" stroke="${fg}" stroke-width="3" stroke-linecap="round"/>`;
+  else if(app==="agenda") inner=`<clipPath id="cl${s}${mono?1:0}"><rect width="64" height="42"/></clipPath><circle cx="24" cy="42" r="12" fill="${fg}" clip-path="url(#cl${s}${mono?1:0})"/><path d="M10 44h44" stroke="${fg}" stroke-width="3" stroke-linecap="round"/>`;
+  else if(app==="fit") inner=`<circle cx="32" cy="23" r="10" fill="${fg}"/><path d="M10 44h44" stroke="${fg}" stroke-width="3" stroke-linecap="round"/>`;
+  else inner=`<path d="M46 14a11 11 0 1 0 8 18 9 9 0 1 1-8-18z" fill="${fg}"/><path d="M10 44h44" stroke="${fg}" stroke-width="3" stroke-linecap="round"/>`;
+  return `<svg width="${s}" height="${s}" viewBox="0 0 64 64" role="img" aria-label="${app==="home"?"Sid'compagnon":APPS[app].name}"><rect width="64" height="64" rx="20" fill="${bg}"/>${inner}</svg>`;
+}
+function wordmark(d,app){
+  const n=app==="home"?"Sid'compagnon":APPS[app].name;
+  const st={signal:"font-family:'Schibsted Grotesk';font-weight:800;letter-spacing:-.02em",encre:"font-family:"+({home:"'IBM Plex Sans';font-weight:600",agenda:"'IBM Plex Sans Condensed';font-weight:700",fit:"'IBM Plex Mono';font-weight:600",note:"'IBM Plex Serif';font-style:italic;font-weight:500"})[app],horizon:"font-family:Figtree;font-weight:800;letter-spacing:-.01em"}[d];
+  return `<span style="${st};font-size:18px">${n}</span>`;
+}
+
+/* ---------- morceaux d'écran ---------- */
+const sb=()=>`<div class="sb"><span>9:41</span><i></i></div>`;
+const head=(d,app)=>`<div class="hd"><button class="hb" aria-label="Toutes les apps" type="button">${I("grid")}</button><div class="hd-t">${logo(d,app,22)}<span>${APPS[app].name}</span></div><button class="hb ask" type="button">${I("ask")}<span>Claude</span></button></div>`;
+const nav=(app,on)=>`<nav class="nv">${APPS[app].fns.map(([n,ic],i)=>`<a class="${i===on?"on":""}">${I(ic)}${n}</a>`).join("")}</nav>`;
+const grp=(d,html)=>d==="horizon"?`<div class="grpd">${html}</div>`:html;
+
+function dayHead(d){
+  if(d==="signal")return `<div class="date">Jeudi 5 novembre · semaine 45</div><div class="wkstrip">${[["L",2],["M",3],["M",4],["J",5],["V",6],["S",7],["D",8]].map(([l,n])=>`<span class="${n===5?"on":""}">${l}<b>${n}</b></span>`).join("")}</div>`;
+  if(d==="encre")return `<div class="bigdate"><b>5</b><span><strong>jeudi</strong>novembre 2026 · sem. 45<br>5 activités, 3 à venir</span></div>`;
+  return `<div class="arc"><svg viewBox="0 0 264 70" aria-hidden="true"><path d="M8 64 Q132 -18 256 64" fill="none" stroke="var(--line)" stroke-width="2" stroke-dasharray="3 5"/><path d="M8 64 Q74 20 104 25" fill="none" stroke="var(--a)" stroke-width="3" stroke-linecap="round"/><circle cx="106" cy="24.6" r="7" fill="var(--a)"/><path d="M0 66h264" stroke="var(--line)" stroke-width="1.5"/></svg><div class="arc-l"><span>8:00</span><span><b style="color:var(--ink)">Jeudi 5 novembre</b> · 10:47</span><span>22:00</span></div></div>`;
+}
+function evList(d,extra){
+  const ev=[
+    ["08:15","10:15","Gestion de projet","Cours · Warocqué, salle 1.12","past"],
+    ["10:30","12:30","Espagnol commercial","Cours · Plaine de Nimy, A2","nowi"],
+    ["14:00","16:00","Management stratégique","Travail de groupe · bibliothèque",""],
+    ["18:30","19:30","Séance Push","Sport · rappel à 17:30","",true],
+    ["20:00","20:30","Appel famille","Perso",""]];
+  if(extra)ev.splice(3,1,["18:30","19:30","Séance Push","Sport · rappel à 17:30","new",true]);
+  return grp(d,`<ul class="tl">${ev.map(([a,b,t,m,c,sp])=>`<li class="${c}"><span class="t">${a}<small>${b}</small></span><span><b>${t}</b><span class="m">${sp&&d==="signal"?`<svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><circle cx="5" cy="5" r="5" fill="var(--fit)"/></svg>`:""}${m}${c==="nowi"?` <span class="now-tag">en cours</span>`:""}</span></span></li>`).join("")}</ul>`);
+}
+const S={};
+S.home=d=>`<div class="mk d-${d}" data-app="home" style="--a:var(--agenda);--ai:var(--agenda-i);--as:var(--agenda-s)">${sb()}
+ <div class="hd"><div class="hd-t" style="padding-left:6px">${logo(d,"home",26)}<span>Sid'compagnon</span></div><span class="avatar">S</span></div>
+ <div class="body"><div><div class="date">Jeudi 5 novembre</div><h1 class="ttl">Bonjour Sid</h1></div>
+ ${grp(d,`<div class="apps">
+  <div class="app-r">${logo(d,"agenda",44)}<div><b>Sid'agenda</b><span class="fn">Agenda, tâches, focus</span><div class="rp"><em>Maintenant</em>Espagnol commercial, jusqu'à 12:30</div><div class="rp"><em>Tâches du jour</em>3 restantes sur 4</div></div></div>
+  <div class="app-r">${logo(d,"fit",44)}<div><b>Sid'fit</b><span class="fn">Musculation, nutrition, graphiques</span><div class="rp"><em>Ce soir</em>Séance Push à 18:30</div><div class="rp"><em>Aujourd'hui</em>1 840 sur 2 600 kcal</div></div></div>
+  <div class="app-r">${logo(d,"note",44)}<div><b>Sid'note</b><span class="fn">Notes, documents, mots de passe</span><div class="rp"><em>Dernière note</em>Forces et faiblesses de Nike</div></div></div>
+ </div>`)}
+ <button class="btn pri" type="button">${I("plus")}Ajouter</button>
+ </div></div>`;
+S.agenda=(d,extra)=>`<div class="mk d-${d}" data-app="agenda" style="--a:var(--agenda);--ai:var(--agenda-i);--as:var(--agenda-s)">${sb()}${head(d,"agenda")}
+ <div class="body"><h1 class="ttl">Agenda</h1>${dayHead(d)}
+ <button class="btn pri" type="button">${I("plus")}Ajouter une activité</button>
+ <div class="sec"><span>Aujourd'hui</span><span class="cnt">5</span></div>
+ ${evList(d,extra)}
+ <div class="sec"><span>Tâches du jour</span><span class="cnt">1 / 4</span></div>
+ ${grp(d,`<ul class="tk">
+  <li class="done"><span class="cb">${I("tick")}</span><span class="x">Envoyer la candidature AWEX</span></li>
+  <li><span class="cb"></span><span>Payer le loyer<span class="warn">${I("alert")}Reportée d'hier</span></span></li>
+  <li><span class="cb"></span><span>Réviser l'espagnol, examen le 16 nov.</span></li>
+  <li><span class="cb"></span><span>Partie avantages et inconvénients Nike</span></li></ul>`)}
+ </div>${extra?`<div class="toast"><span>Activité ajoutée</span><b>Annuler</b></div>`:""}${nav("agenda",0)}</div>`;
+S.add=d=>`<div class="mk d-${d}" data-app="agenda" style="--a:var(--agenda);--ai:var(--agenda-i);--as:var(--agenda-s)">${sb()}${head(d,"agenda")}
+ <div class="body"><h1 class="ttl">Agenda</h1>${dayHead(d)}</div>${nav("agenda",0)}
+ <div class="dim"></div>
+ <div class="sheet"><div class="grab"></div><h3>Nouvelle activité</h3>
+  <div class="ta">Séance push jeudi 18h30, rappel 1 h avant<span class="caret"></span></div>
+  <div class="got"><span class="got-l">Compris</span>
+   <div class="got-r">${I("tag")}<span class="k">Type</span><span>Sport</span>${I("chev","chev")}</div>
+   <div class="got-r">${I("calendar")}<span class="k">Jour</span><span>Jeudi 5 novembre</span>${I("chev","chev")}</div>
+   <div class="got-r">${I("clock")}<span class="k">Heure</span><span>18:30 – 19:30</span>${I("chev","chev")}</div>
+   <div class="got-r">${I("bell")}<span class="k">Rappel</span><span>1 h avant, à 17:30</span>${I("chev","chev")}</div>
+  </div>
+  <button class="btn pri" type="button">Ajouter l'activité</button>
+  <button class="btn ghost" type="button" style="height:30px">Plus d'options</button>
+ </div></div>`;
+S.added=d=>S.agenda(d,true);
+S.muscu=d=>`<div class="mk d-${d}" data-app="fit" style="--a:var(--fit);--ai:var(--fit-i);--as:var(--fit-s)">${sb()}${head(d,"fit")}
+ <div class="body"><h1 class="ttl">Musculation</h1>
+ <div class="chips"><span class="chip on"><span class="l">A</span>Push</span><span class="chip"><span class="l">B</span>Pull</span><span class="chip"><span class="l">C</span>Jambes</span></div>
+ <div class="sum"><div class="sum-t"><b>Push</b><span>34 min · 9 sur 16 séries</span></div><div class="bar"><i style="width:56%"></i></div></div>
+ <div class="ex closed"><div class="ex-h"><b>Développé couché haltères</b><span>4 / 4 ${I("tick")}</span></div><div class="adv">Meilleure série : 32 kg × 8</div></div>
+ <div class="ex"><div class="ex-h"><b>Développé militaire haltères</b><span>2 / 3</span></div>
+  <div class="adv">Conseillé : 3 séries de 8 à 12 · repos 2 min 30</div>
+  <div class="sets">
+   <div class="set done"><span class="n">1</span><span class="v">20 kg</span><span class="v">10 rép.</span><span class="st">${I("tick")}</span></div>
+   <div class="set done"><span class="n">2</span><span class="v">20 kg</span><span class="v">9 rép.</span><span class="st">${I("tick")}</span></div>
+   <div class="set cur"><span class="n">3</span><span class="v">22 kg</span><span class="v">8 rép.</span><span class="st"></span></div>
+  </div>
+  <div class="hint">${I("chart")}La dernière fois : 20 kg × 9. Tu peux monter à 22 kg.</div>
+  <button class="btn pri" type="button">Valider la série 3</button>
+ </div>
+ <div class="ex"><div class="ex-h"><b>Pec deck</b><span>0 / 3</span></div><div class="adv">3 séries de 10 à 15 · repos 2 min</div></div>
+ <div class="ex"><div class="ex-h"><b>Élévations latérales</b><span>0 / 3</span></div><div class="adv">3 séries de 12 à 15 · repos 1 min 30</div></div>
+ </div>${nav("fit",0)}</div>`;
+S.notes=d=>`<div class="mk d-${d}" data-app="note" style="--a:var(--note);--ai:var(--note-i);--as:var(--note-s)">${sb()}${head(d,"note")}
+ <div class="body"><h1 class="ttl">Notes</h1>
+ <div class="fld">${I("search")}Rechercher une note</div>
+ <div class="path">Notes ${I("chev")} Cours ${I("chev")} <b>Management stratégique</b></div>
+ <div class="row2"><button class="btn pri" type="button">${I("plus")}Nouvelle note</button><button class="btn sec-b" type="button">${I("folder")}Dossier</button></div>
+ ${grp(d,`<ul class="nl">
+  <li class="folder">${I("folder")}<div><b>Analyse Nike</b><p>3 notes</p></div></li>
+  <li>${I("note")}<div style="min-width:0"><b>Forces et faiblesses de Nike</b><p>Avantages : marque mondiale, innovation produit, réseau de distribution…</p></div><span class="dt">auj.</span></li>
+  <li>${I("note")}<div style="min-width:0"><b>Plan de la présentation</b><p>Contexte, analyse SWOT, recommandations, questions</p></div><span class="dt">hier</span></li>
+  <li>${I("note")}<div style="min-width:0"><b>Questions pour le séminaire</b><p>Comment mesurer l'avantage concurrentiel d'une marque ?</p></div><span class="dt">2 nov.</span></li>
+  <li>${I("lock")}<div style="min-width:0"><b>Note secrète</b><p>Visible avec ton code</p></div><span class="dt">28 oct.</span></li>
+ </ul>`)}
+ </div>${nav("note",0)}</div>`;
+S.nutri=d=>`<div class="mk d-${d}" data-app="fit" style="--a:var(--fit);--ai:var(--fit-i);--as:var(--fit-s)">${sb()}${head(d,"fit")}
+ <div class="body"><h1 class="ttl">Nutrition</h1>
+ <div class="dsel"><button type="button" aria-label="Jour précédent">${I("chev","flip")}</button><b>Aujourd'hui, jeudi 5</b><button type="button" aria-label="Jour suivant">${I("chev")}</button></div>
+ ${grp(d,`<div class="stack" style="gap:12px;padding:12px 0">
+  <div class="kc"><b>1 840 <small>/ 2 600 kcal</small></b><span>Il te reste<br><strong style="color:var(--ink)">760 kcal</strong></span></div>
+  <div class="bar"><i style="width:71%"></i></div>
+  <div class="mac">
+   <div class="mac-r"><span>Protéines</span><span class="bar"><i style="width:80%"></i></span><span class="v">112 / 140 g</span></div>
+   <div class="mac-r"><span>Glucides</span><span class="bar"><i style="width:73%"></i></span><span class="v">205 / 280 g</span></div>
+   <div class="mac-r"><span>Lipides</span><span class="bar"><i style="width:72%"></i></span><span class="v">58 / 80 g</span></div>
+  </div></div>`)}
+ <div class="addm"><div class="fld">${I("plus")}Ajouter un repas : quoi, combien ?</div>
+  <div class="row3"><button class="btn sec-b" type="button">Photo</button><button class="btn sec-b" type="button">Galerie</button><button class="btn sec-b" type="button">À la main</button></div></div>
+ <div class="sec"><span>Repas du jour</span><span class="cnt">3</span></div>
+ ${grp(d,`<div>
+  <div class="meal"><b>Petit-déjeuner</b><span class="k">520 kcal</span><p>Flocons d'avoine, banane, skyr · 08:10</p><span class="pgl">P 32 g · G 78 g · L 9 g</span></div>
+  <div class="meal"><b>Déjeuner</b><span class="k">760 kcal</span><p>Poulet, riz basmati, brocolis, huile d'olive · 12:45</p><span class="pgl">P 52 g · G 88 g · L 21 g</span></div>
+  <div class="meal"><b>Collation</b><span class="k">560 kcal</span><p>Yaourt grec, noix, pomme · 16:00</p><span class="pgl">P 28 g · G 39 g · L 28 g</span></div>
+ </div>`)}
+ <button class="btn ghost" type="button">Pas d'idée ? Proposer un menu pour ce soir</button>
+ </div>${nav("fit",1)}</div>`;
+S.vault=d=>`<div class="mk d-${d}" data-app="note" style="--a:var(--note);--ai:var(--note-i);--as:var(--note-s)">${sb()}${head(d,"note")}
+ <div class="body"><h1 class="ttl">Mots de passe</h1>
+ <div class="vault">${I("lock","big")}<h2>Coffre verrouillé</h2><p>Entre ton code pour voir tes mots de passe.</p>
+  <div class="dots" aria-label="2 chiffres sur 6"><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i></div>
+  <div class="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<span>${n}</span>`).join("")}<span class="e"></span><span>0</span><span class="e"></span></div>
+  <div class="row2" style="width:100%;margin-top:6px"><button class="btn sec-b" type="button">Face ID</button><button class="btn ghost" type="button">Code oublié ?</button></div>
+ </div></div>${nav("note",2)}</div>`;
+const SCREENS=[
+ ["home","Accueil","L'accueil de la suite : le jour en cours et les trois apps, chacune avec un ou deux repères."],
+ ["agenda","Agenda · journée","Écran dense : cours (venus de l'horaire UMons), séance de sport, tâches dont une reportée."],
+ ["add","Ajouter · saisie","Parcours de saisie, 1er temps : on tape une phrase, l'app montre ce qu'elle a compris."],
+ ["added","Ajouter · confirmation","2e temps : l'activité apparaît dans la journée, avec « Annuler » pendant quelques secondes."],
+ ["muscu","Musculation · séance","Écran dense et action principale : une séance en cours, la série 3 à valider."],
+ ["nutri","Nutrition · journée","Écran le plus dense de l'app : calories, macros, ajout d'un repas (texte, photo, galerie, à la main), repas du jour."],
+ ["notes","Notes · dossier","Un dossier de cours, avec un sous-dossier, des notes et une note secrète."],
+ ["vault","Mots de passe · verrouillé","État verrouillé du coffre : code à 6 chiffres, Face ID, code oublié."]
+];
+const DIRS=[["signal","A · Signal"],["encre","B · Encre"],["horizon","C · Horizon"]];
+const phone=html=>`<div class="phone">${html}</div>`;
+
+/* ---------- section 1 : identité ---------- */
+const ID={
+ signal:{idea:"Une forme simple par app. La forme porte l'identité, la couleur la renforce.",
+  pr:["Commun : une police (Schibsted Grotesk), la grille, les composants, la barre du bas, les icônes au trait droit.","Par app : sa forme (carré, rond, coin de page) et sa couleur franche.","Par fonction : seulement l'icône et le titre. Un repère venu d'une autre app garde sa forme (une séance dans l'agenda porte le rond de Sid'fit).","Mouvement : bref et net, 150 à 250 ms. Une forme se remplit pour confirmer."],
+  pal:[["#2F56D9","Agenda"],["#C8441F","Fit (interface)"],["#E5532D","Fit (logo)"],["#EBB129","Note"],["#14161B","Encre"],["#F4F5F7","Fond"],["#C8372D","Erreur"]],
+  type:`<div style="font-family:'Schibsted Grotesk';font-weight:800;font-size:30px;letter-spacing:-.02em;line-height:1">Musculation</div><div style="font-family:'Schibsted Grotesk';font-size:15px">Développé militaire · 22 kg × 8 rép.</div><div style="font-family:'Schibsted Grotesk';font-size:13px" class="mut">Une seule famille, de 400 à 800 ; chiffres tabulaires.</div>`},
+ encre:{idea:"Une famille de caractères à trois voix. L'identité est typographique, presque sans couleur.",
+  pr:["Commun : IBM Plex, l'encre noire, les filets fins, des angles presque droits.","Par app : une coupe de la même famille (étroite, chasse fixe, à empattements) et sa lettre.","Par fonction : l'icône et le titre ; la couleur de l'app n'apparaît qu'en petits repères.","Mouvement : le trait se trace, les chiffres défilent, 200 à 260 ms, sans rebond."],
+  pal:[["#18181B","Encre"],["#F6F6F4","Papier"],["#3A5BA0","Agenda"],["#A3472B","Fit"],["#3F6B4A","Note"],["#C8372D","Erreur"]],
+  type:`<div style="font-family:'IBM Plex Sans Condensed';font-weight:700;font-size:30px;line-height:1">Agenda</div><div style="font-family:'IBM Plex Mono';font-size:15px">22 kg × 8 · 1 840 kcal</div><div style="font-family:'IBM Plex Serif';font-style:italic;font-size:17px">Forces et faiblesses de Nike</div><div style="font-family:'IBM Plex Sans';font-size:13px" class="mut">Plex Sans pour tout le reste.</div>`},
+ horizon:{idea:"Trois moments de la journée. Chaque app a sa lumière ; le soleil change de place.",
+  pr:["Commun : une police ronde (Figtree), des groupes arrondis façon iOS, une barre du bas flottante.","Par app : la position du soleil dans le logo, la teinte du fond et sa couleur.","Par fonction : l'icône et le titre, sur le même fond.","Mouvement : doux et un peu plus long, 300 à 500 ms. Un anneau ou un arc qui se remplit."],
+  pal:[["#2B61B3","Agenda (interface)"],["#3F7FD9","Agenda (logo)"],["#AD4F1D","Fit (interface)"],["#E07038","Fit (logo)"],["#7A5CC6","Note"],["#E7EFFB","Fond agenda"],["#1B1D26","Encre"],["#C8372D","Erreur"]],
+  type:`<div style="font-family:Figtree;font-weight:800;font-size:30px;letter-spacing:-.015em;line-height:1">Bonjour Sid</div><div style="font-family:Figtree;font-size:15px">Séance Push à 18:30 · 1 840 kcal</div><div style="font-family:Figtree;font-size:13px" class="mut">Une seule famille, ronde et très lisible.</div>`}
+};
+const sty={signal:"--sw:2;--cap:square;--join:miter",encre:"--sw:1.5;--cap:butt;--join:miter",horizon:"--sw:2;--cap:round;--join:round"};
+document.getElementById("identity").innerHTML=DIRS.map(([d,n])=>{const x=ID[d];return `<section class="dcol" aria-label="${n}">
+ <div class="dname"><b>${n}</b>${d==="signal"?'<span class="tagr">recommandée</span>':""}</div>
+ <p>${x.idea}</p>
+ <div class="blk"><h4>Logos : la suite et les trois apps</h4><div class="logos">${["home","agenda","fit","note"].map(a=>logo(d,a,56)).join("")}</div>
+  <div class="stack" style="gap:6px">${["home","agenda","fit","note"].map(a=>wordmark(d,a)).join("")}</div></div>
+ <div class="blk"><h4>Principes</h4><ul class="pl">${x.pr.map(p=>`<li>${p}</li>`).join("")}</ul></div>
+ <div class="blk"><h4>Palette</h4><div class="sw">${x.pal.map(([c,l])=>`<span><i style="background:${c}"></i>${l}</span>`).join("")}</div><p class="small mut">Un fond qui porte du texte atteint au moins 4,5:1 ; le logo peut garder une teinte plus vive. Succès, avertissement et erreur ont leurs propres couleurs, toujours avec une icône et un texte.</p></div>
+ <div class="blk"><h4>Typographie</h4>${x.type}</div>
+ <div class="blk" style="${sty[d]}"><h4>Icônes</h4><div class="icons">${["calendar","check","timer","dumbbell","plate","chart","note","folder","lock","search","ask","bell"].map(k=>I(k)).join("")}</div></div>
+</section>`}).join("");
+
+/* ---------- section 2 : écrans ---------- */
+let cur="agenda";
+const tabs=document.getElementById("scrTabs");
+tabs.innerHTML=SCREENS.map(([k,l])=>`<button type="button" data-s="${k}" aria-pressed="${k===cur}">${l}</button>`).join("");
+function drawPhones(){
+  const s=SCREENS.find(x=>x[0]===cur);
+  document.getElementById("scrNote").textContent=s[2];
+  document.getElementById("phones").innerHTML=DIRS.map(([d,n])=>`<figure>${phone(S[cur](d))}<figcaption>${n}</figcaption></figure>`).join("");
+}
+tabs.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;cur=b.dataset.s;tabs.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));drawPhones()});
+drawPhones();
+
+/* ---------- section 3 : mouvement ---------- */
+const MO={
+ signal:"<b>Rôle</b> : confirmer la série. <b>Déclencheur</b> : appui sur « Valider ». <b>Durée</b> : 180 ms pour la case, 240 ms pour la barre ; la pastille de repos arrive 160 ms après. <b>Courbe</b> : sortie franche (0.2, 0.8, 0.2, 1). <b>Mouvement réduit</b> : la case passe pleine d'un coup, rien ne glisse.",
+ encre:"<b>Rôle</b> : confirmer la série et compter. <b>Déclencheur</b> : appui sur « Valider ». <b>Durée</b> : 220 ms pour le trait de la coche, 260 ms pour le soulignement et les chiffres. <b>Courbe</b> : ease-out, sans rebond. <b>Mouvement réduit</b> : coche et chiffre changent sans défilement.",
+ horizon:"<b>Rôle</b> : confirmer la série, montrer la progression. <b>Déclencheur</b> : appui sur « Valider ». <b>Durée</b> : 520 ms pour l'anneau, 260 ms pour la pastille (léger dépassement). <b>Courbe</b> : (0.45, 0, 0.2, 1). <b>Mouvement réduit</b> : l'anneau et la pastille changent sans animation."
+};
+document.getElementById("motion").innerHTML=DIRS.map(([d,n])=>`<section class="dcol"><div class="dname"><b>${n}</b></div>
+ <div class="mk d-${d}" data-app="fit" style="--a:var(--fit);--ai:var(--fit-i);--as:var(--fit-s);height:auto;border-radius:14px;overflow:hidden">
+ <div class="mo" data-mo>
+  <div class="mo-row"><span class="n">Série 3</span><span class="v">22 kg × 8</span><span class="st"><i></i><b></b><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></div>
+  ${d==="horizon"?`<div style="display:flex;gap:14px;align-items:center"><svg class="ring" viewBox="0 0 64 64" aria-hidden="true"><circle class="bg" cx="32" cy="32" r="28"/><circle class="fg" cx="32" cy="32" r="28" style="stroke-dashoffset:${176*(1-9/16)}"/></svg><div class="cntl"><span class="roll"><span>9</span><span>10</span></span>sur 16 séries</div></div>`:`<div class="cntl"><span class="roll"><span>9</span><span>10</span></span>sur 16 séries</div><div class="bar"><i style="width:${9/16*100}%"></i></div>`}
+  <span class="rest">Repos 2:30</span>
+  <div class="btnr"><button class="btn pri" type="button" data-go>Valider la série</button><button class="btn sec-b" type="button" data-reset>Rejouer</button></div>
+  <p class="spec">${MO[d]}</p>
+ </div></div></section>`).join("");
+document.getElementById("motion").addEventListener("click",e=>{
+  const mo=e.target.closest("[data-mo]");if(!mo)return;
+  const set=on=>{mo.classList.toggle("on",on);const bar=mo.querySelector(".bar i");if(bar)bar.style.width=(on?10:9)/16*100+"%";const fg=mo.querySelector(".ring .fg");if(fg)fg.style.strokeDashoffset=176*(1-(on?10:9)/16)};
+  if(e.target.closest("[data-go]"))set(true);
+  if(e.target.closest("[data-reset]"))set(false);
+});
+
+/* ---------- section 4 : ordinateur ---------- */
+const H0=8,PX=34;
+const WEEK=[
+ [["08:15","10:15","Gestion de projet","Cours"],["13:30","15:30","Comptabilité de gestion","Cours"],["18:30","19:45","Séance Pull","Sport",1]],
+ [["10:30","12:30","Espagnol commercial","Cours"],["14:00","16:00","Séminaire gestion de projet","Cours"]],
+ [["08:15","10:15","Management stratégique","Cours"],["18:30","19:30","Séance Jambes","Sport",1]],
+ [["08:15","10:15","Gestion de projet","Cours"],["10:30","12:30","Espagnol commercial","Cours"],["14:00","16:00","Travail de groupe Nike","Bibliothèque"],["18:30","19:30","Séance Push","Sport",1],["20:00","20:30","Appel famille","Perso"]],
+ [["09:00","11:00","Comptabilité de gestion","Cours"],["15:00","16:00","Rendez-vous banque","Perso"]],
+ [["11:00","12:15","Séance Full body","Sport",1]],
+ [["17:00","18:00","Courses de la semaine","Perso"]]];
+const hm=s=>{const[a,b]=s.split(":").map(Number);return a+b/60};
+function desk(d){
+  const app="agenda";
+  const days=["lun.","mar.","mer.","jeu.","ven.","sam.","dim."];
+  const side=Object.entries(APPS).map(([k,a])=>`<div class="grp"><div class="grp-h">${logo(d,k,18)}${a.name}</div>${a.fns.map(([n,ic],i)=>`<div class="it ${k==="agenda"&&i===0?"on":""}" style="${k!=="agenda"?`--as:var(--${k}-s);--ai:var(--${k}-i)`:""}">${I(ic)}${n}</div>`).join("")}</div>`).join("");
+  const hrs=Array.from({length:14},(_,i)=>`<span style="top:${i*PX}px">${H0+i}:00</span>`).join("");
+  const gl=Array.from({length:14},(_,i)=>`<i class="gl" style="top:${i*PX}px"></i>`).join("");
+  const cols=WEEK.map((evs,di)=>`<div class="col ${di===3?"today":""}">${gl}${evs.map(([a,b,t,m,sp])=>`<div class="ev ${sp?"sport":""} ${hm(b)-hm(a)<1.5?"short":""}" style="top:${(hm(a)-H0)*PX+1}px;height:${(hm(b)-hm(a))*PX-2}px"><b>${t}</b><span class="em">${sp&&d==="signal"?`<svg class="ic" viewBox="0 0 10 10" style="stroke:none"><circle cx="5" cy="5" r="4" fill="var(--fit)"/></svg> `:""}${a}</span></div>`).join("")}${di===3?`<i class="nowl" style="top:${(10.78-H0)*PX}px"></i>`:""}</div>`).join("");
+  return `<div class="deskw"><h3>${DIRS.find(x=>x[0]===d)[1]}</h3><div class="desk"><div class="mk d-${d}" data-app="agenda" style="--a:var(--agenda);--ai:var(--agenda-i);--as:var(--agenda-s)">
+   <aside><div class="brand">${logo(d,"home",26)}Sid'compagnon</div>${side}</aside>
+   <main><div class="dhd"><h1 class="ttl">Semaine du 2 au 8 novembre</h1><div class="nav2"><button type="button" aria-label="Semaine précédente">‹</button><button type="button">Aujourd'hui</button><button type="button" aria-label="Semaine suivante">›</button></div><span class="sp"></span><button class="hb ask" type="button">${I("ask")}<span>Claude</span></button><button class="btn pri" type="button">${I("plus")}Ajouter une activité</button></div>
+    <div class="dbody"><div class="wk"><div></div>${days.map((x,i)=>`<div class="dh ${i===3?"today":""}">${x}<b>${i+2}</b></div>`).join("")}<div class="hrs">${hrs}</div>${cols}</div>
+    <div class="side"><div class="sec" style="margin-top:0"><span>Tâches de la semaine</span><span class="cnt">2 / 6</span></div>
+     <ul class="tk"><li class="done"><span class="cb">${I("tick")}</span><span class="x">Envoyer la candidature AWEX</span></li><li class="done"><span class="cb">${I("tick")}</span><span class="x">Imprimer le contrat de bail</span></li><li><span class="cb"></span><span>Payer le loyer<span class="warn">${I("alert")}Reportée d'hier</span></span></li><li><span class="cb"></span><span>Réviser l'espagnol, examen le 16 nov.</span></li><li><span class="cb"></span><span>Partie avantages et inconvénients Nike</span></li><li><span class="cb"></span><span>Préparer la présentation du séminaire</span></li></ul></div></div>
+   </main></div></div></div>`;
+}
+document.getElementById("desks").innerHTML=DIRS.map(([d])=>desk(d)).join("");
+
+/* ---------- section 5 : logos ---------- */
+document.getElementById("logoTests").innerHTML=DIRS.map(([d,n])=>`<section class="dcol"><div class="dname"><b>${n}</b></div>
+ <div class="blk"><h4>Tailles : 48, 32, 20 et 16 px</h4>${["home","agenda","fit","note"].map(a=>`<div class="sizes">${[48,32,20,16].map(s=>`<figure>${logo(d,a,s)}</figure>`).join("")}<span class="small mut">${a==="home"?"Sid'compagnon":APPS[a].name}</span></div>`).join("")}</div>
+ <div class="blk"><h4>Une couleur</h4><div class="mono-row mono-ink" style="--mono-bg:#FFFFFF">${["home","agenda","fit","note"].map(a=>logo(d,a,40,true)).join("")}</div><div class="mono-row mono-pap" style="--mono-bg:#111111">${["home","agenda","fit","note"].map(a=>logo(d,a,40,true)).join("")}</div></div>
+</section>`).join("");
+
+/* ---------- réglages ---------- */
+const root=document.querySelector(".wrap");
+const pressed=(a,b,on)=>{a.setAttribute("aria-pressed",on);b.setAttribute("aria-pressed",!on)};
+const thD=document.getElementById("thDark"),thL=document.getElementById("thLight"),mvOn=document.getElementById("mvOn"),mvOff=document.getElementById("mvOff");
+const setTheme=dk=>{root.classList.toggle("dk",dk);pressed(thD,thL,dk);try{localStorage.setItem("sc-mk-th",dk?"d":"l")}catch(e){}};
+thD.onclick=()=>setTheme(true);thL.onclick=()=>setTheme(false);
+mvOn.onclick=()=>{root.classList.remove("rm");pressed(mvOn,mvOff,true)};mvOff.onclick=()=>{root.classList.add("rm");pressed(mvOn,mvOff,false)};
+let th="d";try{th=localStorage.getItem("sc-mk-th")||"d"}catch(e){}
+setTheme(th!=="l");
+if(matchMedia("(prefers-reduced-motion: reduce)").matches)pressed(mvOn,mvOff,false);
+})();
+</script>

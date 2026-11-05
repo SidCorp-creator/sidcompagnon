@@ -129,7 +129,7 @@ function onbFinish(){
   if(!Object.values(onbSel).some(Boolean)){toast("Garde au moins un onglet");return}
   Object.assign(data.prefs.tabs,onbSel);data.prefs.onboarded=true;delete data.prefs.onbPending;save();
   $("onb").hidden=true;document.body.style.overflow="";applyTabs();renderHomeSel();
-  show("home");toast("Bienvenue sur Sid'compagnon");
+  show("home");
 }
 $("onbGo").addEventListener("click",onbFinish);$("onbSkip").addEventListener("click",onbFinish);
 $("replayOnb").addEventListener("click",openOnb);

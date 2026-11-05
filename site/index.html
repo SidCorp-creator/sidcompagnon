@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="fr" data-theme="dark" data-ds="edito">
+<html lang="fr" data-theme="dark" data-ds="elan">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Sid'compagnon</title>
-<meta name="description" content="Sid'compagnon réunit trois applications personnelles avec un seul compte : sid'agenda (agenda, tâches, minuteur de concentration), sid'fit (musculation, nutrition, graphiques) et sid'note (notes, documents et mots de passe chiffrés).">
+<meta name="description" content="Sid'compagnon réunit trois applications personnelles avec un seul compte : Sid Journée (agenda, tâches, minuteur de concentration), Sid Forme (musculation, nutrition, graphiques) et Sid Coffre (notes, documents et mots de passe chiffrés).">
 <meta name="application-name" content="Sid'compagnon">
 <meta name="author" content="SidCorp">
 <meta name="robots" content="index, follow">
@@ -12,7 +12,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Sid'compagnon">
 <meta property="og:title" content="Sid'compagnon">
-<meta property="og:description" content="Ta vie, en ordre. Trois applications, un seul compte : sid'agenda, sid'fit et sid'note.">
+<meta property="og:description" content="Ta vie, en ordre. Trois applications, un seul compte : Sid Journée, Sid Forme et Sid Coffre.">
 <meta property="og:url" content="https://sidcompagnon.com/">
 <meta property="og:image" content="https://sidcompagnon.com/logo-512.png">
 <meta property="og:locale" content="fr_BE">
@@ -20,21 +20,21 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Sid'compagnon">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#111214" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#111214" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#121212" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
 <!-- v46 (#9) : nom officiel du site pour Google (données structurées WebSite) ; ce bloc de données n'est pas un script exécuté -->
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","slogan":"Ta vie, en ordre.","name":"Sid'compagnon","alternateName":["Sidcompagnon","Sid compagnon"],"url":"https://sidcompagnon.com/","inLanguage":["fr","en","nl"],"publisher":{"@type":"Organization","name":"SidCorp","url":"https://sidcompagnon.com/","logo":"https://sidcompagnon.com/logo-512.png"}}</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="logo-180.png">
-<link rel="icon" href="favicon.ico" sizes="any"><link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="icon" href="logo-32.png" sizes="32x32"><link rel="icon" href="logo-192.png" sizes="192x192">
+<link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="icon" href="logo-32.png" sizes="32x32"><link rel="icon" href="logo-192.png" sizes="192x192">
 <link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="app.css">
 <link rel="stylesheet" href="design.css">
-<link rel="stylesheet" href="ident.css">
+
 </head>
 <body>
 <a class="skip-link" href="#main">Aller au contenu</a>
-<noscript><p style="padding:16px;font-family:sans-serif">Sid'compagnon a besoin de JavaScript pour fonctionner. Sid'compagnon réunit sid'agenda (agenda, tâches), sid'fit (musculation, nutrition) et sid'note (notes, documents, mots de passe). <a href="confidentialite.html">Confidentialité</a> · <a href="conditions.html">Conditions d'utilisation</a> · <a href="cookies.html">Cookies</a></p></noscript>
+<noscript><p style="padding:16px;font-family:sans-serif">Sid'compagnon a besoin de JavaScript pour fonctionner. Sid'compagnon réunit Sid Journée (agenda, tâches), Sid Forme (musculation, nutrition) et Sid Coffre (notes, documents, mots de passe). <a href="confidentialite.html">Confidentialité</a> · <a href="conditions.html">Conditions d'utilisation</a> · <a href="cookies.html">Cookies</a></p></noscript>
 <div class="splash" id="splash" aria-hidden="true"><div class="sp-mark" id="spMark"></div><div class="sp-name">Sid'compagnon</div><div class="sp-tag">Ta vie, en ordre.</div><div class="sp-apps" id="spApps"></div></div>
 <div id="auth" class="auth" hidden>
   <div class="auth-box">
@@ -133,19 +133,23 @@
     <div class="brand"><img src="logo-192.png" alt="">Sid'compagnon</div>
     <h1>Agenda</h1>
     <div class="eph notr" id="plEph" aria-hidden="true"></div>
-    <!-- v45.3 : ajout d'activités par Claude (comme « Ajouter ce que tu manges » en Nutrition) ; la recherche passe derrière la loupe -->
+    <div hidden aria-hidden="true">    <!-- v45.3 : ajout d'activités par Claude (comme « Ajouter ce que tu manges » en Nutrition) ; la recherche passe derrière la loupe -->
     <form class="card form nu-ask pl-ask" id="plAskForm" style="margin-top:6px">
       <textarea id="plAsk" rows="2" placeholder="Ton activité : quoi, quel jour, à quelle heure, quel type…" aria-label="Activité à planifier" enterkeyhint="send"></textarea>
       <div class="nu-ask-row">
         <button type="button" class="mini nu-mic nu-tool" id="plMic" aria-label="Dicter"><i class="ic" data-i="mic"></i></button>
-        <button type="button" class="mini nu-tool" id="planSearchBtn" aria-label="Rechercher une activité" aria-expanded="false"><i class="ic" data-i="search"></i></button>
+
         <button class="btn" type="submit" id="plAskBtn">Planifier</button>
       </div>
     </form>
-    <details class="conv-tab" data-convtab="agenda"><summary><span>Conversation Claude</span><span class="conv-st small muted" data-convst="agenda"></span></summary><form class="conv-f conv-tab-f" data-conv="agenda"><p class="small muted">Colle ici le lien d'une conversation Claude : toutes tes demandes iront directement dedans. Le message est copié, il ne reste qu'à le coller et l'envoyer.</p><div class="conv-row"><input type="url" inputmode="url" class="conv-tab-in" data-convin="agenda" placeholder="https://claude.ai/chat/…" aria-label="Lien de la conversation Claude" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div><button type="button" class="linkbtn conv-del" data-convdel="agenda" hidden>Retirer</button></form></details>
+    <details hidden class="conv-tab" data-convtab="agenda"><summary><span>Conversation Claude</span><span class="conv-st small muted" data-convst="agenda"></span></summary><form class="conv-f conv-tab-f" data-conv="agenda"><p class="small muted">Colle ici le lien d'une conversation Claude : toutes tes demandes iront directement dedans. Le message est copié, il ne reste qu'à le coller et l'envoyer.</p><div class="conv-row"><input type="url" inputmode="url" class="conv-tab-in" data-convin="agenda" placeholder="https://claude.ai/chat/…" aria-label="Lien de la conversation Claude" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div><button type="button" class="linkbtn conv-del" data-convdel="agenda" hidden>Retirer</button></form></details>
+    </div>
+    <div id="journeyDay"></div>
+    <details class="journey-options"><summary>Calendrier et toutes les dates</summary>
     <input type="search" class="search" id="planSearch" placeholder="Rechercher une activité" aria-label="Rechercher une activité" autocomplete="off" style="margin-top:6px" hidden>
+
+<button type="button" class="mini nu-tool" id="planSearchBtn" aria-label="Rechercher une activité" aria-expanded="false"><i class="ic" data-i="search"></i></button>
     <div id="planTop">
-    <button type="button" class="btn ghost add-act" id="taskAdd">+ Activité</button>
     <datalist id="typeList"></datalist>
     <h2>Prochaines échéances</h2>
     <div class="next" id="next"></div>
@@ -202,6 +206,7 @@
     <h2 id="listH2">Toutes les dates</h2>
     <div class="chips" id="chips"></div>
     <div id="tasks"></div>
+    </details>
   </section>
 
   <!-- POMODORO -->
@@ -264,14 +269,14 @@
     <div class="brand"><img src="logo-192.png" alt="">Sid'compagnon</div>
     <h1>Musculation</h1>
     <p class="sub">Tes programmes et tes séances, au même endroit : note tes séries, tes répétitions et tes poids directement.</p>
-    <form class="card form nu-ask pl-ask ask-mu" id="muAskForm" style="margin-top:6px">
+    <form class="card form nu-ask pl-ask ask-mu" id="muAskForm" hidden style="margin-top:6px">
       <textarea id="muAsk" rows="2" placeholder="Ta demande : ex. ajoute du dos à ma séance B, note ma séance d'hier…" aria-label="Demande sur ton entraînement" enterkeyhint="send"></textarea>
       <div class="nu-ask-row">
         <button type="button" class="mini nu-mic nu-tool" id="muMic" aria-label="Dicter"><i class="ic" data-i="mic"></i></button>
         <button class="btn" type="submit">Envoyer</button>
       </div>
     </form>
-    <details class="conv-tab" data-convtab="muscu"><summary><span>Conversation Claude</span><span class="conv-st small muted" data-convst="muscu"></span></summary><form class="conv-f conv-tab-f" data-conv="muscu"><p class="small muted">Colle ici le lien d'une conversation Claude : toutes tes demandes iront directement dedans. Le message est copié, il ne reste qu'à le coller et l'envoyer.</p><div class="conv-row"><input type="url" inputmode="url" class="conv-tab-in" data-convin="muscu" placeholder="https://claude.ai/chat/…" aria-label="Lien de la conversation Claude" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div><button type="button" class="linkbtn conv-del" data-convdel="muscu" hidden>Retirer</button></form></details>
+    <details hidden class="conv-tab" data-convtab="muscu"><summary><span>Conversation Claude</span><span class="conv-st small muted" data-convst="muscu"></span></summary><form class="conv-f conv-tab-f" data-conv="muscu"><p class="small muted">Colle ici le lien d'une conversation Claude : toutes tes demandes iront directement dedans. Le message est copié, il ne reste qu'à le coller et l'envoyer.</p><div class="conv-row"><input type="url" inputmode="url" class="conv-tab-in" data-convin="muscu" placeholder="https://claude.ai/chat/…" aria-label="Lien de la conversation Claude" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div><button type="button" class="linkbtn conv-del" data-convdel="muscu" hidden>Retirer</button></form></details>
     <div class="mu-goal" id="muGoal"></div>
     <details class="mu-stats-d" id="muStatsD"><summary><span>Mes statistiques</span></summary><div class="card mu-stats" id="muStats"></div></details>
     <div id="coachBox" hidden></div>
@@ -362,7 +367,7 @@
         <div id="nuResult"></div>
         <button type="button" class="linkbtn" id="nuManual" style="background:none;border:0;cursor:pointer;font-size:14px;justify-self:center">Saisir les valeurs à la main</button>
       </form>
-    <details class="conv-tab" data-convtab="nutri"><summary><span>Conversation Claude</span><span class="conv-st small muted" data-convst="nutri"></span></summary><form class="conv-f conv-tab-f" data-conv="nutri"><p class="small muted">Colle ici le lien d'une conversation Claude : toutes tes demandes iront directement dedans. Le message est copié, il ne reste qu'à le coller et l'envoyer.</p><div class="conv-row"><input type="url" inputmode="url" class="conv-tab-in" data-convin="nutri" placeholder="https://claude.ai/chat/…" aria-label="Lien de la conversation Claude" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div><button type="button" class="linkbtn conv-del" data-convdel="nutri" hidden>Retirer</button></form></details>
+    <details hidden class="conv-tab" data-convtab="nutri"><summary><span>Conversation Claude</span><span class="conv-st small muted" data-convst="nutri"></span></summary><form class="conv-f conv-tab-f" data-conv="nutri"><p class="small muted">Colle ici le lien d'une conversation Claude : toutes tes demandes iront directement dedans. Le message est copié, il ne reste qu'à le coller et l'envoyer.</p><div class="conv-row"><input type="url" inputmode="url" class="conv-tab-in" data-convin="nutri" placeholder="https://claude.ai/chat/…" aria-label="Lien de la conversation Claude" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div><button type="button" class="linkbtn conv-del" data-convdel="nutri" hidden>Retirer</button></form></details>
       </div>
       <div class="nu-tabs" id="nuTabs" role="group" aria-label="Nutrition">
         <button type="button" data-nutab="day"><i class="ic" data-i="calendar"></i>Ma journée</button>
@@ -491,14 +496,14 @@
       <div class="nf-path" id="nfPath" role="navigation" aria-label="Dossiers" hidden></div>
       <h1>Notes</h1>
       <p class="sub">Écris librement : idées, listes, brouillons. Tout est enregistré au fur et à mesure.</p>
-      <form class="card form nu-ask pl-ask ask-nt" id="ntAskForm" style="margin-top:6px">
+      <form class="card form nu-ask pl-ask ask-nt" id="ntAskForm" hidden style="margin-top:6px">
         <textarea id="ntAsk" rows="2" placeholder="Ta demande : ex. résume ma note de cours, range mes notes de cuisine…" aria-label="Demande sur tes notes" enterkeyhint="send"></textarea>
       <div class="nu-ask-row">
         <button type="button" class="mini nu-mic nu-tool" id="ntMic" aria-label="Dicter"><i class="ic" data-i="mic"></i></button>
         <button class="btn" type="submit">Envoyer</button>
       </div>
     </form>
-    <details class="conv-tab" data-convtab="note"><summary><span>Conversation Claude</span><span class="conv-st small muted" data-convst="note"></span></summary><form class="conv-f conv-tab-f" data-conv="note"><p class="small muted">Colle ici le lien d'une conversation Claude : toutes tes demandes iront directement dedans. Le message est copié, il ne reste qu'à le coller et l'envoyer.</p><div class="conv-row"><input type="url" inputmode="url" class="conv-tab-in" data-convin="note" placeholder="https://claude.ai/chat/…" aria-label="Lien de la conversation Claude" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div><button type="button" class="linkbtn conv-del" data-convdel="note" hidden>Retirer</button></form></details>
+    <details hidden class="conv-tab" data-convtab="note"><summary><span>Conversation Claude</span><span class="conv-st small muted" data-convst="note"></span></summary><form class="conv-f conv-tab-f" data-conv="note"><p class="small muted">Colle ici le lien d'une conversation Claude : toutes tes demandes iront directement dedans. Le message est copié, il ne reste qu'à le coller et l'envoyer.</p><div class="conv-row"><input type="url" inputmode="url" class="conv-tab-in" data-convin="note" placeholder="https://claude.ai/chat/…" aria-label="Lien de la conversation Claude" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div><button type="button" class="linkbtn conv-del" data-convdel="note" hidden>Retirer</button></form></details>
       <div class="pw-top"><input type="search" class="search" id="noteSearch" placeholder="Rechercher une note" aria-label="Rechercher une note" autocomplete="off"><button type="button" class="btn ghost" id="nfNew">+ Dossier</button><label class="btn ghost" id="pdfNew" title="Importer un PDF de cours">+ PDF<input type="file" id="pdfIn" accept="application/pdf,.pdf" multiple hidden></label><button type="button" class="btn" id="noteNew">+ Note</button></div>
       <form id="nfForm" class="nf-form" hidden><input id="nfIn" placeholder="Nom du dossier" aria-label="Nom du dossier" autocomplete="off" enterkeyhint="done"><button class="btn" type="submit">Créer</button><button type="button" class="btn ghost" id="nfCancel">Annuler</button></form>
       <div class="ns-bar" id="nsBar" hidden></div>
@@ -596,7 +601,7 @@
     <div class="card">
       <div class="row" style="display:block" hidden><div style="margin-bottom:10px">Couleurs</div><div class="pals" id="palSel" role="group" aria-label="Couleurs"></div></div>
       <div class="row"><span class="grow">Thème</span><div class="seg" id="themeSel" role="group" aria-label="Thème" style="grid-template-columns:repeat(3,auto);padding:2px"><button type="button" data-theme="auto">Auto</button><button type="button" data-theme="light">Clair</button><button type="button" data-theme="dark">Sombre</button></div></div>
-      <div class="row"><span class="grow">Style des fonctions<span class="small muted" style="display:block">Chaque fonction a sa propre apparence : polices, matières et détails.</span></span><div class="seg" id="fxSel" role="group" aria-label="Style des fonctions" style="grid-template-columns:repeat(2,auto);padding:2px"><button type="button" data-fx="1">Unique</button><button type="button" data-fx="0">Sobre</button></div></div>
+
       <label class="row"><span class="grow">Langue</span><select id="langSel" class="sel"><option value="fr">Français</option><option value="en">English</option><option value="nl">Nederlands</option></select></label>
       <label class="row" hidden><span class="grow">Page d'accueil</span><select id="homeSel" class="sel"></select></label>
     </div>
@@ -632,13 +637,13 @@
       <details class="ai-adv" id="aiAdv"><summary>Avancé</summary>
         <div class="ai-adv-h">Une conversation par app</div>
         <div class="small muted">Chaque app garde sa propre conversation avec Claude : toutes ses demandes y passent, ton historique reste rangé. Colle ici le lien de la conversation (ou d'un projet). Laisse vide pour en ouvrir une nouvelle.</div>
-        <form class="conv-f" data-conv="agenda"><label for="convAgenda" class="eyebrow">sid'agenda — discussion avec Claude</label>
+        <form class="conv-f" data-conv="agenda"><label for="convAgenda" class="eyebrow">Sid Journée — discussion avec Claude</label>
           <div class="conv-row"><input id="convAgenda" type="url" inputmode="url" placeholder="https://claude.ai/chat/…" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div></form>
-        <form class="conv-f" data-conv="nutri"><label for="convNutri" class="eyebrow">sid'fit — Nutrition</label>
+        <form class="conv-f" data-conv="nutri"><label for="convNutri" class="eyebrow">Sid Forme — Nutrition</label>
           <div class="conv-row"><input id="convNutri" type="url" inputmode="url" placeholder="https://claude.ai/chat/…" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div></form>
-        <form class="conv-f" data-conv="muscu"><label for="convMuscu" class="eyebrow">sid'fit — Musculation</label>
+        <form class="conv-f" data-conv="muscu"><label for="convMuscu" class="eyebrow">Sid Forme — Musculation</label>
           <div class="conv-row"><input id="convMuscu" type="url" inputmode="url" placeholder="https://claude.ai/chat/…" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div></form>
-        <form class="conv-f" data-conv="note"><label for="convNote" class="eyebrow">sid'note — discussion avec Claude</label>
+        <form class="conv-f" data-conv="note"><label for="convNote" class="eyebrow">Sid Coffre — discussion avec Claude</label>
           <div class="conv-row"><input id="convNote" type="url" inputmode="url" placeholder="https://claude.ai/chat/…" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div></form>
         <div class="small muted" style="margin-top:8px">Pour trouver le lien : ouvre la conversation sur claude.ai (navigateur ou ordinateur) et copie l'adresse de la page. Avec un projet (https://claude.ai/project/…), le message est déjà écrit ; avec une conversation, il est copié et il suffit de le coller. N'utilise pas « Partager » dans Claude : ce lien-là est public.</div>
         <div class="ai-adv-h">Adresses du connecteur</div>
@@ -695,7 +700,7 @@
     <div class="card" id="stats"></div>
       </div>
     </details>
-    <p class="small muted" style="margin:18px 4px">Sid'compagnon · version 74.5 · une app <b>SidCorp</b></p>
+    <p class="small muted" style="margin:18px 4px">Sid'compagnon · version 75.0 · une app <b>SidCorp</b></p>
   </section>
 </main>
 
@@ -829,22 +834,26 @@
 </div>
 <div class="sheet-bg" id="taskSheet" hidden>
   <form class="sheet card form" id="taskForm" novalidate>
-    <div class="sheet-head"><b>Nouvelle activité</b><button type="button" class="x" id="taskClose" aria-label="Fermer">×</button></div>
-    <input id="fTitle" placeholder="Ex. Dentiste jeudi 14h" aria-label="Titre" required autocomplete="off">
+    <div class="sheet-head"><b>Nouvelle activité</b><button type="button" class="x" id="taskClose" aria-label="Fermer"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+    <span class="sheet-grab" aria-hidden="true"></span>
+    <label>Titre<input id="fTitle" placeholder="Ex. Dentiste jeudi 14h" required autocomplete="off"></label>
     <p class="small quick-hint" id="fHint" aria-live="polite" hidden></p>
     <div class="two">
       <label>Date<input id="fDate" type="date" required></label>
-      <label>Heure (optionnel)<input id="fTime" type="time"></label>
+      <label>Heure de début<input id="fTime" type="time"></label>
     </div>
+    <label>Heure de fin<input id="fTimeEnd" type="time"></label>
+    <p id="fError" class="err" role="alert" hidden></p>
+    <div class="rem-box" id="fRem"></div>
     <label>Type<input id="fCat" list="typeList" placeholder="Ex. Sport" autocomplete="off"></label>
     <details class="more-opts" id="fMore"><summary><span class="plus">+</span> Plus d'options</summary>
       <div class="two">
         <label>Fin (optionnel)<input id="fEnd" type="date"></label>
-        <label>Heure de fin<input id="fTimeEnd" type="time"></label>
+
       </div>
-      <div class="rem-box" id="fRem"></div>
+
     </details>
-    <button class="btn" type="submit">Ajouter à l'agenda</button>
+    <div class="task-footer"><button class="btn" type="submit">Ajouter une activité</button></div>
   </form>
 </div>
 <div class="sheet-bg" id="actSheet" hidden>
@@ -902,7 +911,7 @@
       <div class="onb-box">
         <img src="logo-192.png" alt="" class="auth-logo onb-pop" style="width:84px;height:84px">
         <h1 id="onbTitle">Bienvenue sur Sid'compagnon</h1>
-        <p class="onb-tag">Trois applications, un seul compte : sid'agenda pour tes journées, sid'fit pour ton corps, sid'note pour tes notes et tes documents.</p>
+        <p class="onb-tag">Trois applications, un seul compte : Sid Journée pour tes journées, Sid Forme pour ton corps, Sid Coffre pour tes notes, documents et mots de passe.</p>
         <p class="sub">Tu n'as pas besoin de tout : on règle l'app ensemble en 3 étapes.</p>
         <ol class="onb-steps">
           <li><span>1</span>Choisis les onglets qui te servent</li>

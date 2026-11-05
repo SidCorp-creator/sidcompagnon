@@ -151,7 +151,20 @@ function ephFill(){const el=$("plEph");if(!el)return;const d=today(),loc=LANG===
   const n=data.tasks.filter(x=>x.date===k&&x.status!=="annulé").length;
   const sig=[k,LANG,n].join("|");if(el.dataset.sig===sig)return;el.dataset.sig=sig;
   el.innerHTML=`<div class="eph-band"><span>${esc(d.toLocaleDateString(loc,{month:"long",year:"numeric"}))}</span><span>${esc(L("Semaine"))} ${wk}</span></div><div class="eph-body"><b class="eph-d">${d.getDate()}</b><span class="eph-r"><span class="eph-wd">${esc(d.toLocaleDateString(loc,{weekday:"long"}))}</span><span class="eph-n">${esc(n?`${n} ${L(n>1?"activités":"activité")}`:L("Aucune activité aujourd'hui"))}</span></span></div>`}
+// Journée Élan : une liste lisible ; le calendrier complet reste accessible dans les options.
+let elanFresh="";
+function renderElanDay(){const host=$("journeyDay");if(!host)return;
+ const day=selDay||iso(today()),d=parse(day),loc=LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE",monday=new Date(d);monday.setDate(d.getDate()-(d.getDay()+6)%7);
+ const week=Array.from({length:7},(_,i)=>{const x=new Date(monday);x.setDate(x.getDate()+i);return {day:iso(x),label:x.toLocaleDateString(loc,{weekday:"short"}),num:x.getDate()}});
+ const shift=n=>{const x=new Date(d);x.setDate(x.getDate()+n);return iso(x)},now=new Date(),minute=now.getHours()*60+now.getMinutes();
+ const items=allT().filter(t=>onDay(t,day)).sort((a,b)=>sk(a).localeCompare(sk(b))).map(t=>({id:t.id,title:t.title,time:t.time||"",endTime:t.timeEnd||"",typeColor:t.cat?tc(t.cat):"",meta:[t.canc?L("Annulé"):"",t.cat,t.loc].filter(Boolean).join(" · "),past:!!t.canc||t.status==="fait"||(day<iso(today())),current:day===iso(today())&&!!t.time&&toMin(t.time)<=minute&&(toMin(t.timeEnd)||toMin(t.time)+60)>minute,fresh:t.id===elanFresh,ical:t.src==="ical",done:t.status==="fait"}));
+ const props={day,label:d.toLocaleDateString(loc,{weekday:"long",day:"numeric",month:"long"}),week,items,prev:shift(-1),next:shift(1),check:CHECK,more:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg>',i18n:agI18n()};
+ if(shIsl("journeyDay")){try{window.SCIslands.journeyDay(host,props);return}catch(e){reportErr("island journeyDay: "+(e&&e.message))}}
+ host.innerHTML=`<div class="journey-week" role="group" aria-label="${L("Choisir un jour")}">${week.map(x=>`<button type="button" data-elan-day="${x.day}" aria-pressed="${x.day===day}"><span>${x.label}</span><b>${x.num}</b></button>`).join("")}</div><button type="button" id="taskAdd" class="btn add-act">${L("Ajouter une activité")}</button><div class="journey-date"><button type="button" data-elan-day="${props.prev}" aria-label="${L("Jour précédent")}">${IC("chev")}</button><h2>${props.label}</h2><button type="button" data-elan-day="${props.next}" aria-label="${L("Jour suivant")}">${IC("chev")}</button></div><div class="journey-list">${items.map(t=>`<div class="journey-row ${t.past?"past":""} ${t.current?"current":""} ${t.fresh?"fresh":""}"><span class="journey-time"><span ${t.time?"":'class="all-day"'}>${t.time||L("Toute la journée")}</span>${t.endTime?`<small>${t.endTime}</small>`:""}</span><button type="button" class="journey-content" ${t.ical?`data-icalinfo="${esc(t.id)}"`:`data-edit="task:${t.id}"`}><b class="notr">${esc(t.title)}</b><span class="muted notr">${t.typeColor?`<i class="journey-type-dot" aria-hidden="true" style="background:var(${esc(t.typeColor)})"></i>`:""}${esc(t.meta)}</span></button>${t.ical?"":`<button type="button" class="journey-state ${t.done?"done":""}" aria-pressed="${t.done}" data-st="${t.id}" data-s="${t.done?"fait":"à faire"}" aria-label="${L(t.done?"Faite":"Marquer comme faite")}">${t.done?CHECK:props.more}</button>`}</div>`).join("")||`<div class="journey-empty">${L("Rien de prévu ce jour-ci")}</div>`}</div>`;
+}
+$("v-plan").addEventListener("click",e=>{const b=e.target.closest("[data-elan-day]");if(!b)return;selDay=b.dataset.elanDay;renderPlan()});
 function renderPlan(){
+  renderElanDay();if(data.ui.view&&data.ui.view!=="home")renderVhead(data.ui.view);
   ephFill();
   const T=data.tasks,q=norm(planQ);
   $("planTop").hidden=!!q;
@@ -195,7 +208,7 @@ function renderPlan(){
       <button type="button" class="pr-more" data-tmore2="${t.id}" aria-label="Plus d'actions">⋯</button></div>`}).join("")}</div>`)}).join("");
 }
 $("v-plan").addEventListener("click",e=>{
-  const ii=e.target.closest(".row[data-icalinfo]");if(ii){icalInfo(ii.dataset.icalinfo);return}
+  const ii=e.target.closest("[data-icalinfo]");if(ii){icalInfo(ii.dataset.icalinfo);return}
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.f){data.ui.filter=b.dataset.f;saveUI();renderPlan();return}
   if(b.dataset.mfold){const k=b.dataset.mfold;if(planOpenMem[k])delete planOpenMem[k];else planOpenMem[k]=1;renderPlan();return}
@@ -206,7 +219,7 @@ $("v-plan").addEventListener("click",e=>{
       ...STATUSES.map(s=>({l:s==="à faire"?"Marquer à faire":s==="en cours"?"Marquer en cours":"Marquer comme fait",on:t.status===s,fn:()=>{t.status=s;save();renderPlan()}})),
       {l:"Supprimer",danger:true,fn:()=>taskDel(t.id)}]);return}
   const T=data.tasks;
-  if(b.dataset.st){const t=T.find(x=>x.id===b.dataset.st);t.status=STATUSES[(STATUSES.indexOf(t.status)+1)%3];save();renderPlan()}
+  if(b.dataset.st){$("vhead").dataset.progressChange="done";const t=T.find(x=>x.id===b.dataset.st);if(!t)return;t.status=b.classList.contains("journey-state")?(t.status==="fait"?"à faire":"fait"):STATUSES[(STATUSES.indexOf(t.status)+1)%3];save();renderPlan()}
   else if(b.dataset.cf){const t=T.find(x=>x.id===b.dataset.cf);t.tbc=false;save();renderPlan();toast("Date confirmée")}
   else if(b.dataset.tdel){if(c2ok(b))taskDel(b.dataset.tdel)}
 });
@@ -246,20 +259,29 @@ function quickPreview(){const v=$("fTitle").value,h=$("fHint");if(!v.trim()){h.h
   h.innerHTML=`${IC("calendar")||""}<span>${L("Compris")} : <b class="notr">${esc(q.title)}</b> · ${d?esc(d.toLocaleDateString(LANG==="fr"?"fr-BE":LANG==="nl"?"nl-BE":"en-GB",{weekday:"long",day:"numeric",month:"long"})):""}${q.time?` ${d?"· ":""}${q.time}`:""}</span>`;h.hidden=false}
 $("fTitle").addEventListener("input",quickPreview);
 ["fDate","fTime"].forEach(id=>$(id).addEventListener("input",()=>{fTouched=true}));
-function openTaskSheet(date){const f=$("taskForm");fTouched=false;$("fHint").hidden=true;if(!$("fDate").value||date)$("fDate").value=date||iso(today());
-  $("taskSheet").hidden=false;setTimeout(()=>$("fTitle").focus(),80)}
-function closeTaskSheet(){$("taskSheet").hidden=true;$("fMore").open=false}
-$("taskAdd").addEventListener("click",()=>openTaskSheet(typeof selDay==="string"&&calMode==="day"?selDay:null));
+function taskError(message,id){const el=$("fError");el.innerHTML=IC("alert")+" "+esc(L(message));el.hidden=false;$(id).setAttribute("aria-describedby","fError");$(id).focus()}
+$("taskForm").addEventListener("input",()=>{$("fError").hidden=true;["fTitle","fDate","fTimeEnd","fEnd"].forEach(id=>$(id).removeAttribute("aria-describedby"))});
+let taskMotion=null,taskMotionSeq=0;
+function openTaskSheet(date){taskMotionSeq++;if(taskMotion)taskMotion.cancel();$("fError").hidden=true;const f=$("taskForm");fTouched=false;$("fHint").hidden=true;if(!$("fDate").value||date)$("fDate").value=date||iso(today());
+  $("taskSheet").hidden=false;$("fTimeEnd").closest("label").hidden=false;
+ const sheet=$("taskForm");if(sheet.animate)taskMotion=sheet.animate([{transform:"translateY(32px)",opacity:0},{transform:"translateY(0)",opacity:1}],{duration:matchMedia("(prefers-reduced-motion: reduce)").matches?1:240,easing:"cubic-bezier(.2,.8,.2,1)"});setTimeout(()=>$("fTitle").focus(),80)}
+function closeTaskSheet(){if($("taskSheet").hidden)return;const seq=++taskMotionSeq;if(taskMotion)taskMotion.cancel();
+ const finish=()=>{if(seq!==taskMotionSeq)return;$("taskSheet").hidden=true;$("fMore").open=false;requestAnimationFrame(()=>$("taskAdd")?.focus({preventScroll:true}))};
+ if(!$("taskForm").animate){finish();return}taskMotion=$("taskForm").animate([{transform:"translateY(0)",opacity:1},{transform:"translateY(32px)",opacity:0}],{duration:matchMedia("(prefers-reduced-motion: reduce)").matches?1:180,easing:"ease-out"});taskMotion.onfinish=finish;
+}
+$("v-plan").addEventListener("click",e=>{if(e.target.closest("#taskAdd"))openTaskSheet(selDay||iso(today()))});
 $("taskClose").addEventListener("click",closeTaskSheet);
 $("taskSheet").addEventListener("click",e=>{if(e.target.id==="taskSheet")closeTaskSheet()});
 function taskDel(id){undoable("Activité supprimée",[id],()=>{tomb(id);data.tasks=data.tasks.filter(x=>x.id!==id)},{after:()=>{renderPlan();renderTypes()}})}
 $("taskForm").addEventListener("submit",e=>{
   e.preventDefault();
   const q=parseQuick($("fTitle").value),t={id:uid(),title:(q.date||q.time)?q.title:$("fTitle").value.trim(),date:$("fDate").value,status:"à faire",tbc:false};
-  if(!t.title||!t.date)return;
+  if(!t.title){taskError("Écris un titre pour cette activité","fTitle");return}if(!t.date){taskError("Choisis une date","fDate");return}
+  if($("fEnd").value&&$("fEnd").value<t.date){taskError("La date de fin doit être après la date de début","fEnd");return}
   t.cat=ensureType($("fCat").value);
   if($("fTime").value)t.time=$("fTime").value;
-  if(t.time&&$("fTimeEnd").value){if($("fTimeEnd").value<=t.time){toast("L'heure de fin doit être après l'heure de début");return}t.timeEnd=$("fTimeEnd").value}
+  if(t.time&&$("fTimeEnd").value){if($("fTimeEnd").value<=t.time){taskError("L'heure de fin doit être après l'heure de début","fTimeEnd");return}t.timeEnd=$("fTimeEnd").value}
   if($("fEnd").value&&$("fEnd").value>=t.date)t.end=$("fEnd").value;
-  remApply(t,"f");data.tasks.push(t);save();renderPlan();renderTypes();e.target.reset();remSel.f=null;renderRem("f");closeTaskSheet();toast("Ajouté à l'agenda");if(t.time)setTimeout(maybeAskNotif,900); // v37 : la proposition arrive quand elle a du sens
+  remApply(t,"f");$("vhead").dataset.progressChange="add";data.tasks.push(t);elanFresh=t.id;selDay=t.date;save();renderPlan();renderTypes();e.target.reset();remSel.f=null;renderRem("f");closeTaskSheet();
+  const original=JSON.stringify(t);toastAct("Activité ajoutée","Annuler",()=>{const current=data.tasks.find(x=>x.id===t.id);if(!current)return;if(JSON.stringify(current)!==original){toast("L'activité a changé : elle est conservée");return}tomb(t.id);data.tasks=data.tasks.filter(x=>x.id!==t.id);elanFresh="";save();renderPlan();renderHome()},4000);if(t.time)setTimeout(maybeAskNotif,900); // v37 : la proposition arrive quand elle a du sens
 });

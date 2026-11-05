@@ -1,0 +1,1554 @@
+{
+  "results": [
+    {
+      "width": 390,
+      "theme": "dark",
+      "fallback": false,
+      "lang": "fr",
+      "name": "390-dark-react-fr",
+      "captures": [
+        "390-dark-react-fr-accueil.png",
+        "390-dark-react-fr-agenda.png",
+        "390-dark-react-fr-ajout.png",
+        "390-dark-react-fr-ajout-clavier-simule.png",
+        "390-dark-react-fr-confirmation.png",
+        "390-dark-react-fr-retour.png",
+        "390-dark-react-fr-agenda-dense-compact.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(242, 242, 242)",
+          "bg": "rgb(42, 42, 42)",
+          "ratio": 12.82
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#AAB76D",
+        "--c-stage": "#6FBF98",
+        "--c-memoire": "#D286B5",
+        "--c-perso": "#A3A7B2",
+        "--x1": "#6FC3D6",
+        "--x2": "#D98AAE",
+        "--x3": "#D9B862",
+        "--x4": "#C49A80",
+        "--x5": "#8CC57E",
+        "--x6": "#E08A9A"
+      },
+      "ok": true
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "fallback": true,
+      "lang": "fr",
+      "name": "390-dark-secours-fr",
+      "captures": [
+        "390-dark-secours-fr-accueil.png",
+        "390-dark-secours-fr-agenda.png",
+        "390-dark-secours-fr-ajout.png",
+        "390-dark-secours-fr-ajout-clavier-simule.png",
+        "390-dark-secours-fr-confirmation.png",
+        "390-dark-secours-fr-retour.png",
+        "390-dark-secours-fr-agenda-dense-compact.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(242, 242, 242)",
+          "bg": "rgb(42, 42, 42)",
+          "ratio": 12.82
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#AAB76D",
+        "--c-stage": "#6FBF98",
+        "--c-memoire": "#D286B5",
+        "--c-perso": "#A3A7B2",
+        "--x1": "#6FC3D6",
+        "--x2": "#D98AAE",
+        "--x3": "#D9B862",
+        "--x4": "#C49A80",
+        "--x5": "#8CC57E",
+        "--x6": "#E08A9A"
+      },
+      "ok": true
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "fallback": false,
+      "lang": "fr",
+      "name": "390-light-react-fr",
+      "captures": [
+        "390-light-react-fr-accueil.png",
+        "390-light-react-fr-agenda.png",
+        "390-light-react-fr-ajout.png",
+        "390-light-react-fr-ajout-clavier-simule.png",
+        "390-light-react-fr-confirmation.png",
+        "390-light-react-fr-retour.png",
+        "390-light-react-fr-agenda-dense-compact.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(26, 26, 26)",
+          "bg": "rgb(236, 236, 236)",
+          "ratio": 14.73
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#66712E",
+        "--c-stage": "#2F7D5B",
+        "--c-memoire": "#9B427A",
+        "--c-perso": "#7A7F8C",
+        "--x1": "#2A7F95",
+        "--x2": "#A84A72",
+        "--x3": "#9A7A2C",
+        "--x4": "#7C5A45",
+        "--x5": "#4B8240",
+        "--x6": "#A33D52"
+      },
+      "ok": true
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "fallback": true,
+      "lang": "fr",
+      "name": "390-light-secours-fr",
+      "captures": [
+        "390-light-secours-fr-accueil.png",
+        "390-light-secours-fr-agenda.png",
+        "390-light-secours-fr-ajout.png",
+        "390-light-secours-fr-ajout-clavier-simule.png",
+        "390-light-secours-fr-confirmation.png",
+        "390-light-secours-fr-retour.png",
+        "390-light-secours-fr-agenda-dense-compact.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(26, 26, 26)",
+          "bg": "rgb(236, 236, 236)",
+          "ratio": 14.73
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#66712E",
+        "--c-stage": "#2F7D5B",
+        "--c-memoire": "#9B427A",
+        "--c-perso": "#7A7F8C",
+        "--x1": "#2A7F95",
+        "--x2": "#A84A72",
+        "--x3": "#9A7A2C",
+        "--x4": "#7C5A45",
+        "--x5": "#4B8240",
+        "--x6": "#A33D52"
+      },
+      "ok": true
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "fallback": false,
+      "lang": "fr",
+      "name": "1280-dark-react-fr",
+      "captures": [
+        "1280-dark-react-fr-accueil.png",
+        "1280-dark-react-fr-agenda.png",
+        "1280-dark-react-fr-ajout.png",
+        "1280-dark-react-fr-ajout-clavier-simule.png",
+        "1280-dark-react-fr-confirmation.png",
+        "1280-dark-react-fr-retour.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(242, 242, 242)",
+          "bg": "rgb(42, 42, 42)",
+          "ratio": 12.82
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#AAB76D",
+        "--c-stage": "#6FBF98",
+        "--c-memoire": "#D286B5",
+        "--c-perso": "#A3A7B2",
+        "--x1": "#6FC3D6",
+        "--x2": "#D98AAE",
+        "--x3": "#D9B862",
+        "--x4": "#C49A80",
+        "--x5": "#8CC57E",
+        "--x6": "#E08A9A"
+      },
+      "ok": true
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "fallback": true,
+      "lang": "fr",
+      "name": "1280-dark-secours-fr",
+      "captures": [
+        "1280-dark-secours-fr-accueil.png",
+        "1280-dark-secours-fr-agenda.png",
+        "1280-dark-secours-fr-ajout.png",
+        "1280-dark-secours-fr-ajout-clavier-simule.png",
+        "1280-dark-secours-fr-confirmation.png",
+        "1280-dark-secours-fr-retour.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(242, 242, 242)",
+          "bg": "rgb(42, 42, 42)",
+          "ratio": 12.82
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#AAB76D",
+        "--c-stage": "#6FBF98",
+        "--c-memoire": "#D286B5",
+        "--c-perso": "#A3A7B2",
+        "--x1": "#6FC3D6",
+        "--x2": "#D98AAE",
+        "--x3": "#D9B862",
+        "--x4": "#C49A80",
+        "--x5": "#8CC57E",
+        "--x6": "#E08A9A"
+      },
+      "ok": true
+    },
+    {
+      "width": 1280,
+      "theme": "light",
+      "fallback": false,
+      "lang": "fr",
+      "name": "1280-light-react-fr",
+      "captures": [
+        "1280-light-react-fr-accueil.png",
+        "1280-light-react-fr-agenda.png",
+        "1280-light-react-fr-ajout.png",
+        "1280-light-react-fr-ajout-clavier-simule.png",
+        "1280-light-react-fr-confirmation.png",
+        "1280-light-react-fr-retour.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(26, 26, 26)",
+          "bg": "rgb(236, 236, 236)",
+          "ratio": 14.73
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#66712E",
+        "--c-stage": "#2F7D5B",
+        "--c-memoire": "#9B427A",
+        "--c-perso": "#7A7F8C",
+        "--x1": "#2A7F95",
+        "--x2": "#A84A72",
+        "--x3": "#9A7A2C",
+        "--x4": "#7C5A45",
+        "--x5": "#4B8240",
+        "--x6": "#A33D52"
+      },
+      "ok": true
+    },
+    {
+      "width": 1280,
+      "theme": "light",
+      "fallback": true,
+      "lang": "fr",
+      "name": "1280-light-secours-fr",
+      "captures": [
+        "1280-light-secours-fr-accueil.png",
+        "1280-light-secours-fr-agenda.png",
+        "1280-light-secours-fr-ajout.png",
+        "1280-light-secours-fr-ajout-clavier-simule.png",
+        "1280-light-secours-fr-confirmation.png",
+        "1280-light-secours-fr-retour.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(26, 26, 26)",
+          "bg": "rgb(236, 236, 236)",
+          "ratio": 14.73
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#66712E",
+        "--c-stage": "#2F7D5B",
+        "--c-memoire": "#9B427A",
+        "--c-perso": "#7A7F8C",
+        "--x1": "#2A7F95",
+        "--x2": "#A84A72",
+        "--x3": "#9A7A2C",
+        "--x4": "#7C5A45",
+        "--x5": "#4B8240",
+        "--x6": "#A33D52"
+      },
+      "ok": true
+    },
+    {
+      "width": 900,
+      "theme": "dark",
+      "fallback": false,
+      "lang": "fr",
+      "name": "900-dark-react-fr",
+      "captures": [
+        "900-dark-react-fr-accueil.png",
+        "900-dark-react-fr-agenda.png",
+        "900-dark-react-fr-ajout.png",
+        "900-dark-react-fr-ajout-clavier-simule.png",
+        "900-dark-react-fr-confirmation.png",
+        "900-dark-react-fr-retour.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(242, 242, 242)",
+          "bg": "rgb(42, 42, 42)",
+          "ratio": 12.82
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#AAB76D",
+        "--c-stage": "#6FBF98",
+        "--c-memoire": "#D286B5",
+        "--c-perso": "#A3A7B2",
+        "--x1": "#6FC3D6",
+        "--x2": "#D98AAE",
+        "--x3": "#D9B862",
+        "--x4": "#C49A80",
+        "--x5": "#8CC57E",
+        "--x6": "#E08A9A"
+      },
+      "ok": true
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "fallback": false,
+      "lang": "fr",
+      "name": "320-dark-react-fr",
+      "captures": [
+        "320-dark-react-fr-accueil.png",
+        "320-dark-react-fr-agenda.png",
+        "320-dark-react-fr-ajout.png",
+        "320-dark-react-fr-ajout-clavier-simule.png",
+        "320-dark-react-fr-confirmation.png",
+        "320-dark-react-fr-retour.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(242, 242, 242)",
+          "bg": "rgb(42, 42, 42)",
+          "ratio": 12.82
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#AAB76D",
+        "--c-stage": "#6FBF98",
+        "--c-memoire": "#D286B5",
+        "--c-perso": "#A3A7B2",
+        "--x1": "#6FC3D6",
+        "--x2": "#D98AAE",
+        "--x3": "#D9B862",
+        "--x4": "#C49A80",
+        "--x5": "#8CC57E",
+        "--x6": "#E08A9A"
+      },
+      "ok": true
+    },
+    {
+      "width": 320,
+      "theme": "light",
+      "fallback": false,
+      "lang": "fr",
+      "name": "320-light-react-fr",
+      "captures": [
+        "320-light-react-fr-accueil.png",
+        "320-light-react-fr-agenda.png",
+        "320-light-react-fr-ajout.png",
+        "320-light-react-fr-ajout-clavier-simule.png",
+        "320-light-react-fr-confirmation.png",
+        "320-light-react-fr-retour.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(26, 26, 26)",
+          "bg": "rgb(236, 236, 236)",
+          "ratio": 14.73
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#66712E",
+        "--c-stage": "#2F7D5B",
+        "--c-memoire": "#9B427A",
+        "--c-perso": "#7A7F8C",
+        "--x1": "#2A7F95",
+        "--x2": "#A84A72",
+        "--x3": "#9A7A2C",
+        "--x4": "#7C5A45",
+        "--x5": "#4B8240",
+        "--x6": "#A33D52"
+      },
+      "ok": true
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "fallback": false,
+      "lang": "en",
+      "name": "390-dark-react-en",
+      "captures": [
+        "390-dark-react-en-accueil.png",
+        "390-dark-react-en-agenda.png",
+        "390-dark-react-en-ajout.png",
+        "390-dark-react-en-ajout-clavier-simule.png",
+        "390-dark-react-en-confirmation.png",
+        "390-dark-react-en-retour.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(242, 242, 242)",
+          "bg": "rgb(42, 42, 42)",
+          "ratio": 12.82
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#AAB76D",
+        "--c-stage": "#6FBF98",
+        "--c-memoire": "#D286B5",
+        "--c-perso": "#A3A7B2",
+        "--x1": "#6FC3D6",
+        "--x2": "#D98AAE",
+        "--x3": "#D9B862",
+        "--x4": "#C49A80",
+        "--x5": "#8CC57E",
+        "--x6": "#E08A9A"
+      },
+      "ok": true
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "fallback": false,
+      "lang": "en",
+      "name": "390-light-react-en",
+      "captures": [
+        "390-light-react-en-accueil.png",
+        "390-light-react-en-agenda.png",
+        "390-light-react-en-ajout.png",
+        "390-light-react-en-ajout-clavier-simule.png",
+        "390-light-react-en-confirmation.png",
+        "390-light-react-en-retour.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(26, 26, 26)",
+          "bg": "rgb(236, 236, 236)",
+          "ratio": 14.73
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#66712E",
+        "--c-stage": "#2F7D5B",
+        "--c-memoire": "#9B427A",
+        "--c-perso": "#7A7F8C",
+        "--x1": "#2A7F95",
+        "--x2": "#A84A72",
+        "--x3": "#9A7A2C",
+        "--x4": "#7C5A45",
+        "--x5": "#4B8240",
+        "--x6": "#A33D52"
+      },
+      "ok": true
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "fallback": false,
+      "lang": "nl",
+      "name": "390-dark-react-nl",
+      "captures": [
+        "390-dark-react-nl-accueil.png",
+        "390-dark-react-nl-agenda.png",
+        "390-dark-react-nl-ajout.png",
+        "390-dark-react-nl-ajout-clavier-simule.png",
+        "390-dark-react-nl-confirmation.png",
+        "390-dark-react-nl-retour.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(242, 242, 242)",
+          "bg": "rgb(42, 42, 42)",
+          "ratio": 12.82
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#AAB76D",
+        "--c-stage": "#6FBF98",
+        "--c-memoire": "#D286B5",
+        "--c-perso": "#A3A7B2",
+        "--x1": "#6FC3D6",
+        "--x2": "#D98AAE",
+        "--x3": "#D9B862",
+        "--x4": "#C49A80",
+        "--x5": "#8CC57E",
+        "--x6": "#E08A9A"
+      },
+      "ok": true
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "fallback": false,
+      "lang": "nl",
+      "name": "390-light-react-nl",
+      "captures": [
+        "390-light-react-nl-accueil.png",
+        "390-light-react-nl-agenda.png",
+        "390-light-react-nl-ajout.png",
+        "390-light-react-nl-ajout-clavier-simule.png",
+        "390-light-react-nl-confirmation.png",
+        "390-light-react-nl-retour.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(26, 26, 26)",
+          "bg": "rgb(236, 236, 236)",
+          "ratio": 14.73
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#66712E",
+        "--c-stage": "#2F7D5B",
+        "--c-memoire": "#9B427A",
+        "--c-perso": "#7A7F8C",
+        "--x1": "#2A7F95",
+        "--x2": "#A84A72",
+        "--x3": "#9A7A2C",
+        "--x4": "#7C5A45",
+        "--x5": "#4B8240",
+        "--x6": "#A33D52"
+      },
+      "ok": true
+    }
+  ],
+  "errors": []
+}

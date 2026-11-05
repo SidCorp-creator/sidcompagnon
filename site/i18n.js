@@ -460,3 +460,27 @@ const PATS_NL=[
  [/^Le serveur de l'horaire a répondu (\d+)$/, "De roosterserver antwoordde $1"],
  [/^Semaine du (.+) au (.+)$/, "Week van $1 tot $2"],
 ];
+
+// Élan : marques propres conservées en FR/EN/NL ; rôles et contrôles traduits.
+Object.assign(DICT,{"Agenda, tâches, focus": "Calendar, tasks, focus", "Sport et alimentation": "Training and nutrition", "Notes, documents, mots de passe": "Notes, documents, passwords", "Tes réglages": "Your settings", "Écris, classe et protège": "Write, organise and protect", "Entraîne-toi, mange bien": "Train and eat well", "activités restantes aujourd'hui": "activities left today", "kcal restantes aujourd'hui": "kcal left today", "activités réalisées": "activities completed", "Activités réalisées": "Activities completed", "Toutes les apps": "All apps", "Calendrier et toutes les dates": "Calendar and all dates", "Choisir un jour": "Choose a day", "Rien de prévu ce jour-ci": "Nothing planned for this day", "L'activité a changé : elle est conservée": "The activity has changed: it has been kept", "Je veux utiliser ": "I want to use ", "Sid Journée — discussion avec Claude": "Sid Journée — chat with Claude", "Sid Forme — Nutrition": "Sid Forme — Nutrition", "Sid Forme — Musculation": "Sid Forme — Strength training", "Sid Coffre — discussion avec Claude": "Sid Coffre — chat with Claude"});
+Object.assign(DICT_NL,{"Agenda, tâches, focus": "Agenda, taken, focus", "Sport et alimentation": "Sport en voeding", "Notes, documents, mots de passe": "Notities, documenten, wachtwoorden", "Tes réglages": "Je instellingen", "Écris, classe et protège": "Schrijf, orden en bescherm", "Entraîne-toi, mange bien": "Train en eet gezond", "activités restantes aujourd'hui": "activiteiten over vandaag", "kcal restantes aujourd'hui": "kcal over vandaag", "activités réalisées": "activiteiten voltooid", "Activités réalisées": "Voltooide activiteiten", "Toutes les apps": "Alle apps", "Calendrier et toutes les dates": "Kalender en alle datums", "Choisir un jour": "Kies een dag", "Rien de prévu ce jour-ci": "Niets gepland voor deze dag", "L'activité a changé : elle est conservée": "De activiteit is gewijzigd en blijft bewaard", "Je veux utiliser ": "Ik wil werken met ", "Sid Journée — discussion avec Claude": "Sid Journée — gesprek met Claude", "Sid Forme — Nutrition": "Sid Forme — Voeding", "Sid Forme — Musculation": "Sid Forme — Krachttraining", "Sid Coffre — discussion avec Claude": "Sid Coffre — gesprek met Claude"});
+for(const dict of [DICT,DICT_NL])for(const k of Object.keys(dict)){if(/sid'agenda|sid'fit|sid'note/.test(k))dict[k]=dict[k].replaceAll("sid'agenda","Sid Journée").replaceAll("sid'fit","Sid Forme").replaceAll("sid'note","Sid Coffre");}
+
+Object.assign(DICT,{"Activité ajoutée":"Activity added","Tu utilises déjà Sid'compagnon comme application.":"You are already using Sid'compagnon as an app."});
+Object.assign(DICT_NL,{"Activité ajoutée":"Activiteit toegevoegd","Tu utilises déjà Sid'compagnon comme application.":"Je gebruikt Sid'compagnon al als app."});
+
+Object.assign(DICT,{"séries réalisées aujourd'hui":"sets completed today","Progression du jour":"Today’s progress"});
+Object.assign(DICT_NL,{"séries réalisées aujourd'hui":"sets voltooid vandaag","Progression du jour":"Voortgang vandaag"});
+
+Object.assign(DICT,{"Mémoire Sid Forme":"Sid Forme memory","Sauvegarde Sid'compagnon":"Sid'compagnon backup","Ce fichier n'est pas une sauvegarde Sid'compagnon":"This file is not a Sid'compagnon backup"});
+Object.assign(DICT_NL,{"Mémoire Sid Forme":"Sid Forme-geheugen","Sauvegarde Sid'compagnon":"Sid'compagnon-back-up","Ce fichier n'est pas une sauvegarde Sid'compagnon":"Dit bestand is geen Sid'compagnon-back-up"});
+
+Object.assign(DICT,{"Écris un titre pour cette activité":"Enter a title for this activity","Choisis une date":"Choose a date","La date de fin doit être après la date de début":"The end date must not be before the start date"});
+Object.assign(DICT_NL,{"Écris un titre pour cette activité":"Geef deze activiteit een titel","Choisis une date":"Kies een datum","La date de fin doit être après la date de début":"De einddatum mag niet vóór de begindatum liggen"});
+// Alias des phrases françaises renommées ; l’identité du connecteur (Sid'note avec S majuscule) reste intacte.
+for(const dict of [DICT,DICT_NL])for(const k of Object.keys(dict)){const next=k.replaceAll("sid'agenda","Sid Journée").replaceAll("sid'fit","Sid Forme").replaceAll("sid'note","Sid Coffre");if(next!==k&&!dict[next])dict[next]=dict[k]}
+Object.assign(DICT,{"Trois applications, un seul compte : Sid Journée pour tes journées, Sid Forme pour ton corps, Sid Coffre pour tes notes, documents et mots de passe.":"Three apps, one account: Sid Journée for your days, Sid Forme for your fitness, Sid Coffre for your notes, documents and passwords."});
+Object.assign(DICT_NL,{"Trois applications, un seul compte : Sid Journée pour tes journées, Sid Forme pour ton corps, Sid Coffre pour tes notes, documents et mots de passe.":"Drie apps, één account: Sid Journée voor je dagen, Sid Forme voor je conditie, Sid Coffre voor je notities, documenten en wachtwoorden."});
+
+Object.assign(DICT,{"Faite":"Done","Marquer comme faite":"Mark as done"});
+Object.assign(DICT_NL,{"Faite":"Voltooid","Marquer comme faite":"Markeren als voltooid"});

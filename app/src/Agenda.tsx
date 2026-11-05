@@ -103,3 +103,13 @@ export function AgendaList({ list, search, open, today, color, icalCat, i18n }: 
     })}
   </>;
 }
+
+// Élan : journée en liste, avec les mêmes data-* que le secours shell.
+export interface JourneyVM {day:string;label:string;week:{day:string;label:string;num:number}[];items:{id:string;title:string;time:string;endTime:string;typeColor:string;meta:string;past:boolean;current:boolean;fresh:boolean;ical:boolean;done:boolean}[];check:string;more:string;prev:string;next:string;i18n:AgI18n}
+export function JourneyDay({day,label,week,items,check,more,prev,next,i18n}:JourneyVM){const {tr,L}=i18n;
+ return <><div className="journey-week" role="group" aria-label={tr(L("Choisir un jour"))}>{week.map(d=><button type="button" key={d.day} data-elan-day={d.day} aria-pressed={day===d.day}><span>{d.label}</span><b>{d.num}</b></button>)}</div>
+ <button type="button" id="taskAdd" className="btn add-act">{tr(L("Ajouter une activité"))}</button><div className="journey-date"><button type="button" data-elan-day={prev} aria-label={tr(L("Jour précédent"))}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button><h2>{label}</h2><button type="button" data-elan-day={next} aria-label={tr(L("Jour suivant"))}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button></div>
+ <div className="journey-list">{items.length?items.map(t=><div key={t.id} className={`journey-row${t.past?' past':''}${t.current?' current':''}${t.fresh?' fresh':''}`}>
+ <span className="journey-time"><span className={t.time?undefined:"all-day"}>{t.time||tr(L("Toute la journée"))}</span>{t.endTime?<small>{t.endTime}</small>:null}</span><button type="button" className="journey-content" {...(t.ical?{'data-icalinfo':t.id}:{'data-edit':`task:${t.id}`})}><b className="notr">{t.title}</b><span className="muted notr">{t.typeColor?<i className="journey-type-dot" aria-hidden="true" style={{background:`var(${t.typeColor})`}}/>:null}{t.meta}</span></button>
+ {t.ical?<span aria-label={tr(L("Calendrier relié"))}/>:<button type="button" className={`journey-state${t.done?" done":""}`} aria-pressed={t.done} data-st={t.id} data-s={t.done?'fait':'à faire'} aria-label={tr(L(t.done?'Faite':'Marquer comme faite'))} dangerouslySetInnerHTML={{__html:t.done?check:more}}/>}</div>):<div className="journey-empty">{tr(L("Rien de prévu ce jour-ci"))}</div>}</div></>;
+}

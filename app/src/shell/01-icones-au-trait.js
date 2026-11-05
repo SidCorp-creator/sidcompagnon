@@ -1,5 +1,8 @@
 /* ---------- icônes au trait (v24, style Graphite : plus aucun émoji dans l'interface) ---------- */
 const ICS={
+  check:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8 12 3 3 5-6"/>',
+  chev:'<path d="m9 5 7 7-7 7"/>',
+  message:'<path d="M5 5h14v11H9l-4 4V5z"/>',
   search:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
   bell:'<path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3H4a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/>',
   calendar:'<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/>',
@@ -32,7 +35,7 @@ const ICS={
   globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
   grad:'<path d="M22 9 12 4 2 9l10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/>',
   trash:'<path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>'};
-const IC=n=>ICS[n]?`<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICS[n]}</svg>`:"";
+const IC=n=>ICS[n]?`<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICS[n]}</svg>`:"";
 // initiales d'un plat à la place de l'émoji : « Poulet riz » → « PR »
 const mono=s=>{const w=String(s||"").normalize("NFC").split(/[\s,'’-]+/).filter(x=>x&&/^\p{L}/u.test(x)&&!/^(de|du|des|la|le|les|au|aux|et|à|a|en|of|the|and|with|avec)$/i.test(x));return (w.length?w.slice(0,2).map(x=>x[0]).join(""):"·").toUpperCase()};
 const hydrateIcons=root=>(root||document).querySelectorAll("i.ic[data-i]").forEach(e=>{if(!e.firstChild)e.innerHTML=IC(e.dataset.i)});

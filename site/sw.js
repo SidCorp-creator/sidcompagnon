@@ -1,4 +1,4 @@
-const CACHE = "sidnote-v74-5";
+const CACHE = "sidnote-v75-0";
 const LIB = "sidnote-lib-2"; // lecteur PDF (pdf.js), gardé entre les versions
 const FILES = ["./", "./index.html", "./app.css", "./design.css", "./ident.css", "./fonts.css", "./i18n.js", "./exercices.js", "./exercices-aide.js", "./react/core.js", "./app.js", "./react/islands.js", "./manifest.webmanifest", "./icons/home.svg", "./icons/agenda.svg", "./icons/fit.svg", "./icons/note.svg", "./apple-touch-icon.png", "./icon-192.png", "./icon-512.png", "./logo-180.png", "./logo-192.png", "./logo-512.png", "./logo-32.png", "./favicon.svg", "./maskable-512.png"];
 
@@ -38,7 +38,7 @@ self.addEventListener("fetch", e => {
 self.addEventListener("push", e => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch (err) { d = { body: e.data && e.data.text() }; }
-  e.waitUntil(self.registration.showNotification(d.title || "sid'note", {
+  e.waitUntil(self.registration.showNotification(d.title || "Sid'compagnon", {
     body: d.body || "",
     icon: "logo-192.png",
     badge: "logo-192.png",

@@ -1,0 +1,84 @@
+{
+  "statut": "palette finale validée et appliquée",
+  "seuil_graphique": 3,
+  "palette_finale": [
+    {
+      "token": "--c-event",
+      "clair": "#0F8B8D",
+      "sombre": "#0F8B8D",
+      "contraste_clair_min": 3.49,
+      "contraste_sombre_min": 3.48
+    },
+    {
+      "token": "--c-cours",
+      "clair": "#66712E",
+      "sombre": "#AAB76D",
+      "contraste_clair_min": 4.48,
+      "contraste_sombre_min": 6.63
+    },
+    {
+      "token": "--c-stage",
+      "clair": "#2F7D5B",
+      "sombre": "#6FBF98",
+      "contraste_clair_min": 4.23,
+      "contraste_sombre_min": 6.55
+    },
+    {
+      "token": "--c-memoire",
+      "clair": "#9B427A",
+      "sombre": "#D286B5",
+      "contraste_clair_min": 5.15,
+      "contraste_sombre_min": 5.34
+    },
+    {
+      "token": "--c-perso",
+      "clair": "#7A7F8C",
+      "sombre": "#A3A7B2",
+      "contraste_clair_min": 3.39,
+      "contraste_sombre_min": 5.97
+    },
+    {
+      "token": "--x1",
+      "clair": "#2A7F95",
+      "sombre": "#6FC3D6",
+      "contraste_clair_min": 3.89,
+      "contraste_sombre_min": 7.14
+    },
+    {
+      "token": "--x2",
+      "clair": "#A84A72",
+      "sombre": "#D98AAE",
+      "contraste_clair_min": 4.57,
+      "contraste_sombre_min": 5.6
+    },
+    {
+      "token": "--x3",
+      "clair": "#9A7A2C",
+      "sombre": "#D9B862",
+      "contraste_clair_min": 3.42,
+      "contraste_sombre_min": 7.51
+    },
+    {
+      "token": "--x4",
+      "clair": "#7C5A45",
+      "sombre": "#C49A80",
+      "contraste_clair_min": 5.22,
+      "contraste_sombre_min": 5.66
+    },
+    {
+      "token": "--x5",
+      "clair": "#4B8240",
+      "sombre": "#8CC57E",
+      "contraste_clair_min": 3.89,
+      "contraste_sombre_min": 7.11
+    },
+    {
+      "token": "--x6",
+      "clair": "#A33D52",
+      "sombre": "#E08A9A",
+      "contraste_clair_min": 5.31,
+      "contraste_sombre_min": 5.65
+    }
+  ],
+  "donnees_modifiees": false
+}

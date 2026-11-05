@@ -12,7 +12,7 @@ function toast(m,ms){const t=$("toast");if(!toastIsl(t,{m:String(m),label:"",onA
 /** @type {any} */ toast.h=undefined; // minuterie du message (déclarée pour TypeScript)
 // v34 : message avec un bouton (ex. « Annuler »)
 function toastAct(m,label,fn,ms){const t=$("toast");let used=false;const act=()=>{if(used)return;used=true;t.hidden=true;clearTimeout(toast.h);fn()};
-  if(!toastIsl(t,{m,label,onAct:act})){t.innerHTML=`<span>${esc(L(m))}</span><button type="button" class="toast-act">${esc(L(label))}</button>`;t.querySelector(".toast-act").addEventListener("click",act,{once:true})}t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,ms||5000)}
+  if(!toastIsl(t,{m,label,onAct:act})){t.innerHTML=`<svg class="toast-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>${esc(L(m))}</span><button type="button" class="toast-act">${esc(L(label))}</button>`;t.querySelector(".toast-act").addEventListener("click",act,{once:true})}t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,ms||5000)}
 // v34 : suppression immédiate, « Annuler » pendant 5 s (plus de double appui pour confirmer).
 // L'annulation remet l'état d'avant ; data.res annule la pierre tombale, même si elle est déjà partie vers les autres appareils.
 // o.later : action définitive (fichiers en ligne…) faite seulement quand on ne peut plus annuler ; o.revert : ce que la fusion ne remet pas seule.
@@ -50,5 +50,5 @@ const LOGO=(app,cls)=>`<img class="logo ${cls||""}" src="icons/${LOGO_APPS[app]?
 
 // v42 : animation d'ouverture (2 s) : le logo Sid'compagnon, puis les trois apps ; elle ne bloque jamais les touchers
 if($("authLogo"))$("authLogo").innerHTML=LOGO("home");
-(()=>{const sp=$("splash");if(!sp)return;$("spMark").innerHTML=LOGO("home");$("spApps").innerHTML=["agenda","fit","note"].map(a=>`<span data-app="${a}">${LOGO(a)}</span>`).join("");
+(()=>{const sp=$("splash");if(!sp)return;if(document.documentElement.dataset.ds==="elan"){sp.remove();return}$("spMark").innerHTML=LOGO("home");$("spApps").innerHTML=["agenda","fit","note"].map(a=>`<span data-app="${a}">${LOGO(a)}</span>`).join("");
   const quick=matchMedia("(prefers-reduced-motion: reduce)").matches;sp.classList.add("go");setTimeout(()=>{sp.remove();bootTop()},quick?400:2100)})();

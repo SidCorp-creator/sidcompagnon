@@ -1,0 +1,29 @@
+Aperçu : http://localhost:8766  (faux Supabase sur :8790, Ctrl+C pour arrêter)
+ERREURS :
+v38 : coffre pas créé
+v38 : Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+v38 : Face ID ne s'ouvre pas tout seul
+v38 : bouton Face ID absent sur le clavier du code
+v44.7 PDF mobile : le PDF ne s'affiche pas
+v44.7 PDF mobile : note PDF mal créée (dossier, pages)
+v44.7 PDF mobile : annotations pas retrouvées à la réouverture
+v44.7 PDF mobile : Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+v44.7 PDF mobile : PDF ou annotations perdus après rechargement
+v44.7 PDF pc : Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+v44.7 PDF pc : le PDF ne s'affiche pas
+v44.7 PDF pc : note PDF mal créée (dossier, pages)
+v44.7 PDF pc : annotations pas retrouvées à la réouverture
+v44.7 PDF pc : Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+v44.7 PDF pc : PDF ou annotations perdus après rechargement
+v45 mobile : PDF pas affiché
+v45 pc : Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+v45 pc : PDF pas affiché
+v65 mobile : PDF pas affiché
+v65 mobile : zone sélectionnée pas marquée
+v65 pc : PDF pas affiché
+v65 pc : zone sélectionnée pas marquée

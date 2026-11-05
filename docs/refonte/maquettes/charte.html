@@ -1,0 +1,385 @@
+<title>Charte Élan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700;1,800&display=swap">
+<style>
+:root{--pg:#F2F2F0;--pg-s:#FFFFFF;--pg-ink:#1A1A1A;--pg-mut:#5E5E5E;--pg-line:#DADAD6;--pg-chip:#E8E8E4}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--pg:#0E0E0E;--pg-s:#181818;--pg-ink:#F2F2F2;--pg-mut:#A6A6A6;--pg-line:#2C2C2C;--pg-chip:#242424;color-scheme:dark}}
+:root[data-theme="dark"]{--pg:#0E0E0E;--pg-s:#181818;--pg-ink:#F2F2F2;--pg-mut:#A6A6A6;--pg-line:#2C2C2C;--pg-chip:#242424;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--pg);color:var(--pg-ink);font:16px/1.5 "Barlow",system-ui,sans-serif;margin:0}
+.wrap{max-width:1280px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 80px;display:flex;flex-direction:column;gap:64px}
+h1,h2,h3{font-family:"Barlow Condensed","Barlow",sans-serif;margin:0;text-wrap:balance;line-height:1.05}
+h1{font-size:clamp(44px,8vw,80px);font-style:italic;font-weight:800}
+h2{font-size:34px;font-weight:800;font-style:italic}
+h3{font-size:22px;font-weight:700}
+p{margin:0;max-width:68ch}
+.lead{font-size:19px;color:var(--pg-mut)}
+.mut{color:var(--pg-mut)}
+section{display:flex;flex-direction:column;gap:20px}
+.sh{display:flex;flex-direction:column;gap:6px}
+.k{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--pg-mut)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:15px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--pg-line);vertical-align:top}
+th{font-weight:700;font-size:13px;color:var(--pg-mut)}
+code{font:14px ui-monospace,Menlo,monospace}
+.seg{display:inline-flex;background:var(--pg-chip);border-radius:999px;padding:4px;gap:4px;align-self:flex-start}
+.seg button{font:600 15px "Barlow",sans-serif;border:0;background:none;color:var(--pg-ink);padding:8px 16px;border-radius:999px;min-height:40px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-s);box-shadow:0 0 0 1px var(--pg-line)}
+.seg button:focus-visible,.btn:focus-visible{outline:2px solid var(--pg-ink);outline-offset:2px}
+.grid-apps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px}
+.appcard{background:var(--pg-s);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
+.appcard .h{background:var(--app);color:var(--on-app);padding:16px;display:flex;gap:12px;align-items:center}
+.appcard .h b{font:italic 800 30px/1 "Barlow Condensed",sans-serif;display:block}
+.appcard .h small{font-size:15px;font-weight:500}
+.appcard .b{padding:16px;display:flex;flex-direction:column;gap:10px}
+.appcard ul{margin:0;padding:0;list-style:none;display:flex;gap:8px;flex-wrap:wrap}
+.appcard li{background:var(--pg-chip);border-radius:999px;padding:6px 12px;font-weight:600;font-size:14px}
+.phones{display:flex;gap:24px;overflow-x:auto;padding-bottom:12px;scroll-snap-type:x mandatory}
+.phwrap{display:flex;flex-direction:column;gap:10px;flex:0 0 auto;scroll-snap-align:start}
+.phwrap>span{font-weight:600;font-size:14px;color:var(--pg-mut)}
+
+/* ===== Interface Élan (jetons de la charte) ===== */
+.ui{--bg:#F7F7F7;--surface:#FFFFFF;--surface-2:#ECECEC;--ink:#1A1A1A;--muted:#5E5E5E;--line:#E1E1E1;--field-line:#8A8A8A;--ok:#157A3E;--warn:#9A5B00;--err:#C81E1E;--scrim:rgba(26,26,26,.45);
+ --j:#2563EB;--j-on:#FFFFFF;--j-ink:#1D4FC4;--j-soft:#E4ECFD;
+ --f:#F25C19;--f-on:#121212;--f-ink:#B8420C;--f-soft:#FFECE2;
+ --c:#7C3AED;--c-on:#FFFFFF;--c-ink:#6527CF;--c-soft:#F0E8FE;--tile-home:#1A1A1A;
+ --font:"Barlow",system-ui,sans-serif;--display:"Barlow Condensed","Barlow",sans-serif;
+ font-family:var(--font);color:var(--ink);background:var(--bg)}
+.ui.dk{--bg:#121212;--surface:#1E1E1E;--surface-2:#2A2A2A;--ink:#F2F2F2;--muted:#A6A6A6;--line:#2E2E2E;--field-line:#6E6E6E;--ok:#4CC27A;--warn:#F2B04A;--err:#FF6B6B;--scrim:rgba(0,0,0,.6);
+ --j-ink:#8FB0F7;--j-soft:#141D33;--f-ink:#FF9A6B;--f-soft:#341708;--c-ink:#B99AF7;--c-soft:#22163A;--tile-home:#2A2A2A;color-scheme:dark}
+[data-app="j"]{--app:var(--j);--on-app:var(--j-on);--app-ink:var(--j-ink);--app-soft:var(--j-soft)}
+[data-app="f"]{--app:var(--f);--on-app:var(--f-on);--app-ink:var(--f-ink);--app-soft:var(--f-soft)}
+[data-app="c"]{--app:var(--c);--on-app:var(--c-on);--app-ink:var(--c-ink);--app-soft:var(--c-soft)}
+.appcard[data-app="j"]{--app:#2563EB;--on-app:#FFFFFF}.appcard[data-app="f"]{--app:#F25C19;--on-app:#121212}.appcard[data-app="c"]{--app:#7C3AED;--on-app:#FFFFFF}
+.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.ph{width:min(390px,calc(100vw - 32px));height:800px;border-radius:36px;overflow:hidden;display:flex;flex-direction:column;position:relative;box-shadow:0 0 0 1px var(--pg-line);background:var(--bg)}
+.sb{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;font-weight:600;font-size:15px}
+.sb i{width:24px;height:11px;border:1.5px solid currentColor;border-radius:3px;opacity:.8}
+.band{background:var(--app);color:var(--on-app);flex:none}
+.hd{display:flex;align-items:center;gap:10px;padding:4px 12px 8px}
+.hb{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;border:0;background:none;color:inherit;flex:none}
+.hd-t{display:flex;gap:10px;align-items:center;flex:1;min-width:0}
+.hd-n{display:flex;flex-direction:column;min-width:0;line-height:1.15}
+.hd-n b{font-size:17px;font-weight:700}
+.hd-n small{font-size:13px;font-weight:500;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ask{height:36px;border-radius:999px;background:var(--on-app);color:var(--app);border:0;display:flex;align-items:center;gap:6px;padding:0 14px 0 10px;font:600 15px var(--font);flex:none;position:relative}
+.ask::after{content:"";position:absolute;inset:-4px 0}
+.ask .ic{width:18px;height:18px}
+.ttl{font:italic 800 44px/1 var(--display);padding:4px 20px 6px;margin:0}
+.prog{padding:4px 20px 18px;display:flex;flex-direction:column;gap:8px}
+.prog b{font:700 19px/1.1 var(--display)}
+.bar{height:6px;border-radius:99px;background:rgba(0,0,0,.18);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--on-app);border-radius:inherit}
+.band.compact .hd{padding-bottom:4px}
+.band.compact .ttl{font-size:32px;padding-bottom:12px}
+.body{flex:1;overflow:hidden;padding:16px 16px 0;display:flex;flex-direction:column;gap:14px}
+.body>*{flex-shrink:0}
+.nv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:var(--surface);border-top:1px solid var(--line);padding:0 0 22px;flex:none}
+.nv a{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 4px;font-size:12px;font-weight:600;color:var(--muted);min-height:56px;box-shadow:inset 0 3px 0 transparent}
+.nv a.on{color:var(--ink);font-weight:700;box-shadow:inset 0 3px 0 var(--app)}
+.nv a.on .ic{color:var(--app-ink)}
+.blk{background:var(--surface);border-radius:16px;padding:4px 16px}
+.row2{display:flex;gap:8px}
+.pri{height:48px;border-radius:10px;background:var(--app);color:var(--on-app);border:0;font:600 16px var(--font);display:flex;align-items:center;justify-content:center;gap:8px;padding:0 18px;flex:1}
+.sec{height:48px;border-radius:10px;background:var(--surface-2);color:var(--ink);border:0;font:600 16px var(--font);display:flex;align-items:center;justify-content:center;gap:8px;padding:0 16px}
+.wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.wk span{display:flex;flex-direction:column;align-items:center;padding:6px 0;border-radius:10px;font-size:12px;color:var(--muted);font-weight:600}
+.wk b{font:700 20px/1.1 var(--display);color:var(--ink)}
+.wk span.on{background:var(--app);color:var(--on-app)}.wk span.on b{color:var(--on-app)}
+.tl{list-style:none;margin:0;padding:0}
+.tl li{display:grid;grid-template-columns:52px minmax(0,1fr);gap:12px;padding:10px 0;border-bottom:1px solid var(--line);min-height:56px;align-items:start}
+.tl li:last-child{border-bottom:0}
+.tl .t{font:700 18px/1.1 var(--display);font-variant-numeric:tabular-nums;display:flex;flex-direction:column}
+.tl .t small{font:600 13px var(--font);color:var(--muted)}
+.tl b{font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tl .m{font-size:14px;color:var(--muted);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tl li.past{color:var(--muted)}.tl li.past .t{color:var(--muted)}
+.tl li.now{box-shadow:inset 3px 0 0 var(--app);margin-left:-16px;padding-left:16px}
+.tag{font-size:12px;font-weight:700;background:var(--app-soft);color:var(--app-ink);padding:2px 8px;border-radius:99px}
+.xl{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;background:var(--surface-2);color:var(--ink);padding:2px 8px 2px 4px;border-radius:99px}
+.xl svg{width:16px;height:16px}
+.sct{font:700 22px/1.1 var(--display);display:flex;justify-content:space-between;align-items:baseline}
+.sct small{font:500 14px var(--font);color:var(--muted)}
+/* accueil */
+.hello{padding:8px 20px 4px;display:flex;justify-content:space-between;align-items:center}
+.hello h3{font:italic 800 40px/1 var(--display)}
+.hello span{font-size:15px;color:var(--muted);font-weight:500}
+.hc{background:var(--surface);border-radius:18px;overflow:hidden}
+.hc-h{background:var(--app);color:var(--on-app);display:flex;align-items:center;gap:10px;padding:0 14px;height:56px}
+.hc-h div{display:flex;flex-direction:column;line-height:1.1;min-width:0}
+.hc-h b{font:italic 800 24px/1 var(--display)}
+.hc-h small{font-size:13px;font-weight:500}
+.hc-h .go{margin-left:auto}
+.hc-b{padding:10px 14px 12px;display:flex;flex-direction:column;gap:8px}
+.hc-k{display:flex;align-items:baseline;gap:8px}
+.hc-k b{font:800 30px/1 var(--display);font-variant-numeric:tabular-nums}
+.hc-k span{font-size:14px;color:var(--muted)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border-radius:99px;padding:0 12px 0 8px;height:34px;font-size:14px;font-weight:600;color:var(--ink)}
+.chip .ic{width:18px;height:18px;color:var(--app-ink)}
+/* muscu */
+.ex{background:var(--surface);border-radius:16px;padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+.ex-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ex-h b{font:700 20px/1.1 var(--display)}
+.ex-h span{font-size:14px;color:var(--muted)}
+.sets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.set{border-radius:10px;background:var(--surface-2);padding:8px 4px;text-align:center;font:700 17px/1.1 var(--display);font-variant-numeric:tabular-nums}
+.set small{display:block;font:500 12px var(--font);color:var(--muted)}
+.set.done{background:var(--app);color:var(--on-app)}.set.done small{color:var(--on-app)}
+.set.next{box-shadow:inset 0 0 0 2px var(--app)}
+/* notes */
+.srch{height:48px;border-radius:10px;background:var(--surface);border:1.5px solid var(--field-line);display:flex;align-items:center;gap:8px;padding:0 12px;color:var(--muted);font-size:16px}
+.nl li{grid-template-columns:36px minmax(0,1fr)}
+.nl .ni{width:36px;height:36px;border-radius:10px;background:var(--app-soft);color:var(--app-ink);display:grid;place-items:center}
+.nl .ni .ic{width:20px;height:20px}
+.lockrow{display:flex;gap:6px;align-items:center;font-size:12px;font-weight:700;color:var(--muted)}
+.lockrow svg{width:14px;height:14px}
+/* desk */
+.desk{border-radius:20px;overflow:hidden;box-shadow:0 0 0 1px var(--pg-line);display:grid;grid-template-columns:240px minmax(0,1fr);min-height:520px}
+.desk aside{background:var(--surface);padding:20px 14px;display:flex;flex-direction:column;gap:6px;border-right:1px solid var(--line)}
+.desk aside .ap{display:flex;align-items:center;gap:10px;font-weight:700;padding:8px;border-radius:10px}
+.desk aside .fn{display:flex;align-items:center;gap:10px;padding:8px 8px 8px 46px;font-size:15px;color:var(--muted);font-weight:600;border-radius:10px}
+.desk aside .fn.on{background:var(--app-soft);color:var(--ink)}
+.desk aside .fn.on .ic{color:var(--app-ink)}
+.desk main{display:flex;flex-direction:column;min-width:0}
+.desk .band .hd{padding:16px 28px 4px}
+.desk .ttl{padding:0 32px 4px}
+.desk .prog{padding:4px 32px 20px;max-width:560px}
+.desk .dbody{padding:24px 32px;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px}
+@media (max-width:860px){.desk{grid-template-columns:minmax(0,1fr)}.desk aside{display:none}.desk .dbody{grid-template-columns:minmax(0,1fr)}}
+/* composants */
+.comp{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.cbox{border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 0 0 1px var(--pg-line)}
+.cbox h3{font-size:18px}
+.cbox .lbl{font-size:13px;font-weight:600;color:var(--muted)}
+.st-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.st-row .pri{flex:none}
+.pri.press{filter:brightness(.92)}
+.pri.focus{outline:2px solid var(--ink);outline-offset:2px}
+.pri.dis{opacity:.45}
+.spin{width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(1turn)}}
+.fld{display:flex;flex-direction:column;gap:6px}
+.fld label{font-weight:600;font-size:15px}
+.fld .in{height:48px;border-radius:10px;background:var(--surface);border:1.5px solid var(--field-line);padding:0 12px;display:flex;align-items:center;font-size:16px}
+.fld .in.f{border-color:var(--ink);outline:2px solid var(--app);outline-offset:1px}
+.fld .in.e{border-color:var(--err)}
+.fld .er{color:var(--err);font-size:14px;font-weight:600;display:flex;gap:6px;align-items:center}
+.fld .er svg{width:16px;height:16px}
+.toast{background:var(--ink);color:var(--bg);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px}
+.toast .ok{width:22px;height:22px;border-radius:50%;background:var(--ok);display:grid;place-items:center;color:#fff;flex:none}
+.toast .ok svg{width:14px;height:14px;stroke-width:3}
+.toast a{margin-left:auto;text-decoration:underline;font-weight:700}
+.empty{text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center;padding:12px}
+.empty p{color:var(--muted)}
+/* palette */
+.pal{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:12px}
+.sw{border-radius:14px;overflow:hidden;background:var(--pg-s);box-shadow:0 0 0 1px var(--pg-line)}
+.sw .c{height:84px;padding:12px;font:italic 800 24px var(--display,"Barlow Condensed");display:flex;align-items:flex-end}
+.sw .t{padding:10px 12px;font-size:14px;display:flex;flex-direction:column}
+.sw .t code{font-size:13px}
+/* logos */
+.lg-row{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end;padding:20px;border-radius:18px}
+.lg-row figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+/* motion */
+.mo{display:flex;flex-direction:column;gap:14px;max-width:420px}
+.mo .bar{height:12px;background:var(--surface-2)}
+.mo .bar i{background:var(--app);transition:width 380ms cubic-bezier(.3,1.35,.5,1)}
+.roll{height:30px;overflow:hidden;display:inline-block;vertical-align:bottom}
+.roll span{display:block;font:800 28px/30px var(--display);transition:transform 260ms cubic-bezier(.3,1.35,.5,1)}
+.mo.rm .bar i,.mo.rm .roll span{transition-duration:1ms}
+.plus{font:italic 800 22px var(--display);color:var(--app-ink);opacity:0;transform:translateY(6px);transition:opacity 160ms,transform 260ms cubic-bezier(.3,1.35,.5,1);display:inline-block}
+.plus.on{opacity:1;transform:none}
+.mo.rm .plus{transition-duration:1ms}
+@media (prefers-reduced-motion:reduce){.mo .bar i,.roll span,.plus{transition-duration:1ms!important}.spin{animation:none}}
+.chk{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.chk li{display:flex;gap:10px;align-items:flex-start}
+.chk li::before{content:"";flex:none;width:8px;height:8px;margin-top:9px;border-radius:2px;background:var(--pg-ink)}
+.q{background:var(--pg-s);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:10px;box-shadow:0 0 0 1px var(--pg-line)}
+</style>
+
+<div class="wrap">
+  <header class="sh" style="gap:14px">
+    <span class="k">Sid'compagnon · Charte, version 1 · 5 nov. 2026</span>
+    <h1>Élan</h1>
+    <p class="lead">La direction que vous avez choisie, appliquée avec vos décisions : les nouveaux noms, le bouton Claude et une seule apparence par app. Les corrections de Codex sont intégrées. Rien n'est encore modifié dans l'app.</p>
+  </header>
+
+  <section aria-labelledby="s-apps">
+    <div class="sh"><span class="k">1 · Qui sert à quoi</span><h2 id="s-apps">Trois apps, trois rôles</h2>
+    <p class="mut">Chaque app a sa couleur, son pictogramme, son nom et sa phrase. Ensemble, ils disent à quoi elle sert.</p></div>
+    <div class="grid-apps" id="apps"></div>
+  </section>
+
+  <section aria-labelledby="s-ecrans">
+    <div class="sh"><span class="k">2 · Écrans</span><h2 id="s-ecrans">Sur un iPhone, à taille réelle</h2>
+    <p class="mut">L'accueil montre les trois apps et toutes leurs fonctions sans défiler. Dans une app, le bandeau rappelle toujours le nom, le rôle et la progression du jour. Faites défiler les écrans vers la droite.</p></div>
+    <div class="seg" role="group" aria-label="Thème des écrans"><button type="button" data-th="dk" aria-pressed="true">Sombre (par défaut)</button><button type="button" data-th="lt" aria-pressed="false">Clair</button></div>
+    <div class="phones" id="phones"></div>
+  </section>
+
+  <section aria-labelledby="s-desk">
+    <div class="sh"><span class="k">3 · Ordinateur</span><h2 id="s-desk">Barre latérale et bandeau</h2></div>
+    <div id="desk"></div>
+  </section>
+
+  <section aria-labelledby="s-logos">
+    <div class="sh"><span class="k">4 · Logos</span><h2 id="s-logos">Une tuile, un pictogramme penché</h2>
+    <p class="mut">Les pictogrammes sont au trait et penchés de 9°. Sous 24 px, on utilise une version simplifiée, sans coche ni cadenas. Il existe aussi une version en une couleur. Les fichiers SVG modifiables sont dans <code>docs/refonte/logos/</code>.</p></div>
+    <div id="logos" style="display:flex;flex-direction:column;gap:12px"></div>
+  </section>
+
+  <section aria-labelledby="s-col">
+    <div class="sh"><span class="k">5 · Couleurs</span><h2 id="s-col">Une couleur par app, des neutres, des états</h2>
+    <p class="mut">Le bandeau garde sa couleur en clair comme en sombre. Le texte posé sur l'orange de Sid Forme est toujours foncé : en blanc, il serait trop peu lisible. Les couleurs d'état (réussi, attention, erreur) n'appartiennent à aucune app et s'accompagnent toujours d'une icône.</p></div>
+    <div class="pal" id="pal"></div>
+    <div class="tbl"><table><thead><tr><th>Couple</th><th>Clair</th><th>Sombre</th><th>Seuil</th></tr></thead><tbody>
+      <tr><td>Texte sur bandeau Sid Journée</td><td>blanc / <code>#2563EB</code> 5,17</td><td>identique</td><td>4,5</td></tr>
+      <tr><td>Texte sur bandeau Sid Forme</td><td><code>#121212</code> / <code>#F25C19</code> 5,64</td><td>identique</td><td>4,5</td></tr>
+      <tr><td>Texte sur bandeau Sid Coffre</td><td>blanc / <code>#7C3AED</code> 5,70</td><td>identique</td><td>4,5</td></tr>
+      <tr><td>Texte secondaire</td><td><code>#5E5E5E</code> / <code>#F7F7F7</code> 6,05</td><td><code>#A6A6A6</code> / <code>#1E1E1E</code> 6,85</td><td>4,5</td></tr>
+      <tr><td>Icône orange sur puce</td><td><code>#B8420C</code> / <code>#ECECEC</code> 4,65</td><td><code>#FF9A6B</code> / <code>#2A2A2A</code> 6,89</td><td>3</td></tr>
+      <tr><td>Bord de champ</td><td><code>#8A8A8A</code> / blanc 3,45</td><td><code>#6E6E6E</code> / <code>#1E1E1E</code> 3,27</td><td>3</td></tr>
+      <tr><td>Erreur</td><td><code>#C81E1E</code> / <code>#F7F7F7</code> 5,36</td><td><code>#FF6B6B</code> / <code>#1E1E1E</code> 6,01</td><td>4,5</td></tr>
+    </tbody></table></div>
+  </section>
+
+  <section aria-labelledby="s-type">
+    <div class="sh"><span class="k">6 · Typographie</span><h2 id="s-type">Barlow pour lire, Barlow Condensed pour l'élan</h2>
+    <p class="mut">L'italique est réservé aux titres. Les chiffres (heures, séries, calories) restent droits et alignés. On passe de 11 polices à 2 : 337 Ko au lieu de 1,2 Mo, dont environ 180 Ko réellement chargés.</p></div>
+    <div class="ui dk" style="border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:18px" data-app="f">
+      <div><div class="lbl" style="font-size:13px;color:var(--muted);font-weight:600">Titre de bandeau · Condensed italique 800, 44 px</div><div style="font:italic 800 44px/1 var(--display)">Musculation</div></div>
+      <div><div class="lbl" style="font-size:13px;color:var(--muted);font-weight:600">Grand chiffre · Condensed droit 800, 48 px, chiffres alignés</div><div style="font:800 48px/1 var(--display);font-variant-numeric:tabular-nums">760 <span style="font:600 16px var(--font);color:var(--muted)">kcal restantes</span></div></div>
+      <div><div class="lbl" style="font-size:13px;color:var(--muted);font-weight:600">Titre de section · Condensed 700, 22 px</div><div style="font:700 22px/1.1 var(--display)">Développé couché</div></div>
+      <div><div class="lbl" style="font-size:13px;color:var(--muted);font-weight:600">Texte · Barlow 400, 16 px</div><div>Descends la barre jusqu'à la poitrine, coudes à 45°. Pause d'1 min 30 entre les séries.</div></div>
+      <div><div class="lbl" style="font-size:13px;color:var(--muted);font-weight:600">Secondaire · Barlow 500, 14 px</div><div style="font-size:14px;color:var(--muted);font-weight:500">Dernière fois : 4 × 8 à 60 kg · il y a 3 jours</div></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-comp">
+    <div class="sh"><span class="k">7 · Composants et états</span><h2 id="s-comp">Les mêmes pièces dans les trois apps</h2>
+    <p class="mut">Seule la couleur de l'app change. Le focus clavier est toujours visible. Une erreur dit toujours quoi faire.</p></div>
+    <div class="seg" role="group" aria-label="App des composants"><button type="button" data-ca="j" aria-pressed="true">Sid Journée</button><button type="button" data-ca="f" aria-pressed="false">Sid Forme</button><button type="button" data-ca="c" aria-pressed="false">Sid Coffre</button></div>
+    <div class="ui dk comp" id="comp" data-app="j" style="background:none"></div>
+  </section>
+
+  <section aria-labelledby="s-mo">
+    <div class="sh"><span class="k">8 · Mouvement</span><h2 id="s-mo">L'élan récompense l'effort</h2>
+    <p class="mut">Seule la progression rebondit : la barre en 380 ms, le compteur en 260 ms. Le reste (fenêtres, onglets, bandeau compact) bouge en moins de 250 ms, sans rebond. En mouvement réduit, l'état final est le même, mais il s'affiche sans animation.</p></div>
+    <div class="ui dk" data-app="f" style="border-radius:18px;padding:24px">
+      <div class="mo" id="mo">
+        <div class="sct">Développé couché <small>série <span class="roll"><span id="rollv">3<br>4</span></span> sur 4</small></div>
+        <span class="bar"><i id="mobar" style="width:56%"></i></span>
+        <div class="row2"><button class="pri btn" type="button" id="mogo">Valider la série</button><span class="plus" id="moplus">+1</span></div>
+        <label style="display:flex;gap:8px;align-items:center;font-size:15px;color:var(--muted)"><input type="checkbox" id="morm" style="width:20px;height:20px"> Simuler le mouvement réduit</label>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="s-chg">
+    <div class="sh"><span class="k">9 · Ce qui change</span><h2 id="s-chg">Décidé avec vous le 5 novembre</h2></div>
+    <ul class="chk">
+      <li><span><b>Noms</b> : Sid Journée, Sid Forme et Sid Coffre ; la suite garde le nom Sid'compagnon. Le connecteur Claude garde son nom « Sid'note », pour ne pas couper la liaison.</span></li>
+      <li><span><b>Une seule apparence par app</b> : les 9 identités par fonction et le réglage « Unique / Sobre » sont retirés.</span></li>
+      <li><span><b>Claude</b> : un bouton, toujours en haut à droite du bandeau, à la place du champ placé en tête des écrans. La conversation reste accessible.</span></li>
+      <li><span><b>Nouvelle icône sur l'écran d'accueil de l'iPhone</b> : il faudra peut-être réinstaller l'app.</span></li>
+      <li><span><b>Aucune fonction retirée.</b> Les autres simplifications (par exemple, ajouter un repas d'une seule façon) vous seront présentées une à une avant d'être faites.</span></li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="s-next">
+    <div class="sh"><span class="k">10 · Suite</span><h2 id="s-next">Prochaine étape</h2></div>
+    <div class="q">
+      <p>Si cette charte vous convient, on l'applique d'abord à <b>un seul parcours complet</b> : accueil, puis Sid Journée, ajouter une activité, et retour. On le vérifie sur iPhone et sur ordinateur, puis Codex le relit. Ensuite seulement, on l'étend au reste. Tout se fait sur une branche à part : rien n'est mis en ligne sans votre accord.</p>
+      <p class="mut">Vous pouvez demander n'importe quel changement : un nom, une couleur, la taille du bandeau…</p>
+    </div>
+  </section>
+</div>
+
+<script>
+const IC={grid:'<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>',
+ask:'<path d="M12 3.5l1.9 4.6 4.6 1.9-4.6 1.9L12 16.5l-1.9-4.6L5.5 10l4.6-1.9z"/><path d="M18.5 15.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z"/>',
+cal:'<rect x="4" y="5.5" width="16" height="14.5" rx="2.5"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/>',
+check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',todo:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-6"/>',
+timer:'<circle cx="12" cy="13.5" r="7"/><path d="M12 9.5v4l2.5 2M9.5 3.5h5"/>',
+db:'<path d="M7 7v10M17 7v10M4 9.5v5M20 9.5v5M7 12h10"/>',
+food:'<path d="M12 7.5c-1.5-1.8-6-1.5-6 3.5 0 4 3 8 6 8s6-4 6-8c0-5-4.5-5.3-6-3.5z"/><path d="M12 7.5c0-2 1-3.5 2.5-4"/>',
+chart:'<path d="M4 20h16"/><path d="M7 16v-4M12 16V8M17 16v-6"/>',
+note:'<path d="M6 3.5h8l4.5 4.5v12.5H6z"/><path d="M14 3.5V8h4.5M9 12.5h6M9 16h4"/>',
+folder:'<path d="M3.5 7a2 2 0 0 1 2-2h4l2 2.5h7a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/>',
+lock:'<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/>',
+plus:'<path d="M12 5v14M5 12h14"/>',search:'<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>',
+chev:'<path d="M9.5 6l6 6-6 6"/>',home:'<path d="M4 11l8-6.5 8 6.5V20H4z"/>',alert:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v5.5M12 16.2v.3"/>',
+gear:'<circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.5M12 18v2.5M3.5 12H6M18 12h2.5M6 6l1.8 1.8M16.2 16.2L18 18M6 18l1.8-1.8M16.2 7.8L18 6"/>'};
+const I=(n,c="ic")=>`<svg class="${c}" viewBox="0 0 24 24" aria-hidden="true">${IC[n]}</svg>`;
+const BR={j:"#2563EB",f:"#F25C19",c:"#7C3AED"};const ON={j:"#FFFFFF",f:"#121212",c:"#FFFFFF"};
+const APPS={j:{name:"Sid Journée",role:"Agenda, tâches, focus",verb:"Organise tes journées",fns:[["Agenda","cal"],["Tâches","todo"],["Focus","timer"]],k:["3","activités restantes aujourd'hui"]},
+ f:{name:"Sid Forme",role:"Sport et alimentation",verb:"Entraîne-toi, mange bien",fns:[["Musculation","db"],["Nutrition","food"],["Graphiques","chart"]],k:["760","kcal restantes · séance Push à 18:30"]},
+ c:{name:"Sid Coffre",role:"Notes, documents, mots de passe",verb:"Écris, classe et protège",fns:[["Notes","note"],["Documents","folder"],["Mots de passe","lock"]],k:["12","notes · 3 documents · coffre verrouillé"]}};
+function picto(a,fg,mini){const sw=mini?6:5,st=`fill="none" stroke="${fg}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"`;let p="";
+ if(a==="j")p=`<rect x="16" y="19" width="32" height="28" rx="5" ${st}/><path d="M16 28h32M24 13v8M40 13v8" ${st}/>`+(mini?"":`<path d="M25 37.5l5 4.5 9-9" ${st}/>`);
+ if(a==="f")p=`<path d="M22 21v22M42 21v22M14 27v10M50 27v10M22 32h20" ${st}/>`;
+ if(a==="c")p=`<path d="M20 13h16l9 9v29H20z" ${st}/><path d="M36 13v9h9" ${st}/>`+(mini?"":`<path d="M27 37h12v9H27zM29.5 37v-3a3.5 3.5 0 0 1 7 0v3" fill="none" stroke="${fg}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`);
+ return `<g transform="translate(5 0) skewX(-9)">${p}</g>`}
+function bars(c){return `<g transform="skewX(-12) translate(8 0)"><rect x="13" y="34" width="9" height="16" rx="3" fill="${c[0]}"/><rect x="27" y="24" width="9" height="26" rx="3" fill="${c[1]}"/><rect x="41" y="14" width="9" height="36" rx="3" fill="${c[2]}"/></g>`}
+let mid=0;
+function logo(a,s=40,o={}){const lab=a==="home"?"Sid'compagnon":APPS[a].name;const mini=s<24;
+ if(o.mono){mid++;const inner=a==="home"?bars(["#000","#000","#000"]):picto(a,"#000",mini);return `<svg width="${s}" height="${s}" viewBox="0 0 64 64" role="img" aria-label="${lab}"><defs><mask id="mk${mid}"><rect width="64" height="64" fill="#fff"/>${inner}</mask></defs><rect width="64" height="64" rx="18" fill="currentColor" mask="url(#mk${mid})"/></svg>`}
+ if(a==="home")return `<svg width="${s}" height="${s}" viewBox="0 0 64 64" role="img" aria-label="${lab}"><rect width="64" height="64" rx="18" fill="${o.tile||"var(--tile-home,#1A1A1A)"}"/>${bars([BR.j,BR.f,BR.c])}</svg>`;
+ return `<svg width="${s}" height="${s}" viewBox="0 0 64 64" role="img" aria-label="${lab}"><rect width="64" height="64" rx="18" fill="${BR[a]}"/>${picto(a,ON[a],mini)}</svg>`}
+
+document.getElementById("apps").innerHTML=Object.entries(APPS).map(([k,a])=>`<article class="appcard" data-app="${k}"><div class="h">${logo(k,48)}<div><b>${a.name}</b><small>${a.role}</small></div></div><div class="b"><p style="font-weight:600;font-size:18px">${a.verb}</p><ul>${a.fns.map(f=>`<li>${f[0]}</li>`).join("")}</ul></div></article>`).join("");
+
+const sb=()=>`<div class="sb"><span>9:41</span><i></i></div>`;
+function band(a,title,prog,compact){const A=APPS[a];return `<div class="band${compact?" compact":""}">${sb()}<div class="hd"><button class="hb" type="button" aria-label="Toutes les apps">${I("grid")}</button><div class="hd-t">${logo(a,32)}<span class="hd-n"><b>${A.name}</b><small>${A.role}</small></span></div><button class="ask" type="button">${I("ask")}Claude</button></div><h3 class="ttl">${title}</h3>${prog&&!compact?`<div class="prog"><b>${prog[0]}</b>${prog[1]?`<span class="bar"><i style="width:${prog[1]}%"></i></span>`:""}</div>`:""}</div>`}
+const nav=(a,on)=>`<nav class="nv">${APPS[a].fns.map(([n,ic],i)=>`<a class="${i===on?"on":""}">${I(ic)}${n}</a>`).join("")}</nav>`;
+const S={
+home:()=>`<div class="ph" data-app="j" style="--app:var(--bg)">${sb()}<div class="hello"><h3>Bonjour Sid</h3>${logo("home",36)}</div><p style="padding:0 20px 10px;color:var(--muted);font-weight:500;font-size:15px">Jeudi 5 novembre</p>
+ <div class="body" style="padding-top:0;gap:12px">${Object.entries(APPS).map(([k,a])=>`<article class="hc" data-app="${k}"><div class="hc-h">${logo(k,32)}<div><b>${a.name}</b><small>${a.verb}</small></div><span class="go">${I("chev")}</span></div><div class="hc-b"><div class="hc-k"><b>${a.k[0]}</b><span>${a.k[1]}</span></div><div class="chips">${a.fns.map(([n,ic])=>`<span class="chip">${I(ic)}${n}</span>`).join("")}</div></div></article>`).join("")}</div>
+ <nav class="nv" style="grid-template-columns:repeat(2,minmax(0,1fr))"><a class="on" style="box-shadow:none">${I("home")}Accueil</a><a>${I("gear")}Réglages</a></nav></div>`,
+agenda:()=>`<div class="ph" data-app="j">${band("j","Agenda",["3 activités restantes sur 5",45])}<div class="body"><div class="wk">${[["L",2],["M",3],["M",4],["J",5],["V",6],["S",7],["D",8]].map(([l,n])=>`<span class="${n===5?"on":""}">${l}<b>${n}</b></span>`).join("")}</div>
+ <div class="row2"><button class="pri" type="button">${I("plus")}Ajouter une activité</button></div>
+ <div class="blk"><ul class="tl"><li class="past"><span class="t">08:15<small>10:15</small></span><span><b>Gestion de projet</b><span class="m">Cours · Warocqué, salle 1.12</span></span></li><li class="now"><span class="t">10:30<small>12:30</small></span><span><b>Espagnol commercial</b><span class="m"><span class="tag">En cours</span>Plaine de Nimy, A2</span></span></li><li><span class="t">14:00<small>16:00</small></span><span><b>Management stratégique</b><span class="m">Travail de groupe · bibliothèque</span></span></li><li><span class="t">18:30<small>19:30</small></span><span><b>Séance Push</b><span class="m"><span class="xl">${logo("f",16)}Sid Forme</span>Rappel à 17:30</span></span></li></ul></div></div>${nav("j",0)}</div>`,
+compact:()=>`<div class="ph" data-app="j">${band("j","Agenda",null,true)}<div class="body"><div class="blk"><ul class="tl"><li><span class="t">14:00<small>16:00</small></span><span><b>Management stratégique</b><span class="m">Travail de groupe · bibliothèque</span></span></li><li><span class="t">18:30<small>19:30</small></span><span><b>Séance Push</b><span class="m"><span class="xl">${logo("f",16)}Sid Forme</span>Rappel à 17:30</span></span></li><li><span class="t">20:00<small>20:30</small></span><span><b>Appel famille</b><span class="m">Perso</span></span></li><li><span class="t">21:00<small>22:00</small></span><span><b>Réviser le chapitre 4 de droit des sociétés avant l'examen de lundi</b><span class="m">Tâche planifiée</span></span></li></ul></div><p style="color:var(--muted);font-size:14px;padding:0 4px">Bandeau compact : dès qu'on fait défiler, que le clavier s'ouvre ou que l'écran fait moins de 700 px de haut.</p></div>${nav("j",0)}</div>`,
+muscu:()=>`<div class="ph" data-app="f">${band("f","Musculation",["Push · 9 sur 16 séries · 34 min",56])}<div class="body">
+ <div class="ex"><div class="ex-h"><b>Développé couché</b><span>4 × 8 · 60 kg</span></div><div class="sets"><span class="set done">60 kg<small>8 reps</small></span><span class="set done">60 kg<small>8 reps</small></span><span class="set next">60 kg<small>8 reps</small></span><span class="set">60 kg<small>8 reps</small></span></div><div class="row2"><button class="pri" type="button">${I("check")}Valider la série 3</button><button class="sec" type="button" aria-label="Chrono">${I("timer")}1:30</button></div></div>
+ <div class="ex"><div class="ex-h"><b>Développé incliné haltères</b><span>3 × 10 · 22 kg</span></div><div class="sets" style="grid-template-columns:repeat(3,minmax(0,1fr))"><span class="set">22 kg<small>10 reps</small></span><span class="set">22 kg<small>10 reps</small></span><span class="set">22 kg<small>10 reps</small></span></div></div>
+ <div class="ex"><div class="ex-h"><b>Dips</b><span>3 × 12</span></div></div></div>${nav("f",0)}</div>`,
+nutri:()=>`<div class="ph" data-app="f">${band("f","Nutrition",["1 840 sur 2 600 kcal",71])}<div class="body">
+ <div class="row2"><button class="pri" type="button">${I("plus")}Ajouter un repas</button></div>
+ <div class="blk" style="padding:12px 16px;display:flex;flex-direction:column;gap:10px">${[["Protéines",112,140,80],["Glucides",210,320,66],["Lipides",58,85,68]].map(([n,v,m,p])=>`<div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;gap:8px;font-weight:600"><span>${n}</span><span style="font:700 17px var(--display);font-variant-numeric:tabular-nums">${v} / ${m} g</span></div><span class="bar" style="background:var(--surface-2)"><i style="width:${p}%;background:var(--app)"></i></span></div>`).join("")}</div>
+ <div class="blk"><ul class="tl"><li><span class="t">08:10</span><span><b>Petit-déjeuner</b><span class="m">Flocons d'avoine, banane, skyr · 520 kcal</span></span></li><li><span class="t">12:40</span><span><b>Déjeuner</b><span class="m">Poulet, riz, brocolis · 760 kcal</span></span></li><li><span class="t">16:00</span><span><b>Collation</b><span class="m">Pomme, amandes · 260 kcal</span></span></li></ul></div></div>${nav("f",1)}</div>`,
+notes:()=>`<div class="ph" data-app="c">${band("c","Notes",["12 notes · 3 documents",0])}<div class="body">
+ <div class="srch">${I("search")}Chercher une note</div><div class="row2"><button class="pri" type="button">${I("plus")}Ajouter une note</button><button class="sec" type="button">${I("folder")}Dossier</button></div>
+ <div class="blk"><ul class="tl nl"><li><span class="ni">${I("note")}</span><span><b>Plan du mémoire</b><span class="m">Études · modifiée hier</span></span></li><li><span class="ni">${I("note")}</span><span><b>Recettes rapides de la semaine</b><span class="m">Perso · 3 nov.</span></span></li><li><span class="ni">${I("lock")}</span><span><b>Note secrète</b><span class="m"><span class="lockrow">${I("lock")}Chiffrée · déverrouille avec ton code</span></span></span></li><li><span class="ni">${I("folder")}</span><span><b>Cours Management</b><span class="m">Dossier · 6 notes</span></span></li></ul></div></div>${nav("c",0)}</div>`
+};
+const LIST=[["home","Accueil"],["agenda","Sid Journée · Agenda"],["compact","Bandeau compact (défilement)"],["muscu","Sid Forme · Musculation"],["nutri","Sid Forme · Nutrition"],["notes","Sid Coffre · Notes"]];
+function renderPhones(th){document.getElementById("phones").innerHTML=LIST.map(([k,n])=>`<div class="phwrap"><span>${n}</span><div class="ui ${th}" style="background:none">${S[k]()}</div></div>`).join("")}
+renderPhones("dk");
+document.querySelectorAll("[data-th]").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("[data-th]").forEach(x=>x.setAttribute("aria-pressed",x===b));renderPhones(b.dataset.th)}));
+
+document.getElementById("desk").innerHTML=`<div class="ui dk desk" data-app="j"><aside><div class="ap" style="margin-bottom:10px">${logo("home",32)}Sid'compagnon</div>${Object.entries(APPS).map(([k,a])=>`<div data-app="${k}"><div class="ap">${logo(k,28)}${a.name}</div>${a.fns.map(([n,ic],i)=>`<div class="fn ${k==="j"&&i===0?"on":""}">${I(ic)}${n}</div>`).join("")}</div>`).join("")}</aside>
+<main><div class="band"><div class="hd"><div class="hd-t"><span class="hd-n"><b>Sid Journée</b><small>Agenda, tâches, focus</small></span></div><button class="ask" type="button">${I("ask")}Claude</button></div><h3 class="ttl">Agenda · semaine 45</h3><div class="prog"><b>14 activités cette semaine · 9 faites</b><span class="bar"><i style="width:64%"></i></span></div></div>
+<div class="dbody"><div class="blk"><ul class="tl"><li class="past"><span class="t">08:15<small>10:15</small></span><span><b>Gestion de projet</b><span class="m">Cours · Warocqué, salle 1.12</span></span></li><li class="now"><span class="t">10:30<small>12:30</small></span><span><b>Espagnol commercial</b><span class="m"><span class="tag">En cours</span>Plaine de Nimy, A2</span></span></li><li><span class="t">14:00<small>16:00</small></span><span><b>Management stratégique</b><span class="m">Travail de groupe · bibliothèque</span></span></li><li><span class="t">18:30<small>19:30</small></span><span><b>Séance Push</b><span class="m"><span class="xl">${logo("f",16)}Sid Forme</span>Rappel à 17:30</span></span></li></ul></div>
+<div style="display:flex;flex-direction:column;gap:14px"><button class="pri" type="button" style="flex:none">${I("plus")}Ajouter une activité</button><div class="blk" style="padding:14px 16px"><div class="sct" style="margin-bottom:8px">Tâches du jour <small>2 sur 5</small></div><ul class="tl"><li style="grid-template-columns:28px minmax(0,1fr)"><span style="color:var(--app-ink)">${I("todo")}</span><span><b>Envoyer le plan au promoteur</b></span></li><li style="grid-template-columns:28px minmax(0,1fr)"><span style="color:var(--muted)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/></svg></span><span><b>Imprimer le syllabus</b></span></li></ul></div></div></div></main></div>`;
+
+document.getElementById("logos").innerHTML=[["#F7F7F7","#1A1A1A","#1A1A1A"],["#121212","#F2F2F2","#2A2A2A"]].map(([bg,fg,tile])=>`<div class="lg-row" style="background:${bg};color:${fg}">${["home","j","f","c"].map(a=>[64,32,24,16].map(s=>`<figure>${logo(a,s,{tile})}<figcaption style="color:${fg};opacity:.7">${s}</figcaption></figure>`).join("")+`<figure>${logo(a,32,{mono:1})}<figcaption style="color:${fg};opacity:.7">1 couleur</figcaption></figure>`).join('<span style="width:12px"></span>')}</div>`).join("");
+
+const PAL=[["#2563EB","#FFFFFF","Sid Journée","--app · texte blanc"],["#F25C19","#121212","Sid Forme","--app · texte #121212"],["#7C3AED","#FFFFFF","Sid Coffre","--app · texte blanc"],["#121212","#F2F2F2","Fond sombre","--bg (défaut)"],["#F7F7F7","#1A1A1A","Fond clair","--bg"],["#157A3E","#FFFFFF","Réussi","--ok · avec coche"],["#9A5B00","#FFFFFF","Attention","--warn · avec icône"],["#C81E1E","#FFFFFF","Erreur","--err · avec icône"]];
+document.getElementById("pal").innerHTML=PAL.map(([c,t,n,u])=>`<div class="sw"><div class="c" style="background:${c};color:${t};font-family:'Barlow Condensed',sans-serif">${n}</div><div class="t"><code>${c}</code><span class="mut">${u}</span></div></div>`).join("");
+
+function comp(){return `
+<div class="cbox" style="background:var(--bg)"><h3 style="color:var(--ink)">Bouton principal</h3><div class="st-row"><button class="pri" type="button">Ajouter</button><button class="pri press" type="button">Appuyé</button><button class="pri focus" type="button">Focus</button></div><div class="st-row"><button class="pri dis" type="button" disabled>Désactivé</button><button class="pri" type="button"><span class="spin"></span>Ajouter</button></div><span class="lbl">Un seul par écran · 48 px · le libellé reste pendant le chargement</span></div>
+<div class="cbox" style="background:var(--bg)"><h3 style="color:var(--ink)">Champ</h3><div class="fld"><label>Titre</label><div class="in">Révision droit des sociétés</div></div><div class="fld"><label>Heure</label><div class="in f">14:00</div></div><div class="fld"><label>Date</label><div class="in e">31/11</div><span class="er">${I("alert")}Cette date n'existe pas : choisis un jour entre le 1er et le 30.</span></div></div>
+<div class="cbox" style="background:var(--bg);color:var(--ink)"><h3>Puces, message, état vide</h3><div class="chips"><span class="chip" style="background:var(--app);color:var(--on-app)">Aujourd'hui</span><span class="chip">Semaine</span><span class="chip">Mois</span></div><div class="toast"><span class="ok">${I("check")}</span>Activité ajoutée<a>Annuler</a></div><div class="empty"><span style="color:var(--muted)">${I("cal")}</span><p>Rien de prévu ce jour-là.</p><button class="pri" type="button" style="flex:none">${I("plus")}Ajouter une activité</button></div></div>
+<div class="cbox" style="background:var(--bg);padding:0;overflow:hidden;grid-column:1/-1"><div class="band" style="border-radius:0">${(()=>{const a=document.getElementById("comp")?.dataset.app||"j";const A=APPS[a];return `<div class="hd" style="padding-top:12px"><button class="hb" type="button" aria-label="Toutes les apps">${I("grid")}</button><div class="hd-t">${logo(a,32)}<span class="hd-n"><b>${A.name}</b><small>${A.role}</small></span></div><button class="ask" type="button">${I("ask")}Claude</button></div><h3 class="ttl" style="font-size:36px">${A.fns[0][0]}</h3>`})()}</div><div style="padding:0 20px 16px;color:var(--muted);font-size:13px;font-weight:600">Bandeau : logo, nom, rôle, bouton Claude toujours au même endroit</div>${nav(document.getElementById("comp")?.dataset.app||"j",0)}</div>`}
+const CE=document.getElementById("comp");CE.innerHTML=comp();
+document.querySelectorAll("[data-ca]").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("[data-ca]").forEach(x=>x.setAttribute("aria-pressed",x===b));CE.dataset.app=b.dataset.ca;CE.innerHTML=comp()}));
+
+let done=false;const mo=document.getElementById("mo");
+document.getElementById("morm").addEventListener("change",e=>mo.classList.toggle("rm",e.target.checked));
+document.getElementById("mogo").addEventListener("click",e=>{done=!done;document.getElementById("mobar").style.width=done?"75%":"56%";document.getElementById("rollv").style.transform=done?"translateY(-30px)":"none";document.getElementById("moplus").classList.toggle("on",done);e.currentTarget.textContent=done?"Recommencer":"Valider la série"});
+</script>

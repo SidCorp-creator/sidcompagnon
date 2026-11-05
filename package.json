@@ -1,0 +1,8 @@
+{
+  "name": "sidcompagnon-workspace",
+  "private": true,
+  "scripts": {
+    "test": "npm --prefix app test",
+    "build": "npm --prefix app run build"
+  }
+}

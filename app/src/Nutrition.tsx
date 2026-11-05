@@ -62,7 +62,7 @@ export function NuResult({ p, mac, boltIcon, i18n }: { p: NuResultVM | null; mac
   return <div className="dish">
     <div className="dish-h"><span className="dish-ic">{p.photo ? <img src={p.photo} alt="" /> : p.mono}</span>
       <span className="dish-t"><b className="notr">{p.title}</b><span className="small muted">{tr(`${p.items.length} ${L(p.items.length > 1 ? "aliments" : "aliment")}`)}</span>
-        {p.mem ? <span className="memtag" dangerouslySetInnerHTML={{ __html: `${boltIcon} ${escHtml(tr(L("Mémoire Sid'note")))}` }}></span> : null}</span>
+        {p.mem ? <span className="memtag" dangerouslySetInnerHTML={{ __html: `${boltIcon} ${escHtml(tr(L("Mémoire Sid Forme")))}` }}></span> : null}</span>
       <span className="dish-kcal">{r0(s.kcal)}<small>{tr("kcal")}</small></span></div>
     <Macros s={s} mac={mac} i18n={i18n} />
     <div className="dish-items">{p.items.map((x, i) => <div key={i} className="dish-it"><span className="em">·</span><div className="grow"><b className="notr">{x.name}</b>{x.extra ? <span className="notmention">{tr(L("pas dans ta description"))}</span> : null}<QtyCell q={x.qty} i18n={i18n} /></div>

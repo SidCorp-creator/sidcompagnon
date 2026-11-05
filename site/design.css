@@ -5,7 +5,7 @@
    Ce fichier passe après app.css : il en garde la structure et ne change que l'apparence. */
 
 /* ---------- tokens ---------- */
-html[data-ds][data-ds][data-ds],html[data-ds][data-ds] body{
+html[data-ds="edito"][data-ds][data-ds],html[data-ds="edito"][data-ds] body{
   --bg:#F4F0E8; --surface:#F4F0E8; --surface-2:#EBE6DC; --field:#EBE6DC; --ink:#1C1A17; --ink-2:#8A8378; --muted:#665F55; --line:#D6CFC2;
   --bar:#F4F0E8; --on-accent:#F4F0E8;
   --c-agenda:#9C3B26; --c-fit:#2F4A3A; --c-note:#1C1A17; --c-home:#1C1A17;
@@ -19,323 +19,323 @@ html[data-ds][data-ds][data-ds],html[data-ds][data-ds] body{
   --r-card:6px; --r-ctl:6px; --rule:.5px;
   --ease:cubic-bezier(.2,.7,.2,1);
   color-scheme:light}
-@media (prefers-color-scheme:dark){html[data-ds][data-ds][data-ds]:not([data-theme="light"]),html[data-ds][data-ds]:not([data-theme="light"]) body{
+@media (prefers-color-scheme:dark){html[data-ds="edito"][data-ds][data-ds]:not([data-theme="light"]),html[data-ds="edito"][data-ds]:not([data-theme="light"]) body{
   --bg:#111214; --surface:#111214; --surface-2:#1A1B1E; --field:#1A1B1E; --ink:#ECEDEE; --ink-2:#8B8E94; --muted:#8B8E94; --line:#26282C; --bar:#111214; --on-accent:#111214;
   --c-agenda:#D2775F; --c-fit:#86AE95; --c-note:#ECEDEE; --c-home:#ECEDEE; --on-gold:#111214; --late:#D2775F; --ok:#86AE95; --warn:#D9AE62; color-scheme:dark}}
-html[data-ds][data-ds][data-ds][data-theme="dark"],html[data-ds][data-ds][data-theme="dark"] body{
+html[data-ds="edito"][data-ds][data-ds][data-theme="dark"],html[data-ds="edito"][data-ds][data-theme="dark"] body{
   --bg:#111214; --surface:#111214; --surface-2:#1A1B1E; --field:#1A1B1E; --ink:#ECEDEE; --ink-2:#8B8E94; --muted:#8B8E94; --line:#26282C; --bar:#111214; --on-accent:#111214;
   --c-agenda:#D2775F; --c-fit:#86AE95; --c-note:#ECEDEE; --c-home:#ECEDEE; --on-gold:#111214; --late:#D2775F; --ok:#86AE95; --warn:#D9AE62; color-scheme:dark}
-html[data-ds][data-app="agenda"] body{--app:var(--c-agenda)}
-html[data-ds][data-app="fit"] body{--app:var(--c-fit)}
-html[data-ds][data-app="note"] body{--app:var(--c-note)}
+html[data-ds="edito"][data-app="agenda"] body{--app:var(--c-agenda)}
+html[data-ds="edito"][data-app="fit"] body{--app:var(--c-fit)}
+html[data-ds="edito"][data-app="note"] body{--app:var(--c-note)}
 
 /* ---------- corrections automatiques des styles d'app.css (arrondis, graisses) ---------- */
 /* arrondis ramenés à 4–6 px */
-html[data-ds] .card{border-radius:6px}
-html[data-ds] .btn{border-radius:6px}
-html[data-ds] input,html[data-ds] select{border-radius:6px}
-html[data-ds] .prog .track{border-radius:6px}
-html[data-ds] .prog .fill{border-radius:6px}
-html[data-ds] .act-list{border-radius:6px}
-html[data-ds] .realise{border-radius:6px}
-html[data-ds] .next .n{border-radius:6px}
-html[data-ds] .qbtn{border-radius:6px}
-html[data-ds] .day{border-radius:6px}
-html[data-ds] .marks .bars i.s{border-radius:6px 0 0 6px}
-html[data-ds] .marks .bars i.e{border-radius:0 6px 6px 0}
-html[data-ds] .marks .bars i.s.e{border-radius:6px}
-html[data-ds] .ym{border-radius:6px}
-html[data-ds] .pill{border-radius:6px}
-html[data-ds] .status{border-radius:6px}
-html[data-ds] .alert{border-radius:6px}
-html[data-ds] .pomo-stage{border-radius:6px}
-html[data-ds] .pomo-meta div{border-radius:6px}
-html[data-ds] .preset{border-radius:6px}
-html[data-ds] .plan{border-radius:6px}
-html[data-ds] .auth-logo{border-radius:6px}
-html[data-ds] .auth-feats .af-ic{border-radius:6px}
-html[data-ds] .seg{border-radius:6px}
-html[data-ds] .seg button{border-radius:6px}
-html[data-ds] .err{border-radius:6px}
-html[data-ds] .sheet{border-radius:6px 6px 0 0}
-html[data-ds] .resume{border-radius:6px}
-html[data-ds] .switch{border-radius:6px}
-html[data-ds] .spot iframe{border-radius:6px}
+html[data-ds="edito"] .card{border-radius:6px}
+html[data-ds="edito"] .btn{border-radius:6px}
+html[data-ds="edito"] input,html[data-ds="edito"] select{border-radius:6px}
+html[data-ds="edito"] .prog .track{border-radius:6px}
+html[data-ds="edito"] .prog .fill{border-radius:6px}
+html[data-ds="edito"] .act-list{border-radius:6px}
+html[data-ds="edito"] .realise{border-radius:6px}
+html[data-ds="edito"] .next .n{border-radius:6px}
+html[data-ds="edito"] .qbtn{border-radius:6px}
+html[data-ds="edito"] .day{border-radius:6px}
+html[data-ds="edito"] .marks .bars i.s{border-radius:6px 0 0 6px}
+html[data-ds="edito"] .marks .bars i.e{border-radius:0 6px 6px 0}
+html[data-ds="edito"] .marks .bars i.s.e{border-radius:6px}
+html[data-ds="edito"] .ym{border-radius:6px}
+html[data-ds="edito"] .pill{border-radius:6px}
+html[data-ds="edito"] .status{border-radius:6px}
+html[data-ds="edito"] .alert{border-radius:6px}
+html[data-ds="edito"] .pomo-stage{border-radius:6px}
+html[data-ds="edito"] .pomo-meta div{border-radius:6px}
+html[data-ds="edito"] .preset{border-radius:6px}
+html[data-ds="edito"] .plan{border-radius:6px}
+html[data-ds="edito"] .auth-logo{border-radius:6px}
+html[data-ds="edito"] .auth-feats .af-ic{border-radius:6px}
+html[data-ds="edito"] .seg{border-radius:6px}
+html[data-ds="edito"] .seg button{border-radius:6px}
+html[data-ds="edito"] .err{border-radius:6px}
+html[data-ds="edito"] .sheet{border-radius:6px 6px 0 0}
+html[data-ds="edito"] .resume{border-radius:6px}
+html[data-ds="edito"] .switch{border-radius:6px}
+html[data-ds="edito"] .spot iframe{border-radius:6px}
 
-html[data-ds] .ex{border-radius:6px}
-html[data-ds] .mini{border-radius:6px}
-html[data-ds] textarea{border-radius:6px}
+html[data-ds="edito"] .ex{border-radius:6px}
+html[data-ds="edito"] .mini{border-radius:6px}
+html[data-ds="edito"] textarea{border-radius:6px}
 
-html[data-ds] .catbar{border-radius:6px}
-html[data-ds] .cat-prog{border-radius:6px}
-html[data-ds] .onb-dots i{border-radius:6px}
-html[data-ds] .onb-it{border-radius:6px}
-html[data-ds] .onb-it .ic{border-radius:6px}
-html[data-ds] .onb-steps li{border-radius:6px}
-html[data-ds] .nu-tabs{border-radius:6px}
-html[data-ds] .nu-tabs button{border-radius:6px}
-html[data-ds] .nu-left{border-radius:6px}
-html[data-ds] .notmention{border-radius:6px}
-html[data-ds] .recipe{border-radius:6px}
-html[data-ds] .cal-title .yr-ic{border-radius:6px}
-html[data-ds] .docbar .seg{border-radius:6px}
-html[data-ds] .note-ed{border-radius:6px}
-html[data-ds] .doc-ghost{border-radius:6px}
-html[data-ds] .ns-bar{border-radius:6px}
-html[data-ds] .pw-av{border-radius:6px}
-html[data-ds] .sbadge{border-radius:6px}
-html[data-ds] .setsec{border-radius:6px}
-html[data-ds] .nu-sport{border-radius:6px}
-html[data-ds] .nu-goals button,html[data-ds] .nu-pace button{border-radius:6px}
-html[data-ds] .nu-m .bar{border-radius:6px}
-html[data-ds] .nu-m .bar i{border-radius:6px}
-html[data-ds] .nu-photo img{border-radius:6px}
-html[data-ds] .dish{border-radius:6px}
-html[data-ds] .dish-ic{border-radius:6px}
-html[data-ds] .mbar{border-radius:6px}
-html[data-ds] .mchip{border-radius:6px}
-html[data-ds] .memtag{border-radius:6px}
-html[data-ds] .loadcard{border-radius:6px}
-html[data-ds] .load-bar{border-radius:6px}
-html[data-ds] .load-bar i{border-radius:6px}
-html[data-ds] .nu-plan div{border-radius:6px}
-html[data-ds] .nu-ehint{border-radius:6px}
-html[data-ds] .nu-mtype button{border-radius:6px}
-html[data-ds] .soon-card{border-radius:6px}
-html[data-ds] .gr-tip{border-radius:6px}
-html[data-ds] .badge{border-radius:6px}
-html[data-ds] .toast{border-radius:6px}
-html[data-ds] .mini{border-radius:6px}
-html[data-ds] .pill{border-radius:6px}
-html[data-ds] .realise,html[data-ds] .resume,html[data-ds] .status{border-radius:6px}
-html[data-ds] .stepper button{border-radius:6px}
-html[data-ds] .cal-nav{border-radius:6px}
-html[data-ds] .sel{border-radius:6px}
-html[data-ds] .seg button{border-radius:6px}
-html[data-ds] .cal-title{border-radius:6px}
-html[data-ds] .day{border-radius:6px}
-html[data-ds] .next .n{border-radius:6px}
-html[data-ds] .chip-ev{border-radius:6px}
-html[data-ds] .yr-title{border-radius:6px}
-html[data-ds] .nu-tabs button{border-radius:6px}
-html[data-ds] .nu-mtype button,html[data-ds] .nu-goals button,html[data-ds] .nu-pace button,html[data-ds] .preset{border-radius:6px}
-html[data-ds] .dish-ic{border-radius:6px}
-html[data-ds] .mchip,html[data-ds] .nu-plan div,html[data-ds] .pomo-meta div{border-radius:6px}
-html[data-ds] .recipe{border-radius:6px}
-html[data-ds] .toast{border-radius:6px}
-html[data-ds] .toast-act{border-radius:6px}
-html[data-ds] .sheet{border-radius:6px 6px 0 0}
-html[data-ds] .pw-av{border-radius:6px}
-html[data-ds] .auth-logo{border-radius:6px}
-html[data-ds] .alert,html[data-ds] .nu-goalcard,html[data-ds] .nu-warn{border-radius:6px}
-html[data-ds] .gr-tip{border-radius:6px}
-html[data-ds] .rem-box{border-radius:6px}
-html[data-ds] .na-ic{border-radius:6px}
-html[data-ds] .dc-d{border-radius:6px}
-html[data-ds] .pw-eye{border-radius:6px}
-html[data-ds] .mf-n{border-radius:6px}
+html[data-ds="edito"] .catbar{border-radius:6px}
+html[data-ds="edito"] .cat-prog{border-radius:6px}
+html[data-ds="edito"] .onb-dots i{border-radius:6px}
+html[data-ds="edito"] .onb-it{border-radius:6px}
+html[data-ds="edito"] .onb-it .ic{border-radius:6px}
+html[data-ds="edito"] .onb-steps li{border-radius:6px}
+html[data-ds="edito"] .nu-tabs{border-radius:6px}
+html[data-ds="edito"] .nu-tabs button{border-radius:6px}
+html[data-ds="edito"] .nu-left{border-radius:6px}
+html[data-ds="edito"] .notmention{border-radius:6px}
+html[data-ds="edito"] .recipe{border-radius:6px}
+html[data-ds="edito"] .cal-title .yr-ic{border-radius:6px}
+html[data-ds="edito"] .docbar .seg{border-radius:6px}
+html[data-ds="edito"] .note-ed{border-radius:6px}
+html[data-ds="edito"] .doc-ghost{border-radius:6px}
+html[data-ds="edito"] .ns-bar{border-radius:6px}
+html[data-ds="edito"] .pw-av{border-radius:6px}
+html[data-ds="edito"] .sbadge{border-radius:6px}
+html[data-ds="edito"] .setsec{border-radius:6px}
+html[data-ds="edito"] .nu-sport{border-radius:6px}
+html[data-ds="edito"] .nu-goals button,html[data-ds="edito"] .nu-pace button{border-radius:6px}
+html[data-ds="edito"] .nu-m .bar{border-radius:6px}
+html[data-ds="edito"] .nu-m .bar i{border-radius:6px}
+html[data-ds="edito"] .nu-photo img{border-radius:6px}
+html[data-ds="edito"] .dish{border-radius:6px}
+html[data-ds="edito"] .dish-ic{border-radius:6px}
+html[data-ds="edito"] .mbar{border-radius:6px}
+html[data-ds="edito"] .mchip{border-radius:6px}
+html[data-ds="edito"] .memtag{border-radius:6px}
+html[data-ds="edito"] .loadcard{border-radius:6px}
+html[data-ds="edito"] .load-bar{border-radius:6px}
+html[data-ds="edito"] .load-bar i{border-radius:6px}
+html[data-ds="edito"] .nu-plan div{border-radius:6px}
+html[data-ds="edito"] .nu-ehint{border-radius:6px}
+html[data-ds="edito"] .nu-mtype button{border-radius:6px}
+html[data-ds="edito"] .soon-card{border-radius:6px}
+html[data-ds="edito"] .gr-tip{border-radius:6px}
+html[data-ds="edito"] .badge{border-radius:6px}
+html[data-ds="edito"] .toast{border-radius:6px}
+html[data-ds="edito"] .mini{border-radius:6px}
+html[data-ds="edito"] .pill{border-radius:6px}
+html[data-ds="edito"] .realise,html[data-ds="edito"] .resume,html[data-ds="edito"] .status{border-radius:6px}
+html[data-ds="edito"] .stepper button{border-radius:6px}
+html[data-ds="edito"] .cal-nav{border-radius:6px}
+html[data-ds="edito"] .sel{border-radius:6px}
+html[data-ds="edito"] .seg button{border-radius:6px}
+html[data-ds="edito"] .cal-title{border-radius:6px}
+html[data-ds="edito"] .day{border-radius:6px}
+html[data-ds="edito"] .next .n{border-radius:6px}
+html[data-ds="edito"] .chip-ev{border-radius:6px}
+html[data-ds="edito"] .yr-title{border-radius:6px}
+html[data-ds="edito"] .nu-tabs button{border-radius:6px}
+html[data-ds="edito"] .nu-mtype button,html[data-ds="edito"] .nu-goals button,html[data-ds="edito"] .nu-pace button,html[data-ds="edito"] .preset{border-radius:6px}
+html[data-ds="edito"] .dish-ic{border-radius:6px}
+html[data-ds="edito"] .mchip,html[data-ds="edito"] .nu-plan div,html[data-ds="edito"] .pomo-meta div{border-radius:6px}
+html[data-ds="edito"] .recipe{border-radius:6px}
+html[data-ds="edito"] .toast{border-radius:6px}
+html[data-ds="edito"] .toast-act{border-radius:6px}
+html[data-ds="edito"] .sheet{border-radius:6px 6px 0 0}
+html[data-ds="edito"] .pw-av{border-radius:6px}
+html[data-ds="edito"] .auth-logo{border-radius:6px}
+html[data-ds="edito"] .alert,html[data-ds="edito"] .nu-goalcard,html[data-ds="edito"] .nu-warn{border-radius:6px}
+html[data-ds="edito"] .gr-tip{border-radius:6px}
+html[data-ds="edito"] .rem-box{border-radius:6px}
+html[data-ds="edito"] .na-ic{border-radius:6px}
+html[data-ds="edito"] .dc-d{border-radius:6px}
+html[data-ds="edito"] .pw-eye{border-radius:6px}
+html[data-ds="edito"] .mf-n{border-radius:6px}
 
-html[data-ds] .card{border-radius:6px}
-html[data-ds] .home-add{border-radius:6px}
-html[data-ds] .vseg{border-radius:6px}
-html[data-ds] .vseg button{border-radius:6px}
-html[data-ds] .dock-add{border-radius:6px}
-html[data-ds] .sp-ic{border-radius:6px}
-html[data-ds] .mcp-url{border-radius:6px}
-html[data-ds] .np{border-radius:6px}
-html[data-ds] .lightbox img{border-radius:6px}
-html[data-ds] .side-it,html[data-ds] .side-add{border-radius:6px}
-html[data-ds] .tchip{border-radius:4px}
-html[data-ds] .rt-bar{border-radius:6px}
-html[data-ds] .ai-opt{border-radius:6px}
-html[data-ds] .ai-step{border-radius:6px}
-html[data-ds] .ai-prompt{border-radius:6px}
-html[data-ds] .coach-day{border-radius:6px}
-html[data-ds] .wo-ex{border-radius:6px}
-html[data-ds] .wo-rest{border-radius:6px}
-html[data-ds] .nf-back{border-radius:6px}
-html[data-ds] .drop{border-radius:6px}
-html[data-ds] .rt-pop{border-radius:6px}
-html[data-ds] .rt-pop button{border-radius:6px}
-html[data-ds] [data-c2]{border-radius:4px}
-html[data-ds] .act-it[data-c2]{border-radius:6px}
-html[data-ds] .cf-hit{border-radius:6px}
+html[data-ds="edito"] .card{border-radius:6px}
+html[data-ds="edito"] .home-add{border-radius:6px}
+html[data-ds="edito"] .vseg{border-radius:6px}
+html[data-ds="edito"] .vseg button{border-radius:6px}
+html[data-ds="edito"] .dock-add{border-radius:6px}
+html[data-ds="edito"] .sp-ic{border-radius:6px}
+html[data-ds="edito"] .mcp-url{border-radius:6px}
+html[data-ds="edito"] .np{border-radius:6px}
+html[data-ds="edito"] .lightbox img{border-radius:6px}
+html[data-ds="edito"] .side-it,html[data-ds="edito"] .side-add{border-radius:6px}
+html[data-ds="edito"] .tchip{border-radius:4px}
+html[data-ds="edito"] .rt-bar{border-radius:6px}
+html[data-ds="edito"] .ai-opt{border-radius:6px}
+html[data-ds="edito"] .ai-step{border-radius:6px}
+html[data-ds="edito"] .ai-prompt{border-radius:6px}
+html[data-ds="edito"] .coach-day{border-radius:6px}
+html[data-ds="edito"] .wo-ex{border-radius:6px}
+html[data-ds="edito"] .wo-rest{border-radius:6px}
+html[data-ds="edito"] .nf-back{border-radius:6px}
+html[data-ds="edito"] .drop{border-radius:6px}
+html[data-ds="edito"] .rt-pop{border-radius:6px}
+html[data-ds="edito"] .rt-pop button{border-radius:6px}
+html[data-ds="edito"] [data-c2]{border-radius:4px}
+html[data-ds="edito"] .act-it[data-c2]{border-radius:6px}
+html[data-ds="edito"] .cf-hit{border-radius:6px}
 /* graisses ramenées à 500 au plus */
-html[data-ds] .sl-name{font-weight:500}
-html[data-ds] h1{font-weight:500}
-html[data-ds] h2{font-weight:500}
-html[data-ds] .btn{font-weight:500}
-html[data-ds] .brand{font-weight:500}
-html[data-ds] .sl-code{font-weight:500}
-html[data-ds] .act-it.danger{font-weight:500}
-html[data-ds] .act-it[aria-pressed="true"]{font-weight:500}
-html[data-ds] .realise{font-weight:500}
-html[data-ds] .x.armed{font-weight:500}
-html[data-ds] .foldbtn{font-weight:500}
-html[data-ds] .next .t{font-weight:500}
-html[data-ds] .qbtn{font-weight:500}
-html[data-ds] .cal-title{font-weight:500}
-html[data-ds] .cal-dow span{font-weight:500}
-html[data-ds] .yr-title{font-weight:500}
-html[data-ds] .ym-g i.ev{font-weight:500}
-html[data-ds] .ym-g i.td{font-weight:500}
-html[data-ds] .cal-sel .lbl{font-weight:500}
-html[data-ds] .late{font-weight:500}
-html[data-ds] .past{font-weight:500}
-html[data-ds] .status{font-weight:500}
-html[data-ds] .phase{font-weight:500}
-html[data-ds] .preset{font-weight:500}
-html[data-ds] .stepper button{font-weight:500}
-html[data-ds] .seg button{font-weight:500}
-html[data-ds] .err{font-weight:500}
-html[data-ds] .bk-list .n{font-weight:500}
-html[data-ds] .steps li::before{font-weight:500}
-html[data-ds] .install summary{font-weight:500}
-html[data-ds] .resume{font-weight:500}
-html[data-ds] .grp-y{font-weight:500}
-html[data-ds] .grp-m{font-weight:500}
-html[data-ds] .grp-w{font-weight:500}
-html[data-ds] .grp-d{font-weight:500}
-html[data-ds] .back{font-weight:500}
-html[data-ds] .dayv-title{font-weight:500}
-html[data-ds] .blk b{font-weight:500}
-html[data-ds] .linkbtn{font-weight:500}
+html[data-ds="edito"] .sl-name{font-weight:500}
+html[data-ds="edito"] h1{font-weight:500}
+html[data-ds="edito"] h2{font-weight:500}
+html[data-ds="edito"] .btn{font-weight:500}
+html[data-ds="edito"] .brand{font-weight:500}
+html[data-ds="edito"] .sl-code{font-weight:500}
+html[data-ds="edito"] .act-it.danger{font-weight:500}
+html[data-ds="edito"] .act-it[aria-pressed="true"]{font-weight:500}
+html[data-ds="edito"] .realise{font-weight:500}
+html[data-ds="edito"] .x.armed{font-weight:500}
+html[data-ds="edito"] .foldbtn{font-weight:500}
+html[data-ds="edito"] .next .t{font-weight:500}
+html[data-ds="edito"] .qbtn{font-weight:500}
+html[data-ds="edito"] .cal-title{font-weight:500}
+html[data-ds="edito"] .cal-dow span{font-weight:500}
+html[data-ds="edito"] .yr-title{font-weight:500}
+html[data-ds="edito"] .ym-g i.ev{font-weight:500}
+html[data-ds="edito"] .ym-g i.td{font-weight:500}
+html[data-ds="edito"] .cal-sel .lbl{font-weight:500}
+html[data-ds="edito"] .late{font-weight:500}
+html[data-ds="edito"] .past{font-weight:500}
+html[data-ds="edito"] .status{font-weight:500}
+html[data-ds="edito"] .phase{font-weight:500}
+html[data-ds="edito"] .preset{font-weight:500}
+html[data-ds="edito"] .stepper button{font-weight:500}
+html[data-ds="edito"] .seg button{font-weight:500}
+html[data-ds="edito"] .err{font-weight:500}
+html[data-ds="edito"] .bk-list .n{font-weight:500}
+html[data-ds="edito"] .steps li::before{font-weight:500}
+html[data-ds="edito"] .install summary{font-weight:500}
+html[data-ds="edito"] .resume{font-weight:500}
+html[data-ds="edito"] .grp-y{font-weight:500}
+html[data-ds="edito"] .grp-m{font-weight:500}
+html[data-ds="edito"] .grp-w{font-weight:500}
+html[data-ds="edito"] .grp-d{font-weight:500}
+html[data-ds="edito"] .back{font-weight:500}
+html[data-ds="edito"] .dayv-title{font-weight:500}
+html[data-ds="edito"] .blk b{font-weight:500}
+html[data-ds="edito"] .linkbtn{font-weight:500}
 
-html[data-ds] .ms-name{font-weight:500}
-html[data-ds] .ex-head input{font-weight:500}
-html[data-ds] .set .lbl{font-weight:500}
-html[data-ds] .mini{font-weight:500}
-html[data-ds] .more-opts>summary{font-weight:500}
+html[data-ds="edito"] .ms-name{font-weight:500}
+html[data-ds="edito"] .ex-head input{font-weight:500}
+html[data-ds="edito"] .set .lbl{font-weight:500}
+html[data-ds="edito"] .mini{font-weight:500}
+html[data-ds="edito"] .more-opts>summary{font-weight:500}
 
-html[data-ds] .doc-open b{font-weight:500}
-html[data-ds] .onb-skip{font-weight:500}
-html[data-ds] .onb-tag{font-weight:500}
-html[data-ds] .onb-steps li span{font-weight:500}
-html[data-ds] .nu-tabs button{font-weight:500}
-html[data-ds] .notmention{font-weight:500}
-html[data-ds] .me-done{font-weight:500}
-html[data-ds] .cal-title .yr-ic{font-weight:500}
-html[data-ds] .cat-h .fold-n{font-weight:500}
-html[data-ds] .howto>summary{font-weight:500}
-html[data-ds] .note b{font-weight:500}
-html[data-ds] .note-ed input{font-weight:500}
-html[data-ds] .pin-t{font-weight:500}
-html[data-ds] .pad button.del{font-weight:500}
-html[data-ds] .pin-err{font-weight:500}
-html[data-ds] .doc-ghost{font-weight:500}
-html[data-ds] .pw-av{font-weight:500}
-html[data-ds] .pw-main b{font-weight:500}
-html[data-ds] .tabgrp{font-weight:500}
-html[data-ds] .onb-grp{font-weight:500}
-html[data-ds] .setsec>summary{font-weight:500}
-html[data-ds] .nu-blk-h{font-weight:500}
-html[data-ds] .nu-in input{font-weight:500}
-html[data-ds] .dish-it .grow b{font-weight:500}
-html[data-ds] .dish-it .k{font-weight:500}
-html[data-ds] .memtag{font-weight:500}
-html[data-ds] .load-msg{font-weight:500}
-html[data-ds] .nu-mtype button{font-weight:500}
-html[data-ds] .gr-rev .lab{font-weight:500}
-html[data-ds] .badge{font-weight:500}
-html[data-ds] .view>.brand{font-weight:500}
-html[data-ds] .view>h1,html[data-ds] #notesList>h1{font-weight:500}
-html[data-ds] h1{font-weight:500}
-html[data-ds] h2{font-weight:500}
-html[data-ds] .setsec>summary{font-weight:500}
-html[data-ds] .btn{font-weight:500}
-html[data-ds] .mini{font-weight:500}
-html[data-ds] .pill[aria-pressed="true"]{font-weight:500}
-html[data-ds] .tab{font-weight:500}
-html[data-ds] .cal-title{font-weight:500}
-html[data-ds] .cal-title .yr-ic{font-weight:500}
-html[data-ds] .yr-title{font-weight:500}
-html[data-ds] .nu-big{font-weight:500}
-html[data-ds] .dish-kcal{font-weight:500}
-html[data-ds] .dish-ic{font-weight:500}
-html[data-ds] .toast-act{font-weight:500}
-html[data-ds] .onb-tag{font-weight:500}
-html[data-ds] .yr-title .yr-ic{font-weight:500}
-html[data-ds] .meal-tg .tg-box{font-weight:500}
-html[data-ds] .rem-h{font-weight:500}
-html[data-ds] .na-t{font-weight:500}
-html[data-ds] .eyebrow{font-weight:500}
-html[data-ds] nav .tab .tab-l{font-weight:500}
-html[data-ds] .dc-d b{font-weight:500}
-html[data-ds] .pad button.del{font-weight:500}
-html[data-ds] .auth-langs .linkbtn[aria-pressed="true"]{font-weight:500}
-html[data-ds] .hm-next b{font-weight:500}
-html[data-ds] .hm-tile b{font-weight:500}
-html[data-ds] .hm-time{font-weight:500}
-html[data-ds] .qa-it b{font-weight:500}
-html[data-ds] .mcp-it .grow b{font-weight:500}
-html[data-ds] .side-brand{font-weight:500}
-html[data-ds] .tchip{font-weight:500}
-html[data-ds] .wo-h .num{font-weight:500}
-html[data-ds] .wo-set.done .lbl{font-weight:500}
-html[data-ds] .wo-rest{font-weight:500}
-html[data-ds] .nf-back{font-weight:500}
-html[data-ds] .rt-aa{font-weight:500}
-html[data-ds] [data-c2]{font-weight:500}
+html[data-ds="edito"] .doc-open b{font-weight:500}
+html[data-ds="edito"] .onb-skip{font-weight:500}
+html[data-ds="edito"] .onb-tag{font-weight:500}
+html[data-ds="edito"] .onb-steps li span{font-weight:500}
+html[data-ds="edito"] .nu-tabs button{font-weight:500}
+html[data-ds="edito"] .notmention{font-weight:500}
+html[data-ds="edito"] .me-done{font-weight:500}
+html[data-ds="edito"] .cal-title .yr-ic{font-weight:500}
+html[data-ds="edito"] .cat-h .fold-n{font-weight:500}
+html[data-ds="edito"] .howto>summary{font-weight:500}
+html[data-ds="edito"] .note b{font-weight:500}
+html[data-ds="edito"] .note-ed input{font-weight:500}
+html[data-ds="edito"] .pin-t{font-weight:500}
+html[data-ds="edito"] .pad button.del{font-weight:500}
+html[data-ds="edito"] .pin-err{font-weight:500}
+html[data-ds="edito"] .doc-ghost{font-weight:500}
+html[data-ds="edito"] .pw-av{font-weight:500}
+html[data-ds="edito"] .pw-main b{font-weight:500}
+html[data-ds="edito"] .tabgrp{font-weight:500}
+html[data-ds="edito"] .onb-grp{font-weight:500}
+html[data-ds="edito"] .setsec>summary{font-weight:500}
+html[data-ds="edito"] .nu-blk-h{font-weight:500}
+html[data-ds="edito"] .nu-in input{font-weight:500}
+html[data-ds="edito"] .dish-it .grow b{font-weight:500}
+html[data-ds="edito"] .dish-it .k{font-weight:500}
+html[data-ds="edito"] .memtag{font-weight:500}
+html[data-ds="edito"] .load-msg{font-weight:500}
+html[data-ds="edito"] .nu-mtype button{font-weight:500}
+html[data-ds="edito"] .gr-rev .lab{font-weight:500}
+html[data-ds="edito"] .badge{font-weight:500}
+html[data-ds="edito"] .view>.brand{font-weight:500}
+html[data-ds="edito"] .view>h1,html[data-ds="edito"] #notesList>h1{font-weight:500}
+html[data-ds="edito"] h1{font-weight:500}
+html[data-ds="edito"] h2{font-weight:500}
+html[data-ds="edito"] .setsec>summary{font-weight:500}
+html[data-ds="edito"] .btn{font-weight:500}
+html[data-ds="edito"] .mini{font-weight:500}
+html[data-ds="edito"] .pill[aria-pressed="true"]{font-weight:500}
+html[data-ds="edito"] .tab{font-weight:500}
+html[data-ds="edito"] .cal-title{font-weight:500}
+html[data-ds="edito"] .cal-title .yr-ic{font-weight:500}
+html[data-ds="edito"] .yr-title{font-weight:500}
+html[data-ds="edito"] .nu-big{font-weight:500}
+html[data-ds="edito"] .dish-kcal{font-weight:500}
+html[data-ds="edito"] .dish-ic{font-weight:500}
+html[data-ds="edito"] .toast-act{font-weight:500}
+html[data-ds="edito"] .onb-tag{font-weight:500}
+html[data-ds="edito"] .yr-title .yr-ic{font-weight:500}
+html[data-ds="edito"] .meal-tg .tg-box{font-weight:500}
+html[data-ds="edito"] .rem-h{font-weight:500}
+html[data-ds="edito"] .na-t{font-weight:500}
+html[data-ds="edito"] .eyebrow{font-weight:500}
+html[data-ds="edito"] nav .tab .tab-l{font-weight:500}
+html[data-ds="edito"] .dc-d b{font-weight:500}
+html[data-ds="edito"] .pad button.del{font-weight:500}
+html[data-ds="edito"] .auth-langs .linkbtn[aria-pressed="true"]{font-weight:500}
+html[data-ds="edito"] .hm-next b{font-weight:500}
+html[data-ds="edito"] .hm-tile b{font-weight:500}
+html[data-ds="edito"] .hm-time{font-weight:500}
+html[data-ds="edito"] .qa-it b{font-weight:500}
+html[data-ds="edito"] .mcp-it .grow b{font-weight:500}
+html[data-ds="edito"] .side-brand{font-weight:500}
+html[data-ds="edito"] .tchip{font-weight:500}
+html[data-ds="edito"] .wo-h .num{font-weight:500}
+html[data-ds="edito"] .wo-set.done .lbl{font-weight:500}
+html[data-ds="edito"] .wo-rest{font-weight:500}
+html[data-ds="edito"] .nf-back{font-weight:500}
+html[data-ds="edito"] .rt-aa{font-weight:500}
+html[data-ds="edito"] [data-c2]{font-weight:500}
 
 /* ---------- fond, texte, titres ---------- */
-html[data-ds],html[data-ds] body{background:var(--bg)!important;color:var(--ink);font:400 16px/1.45 var(--font);-webkit-font-smoothing:antialiased}
-html[data-ds] *,html[data-ds] *::before,html[data-ds] *::after{box-shadow:none!important;text-shadow:none!important}
-html[data-ds] :focus-visible{outline:1.5px solid var(--ink)!important;outline-offset:2px}
-html[data-ds] h1{font-family:var(--display);font-weight:300;font-size:40px;line-height:1.05;letter-spacing:-.01em;margin:14px 0 6px}
-html[data-ds] h1 i,html[data-ds] h1 em{font-style:italic;font-weight:300}
-html[data-ds] h2{font:500 11px/1.3 var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:28px 0 8px}
-html[data-ds] h3{font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:0}
-html[data-ds] .eyebrow,html[data-ds] .lab{font:500 11px/1.3 var(--font)!important;letter-spacing:.14em!important;text-transform:uppercase;color:var(--muted)}
-html[data-ds] .sub{color:var(--muted);font-size:15px}
-html[data-ds] b,html[data-ds] strong{font-weight:500}
-html[data-ds] .muted,html[data-ds] .small.muted{color:var(--muted)}
+html[data-ds="edito"],html[data-ds="edito"] body{background:var(--bg)!important;color:var(--ink);font:400 16px/1.45 var(--font);-webkit-font-smoothing:antialiased}
+html[data-ds="edito"] *,html[data-ds="edito"] *::before,html[data-ds="edito"] *::after{box-shadow:none!important;text-shadow:none!important}
+html[data-ds="edito"] :focus-visible{outline:1.5px solid var(--ink)!important;outline-offset:2px}
+html[data-ds="edito"] h1{font-family:var(--display);font-weight:300;font-size:40px;line-height:1.05;letter-spacing:-.01em;margin:14px 0 6px}
+html[data-ds="edito"] h1 i,html[data-ds="edito"] h1 em{font-style:italic;font-weight:300}
+html[data-ds="edito"] h2{font:500 11px/1.3 var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:28px 0 8px}
+html[data-ds="edito"] h3{font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:0}
+html[data-ds="edito"] .eyebrow,html[data-ds="edito"] .lab{font:500 11px/1.3 var(--font)!important;letter-spacing:.14em!important;text-transform:uppercase;color:var(--muted)}
+html[data-ds="edito"] .sub{color:var(--muted);font-size:15px}
+html[data-ds="edito"] b,html[data-ds="edito"] strong{font-weight:500}
+html[data-ds="edito"] .muted,html[data-ds="edito"] .small.muted{color:var(--muted)}
 
 /* ---------- listes en filets plutôt qu'en cartes ---------- */
-html[data-ds] .card:not(.sheet){background:transparent;border:0;border-top:var(--rule) solid var(--line);border-bottom:var(--rule) solid var(--line);border-radius:0}
-html[data-ds] .row{border-bottom:var(--rule) solid var(--line);padding-inline:0}
-html[data-ds] .setsec{background:transparent;border:0;border-bottom:var(--rule) solid var(--line);border-radius:0}
-html[data-ds] .setsec>summary{padding-inline:0}
+html[data-ds="edito"] .card:not(.sheet){background:transparent;border:0;border-top:var(--rule) solid var(--line);border-bottom:var(--rule) solid var(--line);border-radius:0}
+html[data-ds="edito"] .row{border-bottom:var(--rule) solid var(--line);padding-inline:0}
+html[data-ds="edito"] .setsec{background:transparent;border:0;border-bottom:var(--rule) solid var(--line);border-radius:0}
+html[data-ds="edito"] .setsec>summary{padding-inline:0}
 
 /* ---------- boutons, champs, pastilles ---------- */
-html[data-ds] .btn{background:var(--ink)!important;color:var(--bg)!important;border-radius:6px;font-weight:500;letter-spacing:0;transition:opacity .15s var(--ease)}
-html[data-ds] .btn:active{opacity:.8}
-html[data-ds] .btn.ghost{background:transparent!important;color:var(--ink)!important;border:var(--rule) solid var(--ink-2)}
-html[data-ds] .btn.stop{background:transparent!important;color:var(--late)!important;border:var(--rule) solid var(--late)}
-html[data-ds] .mini{background:transparent;border:var(--rule) solid var(--line);border-radius:4px;font-weight:400;color:var(--ink)}
-html[data-ds] .pill,html[data-ds] .chip,html[data-ds] .tchip,html[data-ds] .status{border-radius:4px;font-weight:400}
-html[data-ds] .pill[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
-html[data-ds] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),html[data-ds] select,html[data-ds] textarea{background:transparent;border:var(--rule) solid var(--line);border-radius:6px;font-family:var(--font)}
-html[data-ds] input:focus,html[data-ds] select:focus,html[data-ds] textarea:focus{border-color:var(--ink)}
-html[data-ds] .seg{background:var(--surface-2);border-radius:6px}
-html[data-ds] .seg button{border-radius:4px;font-weight:400}
-html[data-ds] .seg button[aria-pressed="true"]{background:var(--bg);color:var(--ink);font-weight:500}
-html[data-ds] .switch:checked{background:var(--ink)}
-html[data-ds] .x{color:var(--muted)}
-html[data-ds] [data-c2]{background:var(--late)!important;color:#fff!important;border-radius:4px!important}
+html[data-ds="edito"] .btn{background:var(--ink)!important;color:var(--bg)!important;border-radius:6px;font-weight:500;letter-spacing:0;transition:opacity .15s var(--ease)}
+html[data-ds="edito"] .btn:active{opacity:.8}
+html[data-ds="edito"] .btn.ghost{background:transparent!important;color:var(--ink)!important;border:var(--rule) solid var(--ink-2)}
+html[data-ds="edito"] .btn.stop{background:transparent!important;color:var(--late)!important;border:var(--rule) solid var(--late)}
+html[data-ds="edito"] .mini{background:transparent;border:var(--rule) solid var(--line);border-radius:4px;font-weight:400;color:var(--ink)}
+html[data-ds="edito"] .pill,html[data-ds="edito"] .chip,html[data-ds="edito"] .tchip,html[data-ds="edito"] .status{border-radius:4px;font-weight:400}
+html[data-ds="edito"] .pill[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+html[data-ds="edito"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),html[data-ds="edito"] select,html[data-ds="edito"] textarea{background:transparent;border:var(--rule) solid var(--line);border-radius:6px;font-family:var(--font)}
+html[data-ds="edito"] input:focus,html[data-ds="edito"] select:focus,html[data-ds="edito"] textarea:focus{border-color:var(--ink)}
+html[data-ds="edito"] .seg{background:var(--surface-2);border-radius:6px}
+html[data-ds="edito"] .seg button{border-radius:4px;font-weight:400}
+html[data-ds="edito"] .seg button[aria-pressed="true"]{background:var(--bg);color:var(--ink);font-weight:500}
+html[data-ds="edito"] .switch:checked{background:var(--ink)}
+html[data-ds="edito"] .x{color:var(--muted)}
+html[data-ds="edito"] [data-c2]{background:var(--late)!important;color:#fff!important;border-radius:4px!important}
 
 /* ---------- chiffres, heures, mesures : IBM Plex Mono ---------- */
-html[data-ds] .hm-time,html[data-ds] .task .date,html[data-ds] .time,html[data-ds] .dish-kcal,html[data-ds] .num,html[data-ds] .sbadge,html[data-ds] .clock,html[data-ds] .pomo-time,html[data-ds] .wo-set input,html[data-ds] .hm-tile b,html[data-ds] .nu-big,html[data-ds] .kpi{font-family:var(--mono)!important;font-variant-numeric:tabular-nums;font-weight:400}
+html[data-ds="edito"] .hm-time,html[data-ds="edito"] .task .date,html[data-ds="edito"] .time,html[data-ds="edito"] .dish-kcal,html[data-ds="edito"] .num,html[data-ds="edito"] .sbadge,html[data-ds="edito"] .clock,html[data-ds="edito"] .pomo-time,html[data-ds="edito"] .wo-set input,html[data-ds="edito"] .hm-tile b,html[data-ds="edito"] .nu-big,html[data-ds="edito"] .kpi{font-family:var(--mono)!important;font-variant-numeric:tabular-nums;font-weight:400}
 
 /* ---------- fenêtres, toast ---------- */
-html[data-ds] .sheet{background:var(--bg)!important;border-radius:8px 8px 0 0;border-top:var(--rule) solid var(--line)}
-html[data-ds] .sheet-bg{background:color-mix(in srgb,var(--ink) 28%,transparent)}
-html[data-ds] #toast{background:var(--ink);color:var(--bg);border-radius:6px;font-weight:400}
+html[data-ds="edito"] .sheet{background:var(--bg)!important;border-radius:8px 8px 0 0;border-top:var(--rule) solid var(--line)}
+html[data-ds="edito"] .sheet-bg{background:color-mix(in srgb,var(--ink) 28%,transparent)}
+html[data-ds="edito"] #toast{background:var(--ink);color:var(--bg);border-radius:6px;font-weight:400}
 
 /* ---------- barre du bas : les fonctions de l'app ouverte ---------- */
-html[data-ds] nav{background:var(--bg)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border-top:var(--rule) solid var(--line)!important;border-radius:0!important;box-shadow:none!important}
-html[data-ds] nav .in{display:grid;max-width:520px;margin:0 auto}
-html[data-ds] nav .tab{color:var(--muted);font-size:11px;font-weight:400;gap:4px;position:relative}
-html[data-ds] nav .tab svg{width:22px;height:22px;stroke-width:1.5}
-html[data-ds] nav .tab[aria-current="page"],html[data-ds] nav .tab[aria-current="page"] .tabicon{color:var(--app);font-weight:500}
-html[data-ds] nav .tab .sbadge{position:absolute;top:2px;left:calc(50% + 8px)}
-html[data-ds] body:not(.has-nav) main{padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}
+html[data-ds="edito"] nav{background:var(--bg)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border-top:var(--rule) solid var(--line)!important;border-radius:0!important;box-shadow:none!important}
+html[data-ds="edito"] nav .in{display:grid;max-width:520px;margin:0 auto}
+html[data-ds="edito"] nav .tab{color:var(--muted);font-size:11px;font-weight:400;gap:4px;position:relative}
+html[data-ds="edito"] nav .tab svg{width:22px;height:22px;stroke-width:1.5}
+html[data-ds="edito"] nav .tab[aria-current="page"],html[data-ds="edito"] nav .tab[aria-current="page"] .tabicon{color:var(--app);font-weight:500}
+html[data-ds="edito"] nav .tab .sbadge{position:absolute;top:2px;left:calc(50% + 8px)}
+html[data-ds="edito"] body:not(.has-nav) main{padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}
 
 /* ---------- en-tête d'une app : logo + nom, retour à Sid'compagnon ---------- */
-html[data-ds] .vhead:not([hidden]){display:flex!important;align-items:center;justify-content:space-between;gap:12px;min-height:36px;margin:4px 0 0;background:none;border:0;padding:0}
-html[data-ds] .ah-brand{display:flex;align-items:center;gap:8px}
-html[data-ds] .ah-logo{width:22px;height:22px;color:var(--app)}
-html[data-ds] .ah-home{display:flex;align-items:center;gap:6px;border:0;background:none;color:var(--muted);font:400 13px var(--font);padding:8px 0 8px 8px;min-height:44px;cursor:pointer}
-html[data-ds] .ah-home svg{width:18px;height:18px;stroke-width:1.5}
+html[data-ds="edito"] .vhead:not([hidden]){display:flex!important;align-items:center;justify-content:space-between;gap:12px;min-height:36px;margin:4px 0 0;background:none;border:0;padding:0}
+html[data-ds="edito"] .ah-brand{display:flex;align-items:center;gap:8px}
+html[data-ds="edito"] .ah-logo{width:22px;height:22px;color:var(--app)}
+html[data-ds="edito"] .ah-home{display:flex;align-items:center;gap:6px;border:0;background:none;color:var(--muted);font:400 13px var(--font);padding:8px 0 8px 8px;min-height:44px;cursor:pointer}
+html[data-ds="edito"] .ah-home svg{width:18px;height:18px;stroke-width:1.5}
 
 /* ---------- logos ---------- */
 .logo{display:block;width:100%;height:100%}
@@ -345,15 +345,15 @@ html[data-ds] .ah-home svg{width:18px;height:18px;stroke-width:1.5}
 .home-app span{color:var(--ink)}
 
 /* ---------- Sid'compagnon : les 3 applications ---------- */
-html[data-ds] #v-home .home-hello{font-family:var(--display);font-weight:300;font-size:40px}
+html[data-ds="edito"] #v-home .home-hello{font-family:var(--display);font-weight:300;font-size:40px}
 .home-apps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:22px 0 8px;padding:18px 0;border-top:var(--rule) solid var(--line);border-bottom:var(--rule) solid var(--line)}
 .home-app{display:flex;flex-direction:column;align-items:center;gap:10px;border:0;background:none;padding:6px 0;cursor:pointer;font:400 14px var(--font);transition:opacity .15s var(--ease)}
 .home-app:active{opacity:.7}
 .home-applogo{width:72px;height:72px}
-html[data-ds] .hm-tile b{font-size:30px;font-weight:400;letter-spacing:-.01em}
-html[data-ds] .hm-tiles .card,html[data-ds] .hm-next{border:0;border-top:var(--rule) solid var(--line);border-radius:0;background:transparent}
-html[data-ds] .home-avatar{border-radius:6px;background:var(--surface-2);color:var(--ink);font-weight:500}
-html[data-ds] .home-add{border-radius:6px}
+html[data-ds="edito"] .hm-tile b{font-size:30px;font-weight:400;letter-spacing:-.01em}
+html[data-ds="edito"] .hm-tiles .card,html[data-ds="edito"] .hm-next{border:0;border-top:var(--rule) solid var(--line);border-radius:0;background:transparent}
+html[data-ds="edito"] .home-avatar{border-radius:6px;background:var(--surface-2);color:var(--ink);font-weight:500}
+html[data-ds="edito"] .home-add{border-radius:6px}
 
 /* ---------- animation d'ouverture (2 s) ---------- */
 .splash{position:fixed;inset:0;z-index:200;display:grid;place-content:center;justify-items:center;gap:14px;background:var(--bg,#F4F0E8);color:var(--ink,#1C1A17);pointer-events:none;opacity:1}
@@ -372,65 +372,65 @@ html[data-ds] .home-add{border-radius:6px}
 
 /* ---------- présentation ---------- */
 .onb-logo{width:96px;height:96px;margin:0 auto}
-html[data-ds] .onb{background:var(--bg)}
-html[data-ds] .onb h1{font-size:34px}
-html[data-ds] .onb-grp{font:500 11px var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-html[data-ds] .onb-dots i{border-radius:2px}
-html[data-ds] .onb-floats{display:none}
+html[data-ds="edito"] .onb{background:var(--bg)}
+html[data-ds="edito"] .onb h1{font-size:34px}
+html[data-ds="edito"] .onb-grp{font:500 11px var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+html[data-ds="edito"] .onb-dots i{border-radius:2px}
+html[data-ds="edito"] .onb-floats{display:none}
 
 /* ---------- barre latérale (ordinateur) ---------- */
-html[data-ds] .side{background:var(--bg);border-right:var(--rule) solid var(--line)}
+html[data-ds="edito"] .side{background:var(--bg);border-right:var(--rule) solid var(--line)}
 .side-logo{width:26px;height:26px;color:var(--ink)}
 .side-applogo{width:16px;height:16px;display:inline-block;vertical-align:-3px;margin-right:6px}
-html[data-ds] .side-brand span{font:300 22px var(--display)}
-html[data-ds] .side-it[aria-current="true"]{background:var(--surface-2);border-radius:6px}
+html[data-ds="edito"] .side-brand span{font:300 22px var(--display)}
+html[data-ds="edito"] .side-it[aria-current="true"]{background:var(--surface-2);border-radius:6px}
 
 /* ---------- icônes fines ---------- */
-html[data-ds] svg.i,html[data-ds] .ic svg,html[data-ds] .sp-ic svg,html[data-ds] .tabicon svg{stroke-width:1.5}
+html[data-ds="edito"] svg.i,html[data-ds="edito"] .ic svg,html[data-ds="edito"] .sp-ic svg,html[data-ds="edito"] .tabicon svg{stroke-width:1.5}
 
 /* ---- sid'note : dossiers en tuiles, notes en filets ---- */
-html[data-ds] #noteList.card{border:0}
-html[data-ds] .nl-h{font:500 11px var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:18px 0 10px}
-html[data-ds] .nl-h:first-child{margin-top:6px}
-html[data-ds] .nf-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-html[data-ds] .nf-tile{position:relative;border:var(--rule) solid var(--line);border-radius:6px;background:var(--surface-2);min-width:0}
-html[data-ds] .nf-tile .nf-open{padding:12px 4px 12px 2px;gap:8px;min-width:0}
-html[data-ds] .nf-tile .nf-open b{font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-html[data-ds] .nf-tile .ngrip{padding:0 0 0 6px}
-html[data-ds] .nf-tile .pen{padding:0 6px;min-width:0;width:auto}
-html[data-ds] .nf-ic{color:var(--ink)}html[data-ds] .nf-ic .i{width:18px;height:18px}
-html[data-ds] .nf-n{font:400 12px var(--mono);color:var(--muted);flex:none}
-html[data-ds] .nl-notes{border-top:var(--rule) solid var(--line)}
-html[data-ds] .nl-notes .note-row{border-bottom:var(--rule) solid var(--line)}
-html[data-ds] .nl-notes .note-row:last-child{border-bottom:var(--rule) solid var(--line)}
-html[data-ds] .note{padding:14px 4px}
-html[data-ds] .note b{font:400 19px/1.25 var(--display);letter-spacing:-.005em}
-html[data-ds] .note .when{font:400 12px var(--mono);color:var(--muted)}
-@media (min-width:700px){html[data-ds] .nf-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-html[data-ds] #notesList .pw-top{flex-wrap:wrap}
-html[data-ds] #notesList .pw-top .search{flex:1 1 100%}
-html[data-ds] #notesList .pw-top .btn{flex:1}
-html[data-ds] #notesList.in-dir > .sub{display:none}
-html[data-ds] .note-rt:focus-visible,html[data-ds] #noteTitle:focus-visible{outline:0!important}
+html[data-ds="edito"] #noteList.card{border:0}
+html[data-ds="edito"] .nl-h{font:500 11px var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:18px 0 10px}
+html[data-ds="edito"] .nl-h:first-child{margin-top:6px}
+html[data-ds="edito"] .nf-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+html[data-ds="edito"] .nf-tile{position:relative;border:var(--rule) solid var(--line);border-radius:6px;background:var(--surface-2);min-width:0}
+html[data-ds="edito"] .nf-tile .nf-open{padding:12px 4px 12px 2px;gap:8px;min-width:0}
+html[data-ds="edito"] .nf-tile .nf-open b{font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+html[data-ds="edito"] .nf-tile .ngrip{padding:0 0 0 6px}
+html[data-ds="edito"] .nf-tile .pen{padding:0 6px;min-width:0;width:auto}
+html[data-ds="edito"] .nf-ic{color:var(--ink)}html[data-ds="edito"] .nf-ic .i{width:18px;height:18px}
+html[data-ds="edito"] .nf-n{font:400 12px var(--mono);color:var(--muted);flex:none}
+html[data-ds="edito"] .nl-notes{border-top:var(--rule) solid var(--line)}
+html[data-ds="edito"] .nl-notes .note-row{border-bottom:var(--rule) solid var(--line)}
+html[data-ds="edito"] .nl-notes .note-row:last-child{border-bottom:var(--rule) solid var(--line)}
+html[data-ds="edito"] .note{padding:14px 4px}
+html[data-ds="edito"] .note b{font:400 19px/1.25 var(--display);letter-spacing:-.005em}
+html[data-ds="edito"] .note .when{font:400 12px var(--mono);color:var(--muted)}
+@media (min-width:700px){html[data-ds="edito"] .nf-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+html[data-ds="edito"] #notesList .pw-top{flex-wrap:wrap}
+html[data-ds="edito"] #notesList .pw-top .search{flex:1 1 100%}
+html[data-ds="edito"] #notesList .pw-top .btn{flex:1}
+html[data-ds="edito"] #notesList.in-dir > .sub{display:none}
+html[data-ds="edito"] .note-rt:focus-visible,html[data-ds="edito"] #noteTitle:focus-visible{outline:0!important}
 
 /* ---- sid'fit : piste B « instrument de mesure » ---- */
-html[data-ds] .nu-sum{gap:22px;padding:18px 0}
-html[data-ds] .nu-ring{width:132px;height:132px;--pc:var(--app)}
-html[data-ds] .nu-ring.over{--pc:var(--late)}
+html[data-ds="edito"] .nu-sum{gap:22px;padding:18px 0}
+html[data-ds="edito"] .nu-ring{width:132px;height:132px;--pc:var(--app)}
+html[data-ds="edito"] .nu-ring.over{--pc:var(--late)}
 
-html[data-ds] .nu-big{font-size:26px}
-html[data-ds] .nu-ring .small{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-html[data-ds] .nu-macros{gap:0}
-html[data-ds] .nu-m{gap:0;padding:8px 0;border-bottom:var(--rule) solid var(--line)}
-html[data-ds] .nu-m:last-child{border-bottom:0}
-html[data-ds] .nu-m .top b{font:500 11px var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-html[data-ds] .nu-m .top span{font:400 14px var(--mono);color:var(--ink)}
-html[data-ds] .nu-m .bar{height:1px;border-radius:0;margin-top:6px}
-html[data-ds] .nu-m .bar i{border-radius:0}
-html[data-ds] .mdot{width:6px;height:6px}
-html[data-ds] input.search{background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238A8378' stroke-width='1.5' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E") no-repeat 12px 50%;padding-left:36px}
-html[data-ds] .auth-logo{display:block;width:76px;height:76px;margin:0 auto;border-radius:0;box-shadow:none;color:var(--c-home)}
-html[data-ds] .auth-logo svg{width:100%;height:100%;display:block}
+html[data-ds="edito"] .nu-big{font-size:26px}
+html[data-ds="edito"] .nu-ring .small{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+html[data-ds="edito"] .nu-macros{gap:0}
+html[data-ds="edito"] .nu-m{gap:0;padding:8px 0;border-bottom:var(--rule) solid var(--line)}
+html[data-ds="edito"] .nu-m:last-child{border-bottom:0}
+html[data-ds="edito"] .nu-m .top b{font:500 11px var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+html[data-ds="edito"] .nu-m .top span{font:400 14px var(--mono);color:var(--ink)}
+html[data-ds="edito"] .nu-m .bar{height:1px;border-radius:0;margin-top:6px}
+html[data-ds="edito"] .nu-m .bar i{border-radius:0}
+html[data-ds="edito"] .mdot{width:6px;height:6px}
+html[data-ds="edito"] input.search{background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238A8378' stroke-width='1.5' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E") no-repeat 12px 50%;padding-left:36px}
+html[data-ds="edito"] .auth-logo{display:block;width:76px;height:76px;margin:0 auto;border-radius:0;box-shadow:none;color:var(--c-home)}
+html[data-ds="edito"] .auth-logo svg{width:100%;height:100%;display:block}
 
 /* =====================================================================
    v43 · couleurs des apps bien présentes + barre latérale nette
@@ -438,57 +438,57 @@ html[data-ds] .auth-logo svg{width:100%;height:100%;display:block}
    (html[data-app]) ou du groupe (.side-grp[data-app], .hm-sec[data-app]). --app-soft / --app-line = teintes,
    --on-app = texte posé sur la couleur.
    ===================================================================== */
-html[data-ds][data-ds][data-ds],html[data-ds][data-ds] body{--on-app:#F4F0E8}
-html[data-ds][data-ds][data-ds][data-theme="dark"],html[data-ds][data-ds][data-theme="dark"] body{--on-app:#111214}
-@media (prefers-color-scheme:dark){html[data-ds][data-ds][data-ds]:not([data-theme="light"]),html[data-ds][data-ds]:not([data-theme="light"]) body{--on-app:#111214}}
-html[data-ds] body,html[data-ds] [data-app]{--app-soft:color-mix(in srgb,var(--app) 9%,var(--bg));--app-line:color-mix(in srgb,var(--app) 35%,var(--line))}
+html[data-ds="edito"][data-ds][data-ds],html[data-ds="edito"][data-ds] body{--on-app:#F4F0E8}
+html[data-ds="edito"][data-ds][data-ds][data-theme="dark"],html[data-ds="edito"][data-ds][data-theme="dark"] body{--on-app:#111214}
+@media (prefers-color-scheme:dark){html[data-ds="edito"][data-ds][data-ds]:not([data-theme="light"]),html[data-ds="edito"][data-ds]:not([data-theme="light"]) body{--on-app:#111214}}
+html[data-ds="edito"] body,html[data-ds="edito"] [data-app]{--app-soft:color-mix(in srgb,var(--app) 9%,var(--bg));--app-line:color-mix(in srgb,var(--app) 35%,var(--line))}
 [data-app="agenda"]:not(html){--app:var(--c-agenda)}
 [data-app="fit"]:not(html){--app:var(--c-fit)}
 [data-app="note"]:not(html){--app:var(--c-note)}
 [data-app="home"]:not(html){--app:var(--c-home)}
 
 /* boutons, états actifs, champs, interrupteurs : couleur de l'app */
-html[data-ds] .btn{background:var(--app)!important;color:var(--on-app)!important}
-html[data-ds] .btn.ghost{color:var(--app)!important;border-color:var(--app-line)}
-html[data-ds] .pill[aria-pressed="true"],html[data-ds] .chip[aria-pressed="true"]{background:var(--app);border-color:var(--app);color:var(--on-app)}
-html[data-ds] .seg button[aria-pressed="true"],html[data-ds] .seg button[aria-selected="true"]{color:var(--app);box-shadow:inset 0 -2px 0 var(--app)!important}
-html[data-ds] .switch:checked{background:var(--app)}
-html[data-ds] input:focus,html[data-ds] select:focus,html[data-ds] textarea:focus{border-color:var(--app)}
-html[data-ds] :focus-visible{outline-color:var(--app)!important}
-html[data-ds] input[type="checkbox"],html[data-ds] input[type="radio"],html[data-ds] input[type="range"]{accent-color:var(--app)}
-html[data-ds] a{color:var(--app)}
-html[data-ds] .sbadge{background:var(--app);color:var(--on-app)}
+html[data-ds="edito"] .btn{background:var(--app)!important;color:var(--on-app)!important}
+html[data-ds="edito"] .btn.ghost{color:var(--app)!important;border-color:var(--app-line)}
+html[data-ds="edito"] .pill[aria-pressed="true"],html[data-ds="edito"] .chip[aria-pressed="true"]{background:var(--app);border-color:var(--app);color:var(--on-app)}
+html[data-ds="edito"] .seg button[aria-pressed="true"],html[data-ds="edito"] .seg button[aria-selected="true"]{color:var(--app);box-shadow:inset 0 -2px 0 var(--app)!important}
+html[data-ds="edito"] .switch:checked{background:var(--app)}
+html[data-ds="edito"] input:focus,html[data-ds="edito"] select:focus,html[data-ds="edito"] textarea:focus{border-color:var(--app)}
+html[data-ds="edito"] :focus-visible{outline-color:var(--app)!important}
+html[data-ds="edito"] input[type="checkbox"],html[data-ds="edito"] input[type="radio"],html[data-ds="edito"] input[type="range"]{accent-color:var(--app)}
+html[data-ds="edito"] a{color:var(--app)}
+html[data-ds="edito"] .sbadge{background:var(--app);color:var(--on-app)}
 
-html[data-ds] .nu-ring{--pc:var(--app)}
-html[data-ds] .eyebrow.app,html[data-ds] .view>h2{color:var(--app)}
+html[data-ds="edito"] .nu-ring{--pc:var(--app)}
+html[data-ds="edito"] .eyebrow.app,html[data-ds="edito"] .view>h2{color:var(--app)}
 
 /* en-tête d'app : bandeau à la couleur de l'app */
-html[data-ds] .vhead:not([hidden]){border-bottom:2px solid var(--app);padding-bottom:6px;margin:4px auto 6px}
-html[data-ds] .vhead .eyebrow{color:var(--app);font-weight:500}
-html[data-ds] .ah-home{color:var(--ink)}
-html[data-ds] .view>h1{color:var(--ink)}
-html[data-ds] nav .tab[aria-current="page"]::before{content:"";position:absolute;top:-6px;left:28%;right:28%;height:2px;background:var(--app)}
-html[data-ds] nav{border-top-color:var(--app-line)!important}
+html[data-ds="edito"] .vhead:not([hidden]){border-bottom:2px solid var(--app);padding-bottom:6px;margin:4px auto 6px}
+html[data-ds="edito"] .vhead .eyebrow{color:var(--app);font-weight:500}
+html[data-ds="edito"] .ah-home{color:var(--ink)}
+html[data-ds="edito"] .view>h1{color:var(--ink)}
+html[data-ds="edito"] nav .tab[aria-current="page"]::before{content:"";position:absolute;top:-6px;left:28%;right:28%;height:2px;background:var(--app)}
+html[data-ds="edito"] nav{border-top-color:var(--app-line)!important}
 
 /* barre latérale : plate et nette (plus de faux gras ni de relief) */
-@media (min-width:768px){
-  html[data-ds] .side{background:var(--bg);border-right:1px solid var(--line);padding:18px 12px;gap:0}
-  html[data-ds] .side-brand{display:flex;align-items:center;gap:10px;margin:0 4px 14px 8px}
-  html[data-ds] .side-tog{display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:6px;background:none;color:var(--muted);cursor:pointer}
-  html[data-ds] .side-tog:hover{background:var(--surface-2);color:var(--ink)}
-  html[data-ds] .side-tog svg{width:18px;height:18px}
-  html[data-ds] .side-it,html[data-ds] .side-add{font:400 14px/1.2 var(--font);color:var(--ink);border-radius:6px;padding:7px 10px;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
-  html[data-ds] .side-it .sp-ic{color:var(--muted)}
-  html[data-ds] .side-it:hover{background:var(--surface-2);color:var(--ink)}
-  html[data-ds] .side-it[aria-current="true"]{background:var(--app-soft);color:var(--app);font-weight:500;box-shadow:inset 3px 0 0 var(--app)!important}
-  html[data-ds] .side-it[aria-current="true"] .sp-ic{color:var(--app)}
-  html[data-ds] .side-add{background:var(--ink);color:var(--bg);font-weight:500;margin:6px 0 4px}
-  html[data-ds] .side-add .sp-ic{color:var(--bg)}
-  html[data-ds] .side-grp{margin-top:14px}
-  html[data-ds] .side-grp .side-h{color:var(--app);font-weight:500;margin:0 10px 4px;display:flex;align-items:center}
-  html[data-ds] .side-grp .side-applogo{color:var(--app)}
-  html[data-ds] .side .sp-meta{font:400 12px var(--mono);color:var(--muted)}
-  html[data-ds] .side-grp:not([data-app="home"]) .side-it:hover .sp-ic{color:var(--app)}
+@media (min-width:1024px){
+  html[data-ds="edito"] .side{background:var(--bg);border-right:1px solid var(--line);padding:18px 12px;gap:0}
+  html[data-ds="edito"] .side-brand{display:flex;align-items:center;gap:10px;margin:0 4px 14px 8px}
+  html[data-ds="edito"] .side-tog{display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:6px;background:none;color:var(--muted);cursor:pointer}
+  html[data-ds="edito"] .side-tog:hover{background:var(--surface-2);color:var(--ink)}
+  html[data-ds="edito"] .side-tog svg{width:18px;height:18px}
+  html[data-ds="edito"] .side-it,html[data-ds="edito"] .side-add{font:400 14px/1.2 var(--font);color:var(--ink);border-radius:6px;padding:7px 10px;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  html[data-ds="edito"] .side-it .sp-ic{color:var(--muted)}
+  html[data-ds="edito"] .side-it:hover{background:var(--surface-2);color:var(--ink)}
+  html[data-ds="edito"] .side-it[aria-current="true"]{background:var(--app-soft);color:var(--app);font-weight:500;box-shadow:inset 3px 0 0 var(--app)!important}
+  html[data-ds="edito"] .side-it[aria-current="true"] .sp-ic{color:var(--app)}
+  html[data-ds="edito"] .side-add{background:var(--ink);color:var(--bg);font-weight:500;margin:6px 0 4px}
+  html[data-ds="edito"] .side-add .sp-ic{color:var(--bg)}
+  html[data-ds="edito"] .side-grp{margin-top:14px}
+  html[data-ds="edito"] .side-grp .side-h{color:var(--app);font-weight:500;margin:0 10px 4px;display:flex;align-items:center}
+  html[data-ds="edito"] .side-grp .side-applogo{color:var(--app)}
+  html[data-ds="edito"] .side .sp-meta{font:400 12px var(--mono);color:var(--muted)}
+  html[data-ds="edito"] .side-grp:not([data-app="home"]) .side-it:hover .sp-ic{color:var(--app)}
   /* masquée */
   body.side-off .side{display:none!important}
   body.side-off main{margin-left:0!important;padding-left:60px!important}
@@ -501,43 +501,43 @@ html[data-ds] nav{border-top-color:var(--app-line)!important}
 }
 @media (max-width:767px){.side-show{display:none!important}}
 body.locked .side-show{display:none!important}
-@media (min-width:768px){html[data-ds] .side-grp{display:flex;flex-direction:column}html[data-ds] .side-it,html[data-ds] .side-add{width:100%;box-sizing:border-box}html[data-ds] .side-it .grow{flex:1}}
+@media (min-width:768px){html[data-ds="edito"] .side-grp{display:flex;flex-direction:column}html[data-ds="edito"] .side-it,html[data-ds="edito"] .side-add{width:100%;box-sizing:border-box}html[data-ds="edito"] .side-it .grow{flex:1}}
 
 /* ---- v43 : présentation, une diapositive par app dans sa couleur ---- */
 .onb-track{--i:0;overflow:hidden!important;scroll-snap-type:none!important}
 .onb-track .onb-slide{transform:translateX(calc(var(--i) * -100%));transition:transform .25s ease-out}
 @media (prefers-reduced-motion:reduce){.onb-track .onb-slide{transition:none}}
-html[data-ds] .onb-dots i.on{background:var(--ink)}
-html[data-ds] .onb-app{--app-soft:color-mix(in srgb,var(--app) 8%,var(--bg))}
-html[data-ds] .onb-app .onb-split{max-width:980px;display:grid;gap:18px;text-align:left;align-items:start}
-html[data-ds] .onb-hero{display:grid;gap:8px;justify-items:start;padding:18px 18px 16px;border-left:3px solid var(--app);background:var(--app-soft);border-radius:0 6px 6px 0}
-html[data-ds] .onb-hero .onb-logo{width:56px;height:56px;margin:0;color:var(--app)}
-html[data-ds] .onb-hero .onb-grp{color:var(--app);margin:4px 0 0;text-align:left;font-weight:500}
-html[data-ds] .onb-hero h1{font-size:30px;margin:0;color:var(--ink);text-align:left}
-html[data-ds] .onb-hero .sub{margin:0;color:var(--ink);opacity:.8}
-html[data-ds] .onb-count{margin:2px 0 0;font:400 12px var(--mono);color:var(--app)}
-html[data-ds] .onb-pick{display:grid;gap:8px}
-html[data-ds] .onb-pick-h{display:flex;justify-content:space-between;align-items:baseline;border-bottom:var(--rule) solid var(--line);padding-bottom:6px}
-html[data-ds] .onb-pick .onb-all{margin:0;font-size:13px;color:var(--app);font-weight:500}
-html[data-ds] .onb-app .onb-list{gap:0}
-html[data-ds] .onb-app .onb-it{background:transparent;border:0;border-bottom:var(--rule) solid var(--line);border-radius:0;padding:10px 2px}
-html[data-ds] .onb-app .onb-it .ic{width:34px;height:34px;border-radius:6px;background:var(--app-soft);color:var(--app)}
-html[data-ds] .onb-app .onb-it .ic svg{width:18px;height:18px}
-html[data-ds] .onb-app .onb-it b{font-size:15px;font-weight:500}
-html[data-ds] .onb-app .onb-it .small{display:block;line-height:1.35}
-html[data-ds] .onb-app .onb-it.off{opacity:.5}
-html[data-ds] .onb-app .onb-hint{margin:4px 0 0;text-align:left}
-html[data-ds] .onb-app .switch:checked{background:var(--app)}
+html[data-ds="edito"] .onb-dots i.on{background:var(--ink)}
+html[data-ds="edito"] .onb-app{--app-soft:color-mix(in srgb,var(--app) 8%,var(--bg))}
+html[data-ds="edito"] .onb-app .onb-split{max-width:980px;display:grid;gap:18px;text-align:left;align-items:start}
+html[data-ds="edito"] .onb-hero{display:grid;gap:8px;justify-items:start;padding:18px 18px 16px;border-left:3px solid var(--app);background:var(--app-soft);border-radius:0 6px 6px 0}
+html[data-ds="edito"] .onb-hero .onb-logo{width:56px;height:56px;margin:0;color:var(--app)}
+html[data-ds="edito"] .onb-hero .onb-grp{color:var(--app);margin:4px 0 0;text-align:left;font-weight:500}
+html[data-ds="edito"] .onb-hero h1{font-size:30px;margin:0;color:var(--ink);text-align:left}
+html[data-ds="edito"] .onb-hero .sub{margin:0;color:var(--ink);opacity:.8}
+html[data-ds="edito"] .onb-count{margin:2px 0 0;font:400 12px var(--mono);color:var(--app)}
+html[data-ds="edito"] .onb-pick{display:grid;gap:8px}
+html[data-ds="edito"] .onb-pick-h{display:flex;justify-content:space-between;align-items:baseline;border-bottom:var(--rule) solid var(--line);padding-bottom:6px}
+html[data-ds="edito"] .onb-pick .onb-all{margin:0;font-size:13px;color:var(--app);font-weight:500}
+html[data-ds="edito"] .onb-app .onb-list{gap:0}
+html[data-ds="edito"] .onb-app .onb-it{background:transparent;border:0;border-bottom:var(--rule) solid var(--line);border-radius:0;padding:10px 2px}
+html[data-ds="edito"] .onb-app .onb-it .ic{width:34px;height:34px;border-radius:6px;background:var(--app-soft);color:var(--app)}
+html[data-ds="edito"] .onb-app .onb-it .ic svg{width:18px;height:18px}
+html[data-ds="edito"] .onb-app .onb-it b{font-size:15px;font-weight:500}
+html[data-ds="edito"] .onb-app .onb-it .small{display:block;line-height:1.35}
+html[data-ds="edito"] .onb-app .onb-it.off{opacity:.5}
+html[data-ds="edito"] .onb-app .onb-hint{margin:4px 0 0;text-align:left}
+html[data-ds="edito"] .onb-app .switch:checked{background:var(--app)}
 @media (min-width:760px){
-  html[data-ds] .onb-app .onb-split{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:40px;padding-top:6vh}
-  html[data-ds] .onb-hero{padding:28px 26px;position:sticky;top:0}
-  html[data-ds] .onb-hero .onb-logo{width:72px;height:72px}
-  html[data-ds] .onb-hero h1{font-size:40px}
+  html[data-ds="edito"] .onb-app .onb-split{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:40px;padding-top:6vh}
+  html[data-ds="edito"] .onb-hero{padding:28px 26px;position:sticky;top:0}
+  html[data-ds="edito"] .onb-hero .onb-logo{width:72px;height:72px}
+  html[data-ds="edito"] .onb-hero h1{font-size:40px}
 }
-html[data-ds] .onb-app{padding-top:52px}
-html[data-ds] .onb[data-app] .onb-nav .btn:not(.ghost){background:var(--app)!important;color:var(--on-app)!important}
-html[data-ds] .onb[data-app] .onb-dots i.on{background:var(--app)}
-@media (min-width:760px){html[data-ds] .onb-app{padding-top:12vh}}
+html[data-ds="edito"] .onb-app{padding-top:52px}
+html[data-ds="edito"] .onb[data-app] .onb-nav .btn:not(.ghost){background:var(--app)!important;color:var(--on-app)!important}
+html[data-ds="edito"] .onb[data-app] .onb-dots i.on{background:var(--app)}
+@media (min-width:760px){html[data-ds="edito"] .onb-app{padding-top:12vh}}
 
 /* ---- v43 : animation d'ouverture de chaque app ---- */
 .app-intro{position:fixed;inset:0;z-index:190;display:grid;place-content:center;justify-items:center;gap:22px;background:var(--bg);color:var(--app);cursor:pointer;animation:aiIn .18s ease-out}
@@ -600,11 +600,11 @@ html[data-ds] .onb[data-app] .onb-dots i.on{background:var(--app)}
 .hm-sec{margin:26px 0 0;border-top:2px solid var(--app);padding-top:12px}
 .hm-sec-h{display:flex;align-items:center;gap:12px;margin-bottom:6px}
 .hm-sec-logo{width:30px;height:30px;color:var(--app);flex:none}
-html[data-ds] .hm-sec-h h2{margin:0;color:var(--app);font:500 13px/1.2 var(--font);letter-spacing:.12em;text-transform:uppercase}
+html[data-ds="edito"] .hm-sec-h h2{margin:0;color:var(--app);font:500 13px/1.2 var(--font);letter-spacing:.12em;text-transform:uppercase}
 .hm-sec-h .small{display:block;margin-top:2px}
 .hm-open{flex:none;border:var(--rule,.5px) solid var(--app-line);background:var(--app-soft);color:var(--app);border-radius:6px;padding:8px 12px;min-height:40px;font:500 14px var(--font);cursor:pointer}
 .hm-open:hover{background:var(--app);color:var(--on-app)}
-html[data-ds] .hm-h{font:500 11px/1.3 var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:14px 0 4px}
+html[data-ds="edito"] .hm-h{font:500 11px/1.3 var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:14px 0 4px}
 .hm-sec .hm-list{border-top:var(--rule,.5px) solid var(--line)}
 .hm-sec .hm-next{display:grid;gap:2px;width:100%;text-align:left;border:0;border-left:3px solid var(--app);background:var(--app-soft);border-radius:0 6px 6px 0;padding:10px 12px;margin:8px 0 0;cursor:pointer;color:var(--ink);font:inherit}
 .hm-sec .hm-next .eyebrow{color:var(--app)}
@@ -620,64 +620,64 @@ html[data-ds] .hm-h{font:500 11px/1.3 var(--font);letter-spacing:.14em;text-tran
 }
 
 /* ---- v43 : programme de musculation (formulaire compact, remarques, séries libres) ---- */
-html[data-ds] .coach-form{display:grid;gap:14px}
-html[data-ds] .cf-intro{margin:0}
-html[data-ds] .cf-sec{border:0;margin:0;padding:0;display:grid;gap:12px}
-html[data-ds] .cf-sec>legend,html[data-ds] .cf-more>summary .eyebrow{color:var(--app);padding:0;margin-bottom:2px}
-html[data-ds] .cf-q{display:grid;gap:6px;margin:0}
-html[data-ds] .cf-q>b,html[data-ds] .cf-q>label>b{font-size:14px;font-weight:500}
-html[data-ds] .cf-seg button{padding:8px 4px;font-size:14px;line-height:1.2}
-html[data-ds] .cf-seg button small{display:block;font-size:11px;color:var(--muted)}
+html[data-ds="edito"] .coach-form{display:grid;gap:14px}
+html[data-ds="edito"] .cf-intro{margin:0}
+html[data-ds="edito"] .cf-sec{border:0;margin:0;padding:0;display:grid;gap:12px}
+html[data-ds="edito"] .cf-sec>legend,html[data-ds="edito"] .cf-more>summary .eyebrow{color:var(--app);padding:0;margin-bottom:2px}
+html[data-ds="edito"] .cf-q{display:grid;gap:6px;margin:0}
+html[data-ds="edito"] .cf-q>b,html[data-ds="edito"] .cf-q>label>b{font-size:14px;font-weight:500}
+html[data-ds="edito"] .cf-seg button{padding:8px 4px;font-size:14px;line-height:1.2}
+html[data-ds="edito"] .cf-seg button small{display:block;font-size:11px;color:var(--muted)}
 .cf-two{display:grid;gap:12px}
 @media (min-width:640px){.cf-two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
-html[data-ds] .cf-more{border-top:var(--rule) solid var(--line);padding-top:10px}
-html[data-ds] .cf-more>summary{display:flex;justify-content:space-between;align-items:baseline;cursor:pointer;list-style:none;min-height:36px;align-items:center}
-html[data-ds] .cf-more>summary::-webkit-details-marker{display:none}
-html[data-ds] .cf-more>summary::after{content:"›";color:var(--muted);transform:rotate(90deg);margin-left:8px}
-html[data-ds] .cf-more[open]>summary::after{transform:rotate(-90deg)}
-html[data-ds] .cf-more[open]{display:grid;gap:12px}
-html[data-ds] .cf-free{width:100%;box-sizing:border-box;font-size:16px;margin-top:4px}
-html[data-ds] .cf-go{display:grid;gap:8px;position:sticky;bottom:0;background:var(--bg);padding:8px 0 calc(4px + env(safe-area-inset-bottom,0px))}
-html[data-ds] .cf-go .btn{width:100%}
-html[data-ds] .co-sets{display:inline-flex;align-items:center;gap:2px;margin-right:6px}
-html[data-ds] .co-step{width:32px;height:32px;border:var(--rule) solid var(--line);border-radius:6px;background:transparent;color:var(--app);font:500 17px/1 var(--font);cursor:pointer}
-html[data-ds] .co-step:disabled{opacity:.35;cursor:default}
-html[data-ds] .co-sets .num{min-width:22px;text-align:center;font:400 14px var(--mono)}
-html[data-ds] .coach-ex li{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-html[data-ds] .coach-adj{display:grid;gap:8px;margin-top:14px;padding-top:12px;border-top:var(--rule) solid var(--line)}
-html[data-ds] .coach-adj textarea{width:100%;box-sizing:border-box;font-size:16px}
-html[data-ds] .coach-adj-b{display:flex;justify-content:flex-end}
-html[data-ds] .coach-rem ul{margin:6px 0 0;padding-left:18px;display:grid;gap:4px}
-html[data-ds] .coach-wait{display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 12px;border-left:3px solid var(--app);background:var(--app-soft);border-radius:0 6px 6px 0;font-size:14px}
-html[data-ds] .wo-set{position:relative}
-html[data-ds] .wo-del{width:28px;height:28px;flex:none;border:0;background:none;color:var(--muted);font-size:18px;cursor:pointer;border-radius:4px}
-html[data-ds] .wo-del:disabled{opacity:.25;cursor:default}
-html[data-ds] .wo-del:hover:not(:disabled){color:var(--late);background:var(--surface-2)}
-html[data-ds] .wo-add{margin-top:8px;color:var(--app);border-color:var(--app-line)}
-html[data-ds] .wo-set{grid-template-columns:28px 56px minmax(0,1fr) minmax(0,1fr) 40px}
-html[data-ds] .coach-ex li{padding:8px 0;column-gap:8px;row-gap:4px}
-html[data-ds] .coach-ex li>.grow{flex:1 1 100%;min-width:0}
-@media (min-width:640px){html[data-ds] .coach-ex li>.grow{flex:1 1 0}}
-html[data-ds] .cf-go{position:static;padding:4px 0 0}
-html[data-ds] .cf-more .cf-q{margin-top:14px}
-html[data-ds] .cf-q>label{color:var(--ink)}
-@media (min-width:640px){html[data-ds] .cf-go{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}}
+html[data-ds="edito"] .cf-more{border-top:var(--rule) solid var(--line);padding-top:10px}
+html[data-ds="edito"] .cf-more>summary{display:flex;justify-content:space-between;align-items:baseline;cursor:pointer;list-style:none;min-height:36px;align-items:center}
+html[data-ds="edito"] .cf-more>summary::-webkit-details-marker{display:none}
+html[data-ds="edito"] .cf-more>summary::after{content:"›";color:var(--muted);transform:rotate(90deg);margin-left:8px}
+html[data-ds="edito"] .cf-more[open]>summary::after{transform:rotate(-90deg)}
+html[data-ds="edito"] .cf-more[open]{display:grid;gap:12px}
+html[data-ds="edito"] .cf-free{width:100%;box-sizing:border-box;font-size:16px;margin-top:4px}
+html[data-ds="edito"] .cf-go{display:grid;gap:8px;position:sticky;bottom:0;background:var(--bg);padding:8px 0 calc(4px + env(safe-area-inset-bottom,0px))}
+html[data-ds="edito"] .cf-go .btn{width:100%}
+html[data-ds="edito"] .co-sets{display:inline-flex;align-items:center;gap:2px;margin-right:6px}
+html[data-ds="edito"] .co-step{width:32px;height:32px;border:var(--rule) solid var(--line);border-radius:6px;background:transparent;color:var(--app);font:500 17px/1 var(--font);cursor:pointer}
+html[data-ds="edito"] .co-step:disabled{opacity:.35;cursor:default}
+html[data-ds="edito"] .co-sets .num{min-width:22px;text-align:center;font:400 14px var(--mono)}
+html[data-ds="edito"] .coach-ex li{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+html[data-ds="edito"] .coach-adj{display:grid;gap:8px;margin-top:14px;padding-top:12px;border-top:var(--rule) solid var(--line)}
+html[data-ds="edito"] .coach-adj textarea{width:100%;box-sizing:border-box;font-size:16px}
+html[data-ds="edito"] .coach-adj-b{display:flex;justify-content:flex-end}
+html[data-ds="edito"] .coach-rem ul{margin:6px 0 0;padding-left:18px;display:grid;gap:4px}
+html[data-ds="edito"] .coach-wait{display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 12px;border-left:3px solid var(--app);background:var(--app-soft);border-radius:0 6px 6px 0;font-size:14px}
+html[data-ds="edito"] .wo-set{position:relative}
+html[data-ds="edito"] .wo-del{width:28px;height:28px;flex:none;border:0;background:none;color:var(--muted);font-size:18px;cursor:pointer;border-radius:4px}
+html[data-ds="edito"] .wo-del:disabled{opacity:.25;cursor:default}
+html[data-ds="edito"] .wo-del:hover:not(:disabled){color:var(--late);background:var(--surface-2)}
+html[data-ds="edito"] .wo-add{margin-top:8px;color:var(--app);border-color:var(--app-line)}
+html[data-ds="edito"] .wo-set{grid-template-columns:28px 56px minmax(0,1fr) minmax(0,1fr) 40px}
+html[data-ds="edito"] .coach-ex li{padding:8px 0;column-gap:8px;row-gap:4px}
+html[data-ds="edito"] .coach-ex li>.grow{flex:1 1 100%;min-width:0}
+@media (min-width:640px){html[data-ds="edito"] .coach-ex li>.grow{flex:1 1 0}}
+html[data-ds="edito"] .cf-go{position:static;padding:4px 0 0}
+html[data-ds="edito"] .cf-more .cf-q{margin-top:14px}
+html[data-ds="edito"] .cf-q>label{color:var(--ink)}
+@media (min-width:640px){html[data-ds="edito"] .cf-go{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}}
 .spot-gate{display:grid;gap:10px;padding:14px;border:var(--rule,.5px) dashed var(--line);border-radius:6px}
 .spot-gate p{margin:0}
 .spot-off{text-align:right;margin-bottom:4px}
-html[data-ds] label.auth-legal:not([hidden]){display:flex;gap:10px;align-items:flex-start;text-align:left;color:var(--ink);cursor:pointer;line-height:1.45}
-html[data-ds] label.auth-legal input{width:20px;height:20px;flex:none;margin:1px 0 0}
-html[data-ds] .cal-title .yr-ic,html[data-ds] .yr-title .yr-ic{opacity:1;color:var(--muted)}
+html[data-ds="edito"] label.auth-legal:not([hidden]){display:flex;gap:10px;align-items:flex-start;text-align:left;color:var(--ink);cursor:pointer;line-height:1.45}
+html[data-ds="edito"] label.auth-legal input{width:20px;height:20px;flex:none;margin:1px 0 0}
+html[data-ds="edito"] .cal-title .yr-ic,html[data-ds="edito"] .yr-title .yr-ic{opacity:1;color:var(--muted)}
 .skip-link{position:absolute;left:-9999px;top:8px;z-index:300;background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:6px;font:500 15px var(--font)}
 .skip-link:focus{left:12px}
 main:focus{outline:0}
-html[data-ds] #nuAddBox .nu-add-h{margin-top:8px}
-html[data-ds] .nu-ai-link{justify-self:center;font-size:14px;color:var(--app)}
-html[data-ds] .aa-img{display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;align-items:center}
-html[data-ds] .aa-img img{width:72px;height:72px;object-fit:cover;border-radius:6px;border:var(--rule) solid var(--line)}
+html[data-ds="edito"] #nuAddBox .nu-add-h{margin-top:8px}
+html[data-ds="edito"] .nu-ai-link{justify-self:center;font-size:14px;color:var(--app)}
+html[data-ds="edito"] .aa-img{display:grid;grid-template-columns:72px minmax(0,1fr);gap:12px;align-items:center}
+html[data-ds="edito"] .aa-img img{width:72px;height:72px;object-fit:cover;border-radius:6px;border:var(--rule) solid var(--line)}
 
 /* trait sous l'onglet actif : droit (avant, l'ombre intérieure suivait l'arrondi du bouton et se recourbait aux bouts) */
-html[data-ds] .seg button[aria-pressed="true"],html[data-ds] .seg button[aria-selected="true"]{box-shadow:none!important;background-image:linear-gradient(var(--app),var(--app));background-size:calc(100% - 16px) 2px;background-position:50% 100%;background-repeat:no-repeat}
+html[data-ds="edito"] .seg button[aria-pressed="true"],html[data-ds="edito"] .seg button[aria-selected="true"]{box-shadow:none!important;background-image:linear-gradient(var(--app),var(--app));background-size:calc(100% - 16px) 2px;background-position:50% 100%;background-repeat:no-repeat}
 
 /* ---- v44 : séances et programmes au même format : mêmes cartes, mêmes actions ---- */
 .ms{background:var(--surface);border:var(--rule,1px) solid var(--line);border-radius:6px;margin-bottom:8px;overflow:hidden}
@@ -699,8 +699,8 @@ html[data-ds] .seg button[aria-pressed="true"],html[data-ds] .seg button[aria-se
 .conv-f{display:grid;gap:6px;margin:12px 0 0}
 .conv-row{display:flex;gap:8px}
 .conv-row input{flex:1;min-width:0}
-html[data-ds] .nu-ring circle{stroke-width:1.5px;stroke-linecap:butt}
-html[data-ds] .nu-ring .bgc{stroke:var(--line)}
+html[data-ds="edito"] .nu-ring circle{stroke-width:1.5px;stroke-linecap:butt}
+html[data-ds="edito"] .nu-ring .bgc{stroke:var(--line)}
 
 /* ---- v44.4 : sid'agenda, lignes de « Toutes les dates » ---- */
 #tasks .prow{border-left:0;gap:14px;align-items:center;padding:14px 2px;min-height:64px}
@@ -739,9 +739,9 @@ html[data-ds] .nu-ring .bgc{stroke:var(--line)}
 .ms summary .ms-del.armed{color:var(--late);font:500 13px var(--font);white-space:nowrap}
 
 /* ---- v44.4 : « Tes précisions » toujours ouvert (même rendu que « L'essentiel », séparé par un filet) ---- */
-html[data-ds] .cf-open{border-top:var(--rule,1px) solid var(--line);padding-top:14px;margin-top:6px}
-html[data-ds] .cf-open .cf-opt{letter-spacing:0;text-transform:none;font-weight:400;margin-left:6px;color:var(--muted)}
-html[data-ds] .nu-for,html[data-ds] .nu-for-day{text-transform:none;letter-spacing:0;font-size:14px}
+html[data-ds="edito"] .cf-open{border-top:var(--rule,1px) solid var(--line);padding-top:14px;margin-top:6px}
+html[data-ds="edito"] .cf-open .cf-opt{letter-spacing:0;text-transform:none;font-weight:400;margin-left:6px;color:var(--muted)}
+html[data-ds="edito"] .nu-for,html[data-ds="edito"] .nu-for-day{text-transform:none;letter-spacing:0;font-size:14px}
 
 /* ---- v44.6 : Tâches, « Nouvelle tâche » en action principale, recherche discrète ---- */
 #v-todo .todo-new{margin:6px 0 14px;gap:8px}
@@ -770,7 +770,7 @@ html[data-ds] .nu-for,html[data-ds] .nu-for-day{text-transform:none;letter-spaci
 body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:29;pointer-events:none}
 
 /* ---- v44.7 : la dernière ligne de chaque page n'est plus cachée par la barre du bas (--navh = sa hauteur réelle, posée par navPad) ---- */
-html[data-ds] body main{padding-bottom:max(calc(var(--navh,0px) + 32px),calc(32px + env(safe-area-inset-bottom,0px)))!important}
+html[data-ds="edito"] body main{padding-bottom:max(calc(var(--navh,0px) + 32px),calc(32px + env(safe-area-inset-bottom,0px)))!important}
 
 /* ---- v44.7 : Sid'compagnon, 3 grandes cartes (une par app) ---- */
 .hc-list{display:grid;gap:14px;margin-top:18px}
@@ -827,11 +827,11 @@ html[data-ds] body main{padding-bottom:max(calc(var(--navh,0px) + 32px),calc(32p
 @media (min-width:900px){.pv-notes:not([hidden]){position:static;width:340px;height:auto;border-top:0;border-left:var(--rule,1px) solid var(--line);box-shadow:none}}
 .pdf-badge{color:var(--app)}
 #pdfNew{cursor:pointer}
-html[data-ds] .pdfv .pv-title{border:0;border-radius:0;background:transparent;min-height:0;font:400 20px/1.2 var(--display,"Fraunces",serif);padding:6px 4px}
-html[data-ds] .pdfv .pv-notes textarea{width:auto;align-self:stretch;min-height:0}
-html[data-ds] .pdfv .pv-txt textarea{border:1px dashed rgba(47,74,58,.45);border-radius:3px;background:rgba(255,255,240,.92);color:#1C1A17;min-height:0;font:400 2.3cqw/1.3 var(--font);padding:.4cqw .8cqw}
-html[data-ds] .pdfv .pv-txt textarea:focus{border-style:solid;font-size:max(2.3cqw,16px)}
-html[data-ds] .pdfv input.pv-title{border:0!important;background:transparent!important;box-shadow:none!important;height:auto!important}
+html[data-ds="edito"] .pdfv .pv-title{border:0;border-radius:0;background:transparent;min-height:0;font:400 20px/1.2 var(--display,"Fraunces",serif);padding:6px 4px}
+html[data-ds="edito"] .pdfv .pv-notes textarea{width:auto;align-self:stretch;min-height:0}
+html[data-ds="edito"] .pdfv .pv-txt textarea{border:1px dashed rgba(47,74,58,.45);border-radius:3px;background:rgba(255,255,240,.92);color:#1C1A17;min-height:0;font:400 2.3cqw/1.3 var(--font);padding:.4cqw .8cqw}
+html[data-ds="edito"] .pdfv .pv-txt textarea:focus{border-style:solid;font-size:max(2.3cqw,16px)}
+html[data-ds="edito"] .pdfv input.pv-title{border:0!important;background:transparent!important;box-shadow:none!important;height:auto!important}
 /* v44.7 : fiche « comment faire » d'un exercice */
 .ex-head .ex-help{flex:none;width:32px;min-width:32px;height:32px;padding:0;border-radius:50%;font:600 15px var(--mono,inherit);display:inline-flex;align-items:center;justify-content:center}
 .ex-head .ex-help[hidden]{display:none!important}
@@ -902,10 +902,10 @@ html[data-ds] .pdfv input.pv-title{border:0!important;background:transparent!imp
 .cal-help li span{display:block}
 /* v45 : « Sid'compagnon » tient toujours sur une ligne dans la barre latérale (jamais coupé) */
 @media (min-width:768px){
-  html[data-ds] .side-brand{gap:8px;margin:0 0 14px 4px}
-  html[data-ds] .side-brand .side-logo{flex:none}
-  html[data-ds] .side-brand span{flex:1 1 auto;min-width:0;white-space:nowrap;font-size:18px;letter-spacing:-.015em;line-height:1.1}
-  html[data-ds] .side-brand .side-tog{flex:none;width:28px;height:28px}
+  html[data-ds="edito"] .side-brand{gap:8px;margin:0 0 14px 4px}
+  html[data-ds="edito"] .side-brand .side-logo{flex:none}
+  html[data-ds="edito"] .side-brand span{flex:1 1 auto;min-width:0;white-space:nowrap;font-size:18px;letter-spacing:-.015em;line-height:1.1}
+  html[data-ds="edito"] .side-brand .side-tog{flex:none;width:28px;height:28px}
 }
 .pl-ask{margin-bottom:10px}
 /* v46 (#7) : « Modifier l'activité » et toutes les fenêtres : rien ne dépasse à droite, les puces passent à la ligne */
@@ -981,59 +981,59 @@ html[data-ds] .pdfv input.pv-title{border:0!important;background:transparent!imp
 /* ---------- v49 : les 9 ambiances validées par Sid (30 oct. 2026) ----------
    Une couleur par fonction (body[data-v]), même fond graphite légèrement teinté en sombre ; en clair, la même teinte en plus foncé (lisible sur l'ivoire).
    Seules la couleur d'accent et la teinte du fond changent : la structure, les polices et les tailles restent les mêmes partout. */
-html[data-ds] body[data-v="plan"]{--app:#9C3B26}
-html[data-ds][data-theme="dark"] body[data-v="plan"]{--app:#D77A5E;--bg:#15110F;--surface:#15110F;--surface-2:#1E1815;--field:#1E1815;--bar:#15110F}
-@media (prefers-color-scheme:dark){html[data-ds]:not([data-theme="light"]) body[data-v="plan"]{--app:#D77A5E;--bg:#15110F;--surface:#15110F;--surface-2:#1E1815;--field:#1E1815;--bar:#15110F}}
-html[data-ds] body[data-v="todo"]{--app:#7A5A1C}
-html[data-ds][data-theme="dark"] body[data-v="todo"]{--app:#CDA55E;--bg:#14120D;--surface:#14120D;--surface-2:#1D1A13;--field:#1D1A13;--bar:#14120D}
-@media (prefers-color-scheme:dark){html[data-ds]:not([data-theme="light"]) body[data-v="todo"]{--app:#CDA55E;--bg:#14120D;--surface:#14120D;--surface-2:#1D1A13;--field:#1D1A13;--bar:#14120D}}
-html[data-ds] body[data-v="pomo"]{--app:#4A469E}
-html[data-ds][data-theme="dark"] body[data-v="pomo"]{--app:#9A97E0;--bg:#0F1015;--surface:#0F1015;--surface-2:#171822;--field:#171822;--bar:#0F1015}
-@media (prefers-color-scheme:dark){html[data-ds]:not([data-theme="light"]) body[data-v="pomo"]{--app:#9A97E0;--bg:#0F1015;--surface:#0F1015;--surface-2:#171822;--field:#171822;--bar:#0F1015}}
-html[data-ds] body[data-v="muscu"]{--app:#2F4A3A}
-html[data-ds][data-theme="dark"] body[data-v="muscu"]{--app:#86AE95;--bg:#0E1311;--surface:#0E1311;--surface-2:#151C18;--field:#151C18;--bar:#0E1311}
-@media (prefers-color-scheme:dark){html[data-ds]:not([data-theme="light"]) body[data-v="muscu"]{--app:#86AE95;--bg:#0E1311;--surface:#0E1311;--surface-2:#151C18;--field:#151C18;--bar:#0E1311}}
-html[data-ds] body[data-v="nutri"]{--app:#545A1C}
-html[data-ds][data-theme="dark"] body[data-v="nutri"]{--app:#BFC36E;--bg:#12130C;--surface:#12130C;--surface-2:#1A1C12;--field:#1A1C12;--bar:#12130C}
-@media (prefers-color-scheme:dark){html[data-ds]:not([data-theme="light"]) body[data-v="nutri"]{--app:#BFC36E;--bg:#12130C;--surface:#12130C;--surface-2:#1A1C12;--field:#1A1C12;--bar:#12130C}}
-html[data-ds] body[data-v="graph"]{--app:#1F5F75}
-html[data-ds][data-theme="dark"] body[data-v="graph"]{--app:#74AEC2;--bg:#0D1215;--surface:#0D1215;--surface-2:#141B1F;--field:#141B1F;--bar:#0D1215}
-@media (prefers-color-scheme:dark){html[data-ds]:not([data-theme="light"]) body[data-v="graph"]{--app:#74AEC2;--bg:#0D1215;--surface:#0D1215;--surface-2:#141B1F;--field:#141B1F;--bar:#0D1215}}
-html[data-ds] body[data-v="notes"]{--app:#1C1A17}
-html[data-ds][data-theme="dark"] body[data-v="notes"]{--app:#E8DFCC;--bg:#121212;--surface:#121212;--surface-2:#1B1B1A;--field:#1B1B1A;--bar:#121212}
-@media (prefers-color-scheme:dark){html[data-ds]:not([data-theme="light"]) body[data-v="notes"]{--app:#E8DFCC;--bg:#121212;--surface:#121212;--surface-2:#1B1B1A;--field:#1B1B1A;--bar:#121212}}
-html[data-ds] body[data-v="docs"]{--app:#34507A}
-html[data-ds][data-theme="dark"] body[data-v="docs"]{--app:#93A8C6;--bg:#0F1115;--surface:#0F1115;--surface-2:#171A20;--field:#171A20;--bar:#0F1115}
-@media (prefers-color-scheme:dark){html[data-ds]:not([data-theme="light"]) body[data-v="docs"]{--app:#93A8C6;--bg:#0F1115;--surface:#0F1115;--surface-2:#171A20;--field:#171A20;--bar:#0F1115}}
-html[data-ds] body[data-v="pwd"]{--app:#6E5416}
-html[data-ds][data-theme="dark"] body[data-v="pwd"]{--app:#CFAE5B;--bg:#12100B;--surface:#12100B;--surface-2:#1B1810;--field:#1B1810;--bar:#12100B}
-@media (prefers-color-scheme:dark){html[data-ds]:not([data-theme="light"]) body[data-v="pwd"]{--app:#CFAE5B;--bg:#12100B;--surface:#12100B;--surface-2:#1B1810;--field:#1B1810;--bar:#12100B}}
+html[data-ds="edito"] body[data-v="plan"]{--app:#9C3B26}
+html[data-ds="edito"][data-theme="dark"] body[data-v="plan"]{--app:#D77A5E;--bg:#15110F;--surface:#15110F;--surface-2:#1E1815;--field:#1E1815;--bar:#15110F}
+@media (prefers-color-scheme:dark){html[data-ds="edito"]:not([data-theme="light"]) body[data-v="plan"]{--app:#D77A5E;--bg:#15110F;--surface:#15110F;--surface-2:#1E1815;--field:#1E1815;--bar:#15110F}}
+html[data-ds="edito"] body[data-v="todo"]{--app:#7A5A1C}
+html[data-ds="edito"][data-theme="dark"] body[data-v="todo"]{--app:#CDA55E;--bg:#14120D;--surface:#14120D;--surface-2:#1D1A13;--field:#1D1A13;--bar:#14120D}
+@media (prefers-color-scheme:dark){html[data-ds="edito"]:not([data-theme="light"]) body[data-v="todo"]{--app:#CDA55E;--bg:#14120D;--surface:#14120D;--surface-2:#1D1A13;--field:#1D1A13;--bar:#14120D}}
+html[data-ds="edito"] body[data-v="pomo"]{--app:#4A469E}
+html[data-ds="edito"][data-theme="dark"] body[data-v="pomo"]{--app:#9A97E0;--bg:#0F1015;--surface:#0F1015;--surface-2:#171822;--field:#171822;--bar:#0F1015}
+@media (prefers-color-scheme:dark){html[data-ds="edito"]:not([data-theme="light"]) body[data-v="pomo"]{--app:#9A97E0;--bg:#0F1015;--surface:#0F1015;--surface-2:#171822;--field:#171822;--bar:#0F1015}}
+html[data-ds="edito"] body[data-v="muscu"]{--app:#2F4A3A}
+html[data-ds="edito"][data-theme="dark"] body[data-v="muscu"]{--app:#86AE95;--bg:#0E1311;--surface:#0E1311;--surface-2:#151C18;--field:#151C18;--bar:#0E1311}
+@media (prefers-color-scheme:dark){html[data-ds="edito"]:not([data-theme="light"]) body[data-v="muscu"]{--app:#86AE95;--bg:#0E1311;--surface:#0E1311;--surface-2:#151C18;--field:#151C18;--bar:#0E1311}}
+html[data-ds="edito"] body[data-v="nutri"]{--app:#545A1C}
+html[data-ds="edito"][data-theme="dark"] body[data-v="nutri"]{--app:#BFC36E;--bg:#12130C;--surface:#12130C;--surface-2:#1A1C12;--field:#1A1C12;--bar:#12130C}
+@media (prefers-color-scheme:dark){html[data-ds="edito"]:not([data-theme="light"]) body[data-v="nutri"]{--app:#BFC36E;--bg:#12130C;--surface:#12130C;--surface-2:#1A1C12;--field:#1A1C12;--bar:#12130C}}
+html[data-ds="edito"] body[data-v="graph"]{--app:#1F5F75}
+html[data-ds="edito"][data-theme="dark"] body[data-v="graph"]{--app:#74AEC2;--bg:#0D1215;--surface:#0D1215;--surface-2:#141B1F;--field:#141B1F;--bar:#0D1215}
+@media (prefers-color-scheme:dark){html[data-ds="edito"]:not([data-theme="light"]) body[data-v="graph"]{--app:#74AEC2;--bg:#0D1215;--surface:#0D1215;--surface-2:#141B1F;--field:#141B1F;--bar:#0D1215}}
+html[data-ds="edito"] body[data-v="notes"]{--app:#1C1A17}
+html[data-ds="edito"][data-theme="dark"] body[data-v="notes"]{--app:#E8DFCC;--bg:#121212;--surface:#121212;--surface-2:#1B1B1A;--field:#1B1B1A;--bar:#121212}
+@media (prefers-color-scheme:dark){html[data-ds="edito"]:not([data-theme="light"]) body[data-v="notes"]{--app:#E8DFCC;--bg:#121212;--surface:#121212;--surface-2:#1B1B1A;--field:#1B1B1A;--bar:#121212}}
+html[data-ds="edito"] body[data-v="docs"]{--app:#34507A}
+html[data-ds="edito"][data-theme="dark"] body[data-v="docs"]{--app:#93A8C6;--bg:#0F1115;--surface:#0F1115;--surface-2:#171A20;--field:#171A20;--bar:#0F1115}
+@media (prefers-color-scheme:dark){html[data-ds="edito"]:not([data-theme="light"]) body[data-v="docs"]{--app:#93A8C6;--bg:#0F1115;--surface:#0F1115;--surface-2:#171A20;--field:#171A20;--bar:#0F1115}}
+html[data-ds="edito"] body[data-v="pwd"]{--app:#6E5416}
+html[data-ds="edito"][data-theme="dark"] body[data-v="pwd"]{--app:#CFAE5B;--bg:#12100B;--surface:#12100B;--surface-2:#1B1810;--field:#1B1810;--bar:#12100B}
+@media (prefers-color-scheme:dark){html[data-ds="edito"]:not([data-theme="light"]) body[data-v="pwd"]{--app:#CFAE5B;--bg:#12100B;--surface:#12100B;--surface-2:#1B1810;--field:#1B1810;--bar:#12100B}}
 
 /* ---------- v49 : plus d'espace, interface standard (demande de Sid : « rien de collé », facile à comprendre) ----------
    Mêmes hauteurs partout : champs et boutons 48 px ; lignes de liste 56 px ; 24 px entre les blocs. */
-html[data-ds] main{padding-left:20px;padding-right:20px}
-html[data-ds] .sub{margin-bottom:24px;line-height:1.5}
-html[data-ds] h2{margin:40px 0 14px}
-html[data-ds] .view > .card,html[data-ds] .view > form.card,html[data-ds] .view > .addbar{margin-bottom:24px}
-html[data-ds] .row{padding-top:16px;padding-bottom:16px;min-height:56px;gap:14px}
-html[data-ds] .form{gap:14px;padding:18px 0}
-html[data-ds] .two{gap:12px}
-html[data-ds] .chips,html[data-ds] .tchips{gap:10px}
-html[data-ds] input:not([type=checkbox]):not([type=radio]):not([type=range]):not(.set-in):not(.search-mini),html[data-ds] select{min-height:48px}
-html[data-ds] .btn{min-height:48px}
-html[data-ds] .btn.mini,html[data-ds] .mini{min-height:40px}
-html[data-ds] .seg{margin:6px 0 20px}
-html[data-ds] .setsec > summary{padding-top:20px;padding-bottom:20px}
-html[data-ds] .setsec-in{padding-bottom:12px}
-html[data-ds] .pl-ask,html[data-ds] .nu-ask,html[data-ds] .ask-mu,html[data-ds] .ask-nt{margin-bottom:24px}
-html[data-ds] .ms{margin-bottom:14px}
-html[data-ds] .ms-body{gap:16px;padding:16px}
-html[data-ds] .dish{margin-bottom:12px}
-html[data-ds] .slogan{font-family:var(--display);font-weight:300;font-size:22px;color:var(--muted);margin:2px 0 14px}
-html[data-ds] .sp-tag{font-family:var(--display);font-weight:300;font-size:18px;opacity:.75;margin-top:6px}
-@media (min-width:768px){html[data-ds] main{padding-left:48px;padding-right:48px}}
-html[data-ds] label.btn{display:inline-flex;align-items:center;justify-content:center}
-html[data-ds] .yr-grid{gap:12px 6px}html[data-ds] .ym{min-width:0;padding:4px 0}html[data-ds] .ym-g,html[data-ds] .ym-g i{min-width:0}
+html[data-ds="edito"] main{padding-left:20px;padding-right:20px}
+html[data-ds="edito"] .sub{margin-bottom:24px;line-height:1.5}
+html[data-ds="edito"] h2{margin:40px 0 14px}
+html[data-ds="edito"] .view > .card,html[data-ds="edito"] .view > form.card,html[data-ds="edito"] .view > .addbar{margin-bottom:24px}
+html[data-ds="edito"] .row{padding-top:16px;padding-bottom:16px;min-height:56px;gap:14px}
+html[data-ds="edito"] .form{gap:14px;padding:18px 0}
+html[data-ds="edito"] .two{gap:12px}
+html[data-ds="edito"] .chips,html[data-ds="edito"] .tchips{gap:10px}
+html[data-ds="edito"] input:not([type=checkbox]):not([type=radio]):not([type=range]):not(.set-in):not(.search-mini),html[data-ds="edito"] select{min-height:48px}
+html[data-ds="edito"] .btn{min-height:48px}
+html[data-ds="edito"] .btn.mini,html[data-ds="edito"] .mini{min-height:40px}
+html[data-ds="edito"] .seg{margin:6px 0 20px}
+html[data-ds="edito"] .setsec > summary{padding-top:20px;padding-bottom:20px}
+html[data-ds="edito"] .setsec-in{padding-bottom:12px}
+html[data-ds="edito"] .pl-ask,html[data-ds="edito"] .nu-ask,html[data-ds="edito"] .ask-mu,html[data-ds="edito"] .ask-nt{margin-bottom:24px}
+html[data-ds="edito"] .ms{margin-bottom:14px}
+html[data-ds="edito"] .ms-body{gap:16px;padding:16px}
+html[data-ds="edito"] .dish{margin-bottom:12px}
+html[data-ds="edito"] .slogan{font-family:var(--display);font-weight:300;font-size:22px;color:var(--muted);margin:2px 0 14px}
+html[data-ds="edito"] .sp-tag{font-family:var(--display);font-weight:300;font-size:18px;opacity:.75;margin-top:6px}
+@media (min-width:768px){html[data-ds="edito"] main{padding-left:48px;padding-right:48px}}
+html[data-ds="edito"] label.btn{display:inline-flex;align-items:center;justify-content:center}
+html[data-ds="edito"] .yr-grid{gap:12px 6px}html[data-ds="edito"] .ym{min-width:0;padding:4px 0}html[data-ds="edito"] .ym-g,html[data-ds="edito"] .ym-g i{min-width:0}
 
 /* v73 : réglages par exercice, progression, statistiques de la musculation */
 .ex-prm{margin:0 2px 8px;border-radius:6px}
@@ -1078,7 +1078,7 @@ html[data-ds] .yr-grid{gap:12px 6px}html[data-ds] .ym{min-width:0;padding:4px 0}
 .ex-head .ex-nm>input,.ex-head .ex-nm>.ex-n{grid-area:1/1}
 .ex-head .ex-nm>input{height:auto;align-self:stretch}
 .ex-head .ex-n{pointer-events:none;align-self:center;padding:10px 13px;font:600 16px/1.25 var(--font);color:var(--ink);white-space:normal;overflow-wrap:anywhere;hyphens:auto;min-width:0}
-html[data-ds] .ex-head .ex-n{font-weight:500}
+html[data-ds="edito"] .ex-head .ex-n{font-weight:500}
 .ex-head .ex-nm:not(:focus-within)>input:not(:placeholder-shown){color:transparent;-webkit-text-fill-color:transparent;caret-color:transparent}
 .ex-head .ex-nm:focus-within>.ex-n,.ex-head .ex-n:empty{visibility:hidden}
 .ex-head .ex-help,.ex-head .x{flex:none}
@@ -1087,3 +1087,210 @@ html[data-ds] .ex-head .ex-n{font-weight:500}
 .hc-it{flex-direction:column;align-items:stretch;gap:2px}
 .hc-k{width:auto}
 .hc-v{white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
+/* Élan v75 : jetons et peau partagée ; l’éditorial historique est isolé par data-ds=edito. */
+:root:root[data-ds="elan"]{--bg:#F7F7F7;--surface:#FFF;--surface-2:#ECECEC;--field:#FFF;--ink:#1A1A1A;--ink-2:#5E5E5E;--muted:#5E5E5E;--line:#E1E1E1;--field-line:#8A8A8A;--bar:#FFF;--scrim:rgba(26,26,26,.45);--ok:#157A3E;--warn:#9A5B00;--err:#C81E1E;--late:var(--err);--font:"Barlow",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--display:"Barlow Condensed",sans-serif;--digits:"Barlow Condensed",sans-serif;--mono:ui-monospace,SFMono-Regular,monospace;--s-1:4px;--s-2:8px;--s-3:12px;--s-4:16px;--s-5:20px;--s-6:24px;--s-7:32px;--s-8:48px;--r-ctl:10px;--r-blk:16px;--r-card:18px;--r-sheet:22px;--r-pill:999px;--hit:44px;--hit-main:48px;--t-fast:120ms;--t-base:180ms;--t-prog:380ms;--ease:cubic-bezier(.2,.8,.2,1);--ease-prog:cubic-bezier(.3,1.35,.5,1);--rule:1px;color-scheme:light}
+@media(prefers-color-scheme:dark){:root:root[data-ds="elan"]:not([data-theme="light"]){--bg:#121212;--surface:#1E1E1E;--surface-2:#2A2A2A;--field:#1E1E1E;--ink:#F2F2F2;--ink-2:#A6A6A6;--muted:#A6A6A6;--line:#2E2E2E;--field-line:#6E6E6E;--bar:#121212;--scrim:rgba(0,0,0,.6);--ok:#4CC27A;--warn:#F2B04A;--err:#FF6B6B;color-scheme:dark;}}
+:root:root[data-ds="elan"][data-theme="dark"]{--bg:#121212;--surface:#1E1E1E;--surface-2:#2A2A2A;--field:#1E1E1E;--ink:#F2F2F2;--ink-2:#A6A6A6;--muted:#A6A6A6;--line:#2E2E2E;--field-line:#6E6E6E;--bar:#121212;--scrim:rgba(0,0,0,.6);--ok:#4CC27A;--warn:#F2B04A;--err:#FF6B6B;color-scheme:dark;}
+:root[data-ds="elan"]{--app:#2563EB;--on-app:#FFF;--app-ink:#1D4FC4;--app-soft:#E4ECFD;}
+html[data-ds="elan"][data-app="agenda"],html[data-ds="elan"] [data-app="agenda"]{--app:#2563EB;--on-app:#FFF;--app-ink:#1D4FC4;--app-soft:#E4ECFD}
+@media(prefers-color-scheme:dark){html[data-ds="elan"]:not([data-theme="light"])[data-app="agenda"],html[data-ds="elan"]:not([data-theme="light"]) [data-app="agenda"]{--app-ink:#8FB0F7;--app-soft:#141D33}}
+html[data-ds="elan"][data-theme="dark"][data-app="agenda"],html[data-ds="elan"][data-theme="dark"] [data-app="agenda"]{--app-ink:#8FB0F7;--app-soft:#141D33}
+html[data-ds="elan"][data-app="fit"],html[data-ds="elan"] [data-app="fit"]{--app:#F25C19;--on-app:#121212;--app-ink:#B8420C;--app-soft:#FFECE2}
+@media(prefers-color-scheme:dark){html[data-ds="elan"]:not([data-theme="light"])[data-app="fit"],html[data-ds="elan"]:not([data-theme="light"]) [data-app="fit"]{--app-ink:#FF9A6B;--app-soft:#341708}}
+html[data-ds="elan"][data-theme="dark"][data-app="fit"],html[data-ds="elan"][data-theme="dark"] [data-app="fit"]{--app-ink:#FF9A6B;--app-soft:#341708}
+html[data-ds="elan"][data-app="note"],html[data-ds="elan"] [data-app="note"]{--app:#7C3AED;--on-app:#FFF;--app-ink:#6527CF;--app-soft:#F0E8FE}
+@media(prefers-color-scheme:dark){html[data-ds="elan"]:not([data-theme="light"])[data-app="note"],html[data-ds="elan"]:not([data-theme="light"]) [data-app="note"]{--app-ink:#B99AF7;--app-soft:#22163A}}
+html[data-ds="elan"][data-theme="dark"][data-app="note"],html[data-ds="elan"][data-theme="dark"] [data-app="note"]{--app-ink:#B99AF7;--app-soft:#22163A}
+:root:root[data-ds="elan"] body,html[data-ds="elan"] [data-app]{--accent:var(--app);--on-accent:var(--on-app);--accent-soft:var(--app-soft);--g-strong:var(--app);--g-bg:var(--app-soft);--g-ink:var(--app-ink);--gold:var(--app-ink);--on-gold:var(--on-app)}
+html[data-ds="elan"] body{font:400 16px/1.5 var(--font);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+html[data-ds="elan"] h1,html[data-ds="elan"] h2,html[data-ds="elan"] h3{font-family:var(--display);font-weight:700;text-transform:none;letter-spacing:0}
+html[data-ds="elan"] h2{font-size:22px;line-height:26px}
+html[data-ds="elan"] button{font-family:var(--font);cursor:pointer}
+html[data-ds="elan"] .btn{background:var(--app);color:var(--on-app);min-height:48px;border-radius:var(--r-ctl);font-size:16px;font-weight:600;box-shadow:none}
+html[data-ds="elan"] .btn.ghost{background:var(--surface-2);color:var(--ink)}
+html[data-ds="elan"] .btn.stop{background:var(--surface);color:var(--err);border:1px solid var(--err)}
+html[data-ds="elan"] :focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+html[data-ds="elan"] #vhead :focus-visible{outline-color:var(--on-app)}
+html[data-ds="elan"] input:not([type=checkbox]):not([type=radio]):not([type=range]),html[data-ds="elan"] select,html[data-ds="elan"] textarea{font-family:var(--font);font-size:16px;min-height:48px;background:var(--surface);color:var(--ink);border:1.5px solid var(--field-line);border-radius:var(--r-ctl)}
+html[data-ds="elan"] input[type=date],html[data-ds="elan"] input[type=time]{appearance:none;-webkit-appearance:none;height:48px;min-width:0}
+html[data-ds="elan"] label{font-weight:600;font-size:16px}
+html[data-ds="elan"] .i,html[data-ds="elan"] .ic svg{width:24px;height:24px;flex:none;stroke-width:2}
+html[data-ds="elan"] .card{border-radius:var(--r-blk);box-shadow:none}
+html[data-ds="elan"] .sheet{background:var(--surface);border-radius:var(--r-sheet) var(--r-sheet) 0 0;box-shadow:none;padding:16px 20px calc(16px + env(safe-area-inset-bottom,0px));max-height:calc(var(--vvh,100dvh) - 16px);min-width:0}
+html[data-ds="elan"] .sheet-head{gap:12px;align-items:center}
+html[data-ds="elan"] .sheet-head b{font:700 22px/26px var(--display)}
+html[data-ds="elan"] .x,html[data-ds="elan"] .mini,html[data-ds="elan"] .cal-nav{min-width:44px;min-height:44px}
+html[data-ds="elan"] .sheet-bg{background:var(--scrim);align-items:end}
+html[data-ds="elan"] .sheet-grab{width:40px;height:4px;background:var(--field-line);border-radius:999px;display:block;margin:0 auto;order:-1}
+html[data-ds="elan"] #taskForm{overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+html[data-ds="elan"] #taskForm>*{flex-shrink:0}
+html[data-ds="elan"] #taskForm .task-footer{position:sticky;bottom:-16px;background:var(--surface);padding:12px 0 8px;z-index:2}
+html[data-ds="elan"] #taskForm .task-footer .btn{width:100%}
+html[data-ds="elan"] #toast{background:var(--ink);color:var(--bg);border-radius:10px;bottom:calc(var(--navh,0px) + 12px + env(safe-area-inset-bottom,0px));max-width:calc(100vw - 40px);font:500 16px/24px var(--font);box-shadow:none}
+html[data-ds="elan"] .toast-act{color:inherit;min-height:44px;border:1px solid currentColor;border-radius:999px;padding:0 16px;white-space:nowrap}
+html[data-ds="elan"] .brand{display:none}
+html[data-ds="elan"] main{max-width:760px;padding:0 20px calc(var(--navh,80px) + 24px);margin-inline:auto}
+html[data-ds="elan"] #vhead:not([hidden]){display:block;position:sticky;top:env(safe-area-inset-top,0px);z-index:12;background:var(--app);color:var(--on-app);margin:0 -20px 16px;padding:8px 12px 16px;border:0;min-width:0}
+.elan-head-row{display:flex;gap:8px;align-items:center;min-width:0}
+.ah-home,.ah-claude{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border:0}
+html[data-ds="elan"] #vhead .ah-home{width:44px;flex:none;background:none;color:var(--on-app);padding:8px;min-width:44px}
+html[data-ds="elan"] #vhead .ah-home svg{width:24px;height:24px}
+html[data-ds="elan"] #vhead .ah-brand{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
+html[data-ds="elan"] #vhead .ah-logo{width:32px;height:32px;flex:none}
+.ah-names{display:flex;flex-direction:column;min-width:0}
+html[data-ds="elan"] .ah-names b{font:700 17px/22px var(--font)}
+html[data-ds="elan"] .ah-names small{font:500 12px/16px var(--font);color:var(--on-app);overflow-wrap:anywhere}
+html[data-ds="elan"] #vhead .ah-claude{border-radius:999px;background:var(--on-app);color:var(--app);font:600 16px/20px var(--font);padding:0 12px;flex:none}
+html[data-ds="elan"] #vhead .elan-title{font:italic 800 44px/44px var(--display);margin:8px 8px 0;letter-spacing:0}
+.elan-progress{display:flex;flex-direction:column;gap:8px;margin:8px 8px 0;font:700 20px/24px var(--digits)}
+.elan-progress-track{display:block;height:6px;background:rgba(0,0,0,.18);border-radius:999px;overflow:hidden}
+.elan-progress-track i{display:block;height:100%;background:var(--on-app);transition:width var(--t-prog) var(--ease-prog);border-radius:inherit}
+html[data-ds="elan"] #vhead.compact{display:flex;align-items:center;gap:8px;padding-bottom:8px}
+html[data-ds="elan"] #vhead.compact .elan-head-row{flex:1}
+html[data-ds="elan"] #vhead.compact .ah-names,html[data-ds="elan"] #vhead.compact .elan-progress{display:none}
+html[data-ds="elan"] #vhead.compact .elan-title{font-size:32px;line-height:34px;margin:0;order:-1}
+html[data-ds="elan"] #vhead.compact .ah-logo{display:none}
+html[data-ds="elan"] #vhead.compact .ah-brand{flex:1}
+html[data-ds="elan"] .view>h1{display:none}
+html[data-ds="elan"] #v-home>.home-hello{display:block;font:700 34px/36px var(--display);margin:0 0 12px;color:var(--ink)}
+html[data-ds="elan"] .home-top{margin:0;min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+html[data-ds="elan"] #homeDate{font:500 14px/20px var(--font);letter-spacing:0;text-transform:none}
+html[data-ds="elan"] .home-acts{display:flex;gap:8px}
+html[data-ds="elan"] .home-add,html[data-ds="elan"] .avatar{height:44px;width:44px;min-width:44px;border-radius:999px;background:var(--surface-2);color:var(--ink);border:0;box-shadow:none}
+html[data-ds="elan"] .home-add svg{width:24px;height:24px}
+html[data-ds="elan"] .hc-list{display:flex;flex-direction:column;gap:12px}
+html[data-ds="elan"] .hc{display:flex;flex-direction:column;gap:0;padding:0;border:0;border-radius:18px;background:var(--surface);color:var(--ink);text-align:left;overflow:hidden;width:100%;min-width:0;box-shadow:none}
+html[data-ds="elan"] .hc-top{display:flex;align-items:center;gap:10px;min-height:56px;max-height:56px;padding:6px 12px;background:var(--app);color:var(--on-app)}
+html[data-ds="elan"] .hc-logo{width:32px;height:32px;flex:none}
+html[data-ds="elan"] .hc-heading{display:flex;flex-direction:column;min-width:0;flex:1}
+html[data-ds="elan"] .hc-name{font:italic 800 26px/28px var(--display);letter-spacing:0;color:var(--on-app)}
+html[data-ds="elan"] .hc-desc{font:500 14px/16px var(--font);color:var(--on-app);padding:0;margin:0;white-space:nowrap}
+html[data-ds="elan"] .hc-go,html[data-ds="elan"] .hc-top>.chev-r{width:20px;height:20px;flex:none}
+html[data-ds="elan"] .hc-main{display:flex;align-items:baseline;gap:10px;padding:8px 12px 0;min-width:0}
+html[data-ds="elan"] .hc-count{font:800 48px/48px var(--digits);font-style:normal;font-variant-numeric:tabular-nums}
+html[data-ds="elan"] .hc-metric{font:400 14px/20px var(--font);overflow-wrap:anywhere}
+html[data-ds="elan"] .hc-detail{padding:0 12px;min-height:20px;max-height:20px;overflow:hidden}
+html[data-ds="elan"] .hc-it{display:flex;flex-direction:row;gap:6px;min-width:0;font:500 14px/20px var(--font)}
+html[data-ds="elan"] .hc-k{color:var(--muted);white-space:nowrap;font:inherit;text-transform:none;letter-spacing:0;display:none}
+html[data-ds="elan"] .hc-v{color:var(--muted);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font:inherit;display:block;min-width:0;max-width:100%}
+html[data-ds="elan"] .hc-v .notr{white-space:nowrap}
+html[data-ds="elan"] .hc-fns{display:flex;gap:6px;padding:6px 12px 10px;min-height:48px;align-items:center;flex-wrap:nowrap}
+html[data-ds="elan"] .hc-fn{display:flex;align-items:center;gap:4px;padding:0 7px;min-height:32px;border-radius:999px;background:var(--surface-2);color:var(--ink);font:600 12px/16px var(--font);white-space:nowrap}
+html[data-ds="elan"] .hc-fn svg{width:16px;height:16px;color:var(--app-ink);stroke-width:2}
+html[data-ds="elan"] #v-plan #plEph,html[data-ds="elan"] #v-plan>.sub{display:none}
+.journey-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-bottom:16px}
+.journey-week button{min-width:0;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--surface-2);color:var(--ink);border:0;border-radius:10px;font-size:12px}
+.journey-week b{font:700 20px/24px var(--digits)}
+.journey-week [aria-pressed=true]{background:var(--app);color:var(--on-app)}
+.journey-date{display:flex;align-items:center;gap:8px;margin:12px 0}
+.journey-date h2{flex:1;margin:0;font:700 22px/26px var(--display);text-transform:none}
+.journey-date button{width:44px;height:44px;border:0;background:var(--surface-2);color:var(--ink);border-radius:10px}
+.journey-date button svg{width:24px;height:24px}
+.journey-list{background:var(--surface);border-radius:16px;overflow:hidden}
+.journey-row{display:flex;gap:12px;align-items:center;min-height:56px;padding:12px;border-bottom:1px solid var(--line)}
+.journey-row:last-child{border-bottom:0}
+.journey-row.current{border-left:3px solid var(--app)}
+.journey-row.fresh{background:var(--app-soft);animation:none}
+.journey-time{font:700 18px/22px var(--digits);font-variant-numeric:tabular-nums;width:70px;flex:none;overflow-wrap:anywhere}
+.journey-content{min-height:44px;flex:1;min-width:0;background:none;border:0;padding:0;text-align:left;display:flex;flex-direction:column;justify-content:center}
+.journey-content b{font:600 16px/22px var(--font);overflow-wrap:anywhere}
+.journey-content>span{font:500 14px/20px var(--font);overflow-wrap:anywhere}
+.journey-row.past .journey-content,.journey-row.past .journey-time{color:var(--muted)}
+.journey-state{width:44px;height:44px;flex:none;background:var(--surface-2);border:0;border-radius:999px;color:var(--app-ink)}
+.journey-state svg{width:24px;height:24px}
+.journey-empty{padding:24px;color:var(--muted)}
+html[data-ds="elan"] #taskAdd{width:100%;margin:16px 0;background:var(--app);color:var(--on-app)}
+.journey-options{margin:12px 0 0}
+.journey-options>summary{min-height:48px;display:flex;align-items:center;cursor:pointer;color:var(--app-ink);font-weight:600}
+html[data-ds="elan"] #navIn .tab{min-height:56px;position:relative;color:var(--muted);padding:8px 2px;border:0;border-radius:0;background:none;font:600 12px/16px var(--font)}
+html[data-ds="elan"] #navIn .tab[aria-current=page]{color:var(--ink);font-weight:700;border-top:3px solid var(--app)}
+html[data-ds="elan"] #navIn .tab[aria-current=page] .tabicon{color:var(--app-ink)}
+html[data-ds="elan"] #navIn .tabicon svg{width:24px;height:24px;stroke-width:2}
+html[data-ds="elan"] .side{background:var(--surface);border-right:1px solid var(--line)}
+html[data-ds="elan"] .side-it{color:var(--ink);min-height:44px;border-radius:10px}
+html[data-ds="elan"] .side-it[aria-current=true]{background:var(--app-soft);color:var(--app-ink)}
+html[data-ds="elan"] .side-h{font:700 17px/22px var(--font);text-transform:none;letter-spacing:0;color:var(--ink)}
+@media(min-width:1024px){html[data-ds="elan"] body.side-on main{margin-left:236px;max-width:none;padding:0 48px 48px}html[data-ds="elan"] body.side-on main>.view,html[data-ds="elan"] body.side-on main>#vhead{max-width:720px;margin-inline:auto}html[data-ds="elan"] body.side-on #vhead{margin-bottom:24px}html[data-ds="elan"] .hc-list{gap:16px}html[data-ds="elan"] .hc{max-width:720px}}
+@media(max-width:359px){html[data-ds="elan"] #vhead .ah-logo{display:none}html[data-ds="elan"] #vhead .ah-claude{padding-inline:10px}.journey-row{padding:10px;gap:8px}.journey-time{width:56px}html[data-ds="elan"] .hc-fns{gap:4px;padding-inline:8px}html[data-ds="elan"] .hc-fn{font-size:11px;padding-inline:5px}}
+@media(prefers-reduced-motion:reduce){:root:root[data-ds="elan"]{--t-fast:1ms;--t-base:1ms;--t-prog:1ms;--ease-prog:linear}html[data-ds="elan"] *,html[data-ds="elan"] *::before,html[data-ds="elan"] *::after{animation-duration:1ms;animation-iteration-count:1;transition-duration:1ms;transition-delay:0ms}}
+html[data-ds="elan"] #v-plan{display:flex;flex-direction:column}
+html[data-ds="elan"] #journeyDay{display:contents}
+html[data-ds="elan"] #v-plan .journey-week{order:1}
+html[data-ds="elan"] #v-plan #taskAdd{order:2;margin-top:0}
+html[data-ds="elan"] #v-plan .journey-date{order:3}
+html[data-ds="elan"] #v-plan .journey-list{order:4}
+html[data-ds="elan"] #v-plan .journey-options{order:5}
+.journey-date button:first-child svg{transform:rotate(180deg)}
+
+html[data-ds="elan"] .btn:not(.ghost):not(.stop){background:var(--app);color:var(--on-app)}
+:root:root[data-ds="elan"]{--c-agenda:#2563EB;--c-fit:#F25C19;--c-note:#7C3AED;--c-home:var(--ink)}
+html[data-ds="elan"][data-theme="dark"] img[src="icons/home.svg"]{content:url("icons/home-dark.svg")}
+@media(prefers-color-scheme:dark){html[data-ds="elan"]:not([data-theme="light"]) img[src="icons/home.svg"]{content:url("icons/home-dark.svg")}}
+/* Charte clarifiée : le mode compact garde le nom et le rôle ; pas de progression fictive. */
+html[data-ds="elan"] #vhead.compact{display:block}
+html[data-ds="elan"] #vhead.compact .ah-names{display:flex}
+html[data-ds="elan"] #vhead.compact .ah-logo{display:block}
+html[data-ds="elan"] #vhead.compact .elan-title{margin:4px 8px 0;font-size:32px;line-height:34px}
+html[data-ds="elan"] #vhead.compact .elan-progress{display:none}
+html[data-ds="elan"] #vhead[data-progress-change="add"] .elan-progress-track i{transition-timing-function:ease-out}
+.elan-progress>span:first-child{animation:elan-count 260ms ease-out}
+@keyframes elan-count{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media(max-width:359px){html[data-ds="elan"] #vhead.compact .ah-logo{display:none}}
+@media(prefers-reduced-motion:reduce){html[data-ds="elan"] .elan-progress>span:first-child{animation-duration:1ms}}
+html[data-ds="elan"][data-app="home"],html[data-ds="elan"] [data-app="home"]{--app:var(--ink);--on-app:var(--bg);--app-ink:var(--ink);--app-soft:var(--surface-2)}
+html[data-ds="elan"] .fresh,html[data-ds="elan"] .flash,html[data-ds="elan"] .zoom,html[data-ds="elan"] .onb-floats span,html[data-ds="elan"] .onb-big,html[data-ds="elan"] .onb-pop{animation:none}
+html[data-ds="elan"] #vhead[data-app="home"] .ah-claude,html[data-ds="elan"] #vhead[data-app="home"] .elan-progress{display:none}
+/* L’ordre DOM suit l’ordre visuel et l’ordre de tabulation. */
+html[data-ds="elan"] #v-plan,html[data-ds="elan"] #journeyDay{display:block}
+@media(max-width:359px){.journey-week{grid-template-columns:repeat(4,minmax(0,1fr))}}
+html[data-ds="elan"] .side-applogo[src="icons/agenda.svg"]{content:url("icons/agenda-mini.svg")}
+html[data-ds="elan"] .side-applogo[src="icons/fit.svg"]{content:url("icons/fit-mini.svg")}
+html[data-ds="elan"] .side-applogo[src="icons/note.svg"]{content:url("icons/note-mini.svg")}
+html[data-ds="elan"] .sp-name{font-family:var(--display)}
+html[data-ds="elan"] #vhead .elan-title{transform-origin:left top}
+html[data-ds="elan"] .ah-home svg,html[data-ds="elan"] .side .sp-ic svg{stroke-width:2}
+
+/* Relecture visuelle T13 : états explicites, grille et hiérarchie des actions. */
+html[data-ds="elan"] .journey-time{font:600 18px/22px var(--digits);overflow-wrap:normal}
+html[data-ds="elan"] .journey-time>span{display:block;white-space:nowrap}
+html[data-ds="elan"] .journey-time small{display:block;font:500 13px/18px var(--font);color:var(--muted);white-space:nowrap}
+html[data-ds="elan"] .journey-state{background:transparent;color:var(--muted);border-radius:999px}
+html[data-ds="elan"] .journey-state.done{background:var(--app);color:var(--on-app)}
+html[data-ds="elan"] .journey-state svg{width:24px;height:24px}
+html[data-ds="elan"] .tab[aria-current="page"] .tabicon::after{content:none}
+html[data-ds="elan"] #taskForm .rem-box{background:transparent;padding:0;border-radius:0}
+html[data-ds="elan"] #taskForm .rem-h{font:600 16px/24px var(--font);color:var(--ink);justify-content:flex-start}
+html[data-ds="elan"] #taskForm .rem-h svg{display:none}
+html[data-ds="elan"] #taskForm .rem-chips{gap:8px}
+html[data-ds="elan"] #taskForm .rem-chips .pill{min-height:44px;border-radius:999px;background:var(--surface-2);color:var(--ink);border:0;font:600 14px/20px var(--font)}
+html[data-ds="elan"] #taskForm .rem-chips .pill[aria-pressed="true"]{background:var(--app);color:var(--on-app)}
+html[data-ds="elan"] #taskForm .tchips .pill{background:var(--surface-2);color:var(--ink);min-height:44px;border:0;border-radius:999px}
+html[data-ds="elan"] #taskForm .tchips .pill[aria-pressed="true"]{background:var(--app);color:var(--on-app)}
+html[data-ds="elan"] #toast .toast-check{width:24px;height:24px;min-width:24px;color:var(--ok)}
+html[data-ds="elan"] #toast .toast-act{background:none;border:0;border-radius:0;color:inherit;font-weight:700;text-decoration:underline;min-height:44px;padding:0 8px}
+html[data-ds="elan"] .side-brand .side-tog{display:grid;place-items:center;background:transparent;color:var(--ink);width:44px;min-width:44px;height:44px;padding:10px;border:0}
+html[data-ds="elan"] .side-brand .side-tog svg{display:block;width:24px;height:24px;stroke-width:2}
+html[data-ds="elan"] .side-add{background:var(--surface-2);color:var(--ink);width:100%;box-sizing:border-box}
+html[data-ds="elan"] .side-add .sp-ic{color:var(--ink)}
+html[data-ds="elan"] .side-grp{display:flex;flex-direction:column}
+html[data-ds="elan"] .side-it{width:100%;box-sizing:border-box}
+
+html[data-ds="elan"] .journey-time .all-day{white-space:normal;font:500 13px/18px var(--font)}
+html[data-ds="elan"] #toast .toast-check{background:var(--bg);border-radius:999px;padding:2px;box-sizing:border-box}
+html[data-ds="elan"] #taskForm .rem-chips .pill[aria-pressed="true"]{opacity:1}
+html[data-ds="elan"] .side-brand{margin-inline:0;gap:8px}
+html[data-ds="elan"] .side-brand>.grow{white-space:nowrap;min-width:0}
+html[data-ds="elan"] .side-add{min-height:44px}
+
+/* Palette des types : changement de jeton validé, sans migration des données. */
+:root:root[data-ds="elan"]{--c-event:#0F8B8D}
+html[data-ds="elan"] #taskForm .tchips .dot{display:inline-block}
+html[data-ds="elan"] .journey-type-dot{display:inline-block;width:10px;height:10px;border-radius:999px;margin-right:8px;vertical-align:middle;flex:none}
+
+html[data-ds="elan"] #taskForm .tchips .pill{border:2px solid transparent}
+html[data-ds="elan"] #taskForm .tchips .pill[aria-pressed="true"]{background:var(--surface-2);color:var(--ink);border-color:var(--ink)}
+
+/* Palette finale des types validée par Claude : les données gardent leurs jetons. */
+:root:root[data-ds="elan"]{--c-cours:#66712E;--c-memoire:#9B427A;--x4:#7C5A45}
+@media(prefers-color-scheme:dark){:root:root[data-ds="elan"]:not([data-theme="light"]){--c-cours:#AAB76D;--c-memoire:#D286B5;--x4:#C49A80}}
+:root:root[data-ds="elan"][data-theme="dark"]{--c-cours:#AAB76D;--c-memoire:#D286B5;--x4:#C49A80}

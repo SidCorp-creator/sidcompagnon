@@ -3,9 +3,9 @@
 // v25 : les catégories deviennent des « espaces » (page Espaces + barre latérale sur ordinateur)
 // v42 : trois applications dans l'application mère Sid'compagnon (même compte, mêmes données) ; Réglages et Compte sont dans Sid'compagnon
 const GROUPS=[
-  {k:"orga",label:"sid'agenda",app:"agenda",tabs:["plan","todo","pomo"]}, // v41 : Listes retirées ; v42 : Focus (pomodoro) revient
-  {k:"sport",label:"sid'fit",app:"fit",tabs:["muscu","nutri","graph"]},
-  {k:"perso",label:"sid'note",app:"note",tabs:["notes","docs","pwd"]},
+  {k:"orga",label:"Sid Journée",app:"agenda",tabs:["plan","todo","pomo"]}, // v41 : Listes retirées ; v42 : Focus (pomodoro) revient
+  {k:"sport",label:"Sid Forme",app:"fit",tabs:["muscu","nutri","graph"]},
+  {k:"perso",label:"Sid Coffre",app:"note",tabs:["notes","docs","pwd"]},
   {k:"more",label:"Sid'compagnon",app:"home",tabs:["more","app"]}];
 const APP_GROUPS=GROUPS.slice(0,3);
 const appOf=v=>v==="home"||v==="spaces"?"home":groupOf(v).app;
@@ -68,6 +68,7 @@ if(v!=="notes")document.body.classList.remove("note-full");if(v==="more"){try{re
   document.querySelectorAll(".view").forEach(s=>s.hidden=s.id!=="v-"+v);
   document.documentElement.dataset.app=appOf(v);renderNav(v);renderVhead(v);renderSide(v);
   if(v==="home")renderHome();
+  if(wasApp!==appOf(v)&&appOf(v)!=="home"&&$("vhead").animate&&!window.__noIntro)$("vhead").animate([{clipPath:"inset(0 100% 0 0)"},{clipPath:"inset(0 0 0 0)"}],{duration:matchMedia("(prefers-reduced-motion: reduce)").matches?1:260,easing:"ease-out"});
   if(v==="spaces")renderSpaces();
   if(v==="more"){renderStats();renderTabsCard();renderHomeSel();renderLook();if(session)renderNotif()}
   // v37 : le coffre se reverrouille en le quittant, tout de suite ou après le délai choisi (Réglages)
@@ -83,7 +84,7 @@ if(v!=="notes")document.body.classList.remove("note-full");if(v==="more"){try{re
   if(v==="graph")renderGraph();
   if(v!=="graph")grTipHide();
   if(v==="pomo")renderSpotify();
-  window.scrollTo(0,0);
+  window.scrollTo(0,0);elanCompact();
   if(v==="home"&&introReady&&INTRO[wasApp])appOutro(wasApp);
 }
 $("navIn").addEventListener("click",e=>{const t=e.target.closest("[data-go]");if(t)show(t.dataset.go)});
@@ -94,12 +95,44 @@ function applyTabs(){
 // --- en-tête d'un module : nom de l'espace + pastilles de ses fonctions ---
 // v28 : nom de l'espace + pastilles des fonctions de cet espace (Agenda · Tâches · Focus…)
 // v42 : en-tête d'une app : son logo et son nom, et le retour à Sid'compagnon (les fonctions sont dans la barre du bas)
+const APP_ROLES={agenda:"Agenda, tâches, focus",fit:"Sport et alimentation",note:"Notes, documents, mots de passe",home:"Tes réglages"};
 function renderVhead(v){const el=$("vhead");
-  if(v==="home"||v==="spaces"){el.hidden=true;return}
-  const g=groupOf(v);el.hidden=false;el.classList.remove("many");
-  if(shIsl("appHead")){try{window.SCIslands.appHead(el,{app:g.app,label:g.label,gridIcon:GRIDIC,i18n:agI18n()});return}catch(e){reportErr("island appHead: "+(e&&e.message))}}
-  el.innerHTML=`<span class="ah-brand">${LOGO(g.app,"ah-logo")}<span class="eyebrow">${esc(g.label)}</span></span><button type="button" class="ah-home" data-go="home" aria-label="${L("Retour à Sid'compagnon")}">${GRIDIC}<span>Sid'compagnon</span></button>`}
-$("vhead").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
+ if(v==="home"||v==="spaces"){el.hidden=true;document.title="Sid'compagnon";return}
+ const g=groupOf(v),previous=el.dataset.app===g.app?Number(el.querySelector("[role=progressbar]")?.getAttribute("aria-valuenow")||0):0;el.hidden=false;el.dataset.app=g.app;el.classList.remove("many");
+ const list=allT().filter(t=>onDay(t,iso(today()))&&!t.canc),done=list.filter(t=>t.status==="fait"||(t.date===iso(today())&&t.timeEnd&&toMin(t.timeEnd)<=new Date().getHours()*60+new Date().getMinutes())).length;
+ let progress=`${done} / ${list.length} ${L("activités réalisées")}`,percent=list.length?Math.round(done/list.length*100):0,hasProgress=g.app==="agenda";
+ if(g.app==="fit"){const n=NU(),log=ML().filter(x=>x.date===iso(today())),sets=log.reduce((sum,x)=>sum+(x.ex||[]).reduce((a,e)=>a+(e.sets||[]).length,0),0);
+  if(v!=="muscu"&&nutriAllowed()&&n.plan?.kcal){const eaten=Math.round(sumOf(dayLog(iso(today()))).kcal),target=dayTarget(iso(today())).kcal;progress=`${eaten} / ${Math.round(target)} kcal`;percent=Math.min(100,Math.round(eaten/target*100));hasProgress=true}
+  else{progress=v==="muscu"?`${sets} ${L("séries réalisées aujourd'hui")}`:`${M().sessions.length} ${L("séances")}`;hasProgress=false}}
+ if(g.app==="note"){progress=`${NT().length} ${L("notes")} · ${docsArr().length} ${L("documents")}`;hasProgress=false}
+ if(g.app==="home"){progress="";hasProgress=false}
+ const title=SHORT[v]||g.label;
+ document.title=`${g.label} · ${L(title)} — Sid'compagnon`;
+ const props={app:g.app,label:g.label,role:APP_ROLES[g.app],title,progress,percent,hasProgress,gridIcon:GRIDIC,askIcon:IC("message"),i18n:agI18n()};
+ if(shIsl("appHead")){try{window.SCIslands.appHead(el,props);return}catch(e){reportErr("island appHead: "+(e&&e.message))}}
+ el.innerHTML=`<div class="elan-head-row"><button type="button" class="ah-home" data-go="home" aria-label="${L("Toutes les apps")}"><span class="ah-grid">${GRIDIC}</span></button><span class="ah-brand">${LOGO(g.app,"ah-logo")}<span class="ah-names"><b>${g.label}</b><small>${L(APP_ROLES[g.app])}</small></span></span><button type="button" class="ah-claude" data-app-claude="1"><span class="ah-chat">${IC("message")}</span>Claude</button></div><h1 class="elan-title">${L(title)}</h1><div class="elan-progress"><span>${progress}</span><span class="elan-progress-track" ${hasProgress?"":"hidden"} role="progressbar" aria-label="${L("Progression du jour")}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><i style="width:${percent}%"></i></span></div>`;
+ const bar=el.querySelector(".elan-progress-track i");if(bar&&hasProgress){bar.style.width=previous+"%";bar.getBoundingClientRect();requestAnimationFrame(()=>bar.style.width=percent+"%")}
+
+}
+$("vhead").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)show(b.dataset.go);if(e.target.closest("[data-app-claude]")){
+ const v=data.ui.view,topic=appOf(v)==="agenda"?"agenda":appOf(v)==="note"?"note":v==="muscu"?"muscu":"nutri";
+ const cv=convUrl(topic);if(cv)extOpen(cv);else aiGo(topic,T3("Je veux utiliser ","I want to use ","Ik wil werken met ")+groupOf(v).label+" · "+L(SHORT[v]));
+}});
+let compactMotion=null,headerPointer=false;
+// Un bandeau ne doit pas déplacer la cible entre l’appui et le clic.
+addEventListener("pointerdown",()=>{headerPointer=true},true);
+const headerRelease=()=>{headerPointer=false;requestAnimationFrame(elanCompact)};
+addEventListener("pointerup",headerRelease,true);addEventListener("pointercancel",headerRelease,true);
+function elanCompact(){const e=$("vhead");if(!e||headerPointer)return;const compact=window.scrollY>24||innerHeight<700||document.documentElement.classList.contains("kb-open");if(e.classList.contains("compact")===compact)return;
+ const title=e.querySelector(".elan-title"),before=title?parseFloat(getComputedStyle(title).fontSize):0;if(compactMotion)compactMotion.cancel();e.style.marginBottom="";const scroll=window.scrollY,height=e.offsetHeight,margin=parseFloat(getComputedStyle(e).marginBottom)||0;e.classList.toggle("compact",compact);
+ // Garder la hauteur du document au défilement évite le retour forcé à scrollY=0 sur une page courte.
+ if(compact&&scroll>24&&innerHeight>=700&&!document.documentElement.classList.contains("kb-open")){e.style.marginBottom=(margin+height-e.offsetHeight)+"px";window.scrollTo(0,scroll)}
+ // Le flux prend sa taille finale immédiatement : un clic pendant le défilement garde sa cible.
+ if(title&&title.animate&&before){const after=parseFloat(getComputedStyle(title).fontSize);compactMotion=title.animate([{transform:`scale(${before/after})`,opacity:.7},{transform:"scale(1)",opacity:1}],{duration:matchMedia("(prefers-reduced-motion: reduce)").matches?1:180,easing:"ease-out"})}}
+
+new MutationObserver(elanCompact).observe(document.documentElement,{attributes:true,attributeFilter:["class"]});
+addEventListener("scroll",elanCompact,{passive:true});addEventListener("resize",elanCompact);document.addEventListener("focusin",elanCompact);document.addEventListener("focusout",()=>requestAnimationFrame(elanCompact));
+
 // --- page Espaces et barre latérale (ordinateur) : tous les modules, rangés par espace, avec un chiffre utile ---
 function spaceMeta(k){try{
   if(k==="plan"){const t0=iso(today()),n=allT().filter(t=>t.status!=="fait"&&!t.canc&&(t.end||t.date)>=t0).length;return n?`${n} ${L("à venir")}`:""}
@@ -119,8 +152,8 @@ $("spacesList").addEventListener("click",e=>{const b=e.target.closest("[data-go]
 // v43 : la barre latérale (ordinateur et tablette) peut être masquée ; le choix est propre à l'appareil (data.ui.sideOff).
 // Par défaut : affichée à partir de 960 px, masquée sur tablette (768–959 px). Masquée, la barre du bas de l'app reprend sa place.
 const SIDEIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M9.5 4.5v15"/></svg>';
-function sideApply(){requestAnimationFrame(navPad);const wide=matchMedia("(min-width:768px)").matches,u=data.ui||{};
-  const on=wide&&(u.sideOff===undefined?innerWidth>=960:!u.sideOff);
+function sideApply(){requestAnimationFrame(navPad);const wide=matchMedia("(min-width:1024px)").matches,u=data.ui||{};
+  const on=wide&&(u.sideOff===undefined?innerWidth>=1024:!u.sideOff);
   document.body.classList.toggle("side-off",wide&&!on);document.body.classList.toggle("side-on",on);
   const sb=$("sideShow");if(sb){sb.hidden=!(wide&&!on);sb.setAttribute("aria-expanded","false")}}
 function sideToggle(show){data.ui.sideOff=!show;saveUI();sideApply();const f=show?document.querySelector("#side .side-tog"):$("sideShow");if(f)f.focus({preventScroll:true})}
@@ -155,7 +188,7 @@ $("qaSheet").addEventListener("click",e=>{if(e.target.id==="qaSheet"){$("qaSheet
 function inCount(ms){const m=Math.round(ms/60000);if(m<60)return `${L("dans")} ${m} min`;const h=Math.floor(m/60),r=m%60;return `${L("dans")} ${h} h${r?" "+two(r):""}`}
 function renderHome(){if(!$("homeBody"))return;
   const now=new Date(),t0=iso(today()),nm=(session&&session.name||"").trim(); // v42 : surnom complet
-  $("homeDate").textContent=`${DOW[now.getDay()]} ${now.getDate()} ${MOL[now.getMonth()]}`;
+  $("homeDate").textContent=now.toLocaleDateString(LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE",{weekday:"long",day:"numeric",month:"long"});
   $("homeHello").textContent=`${L(now.getHours()>=18?"Bonsoir":"Bonjour")}${nm?" "+nm:""}.`;
   $("homeAvatar").textContent=(nm||"S").slice(0,2).toUpperCase();
   const vis=visibleTabs(),T=vis.includes("plan")?allT().filter(t=>t.status!=="fait"&&!t.canc):[];
@@ -184,16 +217,15 @@ function renderHome(){if(!$("homeBody"))return;
     if(last&&nTxt(last))it.push([L("Dernière note"),{u:nTxt(last)},""]);
     const nN=NT().length;it.push([L("Classeur"),`${nN} ${L(nN>1?"notes":"note")} · ${NF().length} ${L(NF().length>1?"dossiers":"dossier")}`,""]);
     cards.push({g,desc:"Notes, documents et mots de passe, à l'abri.",it:it.slice(0,2)})}}
-  // v58 (#3) : cartes dessinées par React (app/src/Home.tsx) ; {u:…} = contenu de la personne (jamais traduit)
-  if(window.SCIslands&&window.SCIslands.home&&!window.__noIslands){try{window.SCIslands.home($("homeBody"),{i18n:agI18n(),
-    cards:cards.map(({g,desc,it})=>({app:g.app,k:g.k,label:g.label,desc,items:it.map(([k,v,w])=>({k,v:typeof v==="object"?v.u:v,user:typeof v==="object",w:w||""}))}))});return}
-    catch(e){reportErr("island home: "+(e&&e.message))}}
-  let h=`<div class="hc-list">${cards.map(({g,desc,it})=>`<button type="button" class="hc" data-app="${g.app}" data-gapp="${g.k}">
-    <span class="hc-top">${LOGO(g.app,"home-applogo hc-logo")}<span class="hc-name">${esc(g.label)}</span><span class="hc-go" aria-hidden="true">›</span></span>
-    <span class="hc-desc">${L(desc)}</span>
-    <span class="hc-items">${it.map(([k,v,w])=>`<span class="hc-it"><span class="hc-k">${k}</span><span class="hc-v">${typeof v==="object"?`<span class="notr">${esc(v.u)}</span>`:v}${w?` <span class="hc-w">· ${esc(w)}</span>`:""}</span></span>`).join("")}</span>
-  </button>`).join("")}</div>`;
-  $("homeBody").innerHTML=h}
+  const phrases={agenda:"Organise tes journées",fit:"Entraîne-toi, mange bien",note:"Écris, classe et protège"};
+  const models=cards.map(({g,it})=>{let count="0",metric="notes";
+    if(g.app==="agenda"){count=String(allT().filter(t=>onDay(t,t0)&&!t.canc&&t.status!=="fait").length);metric="activités restantes aujourd'hui"}
+    else if(g.app==="fit"){if(vis.includes("nutri")&&nutriAllowed()&&NU().plan?.kcal){count=fmtFull(Math.max(0,Math.round(dayTarget(t0).kcal-sumOf(dayLog(t0)).kcal)));metric="kcal restantes aujourd'hui"}else{count=String(M().sessions.length);metric="séances"}}
+    else{count=String(NT().length);metric=NT().length===1?"note":"notes"}
+    return {app:g.app,k:g.k,label:g.label,desc:phrases[g.app],count,metric,functions:groupTabs(g).map(k=>({label:SHORT[k],icon:ICON(k)||""})),items:it.map(([k,v,w])=>({k,v:typeof v==="object"?v.u:v,user:typeof v==="object",w:w||""}))};});
+  if(shIsl("home")){try{window.SCIslands.home($("homeBody"),{i18n:agI18n(),cards:models});return}catch(e){reportErr("island home: "+(e&&e.message))}}
+  $("homeBody").innerHTML=`<div class="hc-list">${models.map(c=>`<button type="button" class="hc" data-app="${c.app}" data-gapp="${c.k}"><span class="hc-top">${LOGO(c.app,"home-applogo hc-logo")}<span class="hc-heading"><span class="hc-name">${c.label}</span><span class="hc-desc">${L(c.desc)}</span></span><svg class="hc-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></span><span class="hc-main"><span class="hc-count">${c.count}</span><span class="hc-metric">${L(c.metric)}</span></span><span class="hc-detail">${c.items.slice(0,1).map(it=>`<span class="hc-it"><span class="hc-k">${it.k}</span><span class="hc-v">${it.user?`<span class="notr">${esc(it.v)}</span>`:esc(it.v)}</span></span>`).join("")}</span><span class="hc-fns">${c.functions.map(f=>`<span class="hc-fn"><span>${f.icon}</span>${L(f.label)}</span>`).join("")}</span></button>`).join("")}</div>`;
+}
 $("homeBody").addEventListener("click",e=>{
   const ga=e.target.closest("[data-gapp]");if(ga){openGroup(ga.dataset.gapp);return}
   if(e.target.closest("[data-aioff]")){data.ui.aiCardOff=1;saveUI();renderHome();return}

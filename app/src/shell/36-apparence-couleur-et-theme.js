@@ -6,15 +6,15 @@ function applyLook(){
   const p=(session&&data.prefs)||{},look=ls.get("sidnote-look")||{};
   // v42 : direction « Éditorial de précision » : clair ivoire ou graphite ; les anciennes ambiances ne sont plus appliquées (le choix reste dans les données)
   const pal=PALETTES[p.palette||look.palette]?(p.palette||look.palette):"or";
-  document.documentElement.removeAttribute("data-palette");document.documentElement.dataset.ds="edito";
+  document.documentElement.removeAttribute("data-palette");document.documentElement.dataset.ds="elan";
   // v45 : sombre par défaut pour tout le monde (avant : clair) ; seul un choix fait par la personne (prefs.theme) est gardé
   const theme=p.theme||(session?"dark":look.theme)||"dark";
   if(theme==="auto")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",theme);
   const dark=theme==="dark"||(theme==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);
-  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content",dark?"#111214":"#F4F0E8"));
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content",dark?"#121212":"#F7F7F7"));
   ls.set("sidnote-look",{theme,palette:pal}); // pour l'écran de connexion
   // v74 : identité propre à chaque fonction (ident.css), « Sobre » = l'apparence commune d'avant
-  document.documentElement.toggleAttribute("data-fx",p.fx!==false);
+  document.documentElement.removeAttribute("data-fx");
 }
 function renderLook(){
   const th=data.prefs.theme||"dark",dark=document.documentElement.dataset.theme==="dark"||(!document.documentElement.dataset.theme&&matchMedia("(prefers-color-scheme: dark)").matches);
@@ -25,7 +25,6 @@ function renderLook(){
 }
 $("palSel").addEventListener("click",e=>{const b=e.target.closest("[data-pal]");if(!b)return;data.prefs.palette=b.dataset.pal;save();applyLook();renderLook()});
 $("themeSel").addEventListener("click",e=>{const b=e.target.closest("[data-theme]");if(!b)return;data.prefs.theme=b.dataset.theme;save();applyLook();renderLook()});
-$("fxSel").addEventListener("click",e=>{const b=e.target.closest("[data-fx]");if(!b)return;data.prefs.fx=b.dataset.fx==="1";save();applyLook();renderLook();if(data.ui.view==="plan")ephFill()});
 applyLook();
 // sections des réglages : on se souvient de celles qui sont ouvertes (sur cet appareil)
 // v39 : les sections de Réglages s'ouvrent fermées à chaque lancement (demande de Sid : « quand je reviens, tout est fermé »)

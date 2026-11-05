@@ -7,6 +7,9 @@ let bootFresh=true;
 function bootTop(){if(bootFresh&&typeof data!=="undefined"&&data.ui&&data.ui.view==="home")window.scrollTo(0,0)}
 /* ---------- icônes au trait (v24, style Graphite : plus aucun émoji dans l'interface) ---------- */
 const ICS={
+  check:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8 12 3 3 5-6"/>',
+  chev:'<path d="m9 5 7 7-7 7"/>',
+  message:'<path d="M5 5h14v11H9l-4 4V5z"/>',
   search:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
   bell:'<path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3H4a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/>',
   calendar:'<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/>',
@@ -39,7 +42,7 @@ const ICS={
   globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
   grad:'<path d="M22 9 12 4 2 9l10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/>',
   trash:'<path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>'};
-const IC=n=>ICS[n]?`<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICS[n]}</svg>`:"";
+const IC=n=>ICS[n]?`<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICS[n]}</svg>`:"";
 // initiales d'un plat à la place de l'émoji : « Poulet riz » → « PR »
 const mono=s=>{const w=String(s||"").normalize("NFC").split(/[\s,'’-]+/).filter(x=>x&&/^\p{L}/u.test(x)&&!/^(de|du|des|la|le|les|au|aux|et|à|a|en|of|the|and|with|avec)$/i.test(x));return (w.length?w.slice(0,2).map(x=>x[0]).join(""):"·").toUpperCase()};
 const hydrateIcons=root=>(root||document).querySelectorAll("i.ic[data-i]").forEach(e=>{if(!e.firstChild)e.innerHTML=IC(e.dataset.i)});
@@ -111,7 +114,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="74.5";const errSent=new Set();
+const APP_V="75.0";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -360,7 +363,7 @@ function toast(m,ms){const t=$("toast");if(!toastIsl(t,{m:String(m),label:"",onA
 /** @type {any} */ toast.h=undefined; // minuterie du message (déclarée pour TypeScript)
 // v34 : message avec un bouton (ex. « Annuler »)
 function toastAct(m,label,fn,ms){const t=$("toast");let used=false;const act=()=>{if(used)return;used=true;t.hidden=true;clearTimeout(toast.h);fn()};
-  if(!toastIsl(t,{m,label,onAct:act})){t.innerHTML=`<span>${esc(L(m))}</span><button type="button" class="toast-act">${esc(L(label))}</button>`;t.querySelector(".toast-act").addEventListener("click",act,{once:true})}t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,ms||5000)}
+  if(!toastIsl(t,{m,label,onAct:act})){t.innerHTML=`<svg class="toast-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg><span>${esc(L(m))}</span><button type="button" class="toast-act">${esc(L(label))}</button>`;t.querySelector(".toast-act").addEventListener("click",act,{once:true})}t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,ms||5000)}
 // v34 : suppression immédiate, « Annuler » pendant 5 s (plus de double appui pour confirmer).
 // L'annulation remet l'état d'avant ; data.res annule la pierre tombale, même si elle est déjà partie vers les autres appareils.
 // o.later : action définitive (fichiers en ligne…) faite seulement quand on ne peut plus annuler ; o.revert : ce que la fusion ne remet pas seule.
@@ -398,7 +401,7 @@ const LOGO=(app,cls)=>`<img class="logo ${cls||""}" src="icons/${LOGO_APPS[app]?
 
 // v42 : animation d'ouverture (2 s) : le logo Sid'compagnon, puis les trois apps ; elle ne bloque jamais les touchers
 if($("authLogo"))$("authLogo").innerHTML=LOGO("home");
-(()=>{const sp=$("splash");if(!sp)return;$("spMark").innerHTML=LOGO("home");$("spApps").innerHTML=["agenda","fit","note"].map(a=>`<span data-app="${a}">${LOGO(a)}</span>`).join("");
+(()=>{const sp=$("splash");if(!sp)return;if(document.documentElement.dataset.ds==="elan"){sp.remove();return}$("spMark").innerHTML=LOGO("home");$("spApps").innerHTML=["agenda","fit","note"].map(a=>`<span data-app="${a}">${LOGO(a)}</span>`).join("");
   const quick=matchMedia("(prefers-reduced-motion: reduce)").matches;sp.classList.add("go");setTimeout(()=>{sp.remove();bootTop()},quick?400:2100)})();
 
 /* ---------- v43 : animation d'ouverture de sid'agenda, sid'fit et sid'note (≈ 2 s) ----------
@@ -423,9 +426,9 @@ const INTRO={
     ()=>{const w=[irint(60,90),irint(70,100),irint(40,80),irint(65,95)];return `<div class="it-lines" aria-hidden="true">${w.map((v,i)=>`<i style="--w:${v}%;animation-delay:${(i*irnd(.18,.26)).toFixed(2)}s"></i>`).join("")}</div>`},
     ()=>{const k=irnd(.9,1.2).toFixed(2),y=irint(-8,8);return `<svg class="it-sign" viewBox="0 0 200 90" aria-hidden="true" style="--t:${k}s"><path d="M10 ${60+y} C 40 ${10+y}, 60 ${80-y}, 85 45 S 120 ${15+y}, 140 55 S 175 ${70-y}, 190 ${35+y}"/></svg>`},
     ()=>{const n=irint(3,5);return `<div class="it-stack" aria-hidden="true">${[...Array(n)].map((_,i)=>`<span style="animation-delay:${(i*irnd(.12,.18)).toFixed(2)}s;--x:${irint(-14,14)}px;--r:${irnd(-5,5).toFixed(1)}deg"></span>`).join("")}</div>`}]};
-const INTRO_NAME={agenda:"sid'agenda",fit:"sid'fit",note:"sid'note"};
+const INTRO_NAME={agenda:"Sid Journée",fit:"Sid Forme",note:"Sid Coffre"};
 function appIntro(app,vv){
-  if(!INTRO[app]||matchMedia("(prefers-reduced-motion: reduce)").matches||window.__noIntro)return;
+  if(document.documentElement.dataset.ds==="elan"||!INTRO[app]||matchMedia("(prefers-reduced-motion: reduce)").matches||window.__noIntro)return;
   introEnd(true);const el=document.createElement("div");el.className="app-intro";el.id="appIntro";el.dataset.app=app;el.setAttribute("role","presentation");
   const v=vv!==undefined?vv:Math.floor(Math.random()*INTRO[app].length);el.dataset.variant=v;
   el.innerHTML=`<div class="ai-art">${INTRO[app][v]()}</div><div class="ai-brand"><span class="ai-logo">${LOGO(app)}</span><span class="ai-name">${INTRO_NAME[app]}</span></div><button type="button" class="ai-skip">${L("Passer")}</button>`;
@@ -436,7 +439,7 @@ addEventListener("keydown",e=>{if($("appIntro"))introEnd()},true);
 // v44.4 : animation de sortie (retour à Sid'compagnon) : le logo de l'app, au centre, rejoint sa place parmi les 3 logos de l'accueil
 const OUT_K={agenda:"orga",fit:"sport",note:"perso"};
 function appOutro(app){
-  if(matchMedia("(prefers-reduced-motion: reduce)").matches||window.__noIntro||!document.body.animate)return;
+  if(document.documentElement.dataset.ds==="elan"||matchMedia("(prefers-reduced-motion: reduce)").matches||window.__noIntro||!document.body.animate)return;
   introEnd(true);$("appOutro")?.remove();
   const el=document.createElement("div");el.className="app-outro";el.id="appOutro";el.dataset.app=app;el.setAttribute("aria-hidden","true");
   el.innerHTML=`<div class="ao-brand"><span class="ao-logo">${LOGO(app)}</span><span class="ao-name">${INTRO_NAME[app]}</span></div>`;
@@ -455,9 +458,9 @@ function appOutro(app){
 // v25 : les catégories deviennent des « espaces » (page Espaces + barre latérale sur ordinateur)
 // v42 : trois applications dans l'application mère Sid'compagnon (même compte, mêmes données) ; Réglages et Compte sont dans Sid'compagnon
 const GROUPS=[
-  {k:"orga",label:"sid'agenda",app:"agenda",tabs:["plan","todo","pomo"]}, // v41 : Listes retirées ; v42 : Focus (pomodoro) revient
-  {k:"sport",label:"sid'fit",app:"fit",tabs:["muscu","nutri","graph"]},
-  {k:"perso",label:"sid'note",app:"note",tabs:["notes","docs","pwd"]},
+  {k:"orga",label:"Sid Journée",app:"agenda",tabs:["plan","todo","pomo"]}, // v41 : Listes retirées ; v42 : Focus (pomodoro) revient
+  {k:"sport",label:"Sid Forme",app:"fit",tabs:["muscu","nutri","graph"]},
+  {k:"perso",label:"Sid Coffre",app:"note",tabs:["notes","docs","pwd"]},
   {k:"more",label:"Sid'compagnon",app:"home",tabs:["more","app"]}];
 const APP_GROUPS=GROUPS.slice(0,3);
 const appOf=v=>v==="home"||v==="spaces"?"home":groupOf(v).app;
@@ -520,6 +523,7 @@ if(v!=="notes")document.body.classList.remove("note-full");if(v==="more"){try{re
   document.querySelectorAll(".view").forEach(s=>s.hidden=s.id!=="v-"+v);
   document.documentElement.dataset.app=appOf(v);renderNav(v);renderVhead(v);renderSide(v);
   if(v==="home")renderHome();
+  if(wasApp!==appOf(v)&&appOf(v)!=="home"&&$("vhead").animate&&!window.__noIntro)$("vhead").animate([{clipPath:"inset(0 100% 0 0)"},{clipPath:"inset(0 0 0 0)"}],{duration:matchMedia("(prefers-reduced-motion: reduce)").matches?1:260,easing:"ease-out"});
   if(v==="spaces")renderSpaces();
   if(v==="more"){renderStats();renderTabsCard();renderHomeSel();renderLook();if(session)renderNotif()}
   // v37 : le coffre se reverrouille en le quittant, tout de suite ou après le délai choisi (Réglages)
@@ -535,7 +539,7 @@ if(v!=="notes")document.body.classList.remove("note-full");if(v==="more"){try{re
   if(v==="graph")renderGraph();
   if(v!=="graph")grTipHide();
   if(v==="pomo")renderSpotify();
-  window.scrollTo(0,0);
+  window.scrollTo(0,0);elanCompact();
   if(v==="home"&&introReady&&INTRO[wasApp])appOutro(wasApp);
 }
 $("navIn").addEventListener("click",e=>{const t=e.target.closest("[data-go]");if(t)show(t.dataset.go)});
@@ -546,12 +550,44 @@ function applyTabs(){
 // --- en-tête d'un module : nom de l'espace + pastilles de ses fonctions ---
 // v28 : nom de l'espace + pastilles des fonctions de cet espace (Agenda · Tâches · Focus…)
 // v42 : en-tête d'une app : son logo et son nom, et le retour à Sid'compagnon (les fonctions sont dans la barre du bas)
+const APP_ROLES={agenda:"Agenda, tâches, focus",fit:"Sport et alimentation",note:"Notes, documents, mots de passe",home:"Tes réglages"};
 function renderVhead(v){const el=$("vhead");
-  if(v==="home"||v==="spaces"){el.hidden=true;return}
-  const g=groupOf(v);el.hidden=false;el.classList.remove("many");
-  if(shIsl("appHead")){try{window.SCIslands.appHead(el,{app:g.app,label:g.label,gridIcon:GRIDIC,i18n:agI18n()});return}catch(e){reportErr("island appHead: "+(e&&e.message))}}
-  el.innerHTML=`<span class="ah-brand">${LOGO(g.app,"ah-logo")}<span class="eyebrow">${esc(g.label)}</span></span><button type="button" class="ah-home" data-go="home" aria-label="${L("Retour à Sid'compagnon")}">${GRIDIC}<span>Sid'compagnon</span></button>`}
-$("vhead").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
+ if(v==="home"||v==="spaces"){el.hidden=true;document.title="Sid'compagnon";return}
+ const g=groupOf(v),previous=el.dataset.app===g.app?Number(el.querySelector("[role=progressbar]")?.getAttribute("aria-valuenow")||0):0;el.hidden=false;el.dataset.app=g.app;el.classList.remove("many");
+ const list=allT().filter(t=>onDay(t,iso(today()))&&!t.canc),done=list.filter(t=>t.status==="fait"||(t.date===iso(today())&&t.timeEnd&&toMin(t.timeEnd)<=new Date().getHours()*60+new Date().getMinutes())).length;
+ let progress=`${done} / ${list.length} ${L("activités réalisées")}`,percent=list.length?Math.round(done/list.length*100):0,hasProgress=g.app==="agenda";
+ if(g.app==="fit"){const n=NU(),log=ML().filter(x=>x.date===iso(today())),sets=log.reduce((sum,x)=>sum+(x.ex||[]).reduce((a,e)=>a+(e.sets||[]).length,0),0);
+  if(v!=="muscu"&&nutriAllowed()&&n.plan?.kcal){const eaten=Math.round(sumOf(dayLog(iso(today()))).kcal),target=dayTarget(iso(today())).kcal;progress=`${eaten} / ${Math.round(target)} kcal`;percent=Math.min(100,Math.round(eaten/target*100));hasProgress=true}
+  else{progress=v==="muscu"?`${sets} ${L("séries réalisées aujourd'hui")}`:`${M().sessions.length} ${L("séances")}`;hasProgress=false}}
+ if(g.app==="note"){progress=`${NT().length} ${L("notes")} · ${docsArr().length} ${L("documents")}`;hasProgress=false}
+ if(g.app==="home"){progress="";hasProgress=false}
+ const title=SHORT[v]||g.label;
+ document.title=`${g.label} · ${L(title)} — Sid'compagnon`;
+ const props={app:g.app,label:g.label,role:APP_ROLES[g.app],title,progress,percent,hasProgress,gridIcon:GRIDIC,askIcon:IC("message"),i18n:agI18n()};
+ if(shIsl("appHead")){try{window.SCIslands.appHead(el,props);return}catch(e){reportErr("island appHead: "+(e&&e.message))}}
+ el.innerHTML=`<div class="elan-head-row"><button type="button" class="ah-home" data-go="home" aria-label="${L("Toutes les apps")}"><span class="ah-grid">${GRIDIC}</span></button><span class="ah-brand">${LOGO(g.app,"ah-logo")}<span class="ah-names"><b>${g.label}</b><small>${L(APP_ROLES[g.app])}</small></span></span><button type="button" class="ah-claude" data-app-claude="1"><span class="ah-chat">${IC("message")}</span>Claude</button></div><h1 class="elan-title">${L(title)}</h1><div class="elan-progress"><span>${progress}</span><span class="elan-progress-track" ${hasProgress?"":"hidden"} role="progressbar" aria-label="${L("Progression du jour")}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><i style="width:${percent}%"></i></span></div>`;
+ const bar=el.querySelector(".elan-progress-track i");if(bar&&hasProgress){bar.style.width=previous+"%";bar.getBoundingClientRect();requestAnimationFrame(()=>bar.style.width=percent+"%")}
+
+}
+$("vhead").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)show(b.dataset.go);if(e.target.closest("[data-app-claude]")){
+ const v=data.ui.view,topic=appOf(v)==="agenda"?"agenda":appOf(v)==="note"?"note":v==="muscu"?"muscu":"nutri";
+ const cv=convUrl(topic);if(cv)extOpen(cv);else aiGo(topic,T3("Je veux utiliser ","I want to use ","Ik wil werken met ")+groupOf(v).label+" · "+L(SHORT[v]));
+}});
+let compactMotion=null,headerPointer=false;
+// Un bandeau ne doit pas déplacer la cible entre l’appui et le clic.
+addEventListener("pointerdown",()=>{headerPointer=true},true);
+const headerRelease=()=>{headerPointer=false;requestAnimationFrame(elanCompact)};
+addEventListener("pointerup",headerRelease,true);addEventListener("pointercancel",headerRelease,true);
+function elanCompact(){const e=$("vhead");if(!e||headerPointer)return;const compact=window.scrollY>24||innerHeight<700||document.documentElement.classList.contains("kb-open");if(e.classList.contains("compact")===compact)return;
+ const title=e.querySelector(".elan-title"),before=title?parseFloat(getComputedStyle(title).fontSize):0;if(compactMotion)compactMotion.cancel();e.style.marginBottom="";const scroll=window.scrollY,height=e.offsetHeight,margin=parseFloat(getComputedStyle(e).marginBottom)||0;e.classList.toggle("compact",compact);
+ // Garder la hauteur du document au défilement évite le retour forcé à scrollY=0 sur une page courte.
+ if(compact&&scroll>24&&innerHeight>=700&&!document.documentElement.classList.contains("kb-open")){e.style.marginBottom=(margin+height-e.offsetHeight)+"px";window.scrollTo(0,scroll)}
+ // Le flux prend sa taille finale immédiatement : un clic pendant le défilement garde sa cible.
+ if(title&&title.animate&&before){const after=parseFloat(getComputedStyle(title).fontSize);compactMotion=title.animate([{transform:`scale(${before/after})`,opacity:.7},{transform:"scale(1)",opacity:1}],{duration:matchMedia("(prefers-reduced-motion: reduce)").matches?1:180,easing:"ease-out"})}}
+
+new MutationObserver(elanCompact).observe(document.documentElement,{attributes:true,attributeFilter:["class"]});
+addEventListener("scroll",elanCompact,{passive:true});addEventListener("resize",elanCompact);document.addEventListener("focusin",elanCompact);document.addEventListener("focusout",()=>requestAnimationFrame(elanCompact));
+
 // --- page Espaces et barre latérale (ordinateur) : tous les modules, rangés par espace, avec un chiffre utile ---
 function spaceMeta(k){try{
   if(k==="plan"){const t0=iso(today()),n=allT().filter(t=>t.status!=="fait"&&!t.canc&&(t.end||t.date)>=t0).length;return n?`${n} ${L("à venir")}`:""}
@@ -571,8 +607,8 @@ $("spacesList").addEventListener("click",e=>{const b=e.target.closest("[data-go]
 // v43 : la barre latérale (ordinateur et tablette) peut être masquée ; le choix est propre à l'appareil (data.ui.sideOff).
 // Par défaut : affichée à partir de 960 px, masquée sur tablette (768–959 px). Masquée, la barre du bas de l'app reprend sa place.
 const SIDEIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M9.5 4.5v15"/></svg>';
-function sideApply(){requestAnimationFrame(navPad);const wide=matchMedia("(min-width:768px)").matches,u=data.ui||{};
-  const on=wide&&(u.sideOff===undefined?innerWidth>=960:!u.sideOff);
+function sideApply(){requestAnimationFrame(navPad);const wide=matchMedia("(min-width:1024px)").matches,u=data.ui||{};
+  const on=wide&&(u.sideOff===undefined?innerWidth>=1024:!u.sideOff);
   document.body.classList.toggle("side-off",wide&&!on);document.body.classList.toggle("side-on",on);
   const sb=$("sideShow");if(sb){sb.hidden=!(wide&&!on);sb.setAttribute("aria-expanded","false")}}
 function sideToggle(show){data.ui.sideOff=!show;saveUI();sideApply();const f=show?document.querySelector("#side .side-tog"):$("sideShow");if(f)f.focus({preventScroll:true})}
@@ -607,7 +643,7 @@ $("qaSheet").addEventListener("click",e=>{if(e.target.id==="qaSheet"){$("qaSheet
 function inCount(ms){const m=Math.round(ms/60000);if(m<60)return `${L("dans")} ${m} min`;const h=Math.floor(m/60),r=m%60;return `${L("dans")} ${h} h${r?" "+two(r):""}`}
 function renderHome(){if(!$("homeBody"))return;
   const now=new Date(),t0=iso(today()),nm=(session&&session.name||"").trim(); // v42 : surnom complet
-  $("homeDate").textContent=`${DOW[now.getDay()]} ${now.getDate()} ${MOL[now.getMonth()]}`;
+  $("homeDate").textContent=now.toLocaleDateString(LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE",{weekday:"long",day:"numeric",month:"long"});
   $("homeHello").textContent=`${L(now.getHours()>=18?"Bonsoir":"Bonjour")}${nm?" "+nm:""}.`;
   $("homeAvatar").textContent=(nm||"S").slice(0,2).toUpperCase();
   const vis=visibleTabs(),T=vis.includes("plan")?allT().filter(t=>t.status!=="fait"&&!t.canc):[];
@@ -636,16 +672,15 @@ function renderHome(){if(!$("homeBody"))return;
     if(last&&nTxt(last))it.push([L("Dernière note"),{u:nTxt(last)},""]);
     const nN=NT().length;it.push([L("Classeur"),`${nN} ${L(nN>1?"notes":"note")} · ${NF().length} ${L(NF().length>1?"dossiers":"dossier")}`,""]);
     cards.push({g,desc:"Notes, documents et mots de passe, à l'abri.",it:it.slice(0,2)})}}
-  // v58 (#3) : cartes dessinées par React (app/src/Home.tsx) ; {u:…} = contenu de la personne (jamais traduit)
-  if(window.SCIslands&&window.SCIslands.home&&!window.__noIslands){try{window.SCIslands.home($("homeBody"),{i18n:agI18n(),
-    cards:cards.map(({g,desc,it})=>({app:g.app,k:g.k,label:g.label,desc,items:it.map(([k,v,w])=>({k,v:typeof v==="object"?v.u:v,user:typeof v==="object",w:w||""}))}))});return}
-    catch(e){reportErr("island home: "+(e&&e.message))}}
-  let h=`<div class="hc-list">${cards.map(({g,desc,it})=>`<button type="button" class="hc" data-app="${g.app}" data-gapp="${g.k}">
-    <span class="hc-top">${LOGO(g.app,"home-applogo hc-logo")}<span class="hc-name">${esc(g.label)}</span><span class="hc-go" aria-hidden="true">›</span></span>
-    <span class="hc-desc">${L(desc)}</span>
-    <span class="hc-items">${it.map(([k,v,w])=>`<span class="hc-it"><span class="hc-k">${k}</span><span class="hc-v">${typeof v==="object"?`<span class="notr">${esc(v.u)}</span>`:v}${w?` <span class="hc-w">· ${esc(w)}</span>`:""}</span></span>`).join("")}</span>
-  </button>`).join("")}</div>`;
-  $("homeBody").innerHTML=h}
+  const phrases={agenda:"Organise tes journées",fit:"Entraîne-toi, mange bien",note:"Écris, classe et protège"};
+  const models=cards.map(({g,it})=>{let count="0",metric="notes";
+    if(g.app==="agenda"){count=String(allT().filter(t=>onDay(t,t0)&&!t.canc&&t.status!=="fait").length);metric="activités restantes aujourd'hui"}
+    else if(g.app==="fit"){if(vis.includes("nutri")&&nutriAllowed()&&NU().plan?.kcal){count=fmtFull(Math.max(0,Math.round(dayTarget(t0).kcal-sumOf(dayLog(t0)).kcal)));metric="kcal restantes aujourd'hui"}else{count=String(M().sessions.length);metric="séances"}}
+    else{count=String(NT().length);metric=NT().length===1?"note":"notes"}
+    return {app:g.app,k:g.k,label:g.label,desc:phrases[g.app],count,metric,functions:groupTabs(g).map(k=>({label:SHORT[k],icon:ICON(k)||""})),items:it.map(([k,v,w])=>({k,v:typeof v==="object"?v.u:v,user:typeof v==="object",w:w||""}))};});
+  if(shIsl("home")){try{window.SCIslands.home($("homeBody"),{i18n:agI18n(),cards:models});return}catch(e){reportErr("island home: "+(e&&e.message))}}
+  $("homeBody").innerHTML=`<div class="hc-list">${models.map(c=>`<button type="button" class="hc" data-app="${c.app}" data-gapp="${c.k}"><span class="hc-top">${LOGO(c.app,"home-applogo hc-logo")}<span class="hc-heading"><span class="hc-name">${c.label}</span><span class="hc-desc">${L(c.desc)}</span></span><svg class="hc-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></span><span class="hc-main"><span class="hc-count">${c.count}</span><span class="hc-metric">${L(c.metric)}</span></span><span class="hc-detail">${c.items.slice(0,1).map(it=>`<span class="hc-it"><span class="hc-k">${it.k}</span><span class="hc-v">${it.user?`<span class="notr">${esc(it.v)}</span>`:esc(it.v)}</span></span>`).join("")}</span><span class="hc-fns">${c.functions.map(f=>`<span class="hc-fn"><span>${f.icon}</span>${L(f.label)}</span>`).join("")}</span></button>`).join("")}</div>`;
+}
 $("homeBody").addEventListener("click",e=>{
   const ga=e.target.closest("[data-gapp]");if(ga){openGroup(ga.dataset.gapp);return}
   if(e.target.closest("[data-aioff]")){data.ui.aiCardOff=1;saveUI();renderHome();return}
@@ -1082,7 +1117,20 @@ function ephFill(){const el=$("plEph");if(!el)return;const d=today(),loc=LANG===
   const n=data.tasks.filter(x=>x.date===k&&x.status!=="annulé").length;
   const sig=[k,LANG,n].join("|");if(el.dataset.sig===sig)return;el.dataset.sig=sig;
   el.innerHTML=`<div class="eph-band"><span>${esc(d.toLocaleDateString(loc,{month:"long",year:"numeric"}))}</span><span>${esc(L("Semaine"))} ${wk}</span></div><div class="eph-body"><b class="eph-d">${d.getDate()}</b><span class="eph-r"><span class="eph-wd">${esc(d.toLocaleDateString(loc,{weekday:"long"}))}</span><span class="eph-n">${esc(n?`${n} ${L(n>1?"activités":"activité")}`:L("Aucune activité aujourd'hui"))}</span></span></div>`}
+// Journée Élan : une liste lisible ; le calendrier complet reste accessible dans les options.
+let elanFresh="";
+function renderElanDay(){const host=$("journeyDay");if(!host)return;
+ const day=selDay||iso(today()),d=parse(day),loc=LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE",monday=new Date(d);monday.setDate(d.getDate()-(d.getDay()+6)%7);
+ const week=Array.from({length:7},(_,i)=>{const x=new Date(monday);x.setDate(x.getDate()+i);return {day:iso(x),label:x.toLocaleDateString(loc,{weekday:"short"}),num:x.getDate()}});
+ const shift=n=>{const x=new Date(d);x.setDate(x.getDate()+n);return iso(x)},now=new Date(),minute=now.getHours()*60+now.getMinutes();
+ const items=allT().filter(t=>onDay(t,day)).sort((a,b)=>sk(a).localeCompare(sk(b))).map(t=>({id:t.id,title:t.title,time:t.time||"",endTime:t.timeEnd||"",typeColor:t.cat?tc(t.cat):"",meta:[t.canc?L("Annulé"):"",t.cat,t.loc].filter(Boolean).join(" · "),past:!!t.canc||t.status==="fait"||(day<iso(today())),current:day===iso(today())&&!!t.time&&toMin(t.time)<=minute&&(toMin(t.timeEnd)||toMin(t.time)+60)>minute,fresh:t.id===elanFresh,ical:t.src==="ical",done:t.status==="fait"}));
+ const props={day,label:d.toLocaleDateString(loc,{weekday:"long",day:"numeric",month:"long"}),week,items,prev:shift(-1),next:shift(1),check:CHECK,more:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg>',i18n:agI18n()};
+ if(shIsl("journeyDay")){try{window.SCIslands.journeyDay(host,props);return}catch(e){reportErr("island journeyDay: "+(e&&e.message))}}
+ host.innerHTML=`<div class="journey-week" role="group" aria-label="${L("Choisir un jour")}">${week.map(x=>`<button type="button" data-elan-day="${x.day}" aria-pressed="${x.day===day}"><span>${x.label}</span><b>${x.num}</b></button>`).join("")}</div><button type="button" id="taskAdd" class="btn add-act">${L("Ajouter une activité")}</button><div class="journey-date"><button type="button" data-elan-day="${props.prev}" aria-label="${L("Jour précédent")}">${IC("chev")}</button><h2>${props.label}</h2><button type="button" data-elan-day="${props.next}" aria-label="${L("Jour suivant")}">${IC("chev")}</button></div><div class="journey-list">${items.map(t=>`<div class="journey-row ${t.past?"past":""} ${t.current?"current":""} ${t.fresh?"fresh":""}"><span class="journey-time"><span ${t.time?"":'class="all-day"'}>${t.time||L("Toute la journée")}</span>${t.endTime?`<small>${t.endTime}</small>`:""}</span><button type="button" class="journey-content" ${t.ical?`data-icalinfo="${esc(t.id)}"`:`data-edit="task:${t.id}"`}><b class="notr">${esc(t.title)}</b><span class="muted notr">${t.typeColor?`<i class="journey-type-dot" aria-hidden="true" style="background:var(${esc(t.typeColor)})"></i>`:""}${esc(t.meta)}</span></button>${t.ical?"":`<button type="button" class="journey-state ${t.done?"done":""}" aria-pressed="${t.done}" data-st="${t.id}" data-s="${t.done?"fait":"à faire"}" aria-label="${L(t.done?"Faite":"Marquer comme faite")}">${t.done?CHECK:props.more}</button>`}</div>`).join("")||`<div class="journey-empty">${L("Rien de prévu ce jour-ci")}</div>`}</div>`;
+}
+$("v-plan").addEventListener("click",e=>{const b=e.target.closest("[data-elan-day]");if(!b)return;selDay=b.dataset.elanDay;renderPlan()});
 function renderPlan(){
+  renderElanDay();if(data.ui.view&&data.ui.view!=="home")renderVhead(data.ui.view);
   ephFill();
   const T=data.tasks,q=norm(planQ);
   $("planTop").hidden=!!q;
@@ -1126,7 +1174,7 @@ function renderPlan(){
       <button type="button" class="pr-more" data-tmore2="${t.id}" aria-label="Plus d'actions">⋯</button></div>`}).join("")}</div>`)}).join("");
 }
 $("v-plan").addEventListener("click",e=>{
-  const ii=e.target.closest(".row[data-icalinfo]");if(ii){icalInfo(ii.dataset.icalinfo);return}
+  const ii=e.target.closest("[data-icalinfo]");if(ii){icalInfo(ii.dataset.icalinfo);return}
   const b=e.target.closest("button");if(!b)return;
   if(b.dataset.f){data.ui.filter=b.dataset.f;saveUI();renderPlan();return}
   if(b.dataset.mfold){const k=b.dataset.mfold;if(planOpenMem[k])delete planOpenMem[k];else planOpenMem[k]=1;renderPlan();return}
@@ -1137,7 +1185,7 @@ $("v-plan").addEventListener("click",e=>{
       ...STATUSES.map(s=>({l:s==="à faire"?"Marquer à faire":s==="en cours"?"Marquer en cours":"Marquer comme fait",on:t.status===s,fn:()=>{t.status=s;save();renderPlan()}})),
       {l:"Supprimer",danger:true,fn:()=>taskDel(t.id)}]);return}
   const T=data.tasks;
-  if(b.dataset.st){const t=T.find(x=>x.id===b.dataset.st);t.status=STATUSES[(STATUSES.indexOf(t.status)+1)%3];save();renderPlan()}
+  if(b.dataset.st){$("vhead").dataset.progressChange="done";const t=T.find(x=>x.id===b.dataset.st);if(!t)return;t.status=b.classList.contains("journey-state")?(t.status==="fait"?"à faire":"fait"):STATUSES[(STATUSES.indexOf(t.status)+1)%3];save();renderPlan()}
   else if(b.dataset.cf){const t=T.find(x=>x.id===b.dataset.cf);t.tbc=false;save();renderPlan();toast("Date confirmée")}
   else if(b.dataset.tdel){if(c2ok(b))taskDel(b.dataset.tdel)}
 });
@@ -1177,22 +1225,31 @@ function quickPreview(){const v=$("fTitle").value,h=$("fHint");if(!v.trim()){h.h
   h.innerHTML=`${IC("calendar")||""}<span>${L("Compris")} : <b class="notr">${esc(q.title)}</b> · ${d?esc(d.toLocaleDateString(LANG==="fr"?"fr-BE":LANG==="nl"?"nl-BE":"en-GB",{weekday:"long",day:"numeric",month:"long"})):""}${q.time?` ${d?"· ":""}${q.time}`:""}</span>`;h.hidden=false}
 $("fTitle").addEventListener("input",quickPreview);
 ["fDate","fTime"].forEach(id=>$(id).addEventListener("input",()=>{fTouched=true}));
-function openTaskSheet(date){const f=$("taskForm");fTouched=false;$("fHint").hidden=true;if(!$("fDate").value||date)$("fDate").value=date||iso(today());
-  $("taskSheet").hidden=false;setTimeout(()=>$("fTitle").focus(),80)}
-function closeTaskSheet(){$("taskSheet").hidden=true;$("fMore").open=false}
-$("taskAdd").addEventListener("click",()=>openTaskSheet(typeof selDay==="string"&&calMode==="day"?selDay:null));
+function taskError(message,id){const el=$("fError");el.innerHTML=IC("alert")+" "+esc(L(message));el.hidden=false;$(id).setAttribute("aria-describedby","fError");$(id).focus()}
+$("taskForm").addEventListener("input",()=>{$("fError").hidden=true;["fTitle","fDate","fTimeEnd","fEnd"].forEach(id=>$(id).removeAttribute("aria-describedby"))});
+let taskMotion=null,taskMotionSeq=0;
+function openTaskSheet(date){taskMotionSeq++;if(taskMotion)taskMotion.cancel();$("fError").hidden=true;const f=$("taskForm");fTouched=false;$("fHint").hidden=true;if(!$("fDate").value||date)$("fDate").value=date||iso(today());
+  $("taskSheet").hidden=false;$("fTimeEnd").closest("label").hidden=false;
+ const sheet=$("taskForm");if(sheet.animate)taskMotion=sheet.animate([{transform:"translateY(32px)",opacity:0},{transform:"translateY(0)",opacity:1}],{duration:matchMedia("(prefers-reduced-motion: reduce)").matches?1:240,easing:"cubic-bezier(.2,.8,.2,1)"});setTimeout(()=>$("fTitle").focus(),80)}
+function closeTaskSheet(){if($("taskSheet").hidden)return;const seq=++taskMotionSeq;if(taskMotion)taskMotion.cancel();
+ const finish=()=>{if(seq!==taskMotionSeq)return;$("taskSheet").hidden=true;$("fMore").open=false;requestAnimationFrame(()=>$("taskAdd")?.focus({preventScroll:true}))};
+ if(!$("taskForm").animate){finish();return}taskMotion=$("taskForm").animate([{transform:"translateY(0)",opacity:1},{transform:"translateY(32px)",opacity:0}],{duration:matchMedia("(prefers-reduced-motion: reduce)").matches?1:180,easing:"ease-out"});taskMotion.onfinish=finish;
+}
+$("v-plan").addEventListener("click",e=>{if(e.target.closest("#taskAdd"))openTaskSheet(selDay||iso(today()))});
 $("taskClose").addEventListener("click",closeTaskSheet);
 $("taskSheet").addEventListener("click",e=>{if(e.target.id==="taskSheet")closeTaskSheet()});
 function taskDel(id){undoable("Activité supprimée",[id],()=>{tomb(id);data.tasks=data.tasks.filter(x=>x.id!==id)},{after:()=>{renderPlan();renderTypes()}})}
 $("taskForm").addEventListener("submit",e=>{
   e.preventDefault();
   const q=parseQuick($("fTitle").value),t={id:uid(),title:(q.date||q.time)?q.title:$("fTitle").value.trim(),date:$("fDate").value,status:"à faire",tbc:false};
-  if(!t.title||!t.date)return;
+  if(!t.title){taskError("Écris un titre pour cette activité","fTitle");return}if(!t.date){taskError("Choisis une date","fDate");return}
+  if($("fEnd").value&&$("fEnd").value<t.date){taskError("La date de fin doit être après la date de début","fEnd");return}
   t.cat=ensureType($("fCat").value);
   if($("fTime").value)t.time=$("fTime").value;
-  if(t.time&&$("fTimeEnd").value){if($("fTimeEnd").value<=t.time){toast("L'heure de fin doit être après l'heure de début");return}t.timeEnd=$("fTimeEnd").value}
+  if(t.time&&$("fTimeEnd").value){if($("fTimeEnd").value<=t.time){taskError("L'heure de fin doit être après l'heure de début","fTimeEnd");return}t.timeEnd=$("fTimeEnd").value}
   if($("fEnd").value&&$("fEnd").value>=t.date)t.end=$("fEnd").value;
-  remApply(t,"f");data.tasks.push(t);save();renderPlan();renderTypes();e.target.reset();remSel.f=null;renderRem("f");closeTaskSheet();toast("Ajouté à l'agenda");if(t.time)setTimeout(maybeAskNotif,900); // v37 : la proposition arrive quand elle a du sens
+  remApply(t,"f");$("vhead").dataset.progressChange="add";data.tasks.push(t);elanFresh=t.id;selDay=t.date;save();renderPlan();renderTypes();e.target.reset();remSel.f=null;renderRem("f");closeTaskSheet();
+  const original=JSON.stringify(t);toastAct("Activité ajoutée","Annuler",()=>{const current=data.tasks.find(x=>x.id===t.id);if(!current)return;if(JSON.stringify(current)!==original){toast("L'activité a changé : elle est conservée");return}tomb(t.id);data.tasks=data.tasks.filter(x=>x.id!==t.id);elanFresh="";save();renderPlan();renderHome()},4000);if(t.time)setTimeout(maybeAskNotif,900); // v37 : la proposition arrive quand elle a du sens
 });
 
 /* ---------- calendriers reliés (iCal) ---------- */
@@ -1386,7 +1443,7 @@ async function saveJSON(obj,name,title){
   try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title});return}}catch(e){if(e.name==="AbortError")return}
   const a=document.createElement("a");a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
 const bkObj=extra=>({app:"sidnote",v:2,exported:new Date().toISOString(),...(extra||{}),data:forServer(data)});
-$("backupBtn").addEventListener("click",()=>saveJSON(bkObj(),`sidnote-sauvegarde-${new Date().toISOString().slice(0,10)}.json`,L("Sauvegarde Sid'note")));
+$("backupBtn").addEventListener("click",()=>saveJSON(bkObj(),`sidnote-sauvegarde-${new Date().toISOString().slice(0,10)}.json`,L("Sauvegarde Sid'compagnon")));
 // RGPD : export complet (JSON) et suppression des données du compte
 $("exportAllBtn").addEventListener("click",()=>saveJSON(bkObj({account:{email:session&&session.email,id:session&&session.user.id}}),`sidnote-mes-donnees-${new Date().toISOString().slice(0,10)}.json`,L("Mes données Sid'compagnon")));
 $("wipeBtn").addEventListener("click",async e=>{
@@ -1426,7 +1483,7 @@ let bkCur=null;
 $("restoreIn").addEventListener("change",async e=>{
   const f=e.target.files[0];e.target.value="";if(!f)return;
   let p=null;try{p=bkParse(JSON.parse(await f.text()))}catch(err){}
-  if(!p){toast("Ce fichier n'est pas une sauvegarde Sid'note");return}
+  if(!p){toast("Ce fichier n'est pas une sauvegarde Sid'compagnon");return}
   bkCur=bkPrepare(p.d);const d=bkCur.d;bkCur.v1=!!p.v1;
   $("bkWhen").textContent=p.at?`${L("Sauvegarde du")} ${fmtDay(p.at)}`:L("Ancienne sauvegarde (tâches et agenda seulement)");
   if(shIsl("bkList")){try{window.SCIslands.bkList($("bkList"),{rows:BK_LISTS.filter(x=>x[1]).map(([k,lb])=>({lb,n:bkGet(d,k).length,now:bkGet(data,k).length})),i18n:agI18n()})}catch(e){reportErr("island bkList: "+(e&&e.message))}}
@@ -3704,8 +3761,8 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden&&!$("aiShe
 const CONV_OK=u=>/^https:\/\/claude\.ai\/(?:chat|project)\/[\w-]+/.test(u||"");
 // v46.1 : une conversation par app (agenda, nutri, muscu, note) ; l'ancien dossier Santé ne sert qu'à sid'fit
 const convUrl=t=>{const c=(data.prefs.aiConv||{})[t];return CONV_OK(c)?c:(t==="nutri"||t==="muscu")&&CONV_OK(data.prefs.aiProj)?data.prefs.aiProj:""};
-const CONV_NAME={nutri:"Nutrition",muscu:"Musculation",agenda:"sid'agenda",note:"sid'note"};
-const CONV_TITLE={agenda:"sid'agenda — discussion avec Claude",nutri:"sid'fit — Nutrition",muscu:"sid'fit — Musculation",note:"sid'note — discussion avec Claude"};
+const CONV_NAME={nutri:"Nutrition",muscu:"Musculation",agenda:"Sid Journée",note:"Sid Coffre"};
+const CONV_TITLE={agenda:"Sid Journée — discussion avec Claude",nutri:"Sid Forme — Nutrition",muscu:"Sid Forme — Musculation",note:"Sid Coffre — discussion avec Claude"};
 const CONV_IN={agenda:"convAgenda",nutri:"convNutri",muscu:"convMuscu",note:"convNote"};
 // nouvelle conversation : le titre de l'app en tête du premier message, pour la retrouver dans Claude et la garder
 const convFirst=(t,p)=>CONV_TITLE[t]&&!convUrl(t)?`${L(CONV_TITLE[t])}\n\n${p}`:p;
@@ -4217,15 +4274,15 @@ function applyLook(){
   const p=(session&&data.prefs)||{},look=ls.get("sidnote-look")||{};
   // v42 : direction « Éditorial de précision » : clair ivoire ou graphite ; les anciennes ambiances ne sont plus appliquées (le choix reste dans les données)
   const pal=PALETTES[p.palette||look.palette]?(p.palette||look.palette):"or";
-  document.documentElement.removeAttribute("data-palette");document.documentElement.dataset.ds="edito";
+  document.documentElement.removeAttribute("data-palette");document.documentElement.dataset.ds="elan";
   // v45 : sombre par défaut pour tout le monde (avant : clair) ; seul un choix fait par la personne (prefs.theme) est gardé
   const theme=p.theme||(session?"dark":look.theme)||"dark";
   if(theme==="auto")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",theme);
   const dark=theme==="dark"||(theme==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);
-  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content",dark?"#111214":"#F4F0E8"));
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content",dark?"#121212":"#F7F7F7"));
   ls.set("sidnote-look",{theme,palette:pal}); // pour l'écran de connexion
   // v74 : identité propre à chaque fonction (ident.css), « Sobre » = l'apparence commune d'avant
-  document.documentElement.toggleAttribute("data-fx",p.fx!==false);
+  document.documentElement.removeAttribute("data-fx");
 }
 function renderLook(){
   const th=data.prefs.theme||"dark",dark=document.documentElement.dataset.theme==="dark"||(!document.documentElement.dataset.theme&&matchMedia("(prefers-color-scheme: dark)").matches);
@@ -4236,11 +4293,11 @@ function renderLook(){
 }
 $("palSel").addEventListener("click",e=>{const b=e.target.closest("[data-pal]");if(!b)return;data.prefs.palette=b.dataset.pal;save();applyLook();renderLook()});
 $("themeSel").addEventListener("click",e=>{const b=e.target.closest("[data-theme]");if(!b)return;data.prefs.theme=b.dataset.theme;save();applyLook();renderLook()});
-$("fxSel").addEventListener("click",e=>{const b=e.target.closest("[data-fx]");if(!b)return;data.prefs.fx=b.dataset.fx==="1";save();applyLook();renderLook();if(data.ui.view==="plan")ephFill()});
 applyLook();
 // sections des réglages : on se souvient de celles qui sont ouvertes (sur cet appareil)
 // v39 : les sections de Réglages s'ouvrent fermées à chaque lancement (demande de Sid : « quand je reviens, tout est fermé »)
 data.ui.setOpen={};
+
 /* ---------- v39 : tout se referme quand on revient (lancement, ou retour après 10 min ailleurs) ---------- */
 function closeAll(){
   document.querySelectorAll(".sheet-bg:not([hidden])").forEach(sb=>{const x=sb.querySelector(".sheet-head .x,[data-esc]");if(x)x.click();else sb.hidden=true});
@@ -4755,7 +4812,7 @@ function renderNuResult(){
   if($("nuResult")._isl){window.SCIslands.unmount($("nuResult"));$("nuResult")._isl=false}
   if(!p){if(!nuBusy)$("nuResult").innerHTML="";return}
   const s=sumOf(p.items);
-  $("nuResult").innerHTML=`<div class="dish"><div class="dish-h"><span class="dish-ic">${p.photo?`<img src="${p.photo}" alt="">`:mono(p.title)}</span><span class="dish-t"><b class="notr">${esc(p.title)}</b><span class="small muted">${p.items.length} ${L(p.items.length>1?"aliments":"aliment")}</span>${p.mem?`<span class="memtag">${IC("bolt")} ${L("Mémoire Sid'note")}</span>`:""}</span><span class="dish-kcal">${r0(s.kcal)}<small>kcal</small></span></div>
+  $("nuResult").innerHTML=`<div class="dish"><div class="dish-h"><span class="dish-ic">${p.photo?`<img src="${p.photo}" alt="">`:mono(p.title)}</span><span class="dish-t"><b class="notr">${esc(p.title)}</b><span class="small muted">${p.items.length} ${L(p.items.length>1?"aliments":"aliment")}</span>${p.mem?`<span class="memtag">${IC("bolt")} ${L("Mémoire Sid Forme")}</span>`:""}</span><span class="dish-kcal">${r0(s.kcal)}<small>kcal</small></span></div>
     ${macroHtml(s)}<div class="dish-items">${p.items.map((x,i)=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${x.extra?`<span class="notmention">${L("pas dans ta description")}</span>`:""}${qtyCell("res:"+i,x)}</div><span class="k">${x.kcal} kcal</span><button type="button" class="x" data-nurm="${i}" aria-label="${L("Retirer")}">×</button></div>`).join("")}</div>
     ${p.note?`<div class="dish-note notr" style="padding-top:8px">${esc(p.note)}</div>`:""}
     <div class="dish-act"><button type="button" class="btn ghost" data-nucancel="1">${L("Annuler")}</button><button type="button" class="btn" data-nuadd="1">${L("Ajouter")} · ${r0(s.kcal)} kcal</button></div></div>`;
@@ -5226,7 +5283,7 @@ document.addEventListener("click",async e=>{const b=e.target.closest("[data-rev]
 function renderApp(){
   const ok=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
   if(shIsl("appStatus")){try{window.SCIslands.appStatus($("appStatus"),{ok,i18n:agI18n()})}catch(e){reportErr("island appStatus: "+(e&&e.message))}}else
-  $("appStatus").innerHTML=ok?'<span class="syncdot"></span><span>Tu utilises déjà Sid\'note comme application.</span>'
+  $("appStatus").innerHTML=ok?'<span class="syncdot"></span><span>Tu utilises déjà Sid\'compagnon comme application.</span>'
     :'<span class="syncdot wait"></span><span>Tu es dans le navigateur. Suis les étapes ci-dessous pour installer l\'app.</span>';
   const ai=$("authInstall");if(ai)ai.hidden=ok;
 }
@@ -5363,7 +5420,7 @@ function onbFinish(){
   if(!Object.values(onbSel).some(Boolean)){toast("Garde au moins un onglet");return}
   Object.assign(data.prefs.tabs,onbSel);data.prefs.onboarded=true;delete data.prefs.onbPending;save();
   $("onb").hidden=true;document.body.style.overflow="";applyTabs();renderHomeSel();
-  show("home");toast("Bienvenue sur Sid'compagnon");
+  show("home");
 }
 $("onbGo").addEventListener("click",onbFinish);$("onbSkip").addEventListener("click",onbFinish);
 $("replayOnb").addEventListener("click",openOnb);
@@ -5462,7 +5519,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v74-5";
+const BUILD="sidnote-v75-0";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

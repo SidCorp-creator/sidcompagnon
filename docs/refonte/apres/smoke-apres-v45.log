@@ -1,0 +1,5 @@
+ERREURS :
+v45 mobile : Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive: "script-src 'self'".
+
+v45 mobile : PDF pas affiché
+v45 pc : PDF pas affiché

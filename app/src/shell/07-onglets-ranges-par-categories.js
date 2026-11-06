@@ -101,10 +101,13 @@ function renderVhead(v){const el=$("vhead");
  const g=groupOf(v),previous=el.dataset.app===g.app?Number(el.querySelector("[role=progressbar]")?.getAttribute("aria-valuenow")||0):0;el.hidden=false;el.dataset.app=g.app;el.classList.remove("many");
  const list=allT().filter(t=>onDay(t,iso(today()))&&!t.canc),done=list.filter(t=>t.status==="fait"||(t.date===iso(today())&&t.timeEnd&&toMin(t.timeEnd)<=new Date().getHours()*60+new Date().getMinutes())).length;
  let progress=`${done} / ${list.length} ${L("activités réalisées")}`,percent=list.length?Math.round(done/list.length*100):0,hasProgress=g.app==="agenda";
- if(g.app==="fit"){const n=NU(),log=ML().filter(x=>x.date===iso(today())),sets=log.reduce((sum,x)=>sum+(x.ex||[]).reduce((a,e)=>a+(e.sets||[]).length,0),0);
-  if(v!=="muscu"&&nutriAllowed()&&n.plan?.kcal){const eaten=Math.round(sumOf(dayLog(iso(today()))).kcal),target=dayTarget(iso(today())).kcal;progress=`${eaten} / ${Math.round(target)} kcal`;percent=Math.min(100,Math.round(eaten/target*100));hasProgress=true}
-  else{progress=v==="muscu"?`${sets} ${L("séries réalisées aujourd'hui")}`:`${M().sessions.length} ${L("séances")}`;hasProgress=false}}
- if(g.app==="note"){progress=`${NT().length} ${L("notes")} · ${docsArr().length} ${L("documents")}`;hasProgress=false}
+ if(v==="todo"){const day=iso(today()),items=data.todos.filter(t=>!t.paused&&(t.done?doneDay(t)===day:!t.day||tDay(t)===day)),completed=items.filter(t=>t.done).length;progress=`${completed} / ${items.length} ${L("tâches réalisées aujourd'hui")}`;percent=items.length?Math.round(completed/items.length*100):0;hasProgress=true}
+ if(v==="pomo"){const r=P.run,segs=r?r.segs:buildSegs(P.cfg),total=r?segs.reduce((a,x)=>a+x.d*MIN,0):pomoLastPosition?pomoLastPosition.total:segs.reduce((a,x)=>a+x.d*MIN,0),taken=r?Math.max(0,Math.min(total,elapsed(r))):pomoLastPosition?total:0,n=r?segs.filter(x=>x.t==="w").length:pomoLastPosition?pomoLastPosition.cycles:segs.filter(x=>x.t==="w").length,cycle=r?segs.slice(0,locate(r,taken).i+1).filter(x=>x.t==="w").length:pomoLastPosition?n:0;progress=!r&&!pomoLastPosition?`${pomoDuration(total/MIN)} · ${n} ${L(n===1?"session":"sessions")}`:`${pomoDuration(taken/MIN)} ${L("sur")} ${pomoDuration(total/MIN)} · ${L("session")} ${Math.min(n,cycle)} ${L("sur")} ${n}`;percent=total?Math.min(100,Math.round(taken/total*1000)/10):0;hasProgress=true}
+ if(g.app==="fit"){const n=NU();
+  if(v==="muscu"){const p=muSessionProgress();progress=`${p.done} / ${p.total} ${L("séries complètes")}`;percent=p.total?Math.round(p.done/p.total*100):0;hasProgress=true}
+  else if(nutriAllowed()&&n.plan?.kcal){const eaten=Math.round(sumOf(dayLog(iso(today()))).kcal),target=dayTarget(iso(today())).kcal;progress=`${fmtFull(eaten)} / ${fmtFull(Math.round(target))}\u202fkcal`;percent=Math.min(100,Math.round(eaten/target*100));hasProgress=true}
+  else{progress=L("Définis ton objectif alimentaire");hasProgress=false}}
+ if(g.app==="note"){progress=elanCoffreMetric(v);hasProgress=false}
  if(g.app==="home"){progress="";hasProgress=false}
  const title=SHORT[v]||g.label;
  document.title=`${g.label} · ${L(title)} — Sid'compagnon`;
@@ -114,10 +117,11 @@ function renderVhead(v){const el=$("vhead");
  const bar=el.querySelector(".elan-progress-track i");if(bar&&hasProgress){bar.style.width=previous+"%";bar.getBoundingClientRect();requestAnimationFrame(()=>bar.style.width=percent+"%")}
 
 }
-$("vhead").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)show(b.dataset.go);if(e.target.closest("[data-app-claude]")){
+function elanHeadClick(e){const b=e.target.closest("[data-go]");if(b)show(b.dataset.go);if(e.target.closest("[data-app-claude]")){
  const v=data.ui.view,topic=appOf(v)==="agenda"?"agenda":appOf(v)==="note"?"note":v==="muscu"?"muscu":"nutri";
  const cv=convUrl(topic);if(cv)extOpen(cv);else aiGo(topic,T3("Je veux utiliser ","I want to use ","Ik wil werken met ")+groupOf(v).label+" · "+L(SHORT[v]));
-}});
+}}
+for(const id of ["vhead","noteAppHead"])$(id).addEventListener("click",elanHeadClick);
 let compactMotion=null,headerPointer=false;
 // Un bandeau ne doit pas déplacer la cible entre l’appui et le clic.
 addEventListener("pointerdown",()=>{headerPointer=true},true);
@@ -251,3 +255,11 @@ function renderTabsCard(){
 }
 $("tabsCard").addEventListener("change",e=>{const c=e.target.closest("[data-tabpref]");if(!c)return;
   data.prefs.tabs[c.dataset.tabpref]=c.checked;save();applyTabs();renderHomeSel();toast(c.checked?"Onglet affiché":"Onglet masqué")});
+
+// Compteurs de présentation uniquement ; aucun nombre déchiffré avant ouverture.
+function elanCoffreMetric(v){
+ if(v==="notes"){const n=NT().length;return `${fmtFull(n)} ${L(n===1?"note":"notes")}`}
+ if(v==="docs"){if(!dvOpen)return L("Verrouillé");const a=docsArr(),size=a.reduce((n,d)=>n+(d.size||0),0);return `${fmtFull(a.length)} ${L(a.length===1?"document":"documents")} · ${size?fmtSize(size):"0 "+(LANG==="fr"?"Ko":"KB")}`}
+ if(v==="pwd")return vaultKey?`${fmtFull(vaultItems.size)} ${L(vaultItems.size===1?"mot de passe":"mots de passe")}`:L("Verrouillé");return "";
+}
+function elanRefreshCoffreMetric(){const v=data.ui.view;if(!["notes","docs","pwd"].includes(v))return;const e=$("vhead").querySelector(".elan-progress>span:first-child");if(e)e.textContent=elanCoffreMetric(v)}

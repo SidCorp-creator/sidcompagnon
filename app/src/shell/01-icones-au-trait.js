@@ -1,5 +1,18 @@
 /* ---------- icônes au trait (v24, style Graphite : plus aucun émoji dans l'interface) ---------- */
 const ICS={
+  eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  upload:'<path d="M12 16V3m-5 5 5-5 5 5M4 15v6h16v-6"/>',
+  rest:'<path d="M9 2h6M12 6v6l3 2M19 5l2 2M21 14a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/>',
+  tick:'<path d="m5 12 4 4L19 6"/>',
+  help:'<path d="M9 9a3 3 0 1 1 5 2c-2 1-2 2-2 3m0 3v.01M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0"/>',
+  copy:'<path d="M9 5H5v14h10v-4M9 3h10v12H9z"/>',
+  arrowup:'<path d="M12 19V5m-6 6 6-6 6 6"/>',
+  chevleft:'<path d="m15 6-6 6 6 6"/>',
+  list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  close:'<path d="m6 6 12 12M18 6 6 18"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  minus:'<path d="M5 12h14"/>',
+  refresh:'<path d="M20 11a8 8 0 1 0-2 6M20 4v7h-7"/>',
   check:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8 12 3 3 5-6"/>',
   chev:'<path d="m9 5 7 7-7 7"/>',
   message:'<path d="M5 5h14v11H9l-4 4V5z"/>',

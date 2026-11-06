@@ -1,3 +1,5 @@
+import {fmtFull} from "./format";
+import {FormeIcon} from "./FormeIcon";
 // Premier écran migré (ticket #3) : le calendrier Semaine / Mois / Année de la Nutrition (v47, #16).
 // Même rendu que l'ancienne fonction renderNuCal de site/app.js (mêmes classes, mêmes data-*) :
 // les clics restent gérés par l'app actuelle, ce composant ne fait que calculer et afficher.
@@ -17,7 +19,6 @@ export interface NuCalProps {
 }
 
 type St = "" | "ok" | "under" | "over";
-const r0 = (x: number) => Math.round(x);
 const cx = (...c: (string | false | null | undefined)[]) => c.filter(Boolean).join(" ");
 
 export function dayState(byDay: Record<string, number>, target: (d: string) => number, k: string): St {
@@ -42,7 +43,7 @@ export function NutritionCalendar(p: NuCalProps) {
       return <button key={k} type="button" className={cx("nwk-row", k === p.selected && "on", st(k))} data-nuday={k} disabled={k > p.today}>
         <span className="nwk-d"><b>{DOWL[d.getDay()]}</b><small>{d.getDate()} {MO[d.getMonth()]}</small></span>
         <span className="nwk-bar"><i style={{ width: `${tg && v ? Math.min(100, v / tg * 100) : 0}%` }}></i></span>
-        <span className="nwk-k">{v != null ? r0(v) : "–"}{v != null && tg ? <small> / {tg}</small> : null}</span>
+        <span className="nwk-k">{v != null ? fmtFull(v,p.i18n.lang||"fr") : "–"}{v != null && tg ? <small> / {fmtFull(tg,p.i18n.lang||"fr")}</small> : null}</span>
       </button>;
     })}</div>;
   } else if (p.range === "month") {
@@ -56,7 +57,7 @@ export function NutritionCalendar(p: NuCalProps) {
         if (!c) return <span key={"o" + i} className="day out"></span>;
         const s = st(c.k);
         return <button key={c.k} type="button" className={cx("day", c.k === p.today && "today", c.k === p.selected && "sel", c.k < p.today && "past")}
-          data-nuday={c.k} disabled={c.k > p.today} aria-label={`${c.d} ${MOL[p.month]}${s ? ` · ${r0(p.byDay[c.k])} kcal` : ""}`}>
+          data-nuday={c.k} disabled={c.k > p.today} aria-label={`${c.d} ${MOL[p.month]}${s ? ` · ${fmtFull(p.byDay[c.k],p.i18n.lang||"fr")} kcal` : ""}`}>
           <span className="num">{c.d}</span>
           <span className="marks">{s ? <span className="dots"><i className={`nu-st ${s}`}></i></span> : null}</span>
         </button>;
@@ -87,7 +88,7 @@ export function NutritionCalendar(p: NuCalProps) {
     <span><i className="nu-st over"></i>{L("Au-dessus")}</span>
   </div> : null;
   const summary = <div className="small muted nu-cal-sum">{nd
-    ? `${nd} ${L(nd > 1 ? "jours notés" : "jour noté")} · ${L("moyenne")} ${r0(tot / nd)} kcal`
+    ? `${nd} ${L(nd > 1 ? "jours notés" : "jour noté")} · ${L("moyenne")} ${fmtFull(tot / nd,p.i18n.lang||"fr")} kcal`
     : L("Aucun repas noté sur cette période.")}</div>;
   const names: Record<NuRange, string> = { week: "Semaine", month: "Mois", year: "Année" };
 
@@ -95,9 +96,9 @@ export function NutritionCalendar(p: NuCalProps) {
     <div className="seg nu-cal-seg" role="group" aria-label={L("Vue")}>{(["week", "month", "year"] as NuRange[]).map((m) =>
       <button key={m} type="button" data-nurange={m} aria-pressed={m === p.range}>{L(names[m])}</button>)}</div>
     <div className="cal-head">
-      <button type="button" className="cal-nav" data-nurn="-1" aria-label={L("Période précédente")}>‹</button>
+      <button type="button" className="cal-nav" data-nurn="-1" aria-label={L("Période précédente")}><FormeIcon name="chev"/></button>
       <b className="nu-cal-t">{title}</b>
-      <button type="button" className="cal-nav" data-nurn="1" aria-label={L("Période suivante")} disabled={next > p.today}>›</button>
+      <button type="button" className="cal-nav" data-nurn="1" aria-label={L("Période suivante")} disabled={next > p.today}><FormeIcon name="chev"/></button>
     </div>
     {body}
     {legend}

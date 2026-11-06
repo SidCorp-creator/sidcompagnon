@@ -3,7 +3,7 @@ import { parse } from "./dates";
 
 export const r0 = (x: number) => Math.round(+x || 0);
 export const r1 = (x: number) => Math.round((+x || 0) * 10) / 10;
-const sep = (lang: string) => (lang === "en" ? "." : ",");
+
 
 export function niceStep(v: number): number {
   if (!(v > 0)) return 1;
@@ -14,12 +14,8 @@ export function niceMax(v: number): number {
   const st = niceStep(v / 4);
   return Math.max(st, Math.ceil(v / st) * st);
 }
-export const fmtFull = (v: number, lang: string) =>
-  Math.round(v).toLocaleString(lang === "en" ? "en-US" : lang === "nl" ? "nl-NL" : "fr-FR");
-export const fmtN = (v: number, lang: string) => {
-  v = Math.round(v * 10) / 10;
-  return v >= 1000 ? (Math.round(v / 100) / 10 + "K").replace(".", sep(lang)) : String(v).replace(".", sep(lang));
-};
+export const fmtFull = (v:number,lang:string) => new Intl.NumberFormat(lang==="en"?"en-US":"fr-FR",{maximumFractionDigits:0}).format(v);
+export const fmtN = (v:number,lang:string) => new Intl.NumberFormat(lang==="en"?"en-US":"fr-FR",{maximumFractionDigits:1}).format(v);
 /** Jour court (12/3) ou long (jeudi 12 mars). */
 export const dLbl = (k: string, long: boolean, DOW: string[], MO: string[]) => {
   const d = parse(k);

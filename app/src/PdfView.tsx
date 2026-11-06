@@ -1,3 +1,4 @@
+import {FormeIcon} from "./FormeIcon";
 // Lecteur-annoteur de PDF (sid'note), migré en v65 (ticket #3) : calque d'annotations d'une page (traits, surlignages, zones de texte)
 // et réglages du stylo / surligneur (couleurs, épaisseur). Même rendu que pvOverlay / pvOpts de site/app.js.
 // Les pages pdf.js (canvas), le dessin en cours, la gomme, le déplacement des zones et la saisie restent gérés par app.js.
@@ -20,7 +21,7 @@ export function PvOverlay({ anns, viewBox, grip, i18n }: { anns: PvAnn[]; viewBo
       : a.t === "text"
         ? <div key={a.id} className={`pv-txt${a.on ? " pv-on" : ""}`} data-ann={a.id} style={a.style}>
           <textarea rows={1} className="notr" aria-label={tr(L("Texte sur le PDF"))} placeholder={tr(L("Écris ici…"))} defaultValue={a.txt}></textarea>
-          <button type="button" className="pv-txt-x" data-pvdel={a.id} aria-label={tr(L("Supprimer ce texte"))}>×</button>
+          <button type="button" className="pv-txt-x" data-pvdel={a.id} aria-label={tr(L("Supprimer ce texte"))}><FormeIcon name="close"/></button>
           <span className="pv-txt-mv" data-pvmv={a.id} title={tr(L("Déplacer"))} aria-hidden="true" dangerouslySetInnerHTML={{ __html: grip }}></span>
           <span className="pv-txt-rs" data-pvrs={a.id} title={tr(L("Agrandir ou rétrécir"))} aria-hidden="true"></span>
         </div>

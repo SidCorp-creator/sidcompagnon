@@ -44,7 +44,7 @@ const noteView=n=>!n?null:n.secret?(nsKey&&n.vid===nsVid&&nsPlain.get(n.id))||nu
 function noteQueue(fn){clearTimeout(noteSaveT);notePend=fn;noteSaveT=setTimeout(noteFlush,600)}
 async function noteFlush(){clearTimeout(noteSaveT);noteSaveT=null;const f=notePend;notePend=null;if(f)await f()}
 function renderNotes(){
-  if(!$("noteList"))return;if(typeof pvRefresh==="function")pvRefresh();
+  if(!$("noteList"))return;elanRefreshCoffreMetric();if(typeof pvRefresh==="function")pvRefresh();
   // coffre des notes remis à zéro ou recréé ailleurs : on reverrouille
   if(nsKey&&(!nsOn()||data.noteVault.id!==nsVid)){nsKey=null;nsVid=null;nsPlain=new Map()}
   // notes secrètes arrivées d'un autre appareil : on les déchiffre puis on réaffiche
@@ -53,7 +53,9 @@ function renderNotes(){
   if(noteOpenId&&!v)noteOpenId=null; // supprimée ailleurs, ou verrouillée
   $("notesList").hidden=!!noteOpenId;$("noteEdit").hidden=!noteOpenId;document.body.classList.toggle("note-full",data.ui.view==="notes"&&!!noteOpenId);if(data.ui.view==="notes")$("vhead").hidden=!!noteOpenId;
   if(noteOpenId){
+    $("noteAppHead").innerHTML=`<div class="elan-head-row"><button type="button" class="ah-home" data-go="home" aria-label="${L("Toutes les apps")}"><span class="ah-grid">${GRIDIC}</span></button><span class="ah-brand">${LOGO("note","ah-logo")}<span class="ah-names"><b>Sid Coffre</b><small>${L(APP_ROLES.note)}</small></span></span><button type="button" class="ah-claude" data-app-claude="1"><span class="ah-chat">${IC("message")}</span>Claude</button></div><h1 class="elan-title">${L("Notes")}</h1>`;
     if(document.activeElement!==$("noteTitle"))$("noteTitle").value=v.title||"";
+    noteTitleGrow();
     if(document.activeElement!==$("noteBody"))rtSet(v);
     $("noteWhen").textContent=fmtWhen(n.upd||Date.parse(n.createdAt));
     $("noteSecBar").hidden=!n.secret;
@@ -67,17 +69,17 @@ function renderNotes(){
   if(shIsl("nsBar")){try{window.SCIslands.nsBar($("nsBar"),{unlock:IC("unlock"),lock:IC("lock"),i18n:agI18n()})}catch(e){reportErr("island nsBar: "+(e&&e.message))}}
   else $("nsBar").innerHTML=`<span class="grow">${IC("unlock")} ${L("Notes secrètes déverrouillées")}</span><button type="button" class="mini" data-nslock="1">${IC("lock")} ${L("Verrouiller")}</button>`;
   let list=NT().slice().sort((a,b)=>(b.upd||0)-(a.upd||0));
-  if(noteDir&&!nfOf(noteDir))noteDir=null;$("nfNew").textContent=L(noteDir?"+ Sous-dossier":"+ Dossier");
+  if(noteDir&&!nfOf(noteDir))noteDir=null;$("nfNew").innerHTML=IC("plus")+" "+L(noteDir?"Sous-dossier":"Dossier");
   const path=nfPath(noteDir);$("nfPath").hidden=!!q||!noteDir;
   // v41 : dans un dossier, un vrai bouton retour (vers le dossier parent) + le chemin complet ; on peut y déposer une note ou un dossier
   const up=path.length>1?path[path.length-2]:null;
   const isl=window.SCIslands&&window.SCIslands.notes&&!window.__noIslands;
-  if(isl){}else $("nfPath").innerHTML=noteDir?`<button type="button" class="back nf-back" data-nfgo="${up?up.id:""}">‹ ${esc(up?up.name:L("Notes"))}</button>
-    <div class="nf-crumbs"><button type="button" class="nf-crumb" data-nfgo="">${L("Notes")}</button>`+path.map((f,i)=>`<span aria-hidden="true">›</span>${i===path.length-1?`<b class="notr">${esc(f.name)}</b>`:`<button type="button" class="nf-crumb notr" data-nfgo="${f.id}">${esc(f.name)}</button>`}`).join("")+`</div>`:"";
+  if(isl){}else $("nfPath").innerHTML=noteDir?`<button type="button" class="back nf-back" data-nfgo="${up?up.id:""}">${IC("chev")}<span class="notr">${esc(up?up.name:L("Notes"))}</span></button>
+    <div class="nf-crumbs"><button type="button" class="nf-crumb" data-nfgo="">${L("Notes")}</button>`+path.map((f,i)=>`<span aria-hidden="true">${IC("chev")}</span>${i===path.length-1?`<b class="notr">${esc(f.name)}</b>`:`<button type="button" class="nf-crumb notr" data-nfgo="${f.id}">${esc(f.name)}</button>`}`).join("")+`</div>`:"";
   $("notesList").classList.toggle("in-dir",!!noteDir&&!q);const h1=$("notesList").querySelector("h1");if(h1){h1.textContent=noteDir&&!q?path[path.length-1].name:L("Notes");h1.classList.toggle("notr",!!noteDir)}
   // v42 : les dossiers en tuiles (section « Dossiers »), bien distincts des notes en lignes (section « Notes »)
   const kids=q?[]:nfKids(noteDir);
-  const dirs=kids.length?`<h2 class="nl-h">${L(noteDir?"Sous-dossiers":"Dossiers")}</h2><div class="nf-grid">`+kids.map(f=>`<div class="nf-row nf-tile"><span class="ngrip" data-fgrip="${f.id}" aria-hidden="true" title="${L("Maintenir et glisser")}">${GRIP}</span><button type="button" class="nf-open" data-nfopen="${f.id}"><span class="nf-ic">${IC("folder")}</span><b class="grow notr">${esc(f.name)}</b><span class="nf-n">${nfCount(f.id)||"0"}</span></button><button type="button" class="pen" data-nfmore="${f.id}" aria-label="${L("Plus d'actions")}">${MORE}</button></div>`).join("")+`</div>`:"";
+  const dirs=kids.length?`<h2 class="nl-h">${L(noteDir?"Sous-dossiers":"Dossiers")}</h2><div class="nf-grid">`+kids.map(f=>`<div class="nf-row nf-tile"><span class="ngrip" data-fgrip="${f.id}" aria-hidden="true" title="${L("Maintenir et glisser")}">${GRIP}</span><button type="button" class="nf-open" data-nfopen="${f.id}"><span class="nf-ic">${IC("folder")}</span><b class="grow notr">${esc(f.name)}</b><span class="nf-n">${nfCount(f.id)?`${nfCount(f.id)} ${L(nfCount(f.id)===1?"note":"notes")}`:L("Vide")}</span></button><button type="button" class="pen" data-nfmore="${f.id}" aria-label="${L("Plus d'actions")}">${MORE}</button></div>`).join("")+`</div>`:"";
   if(!q)list=list.filter(x=>noteDirOf(x)===noteDir);
   if(q)list=list.filter(x=>noteView(x)).map(x=>{const w=noteView(x);return{x,s:Math.max(fuzzyScore(w.title||"",q),fold(w.body).includes(fold(q))?11:0)}}).filter(o=>o.s>0).sort((a,b)=>b.s-a.s).map(o=>o.x);
   // v57 (#3) : chemin et liste dessinés par React (app/src/Notes.tsx) ; les notes secrètes arrivent déchiffrées (en mémoire) ou « locked »
@@ -284,7 +286,7 @@ function pvOverlay(w){const ov=w.querySelector(".pv-ov"),pg=+w.dataset.pg,act=do
   for(const a of pvAnns(pv.note,pg)){if(keep&&keep.dataset.ann===a.id)continue;
     if(a.t==="ink"&&Array.isArray(a.pts)&&a.pts.length)svg.insertAdjacentHTML("beforeend",`<path data-ann="${a.id}" class="${a.hl?"ink-hl":"ink-pen"}" d="${pvPath(a.pts,r)}" stroke="${esc(/^#[0-9a-f]{6}$/i.test(a.c||"")?a.c:"#1C1A17")}" stroke-width="${((a.w||.004)*1000).toFixed(1)}"/>`);
     else if(a.t==="hl")ov.insertAdjacentHTML("beforeend",`<button type="button" class="pv-hl" data-ann="${a.id}" style="left:${pct(a.x)};top:${pct(a.y)};width:${pct(a.w)};height:${pct(a.h)}" aria-label="${L("Surlignage")}"></button>`);
-    else if(a.t==="text")ov.insertAdjacentHTML("beforeend",`<div class="pv-txt${pv.sel===a.id?" pv-on":""}" data-ann="${a.id}" style="left:${pct(a.x)};top:${pct(a.y)};width:${pct(a.w||.4)}${a.h?`;height:${pct(a.h)}`:""}"><textarea rows="1" class="notr" aria-label="${L("Texte sur le PDF")}" placeholder="${L("Écris ici…")}">${esc(a.txt||"")}</textarea><button type="button" class="pv-txt-x" data-pvdel="${a.id}" aria-label="${L("Supprimer ce texte")}">×</button><span class="pv-txt-mv" data-pvmv="${a.id}" title="${L("Déplacer")}" aria-hidden="true">${GRIP}</span><span class="pv-txt-rs" data-pvrs="${a.id}" title="${L("Agrandir ou rétrécir")}" aria-hidden="true"></span></div>`)}
+    else if(a.t==="text")ov.insertAdjacentHTML("beforeend",`<div class="pv-txt${pv.sel===a.id?" pv-on":""}" data-ann="${a.id}" style="left:${pct(a.x)};top:${pct(a.y)};width:${pct(a.w||.4)}${a.h?`;height:${pct(a.h)}`:""}"><textarea rows="1" class="notr" aria-label="${L("Texte sur le PDF")}" placeholder="${L("Écris ici…")}">${esc(a.txt||"")}</textarea><button type="button" class="pv-txt-x" data-pvdel="${a.id}" aria-label="${L("Supprimer ce texte")}">${IC("close")}</button><span class="pv-txt-mv" data-pvmv="${a.id}" title="${L("Déplacer")}" aria-hidden="true">${GRIP}</span><span class="pv-txt-rs" data-pvrs="${a.id}" title="${L("Agrandir ou rétrécir")}" aria-hidden="true"></span></div>`)}
   ov.querySelectorAll(".pv-txt textarea").forEach(pvGrow)}
 const pvGrow=t=>{t.style.height="auto";const box=t.parentElement,h=box&&box.style.height?box.clientHeight:0;t.style.height=Math.max(t.scrollHeight,h)+"px"};
 function pvRefresh(){if(!pv.note||$("pdfv").hidden)return;if(!noteFind(pv.note)){pvClose();return}document.querySelectorAll("#pvBody .pv-page").forEach(pvOverlay)}
@@ -423,3 +425,10 @@ function nsReset(){
   nsKey=null;nsVid=null;nsPlain=new Map();save();renderNotes();toast("Notes secrètes effacées");
 }
 
+
+// T16 C : accès clavier aux sélecteurs natifs de fichiers ; aucun changement d'import.
+for(const id of ["pdfNew","notePhotoBtn"]){$(id).addEventListener("keydown",e=>{if(e.target!==e.currentTarget||!["Enter"," "].includes(e.key))return;e.preventDefault();$(id).querySelector("input[type=file]").click()})}
+
+// Hauteur visuelle du titre ; Entrée garde son action historique vers le corps.
+function noteTitleGrow(){const e=$("noteTitle");e.style.height="auto";e.style.height=Math.min(97,Math.max(48,e.scrollHeight+3))+"px"}
+$("noteTitle").addEventListener("input",()=>{$("noteTitle").value=$("noteTitle").value.replace(/[\r\n]/g,"");noteTitleGrow()},true);

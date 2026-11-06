@@ -181,7 +181,7 @@ function renderPwd(){
   if(!$("pinBox"))return;
   // coffre remis à zéro ou recréé sur un autre appareil : on reverrouille
   if(vaultKey&&(!vaultOn()||data.vault.id!==vaultVid)){vaultKey=null;vaultItems=new Map();pinStep=""}
-  const open=!!vaultKey;$("pinBox").hidden=open;$("vault").hidden=!open;
+  const open=!!vaultKey;$("pinBox").hidden=open;$("vault").hidden=!open;elanRefreshCoffreMetric();
   if(open){renderPwList();vaultLoad();return}
   // un coffre arrivé d'un autre appareil pendant qu'on était sur « Choisis ton code » : on passe au déverrouillage (sinon on en créerait un second)
   if(vaultOn()&&/^(new|confirm|adopt)$/.test(pinStep)){pinStep="";pinBuf="";pinFirst=""}
@@ -260,7 +260,7 @@ $("pwLock").addEventListener("click",()=>{pwdLock();toast("Mots de passe verroui
 const EYE=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>`;
 const COPY=`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2.5"/><path d="M15.5 8.5V6a2.5 2.5 0 0 0-2.5-2.5H6A2.5 2.5 0 0 0 3.5 6v7A2.5 2.5 0 0 0 6 15.5h2.5"/></svg>`;
 function renderPwList(){
-  if(!vaultKey)return;
+  if(!vaultKey)return;elanRefreshCoffreMetric();
   const q=pwQ.trim();let list=[...vaultItems.entries()].map(([id,v])=>({id,...v}));
   // v28 : classement au choix (data.prefs.pwSort) : A → Z (par défaut) ou les plus récents d'abord (date d'ajout ou de modification)
   const srt=data.prefs.pwSort==="date"?"date":"alpha",at=id=>{const r=PW().find(x=>x.id===id);return r?(r.upd||Date.parse(r.createdAt)||0):0};
@@ -273,10 +273,10 @@ function renderPwList(){
     catch(e){reportErr("island pwList: "+(e&&e.message))}}
   $("pwList").innerHTML=list.length?list.map(x=>{const show=pwShown.has(x.id);
     return `<div class="pw-row"><div class="pw-av notr">${esc((String(x.site).trim()[0]||"?"))}</div>
-      <div class="pw-main notr"><b>${esc(x.site)}</b>${x.user?`<span class="small muted">${esc(x.user)}</span>`:""}<span class="pw-sec">${show?esc(x.pw):"••••••••"}</span>${x.note&&show?`<span class="small muted">${esc(x.note)}</span>`:""}</div>
-      <button class="pen" data-pweye="${x.id}" aria-label="${L(show?"Masquer":"Afficher")}">${EYE}</button>
+      <div class="pw-main notr"><b>${esc(x.site)}</b>${x.user?`<span class="small muted">${esc(x.user)}</span>`:""}${x.note&&show?`<span class="small muted">${esc(x.note)}</span>`:""}</div>
+      <div class="pw-controls"><span class="pw-sec notr">${show?esc(x.pw):"••••••••"}</span><button class="pen" data-pweye="${x.id}" aria-label="${L(show?"Masquer":"Afficher")}">${EYE}</button>
       <button class="pen" data-pwcopy="${x.id}" aria-label="Copier le mot de passe">${COPY}</button>
-      <button class="pen" data-pwedit="${x.id}" aria-label="Modifier">${PEN}</button></div>`}).join("")
+      <button class="pen" data-pwedit="${x.id}" aria-label="Modifier">${PEN}</button></div></div>`}).join("")
     :`<div class="empty">${L(q?"Aucun site ne correspond.":"Aucun mot de passe pour l'instant. Touche « + Ajouter ».")}</div>`;
 }
 $("pwSearch").addEventListener("input",e=>{pwQ=e.target.value;renderPwList()});
@@ -293,7 +293,7 @@ function openPwSheet(id){
   if(!vaultKey)return;pwEditId=id||null;const v=id?vaultItems.get(id)||{}:{};
   $("pwSheetTitle").textContent=L(id?"Modifier le mot de passe":"Nouveau mot de passe");
   $("pwSite").value=v.site||"";$("pwUser").value=v.user||"";$("pwPass").value=v.pw||"";$("pwNote").value=v.note||"";
-  $("pwPass").type="password";$("pwEye").textContent=L("Voir");
+  $("pwPass").type="password";pwEyePaint(false);
   const d=$("pwDel");d.hidden=!id;d.classList.remove("armed");d.textContent=L("Supprimer");
   $("pwSheet").hidden=false;if(!id)setTimeout(()=>$("pwSite").focus(),50);
 }
@@ -301,11 +301,11 @@ function closePwSheet(){$("pwSheet").hidden=true;pwEditId=null;["pwSite","pwUser
 $("pwNew").addEventListener("click",()=>openPwSheet(null));
 $("pwClose").addEventListener("click",closePwSheet);
 $("pwSheet").addEventListener("click",e=>{if(e.target.id==="pwSheet")closePwSheet()});
-$("pwEye").addEventListener("click",()=>{const i=$("pwPass"),s=i.type==="password";i.type=s?"text":"password";$("pwEye").textContent=L(s?"Cacher":"Voir")});
+$("pwEye").addEventListener("click",()=>{const i=$("pwPass"),s=i.type==="password";i.type=s?"text":"password";pwEyePaint(s)});
 $("pwGen").addEventListener("click",()=>{
   const A="abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789",S="-_!?.@#",r=crypto.getRandomValues(new Uint32Array(16));
   let p=[...r].map(n=>A[n%A.length]);p[3]=S[r[3]%S.length];p[10]=String(r[10]%10);
-  $("pwPass").value=p.join("");$("pwPass").type="text";$("pwEye").textContent=L("Cacher");toast("Mot de passe généré");
+  $("pwPass").value=p.join("");$("pwPass").type="text";pwEyePaint(true);toast("Mot de passe généré");
 });
 $("pwForm").addEventListener("submit",async e=>{
   e.preventDefault();if(!vaultKey)return;
@@ -321,3 +321,6 @@ $("pwDel").addEventListener("click",e=>{const b=e.currentTarget;if(!pwEditId)ret
   const id=pwEditId;closePwSheet();
   undoable("Mot de passe supprimé",[id],()=>{tomb(id);data.pwds=PW().filter(x=>x.id!==id);vaultItems.delete(id);pwShown.delete(id)},{after:()=>{renderPwList();vaultLoad()}});
 });
+
+// Le même contrôle Voir/Cacher, présenté par son pictogramme et son nom accessible.
+function pwEyePaint(shown){const b=$("pwEye");b.innerHTML=IC("eye");b.setAttribute("aria-label",L(shown?"Cacher":"Voir"));b.setAttribute("aria-pressed",String(shown))}

@@ -4,8 +4,9 @@ data.pomo=data.pomo||{cfg:{work:25,brk:5,total:120},run:null,log:{}};
 const P=data.pomo;
 const PRESETS=[60,90,120,180];
 const hm=m=>{m=Math.round(m);const h=Math.floor(m/60),r=m%60;return h?`${h} h${r?" "+String(r).padStart(2,"0"):""}`:`${r} min`};
+const pomoDuration=m=>hm(m).replace(" h",LANG==="nl"?"\u202fu":"\u202fh");
 const clockTxt=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")};
-const hhmm=d=>String(d.getHours()).padStart(2,"0")+"h"+String(d.getMinutes()).padStart(2,"0");
+const hhmm=d=>String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
 const dayKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 
 function buildSegs({work,brk,total}){
@@ -17,16 +18,16 @@ function buildSegs({work,brk,total}){
   }
   return segs;
 }
-function planBar(segs,el,doneIdx=-1){
-  if(window.SCIslands&&window.SCIslands.planBar&&!window.__noIslands){try{window.SCIslands.planBar(el,{segs,doneIdx});return}catch(e){reportErr("island planBar: "+(e&&e.message))}}
+function planBar(segs,el,doneIdx=-1,into=0){
+  if(window.SCIslands&&window.SCIslands.planBar&&!window.__noIslands){try{window.SCIslands.planBar(el,{segs,doneIdx,into});return}catch(e){reportErr("island planBar: "+(e&&e.message))}}
   const tot=segs.reduce((a,s)=>a+s.d,0);
-  el.innerHTML=segs.map((s,i)=>`<i class="${s.t==="w"?"w":"b"} ${i<doneIdx?"past":""}" style="flex:${s.d/tot}"></i>`).join("");
+  el.innerHTML=segs.map((s,i)=>`<i class="${s.t==="w"?"w":"b"} ${i<doneIdx?"past":""}" style="flex:${s.t==="b"?"0 0 4px":s.d/tot}">${s.t==="w"?`<b style="width:${i<doneIdx?100:i===doneIdx?Math.min(1,into)*100:0}%"></b>`:""}</i>`).join("");
 }
 function renderSetup(){
   const c=P.cfg;
-  if(window.SCIslands&&window.SCIslands.pomoPresets&&!window.__noIslands){try{window.SCIslands.pomoPresets($("presets"),{presets:PRESETS,total:c.total,labels:PRESETS.map(m=>agI18n().tr(hm(m)))})}catch(e){reportErr("island presets: "+(e&&e.message));window.__noIslands=true;try{renderSetup()}finally{window.__noIslands=false}return}}
-  else $("presets").innerHTML=PRESETS.map(m=>`<button class="preset" data-total="${m}" aria-pressed="${c.total===m}">${hm(m)}</button>`).join("");
-  $("oWork").textContent=c.work+" min";$("oBrk").textContent=c.brk+" min";$("oTotal").textContent=hm(c.total);
+  if(window.SCIslands&&window.SCIslands.pomoPresets&&!window.__noIslands){try{window.SCIslands.pomoPresets($("presets"),{presets:PRESETS,total:c.total,labels:PRESETS.map(m=>pomoDuration(m))})}catch(e){reportErr("island presets: "+(e&&e.message));window.__noIslands=true;try{renderSetup()}finally{window.__noIslands=false}return}}
+  else $("presets").innerHTML=PRESETS.map(m=>`<button class="preset notr" data-total="${m}" aria-pressed="${c.total===m}">${pomoDuration(m)}</button>`).join("");
+  $("oWork").textContent=c.work+" min";$("oBrk").textContent=c.brk+" min";$("oTotal").textContent=pomoDuration(c.total);
   const segs=buildSegs(c),n=segs.filter(s=>s.t==="w").length,
         work=segs.filter(s=>s.t==="w").reduce((a,s)=>a+s.d,0),real=segs.reduce((a,s)=>a+s.d,0);
   planBar(segs,$("planBar"));
@@ -38,7 +39,7 @@ $("pomoSetup").addEventListener("click",e=>{
   else if(b.dataset.step){const[k,v]=b.dataset.step.split(",");const lim={work:[5,90],brk:[1,30],total:[15,480]}[k];
     P.cfg[k]=Math.min(lim[1],Math.max(lim[0],P.cfg[k]+ +v))}
   else return;
-  save();renderSetup();
+  pomoLastPosition=null;save();renderSetup();if(data.ui.view==="pomo"){$("vhead").dataset.progressChange="position";renderVhead("pomo")}
 });
 
 /* son : débloqué au clic sur Démarrer (obligatoire sur iPhone) */
@@ -69,18 +70,19 @@ function locate(r,el){
   return{i:r.segs.length,into:0,d:0};
 }
 function workDone(r,el){let t=0,w=0;for(const s of r.segs){const d=s.d*MIN;if(s.t==="w")w+=Math.max(0,Math.min(d,el-t));t+=d}return w}
-let lastIdx=null,pomoSched=false;
+let lastIdx=null,pomoSched=false,pomoProgressChange="position",pomoLastPosition=null;
 function pomoPlan(){const r=P.run;if(!r||r.pausedAt){chimeCancel("pomo");pomoSched=false;return}
   const el=elapsed(r),it=[];let t=0;r.segs.forEach((s,i)=>{if(i&&t>el)it.push([s.t,t-el]);t+=s.d*MIN});it.push(["end",t-el]);pomoSched=chimePlan("pomo",it)}
 function startPomo(){
-  unlockAudio();
+  pomoLastPosition=null;pomoProgressChange="position";unlockAudio();
   const segs=buildSegs(P.cfg);
   P.run={segs,startAt:Date.now(),pausedAt:null,pausedTotal:0};lastIdx=0;
-  save();chime("w");keepAwake(true);pomoPlan();renderPomo();
+  save();chime("w");keepAwake(true);pomoPlan();renderPomo();if(data.ui.view==="pomo"){window.scrollTo(0,0);elanCompact()}
 }
 function finishPomo(completed){
   const r=P.run;if(!r)return;
   const w=workDone(r,elapsed(r)),k=dayKey(new Date(r.startAt));
+  pomoLastPosition=completed?{total:r.segs.reduce((a,x)=>a+x.d*MIN,0),cycles:r.segs.filter(x=>x.t==="w").length}:null;pomoProgressChange=completed?(pomoProgressChange==="skip"?"skip":"cycle"):"position";
   P.log[k]=(P.log[k]||0)+w;P.run=null;lastIdx=null;save();keepAwake(false);
   const pre=pomoSched;if(!completed)chimeCancel("pomo");pomoSched=false;
   if(completed){if(!pre)chime("end");toast(`Bravo ! ${hm(w/MIN)} de travail terminées`)}
@@ -91,7 +93,7 @@ $("pomoPause").addEventListener("click",()=>{const r=P.run;if(!r)return;unlockAu
   if(r.pausedAt){r.pausedTotal+=Date.now()-r.pausedAt;r.pausedAt=null;keepAwake(true)}else{r.pausedAt=Date.now();keepAwake(false)}
   save();pomoPlan();renderPomo()});
 $("pomoSkip").addEventListener("click",()=>{const r=P.run;if(!r)return;unlockAudio();
-  const L=locate(r,elapsed(r));r.pausedTotal-=(L.d-L.into);save();chimeCancel("pomo");pomoSched=false;tickPomo();pomoPlan()});
+  pomoProgressChange="skip";const L=locate(r,elapsed(r));r.pausedTotal-=(L.d-L.into);save();chimeCancel("pomo");pomoSched=false;tickPomo();pomoPlan()});
 $("pomoStop").addEventListener("click",e=>{const b=e.currentTarget;
   if(b.dataset.armed){finishPomo(false);toast("Session arrêtée")}
   else{b.dataset.armed="1";b.textContent="Confirmer ?";setTimeout(()=>{delete b.dataset.armed;b.textContent="Arrêter"},3000)}});
@@ -101,6 +103,7 @@ function tickPomo(){
   const el=elapsed(r),L=locate(r,el);
   if(L.i>=r.segs.length){finishPomo(true);return}
   if(lastIdx!==null&&L.i!==lastIdx){
+    if(pomoProgressChange!=="skip")pomoProgressChange="cycle";
     const s=r.segs[L.i];if(!pomoSched)chime(s.t);toast(s.t==="w"?"Au travail !":`Pause de ${s.d} min`);
     $("stage").classList.remove("flash");void $("stage").offsetWidth;$("stage").classList.add("flash");
   }
@@ -110,21 +113,23 @@ function tickPomo(){
   $("stage").style.setProperty("--pc",`var(${isW?"--accent":"--ok"})`);
   $("phase").textContent=r.pausedAt?"En pause":isW?"Travail":"Pause";
   $("clock").textContent=clockTxt(L.d-L.into);
-  $("segInfo").textContent=isW?`Session ${curW} sur ${nW}`:`Prochaine : session ${curW+1} sur ${nW}`;
+  $("stage").classList.toggle("is-paused",!!r.pausedAt);
+  $("segInfo").textContent=r.pausedAt?"En pause":isW?`Session ${curW} sur ${nW}`:`Prochaine : session ${curW+1} sur ${nW}`;
   $("ring").style.strokeDashoffset=(339.29*(L.into/L.d)).toFixed(2);
-  planBar(r.segs,$("runBar"),L.i);
+  planBar(r.segs,$("runBar"),L.i,L.into/L.d);
   const totalMs=r.segs.reduce((a,x)=>a+x.d*MIN,0);
   $("mDone").textContent=hm(workDone(r,el)/MIN);
   $("mLeft").textContent=hm((totalMs-el)/MIN);
   $("mEnd").textContent=hhmm(new Date(Date.now()+(totalMs-el)));
   $("pomoPause").textContent=r.pausedAt?"Reprendre":"Pause";
+  if(data.ui.view==="pomo"){$("vhead").dataset.progressChange=pomoProgressChange;renderVhead("pomo")}pomoProgressChange="position";
   document.title=r.pausedAt?"Sid'compagnon":`${clockTxt(L.d-L.into)} · ${isW?"Travail":"Pause"}`;
 }
 function renderPomo(){
   const run=!!P.run;
   $("pomoSetup").hidden=run;$("pomoRun").hidden=!run;setBadge("pomo",run?"dot":0);
   if(run)tickPomo();else{renderSetup();document.title="Sid'compagnon"}
-  renderPomoStats();
+  renderPomoStats();if(data.ui.view==="pomo"){$("vhead").dataset.progressChange=pomoProgressChange;renderVhead("pomo")}pomoProgressChange="position";
 }
 function renderPomoStats(){
   const today=P.log[dayKey(new Date())]||0;

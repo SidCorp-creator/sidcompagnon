@@ -55,6 +55,8 @@ Rien n'est fusionné dans `main` ni mis en ligne sans l'accord de Sid. `main` = 
 | T10 | Charte F · Élan (`charte.md`, `logos/`, page https://claude.ai/artifact/Sii7bNVqMiRc7hNDKNer6P) | Claude Code (rédaction), Codex (jetons) | **validée par Sid le 5 nov.** (« oui tu peux appliquer ») |
 | T11 | Inventaire des noms d'apps (1 475 occurrences, 121 fichiers ; mcp gelé) | Codex | fait (`audit-technique.md` § T11) |
 | T12 | Skill du projet `.claude/skills/sid-charte/` (+ lien `.agents/skills/sid-charte`), source `charte.md` | Claude Code | fait |
+| T15 | Essai sur iPhone : branche `refonte-tech` poussée (commit 87897d9), aperçu https://sidcompagnon-git-refonte-tech-sidcorp1.vercel.app (connexion Vercel requise) | Claude Code (envoi), **Sid** (essai) | fait : Sid a essayé, « ça marche bien » |
+| T16 | Extension à toute l'app, lots A à E (relais 05) | Codex (intégration), Claude Code (revue après chaque lot) | demandée |
 | T14 | Export des logos aux formats de l'app (`logos/export/`) | Claude Code | fait |
 | T13 | Fondations Élan + premier parcours : accueil → Sid Journée → ajouter une activité → retour (relais 04) | Codex (intégration), Claude Code (revue visuelle) | fait : v75.0 sur `refonte-tech`, 94 captures `apres/`, 14 écarts de la revue visuelle corrigés, palette des types révisée (`palette-types.md`), tests 15/15. Comparaison pour Sid : https://claude.ai/artifact/KXgkzSTGLPiQBSoSReF3vS |
 
@@ -85,6 +87,9 @@ Rien n'est fusionné dans `main` ni mis en ligne sans l'accord de Sid. `main` = 
 | 5 nov. | Nouvelle icône d'écran d'accueil (réinstallation possible) | validé par Sid |
 | 5 nov. | **Charte v1 validée par Sid**, application autorisée (branches séparées, pas de mise en ligne) | — |
 | 5 nov. | `site/` n'est modifié que par Codex (branche `refonte-tech`) pendant l'intégration ; Claude Code fournit les fichiers (logos, skill) et fait la revue | éviter deux branches qui modifient les mêmes fichiers |
+| 5 nov. | Sid autorise l'envoi de `refonte-tech` sur GitHub pour un essai sur iPhone (aperçu Vercel, pas `main`) | l'aperçu utilise le vrai compte et les vraies données de Sid |
+| 5 nov. | Nutrition : un seul bouton « Ajouter un repas » qui ouvre les 5 façons d'ajouter (aucune retirée) | validé par Sid |
+| 5 nov. | Réglages des conversations Claude seulement dans l'app concernée (retirés de Réglages) | validé par Sid |
 | 5 nov. | Tour 2 : règle commune « chaque écran dit à quoi sert l'app » (logo littéral, verbe + contenu + chiffre utile sur l'accueil, rôle dans l'en-tête) | répond directement au motif du refus |
 
 ## Points ouverts (questions pour Sid)

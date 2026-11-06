@@ -15,7 +15,7 @@ function yearGrid(y,cls){const now=today();let h="";
     for(let d=1;d<=n;d++)g+=`<i class="${cls(iso(new Date(y,m,d)))}">${d}</i>`;
     h+=`<button class="ym ${y===now.getFullYear()&&m===now.getMonth()?"cur":""}" data-ym="${m}" aria-label="${MOL[m]} ${y}"><b>${MOL[m]}</b><div class="ym-g">${g}</div></button>`}return h}
 // v53 (#3) : textes des îlots de l'agenda (tr = traduction avec les motifs, comme la traduction automatique du DOM)
-const agI18n=()=>({tr:x=>LANG&&LANG!=="fr"?trStr(x):x,L,MOL,MO,locale:LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE"});
+const agI18n=()=>({tr:x=>LANG&&LANG!=="fr"?trStr(x):x,L,MOL,MO,lang:LANG,locale:LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE"});
 function renderMonth(){
   const T=allT(),tIso=iso(today());
   if(shIsl("calTitle")){try{window.SCIslands.calTitle($("calTitle"),{mo:MOL[calM],y:calY,i18n:agI18n()})}catch(e){reportErr("island calTitle: "+(e&&e.message))}}

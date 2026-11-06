@@ -33,3 +33,9 @@ if(window.visualViewport){const vv=visualViewport,de=document.documentElement,st
     if(e.key==="Tab"){const f=[...bg.querySelectorAll(FOC)].filter(vis);if(!f.length)return;const a=f[0],z=f[f.length-1];
       if(!bg.contains(document.activeElement)){e.preventDefault();a.focus();return}
       if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}},true)}
+// Fondu fonctionnel : il indique uniquement les commandes restant hors du cadre.
+{const rows=[...document.querySelectorAll('[data-elan-scroll]')];let frame=0;
+ const update=()=>{frame=0;rows.forEach(e=>{const max=e.scrollWidth-e.clientWidth;e.classList.toggle('scroll-more-start',max>1&&e.scrollLeft>1);e.classList.toggle('scroll-more-end',max>1&&e.scrollLeft<max-1)})};
+ const schedule=()=>{if(!frame)frame=requestAnimationFrame(update)};
+ rows.forEach(e=>{e.addEventListener('scroll',schedule,{passive:true});new MutationObserver(schedule).observe(e,{childList:true,subtree:true,characterData:true});if(window.ResizeObserver)new ResizeObserver(schedule).observe(e)});
+ addEventListener('resize',schedule);document.fonts.ready.then(schedule);schedule();}

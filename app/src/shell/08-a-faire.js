@@ -8,16 +8,16 @@ const doneDay=t=>t.doneAt?iso(new Date(t.doneAt)):null;
 const dayTodos=k=>data.todos.filter(t=>!t.paused&&(t.done?t.day&&doneDay(t)===k:tDay(t)===k)).sort((a,b)=>(a.done-b.done)||ordSort(a,b));
 function dayLbl(k){const t0=iso(today());if(k===t0)return L("Aujourd'hui");const d=parse(k),tm=new Date(today());tm.setDate(tm.getDate()+1);
   if(k===iso(tm))return L("Demain");return `${DOW[d.getDay()].slice(0,3)}. ${d.getDate()} ${MO[d.getMonth()]}`}
-const planChip=t=>{if(t.done||!t.day)return"";const n=tLate(t);return ` <span class="tchip ${n?"late":tDay(t)===iso(today())?"today":""}">${n?`↻ ${L("reportée")}`:esc(dayLbl(t.day))}</span>`};
+const planChip=t=>{if(t.done||!t.day)return"";const n=tLate(t);return ` <span class="tchip ${n?"late":tDay(t)===iso(today())?"today":""}">${n?`${IC("refresh")} ${L("reportée")}`:esc(dayLbl(t.day))}</span>`};
 function todoToggle(t){t.done=!t.done;delete t.paused;if(t.done){t.doneAt=new Date().toISOString();if(t.day&&t.day<iso(today()))t.day=iso(today());toast("Tâche réalisée")}else delete t.doneAt;
-  freshId=t.id;save();renderTodos();if(navigator.vibrate)navigator.vibrate(10)}
+  freshId=t.id;todoProgressChange=t.done?"done":"adjust";save();renderTodos();if(navigator.vibrate)navigator.vibrate(10)}
 // planifier : aujourd'hui, demain, une date, ou retirer la date
 function todoPlan(t,after){const set=k=>{if(k)t.day=k;else delete t.day;t.upd=Date.now();save();renderTodos();if(after)after();toast(k?`${L("Prévue")} : ${dayLbl(k)}`:"Date retirée")};
   const tm=new Date(today());tm.setDate(tm.getDate()+1);
   openActions(L("Planifier"),[{l:"Aujourd'hui",on:t.day===iso(today()),fn:()=>set(iso(today()))},{l:"Demain",on:t.day===iso(tm),fn:()=>set(iso(tm))},
     {l:"Choisir une date…",fn:()=>{const i=$("planPick");i.value=t.day||iso(today());i.onchange=()=>{if(i.value)set(i.value)};try{i.showPicker()}catch(e){i.focus();i.click()}}},
     ...(t.day?[{l:"Retirer la date",fn:()=>set(null)}]:[])])}
-let freshId=null,todoQ="";
+let freshId=null,todoQ="",todoProgressChange="adjust";
 const PEN=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>`,PAUSE=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6v12M15 6v12"/></svg>`;
 const DOWL=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
 const mlow=i=>LANG==="en"?MOL[i]:MOL[i].toLowerCase();
@@ -96,7 +96,7 @@ function doneCal(list){const byDay={};list.forEach(t=>{const k=iso(new Date(t.do
   for(let d=1;d<=nd;d++){const k=`${y}-${two(m+1)}-${two(d)}`,n=(byDay[k]||[]).length,lv=n?Math.ceil(n/max*4):0;
     g+=`<button type="button" class="dc-d lv${lv} ${k===tk?"td":""}" data-dcday="${k}" aria-pressed="${dcSel===k}" ${n?"":"disabled"} aria-label="${d} ${MOL[m]} : ${n}"><span>${d}</span>${n?`<b>${n}</b>`:""}</button>`}
   const sel=dcSel&&byDay[dcSel];const sd=dcSel?parse(dcSel):null;
-  return `<div class="card dc"><div class="dc-top"><button type="button" class="mini" data-dcm="${dcMonth-1}" aria-label="${L("Mois précédent")}">‹</button><b>${L(MOL[m])} ${y}</b><button type="button" class="mini" data-dcm="${dcMonth+1}" ${dcMonth>=cur?"disabled":""} aria-label="${L("Mois suivant")}">›</button></div>
+  return `<div class="card dc"><div class="dc-top"><button type="button" class="mini" data-dcm="${dcMonth-1}" aria-label="${L("Mois précédent")}">${IC("chev")}</button><b>${L(MOL[m])} ${y}</b><button type="button" class="mini" data-dcm="${dcMonth+1}" ${dcMonth>=cur?"disabled":""} aria-label="${L("Mois suivant")}">${IC("chev")}</button></div>
     <div class="small muted" style="text-align:center;margin:-2px 0 8px">${monthN} ${L(monthN>1?"tâches réalisées ce mois-ci":"tâche réalisée ce mois-ci")}</div>
     <div class="dc-g">${[...({fr:"LMMJVSD",en:"MTWTFSS",nl:"MDWDVZZ"}[LANG]||"LMMJVSD")].map(x=>`<i>${x}</i>`).join("")}${g}</div></div>`+
     (sel?`<div class="grp-d" style="margin:10px 4px 6px">${DOWL[sd.getDay()]} ${sd.getDate()} ${mlow(sd.getMonth())} · ${sel.length} ${L(sel.length>1?"tâches":"tâche")}</div><div class="card">${sel.map(todoRow).join("")}</div>`
@@ -120,16 +120,17 @@ function renderTodos(){
   const fin=cats.filter(finished),showFin=!!TV().showFin||fin.some(c=>c.id===cc);
   const isl=window.SCIslands&&window.SCIslands.todos&&!window.__noIslands;
   if(!isl)$("todoCats").innerHTML=`<button class="pill" data-tcat="all" aria-pressed="${cc==="all"}">${L("Toutes")}</button>`+
-    cats.filter(c=>!finished(c)).map(c=>`<button class="pill" data-tcat="${c.id}" aria-pressed="${cc===c.id}">${esc(c.name)} <span class="cnt">${openN(c.id)||""}</span></button>`).join("")+
-    (fin.length?`<button class="pill" data-tcatfin="1" aria-pressed="${showFin}">✓ ${fin.length} ${L(fin.length>1?"terminées":"terminée")}</button>`+(showFin?fin.map(c=>`<button class="pill" data-tcat="${c.id}" aria-pressed="${cc===c.id}" style="opacity:.75">✓ ${esc(c.name)}</button>`).join(""):""):"")+
-    `<button class="pill add" data-tcatnew="1">+ ${L("Catégorie")}</button>`;
+    cats.filter(c=>!finished(c)).map(c=>`<button class="pill" data-tcat="${c.id}" data-user-label="" title="${esc(c.name)}" aria-label="${esc(c.name)}" aria-pressed="${cc===c.id}"><span class="cat-name notr">${esc(c.name)}</span><span class="cnt">${openN(c.id)||""}</span></button>`).join("")+
+    (fin.length?`<button class="pill" data-tcatfin="1" aria-pressed="${showFin}">${CHECK} ${fin.length} ${L(fin.length>1?"terminées":"terminée")}</button>`+(showFin?fin.map(c=>`<button class="pill" data-tcat="${c.id}" data-user-label="" title="${esc(c.name)}" aria-label="${esc(c.name)}" aria-pressed="${cc===c.id}" style="opacity:.75">${CHECK}<span class="cat-name notr">${esc(c.name)}</span></button>`).join(""):""):"")+
+    `<button class="pill add" data-tcatnew="1">${IC("plus")} ${L("Catégorie")}</button>`;
+  const foldKeys=[...new Set(open.map(t=>t.cat&&catOf(t.cat)?t.cat:"none"))],foldAll=$("todoFoldAll"),allFolded=foldKeys.every(k=>TV().fold[k]);foldAll.hidden=cc!=="all"||foldKeys.length<2;foldAll.title=foldAll.ariaLabel=L(allFolded?"Tout déplier":"Tout replier");foldAll.setAttribute("aria-expanded",String(!allFolded));
   const cat=catOf(cc);
   $("catBar").hidden=!cat;
   if(cat&&!isl){const tot=data.todos.filter(t=>t.cat===cat.id&&!t.paused).length,dn=data.todos.filter(t=>t.cat===cat.id&&t.done).length;
-    $("catBar").innerHTML=catEditing?`<form id="catRename" style="display:flex;gap:8px;width:100%"><input id="catRenIn" value="${esc(cat.name)}" aria-label="Nouveau nom" autocomplete="off"><button class="btn" type="submit">OK</button></form>`
+    $("catBar").innerHTML=catEditing?`<form id="catRename" style="display:flex;gap:8px;width:100%"><input id="catRenIn" value="${esc(cat.name)}" aria-label="Nouveau nom" autocomplete="off"><button class="btn ghost" type="submit">OK</button></form>`
       :`<div class="grow"><b>${esc(cat.name)}</b><div class="small muted">${tot?`${dn}/${tot} ${L("réalisées")}`:L("Aucune tâche pour l'instant")}</div></div>
         <div class="cat-prog" style="width:70px"><i style="width:${tot?dn/tot*100:0}%"></i></div>
-        <button class="mini" data-catren="1">${L("Renommer")}</button><button class="x" data-catdel="1" aria-label="Supprimer la catégorie">×</button>`}
+        <button class="mini" data-catren="1">${L("Renommer")}</button><button class="x" data-catdel="1" aria-label="Supprimer la catégorie">${IC("close")}</button>`}
   $("todoIn").placeholder=cat?`${L("Nouvelle tâche dans")} « ${cat.name} »…`:L("Nouvelle tâche…");
   // liste à faire
   const emptyMsg=`<div class="card"><div class="empty">${q?"Aucune tâche à faire ne correspond.":all.some(t=>t.done)?"Tout est réalisé. Bravo !":cat?"Aucune tâche dans cette catégorie. Ajoute-en une ci-dessus.":"Aucune tâche. Ajoute-en une ci-dessus."}</div></div>`;
@@ -138,14 +139,14 @@ function renderTodos(){
     // v44.6 : les tâches sans catégorie d'abord, puis les catégories
     const groups=[{c:null,items:open.filter(t=>!(t.cat&&catOf(t.cat)))},...cats.map(c=>({c,items:open.filter(t=>t.cat===c.id)}))].filter(g=>g.items.length);
     // chaque catégorie peut être repliée (réglage propre à cet appareil)
-    const fold=TV().fold,allFolded=groups.every(g=>fold[g.c?g.c.id:"none"]);
+    const fold=TV().fold;
     const fbtn=(k,n)=>`<button class="foldc" data-tfold="${k}" aria-expanded="${!fold[k]}" aria-label="${L(fold[k]?"Déplier":"Replier")}">${CHEV}</button>`;
     const body=(k,items)=>fold[k]?"":`<div class="card" data-group="${k}">${items.map(todoRow).join("")}</div>`;
     const cnt=(k,n)=>fold[k]?`<span class="fold-n">${n}</span>`:"";
-    $("todoOpen").innerHTML=(groups.length>1?`<div style="display:flex;justify-content:flex-end;margin:-4px 0 -10px"><button type="button" class="mini" data-tfoldall="1">${L(allFolded?"Tout déplier":"Tout replier")}</button></div>`:"")+groups.map(g=>{
+    $("todoOpen").innerHTML=groups.map(g=>{
       if(!g.c)return `<div class="cat-h">${fbtn("none")}<h2>${L("Sans catégorie")}</h2>${cnt("none",g.items.length)}</div>${body("none",g.items)}`;
       const tot=data.todos.filter(t=>t.cat===g.c.id&&!t.paused).length,dn=data.todos.filter(t=>t.cat===g.c.id&&t.done).length;
-      return `<div class="cat-h">${fbtn(g.c.id)}<h2><button class="back" data-tcat="${g.c.id}" style="padding:0;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit">${esc(g.c.name)} ›</button></h2>${cnt(g.c.id,g.items.length)}<span class="small muted">${dn}/${tot}</span><div class="cat-prog"><i style="width:${tot?dn/tot*100:0}%"></i></div></div>${body(g.c.id,g.items)}`}).join("");
+      return `<div class="cat-h">${fbtn(g.c.id)}<h2><button class="back" data-user-label="" title="${esc(g.c.name)}" aria-label="${esc(g.c.name)}" data-tcat="${g.c.id}" style="padding:0;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit"><span class="cat-title notr">${esc(g.c.name)}</span>${IC("chev")}</button></h2>${cnt(g.c.id,g.items.length)}<span class="small muted">${dn}/${tot}</span><div class="cat-prog"><i style="width:${tot?dn/tot*100:0}%"></i></div></div>${body(g.c.id,g.items)}`}).join("");
   }else $("todoOpen").innerHTML=open.length?`<div class="card" data-group="${cc}">${open.map(todoRow).join("")}</div>`:emptyMsg;
   $("foldPaused").hidden=!paused.length;
   $("pausedTitle").textContent=`${L("En suspens")} (${paused.length})`;$("pausedArrow").textContent=L(pausedOpen?"Masquer":"Afficher");
@@ -164,7 +165,7 @@ function renderTodos(){
         {todos:data.todos,cats,open,paused,done,view:{cat:cc,fold:v.fold,doneOpen:!!v.doneOpen,pausedOpen:v.pausedOpen!==false,showFin:!!v.showFin,doneCal:!!v.doneCal},
          search:!!q,grip:!todoQ,catEditing,freshId,today:iso(today()),dcMonth,dcSel,i18n:{...agI18n(),DOW,DOWL,lang:LANG||"fr"}})}
     catch(e){reportErr("island todos: "+(e&&e.message));window.__noIslands=true;try{renderTodos()}finally{window.__noIslands=false}return}}
-  freshId=null;
+  if(data.ui.view==="todo"){$("vhead").dataset.progressChange=todoProgressChange;renderVhead("todo")}todoProgressChange="adjust";freshId=null;
 }
 $("todoSearch").addEventListener("input",e=>{todoQ=e.target.value;renderTodos()});
 // v44.6 : la recherche s'ouvre avec la loupe (et se referme vide)

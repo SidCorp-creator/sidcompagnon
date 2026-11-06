@@ -9,14 +9,14 @@ function nuCalOpen(mode){const d=parse(nuDay);nuRange=mode;nuRY=d.getFullYear();
 function renderNuCal(){const box=$("nuCal"),btn=$("nuDayBtn");if(!box)return;box.hidden=!nuRange;if(btn)btn.setAttribute("aria-expanded",String(!!nuRange));if(!nuRange)return;
   // v50 (ticket #3) : premier écran migré en TypeScript + React (app/src/NutritionCalendar.tsx, build site/react/islands.js) ;
   // même rendu, mêmes data-* (les clics restent gérés ici). Si le module n'est pas chargé, l'ancien rendu ci-dessous sert de secours.
-  if(window.SCIslands&&window.SCIslands.nuCal&&!window.__noIslands){try{window.SCIslands.nuCal(box,{range:nuRange,year:nuRY,month:nuRM,weekStart:nuRW,today:iso(today()),selected:nuDay,byDay:nuDays(),target:k=>dayTarget(k).kcal||0,i18n:{L,MOL,MO,DOWL}});return}catch(e){reportErr&&reportErr("island nuCal: "+(e&&e.message))}}
+  if(window.SCIslands&&window.SCIslands.nuCal&&!window.__noIslands){try{window.SCIslands.nuCal(box,{range:nuRange,year:nuRY,month:nuRM,weekStart:nuRW,today:iso(today()),selected:nuDay,byDay:nuDays(),target:k=>dayTarget(k).kcal||0,i18n:{L,MOL,MO,DOWL,lang:LANG}});return}catch(e){reportErr&&reportErr("island nuCal: "+(e&&e.message))}}
   const tIso=iso(today()),by=nuDays();let title="",body="",tot=0,nd=0,start="";
-  const sum=()=>`<div class="small muted nu-cal-sum">${nd?`${nd} ${L(nd>1?"jours notés":"jour noté")} · ${L("moyenne")} ${r0(tot/nd)} kcal`:L("Aucun repas noté sur cette période.")}</div>`;
+  const sum=()=>`<div class="small muted nu-cal-sum">${nd?`${nd} ${L(nd>1?"jours notés":"jour noté")} · ${L("moyenne")} ${fmtFull(r0(tot/nd))} kcal`:L("Aucun repas noté sur cette période.")}</div>`;
   const leg=`<div class="nu-leg small muted"><span><i class="nu-st ok"></i>${L("Dans l'objectif")}</span><span><i class="nu-st under"></i>${L("En dessous")}</span><span><i class="nu-st over"></i>${L("Au-dessus")}</span></div>`;
   if(nuRange==="week"){const m=parse(nuRW),e=new Date(m);e.setDate(e.getDate()+6);start=nuRW;
     title=`${m.getDate()} ${MO[m.getMonth()]} – ${e.getDate()} ${MO[e.getMonth()]} ${e.getFullYear()}`;
     let rows="";for(let i=0;i<7;i++){const d=new Date(m);d.setDate(d.getDate()+i);const k=iso(d),st=nuSt(by,k),tg=dayTarget(k).kcal||0,v=by[k];if(v!=null){tot+=v;nd++}
-      rows+=`<button type="button" class="nwk-row ${k===nuDay?"on":""} ${st}" data-nuday="${k}" ${k>tIso?"disabled":""}><span class="nwk-d"><b>${esc(DOWL[d.getDay()])}</b><small>${d.getDate()} ${MO[d.getMonth()]}</small></span><span class="nwk-bar"><i style="width:${tg&&v?Math.min(100,v/tg*100):0}%"></i></span><span class="nwk-k">${v!=null?r0(v):"–"}${v!=null&&tg?`<small> / ${tg}</small>`:""}</span></button>`}
+      rows+=`<button type="button" class="nwk-row ${k===nuDay?"on":""} ${st}" data-nuday="${k}" ${k>tIso?"disabled":""}><span class="nwk-d"><b>${esc(DOWL[d.getDay()])}</b><small>${d.getDate()} ${MO[d.getMonth()]}</small></span><span class="nwk-bar"><i style="width:${tg&&v?Math.min(100,v/tg*100):0}%"></i></span><span class="nwk-k">${v!=null?r0(v):"–"}${v!=null&&tg?`<small> / ${fmtFull(tg)}</small>`:""}</span></button>`}
     body=`<div class="nwk">${rows}</div>`+leg+sum()}
   else if(nuRange==="month"){title=`${MOL[nuRM]} ${nuRY}`;start=iso(new Date(nuRY,nuRM,1));
     const g=monthGrid(nuRY,nuRM,(k,d)=>{const st=nuSt(by,k);if(st){tot+=by[k];nd++}
@@ -28,7 +28,7 @@ function renderNuCal(){const box=$("nuCal"),btn=$("nuDayBtn");if(!box)return;box
   // période suivante seulement si elle a déjà commencé
   const nx=nuRange==="week"?(()=>{const d=parse(nuRW);d.setDate(d.getDate()+7);return iso(d)})():nuRange==="month"?iso(new Date(nuRY,nuRM+1,1)):iso(new Date(nuRY+1,0,1));
   box.innerHTML=`<div class="seg nu-cal-seg" role="group" aria-label="${L("Vue")}">${["week","month","year"].map(m=>`<button type="button" data-nurange="${m}" aria-pressed="${m===nuRange}">${L({week:"Semaine",month:"Mois",year:"Année"}[m])}</button>`).join("")}</div>
-    <div class="cal-head"><button type="button" class="cal-nav" data-nurn="-1" aria-label="${L("Période précédente")}">‹</button><b class="nu-cal-t">${esc(title)}</b><button type="button" class="cal-nav" data-nurn="1" aria-label="${L("Période suivante")}" ${nx>tIso?"disabled":""}>›</button></div>
+    <div class="cal-head"><button type="button" class="cal-nav" data-nurn="-1" aria-label="${L("Période précédente")}">${IC("chev")}</button><b class="nu-cal-t">${esc(title)}</b><button type="button" class="cal-nav" data-nurn="1" aria-label="${L("Période suivante")}" ${nx>tIso?"disabled":""}>${IC("chev")}</button></div>
     ${body}<button type="button" class="linkbtn nu-cal-x" data-nurange="">${L("Fermer le calendrier")}</button>`}
 $("nuDayBtn").addEventListener("click",()=>{if(nuRange){nuRange=null;renderNuCal()}else nuCalOpen("month")});
 window.addEventListener("sc-islands",()=>{if(nuRange)renderNuCal();if(data&&data.ui&&data.ui.view==="graph")renderGraph();if(data&&data.ui&&data.ui.view==="pomo")renderPomo();if(data&&data.ui&&data.ui.view==="muscu")renderMuscu();if(session&&data&&data.tasks){renderPlan();renderTodos();renderHome();try{setSync();renderCals()}catch(e){}}if(session&&data&&data.ui){const v=data.ui.view||"home";renderNav(v);renderVhead(v);renderSide(v)}
@@ -50,7 +50,7 @@ function renderNuCopy(){if(!nuCp)return;const tIso=iso(today()),mx=(()=>{const d
   if(nuIsl("nuCopy")){try{window.SCIslands.nuCopy($("nuCopyBody"),{MOL,i18n:agI18n(),c:{y:nuCp.y,m:nuCp.m,sel:[...nuCp.sel],src:nuCp.src,today:tIso,max:mx,nextOff:iso(new Date(nuCp.y,nuCp.m+1,1))>mx,
     dow:[1,2,3,4,5,6,0].map(i=>String(DOWL[i]||"").slice(0,1).toUpperCase())}});return}catch(e){reportErr("island nuCopy: "+(e&&e.message))}}
   $("nuCopyBody").innerHTML=`<p class="small muted" style="margin:0 0 8px">${L("Touche les jours où tu as mangé (ou mangeras) la même chose.")}</p>
-    <div class="cal-head"><button type="button" class="cal-nav" data-nucpn="-1" aria-label="${L("Mois précédent")}">‹</button><b>${MOL[nuCp.m]} ${nuCp.y}</b><button type="button" class="cal-nav" data-nucpn="1" aria-label="${L("Mois suivant")}" ${iso(new Date(nuCp.y,nuCp.m+1,1))>mx?"disabled":""}>›</button></div>
+    <div class="cal-head"><button type="button" class="cal-nav" data-nucpn="-1" aria-label="${L("Mois précédent")}">${IC("chev")}</button><b>${MOL[nuCp.m]} ${nuCp.y}</b><button type="button" class="cal-nav" data-nucpn="1" aria-label="${L("Mois suivant")}" ${iso(new Date(nuCp.y,nuCp.m+1,1))>mx?"disabled":""}>${IC("chev")}</button></div>
     <div class="cal-grid cal-dow">${dowHead()}</div>
     <div class="cal-grid nu-cpgrid">${monthGrid(nuCp.y,nuCp.m,(k,d)=>`<button type="button" class="day ${k===tIso?"today":""} ${nuCp.sel.has(k)?"sel":""} ${k===nuCp.src?"nu-cp-src":""}" data-nucpd="${k}" aria-pressed="${nuCp.sel.has(k)}" ${k>mx||k===nuCp.src?"disabled":""} aria-label="${d} ${MOL[nuCp.m]}"><span class="num">${d}</span></button>`)}</div>
     <button type="button" class="btn" id="nuCopyGo" ${n?"":"disabled"} style="width:100%;margin-top:12px">${n?`${L("Copier sur")} ${n} ${L(n>1?"jours":"jour")}`:L("Choisis au moins un jour")}</button>`}
@@ -150,7 +150,7 @@ function renderMenuForm(){
   document.querySelectorAll("#nuMType button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mtype===mp.type));
   $("nuMDay").hidden=!day;$("nuMOne").hidden=day;$("nuSnacks").textContent=mp.snacks||0;
   if(shIsl("nuSlots")){try{window.SCIslands.nuSlots($("nuSlots"),{i18n:agI18n(),slots:MAINS.map(s=>({k:s,on:!!mp.pick[s],icon:IC(SLOT[s][1]),name:SLOT[s][0]}))})}catch(e){reportErr("island nuSlots: "+(e&&e.message))}}
-  else $("nuSlots").innerHTML=MAINS.map(s=>`<button type="button" class="pill meal-tg" data-pick="${s}" aria-pressed="${!!mp.pick[s]}"><span class="tg-box" aria-hidden="true">${mp.pick[s]?"✓":""}</span>${IC(SLOT[s][1])} ${L(SLOT[s][0])}</button>`).join("");
+  else $("nuSlots").innerHTML=MAINS.map(s=>`<button type="button" class="pill meal-tg" data-pick="${s}" aria-pressed="${!!mp.pick[s]}"><span class="tg-box" aria-hidden="true">${mp.pick[s]?IC("tick"):""}</span>${IC(SLOT[s][1])} ${L(SLOT[s][0])}</button>`).join("");
   const sl=mpSlots();
   $("nuMenuBtn").textContent=L(day?(sl.length===1&&sl[0]==="meal"?"Générer mon repas unique":"Générer ma journée"):{breakfast:"Générer un petit-déjeuner",lunch:"Générer un déjeuner",snack:"Générer une collation",dinner:"Générer un dîner"}[mp.type]);
   if(day){const k=mpKcals(),tot=k.reduce((a,b)=>a+b,0),tg=dayTarget(iso(today())).kcal;
@@ -188,7 +188,7 @@ const SPOONS=/** @type {[RegExp,number,number][]} */([[/huile|oil/i,13.5,4.5],[/
 function spoonQty(name,g){if(!(g>0)||g>80)return"";const s=SPOONS.find(([re])=>re.test(name||""));if(!s)return"";
   const half=x=>Math.max(.5,Math.round(x*2)/2),fr=x=>String(x).replace(".",LANG==="en"?".":",");
   const tb=g/s[1];if(tb>=.75)return `${fr(half(tb))} ${L("c. à soupe")}`;return `${fr(half(g/s[2]))} ${L("c. à café")}`}
-const qtyTxt=x=>{const m=String(x.qty||"").trim().match(/^(\d+(?:[.,]\d+)?)\s*g$/i),g=x.g||(m?+m[1].replace(",","."):0),sp=g?spoonQty(x.name,g):"";return sp?`${sp} (${r0(g)} g)`:(x.qty||"")};
+const qtyTxt=x=>{const m=String(x.qty||"").trim().match(/^(\d+(?:[.,]\d+)?)\s*g$/i),g=x.g||(m?+m[1].replace(",","."):0),sp=g?spoonQty(x.name,g):"";return sp?`${sp} (${fmtFull(r0(g))} g)`:(x.qty||"")};
 // le serveur connaît les créneaux classiques : le repas unique part comme un déjeuner, avec son propre nom
 const srvSlot=s=>s==="meal"?"lunch":s;
 // la toute première génération peut échouer (serveur qui démarre, réponse vide) : on réessaie une fois tout seul
@@ -217,7 +217,7 @@ function recipeSteps(v){if(!v)return null;if(Array.isArray(v))return v.map(x=>St
 async function getRecipe(ml){
   const n=NU(),list=ml.items.map(x=>`${qtyTxt(x)} ${x.name}`).join(", ");
   try{const r=await nuRetry(()=>nuCall("recette",{data:{name:ml.name,kcal:ml.kcal,foods:ml.items.map(x=>({food:x.name,grams:x.g||null,quantity:x.qty}))}}),r=>r&&Array.isArray(r.steps)&&r.steps.length);
-    const st=recipeSteps(r.steps);if(st){const t=[r.prep_min?`${L("Préparation")} ${r0(r.prep_min)} min`:"",r.cook_min?`${L("Cuisson")} ${r0(r.cook_min)} min`:""].filter(Boolean).join(" · ");
+    const st=recipeSteps(r.steps);if(st){const t=[r.prep_min?`${L("Préparation")} ${fmtFull(r0(r.prep_min))} min`:"",r.cook_min?`${L("Cuisson")} ${fmtFull(r0(r.cook_min))} min`:""].filter(Boolean).join(" · ");
       if(t)st.unshift(L("Temps")+" : "+t);if(r.tips)st.push(L("Astuce")+" : "+r.tips);return st}}
   catch(ex){if(ex.status!==400)throw ex}
   const r=await nuRetry(()=>nuCall("menu",{data:{meal_type:srvSlot(ml.slot||"lunch"),meals:[{slot:srvSlot(ml.slot||"lunch"),name:ml.name,kcal:ml.kcal}],target_kcal:ml.kcal,protein_g:r0(ml.p),carbs_g:r0(ml.c),fat_g:r0(ml.f),
@@ -249,7 +249,7 @@ function renderNuMenu(){
       if(ok)m.meals.forEach(ml=>{const s=sumOf(ml.items);Object.assign(ml,{kcal:r0(s.kcal),p:r1(s.p),c:r1(s.c),f:r1(s.f)})});
       const el=$("nuMenu");if(!el._isl){el.innerHTML="";el._isl=true}
       window.SCIslands.nuMenu(el,{mac:NU_MAC(),icons:{book:IC("book")},i18n:agI18n(),m:ok?{total:sumOf(m.meals),tips:m.tips||"",edit:meEdit,add:meAdd,recipe:meRecipe,recipeBusy:nuBusy==="recipe",regen:meRegen,
-        meals:m.meals.map(ml=>({name:ml.name,mono:mono(ml.name),slot:slotName(ml.slot),target:ml.target||0,kcal:ml.kcal,sum:{kcal:ml.kcal,p:ml.p,c:ml.c,f:ml.f},ate:ml.ate===iso(today()),steps:ml.steps||null,
+        meals:m.meals.map(ml=>({name:ml.name,mono:mono(ml.name),icon:IC(SLOT[ml.slot]?.[1]||"utensils"),slot:slotName(ml.slot),target:ml.target||0,kcal:ml.kcal,sum:{kcal:ml.kcal,p:ml.p,c:ml.c,f:ml.f},ate:ml.ate===iso(today()),steps:ml.steps||null,
           items:ml.items.map(x=>({name:x.name,g:x.g||0,qty:x.qty||"",qtyLbl:qtyTxt(x),kcal:x.kcal}))}))}:null});
       if(meEdit){const i=$("meQtyIn");if(i){i.focus();i.select()}}if(meAdd!==null){const i=$("meAddIn");if(i)i.focus()}return}
     catch(e){reportErr("island nuMenu: "+(e&&e.message))}}
@@ -258,8 +258,8 @@ function renderNuMenu(){
   m.meals.forEach(ml=>{const s=sumOf(ml.items);Object.assign(ml,{kcal:r0(s.kcal),p:r1(s.p),c:r1(s.c),f:r1(s.f)})});
   const T=sumOf(m.meals),td=iso(today());
   $("nuMenu").innerHTML=`<h2 style="margin-top:16px">${L("Ton menu")}</h2>`+boxes([[r0(T.kcal),"kcal"],[r1(T.p)+" g","Protéines","--m-p"],[r1(T.c)+" g","Glucides","--m-c"],[r1(T.f)+" g","Lipides","--m-f"]])+
-    m.meals.map((ml,i)=>`<div class="dish"><div class="dish-h"><span class="dish-ic">${mono(ml.name)}</span><span class="dish-t"><b class="notr">${esc(ml.name)}</b><span class="small muted">${L(slotName(ml.slot))}${ml.target?` · ${L("objectif")} ${ml.target} kcal`:""}</span></span><span class="dish-kcal">${ml.kcal}<small>kcal</small></span><button type="button" class="x" data-medel="${i}" aria-label="${L("Retirer ce repas")}">×</button></div>
-      ${macroHtml(ml)}<div class="dish-items">${ml.items.map((x,j)=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${meEdit===`${i}:${j}`?`<span class="me-qty"><input type="text" inputmode="decimal" id="meQtyIn" value="${x.g||""}" aria-label="${L("Grammes")}"> g <button type="button" class="mini" data-meqok="${i}:${j}">OK</button></span>`:x.g?`<button type="button" class="qty-ed notr" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${esc(qtyTxt(x))}</button>`:`<span class="small muted notr">${esc(x.qty)}</span>`}</div><span class="k">${x.kcal} kcal</span>${x.g?`<button class="pen" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${PEN}</button>`:""}<button class="x" data-merm="${i}:${j}" aria-label="${L("Retirer")}">×</button></div>`).join("")}</div>
+    m.meals.map((ml,i)=>`<div class="dish"><div class="dish-h"><span class="dish-ic">${IC(SLOT[ml.slot]?.[1]||"utensils")}</span><span class="dish-t"><b class="notr" data-user-label="" title="${esc(ml.name)}">${esc(ml.name)}</b><span class="small muted">${L(slotName(ml.slot))}${ml.target?` · ${L("objectif")} ${fmtFull(ml.target)}\u202fkcal`:""}</span></span><span class="dish-kcal">${fmtFull(ml.kcal)}<small>\u202fkcal</small></span><button type="button" class="x" data-medel="${i}" aria-label="${L("Retirer ce repas")}">×</button></div>
+      ${macroHtml(ml)}<div class="dish-items">${ml.items.map((x,j)=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${meEdit===`${i}:${j}`?`<span class="me-qty"><input type="text" inputmode="decimal" id="meQtyIn" value="${x.g||""}" aria-label="${L("Grammes")}"> g <button type="button" class="mini" data-meqok="${i}:${j}">OK</button></span>`:x.g?`<button type="button" class="qty-ed notr" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${esc(qtyTxt(x))}</button>`:`<span class="small muted notr">${esc(x.qty)}</span>`}</div><span class="k">${fmtFull(x.kcal)}\u202fkcal</span>${x.g?`<button class="pen" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${PEN}</button>`:""}<button class="x" data-merm="${i}:${j}" aria-label="${L("Retirer")}">×</button></div>`).join("")}</div>
       ${meAdd===i?`<form class="me-add" data-meaddf="${i}"><input id="meAddIn" placeholder="${L("Ex. 30 g d'amandes")}" autocomplete="off"><button class="btn" type="submit">OK</button></form>`:""}
       ${meRecipe===i?`<div class="recipe"><b>${IC("book")} ${L("Recette")}</b>${nuBusy==="recipe"?`<div class="small muted" style="margin-top:6px"><span class="spin"></span> ${L("Préparation de la recette…")}</div>`:ml.steps&&ml.steps.length?`<ol class="notr">${ml.steps.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>`:`<div class="small muted">${L("Recette indisponible pour le moment.")}</div>`}</div>`:""}
       <div class="me-act"><button type="button" class="mini" data-meadd="${i}">+ ${L("Aliment")}</button><button type="button" class="mini" data-merec="${i}">${IC("book")} ${L(meRecipe===i?"Cacher la recette":"Recette")}</button><button type="button" class="mini" data-meregen="${i}">↻ ${L("Autre idée")}</button>
@@ -271,13 +271,13 @@ function renderNuMenu(){
 function nuMenuFree(){const el=$("nuMenu");if(el._isl){window.SCIslands.unmount(el);el._isl=false}}
 // bandeau du menu : ce qu'il reste à manger aujourd'hui
 function renderMenuLeft(){const el=$("nuMenuLeft");if(!el||!NU().plan)return;const t=dayTarget(iso(today())),s=sumOf(dayLog(iso(today()))),left=r0(t.kcal-s.kcal);
-  el.innerHTML=`${IC("target")}<span class="grow">${left>=0?`${L("Il te reste")} <b>${fmtFull(left)} kcal</b> ${L("à manger aujourd'hui")}`:`${L("Objectif dépassé de")} <b>${fmtFull(-left)} kcal</b>`} <span class="muted">(${L("objectif")} ${fmtFull(t.kcal)})</span></span>`}
+  el.innerHTML=`${IC("target")}<span class="grow">${left>=0?`${L("Il te reste")} <b>${fmtFull(left)}\u202fkcal</b> ${L("à manger aujourd'hui")}`:`${L("Objectif dépassé de")} <b>${fmtFull(-left)}\u202fkcal</b>`} <span class="muted">(${L("objectif")} ${fmtFull(t.kcal)})</span></span>`}
 // changer la quantité d'un aliment du menu : calories et macros suivent
 function meScale(i,j,g){const it=NU().menu.meals[i].items[j];if(!(g>0)||!it.g)return;const k=g/it.g;
   Object.assign(it,{g:r0(g),qty:r0(g)+" g",kcal:r0(it.kcal*k),p:r1(it.p*k),c:r1(it.c*k),f:r1(it.f*k)});NU().upd=Date.now();save()}
 $("nuMenu").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b)return;const n=NU(),M=n.menu;
   if(b.dataset.numeal){const ml=M.meals[+b.dataset.numeal],d0=nuDay;nuDay=iso(today());
-    nuAddItems(ml.items,null,{name:ml.name,em:ml.em});nuDay=d0;ml.ate=iso(today());n.upd=Date.now();save();renderNutri();toast(`${L("Ajouté à ta journée")} · ${ml.kcal} kcal`);return}
+    nuAddItems(ml.items,null,{name:ml.name,em:ml.em});nuDay=d0;ml.ate=iso(today());n.upd=Date.now();save();renderNutri();toast(`${L("Ajouté à ta journée")} · ${fmtFull(ml.kcal)} kcal`);return}
   if(b.dataset.merec){const i=+b.dataset.merec,ml=M.meals[i];if(meRecipe===i){meRecipe=null;renderNuMenu();return}
     meRecipe=i;if(ml.steps&&ml.steps.length||nuBusy){renderNuMenu();return}
     nuBusy="recipe";renderNuMenu();

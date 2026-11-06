@@ -898,7 +898,7 @@ html[data-ds="edito"] .pdfv input.pv-title{border:0!important;background:transpa
 .pv-txt.pv-on .pv-txt-mv,.pdfv[data-tool="text"] .pv-txt .pv-txt-mv,.pv-txt:hover .pv-txt-mv,.pv-txt:focus-within .pv-txt-mv{display:flex}
 .pv-txt.pv-on .pv-txt-rs,.pdfv[data-tool="text"] .pv-txt .pv-txt-rs,.pv-txt:hover .pv-txt-rs,.pv-txt:focus-within .pv-txt-rs{display:block}
 .pv-txt.pv-on textarea{border-style:solid!important;border-color:#2F4A3A!important}
-@media (pointer:coarse){.pv-txt-x,.pv-txt-mv{width:30px!important;height:30px!important;top:-15px!important}.pv-txt-x{right:-15px!important;line-height:30px!important}.pv-txt-mv{left:-15px!important}.pv-txt-rs{width:28px;height:28px;right:-14px;bottom:-14px}.pv-txt-rs::after{inset:8px}}
+@media (pointer:coarse){html:not([data-ds="elan"]) .pv-txt-x,html:not([data-ds="elan"]) .pv-txt-mv{width:30px!important;height:30px!important;top:-15px!important}html:not([data-ds="elan"]) .pv-txt-x{right:-15px!important;line-height:30px!important}html:not([data-ds="elan"]) .pv-txt-mv{left:-15px!important}html:not([data-ds="elan"]) .pv-txt-rs{width:28px;height:28px;right:-14px;bottom:-14px}html:not([data-ds="elan"]) .pv-txt-rs::after{inset:8px}}
 .cal-help li span{display:block}
 /* v45 : « Sid'compagnon » tient toujours sur une ligne dans la barre latérale (jamais coupé) */
 @media (min-width:768px){
@@ -1133,15 +1133,15 @@ html[data-ds="elan"] main{max-width:760px;padding:0 20px calc(var(--navh,80px) +
 html[data-ds="elan"] #vhead:not([hidden]){display:block;position:sticky;top:env(safe-area-inset-top,0px);z-index:12;background:var(--app);color:var(--on-app);margin:0 -20px 16px;padding:8px 12px 16px;border:0;min-width:0}
 .elan-head-row{display:flex;gap:8px;align-items:center;min-width:0}
 .ah-home,.ah-claude{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border:0}
-html[data-ds="elan"] #vhead .ah-home{width:44px;flex:none;background:none;color:var(--on-app);padding:8px;min-width:44px}
-html[data-ds="elan"] #vhead .ah-home svg{width:24px;height:24px}
-html[data-ds="elan"] #vhead .ah-brand{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
-html[data-ds="elan"] #vhead .ah-logo{width:32px;height:32px;flex:none}
+html[data-ds="elan"] :is(#vhead,#noteAppHead) .ah-home{width:44px;flex:none;background:none;color:var(--on-app);padding:8px;min-width:44px}
+html[data-ds="elan"] :is(#vhead,#noteAppHead) .ah-home svg{width:24px;height:24px}
+html[data-ds="elan"] :is(#vhead,#noteAppHead) .ah-brand{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
+html[data-ds="elan"] :is(#vhead,#noteAppHead) .ah-logo{width:32px;height:32px;flex:none}
 .ah-names{display:flex;flex-direction:column;min-width:0}
 html[data-ds="elan"] .ah-names b{font:700 17px/22px var(--font)}
 html[data-ds="elan"] .ah-names small{font:500 12px/16px var(--font);color:var(--on-app);overflow-wrap:anywhere}
-html[data-ds="elan"] #vhead .ah-claude{border-radius:999px;background:var(--on-app);color:var(--app);font:600 16px/20px var(--font);padding:0 12px;flex:none}
-html[data-ds="elan"] #vhead .elan-title{font:italic 800 44px/44px var(--display);margin:8px 8px 0;letter-spacing:0}
+html[data-ds="elan"] :is(#vhead,#noteAppHead) .ah-claude{border-radius:999px;background:var(--on-app);color:var(--app);font:600 16px/20px var(--font);padding:0 12px;flex:none}
+html[data-ds="elan"] :is(#vhead,#noteAppHead) .elan-title{font:italic 800 44px/44px var(--display);margin:8px 8px 0;letter-spacing:0}
 .elan-progress{display:flex;flex-direction:column;gap:8px;margin:8px 8px 0;font:700 20px/24px var(--digits)}
 .elan-progress-track{display:block;height:6px;background:rgba(0,0,0,.18);border-radius:999px;overflow:hidden}
 .elan-progress-track i{display:block;height:100%;background:var(--on-app);transition:width var(--t-prog) var(--ease-prog);border-radius:inherit}
@@ -1211,7 +1211,7 @@ html[data-ds="elan"] .side-it{color:var(--ink);min-height:44px;border-radius:10p
 html[data-ds="elan"] .side-it[aria-current=true]{background:var(--app-soft);color:var(--app-ink)}
 html[data-ds="elan"] .side-h{font:700 17px/22px var(--font);text-transform:none;letter-spacing:0;color:var(--ink)}
 @media(min-width:1024px){html[data-ds="elan"] body.side-on main{margin-left:236px;max-width:none;padding:0 48px 48px}html[data-ds="elan"] body.side-on main>.view,html[data-ds="elan"] body.side-on main>#vhead{max-width:720px;margin-inline:auto}html[data-ds="elan"] body.side-on #vhead{margin-bottom:24px}html[data-ds="elan"] .hc-list{gap:16px}html[data-ds="elan"] .hc{max-width:720px}}
-@media(max-width:359px){html[data-ds="elan"] #vhead .ah-logo{display:none}html[data-ds="elan"] #vhead .ah-claude{padding-inline:10px}.journey-row{padding:10px;gap:8px}.journey-time{width:56px}html[data-ds="elan"] .hc-fns{gap:4px;padding-inline:8px}html[data-ds="elan"] .hc-fn{font-size:11px;padding-inline:5px}}
+@media(max-width:359px){html[data-ds="elan"] :is(#vhead,#noteAppHead) .ah-logo{display:none}html[data-ds="elan"] :is(#vhead,#noteAppHead) .ah-claude{padding-inline:10px}.journey-row{padding:10px;gap:8px}.journey-time{width:56px}html[data-ds="elan"] .hc-fns{gap:4px;padding-inline:8px}html[data-ds="elan"] .hc-fn{font-size:11px;padding-inline:5px}}
 @media(prefers-reduced-motion:reduce){:root:root[data-ds="elan"]{--t-fast:1ms;--t-base:1ms;--t-prog:1ms;--ease-prog:linear}html[data-ds="elan"] *,html[data-ds="elan"] *::before,html[data-ds="elan"] *::after{animation-duration:1ms;animation-iteration-count:1;transition-duration:1ms;transition-delay:0ms}}
 html[data-ds="elan"] #v-plan{display:flex;flex-direction:column}
 html[data-ds="elan"] #journeyDay{display:contents}
@@ -1247,7 +1247,7 @@ html[data-ds="elan"] .side-applogo[src="icons/agenda.svg"]{content:url("icons/ag
 html[data-ds="elan"] .side-applogo[src="icons/fit.svg"]{content:url("icons/fit-mini.svg")}
 html[data-ds="elan"] .side-applogo[src="icons/note.svg"]{content:url("icons/note-mini.svg")}
 html[data-ds="elan"] .sp-name{font-family:var(--display)}
-html[data-ds="elan"] #vhead .elan-title{transform-origin:left top}
+html[data-ds="elan"] :is(#vhead,#noteAppHead) .elan-title{transform-origin:left top}
 html[data-ds="elan"] .ah-home svg,html[data-ds="elan"] .side .sp-ic svg{stroke-width:2}
 
 /* Relecture visuelle T13 : états explicites, grille et hiérarchie des actions. */
@@ -1294,3 +1294,579 @@ html[data-ds="elan"] #taskForm .tchips .pill[aria-pressed="true"]{background:var
 :root:root[data-ds="elan"]{--c-cours:#66712E;--c-memoire:#9B427A;--x4:#7C5A45}
 @media(prefers-color-scheme:dark){:root:root[data-ds="elan"]:not([data-theme="light"]){--c-cours:#AAB76D;--c-memoire:#D286B5;--x4:#C49A80}}
 :root:root[data-ds="elan"][data-theme="dark"]{--c-cours:#AAB76D;--c-memoire:#D286B5;--x4:#C49A80}
+/* T16 A — Tâches et Focus ; structure, traitements et clés conservés. */
+html[data-ds="elan"] #v-todo,html[data-ds="elan"] #v-pomo{min-width:0}
+html[data-ds="elan"] #v-todo #hello{display:none}
+html[data-ds="elan"] .lot-a-label{display:block;margin:20px 0 8px}
+html[data-ds="elan"] #v-todo .addbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin:0 0 12px;padding:0;background:none;border:0}
+html[data-ds="elan"] #v-todo .addbar label{grid-column:1/-1}
+html[data-ds="elan"] #v-todo .addbar input{width:100%;min-width:0}
+html[data-ds="elan"] #v-todo .todo-tools{display:flex;justify-content:flex-end;margin:0 0 8px}
+html[data-ds="elan"] #v-todo .todo-sbtn{width:44px;height:44px;border:0;border-radius:10px;background:var(--surface-2);color:var(--ink);display:grid;place-items:center}
+html[data-ds="elan"] #v-todo .todo-sbtn svg{width:24px;height:24px;stroke-width:2}
+html[data-ds="elan"] #v-todo #todoCats{position:static;display:flex;flex-wrap:wrap;overflow:visible;gap:8px;padding:0;margin:0 0 16px}
+html[data-ds="elan"] #v-todo .pill,html[data-ds="elan"] #v-pomo .preset{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:44px;border:0;border-radius:999px;background:var(--surface-2);color:var(--ink);font:600 14px/20px var(--font);padding:8px 12px;white-space:normal}
+html[data-ds="elan"] #v-todo .pill[aria-pressed=true],html[data-ds="elan"] #v-pomo .preset[aria-pressed=true]{background:var(--app);color:var(--on-app)}
+html[data-ds="elan"] #v-todo .pill .cnt{color:inherit;opacity:1}
+html[data-ds="elan"] #v-todo .card{border:0;border-radius:16px;overflow:hidden}
+html[data-ds="elan"] #v-todo .row{display:flex;align-items:center;gap:8px;min-height:56px;padding:8px 12px;border-bottom:1px solid var(--line)}
+html[data-ds="elan"] #v-todo .row:last-child{border-bottom:0}
+html[data-ds="elan"] #v-todo .row .ttl-btn{font:600 16px/22px var(--font);min-width:0;min-height:44px;overflow-wrap:anywhere;white-space:normal}
+html[data-ds="elan"] #v-todo .row.done .ttl-btn{font-weight:500;color:var(--muted)}
+html[data-ds="elan"] #v-todo .check,html[data-ds="elan"] #v-todo .grip,html[data-ds="elan"] #v-todo .pen{width:44px;height:44px;min-width:44px;flex:none;display:grid;place-items:center;padding:10px;box-sizing:border-box;color:var(--muted);box-shadow:none}
+html[data-ds="elan"] #v-todo .check{border:2px solid var(--muted);background:transparent;border-radius:999px}
+html[data-ds="elan"] #v-todo .done .check{background:var(--app);border-color:var(--app);color:var(--on-app)}
+html[data-ds="elan"] #v-todo .grip,html[data-ds="elan"] #v-todo .pen{border:0;background:none;border-radius:10px}
+html[data-ds="elan"] #v-todo .grip svg,html[data-ds="elan"] #v-todo .pen svg{width:24px;height:24px}
+html[data-ds="elan"] #v-todo .resume{min-height:44px;padding:8px 12px;background:var(--surface-2);color:var(--ink);border:0;border-radius:10px;font:600 14px/20px var(--font)}
+html[data-ds="elan"] #v-todo .donetime{flex:none;width:44px;white-space:nowrap;font:600 18px/22px var(--digits);color:var(--muted)}
+html[data-ds="elan"] #v-todo .tchip{display:inline-flex;align-items:center;gap:4px;max-width:100%;border:0;background:var(--surface-2);color:var(--ink);font:500 13px/18px var(--font);text-transform:none;letter-spacing:0;white-space:normal}
+html[data-ds="elan"] #v-todo .tchip.late{color:var(--warn)}
+html[data-ds="elan"] #v-todo .tchip svg{width:16px;height:16px}
+html[data-ds="elan"] #v-todo .cat-h{gap:8px;margin:20px 0 8px;flex-wrap:wrap;min-width:0}
+html[data-ds="elan"] #v-todo .cat-h h2{margin:0;min-width:0;flex:1;font:700 22px/26px var(--display)}
+html[data-ds="elan"] #v-todo .cat-h h2 .back{display:flex;align-items:center;gap:4px;white-space:normal;overflow-wrap:anywhere;min-height:44px;text-align:left;width:100%;border:0;background:none}
+html[data-ds="elan"] #v-todo .foldc{height:44px;width:44px;min-width:44px;display:grid;place-items:center;border:0;background:var(--surface-2);color:var(--ink);border-radius:10px}
+html[data-ds="elan"] #v-todo .cat-prog{height:6px;background:var(--surface-2);border-radius:999px;overflow:hidden}
+html[data-ds="elan"] #v-todo .cat-prog i{background:var(--app)}
+html[data-ds="elan"] #v-todo .catbar{background:var(--surface);border:0;border-radius:16px;padding:12px;flex-wrap:wrap;gap:8px}
+html[data-ds="elan"] #v-todo .catbar .grow{min-width:120px;overflow-wrap:anywhere}
+html[data-ds="elan"] #v-todo .mini,html[data-ds="elan"] #v-todo .x{min-height:44px;min-width:44px;background:var(--surface-2);color:var(--ink);border:0;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;white-space:normal}
+html[data-ds="elan"] #v-todo .foldbtn{font:700 22px/26px var(--display);letter-spacing:0;text-transform:none;color:var(--ink);min-height:48px;align-items:center;padding:8px 0;margin:24px 0 8px}
+html[data-ds="elan"] #v-todo .foldbtn>span:last-child{font:600 14px/20px var(--font);color:var(--app-ink)}
+html[data-ds="elan"] #v-todo #doneView{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+html[data-ds="elan"] #v-todo .dc-top .mini:first-child svg{transform:rotate(180deg)}
+html[data-ds="elan"] #v-todo .dc-d{font:500 14px/20px var(--font);min-height:44px;aspect-ratio:auto;border-radius:10px}
+html[data-ds="elan"] #v-todo .dc-d.lv1,html[data-ds="elan"] #v-todo .dc-d.lv2,html[data-ds="elan"] #v-todo .dc-d.lv3{background:var(--app-soft);color:var(--ink)}
+html[data-ds="elan"] #v-todo .dc-d.lv4{background:var(--app);color:var(--on-app)}
+html[data-ds="elan"] #v-todo .dc-d[aria-pressed=true]{outline:2px solid var(--ink);outline-offset:-2px;box-shadow:none}
+html[data-ds="elan"] #v-todo .grp-y,html[data-ds="elan"] #v-todo .grp-m,html[data-ds="elan"] #v-todo .grp-w,html[data-ds="elan"] #v-todo .grp-d{letter-spacing:0;text-transform:none;color:var(--muted);font:500 14px/20px var(--font)}
+html[data-ds="elan"] #v-todo .grp-y{font:700 22px/26px var(--display);color:var(--ink)}
+html[data-ds="elan"] #v-todo .dragging{background:var(--app-soft);outline:2px solid var(--app);box-shadow:none}
+html[data-ds="elan"] #v-todo .drop-anim{transition:transform var(--t-base) var(--ease)}
+html[data-ds="elan"] #v-todo .pill.drop{outline:2px solid var(--ink);outline-offset:2px}
+html[data-ds="elan"] #vhead[data-progress-change="adjust"] .elan-progress-track i{transition-timing-function:ease-out}
+html[data-ds="elan"] #v-pomo h2{margin:24px 0 12px;font:700 22px/26px var(--display);color:var(--ink)}
+html[data-ds="elan"] #v-pomo .card{border:0;box-shadow:none;overflow:hidden}
+html[data-ds="elan"] #v-pomo .presets{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+html[data-ds="elan"] #v-pomo .preset{padding-inline:4px}
+html[data-ds="elan"] #v-pomo .row{min-height:56px;padding:8px 12px;gap:8px;border-bottom:1px solid var(--line);min-width:0}
+html[data-ds="elan"] #v-pomo .row:last-child{border-bottom:0}
+html[data-ds="elan"] #v-pomo .stepper{gap:4px;flex:none}
+html[data-ds="elan"] #v-pomo .stepper button{width:44px;height:44px;min-width:44px;display:grid;place-items:center;background:var(--surface-2);color:var(--ink);border:0;border-radius:10px;padding:10px}
+html[data-ds="elan"] #v-pomo .stepper output{font:600 20px/24px var(--digits);min-width:54px}
+html[data-ds="elan"] #v-pomo .plan{height:8px;gap:2px;border-radius:999px}
+html[data-ds="elan"] #v-pomo .plan i.w{background:var(--app)}
+html[data-ds="elan"] #v-pomo .plan i.b{background:var(--muted)}
+html[data-ds="elan"] #v-pomo .plan i.past{opacity:.4}
+html[data-ds="elan"] #v-pomo .pomo-stage{background:var(--surface);border:0;border-radius:16px;padding:20px;gap:16px;box-shadow:none}
+html[data-ds="elan"] #v-pomo .phase{font:600 16px/24px var(--font);text-transform:none;letter-spacing:0;color:var(--ink)}
+html[data-ds="elan"] #v-pomo .ringwrap{width:min(100%,240px)}
+html[data-ds="elan"] #v-pomo .ringwrap .fgc{stroke:var(--app);transition:stroke-dashoffset 500ms linear}
+html[data-ds="elan"] #v-pomo .ringwrap .bgc{stroke:var(--surface-2)}
+html[data-ds="elan"] #v-pomo .ringtxt .big{font:800 48px/48px var(--digits);font-variant-numeric:tabular-nums;color:var(--ink)}
+html[data-ds="elan"] #v-pomo .pomo-meta{background:none;gap:8px}
+html[data-ds="elan"] #v-pomo .pomo-meta div{background:none;border-radius:0;padding:0;min-width:0}
+html[data-ds="elan"] #v-pomo .pomo-meta b{font:700 22px/26px var(--digits);white-space:nowrap}
+html[data-ds="elan"] #v-pomo .pomo-meta span{font:500 13px/18px var(--font)}
+html[data-ds="elan"] #v-pomo .ctrls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+html[data-ds="elan"] #v-pomo .ctrls .btn{min-width:0;font-size:14px;padding:8px 4px}
+html[data-ds="elan"] #v-pomo #pomoStart{font:600 16px/20px var(--font);height:48px;padding:12px}
+html[data-ds="elan"] #v-pomo #spotForm{display:grid;grid-template-columns:minmax(0,1fr) auto}
+html[data-ds="elan"] #v-pomo #spotForm input{width:100%;min-width:0}
+html[data-ds="elan"] #v-pomo #pomoStats b{font:700 22px/26px var(--digits);white-space:nowrap}
+@media(max-width:359px){html[data-ds="elan"] #v-pomo .row{flex-wrap:wrap}html[data-ds="elan"] #v-pomo .stepper{margin-left:auto}html[data-ds="elan"] #v-todo .row{padding-inline:8px;gap:4px}}
+@media(prefers-reduced-motion:reduce){html[data-ds="elan"] #v-pomo .ringwrap .fgc{transition-duration:1ms}}
+/* Exceptions/clarifications validées dans la charte pour le lot A. */
+html[data-ds="elan"] #v-todo .dc{padding:12px 0}
+html[data-ds="elan"] #v-todo .dc-g{gap:0}
+html[data-ds="elan"] #v-todo .dc-d{border-radius:0}
+html[data-ds="elan"] #v-todo .dc-d[aria-pressed=true]{font-weight:700;background:var(--app);color:var(--on-app)}
+html[data-ds="elan"] #vhead[data-progress-change="position"] .elan-progress-track i{transition:width 500ms linear}
+html[data-ds="elan"] #vhead[data-progress-change="skip"] .elan-progress-track i{transition:width var(--t-prog) ease-out}
+html[data-ds="elan"] #vhead[data-progress-change="cycle"] .elan-progress-track i{transition:width var(--t-prog) var(--ease-prog)}
+html[data-ds="elan"] #v-pomo .spot-gate .btn{background:var(--surface-2);color:var(--ink)}
+@media(prefers-reduced-motion:reduce){html[data-ds="elan"] #vhead[data-progress-change] .elan-progress-track i{transition-duration:1ms;transition-timing-function:linear}}
+html[data-ds="elan"] #v-todo #todoForm,html[data-ds="elan"] #v-todo #catForm{grid-template-columns:minmax(0,1fr) 44px auto}
+html[data-ds="elan"] #v-pomo #spotForm label{grid-column:1/-1}
+html[data-ds="elan"] body.todo-dragging #v-todo #todoCats{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--bg);padding-block:8px;box-shadow:none}
+/* Le bandeau suit la zone réellement visible après un défilement mobile/clavier. */
+html[data-ds="elan"] #vhead:not([hidden]){top:calc(env(safe-area-inset-top,0px) + var(--vvt,0px))}
+html[data-ds="elan"] #v-pomo .spot-gate{border:0;border-radius:0;background:none;box-shadow:none;padding:12px}
+html[data-ds="elan"] #v-pomo .linkbtn{color:var(--app-ink)}
+html[data-ds="elan"] #navIn .sbadge{background:var(--surface-2);color:var(--ink)}
+html[data-ds="elan"] #navIn .sbadge.dot{background:var(--ink)}
+html[data-ds="elan"] #v-todo .addbar{position:relative}
+html[data-ds="elan"] #v-todo #planPick{position:absolute;left:0;top:0;width:1px;max-width:1px;height:1px;min-height:0;padding:0;border:0;opacity:0;pointer-events:none}
+html[data-ds="elan"] #v-todo .todo-new input:not(.vh-input){font-size:16px;min-height:48px;border-color:var(--field-line);border-radius:var(--r-ctl)}
+html[data-ds="elan"] #v-todo .todo-new .btn{min-height:48px;font:600 16px/20px var(--font);padding-inline:16px}
+/* T16 A — corrections de la revue A1–A12. */
+html[data-ds="elan"] #v-todo .todo-filter-row{display:flex;align-items:center;gap:8px;min-width:0;margin-bottom:16px}
+html[data-ds="elan"] #v-todo #todoCats{flex:1;min-width:0;display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-inline:contain;margin:0;padding:0;scrollbar-width:none}
+html[data-ds="elan"] #v-todo #todoCats .pill{flex:none;max-width:200px;white-space:nowrap}
+html[data-ds="elan"] #v-todo #todoCats .cat-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+html[data-ds="elan"] #v-todo .todo-filter-row>.todo-sbtn{flex:none}
+html[data-ds="elan"] body.todo-dragging #v-todo .todo-filter-row{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--vvt,0px));z-index:30;background:var(--bg)}
+html[data-ds="elan"] body.todo-dragging #v-todo #todoCats{position:static;padding:0}
+html[data-ds="elan"] #v-todo .cat-h h2{font:700 20px/24px var(--display);color:var(--ink)}
+html[data-ds="elan"] #v-todo .cat-title{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;text-overflow:ellipsis;min-width:0}
+html[data-ds="elan"] #v-todo .cat-h .back svg{flex:none}
+html[data-ds="elan"] #v-todo .check{position:relative;border:0;background:none;padding:8px}
+html[data-ds="elan"] #v-todo .check::before{content:"";position:absolute;width:28px;height:28px;box-sizing:border-box;left:8px;top:8px;border:2px solid var(--muted);border-radius:999px}
+html[data-ds="elan"] #v-todo .done .check{background:none;color:var(--on-app)}
+html[data-ds="elan"] #v-todo .done .check::before{background:var(--app);border-color:var(--app)}
+html[data-ds="elan"] #v-todo .check svg{position:relative;z-index:1;width:20px;height:20px}
+html[data-ds="elan"] #v-todo .grip{width:16px;min-width:16px;padding:0}
+html[data-ds="elan"] #v-todo .grip svg{width:16px}
+html[data-ds="elan"] #v-todo .pen{margin:0}
+html[data-ds="elan"] #navIn .tab{display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
+html[data-ds="elan"] #navIn .tabicon{position:relative;height:24px;flex:none}
+html[data-ds="elan"] #navIn .sbadge{position:absolute;left:calc(50% + 4px);top:2px;min-width:16px;height:16px;line-height:16px;font:600 11px/16px var(--font);padding:0 4px;background:var(--app);color:var(--on-app);margin:0;box-sizing:border-box}
+html[data-ds="elan"] #navIn .sbadge.dot{width:8px;height:8px;min-width:8px;padding:0;top:4px;left:calc(50% + 8px);background:var(--app);outline:2px solid var(--bar)}
+html[data-ds="elan"] #v-pomo .duration-total{justify-content:center}
+html[data-ds="elan"] #v-pomo .duration-card .presets{padding:12px;box-sizing:border-box}
+html[data-ds="elan"] #v-pomo .pomo-start-bar{padding:16px 0;background:var(--bg)}
+html[data-ds="elan"] #v-pomo #pomoStart{width:100%;margin:0}
+html[data-ds="elan"] #v-pomo .plan{gap:0;background:none;overflow:hidden}
+html[data-ds="elan"] #v-pomo .plan i.w{background:var(--surface-2);border-radius:999px;overflow:hidden}
+html[data-ds="elan"] #v-pomo .plan i.b{background:transparent}
+html[data-ds="elan"] #v-pomo .plan i.past{opacity:1}
+html[data-ds="elan"] #v-pomo .plan i>b{display:block;height:100%;background:var(--app);border-radius:999px}
+html[data-ds="elan"] #v-pomo .is-paused .ringwrap .fgc,html[data-ds="elan"] #v-pomo .is-paused .ringwrap .bgc{stroke:var(--muted)}
+html[data-ds="elan"] #v-pomo .is-paused .phase{visibility:hidden}
+html[data-ds="elan"] #v-pomo .is-paused #segInfo{font-weight:700;color:var(--ink)}
+@media(max-width:1023px){html[data-ds="elan"] #v-pomo .pomo-start-bar{position:fixed;bottom:var(--navh,80px);left:20px;right:20px;z-index:14;padding:16px 0}html[data-ds="elan"] #pomoSetup{padding-bottom:96px}}
+html[data-ds="elan"] #navIn .tab{border-top:3px solid transparent}
+html[data-ds="elan"] #navIn .tab[aria-current=page]{border-top-color:var(--app)}
+/* T16 B — Forme ; mêmes traitements, une entrée de repas. */
+html[data-ds="elan"] #v-todo .todo-filter-row{position:relative}
+html[data-ds="elan"] #v-todo #todoCats{mask-image:linear-gradient(to right,#000 calc(100% - 24px),transparent);-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 24px),transparent);padding-right:24px}
+html[data-ds="elan"] #v-pomo .stepper output{white-space:pre}
+@media(max-width:1023px){html[data-ds="elan"] #pomoSetup{padding-bottom:calc(48px + 16px + 32px)}}
+html[data-ds="elan"]{--m-p:#0F7779;--m-c:#956016;--m-f:#9B427A;--st-good:var(--ok);--st-warn:var(--warn);--st-bad:var(--err)}
+@media(prefers-color-scheme:dark){html[data-ds="elan"]:not([data-theme="light"]){--m-p:#62C8CB;--m-c:#DFB36A;--m-f:#D286B5}}
+html[data-ds="elan"][data-theme="dark"]{--m-p:#62C8CB;--m-c:#DFB36A;--m-f:#D286B5}
+html[data-ds="elan"] :is(#v-muscu,#v-nutri,#v-graph,#nuMealSheet){font-family:var(--font);min-width:0}
+html[data-ds="elan"] :is(#v-muscu,#v-nutri,#v-graph,#nuMealSheet) :is(input,textarea,select){font:400 16px/24px var(--font);min-height:48px;border:1.5px solid var(--field-line);border-radius:10px;background:var(--surface);color:var(--ink);min-width:0;max-width:100%}
+html[data-ds="elan"] :is(#v-muscu,#v-nutri,#v-graph) :is(.card,.ms,.dish){border:0;box-shadow:none;border-radius:16px;background:var(--surface);min-width:0}
+html[data-ds="elan"] :is(#v-muscu,#v-nutri,#v-graph,#nuMealSheet) :is(.mini,.x,.pen,.cal-nav,.nu-for-nav,.qty-ed,.set-add,.set-del,.linkbtn){min-height:44px;min-width:44px;border:0;border-radius:10px;background:var(--surface-2);color:var(--ink);font:600 14px/20px var(--font);display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:8px}
+html[data-ds="elan"] :is(#v-muscu,#v-nutri,#v-graph,#nuMealSheet) svg.i{width:24px;height:24px;stroke-width:2}
+html[data-ds="elan"] :is(#v-muscu,#v-nutri,#v-graph) :is(.eyebrow,.nu-blk-h,.gr-h b){font:700 22px/26px var(--digits);text-transform:none;letter-spacing:0;color:var(--ink)}
+html[data-ds="elan"] #v-muscu .mu-goal{padding:16px;background:var(--surface);border:0;border-radius:16px}
+html[data-ds="elan"] #v-muscu .mu-goal-seg{display:flex;flex-wrap:wrap;gap:8px;background:none;margin:12px 0}
+html[data-ds="elan"] #v-muscu .mu-goal-seg button{flex:1;min-width:90px;min-height:44px;border:0;background:var(--surface-2);color:var(--ink);border-radius:999px;font:600 14px/20px var(--font)}
+html[data-ds="elan"] #v-muscu .mu-goal-seg button[aria-pressed=true]{background:var(--app);color:var(--on-app)}
+html[data-ds="elan"] #v-muscu .ms-grp-h{margin:24px 0 8px}
+html[data-ds="elan"] #v-muscu .ms{overflow:hidden;margin:12px 0}
+html[data-ds="elan"] #v-muscu .ms>summary{min-height:56px;gap:8px;padding:12px 16px}
+html[data-ds="elan"] #v-muscu .ms-name{font:600 18px/24px var(--font);overflow-wrap:anywhere;color:var(--ink)}
+html[data-ds="elan"] #v-muscu .se-tag{background:var(--surface-2);color:var(--ink);border:0}
+html[data-ds="elan"] #v-muscu .ms-body{padding:16px;display:grid;gap:16px}
+html[data-ds="elan"] #v-muscu .ex{padding:16px 0;margin:0;border:0;border-top:1px solid var(--line);background:none;border-radius:0;box-shadow:none}
+html[data-ds="elan"] #v-muscu .ex-head{gap:8px;min-width:0}
+html[data-ds="elan"] #v-muscu .ex-nm{min-width:0;flex:1}
+html[data-ds="elan"] #v-muscu .ex-n{font:600 16px/24px var(--font);overflow-wrap:anywhere}
+html[data-ds="elan"] #v-muscu .num{background:var(--surface-2);color:var(--ink);font:700 20px/24px var(--digits)}
+html[data-ds="elan"] #v-muscu .ex-adv{background:none;padding:12px 0;font:500 14px/20px var(--font);color:var(--muted)}
+html[data-ds="elan"] #v-muscu .ex-prm summary{min-height:44px;display:flex;align-items:center;white-space:normal;font:500 14px/20px var(--font)}
+html[data-ds="elan"] #v-muscu .ex-prm-g{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+html[data-ds="elan"] #v-muscu .set-row{display:grid;grid-template-columns:48px minmax(0,1fr) 12px minmax(0,1fr) 44px;gap:4px;min-height:56px;align-items:center;padding:4px 0;background:none;border-bottom:1px solid var(--line)}
+html[data-ds="elan"] #v-muscu .set-l{font:600 16px/20px var(--digits);color:var(--ink)}
+html[data-ds="elan"] #v-muscu .set-in{width:100%;text-align:center;padding:8px 4px;font-variant-numeric:tabular-nums}
+html[data-ds="elan"] #v-muscu .set-acts{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+html[data-ds="elan"] #v-muscu .ms-actions{display:flex;gap:8px;flex-wrap:wrap}
+html[data-ds="elan"] #v-muscu .ms-actions button{flex:1}
+html[data-ds="elan"] #v-muscu #msForm{margin-top:24px}
+html[data-ds="elan"] #v-nutri .nu-tabs{display:flex;gap:8px;background:none;overflow:auto;margin:20px 0}
+html[data-ds="elan"] #v-nutri .nu-tabs button{flex:1;min-height:44px;background:var(--surface-2);color:var(--ink);border:0;border-radius:999px;font:600 14px/20px var(--font);padding:8px}
+html[data-ds="elan"] #v-nutri .nu-tabs button[aria-pressed=true]{background:var(--app);color:var(--on-app)}
+html[data-ds="elan"] #v-nutri .nu-tabs svg{display:none}
+html[data-ds="elan"] #v-nutri .nu-sum{display:grid;grid-template-columns:1fr;gap:24px;padding:20px}
+html[data-ds="elan"] #v-nutri .nu-ring{width:160px;height:160px;margin:auto;--pc:var(--app)}
+html[data-ds="elan"] #v-nutri .nu-big{font:800 48px/48px var(--digits);font-style:normal}
+html[data-ds="elan"] #v-nutri .nu-ring .small{font:500 14px/20px var(--font)}
+html[data-ds="elan"] #v-nutri .nu-macros{width:100%;display:grid;gap:16px}
+html[data-ds="elan"] #v-nutri .nu-m .top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 8px;font:500 14px/20px var(--font)}
+html[data-ds="elan"] #v-nutri .nu-m .top>span{white-space:nowrap;font-variant-numeric:tabular-nums}
+html[data-ds="elan"] #v-nutri .nu-m .bar{height:6px;background:var(--surface-2);border-radius:999px;margin-top:8px}
+html[data-ds="elan"] #nuMealAdd{width:100%;margin:16px 0}
+html[data-ds="elan"] #v-nutri .dish{overflow:hidden;margin:12px 0}
+html[data-ds="elan"] #v-nutri .dish-h{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:16px}
+html[data-ds="elan"] #v-nutri .dish-t{min-width:0;flex:1 1 100px}
+html[data-ds="elan"] #v-nutri .dish-t b{overflow-wrap:anywhere;font:600 16px/24px var(--font)}
+html[data-ds="elan"] #v-nutri .dish-kcal{font:700 24px/26px var(--digits);color:var(--ink)}
+html[data-ds="elan"] #v-nutri .mchips{padding:12px 16px;gap:8px}
+html[data-ds="elan"] #v-nutri .mchip b{font:700 20px/24px var(--digits)}
+html[data-ds="elan"] #v-nutri .mchip>span{font:500 12px/18px var(--font)}
+html[data-ds="elan"] #v-nutri .dish-it{flex-wrap:wrap;gap:8px;min-height:56px}
+html[data-ds="elan"] #v-nutri .nu-blk{padding:16px}
+html[data-ds="elan"] #v-nutri .nu-blk :is(.nu-sex,.nu-goals,.nu-tgt){gap:8px}
+html[data-ds="elan"] #v-nutri :is(.nu-sex button,.nu-goals button,.nu-pace button,.nu-mtype button){min-height:48px;background:var(--surface-2);color:var(--ink);border:2px solid transparent;border-radius:10px}
+html[data-ds="elan"] #v-nutri :is(.nu-sex button,.nu-goals button,.nu-pace button,.nu-mtype button)[aria-pressed=true]{border-color:var(--ink);background:var(--app-soft);color:var(--ink)}
+html[data-ds="elan"] #v-nutri .nu-cal :is(.dc-d,.cal-nav){min-height:44px}
+html[data-ds="elan"] #v-nutri .nu-cal .dc-d.sel{background:var(--app);color:var(--on-app);font-weight:700}
+html[data-ds="elan"] #v-graph .gr-card{padding:16px;margin:16px 0}
+html[data-ds="elan"] #v-graph .gr-h{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline;margin-bottom:16px}
+html[data-ds="elan"] #v-graph .gr-wform{gap:8px;margin:8px 0 16px}
+html[data-ds="elan"] #v-graph .gr-legend{display:flex;flex-wrap:wrap;gap:12px;font:500 14px/20px var(--font)}
+html[data-ds="elan"] #v-graph .gr-tip{font:500 14px/20px var(--font);background:var(--ink);color:var(--bg);border:0;box-shadow:none}
+html[data-ds="elan"] #v-graph .gr-rev .btn{background:var(--surface-2);color:var(--ink)}
+html[data-ds="elan"] #nuMealSheet{--app:#F25C19;--on-app:#121212;--app-ink:#B8420C;--app-soft:#FFECE2}
+html[data-ds="elan"] #nuMealSheet .nu-meal-sheet{max-height:calc(var(--vvh,100dvh) - 24px);overflow:auto;padding:20px;border-radius:22px 22px 0 0;background:var(--surface);color:var(--ink)}
+html[data-ds="elan"] #nuMealSheet .sheet-head{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+html[data-ds="elan"] #nuMealSheet h2{flex:1;margin:0}
+html[data-ds="elan"] #nuMealSheet #nuAskForm{border:0;background:none;padding:0;display:grid;gap:12px;box-shadow:none}
+html[data-ds="elan"] #nuMealSheet .nu-ask-row{display:flex;flex-wrap:wrap;gap:8px}
+html[data-ds="elan"] #nuMealSheet #nuAskBtn{flex-basis:100%;position:sticky;bottom:0;min-height:48px;background:var(--app);color:var(--on-app)}
+html[data-ds="elan"] #nuMealSheet #nuResult .dish{background:none;border:0;box-shadow:none}
+html[data-ds="elan"] #nuMealSheet .nu-for{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+html[data-ds="elan"] #nuMealSheet .nu-for-day{flex:1;min-width:100px}
+@media(min-width:600px){html[data-ds="elan"] #v-nutri .nu-sum{grid-template-columns:160px minmax(0,1fr)}}
+@media(max-width:359px){html[data-ds="elan"] #v-muscu .ms-body{padding:12px}html[data-ds="elan"] #v-nutri .nu-cal .dc-days{gap:0}html[data-ds="elan"] #v-nutri .nu-cal{margin-inline:-8px}}
+html[data-ds="elan"] #v-nutri .nu-sum{grid-template-columns:104px minmax(0,1fr);gap:16px;padding:16px}
+html[data-ds="elan"] #v-nutri .nu-ring{width:104px;height:104px}
+html[data-ds="elan"] #v-nutri .nu-big{font:800 36px/36px var(--digits)}
+html[data-ds="elan"] #v-nutri .nu-ring .small{font:500 12px/16px var(--font)}
+html[data-ds="elan"] #v-nutri .nu-macros{gap:12px}
+html[data-ds="elan"] #v-nutri .nu-m .top{font-family:var(--font);font-size:14px}
+html[data-ds="elan"] #v-nutri .nu-m .top>span{font-family:var(--digits);font-size:18px;font-weight:600}
+html[data-ds="elan"] #v-nutri .nu-daylbl{color:var(--ink)}
+html[data-ds="elan"] #v-muscu .se-tag{font:600 13px/20px var(--font);text-transform:none;letter-spacing:0}
+html[data-ds="elan"] #v-muscu .ex-adv b{font-family:var(--digits)}
+html[data-ds="elan"] #v-muscu .ms>summary .chev svg{width:20px;height:20px;stroke-width:2}
+html[data-ds="elan"] #v-muscu .ms[open]>summary .chev{transform:rotate(90deg)}
+@media(max-width:359px){html[data-ds="elan"] #v-nutri .nu-sum{grid-template-columns:88px minmax(0,1fr);padding:12px;gap:12px}html[data-ds="elan"] #v-nutri .nu-ring{width:88px;height:88px}}
+html[data-ds="elan"] #v-graph .gr-plot .ax{font:500 14px var(--font)}
+html[data-ds="elan"] #v-graph .gr-plot .lbl{font:600 14px var(--font)}
+html[data-ds="elan"] #v-nutri .dish-t b{white-space:normal;overflow:visible;text-overflow:clip}
+html[data-ds="elan"] #v-nutri #nuLogH{color:var(--ink);font:700 22px/26px var(--digits)}
+html[data-ds="elan"] #v-nutri .nu-energy{display:grid;align-content:center;gap:8px;min-width:0}
+html[data-ds="elan"] #v-nutri #nuKcalOf{font:500 14px/20px var(--font);text-align:center;overflow-wrap:normal}
+html[data-ds="elan"] #nuCal .nu-mgrid{grid-template-columns:repeat(7,minmax(0,1fr));gap:0}
+html[data-ds="elan"] #nuCal .day{min-width:0;min-height:44px;height:44px;aspect-ratio:auto;padding:4px;border-radius:10px;font:500 14px/20px var(--font)}
+html[data-ds="elan"] #nuCal .day.sel{background:var(--app);color:var(--on-app);font-weight:700;border:0}
+html[data-ds="elan"] #nuCal .nwk-row{min-height:56px}
+@media(max-width:359px){html[data-ds="elan"] #nuCal{margin-inline:-12px;padding:8px 4px}html[data-ds="elan"] #nuCal .nu-mgrid,html[data-ds="elan"] #nuCal .cal-dow{gap:0}}
+/* Séries : saisie conservée, état calculé depuis kg/répétitions. */
+html[data-ds="elan"] #v-muscu .set-row{padding:8px;border:2px solid transparent;border-radius:10px;margin:8px 0;background:var(--surface-2)}
+html[data-ds="elan"] #v-muscu .set-row[data-set-state="next"]{border-color:var(--app-ink);background:var(--surface)}
+html[data-ds="elan"] #v-muscu .set-row[data-set-state="done"]{background:var(--app);color:var(--on-app)}
+html[data-ds="elan"] #v-muscu .set-row[data-set-state="done"] :is(.set-l,.set-sep,.set-del){color:var(--on-app);opacity:1}
+html[data-ds="elan"] #v-muscu .set-row[data-set-state="done"] .set-in{background:var(--app);color:var(--on-app);border-color:var(--on-app)}
+html[data-ds="elan"] #v-muscu .set-row[data-set-state="done"] .set-del{background:none}
+html[data-ds="elan"] #v-muscu .set-mark svg{width:16px;height:16px;display:block}
+html[data-ds="elan"] #v-muscu .set-row[data-set-state="done"] :focus-visible{outline-color:var(--on-app)}
+@media(max-width:359px){html[data-ds="elan"] #v-muscu .set-row{padding:4px;grid-template-columns:40px minmax(0,1fr) 8px minmax(0,1fr) 44px;gap:2px}}
+html[data-ds="elan"] #nuCal .day{width:100%}
+/* « sel » sert aussi aux menus déroulants historiques : ne pas limiter un jour choisi à 55 %. */
+html[data-ds="elan"] #nuCal .day{max-width:none;appearance:none}
+html[data-ds="elan"] #nuCal .day.sel .num{background:none;color:inherit;font-weight:700}
+html[data-ds="elan"] #v-muscu .set-l{white-space:normal;overflow-wrap:normal}
+/* T16 B — contre-revue B1–B16. */
+html[data-ds="elan"] :is(#v-muscu,#v-nutri,#v-graph,#nuMealSheet) :is(h2,h3,.sheet-head b){color:var(--ink)}
+html[data-ds="elan"] #v-muscu .mu-goal-seg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+html[data-ds="elan"] #v-muscu .mu-goal-seg button{min-width:0;white-space:normal;overflow:visible;text-overflow:clip;padding:12px 8px}
+html[data-ds="elan"] #v-muscu .ms>summary{display:grid;grid-template-columns:24px minmax(0,1fr) 44px;align-items:start;gap:8px}
+html[data-ds="elan"] #v-muscu .ms>summary .chev{align-self:start;margin-top:10px}
+html[data-ds="elan"] #v-muscu .ms>summary .ms-del{align-self:start;margin:0}
+html[data-ds="elan"] #v-muscu .ms-name{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;text-overflow:ellipsis}
+html[data-ds="elan"] #v-muscu .ms-meta{display:flex;flex-wrap:wrap;gap:4px 8px;margin-top:8px;color:var(--muted)}
+html[data-ds="elan"] #v-muscu .se-tag{margin:0;background:none;color:var(--muted);padding:0}
+html[data-ds="elan"] #v-muscu .set-row{grid-template-columns:64px minmax(72px,1fr) minmax(72px,1fr) 44px;gap:8px;padding:8px}
+html[data-ds="elan"] #v-muscu .set-l{min-width:64px;display:flex;gap:4px;align-items:center;font-size:16px;white-space:nowrap}
+html[data-ds="elan"] #v-muscu .set-mark{flex:none;width:16px;height:16px}
+html[data-ds="elan"] #v-muscu .set-mark svg{width:16px;height:16px}
+html[data-ds="elan"] #v-muscu .set-field{display:flex;align-items:center;gap:4px;min-width:72px;min-height:48px;padding:4px 6px;border:1.5px solid var(--field-line);border-radius:10px;background:var(--surface);color:var(--ink)}
+html[data-ds="elan"] #v-muscu .set-field .set-in,html[data-ds="elan"] #v-muscu .set-row[data-set-state="done"] .set-in{flex:1;min-width:0;width:0;min-height:44px;height:44px;padding:0;border:0;border-radius:0;background:none;color:var(--ink);font:600 20px/24px var(--digits)}
+html[data-ds="elan"] #v-muscu .set-unit{flex:none;font:500 14px/20px var(--font);color:var(--muted)}
+html[data-ds="elan"] #v-muscu .set-row[data-set-state="done"] .set-field{background:var(--surface);color:var(--ink);border-color:var(--field-line)}
+html[data-ds="elan"] #v-muscu .set-row[data-set-state="done"] .set-in:focus-visible{outline-color:var(--ink)}
+html[data-ds="elan"] :is(#v-muscu,#v-nutri) .qbtn{background:var(--surface-2);border:0;border-radius:10px;min-height:48px;color:var(--ink);display:flex;align-items:center;justify-content:center;gap:8px}
+html[data-ds="elan"] #nuLog .dish-h{display:grid;grid-template-columns:minmax(0,1fr) 44px 44px 44px;gap:8px;align-items:center}
+html[data-ds="elan"] #nuLog .dish-clock{grid-column:1/4;grid-row:1;font:600 18px/24px var(--digits);color:var(--muted)}
+html[data-ds="elan"] #nuLog .dish-ic:not(:has(img)){display:none}
+html[data-ds="elan"] #nuLog .dish-ic:has(img){grid-column:4;grid-row:1;width:44px;height:44px}
+html[data-ds="elan"] #nuLog .dish-t{grid-row:2;grid-column:1/-1;min-width:0}
+html[data-ds="elan"] #nuLog .dish-t b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;text-overflow:ellipsis;white-space:normal}
+html[data-ds="elan"] #nuLog .dish-kcal{grid-row:3;grid-column:1;display:flex;align-items:baseline;gap:4px;white-space:nowrap}
+html[data-ds="elan"] #nuLog .dish-kcal small{font:500 14px/20px var(--font)}
+html[data-ds="elan"] #nuLog [data-nucopy]{grid-row:3;grid-column:2}
+html[data-ds="elan"] #nuLog .dish-h>[data-nuedit]{grid-row:3;grid-column:3}
+html[data-ds="elan"] #nuLog [data-nudelg]{grid-row:3;grid-column:4}
+html[data-ds="elan"] :is(#v-nutri,#v-graph) .seg{background:var(--surface-2);border-radius:10px;padding:4px;gap:4px}
+html[data-ds="elan"] :is(#v-nutri,#v-graph) .seg button{min-height:44px;background:none;border:0;border-radius:10px;color:var(--ink);box-shadow:none}
+html[data-ds="elan"] #v-nutri :is(.seg button,.nu-mtype button,.nu-sex button,.nu-goals button,.nu-pace button,.meal-tg)[aria-pressed="true"],html[data-ds="elan"] #v-graph .seg button[aria-pressed="true"]{background:var(--app);color:var(--on-app);border-color:transparent;box-shadow:none}
+html[data-ds="elan"] #v-nutri [aria-pressed="true"] :is(svg.i,.small,.muted){color:var(--on-app);opacity:1}
+html[data-ds="elan"] #nuCal .cal-nav[data-nurn="-1"] svg{transform:rotate(180deg)}
+html[data-ds="elan"] #nuCal .cal-nav{width:44px;height:44px}
+html[data-ds="elan"] #v-nutri .stepper button{display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:10px;background:var(--surface-2);color:var(--ink);padding:10px}
+html[data-ds="elan"] #v-nutri .stepper button svg{width:24px;height:24px}
+html[data-ds="elan"] #v-nutri .nu-sport{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 44px;gap:12px;align-items:start;padding:12px}
+html[data-ds="elan"] #v-nutri .nu-sport>.nu-name{grid-column:1/3}
+html[data-ds="elan"] #v-nutri .nu-sport>.x{grid-column:3;grid-row:1;width:44px;height:44px}
+html[data-ds="elan"] #v-nutri .nu-sport>.nu-f{grid-row:2}
+html[data-ds="elan"] #v-nutri .nu-sport>.nu-f>span:first-child{min-height:40px;font:500 14px/20px var(--font)}
+html[data-ds="elan"] #v-nutri .nu-sport>.nu-f:last-child{grid-column:2/4}
+html[data-ds="elan"] #v-nutri .tg-box{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border:1px solid currentColor;border-radius:4px}
+html[data-ds="elan"] #v-nutri .tg-box svg{width:16px;height:16px}
+html[data-ds="elan"] #v-pomo .plan i.w{background:var(--field-line)}
+@media(max-width:1023px){html[data-ds="elan"] #pomoSetup{padding-bottom:0}html[data-ds="elan"] #v-pomo{padding-bottom:96px}}
+@media(max-width:359px){html[data-ds="elan"] #v-muscu .set-row{grid-template-columns:64px minmax(72px,1fr) minmax(72px,1fr);grid-template-rows:auto auto;gap:8px;padding:8px 4px}html[data-ds="elan"] #v-muscu .set-l{grid-column:1;grid-row:1}html[data-ds="elan"] #v-muscu .set-field:nth-of-type(2){grid-column:2;grid-row:1/3}html[data-ds="elan"] #v-muscu .set-field:nth-of-type(3){grid-column:3;grid-row:1/3}html[data-ds="elan"] #v-muscu .set-del{grid-column:1;grid-row:2}}
+html[data-ds="elan"] #v-nutri .stepper output{font:600 20px/24px var(--digits);min-width:40px}
+html[data-ds="elan"] #v-nutri .dish-t b{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;text-overflow:ellipsis}
+html[data-ds="elan"] :is(h2,h3,.sheet-head b){color:var(--ink)}
+@media(max-width:1023px){html[data-ds="elan"] #v-pomo{padding-bottom:0}html[data-ds="elan"] #v-pomo:has(#pomoSetup:not([hidden])){padding-bottom:96px}}
+html[data-ds="elan"] #nuCopyBody .day{width:100%;max-width:none;min-width:0;min-height:44px}
+html[data-ds="elan"] #nuCopyBody .cal-grid{gap:0}
+html[data-ds="elan"] #nuCopyBody .day.sel .num{background:none;color:inherit;font-weight:700}
+html[data-ds="elan"] #nuCopyBody .cal-nav{width:44px;height:44px}
+html[data-ds="elan"] #nuCopyBody .cal-nav svg{width:24px;height:24px}
+html[data-ds="elan"] #nuCopyBody [data-nucpn="-1"] svg{transform:rotate(180deg)}
+html[data-ds="elan"] #v-muscu .mu-goal-seg button{overflow-wrap:anywhere}
+
+/* T16 C · retouches B17–B19. */
+html[data-ds="elan"] #v-muscu .set-field:focus-within{outline:2px solid var(--ink);outline-offset:2px}
+html[data-ds="elan"] #v-muscu .set-field .set-in:focus-visible{outline:none}
+html[data-ds="elan"] #v-nutri :is(.mchip b,.dish-kcal,.k,.nu-plan b){word-spacing:.12em}
+html[data-ds="elan"] #v-nutri .dish-kcal small{margin-inline-start:.18em}
+@media(max-width:359px){
+ html[data-ds="elan"] #v-muscu .set-row{grid-template-columns:repeat(2,minmax(72px,1fr));grid-template-rows:auto auto;gap:8px}
+ html[data-ds="elan"] #v-muscu .set-l{grid-column:1;grid-row:1}
+ html[data-ds="elan"] #v-muscu .set-del{grid-column:2;grid-row:1;justify-self:end}
+ html[data-ds="elan"] #v-muscu .set-field:nth-of-type(2){grid-column:1;grid-row:2}
+ html[data-ds="elan"] #v-muscu .set-field:nth-of-type(3){grid-column:2;grid-row:2}
+}
+
+/* T16 C · Sid Coffre : surfaces, listes et commandes ; moteurs inchangés. */
+html[data-ds="elan"] :is(#v-notes,#v-docs,#v-pwd)>:is(.brand,h1,.sub),html[data-ds="elan"] #notesList>h1,html[data-ds="elan"] #notesList>.sub{display:none}
+html[data-ds="elan"] .coffre-search-label{display:block;margin:0 0 8px;font:600 16px/20px var(--font);color:var(--ink)}
+html[data-ds="elan"] :is(#v-notes,#v-docs,#v-pwd,.pdfv,.viewer,#pwSheet,#scan) :is(.mini,.pen,.x,.back,.qbtn){min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:8px;border:0;border-radius:10px;background:var(--surface-2);color:var(--ink);font:600 14px/20px var(--font)}
+html[data-ds="elan"] :is(#v-notes,#v-docs,#v-pwd,.pdfv,.viewer,#pwSheet,#scan) :is(button,label) svg{flex:none;width:20px;height:20px}
+html[data-ds="elan"] :is(#noteList,#docList,#pwList){padding:0;background:var(--surface);border:0;border-radius:16px;overflow:hidden;box-shadow:none}
+html[data-ds="elan"] #noteList{background:none;overflow:visible}
+html[data-ds="elan"] :is(.nl-h,.pin-t,.pv-notes-h b){font:700 22px/26px var(--digits);color:var(--ink);text-transform:none;letter-spacing:0}
+html[data-ds="elan"] .nl-h{margin:24px 0 12px}
+html[data-ds="elan"] .nf-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+html[data-ds="elan"] .nf-tile{min-width:0;display:flex;align-items:center;gap:0;background:var(--surface);border:0;border-radius:16px}
+html[data-ds="elan"] .nf-tile .ngrip{width:20px;padding:0;flex:none;color:var(--muted)}
+html[data-ds="elan"] .nf-open{display:grid;grid-template-columns:24px minmax(0,1fr);gap:4px 8px;min-height:80px;padding:12px 0;min-width:0}
+html[data-ds="elan"] .nf-open b{font:600 16px/20px var(--font);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+html[data-ds="elan"] .nf-open .nf-n{grid-column:2;font:600 14px/20px var(--digits);color:var(--muted)}
+html[data-ds="elan"] .nf-tile .pen{align-self:flex-start;margin:8px 4px 0 0;background:none}
+html[data-ds="elan"] .nf-ic{color:var(--app-ink);width:24px;height:24px}
+html[data-ds="elan"] .nl-notes{background:var(--surface);border-radius:16px;overflow:hidden}
+html[data-ds="elan"] .note-row{display:flex;align-items:center;min-height:88px;gap:0;padding:8px;border-bottom:1px solid var(--line)}
+html[data-ds="elan"] .note-row:last-child{border-bottom:0}
+html[data-ds="elan"] .note-row .ngrip{flex:none;width:20px;padding:0;color:var(--muted)}
+html[data-ds="elan"] .note{min-width:0;min-height:56px;flex:1;padding:8px;background:none;border:0;border-radius:0;display:flex;flex-direction:column;gap:4px;text-align:left;color:var(--ink)}
+html[data-ds="elan"] .note b{font:600 16px/20px var(--font);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;color:var(--ink)}
+html[data-ds="elan"] .note :is(.prev,.when,.np-count){font:500 14px/20px var(--font);color:var(--muted)}
+html[data-ds="elan"] .note .prev{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;overflow:hidden;overflow-wrap:anywhere}
+html[data-ds="elan"] .note .when{font-variant-numeric:tabular-nums}
+html[data-ds="elan"] .note-more{align-self:flex-start;background:none}
+html[data-ds="elan"] .nf-crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:4px;overflow-wrap:anywhere}
+html[data-ds="elan"] .nf-crumbs svg{width:16px;height:16px}
+html[data-ds="elan"] .nf-crumb{min-height:44px;font:600 14px/20px var(--font);color:var(--ink)}
+html[data-ds="elan"] .nf-back{max-width:100%;overflow-wrap:anywhere;text-align:left}
+html[data-ds="elan"] .nf-back>svg{transform:rotate(180deg)}
+html[data-ds="elan"] :is(.coffre-notes-actions,.coffre-pwd-actions){display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;margin-bottom:16px}
+html[data-ds="elan"] .coffre-notes-actions{grid-template-columns:repeat(3,minmax(0,1fr))}
+html[data-ds="elan"] #noteSearch{grid-column:1/-1}
+html[data-ds="elan"] #noteNew{grid-column:3;white-space:normal;min-width:0;font-size:14px}
+html[data-ds="elan"] :is(#nfNew,#pdfNew){min-width:0;font-size:14px;padding-inline:8px}
+html[data-ds="elan"] :is(.ns-bar,#noteSecBar){border-radius:10px;background:var(--app-soft);color:var(--ink);flex-wrap:wrap;gap:8px;padding:12px}
+html[data-ds="elan"] .doc-actions{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+html[data-ds="elan"] #docFolders{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+html[data-ds="elan"] #docFolders .pill{min-height:44px;max-width:100%;display:inline-flex;gap:8px;align-items:center;font:600 14px/20px var(--font);white-space:normal;overflow-wrap:anywhere;border:0;background:var(--surface-2);color:var(--ink)}
+html[data-ds="elan"] #docFolders .pill[aria-pressed="true"]{background:var(--app);color:var(--on-app)}
+html[data-ds="elan"] .docbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:16px 0}
+html[data-ds="elan"] .doc{display:grid;grid-template-columns:24px 44px minmax(0,1fr) 44px 44px;gap:8px;align-items:start;min-height:88px;padding:12px;border-bottom:1px solid var(--line)}
+html[data-ds="elan"] .doc:last-child{border-bottom:0}
+html[data-ds="elan"] .doc .grip{width:24px;min-height:44px;border:0;color:var(--muted);background:none;padding:0}
+html[data-ds="elan"] .doc-ic{grid-column:2;min-height:44px;min-width:44px;background:var(--surface-2);color:var(--ink);border:0;border-radius:10px;font:700 16px/20px var(--digits)}
+html[data-ds="elan"] .doc-open{grid-column:3;min-width:0;min-height:56px;display:flex;flex-direction:column;gap:8px;border:0;background:none;padding:0;text-align:left;color:var(--ink)}
+html[data-ds="elan"] .doc-open b{font:600 16px/20px var(--font);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+html[data-ds="elan"] .doc-open .small{white-space:normal;overflow-wrap:anywhere;font:500 14px/20px var(--font)}
+html[data-ds="elan"] .pw-row{display:grid;grid-template-columns:40px minmax(0,1fr) repeat(3,44px);gap:8px;padding:16px;align-items:start}
+html[data-ds="elan"] .pw-av{width:40px;height:40px;background:var(--surface-2);color:var(--ink);font:700 20px/24px var(--digits)}
+html[data-ds="elan"] .pw-main b{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;font:600 16px/20px var(--font)}
+html[data-ds="elan"] .pw-main .small{white-space:normal;overflow-wrap:anywhere;font:500 14px/20px var(--font)}
+html[data-ds="elan"] .pw-sec{display:block;margin-top:8px;font:500 16px/24px ui-monospace,SFMono-Regular,monospace;overflow-wrap:anywhere}
+html[data-ds="elan"] .pw-field{min-width:0;gap:8px}
+html[data-ds="elan"] .pw-field input{min-width:0}
+html[data-ds="elan"] :is(#pinBox,.pin-host .pin){max-width:360px;margin:24px auto;gap:16px}
+html[data-ds="elan"] .pad{gap:8px;width:100%;max-width:280px}
+html[data-ds="elan"] .pad button{min-height:56px;min-width:56px;background:var(--surface-2);color:var(--ink);border:0;border-radius:10px;box-shadow:none;font:600 28px/32px var(--digits)}
+html[data-ds="elan"] .pin-dots i{border:1.5px solid var(--field-line);background:var(--surface);width:16px;height:16px}
+html[data-ds="elan"] .pin-dots i.on{background:var(--app);border-color:var(--app)}
+html[data-ds="elan"] .doc-locked{background:var(--surface);border-radius:16px;gap:16px;padding:24px 16px}
+html[data-ds="elan"] .pin-ic2 .ic svg{width:32px;height:32px;color:var(--muted)}
+html[data-ds="elan"] body.note-full #noteEdit{padding-inline:20px;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+html[data-ds="elan"] .coffre-editor-head{background:var(--app);color:var(--on-app);margin:0 -20px 0;padding:8px 12px}
+html[data-ds="elan"] .coffre-editor-head .elan-title{font-size:32px;line-height:34px}
+html[data-ds="elan"] .coffre-editor-head :focus-visible{outline-color:var(--on-app)}
+html[data-ds="elan"] body.note-full .note-top{padding:8px 0;background:var(--bg)}
+html[data-ds="elan"] #noteTop .dayv-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 8px}
+html[data-ds="elan"] #noteWhen{order:2;flex-basis:100%;text-align:left}
+html[data-ds="elan"] .rt-bar{display:flex;flex-wrap:wrap;gap:4px;padding:8px;border:0;border-radius:10px;background:var(--surface-2);box-shadow:none}
+html[data-ds="elan"] .rt-bar button{min-width:44px;min-height:44px;border:0;border-radius:10px;background:var(--surface);color:var(--ink);font:600 16px/20px var(--font);display:inline-flex;align-items:center;justify-content:center;gap:2px}
+html[data-ds="elan"] .rt-bar button[aria-pressed="true"]{background:var(--app);color:var(--on-app)}
+html[data-ds="elan"] .rt-bar .rt-sep{display:none}
+html[data-ds="elan"] .rt-bar .rt-ch{width:10px;height:10px}
+html[data-ds="elan"] .rt-pop{border:1.5px solid var(--field-line);border-radius:16px;box-shadow:none;max-width:calc(100vw - 40px)}
+html[data-ds="elan"] .rt-pop button{min-height:44px}
+html[data-ds="elan"] .note-ed{background:var(--surface);padding:16px;border-radius:16px;min-width:0}
+html[data-ds="elan"] #noteTitle{width:100%;font:700 22px/26px var(--digits);min-height:48px;padding:8px;border:1.5px solid var(--field-line);border-radius:10px;color:var(--ink)}
+html[data-ds="elan"] #noteBody{font:400 16px/24px var(--font);min-height:240px;padding:16px 0;overflow-wrap:anywhere}
+html[data-ds="elan"] #noteBody:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+html[data-ds="elan"] :is(.pdfv,.viewer){background:var(--bg);color:var(--ink)}
+html[data-ds="elan"] :is(.pv-head,.viewer-head){padding:8px 12px;background:var(--app);color:var(--on-app);gap:8px;flex-wrap:wrap}
+html[data-ds="elan"] .pv-title{min-width:0;font:600 16px/24px var(--font);color:var(--on-app);background:none;border:1.5px solid var(--on-app);border-radius:10px;min-height:48px}
+html[data-ds="elan"] :is(.pv-head,.viewer-head) :focus-visible{outline-color:var(--on-app)}
+html[data-ds="elan"] .pv-tools{gap:8px;padding:8px 12px;background:var(--surface);scrollbar-width:thin}
+html[data-ds="elan"] .pv-tools button{min-height:44px;border:0;border-radius:10px;background:var(--surface-2);color:var(--ink);font:600 14px/20px var(--font)}
+html[data-ds="elan"] .pv-tools button[aria-pressed="true"]{background:var(--app);color:var(--on-app)}
+html[data-ds="elan"] .pv-page,html[data-ds="elan"] .pv-notes:not([hidden]){box-shadow:none}
+html[data-ds="elan"] .pv-notes textarea{border:1.5px solid var(--field-line);border-radius:10px;background:var(--surface);color:var(--ink)}
+html[data-ds="elan"] .howto>.steps.card{background:none;border:0;box-shadow:none}
+@media(max-width:600px){
+ html[data-ds="elan"] .doc{grid-template-columns:24px 44px minmax(0,1fr);gap:8px}
+ html[data-ds="elan"] .doc .pen{grid-row:2;justify-self:end}
+ html[data-ds="elan"] .doc .pen[data-docshare]{grid-column:2}
+ html[data-ds="elan"] .doc .pen[data-edit]{grid-column:3}
+ html[data-ds="elan"] .pw-row{grid-template-columns:40px minmax(0,1fr) 44px;gap:8px;padding:12px}
+ html[data-ds="elan"] .pw-row .pen{grid-row:2}
+ html[data-ds="elan"] .pw-row [data-pweye]{grid-column:1}
+ html[data-ds="elan"] .pw-row [data-pwcopy]{grid-column:2;justify-self:end}
+ html[data-ds="elan"] .pw-row [data-pwedit]{grid-column:3}
+ html[data-ds="elan"] .pw-main{grid-column:2/-1}
+}
+@media(max-width:359px){html[data-ds="elan"] .nf-grid{grid-template-columns:minmax(0,1fr)}html[data-ds="elan"] .coffre-notes-actions{grid-template-columns:repeat(2,minmax(0,1fr))}html[data-ds="elan"] #noteNew{grid-column:1/-1}html[data-ds="elan"] #noteTop .dayv-head{gap:4px}html[data-ds="elan"] #noteBack{flex:1}}
+@media(min-width:1024px){html[data-ds="elan"] body.note-full #noteEdit{padding-inline:max(48px,calc((100vw - 720px)/2))}}
+html[data-ds="elan"] .note b{white-space:normal;max-width:100%}
+html[data-ds="elan"] .note .prev{max-width:100%}
+html[data-ds="elan"] .nf-grid{grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr))}
+html[data-ds="elan"] .nf-open b{white-space:normal;word-break:normal}
+html[data-ds="elan"] #noteList .note-more{align-self:flex-start;flex:none;background:none}
+html[data-ds="elan"] .nf-tile .pen{background:none}
+
+html[data-ds="elan"] #noteAppHead{position:sticky;top:0;z-index:5}
+html[data-ds="elan"] #noteAppHead .elan-title{font-size:32px;line-height:34px}
+html[data-ds="elan"] body.note-full .note-top{position:static}
+html[data-ds="elan"] .rt-bar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}
+html[data-ds="elan"] .rt-bar button{flex:none}
+html[data-ds="elan"] .note-ed{border:0;box-shadow:none}
+html[data-ds="elan"] :is(.elan-progress>span,#nuMacros .top>span,#nuKcalOf){word-spacing:.1em}
+html[data-ds="elan"] #docFolders{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;padding-bottom:4px}
+html[data-ds="elan"] #docFolders .pill{flex:none;white-space:nowrap;max-width:240px}
+html[data-ds="elan"] .coffre-folder-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+html[data-ds="elan"] #docFolders .cnt{flex:none;white-space:nowrap;font-variant-numeric:tabular-nums}
+html[data-ds="elan"] :is(#v-notes,#v-docs,#v-pwd) .seg button[aria-pressed="true"]{background:var(--app);color:var(--on-app);border-color:var(--app)}
+html[data-ds="elan"] .doc-open .small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+html[data-ds="elan"] .doc-ic::after,html[data-ds="elan"] .doc-ic::before{display:none}
+html[data-ds="elan"] .doc{grid-template-columns:44px 44px minmax(0,1fr) 44px 44px}
+html[data-ds="elan"] .doc .grip{width:44px;min-width:44px}
+html[data-ds="elan"] :is(.note-row,.nf-tile) .ngrip{width:24px;min-height:44px;display:flex;align-items:center;justify-content:center}
+@media(max-width:600px){html[data-ds="elan"] .doc{grid-template-columns:44px 44px minmax(0,1fr)}}
+html[data-ds="elan"] body.note-full .note-top::before{display:none}
+html[data-ds="elan"] .viewer-body canvas{box-shadow:none}
+
+html[data-ds="elan"] #v-nutri .dish-kcal small{margin-inline-start:0}
+html[data-ds="elan"] #nuLog .dish-kcal{gap:0}
+
+html[data-ds="elan"] :is(.note-row,.nf-tile) .ngrip{width:44px;flex:none}
+html[data-ds="elan"] .pv-sw{flex-wrap:wrap}
+html[data-ds="elan"] .pv-sw button{width:44px;height:44px;min-width:44px;box-shadow:none;border-color:var(--field-line)}
+html[data-ds="elan"] .pv-sw button[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:2px}
+html[data-ds="elan"] .pv-size input[type=range]{min-height:44px;height:44px}
+html[data-ds="elan"] :is(.pv-txt-x,.pv-txt-mv,.pv-txt-rs){width:44px;height:44px;min-width:44px;min-height:44px}
+html[data-ds="elan"] :is(.pv-txt-x,.pv-txt-mv){top:-22px}
+html[data-ds="elan"] .pv-txt-x{right:-22px;line-height:44px}
+html[data-ds="elan"] .pv-txt-mv{left:-22px}
+html[data-ds="elan"] .pv-txt-rs{right:-22px;bottom:-22px}
+html[data-ds="elan"] .pv-txt-rs::after{inset:14px}
+/* Poignées PDF : cible de 44 px, repère visuel de 24 px autour du contenu. */
+html[data-ds="elan"] :is(.pv-txt-x,.pv-txt-mv,.pv-txt-rs){background:transparent;isolation:isolate}
+html[data-ds="elan"] :is(.pv-txt-x,.pv-txt-mv,.pv-txt-rs)::before{content:"";position:absolute;inset:10px;border-radius:50%;background:#1C1A17;z-index:-1}
+html[data-ds="elan"] .pv-txt-mv svg{width:16px;height:16px}
+
+html[data-ds="elan"] .coffre-editor-chrome{position:sticky;top:0;z-index:5;flex:none;min-width:0;background:var(--bg)}
+html[data-ds="elan"] .coffre-editor-chrome #noteAppHead{position:static}
+html[data-ds="elan"] #noteTop .dayv-head{display:grid;grid-template-columns:auto repeat(5,44px);flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}
+html[data-ds="elan"] #noteWhen{grid-column:1/-1;grid-row:2;order:0}
+html[data-ds="elan"] #noteTop .dayv-head>button,html[data-ds="elan"] #noteTop .dayv-head>label{grid-row:1}
+
+/* T16 C · revue C1–C13 : hiérarchie, densité et repères. */
+html[data-ds="elan"] .coffre-search{position:relative;display:block;min-width:0;width:100%;flex:1}
+html[data-ds="elan"] .coffre-search>.ic{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--muted);pointer-events:none}
+html[data-ds="elan"] .coffre-search>.ic svg{width:20px;height:20px}
+html[data-ds="elan"] .coffre-search>.search{width:100%;padding-left:40px;margin:0}
+html[data-ds="elan"] .coffre-notes-actions>.coffre-search{grid-column:1/-1}
+html[data-ds="elan"] :is(#pdfNew,#nfNew,.doc-actions .btn,#scanAddTxt){display:inline-flex;align-items:center;justify-content:center;gap:8px}
+html[data-ds="elan"] .nf-n{white-space:nowrap}
+html[data-ds="elan"] #noteTitle{display:block;resize:none;overflow-y:auto;white-space:pre-wrap;font:700 22px/26px var(--digits);min-height:48px;max-height:97px;box-sizing:border-box;flex:none;padding:8px}
+html[data-ds="elan"] #noteBody{border:0;box-shadow:none}
+html[data-ds="elan"] #noteBody:focus-visible{outline:none}
+html[data-ds="elan"] .note-ed:has(#noteBody:focus-visible){outline:2px solid var(--ink);outline-offset:2px}
+html[data-ds="elan"] [data-elan-scroll]{scroll-padding-inline:24px}
+html[data-ds="elan"] [data-elan-scroll].scroll-more-end{mask-image:linear-gradient(to right,#000 calc(100% - 24px),transparent)}
+html[data-ds="elan"] [data-elan-scroll].scroll-more-start{mask-image:linear-gradient(to right,transparent,#000 24px)}
+html[data-ds="elan"] [data-elan-scroll].scroll-more-start.scroll-more-end{mask-image:linear-gradient(to right,transparent,#000 24px,#000 calc(100% - 24px),transparent)}
+html[data-ds="elan"] .pv-notes{box-sizing:border-box;min-width:0;max-width:100vw}
+html[data-ds="elan"] .pv-notes:not([hidden]){width:100%;box-sizing:border-box}
+html[data-ds="elan"] .pv-notes-h{min-width:0;gap:8px;box-sizing:border-box}
+html[data-ds="elan"] .pv-notes-h b{min-width:0;overflow-wrap:anywhere;flex:1}
+html[data-ds="elan"] .pv-notes textarea{width:calc(100% - 24px);max-width:calc(100% - 24px);min-width:0;min-height:0;box-sizing:border-box;align-self:stretch}
+html[data-ds="elan"] #psClose{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;background:var(--surface-2);color:var(--ink);border:0;border-radius:10px}
+html[data-ds="elan"] :is(#psClose,.pv-txt-x) svg{width:20px;height:20px;vertical-align:middle}
+html[data-ds="elan"] #scan .seg button[aria-pressed="true"]{background:var(--app);color:var(--on-app);border-color:var(--app)}
+html[data-ds="elan"] #scan .pg :is(.rot,.rm){width:44px;height:44px;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;background:var(--surface-2);color:var(--ink);border:0;border-radius:10px}
+html[data-ds="elan"] .doc{min-height:88px}
+html[data-ds="elan"] .doc-open{gap:4px}
+html[data-ds="elan"] .doc-open .small{display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:20px}
+html[data-ds="elan"] .pw-row{grid-template-columns:40px minmax(0,1fr);gap:8px;padding:12px}
+html[data-ds="elan"] .pw-main{grid-column:2;min-width:0}
+html[data-ds="elan"] .pw-controls{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) repeat(3,44px);align-items:center;gap:8px;min-width:0}
+html[data-ds="elan"] .pw-controls .pw-sec{margin:0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-ds="elan"] .pw-controls .pen{grid-row:1;grid-column:auto;justify-self:stretch}
+html[data-ds="elan"] #pwForm label{display:grid;gap:8px;min-width:0}
+html[data-ds="elan"] #pwForm .pw-field{position:relative;display:block;min-width:0;width:100%}
+html[data-ds="elan"] #pwPass{width:100%;padding-right:56px;box-sizing:border-box}
+html[data-ds="elan"] #pwEye{position:absolute;right:2px;top:2px;width:44px;height:44px;min-width:44px;min-height:44px;background:none;color:var(--ink);border:0}
+html[data-ds="elan"] #pwGen{justify-self:start;margin:0}
+html[data-ds="elan"] #pwForm>.two{display:flex;flex-direction:column;gap:8px}
+html[data-ds="elan"] #pwForm [type=submit]{width:100%;min-height:48px}
+html[data-ds="elan"] #pwDel{align-self:start;width:auto}
+html[data-ds="elan"] :is(#docSort,#pwSort){display:flex;gap:4px;padding:4px;border:0;background:var(--surface-2);border-radius:999px}
+html[data-ds="elan"] :is(#docSort,#pwSort) button{flex:1;min-height:44px;border:0;border-radius:999px;font:600 16px/20px var(--font)}
+@media(max-width:600px){
+ html[data-ds="elan"] .coffre-notes-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+ html[data-ds="elan"] #noteNew{grid-column:1/-1;grid-row:2;white-space:nowrap;font-size:16px}
+ html[data-ds="elan"] #nfNew{grid-column:1;grid-row:3}
+ html[data-ds="elan"] #pdfNew{grid-column:2;grid-row:3}
+ html[data-ds="elan"] .doc{position:relative;grid-template-columns:44px minmax(0,1fr) 44px 44px;gap:8px;padding:12px;align-items:start}
+ html[data-ds="elan"] .doc .grip{grid-column:1;grid-row:1}
+ html[data-ds="elan"] .doc-ic{display:none}
+ html[data-ds="elan"] .doc-open{grid-column:2/-1;grid-row:1;min-height:64px;align-items:stretch}
+ html[data-ds="elan"] .doc-open b{max-width:calc(100% - 104px);min-height:40px}
+ html[data-ds="elan"] .doc .pen[data-docshare]{grid-column:3;grid-row:1;z-index:1}
+ html[data-ds="elan"] .doc .pen[data-edit]{grid-column:4;grid-row:1;z-index:1}
+ html[data-ds="elan"] .pw-row .pw-controls .pen{grid-row:1;grid-column:auto;justify-self:stretch}
+}
+@media(min-width:900px){html[data-ds="elan"] .pv-notes:not([hidden]){width:340px;max-width:340px;flex:none}}
+html[data-ds="elan"] .coffre-notes-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+html[data-ds="elan"] #noteNew{grid-column:1/-1;grid-row:2;white-space:nowrap;font-size:16px}
+html[data-ds="elan"] #nfNew{grid-column:1;grid-row:3}
+html[data-ds="elan"] #pdfNew{grid-column:2;grid-row:3}
+html[data-ds="elan"] #noteTop .dayv-head{grid-template-columns:max-content repeat(5,44px)}
+html[data-ds="elan"] .nf-n{font:500 14px/20px var(--font);word-spacing:.1em}
+html[data-ds="elan"] #v-docs #docFolders{margin-top:16px}
+html[data-ds="elan"] #pwForm>.two{position:sticky;bottom:0;padding:8px 0;background:var(--surface)}
+html[data-ds="elan"] .pw-controls .pw-sec{grid-column:1;grid-row:1}
+html[data-ds="elan"] .pw-row .pw-controls [data-pweye]{grid-column:2;grid-row:1}
+html[data-ds="elan"] .pw-row .pw-controls [data-pwcopy]{grid-column:3;grid-row:1}
+html[data-ds="elan"] .pw-row .pw-controls [data-pwedit]{grid-column:4;grid-row:1}
+html[data-ds="elan"] #pwForm #pwEye{background:none;padding:0;border:0}
+html[data-ds="elan"] #pwPass{font-family:ui-monospace,SFMono-Regular,monospace}
+html[data-ds="elan"] #folderBar>.coffre-search{flex:0 0 100%;width:100%}
+html[data-ds="elan"] #folderBar>.coffre-search-label{flex:0 0 100%;margin:8px 0 0}

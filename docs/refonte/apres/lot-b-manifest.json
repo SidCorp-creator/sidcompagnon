@@ -1,0 +1,2380 @@
+{
+  "results": [
+    {
+      "width": 390,
+      "theme": "dark",
+      "fallback": false,
+      "lang": "fr",
+      "name": "390-dark-react-fr",
+      "captures": [
+        "390-dark-react-fr-lot-b-focus-programme.png",
+        "390-dark-react-fr-lot-b-musculation.png",
+        "390-dark-react-fr-lot-b-musculation-series.png",
+        "390-dark-react-fr-lot-b-musculation-dense.png",
+        "390-dark-react-fr-lot-b-nutrition-jour.png",
+        "390-dark-react-fr-lot-b-nutrition-repas.png",
+        "390-dark-react-fr-lot-b-nutrition-copie.png",
+        "390-dark-react-fr-lot-b-nutrition-ajout.png",
+        "390-dark-react-fr-lot-b-nutrition-analyse.png",
+        "390-dark-react-fr-lot-b-nutrition-clavier-simule.png",
+        "390-dark-react-fr-lot-b-nutrition-ajoute.png",
+        "390-dark-react-fr-lot-b-nutrition-calendrier.png",
+        "390-dark-react-fr-lot-b-nutrition-menu.png",
+        "390-dark-react-fr-lot-b-nutrition-profil.png",
+        "390-dark-react-fr-lot-b-nutrition-profil-formulaire.png",
+        "390-dark-react-fr-lot-b-graphiques.png",
+        "390-dark-react-fr-lot-b-graphiques-calories.png",
+        "390-dark-react-fr-lot-b-graphiques-tableau.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(242, 242, 242)",
+          "bg": "rgb(42, 42, 42)",
+          "ratio": 12.82
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#AAB76D",
+        "--c-stage": "#6FBF98",
+        "--c-memoire": "#D286B5",
+        "--c-perso": "#A3A7B2",
+        "--x1": "#6FC3D6",
+        "--x2": "#D98AAE",
+        "--x3": "#D9B862",
+        "--x4": "#C49A80",
+        "--x5": "#8CC57E",
+        "--x6": "#E08A9A"
+      },
+      "lotA": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "dragOrder": [
+          "a2",
+          "a3",
+          "a1"
+        ],
+        "naturalEnd": "cycle",
+        "skippedEnd": "skip"
+      },
+      "lotB": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true
+      },
+      "lotC": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "realV2Unlock": true,
+        "encryptedDocument": true,
+        "secretTitleNeverStored": true,
+        "passwordRoundTrip": true,
+        "pdfNotesSaved": true
+      },
+      "ok": true,
+      "lotCPdf": {
+        "pdfTargets44": true,
+        "pdfTextAnnotationSaved": true
+      }
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "fallback": true,
+      "lang": "fr",
+      "name": "390-dark-secours-fr",
+      "captures": [
+        "390-dark-secours-fr-lot-b-focus-programme.png",
+        "390-dark-secours-fr-lot-b-musculation.png",
+        "390-dark-secours-fr-lot-b-musculation-series.png",
+        "390-dark-secours-fr-lot-b-musculation-dense.png",
+        "390-dark-secours-fr-lot-b-nutrition-jour.png",
+        "390-dark-secours-fr-lot-b-nutrition-repas.png",
+        "390-dark-secours-fr-lot-b-nutrition-copie.png",
+        "390-dark-secours-fr-lot-b-nutrition-ajout.png",
+        "390-dark-secours-fr-lot-b-nutrition-analyse.png",
+        "390-dark-secours-fr-lot-b-nutrition-clavier-simule.png",
+        "390-dark-secours-fr-lot-b-nutrition-ajoute.png",
+        "390-dark-secours-fr-lot-b-nutrition-calendrier.png",
+        "390-dark-secours-fr-lot-b-nutrition-menu.png",
+        "390-dark-secours-fr-lot-b-nutrition-profil.png",
+        "390-dark-secours-fr-lot-b-nutrition-profil-formulaire.png",
+        "390-dark-secours-fr-lot-b-graphiques.png",
+        "390-dark-secours-fr-lot-b-graphiques-calories.png",
+        "390-dark-secours-fr-lot-b-graphiques-tableau.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(242, 242, 242)",
+          "bg": "rgb(42, 42, 42)",
+          "ratio": 12.82
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#AAB76D",
+        "--c-stage": "#6FBF98",
+        "--c-memoire": "#D286B5",
+        "--c-perso": "#A3A7B2",
+        "--x1": "#6FC3D6",
+        "--x2": "#D98AAE",
+        "--x3": "#D9B862",
+        "--x4": "#C49A80",
+        "--x5": "#8CC57E",
+        "--x6": "#E08A9A"
+      },
+      "lotA": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "dragOrder": [
+          "a2",
+          "a3",
+          "a1"
+        ],
+        "naturalEnd": "cycle",
+        "skippedEnd": "skip"
+      },
+      "lotB": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true
+      },
+      "lotC": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "realV2Unlock": true,
+        "encryptedDocument": true,
+        "secretTitleNeverStored": true,
+        "passwordRoundTrip": true,
+        "pdfNotesSaved": true
+      },
+      "ok": true
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "fallback": false,
+      "lang": "fr",
+      "name": "390-light-react-fr",
+      "captures": [
+        "390-light-react-fr-lot-b-focus-programme.png",
+        "390-light-react-fr-lot-b-musculation.png",
+        "390-light-react-fr-lot-b-musculation-series.png",
+        "390-light-react-fr-lot-b-musculation-dense.png",
+        "390-light-react-fr-lot-b-nutrition-jour.png",
+        "390-light-react-fr-lot-b-nutrition-repas.png",
+        "390-light-react-fr-lot-b-nutrition-copie.png",
+        "390-light-react-fr-lot-b-nutrition-ajout.png",
+        "390-light-react-fr-lot-b-nutrition-analyse.png",
+        "390-light-react-fr-lot-b-nutrition-clavier-simule.png",
+        "390-light-react-fr-lot-b-nutrition-ajoute.png",
+        "390-light-react-fr-lot-b-nutrition-calendrier.png",
+        "390-light-react-fr-lot-b-nutrition-menu.png",
+        "390-light-react-fr-lot-b-nutrition-profil.png",
+        "390-light-react-fr-lot-b-nutrition-profil-formulaire.png",
+        "390-light-react-fr-lot-b-graphiques.png",
+        "390-light-react-fr-lot-b-graphiques-calories.png",
+        "390-light-react-fr-lot-b-graphiques-tableau.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(26, 26, 26)",
+          "bg": "rgb(236, 236, 236)",
+          "ratio": 14.73
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#66712E",
+        "--c-stage": "#2F7D5B",
+        "--c-memoire": "#9B427A",
+        "--c-perso": "#7A7F8C",
+        "--x1": "#2A7F95",
+        "--x2": "#A84A72",
+        "--x3": "#9A7A2C",
+        "--x4": "#7C5A45",
+        "--x5": "#4B8240",
+        "--x6": "#A33D52"
+      },
+      "lotA": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "dragOrder": [
+          "a2",
+          "a3",
+          "a1"
+        ],
+        "naturalEnd": "cycle",
+        "skippedEnd": "skip"
+      },
+      "lotB": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true
+      },
+      "lotC": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "realV2Unlock": true,
+        "encryptedDocument": true,
+        "secretTitleNeverStored": true,
+        "passwordRoundTrip": true,
+        "pdfNotesSaved": true
+      },
+      "ok": true
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "fallback": true,
+      "lang": "fr",
+      "name": "390-light-secours-fr",
+      "captures": [
+        "390-light-secours-fr-lot-b-focus-programme.png",
+        "390-light-secours-fr-lot-b-musculation.png",
+        "390-light-secours-fr-lot-b-musculation-series.png",
+        "390-light-secours-fr-lot-b-musculation-dense.png",
+        "390-light-secours-fr-lot-b-nutrition-jour.png",
+        "390-light-secours-fr-lot-b-nutrition-repas.png",
+        "390-light-secours-fr-lot-b-nutrition-copie.png",
+        "390-light-secours-fr-lot-b-nutrition-ajout.png",
+        "390-light-secours-fr-lot-b-nutrition-analyse.png",
+        "390-light-secours-fr-lot-b-nutrition-clavier-simule.png",
+        "390-light-secours-fr-lot-b-nutrition-ajoute.png",
+        "390-light-secours-fr-lot-b-nutrition-calendrier.png",
+        "390-light-secours-fr-lot-b-nutrition-menu.png",
+        "390-light-secours-fr-lot-b-nutrition-profil.png",
+        "390-light-secours-fr-lot-b-nutrition-profil-formulaire.png",
+        "390-light-secours-fr-lot-b-graphiques.png",
+        "390-light-secours-fr-lot-b-graphiques-calories.png",
+        "390-light-secours-fr-lot-b-graphiques-tableau.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(26, 26, 26)",
+          "bg": "rgb(236, 236, 236)",
+          "ratio": 14.73
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#66712E",
+        "--c-stage": "#2F7D5B",
+        "--c-memoire": "#9B427A",
+        "--c-perso": "#7A7F8C",
+        "--x1": "#2A7F95",
+        "--x2": "#A84A72",
+        "--x3": "#9A7A2C",
+        "--x4": "#7C5A45",
+        "--x5": "#4B8240",
+        "--x6": "#A33D52"
+      },
+      "lotA": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "dragOrder": [
+          "a2",
+          "a3",
+          "a1"
+        ],
+        "naturalEnd": "cycle",
+        "skippedEnd": "skip"
+      },
+      "lotB": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true
+      },
+      "lotC": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "realV2Unlock": true,
+        "encryptedDocument": true,
+        "secretTitleNeverStored": true,
+        "passwordRoundTrip": true,
+        "pdfNotesSaved": true
+      },
+      "ok": true
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "fallback": false,
+      "lang": "fr",
+      "name": "1280-dark-react-fr",
+      "captures": [
+        "1280-dark-react-fr-lot-b-focus-programme.png",
+        "1280-dark-react-fr-lot-b-musculation.png",
+        "1280-dark-react-fr-lot-b-musculation-series.png",
+        "1280-dark-react-fr-lot-b-musculation-dense.png",
+        "1280-dark-react-fr-lot-b-nutrition-jour.png",
+        "1280-dark-react-fr-lot-b-nutrition-repas.png",
+        "1280-dark-react-fr-lot-b-nutrition-copie.png",
+        "1280-dark-react-fr-lot-b-nutrition-ajout.png",
+        "1280-dark-react-fr-lot-b-nutrition-analyse.png",
+        "1280-dark-react-fr-lot-b-nutrition-clavier-simule.png",
+        "1280-dark-react-fr-lot-b-nutrition-ajoute.png",
+        "1280-dark-react-fr-lot-b-nutrition-calendrier.png",
+        "1280-dark-react-fr-lot-b-nutrition-menu.png",
+        "1280-dark-react-fr-lot-b-nutrition-profil.png",
+        "1280-dark-react-fr-lot-b-nutrition-profil-formulaire.png",
+        "1280-dark-react-fr-lot-b-graphiques.png",
+        "1280-dark-react-fr-lot-b-graphiques-calories.png",
+        "1280-dark-react-fr-lot-b-graphiques-tableau.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(242, 242, 242)",
+          "bg": "rgb(42, 42, 42)",
+          "ratio": 12.82
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#AAB76D",
+        "--c-stage": "#6FBF98",
+        "--c-memoire": "#D286B5",
+        "--c-perso": "#A3A7B2",
+        "--x1": "#6FC3D6",
+        "--x2": "#D98AAE",
+        "--x3": "#D9B862",
+        "--x4": "#C49A80",
+        "--x5": "#8CC57E",
+        "--x6": "#E08A9A"
+      },
+      "lotA": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "dragOrder": [
+          "a2",
+          "a3",
+          "a1"
+        ],
+        "naturalEnd": "cycle",
+        "skippedEnd": "skip"
+      },
+      "lotB": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true
+      },
+      "lotC": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "realV2Unlock": true,
+        "encryptedDocument": true,
+        "secretTitleNeverStored": true,
+        "passwordRoundTrip": true,
+        "pdfNotesSaved": true
+      },
+      "ok": true
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "fallback": true,
+      "lang": "fr",
+      "name": "1280-dark-secours-fr",
+      "captures": [
+        "1280-dark-secours-fr-lot-b-focus-programme.png",
+        "1280-dark-secours-fr-lot-b-musculation.png",
+        "1280-dark-secours-fr-lot-b-musculation-series.png",
+        "1280-dark-secours-fr-lot-b-musculation-dense.png",
+        "1280-dark-secours-fr-lot-b-nutrition-jour.png",
+        "1280-dark-secours-fr-lot-b-nutrition-repas.png",
+        "1280-dark-secours-fr-lot-b-nutrition-copie.png",
+        "1280-dark-secours-fr-lot-b-nutrition-ajout.png",
+        "1280-dark-secours-fr-lot-b-nutrition-analyse.png",
+        "1280-dark-secours-fr-lot-b-nutrition-clavier-simule.png",
+        "1280-dark-secours-fr-lot-b-nutrition-ajoute.png",
+        "1280-dark-secours-fr-lot-b-nutrition-calendrier.png",
+        "1280-dark-secours-fr-lot-b-nutrition-menu.png",
+        "1280-dark-secours-fr-lot-b-nutrition-profil.png",
+        "1280-dark-secours-fr-lot-b-nutrition-profil-formulaire.png",
+        "1280-dark-secours-fr-lot-b-graphiques.png",
+        "1280-dark-secours-fr-lot-b-graphiques-calories.png",
+        "1280-dark-secours-fr-lot-b-graphiques-tableau.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(242, 242, 242)",
+          "bg": "rgb(42, 42, 42)",
+          "ratio": 12.82
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#AAB76D",
+        "--c-stage": "#6FBF98",
+        "--c-memoire": "#D286B5",
+        "--c-perso": "#A3A7B2",
+        "--x1": "#6FC3D6",
+        "--x2": "#D98AAE",
+        "--x3": "#D9B862",
+        "--x4": "#C49A80",
+        "--x5": "#8CC57E",
+        "--x6": "#E08A9A"
+      },
+      "lotA": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "dragOrder": [
+          "a2",
+          "a3",
+          "a1"
+        ],
+        "naturalEnd": "cycle",
+        "skippedEnd": "skip"
+      },
+      "lotB": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true
+      },
+      "lotC": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "realV2Unlock": true,
+        "encryptedDocument": true,
+        "secretTitleNeverStored": true,
+        "passwordRoundTrip": true,
+        "pdfNotesSaved": true
+      },
+      "ok": true
+    },
+    {
+      "width": 1280,
+      "theme": "light",
+      "fallback": false,
+      "lang": "fr",
+      "name": "1280-light-react-fr",
+      "captures": [
+        "1280-light-react-fr-lot-b-focus-programme.png",
+        "1280-light-react-fr-lot-b-musculation.png",
+        "1280-light-react-fr-lot-b-musculation-series.png",
+        "1280-light-react-fr-lot-b-musculation-dense.png",
+        "1280-light-react-fr-lot-b-nutrition-jour.png",
+        "1280-light-react-fr-lot-b-nutrition-repas.png",
+        "1280-light-react-fr-lot-b-nutrition-copie.png",
+        "1280-light-react-fr-lot-b-nutrition-ajout.png",
+        "1280-light-react-fr-lot-b-nutrition-analyse.png",
+        "1280-light-react-fr-lot-b-nutrition-clavier-simule.png",
+        "1280-light-react-fr-lot-b-nutrition-ajoute.png",
+        "1280-light-react-fr-lot-b-nutrition-calendrier.png",
+        "1280-light-react-fr-lot-b-nutrition-menu.png",
+        "1280-light-react-fr-lot-b-nutrition-profil.png",
+        "1280-light-react-fr-lot-b-nutrition-profil-formulaire.png",
+        "1280-light-react-fr-lot-b-graphiques.png",
+        "1280-light-react-fr-lot-b-graphiques-calories.png",
+        "1280-light-react-fr-lot-b-graphiques-tableau.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(26, 26, 26)",
+          "bg": "rgb(236, 236, 236)",
+          "ratio": 14.73
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#66712E",
+        "--c-stage": "#2F7D5B",
+        "--c-memoire": "#9B427A",
+        "--c-perso": "#7A7F8C",
+        "--x1": "#2A7F95",
+        "--x2": "#A84A72",
+        "--x3": "#9A7A2C",
+        "--x4": "#7C5A45",
+        "--x5": "#4B8240",
+        "--x6": "#A33D52"
+      },
+      "lotA": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "dragOrder": [
+          "a2",
+          "a3",
+          "a1"
+        ],
+        "naturalEnd": "cycle",
+        "skippedEnd": "skip"
+      },
+      "lotB": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true
+      },
+      "lotC": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "realV2Unlock": true,
+        "encryptedDocument": true,
+        "secretTitleNeverStored": true,
+        "passwordRoundTrip": true,
+        "pdfNotesSaved": true
+      },
+      "ok": true,
+      "lotCPdf": {
+        "pdfTargets44": true,
+        "pdfTextAnnotationSaved": true
+      }
+    },
+    {
+      "width": 1280,
+      "theme": "light",
+      "fallback": true,
+      "lang": "fr",
+      "name": "1280-light-secours-fr",
+      "captures": [
+        "1280-light-secours-fr-lot-b-focus-programme.png",
+        "1280-light-secours-fr-lot-b-musculation.png",
+        "1280-light-secours-fr-lot-b-musculation-series.png",
+        "1280-light-secours-fr-lot-b-musculation-dense.png",
+        "1280-light-secours-fr-lot-b-nutrition-jour.png",
+        "1280-light-secours-fr-lot-b-nutrition-repas.png",
+        "1280-light-secours-fr-lot-b-nutrition-copie.png",
+        "1280-light-secours-fr-lot-b-nutrition-ajout.png",
+        "1280-light-secours-fr-lot-b-nutrition-analyse.png",
+        "1280-light-secours-fr-lot-b-nutrition-clavier-simule.png",
+        "1280-light-secours-fr-lot-b-nutrition-ajoute.png",
+        "1280-light-secours-fr-lot-b-nutrition-calendrier.png",
+        "1280-light-secours-fr-lot-b-nutrition-menu.png",
+        "1280-light-secours-fr-lot-b-nutrition-profil.png",
+        "1280-light-secours-fr-lot-b-nutrition-profil-formulaire.png",
+        "1280-light-secours-fr-lot-b-graphiques.png",
+        "1280-light-secours-fr-lot-b-graphiques-calories.png",
+        "1280-light-secours-fr-lot-b-graphiques-tableau.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(26, 26, 26)",
+          "bg": "rgb(236, 236, 236)",
+          "ratio": 14.73
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#66712E",
+        "--c-stage": "#2F7D5B",
+        "--c-memoire": "#9B427A",
+        "--c-perso": "#7A7F8C",
+        "--x1": "#2A7F95",
+        "--x2": "#A84A72",
+        "--x3": "#9A7A2C",
+        "--x4": "#7C5A45",
+        "--x5": "#4B8240",
+        "--x6": "#A33D52"
+      },
+      "lotA": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "dragOrder": [
+          "a2",
+          "a3",
+          "a1"
+        ],
+        "naturalEnd": "cycle",
+        "skippedEnd": "skip"
+      },
+      "lotB": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true
+      },
+      "lotC": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "realV2Unlock": true,
+        "encryptedDocument": true,
+        "secretTitleNeverStored": true,
+        "passwordRoundTrip": true,
+        "pdfNotesSaved": true
+      },
+      "ok": true
+    },
+    {
+      "width": 900,
+      "theme": "dark",
+      "fallback": false,
+      "lang": "fr",
+      "name": "900-dark-react-fr",
+      "captures": [
+        "900-dark-react-fr-lot-b-focus-programme.png",
+        "900-dark-react-fr-lot-b-musculation.png",
+        "900-dark-react-fr-lot-b-musculation-series.png",
+        "900-dark-react-fr-lot-b-musculation-dense.png",
+        "900-dark-react-fr-lot-b-nutrition-jour.png",
+        "900-dark-react-fr-lot-b-nutrition-repas.png",
+        "900-dark-react-fr-lot-b-nutrition-copie.png",
+        "900-dark-react-fr-lot-b-nutrition-ajout.png",
+        "900-dark-react-fr-lot-b-nutrition-analyse.png",
+        "900-dark-react-fr-lot-b-nutrition-clavier-simule.png",
+        "900-dark-react-fr-lot-b-nutrition-ajoute.png",
+        "900-dark-react-fr-lot-b-nutrition-calendrier.png",
+        "900-dark-react-fr-lot-b-nutrition-menu.png",
+        "900-dark-react-fr-lot-b-nutrition-profil.png",
+        "900-dark-react-fr-lot-b-nutrition-profil-formulaire.png",
+        "900-dark-react-fr-lot-b-graphiques.png",
+        "900-dark-react-fr-lot-b-graphiques-calories.png",
+        "900-dark-react-fr-lot-b-graphiques-tableau.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(242, 242, 242)",
+          "bg": "rgb(42, 42, 42)",
+          "ratio": 12.82
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#AAB76D",
+        "--c-stage": "#6FBF98",
+        "--c-memoire": "#D286B5",
+        "--c-perso": "#A3A7B2",
+        "--x1": "#6FC3D6",
+        "--x2": "#D98AAE",
+        "--x3": "#D9B862",
+        "--x4": "#C49A80",
+        "--x5": "#8CC57E",
+        "--x6": "#E08A9A"
+      },
+      "lotA": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "dragOrder": [
+          "a2",
+          "a3",
+          "a1"
+        ],
+        "naturalEnd": "cycle",
+        "skippedEnd": "skip"
+      },
+      "lotB": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true
+      },
+      "lotC": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "realV2Unlock": true,
+        "encryptedDocument": true,
+        "secretTitleNeverStored": true,
+        "passwordRoundTrip": true,
+        "pdfNotesSaved": true
+      },
+      "ok": true
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "fallback": false,
+      "lang": "fr",
+      "name": "320-dark-react-fr",
+      "captures": [
+        "320-dark-react-fr-lot-b-focus-programme.png",
+        "320-dark-react-fr-lot-b-musculation.png",
+        "320-dark-react-fr-lot-b-musculation-series.png",
+        "320-dark-react-fr-lot-b-musculation-dense.png",
+        "320-dark-react-fr-lot-b-nutrition-jour.png",
+        "320-dark-react-fr-lot-b-nutrition-repas.png",
+        "320-dark-react-fr-lot-b-nutrition-copie.png",
+        "320-dark-react-fr-lot-b-nutrition-ajout.png",
+        "320-dark-react-fr-lot-b-nutrition-analyse.png",
+        "320-dark-react-fr-lot-b-nutrition-clavier-simule.png",
+        "320-dark-react-fr-lot-b-nutrition-ajoute.png",
+        "320-dark-react-fr-lot-b-nutrition-calendrier.png",
+        "320-dark-react-fr-lot-b-nutrition-menu.png",
+        "320-dark-react-fr-lot-b-nutrition-profil.png",
+        "320-dark-react-fr-lot-b-nutrition-profil-formulaire.png",
+        "320-dark-react-fr-lot-b-graphiques.png",
+        "320-dark-react-fr-lot-b-graphiques-calories.png",
+        "320-dark-react-fr-lot-b-graphiques-tableau.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(242, 242, 242)",
+          "bg": "rgb(42, 42, 42)",
+          "ratio": 12.82
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#AAB76D",
+        "--c-stage": "#6FBF98",
+        "--c-memoire": "#D286B5",
+        "--c-perso": "#A3A7B2",
+        "--x1": "#6FC3D6",
+        "--x2": "#D98AAE",
+        "--x3": "#D9B862",
+        "--x4": "#C49A80",
+        "--x5": "#8CC57E",
+        "--x6": "#E08A9A"
+      },
+      "lotA": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "dragOrder": [
+          "a2",
+          "a3",
+          "a1"
+        ],
+        "naturalEnd": "cycle",
+        "skippedEnd": "skip"
+      },
+      "lotB": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true
+      },
+      "lotC": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "realV2Unlock": true,
+        "encryptedDocument": true,
+        "secretTitleNeverStored": true,
+        "passwordRoundTrip": true,
+        "pdfNotesSaved": true
+      },
+      "ok": true
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "fallback": true,
+      "lang": "fr",
+      "name": "320-dark-secours-fr",
+      "captures": [
+        "320-dark-secours-fr-lot-b-focus-programme.png",
+        "320-dark-secours-fr-lot-b-musculation.png",
+        "320-dark-secours-fr-lot-b-musculation-series.png",
+        "320-dark-secours-fr-lot-b-musculation-dense.png",
+        "320-dark-secours-fr-lot-b-nutrition-jour.png",
+        "320-dark-secours-fr-lot-b-nutrition-repas.png",
+        "320-dark-secours-fr-lot-b-nutrition-copie.png",
+        "320-dark-secours-fr-lot-b-nutrition-ajout.png",
+        "320-dark-secours-fr-lot-b-nutrition-analyse.png",
+        "320-dark-secours-fr-lot-b-nutrition-clavier-simule.png",
+        "320-dark-secours-fr-lot-b-nutrition-ajoute.png",
+        "320-dark-secours-fr-lot-b-nutrition-calendrier.png",
+        "320-dark-secours-fr-lot-b-nutrition-menu.png",
+        "320-dark-secours-fr-lot-b-nutrition-profil.png",
+        "320-dark-secours-fr-lot-b-nutrition-profil-formulaire.png",
+        "320-dark-secours-fr-lot-b-graphiques.png",
+        "320-dark-secours-fr-lot-b-graphiques-calories.png",
+        "320-dark-secours-fr-lot-b-graphiques-tableau.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(242, 242, 242)",
+          "bg": "rgb(42, 42, 42)",
+          "ratio": 12.82
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#AAB76D",
+        "--c-stage": "#6FBF98",
+        "--c-memoire": "#D286B5",
+        "--c-perso": "#A3A7B2",
+        "--x1": "#6FC3D6",
+        "--x2": "#D98AAE",
+        "--x3": "#D9B862",
+        "--x4": "#C49A80",
+        "--x5": "#8CC57E",
+        "--x6": "#E08A9A"
+      },
+      "lotA": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "dragOrder": [
+          "a2",
+          "a3",
+          "a1"
+        ],
+        "naturalEnd": "cycle",
+        "skippedEnd": "skip"
+      },
+      "lotB": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true
+      },
+      "lotC": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "realV2Unlock": true,
+        "encryptedDocument": true,
+        "secretTitleNeverStored": true,
+        "passwordRoundTrip": true,
+        "pdfNotesSaved": true
+      },
+      "ok": true
+    },
+    {
+      "width": 320,
+      "theme": "light",
+      "fallback": false,
+      "lang": "fr",
+      "name": "320-light-react-fr",
+      "captures": [
+        "320-light-react-fr-lot-b-focus-programme.png",
+        "320-light-react-fr-lot-b-musculation.png",
+        "320-light-react-fr-lot-b-musculation-series.png",
+        "320-light-react-fr-lot-b-musculation-dense.png",
+        "320-light-react-fr-lot-b-nutrition-jour.png",
+        "320-light-react-fr-lot-b-nutrition-repas.png",
+        "320-light-react-fr-lot-b-nutrition-copie.png",
+        "320-light-react-fr-lot-b-nutrition-ajout.png",
+        "320-light-react-fr-lot-b-nutrition-analyse.png",
+        "320-light-react-fr-lot-b-nutrition-clavier-simule.png",
+        "320-light-react-fr-lot-b-nutrition-ajoute.png",
+        "320-light-react-fr-lot-b-nutrition-calendrier.png",
+        "320-light-react-fr-lot-b-nutrition-menu.png",
+        "320-light-react-fr-lot-b-nutrition-profil.png",
+        "320-light-react-fr-lot-b-nutrition-profil-formulaire.png",
+        "320-light-react-fr-lot-b-graphiques.png",
+        "320-light-react-fr-lot-b-graphiques-calories.png",
+        "320-light-react-fr-lot-b-graphiques-tableau.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(26, 26, 26)",
+          "bg": "rgb(236, 236, 236)",
+          "ratio": 14.73
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#66712E",
+        "--c-stage": "#2F7D5B",
+        "--c-memoire": "#9B427A",
+        "--c-perso": "#7A7F8C",
+        "--x1": "#2A7F95",
+        "--x2": "#A84A72",
+        "--x3": "#9A7A2C",
+        "--x4": "#7C5A45",
+        "--x5": "#4B8240",
+        "--x6": "#A33D52"
+      },
+      "lotA": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "dragOrder": [
+          "a2",
+          "a3",
+          "a1"
+        ],
+        "naturalEnd": "cycle",
+        "skippedEnd": "skip"
+      },
+      "lotB": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true
+      },
+      "lotC": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "realV2Unlock": true,
+        "encryptedDocument": true,
+        "secretTitleNeverStored": true,
+        "passwordRoundTrip": true,
+        "pdfNotesSaved": true
+      },
+      "ok": true
+    },
+    {
+      "width": 320,
+      "theme": "light",
+      "fallback": true,
+      "lang": "fr",
+      "name": "320-light-secours-fr",
+      "captures": [
+        "320-light-secours-fr-lot-b-focus-programme.png",
+        "320-light-secours-fr-lot-b-musculation.png",
+        "320-light-secours-fr-lot-b-musculation-series.png",
+        "320-light-secours-fr-lot-b-musculation-dense.png",
+        "320-light-secours-fr-lot-b-nutrition-jour.png",
+        "320-light-secours-fr-lot-b-nutrition-repas.png",
+        "320-light-secours-fr-lot-b-nutrition-copie.png",
+        "320-light-secours-fr-lot-b-nutrition-ajout.png",
+        "320-light-secours-fr-lot-b-nutrition-analyse.png",
+        "320-light-secours-fr-lot-b-nutrition-clavier-simule.png",
+        "320-light-secours-fr-lot-b-nutrition-ajoute.png",
+        "320-light-secours-fr-lot-b-nutrition-calendrier.png",
+        "320-light-secours-fr-lot-b-nutrition-menu.png",
+        "320-light-secours-fr-lot-b-nutrition-profil.png",
+        "320-light-secours-fr-lot-b-nutrition-profil-formulaire.png",
+        "320-light-secours-fr-lot-b-graphiques.png",
+        "320-light-secours-fr-lot-b-graphiques-calories.png",
+        "320-light-secours-fr-lot-b-graphiques-tableau.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(26, 26, 26)",
+          "bg": "rgb(236, 236, 236)",
+          "ratio": 14.73
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#66712E",
+        "--c-stage": "#2F7D5B",
+        "--c-memoire": "#9B427A",
+        "--c-perso": "#7A7F8C",
+        "--x1": "#2A7F95",
+        "--x2": "#A84A72",
+        "--x3": "#9A7A2C",
+        "--x4": "#7C5A45",
+        "--x5": "#4B8240",
+        "--x6": "#A33D52"
+      },
+      "lotA": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "dragOrder": [
+          "a2",
+          "a3",
+          "a1"
+        ],
+        "naturalEnd": "cycle",
+        "skippedEnd": "skip"
+      },
+      "lotB": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true
+      },
+      "lotC": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "realV2Unlock": true,
+        "encryptedDocument": true,
+        "secretTitleNeverStored": true,
+        "passwordRoundTrip": true,
+        "pdfNotesSaved": true
+      },
+      "ok": true,
+      "lotCPdf": {
+        "pdfTargets44": true,
+        "pdfTextAnnotationSaved": true
+      }
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "fallback": false,
+      "lang": "en",
+      "name": "390-dark-react-en",
+      "captures": [
+        "390-dark-react-en-lot-b-focus-programme.png",
+        "390-dark-react-en-lot-b-musculation.png",
+        "390-dark-react-en-lot-b-musculation-series.png",
+        "390-dark-react-en-lot-b-musculation-dense.png",
+        "390-dark-react-en-lot-b-nutrition-jour.png",
+        "390-dark-react-en-lot-b-nutrition-repas.png",
+        "390-dark-react-en-lot-b-nutrition-copie.png",
+        "390-dark-react-en-lot-b-nutrition-ajout.png",
+        "390-dark-react-en-lot-b-nutrition-analyse.png",
+        "390-dark-react-en-lot-b-nutrition-clavier-simule.png",
+        "390-dark-react-en-lot-b-nutrition-ajoute.png",
+        "390-dark-react-en-lot-b-nutrition-calendrier.png",
+        "390-dark-react-en-lot-b-nutrition-menu.png",
+        "390-dark-react-en-lot-b-nutrition-profil.png",
+        "390-dark-react-en-lot-b-nutrition-profil-formulaire.png",
+        "390-dark-react-en-lot-b-graphiques.png",
+        "390-dark-react-en-lot-b-graphiques-calories.png",
+        "390-dark-react-en-lot-b-graphiques-tableau.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(242, 242, 242)",
+          "bg": "rgb(42, 42, 42)",
+          "ratio": 12.82
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#AAB76D",
+        "--c-stage": "#6FBF98",
+        "--c-memoire": "#D286B5",
+        "--c-perso": "#A3A7B2",
+        "--x1": "#6FC3D6",
+        "--x2": "#D98AAE",
+        "--x3": "#D9B862",
+        "--x4": "#C49A80",
+        "--x5": "#8CC57E",
+        "--x6": "#E08A9A"
+      },
+      "lotA": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "dragOrder": [
+          "a2",
+          "a3",
+          "a1"
+        ],
+        "naturalEnd": "cycle",
+        "skippedEnd": "skip"
+      },
+      "lotB": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true
+      },
+      "lotC": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "realV2Unlock": true,
+        "encryptedDocument": true,
+        "secretTitleNeverStored": true,
+        "passwordRoundTrip": true,
+        "pdfNotesSaved": true
+      },
+      "ok": true
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "fallback": false,
+      "lang": "en",
+      "name": "390-light-react-en",
+      "captures": [
+        "390-light-react-en-lot-b-focus-programme.png",
+        "390-light-react-en-lot-b-musculation.png",
+        "390-light-react-en-lot-b-musculation-series.png",
+        "390-light-react-en-lot-b-musculation-dense.png",
+        "390-light-react-en-lot-b-nutrition-jour.png",
+        "390-light-react-en-lot-b-nutrition-repas.png",
+        "390-light-react-en-lot-b-nutrition-copie.png",
+        "390-light-react-en-lot-b-nutrition-ajout.png",
+        "390-light-react-en-lot-b-nutrition-analyse.png",
+        "390-light-react-en-lot-b-nutrition-clavier-simule.png",
+        "390-light-react-en-lot-b-nutrition-ajoute.png",
+        "390-light-react-en-lot-b-nutrition-calendrier.png",
+        "390-light-react-en-lot-b-nutrition-menu.png",
+        "390-light-react-en-lot-b-nutrition-profil.png",
+        "390-light-react-en-lot-b-nutrition-profil-formulaire.png",
+        "390-light-react-en-lot-b-graphiques.png",
+        "390-light-react-en-lot-b-graphiques-calories.png",
+        "390-light-react-en-lot-b-graphiques-tableau.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(26, 26, 26)",
+          "bg": "rgb(236, 236, 236)",
+          "ratio": 14.73
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#66712E",
+        "--c-stage": "#2F7D5B",
+        "--c-memoire": "#9B427A",
+        "--c-perso": "#7A7F8C",
+        "--x1": "#2A7F95",
+        "--x2": "#A84A72",
+        "--x3": "#9A7A2C",
+        "--x4": "#7C5A45",
+        "--x5": "#4B8240",
+        "--x6": "#A33D52"
+      },
+      "lotA": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "dragOrder": [
+          "a2",
+          "a3",
+          "a1"
+        ],
+        "naturalEnd": "cycle",
+        "skippedEnd": "skip"
+      },
+      "lotB": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true
+      },
+      "lotC": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "realV2Unlock": true,
+        "encryptedDocument": true,
+        "secretTitleNeverStored": true,
+        "passwordRoundTrip": true,
+        "pdfNotesSaved": true
+      },
+      "ok": true
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "fallback": false,
+      "lang": "nl",
+      "name": "390-dark-react-nl",
+      "captures": [
+        "390-dark-react-nl-lot-b-focus-programme.png",
+        "390-dark-react-nl-lot-b-musculation.png",
+        "390-dark-react-nl-lot-b-musculation-series.png",
+        "390-dark-react-nl-lot-b-musculation-dense.png",
+        "390-dark-react-nl-lot-b-nutrition-jour.png",
+        "390-dark-react-nl-lot-b-nutrition-repas.png",
+        "390-dark-react-nl-lot-b-nutrition-copie.png",
+        "390-dark-react-nl-lot-b-nutrition-ajout.png",
+        "390-dark-react-nl-lot-b-nutrition-analyse.png",
+        "390-dark-react-nl-lot-b-nutrition-clavier-simule.png",
+        "390-dark-react-nl-lot-b-nutrition-ajoute.png",
+        "390-dark-react-nl-lot-b-nutrition-calendrier.png",
+        "390-dark-react-nl-lot-b-nutrition-menu.png",
+        "390-dark-react-nl-lot-b-nutrition-profil.png",
+        "390-dark-react-nl-lot-b-nutrition-profil-formulaire.png",
+        "390-dark-react-nl-lot-b-graphiques.png",
+        "390-dark-react-nl-lot-b-graphiques-calories.png",
+        "390-dark-react-nl-lot-b-graphiques-tableau.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(242, 242, 242)",
+          "bg": "rgb(42, 42, 42)",
+          "ratio": 12.82
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#AAB76D",
+        "--c-stage": "#6FBF98",
+        "--c-memoire": "#D286B5",
+        "--c-perso": "#A3A7B2",
+        "--x1": "#6FC3D6",
+        "--x2": "#D98AAE",
+        "--x3": "#D9B862",
+        "--x4": "#C49A80",
+        "--x5": "#8CC57E",
+        "--x6": "#E08A9A"
+      },
+      "lotA": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "dragOrder": [
+          "a2",
+          "a3",
+          "a1"
+        ],
+        "naturalEnd": "cycle",
+        "skippedEnd": "skip"
+      },
+      "lotB": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true
+      },
+      "lotC": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "realV2Unlock": true,
+        "encryptedDocument": true,
+        "secretTitleNeverStored": true,
+        "passwordRoundTrip": true,
+        "pdfNotesSaved": true
+      },
+      "ok": true
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "fallback": false,
+      "lang": "nl",
+      "name": "390-light-react-nl",
+      "captures": [
+        "390-light-react-nl-lot-b-focus-programme.png",
+        "390-light-react-nl-lot-b-musculation.png",
+        "390-light-react-nl-lot-b-musculation-series.png",
+        "390-light-react-nl-lot-b-musculation-dense.png",
+        "390-light-react-nl-lot-b-nutrition-jour.png",
+        "390-light-react-nl-lot-b-nutrition-repas.png",
+        "390-light-react-nl-lot-b-nutrition-copie.png",
+        "390-light-react-nl-lot-b-nutrition-ajout.png",
+        "390-light-react-nl-lot-b-nutrition-analyse.png",
+        "390-light-react-nl-lot-b-nutrition-clavier-simule.png",
+        "390-light-react-nl-lot-b-nutrition-ajoute.png",
+        "390-light-react-nl-lot-b-nutrition-calendrier.png",
+        "390-light-react-nl-lot-b-nutrition-menu.png",
+        "390-light-react-nl-lot-b-nutrition-profil.png",
+        "390-light-react-nl-lot-b-nutrition-profil-formulaire.png",
+        "390-light-react-nl-lot-b-graphiques.png",
+        "390-light-react-nl-lot-b-graphiques-calories.png",
+        "390-light-react-nl-lot-b-graphiques-tableau.png"
+      ],
+      "contrasts": [
+        {
+          "selector": ".hc[data-app=fit] .hc-top",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-desc",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "selector": ".hc[data-app=fit] .hc-fn",
+          "fg": "rgb(26, 26, 26)",
+          "bg": "rgb(236, 236, 236)",
+          "ratio": 14.73
+        },
+        {
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(37, 99, 235)",
+          "ratio": 5.17
+        },
+        {
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(37, 99, 235)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.17
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(18, 18, 18)",
+          "bg": "rgb(242, 92, 25)",
+          "ratio": 5.64
+        },
+        {
+          "view": "muscu",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(242, 92, 25)",
+          "bg": "rgb(18, 18, 18)",
+          "ratio": 5.64
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-names small",
+          "fg": "rgb(255, 255, 255)",
+          "bg": "rgb(124, 58, 237)",
+          "ratio": 5.7
+        },
+        {
+          "view": "notes",
+          "selector": "#vhead .ah-claude",
+          "fg": "rgb(124, 58, 237)",
+          "bg": "rgb(255, 255, 255)",
+          "ratio": 5.7
+        }
+      ],
+      "palette": {
+        "--c-event": "#0F8B8D",
+        "--c-cours": "#66712E",
+        "--c-stage": "#2F7D5B",
+        "--c-memoire": "#9B427A",
+        "--c-perso": "#7A7F8C",
+        "--x1": "#2A7F95",
+        "--x2": "#A84A72",
+        "--x3": "#9A7A2C",
+        "--x4": "#7C5A45",
+        "--x5": "#4B8240",
+        "--x6": "#A33D52"
+      },
+      "lotA": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "dragOrder": [
+          "a2",
+          "a3",
+          "a1"
+        ],
+        "naturalEnd": "cycle",
+        "skippedEnd": "skip"
+      },
+      "lotB": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true
+      },
+      "lotC": {
+        "renderDataUnchanged": true,
+        "protectedDataUnchanged": true,
+        "realV2Unlock": true,
+        "encryptedDocument": true,
+        "secretTitleNeverStored": true,
+        "passwordRoundTrip": true,
+        "pdfNotesSaved": true
+      },
+      "ok": true
+    }
+  ],
+  "errors": []
+}

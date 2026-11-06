@@ -20,10 +20,10 @@ function trStr(raw){
 function trNode(n){
   if(n.nodeType===3){const p=n.parentElement;if(!p||p.closest(NOTR)||p.closest("script,style"))return;const v=trStr(n.nodeValue);if(v!==n.nodeValue)n.nodeValue=v;return}
   if(n.nodeType!==1||n.matches("script,style"))return;
-  for(const a of ["placeholder","aria-label","title"]){const v=n.getAttribute(a);if(v){const w=trStr(v);if(w!==v)n.setAttribute(a,w)}}
+  for(const a of ["placeholder","aria-label","title"]){const v=n.hasAttribute("data-user-label")?null:n.getAttribute(a);if(v){const w=trStr(v);if(w!==v)n.setAttribute(a,w)}}
   if(n.closest(NOTR)&&!n.matches("input,select,textarea"))return;
   const w=document.createTreeWalker(n,NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT);let x;
-  while((x=w.nextNode()))if(x.nodeType===3)trNode(x);else for(const a of ["placeholder","aria-label","title"]){const v=x.getAttribute(a);if(v){const u=trStr(v);if(u!==v)x.setAttribute(a,u)}}
+  while((x=w.nextNode()))if(x.nodeType===3)trNode(x);else for(const a of ["placeholder","aria-label","title"]){const v=x.hasAttribute("data-user-label")?null:x.getAttribute(a);if(v){const u=trStr(v);if(u!==v)x.setAttribute(a,u)}}
 }
 function startTranslate(){
   document.documentElement.lang=LANG;document.title="Sid'compagnon";

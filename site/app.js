@@ -7,6 +7,19 @@ let bootFresh=true;
 function bootTop(){if(bootFresh&&typeof data!=="undefined"&&data.ui&&data.ui.view==="home")window.scrollTo(0,0)}
 /* ---------- icônes au trait (v24, style Graphite : plus aucun émoji dans l'interface) ---------- */
 const ICS={
+  eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  upload:'<path d="M12 16V3m-5 5 5-5 5 5M4 15v6h16v-6"/>',
+  rest:'<path d="M9 2h6M12 6v6l3 2M19 5l2 2M21 14a9 9 0 1 1-18 0 9 9 0 0 1 18 0"/>',
+  tick:'<path d="m5 12 4 4L19 6"/>',
+  help:'<path d="M9 9a3 3 0 1 1 5 2c-2 1-2 2-2 3m0 3v.01M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0"/>',
+  copy:'<path d="M9 5H5v14h10v-4M9 3h10v12H9z"/>',
+  arrowup:'<path d="M12 19V5m-6 6 6-6 6 6"/>',
+  chevleft:'<path d="m15 6-6 6 6 6"/>',
+  list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  close:'<path d="m6 6 12 12M18 6 6 18"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  minus:'<path d="M5 12h14"/>',
+  refresh:'<path d="M20 11a8 8 0 1 0-2 6M20 4v7h-7"/>',
   check:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8 12 3 3 5-6"/>',
   chev:'<path d="m9 5 7 7-7 7"/>',
   message:'<path d="M5 5h14v11H9l-4 4V5z"/>',
@@ -556,10 +569,13 @@ function renderVhead(v){const el=$("vhead");
  const g=groupOf(v),previous=el.dataset.app===g.app?Number(el.querySelector("[role=progressbar]")?.getAttribute("aria-valuenow")||0):0;el.hidden=false;el.dataset.app=g.app;el.classList.remove("many");
  const list=allT().filter(t=>onDay(t,iso(today()))&&!t.canc),done=list.filter(t=>t.status==="fait"||(t.date===iso(today())&&t.timeEnd&&toMin(t.timeEnd)<=new Date().getHours()*60+new Date().getMinutes())).length;
  let progress=`${done} / ${list.length} ${L("activités réalisées")}`,percent=list.length?Math.round(done/list.length*100):0,hasProgress=g.app==="agenda";
- if(g.app==="fit"){const n=NU(),log=ML().filter(x=>x.date===iso(today())),sets=log.reduce((sum,x)=>sum+(x.ex||[]).reduce((a,e)=>a+(e.sets||[]).length,0),0);
-  if(v!=="muscu"&&nutriAllowed()&&n.plan?.kcal){const eaten=Math.round(sumOf(dayLog(iso(today()))).kcal),target=dayTarget(iso(today())).kcal;progress=`${eaten} / ${Math.round(target)} kcal`;percent=Math.min(100,Math.round(eaten/target*100));hasProgress=true}
-  else{progress=v==="muscu"?`${sets} ${L("séries réalisées aujourd'hui")}`:`${M().sessions.length} ${L("séances")}`;hasProgress=false}}
- if(g.app==="note"){progress=`${NT().length} ${L("notes")} · ${docsArr().length} ${L("documents")}`;hasProgress=false}
+ if(v==="todo"){const day=iso(today()),items=data.todos.filter(t=>!t.paused&&(t.done?doneDay(t)===day:!t.day||tDay(t)===day)),completed=items.filter(t=>t.done).length;progress=`${completed} / ${items.length} ${L("tâches réalisées aujourd'hui")}`;percent=items.length?Math.round(completed/items.length*100):0;hasProgress=true}
+ if(v==="pomo"){const r=P.run,segs=r?r.segs:buildSegs(P.cfg),total=r?segs.reduce((a,x)=>a+x.d*MIN,0):pomoLastPosition?pomoLastPosition.total:segs.reduce((a,x)=>a+x.d*MIN,0),taken=r?Math.max(0,Math.min(total,elapsed(r))):pomoLastPosition?total:0,n=r?segs.filter(x=>x.t==="w").length:pomoLastPosition?pomoLastPosition.cycles:segs.filter(x=>x.t==="w").length,cycle=r?segs.slice(0,locate(r,taken).i+1).filter(x=>x.t==="w").length:pomoLastPosition?n:0;progress=!r&&!pomoLastPosition?`${pomoDuration(total/MIN)} · ${n} ${L(n===1?"session":"sessions")}`:`${pomoDuration(taken/MIN)} ${L("sur")} ${pomoDuration(total/MIN)} · ${L("session")} ${Math.min(n,cycle)} ${L("sur")} ${n}`;percent=total?Math.min(100,Math.round(taken/total*1000)/10):0;hasProgress=true}
+ if(g.app==="fit"){const n=NU();
+  if(v==="muscu"){const p=muSessionProgress();progress=`${p.done} / ${p.total} ${L("séries complètes")}`;percent=p.total?Math.round(p.done/p.total*100):0;hasProgress=true}
+  else if(nutriAllowed()&&n.plan?.kcal){const eaten=Math.round(sumOf(dayLog(iso(today()))).kcal),target=dayTarget(iso(today())).kcal;progress=`${fmtFull(eaten)} / ${fmtFull(Math.round(target))}\u202fkcal`;percent=Math.min(100,Math.round(eaten/target*100));hasProgress=true}
+  else{progress=L("Définis ton objectif alimentaire");hasProgress=false}}
+ if(g.app==="note"){progress=elanCoffreMetric(v);hasProgress=false}
  if(g.app==="home"){progress="";hasProgress=false}
  const title=SHORT[v]||g.label;
  document.title=`${g.label} · ${L(title)} — Sid'compagnon`;
@@ -569,10 +585,11 @@ function renderVhead(v){const el=$("vhead");
  const bar=el.querySelector(".elan-progress-track i");if(bar&&hasProgress){bar.style.width=previous+"%";bar.getBoundingClientRect();requestAnimationFrame(()=>bar.style.width=percent+"%")}
 
 }
-$("vhead").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)show(b.dataset.go);if(e.target.closest("[data-app-claude]")){
+function elanHeadClick(e){const b=e.target.closest("[data-go]");if(b)show(b.dataset.go);if(e.target.closest("[data-app-claude]")){
  const v=data.ui.view,topic=appOf(v)==="agenda"?"agenda":appOf(v)==="note"?"note":v==="muscu"?"muscu":"nutri";
  const cv=convUrl(topic);if(cv)extOpen(cv);else aiGo(topic,T3("Je veux utiliser ","I want to use ","Ik wil werken met ")+groupOf(v).label+" · "+L(SHORT[v]));
-}});
+}}
+for(const id of ["vhead","noteAppHead"])$(id).addEventListener("click",elanHeadClick);
 let compactMotion=null,headerPointer=false;
 // Un bandeau ne doit pas déplacer la cible entre l’appui et le clic.
 addEventListener("pointerdown",()=>{headerPointer=true},true);
@@ -707,6 +724,14 @@ function renderTabsCard(){
 $("tabsCard").addEventListener("change",e=>{const c=e.target.closest("[data-tabpref]");if(!c)return;
   data.prefs.tabs[c.dataset.tabpref]=c.checked;save();applyTabs();renderHomeSel();toast(c.checked?"Onglet affiché":"Onglet masqué")});
 
+// Compteurs de présentation uniquement ; aucun nombre déchiffré avant ouverture.
+function elanCoffreMetric(v){
+ if(v==="notes"){const n=NT().length;return `${fmtFull(n)} ${L(n===1?"note":"notes")}`}
+ if(v==="docs"){if(!dvOpen)return L("Verrouillé");const a=docsArr(),size=a.reduce((n,d)=>n+(d.size||0),0);return `${fmtFull(a.length)} ${L(a.length===1?"document":"documents")} · ${size?fmtSize(size):"0 "+(LANG==="fr"?"Ko":"KB")}`}
+ if(v==="pwd")return vaultKey?`${fmtFull(vaultItems.size)} ${L(vaultItems.size===1?"mot de passe":"mots de passe")}`:L("Verrouillé");return "";
+}
+function elanRefreshCoffreMetric(){const v=data.ui.view;if(!["notes","docs","pwd"].includes(v))return;const e=$("vhead").querySelector(".elan-progress>span:first-child");if(e)e.textContent=elanCoffreMetric(v)}
+
 /* ---------- À faire ---------- */
 // v39 : tâches planifiées (todo.day = AAAA-MM-JJ). Une tâche pas faite à temps passe toute seule au jour suivant :
 // le jour affiché devient aujourd'hui (tDay), sans réécrire les données ; tLate = nombre de jours de retard (badge « reportée »).
@@ -717,16 +742,16 @@ const doneDay=t=>t.doneAt?iso(new Date(t.doneAt)):null;
 const dayTodos=k=>data.todos.filter(t=>!t.paused&&(t.done?t.day&&doneDay(t)===k:tDay(t)===k)).sort((a,b)=>(a.done-b.done)||ordSort(a,b));
 function dayLbl(k){const t0=iso(today());if(k===t0)return L("Aujourd'hui");const d=parse(k),tm=new Date(today());tm.setDate(tm.getDate()+1);
   if(k===iso(tm))return L("Demain");return `${DOW[d.getDay()].slice(0,3)}. ${d.getDate()} ${MO[d.getMonth()]}`}
-const planChip=t=>{if(t.done||!t.day)return"";const n=tLate(t);return ` <span class="tchip ${n?"late":tDay(t)===iso(today())?"today":""}">${n?`↻ ${L("reportée")}`:esc(dayLbl(t.day))}</span>`};
+const planChip=t=>{if(t.done||!t.day)return"";const n=tLate(t);return ` <span class="tchip ${n?"late":tDay(t)===iso(today())?"today":""}">${n?`${IC("refresh")} ${L("reportée")}`:esc(dayLbl(t.day))}</span>`};
 function todoToggle(t){t.done=!t.done;delete t.paused;if(t.done){t.doneAt=new Date().toISOString();if(t.day&&t.day<iso(today()))t.day=iso(today());toast("Tâche réalisée")}else delete t.doneAt;
-  freshId=t.id;save();renderTodos();if(navigator.vibrate)navigator.vibrate(10)}
+  freshId=t.id;todoProgressChange=t.done?"done":"adjust";save();renderTodos();if(navigator.vibrate)navigator.vibrate(10)}
 // planifier : aujourd'hui, demain, une date, ou retirer la date
 function todoPlan(t,after){const set=k=>{if(k)t.day=k;else delete t.day;t.upd=Date.now();save();renderTodos();if(after)after();toast(k?`${L("Prévue")} : ${dayLbl(k)}`:"Date retirée")};
   const tm=new Date(today());tm.setDate(tm.getDate()+1);
   openActions(L("Planifier"),[{l:"Aujourd'hui",on:t.day===iso(today()),fn:()=>set(iso(today()))},{l:"Demain",on:t.day===iso(tm),fn:()=>set(iso(tm))},
     {l:"Choisir une date…",fn:()=>{const i=$("planPick");i.value=t.day||iso(today());i.onchange=()=>{if(i.value)set(i.value)};try{i.showPicker()}catch(e){i.focus();i.click()}}},
     ...(t.day?[{l:"Retirer la date",fn:()=>set(null)}]:[])])}
-let freshId=null,todoQ="";
+let freshId=null,todoQ="",todoProgressChange="adjust";
 const PEN=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>`,PAUSE=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6v12M15 6v12"/></svg>`;
 const DOWL=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
 const mlow=i=>LANG==="en"?MOL[i]:MOL[i].toLowerCase();
@@ -805,7 +830,7 @@ function doneCal(list){const byDay={};list.forEach(t=>{const k=iso(new Date(t.do
   for(let d=1;d<=nd;d++){const k=`${y}-${two(m+1)}-${two(d)}`,n=(byDay[k]||[]).length,lv=n?Math.ceil(n/max*4):0;
     g+=`<button type="button" class="dc-d lv${lv} ${k===tk?"td":""}" data-dcday="${k}" aria-pressed="${dcSel===k}" ${n?"":"disabled"} aria-label="${d} ${MOL[m]} : ${n}"><span>${d}</span>${n?`<b>${n}</b>`:""}</button>`}
   const sel=dcSel&&byDay[dcSel];const sd=dcSel?parse(dcSel):null;
-  return `<div class="card dc"><div class="dc-top"><button type="button" class="mini" data-dcm="${dcMonth-1}" aria-label="${L("Mois précédent")}">‹</button><b>${L(MOL[m])} ${y}</b><button type="button" class="mini" data-dcm="${dcMonth+1}" ${dcMonth>=cur?"disabled":""} aria-label="${L("Mois suivant")}">›</button></div>
+  return `<div class="card dc"><div class="dc-top"><button type="button" class="mini" data-dcm="${dcMonth-1}" aria-label="${L("Mois précédent")}">${IC("chev")}</button><b>${L(MOL[m])} ${y}</b><button type="button" class="mini" data-dcm="${dcMonth+1}" ${dcMonth>=cur?"disabled":""} aria-label="${L("Mois suivant")}">${IC("chev")}</button></div>
     <div class="small muted" style="text-align:center;margin:-2px 0 8px">${monthN} ${L(monthN>1?"tâches réalisées ce mois-ci":"tâche réalisée ce mois-ci")}</div>
     <div class="dc-g">${[...({fr:"LMMJVSD",en:"MTWTFSS",nl:"MDWDVZZ"}[LANG]||"LMMJVSD")].map(x=>`<i>${x}</i>`).join("")}${g}</div></div>`+
     (sel?`<div class="grp-d" style="margin:10px 4px 6px">${DOWL[sd.getDay()]} ${sd.getDate()} ${mlow(sd.getMonth())} · ${sel.length} ${L(sel.length>1?"tâches":"tâche")}</div><div class="card">${sel.map(todoRow).join("")}</div>`
@@ -829,16 +854,17 @@ function renderTodos(){
   const fin=cats.filter(finished),showFin=!!TV().showFin||fin.some(c=>c.id===cc);
   const isl=window.SCIslands&&window.SCIslands.todos&&!window.__noIslands;
   if(!isl)$("todoCats").innerHTML=`<button class="pill" data-tcat="all" aria-pressed="${cc==="all"}">${L("Toutes")}</button>`+
-    cats.filter(c=>!finished(c)).map(c=>`<button class="pill" data-tcat="${c.id}" aria-pressed="${cc===c.id}">${esc(c.name)} <span class="cnt">${openN(c.id)||""}</span></button>`).join("")+
-    (fin.length?`<button class="pill" data-tcatfin="1" aria-pressed="${showFin}">✓ ${fin.length} ${L(fin.length>1?"terminées":"terminée")}</button>`+(showFin?fin.map(c=>`<button class="pill" data-tcat="${c.id}" aria-pressed="${cc===c.id}" style="opacity:.75">✓ ${esc(c.name)}</button>`).join(""):""):"")+
-    `<button class="pill add" data-tcatnew="1">+ ${L("Catégorie")}</button>`;
+    cats.filter(c=>!finished(c)).map(c=>`<button class="pill" data-tcat="${c.id}" data-user-label="" title="${esc(c.name)}" aria-label="${esc(c.name)}" aria-pressed="${cc===c.id}"><span class="cat-name notr">${esc(c.name)}</span><span class="cnt">${openN(c.id)||""}</span></button>`).join("")+
+    (fin.length?`<button class="pill" data-tcatfin="1" aria-pressed="${showFin}">${CHECK} ${fin.length} ${L(fin.length>1?"terminées":"terminée")}</button>`+(showFin?fin.map(c=>`<button class="pill" data-tcat="${c.id}" data-user-label="" title="${esc(c.name)}" aria-label="${esc(c.name)}" aria-pressed="${cc===c.id}" style="opacity:.75">${CHECK}<span class="cat-name notr">${esc(c.name)}</span></button>`).join(""):""):"")+
+    `<button class="pill add" data-tcatnew="1">${IC("plus")} ${L("Catégorie")}</button>`;
+  const foldKeys=[...new Set(open.map(t=>t.cat&&catOf(t.cat)?t.cat:"none"))],foldAll=$("todoFoldAll"),allFolded=foldKeys.every(k=>TV().fold[k]);foldAll.hidden=cc!=="all"||foldKeys.length<2;foldAll.title=foldAll.ariaLabel=L(allFolded?"Tout déplier":"Tout replier");foldAll.setAttribute("aria-expanded",String(!allFolded));
   const cat=catOf(cc);
   $("catBar").hidden=!cat;
   if(cat&&!isl){const tot=data.todos.filter(t=>t.cat===cat.id&&!t.paused).length,dn=data.todos.filter(t=>t.cat===cat.id&&t.done).length;
-    $("catBar").innerHTML=catEditing?`<form id="catRename" style="display:flex;gap:8px;width:100%"><input id="catRenIn" value="${esc(cat.name)}" aria-label="Nouveau nom" autocomplete="off"><button class="btn" type="submit">OK</button></form>`
+    $("catBar").innerHTML=catEditing?`<form id="catRename" style="display:flex;gap:8px;width:100%"><input id="catRenIn" value="${esc(cat.name)}" aria-label="Nouveau nom" autocomplete="off"><button class="btn ghost" type="submit">OK</button></form>`
       :`<div class="grow"><b>${esc(cat.name)}</b><div class="small muted">${tot?`${dn}/${tot} ${L("réalisées")}`:L("Aucune tâche pour l'instant")}</div></div>
         <div class="cat-prog" style="width:70px"><i style="width:${tot?dn/tot*100:0}%"></i></div>
-        <button class="mini" data-catren="1">${L("Renommer")}</button><button class="x" data-catdel="1" aria-label="Supprimer la catégorie">×</button>`}
+        <button class="mini" data-catren="1">${L("Renommer")}</button><button class="x" data-catdel="1" aria-label="Supprimer la catégorie">${IC("close")}</button>`}
   $("todoIn").placeholder=cat?`${L("Nouvelle tâche dans")} « ${cat.name} »…`:L("Nouvelle tâche…");
   // liste à faire
   const emptyMsg=`<div class="card"><div class="empty">${q?"Aucune tâche à faire ne correspond.":all.some(t=>t.done)?"Tout est réalisé. Bravo !":cat?"Aucune tâche dans cette catégorie. Ajoute-en une ci-dessus.":"Aucune tâche. Ajoute-en une ci-dessus."}</div></div>`;
@@ -847,14 +873,14 @@ function renderTodos(){
     // v44.6 : les tâches sans catégorie d'abord, puis les catégories
     const groups=[{c:null,items:open.filter(t=>!(t.cat&&catOf(t.cat)))},...cats.map(c=>({c,items:open.filter(t=>t.cat===c.id)}))].filter(g=>g.items.length);
     // chaque catégorie peut être repliée (réglage propre à cet appareil)
-    const fold=TV().fold,allFolded=groups.every(g=>fold[g.c?g.c.id:"none"]);
+    const fold=TV().fold;
     const fbtn=(k,n)=>`<button class="foldc" data-tfold="${k}" aria-expanded="${!fold[k]}" aria-label="${L(fold[k]?"Déplier":"Replier")}">${CHEV}</button>`;
     const body=(k,items)=>fold[k]?"":`<div class="card" data-group="${k}">${items.map(todoRow).join("")}</div>`;
     const cnt=(k,n)=>fold[k]?`<span class="fold-n">${n}</span>`:"";
-    $("todoOpen").innerHTML=(groups.length>1?`<div style="display:flex;justify-content:flex-end;margin:-4px 0 -10px"><button type="button" class="mini" data-tfoldall="1">${L(allFolded?"Tout déplier":"Tout replier")}</button></div>`:"")+groups.map(g=>{
+    $("todoOpen").innerHTML=groups.map(g=>{
       if(!g.c)return `<div class="cat-h">${fbtn("none")}<h2>${L("Sans catégorie")}</h2>${cnt("none",g.items.length)}</div>${body("none",g.items)}`;
       const tot=data.todos.filter(t=>t.cat===g.c.id&&!t.paused).length,dn=data.todos.filter(t=>t.cat===g.c.id&&t.done).length;
-      return `<div class="cat-h">${fbtn(g.c.id)}<h2><button class="back" data-tcat="${g.c.id}" style="padding:0;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit">${esc(g.c.name)} ›</button></h2>${cnt(g.c.id,g.items.length)}<span class="small muted">${dn}/${tot}</span><div class="cat-prog"><i style="width:${tot?dn/tot*100:0}%"></i></div></div>${body(g.c.id,g.items)}`}).join("");
+      return `<div class="cat-h">${fbtn(g.c.id)}<h2><button class="back" data-user-label="" title="${esc(g.c.name)}" aria-label="${esc(g.c.name)}" data-tcat="${g.c.id}" style="padding:0;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit"><span class="cat-title notr">${esc(g.c.name)}</span>${IC("chev")}</button></h2>${cnt(g.c.id,g.items.length)}<span class="small muted">${dn}/${tot}</span><div class="cat-prog"><i style="width:${tot?dn/tot*100:0}%"></i></div></div>${body(g.c.id,g.items)}`}).join("");
   }else $("todoOpen").innerHTML=open.length?`<div class="card" data-group="${cc}">${open.map(todoRow).join("")}</div>`:emptyMsg;
   $("foldPaused").hidden=!paused.length;
   $("pausedTitle").textContent=`${L("En suspens")} (${paused.length})`;$("pausedArrow").textContent=L(pausedOpen?"Masquer":"Afficher");
@@ -873,7 +899,7 @@ function renderTodos(){
         {todos:data.todos,cats,open,paused,done,view:{cat:cc,fold:v.fold,doneOpen:!!v.doneOpen,pausedOpen:v.pausedOpen!==false,showFin:!!v.showFin,doneCal:!!v.doneCal},
          search:!!q,grip:!todoQ,catEditing,freshId,today:iso(today()),dcMonth,dcSel,i18n:{...agI18n(),DOW,DOWL,lang:LANG||"fr"}})}
     catch(e){reportErr("island todos: "+(e&&e.message));window.__noIslands=true;try{renderTodos()}finally{window.__noIslands=false}return}}
-  freshId=null;
+  if(data.ui.view==="todo"){$("vhead").dataset.progressChange=todoProgressChange;renderVhead("todo")}todoProgressChange="adjust";freshId=null;
 }
 $("todoSearch").addEventListener("input",e=>{todoQ=e.target.value;renderTodos()});
 // v44.6 : la recherche s'ouvre avec la loupe (et se referme vide)
@@ -981,7 +1007,7 @@ function yearGrid(y,cls){const now=today();let h="";
     for(let d=1;d<=n;d++)g+=`<i class="${cls(iso(new Date(y,m,d)))}">${d}</i>`;
     h+=`<button class="ym ${y===now.getFullYear()&&m===now.getMonth()?"cur":""}" data-ym="${m}" aria-label="${MOL[m]} ${y}"><b>${MOL[m]}</b><div class="ym-g">${g}</div></button>`}return h}
 // v53 (#3) : textes des îlots de l'agenda (tr = traduction avec les motifs, comme la traduction automatique du DOM)
-const agI18n=()=>({tr:x=>LANG&&LANG!=="fr"?trStr(x):x,L,MOL,MO,locale:LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE"});
+const agI18n=()=>({tr:x=>LANG&&LANG!=="fr"?trStr(x):x,L,MOL,MO,lang:LANG,locale:LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE"});
 function renderMonth(){
   const T=allT(),tIso=iso(today());
   if(shIsl("calTitle")){try{window.SCIslands.calTitle($("calTitle"),{mo:MOL[calM],y:calY,i18n:agI18n()})}catch(e){reportErr("island calTitle: "+(e&&e.message))}}
@@ -1651,8 +1677,9 @@ data.pomo=data.pomo||{cfg:{work:25,brk:5,total:120},run:null,log:{}};
 const P=data.pomo;
 const PRESETS=[60,90,120,180];
 const hm=m=>{m=Math.round(m);const h=Math.floor(m/60),r=m%60;return h?`${h} h${r?" "+String(r).padStart(2,"0"):""}`:`${r} min`};
+const pomoDuration=m=>hm(m).replace(" h",LANG==="nl"?"\u202fu":"\u202fh");
 const clockTxt=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")};
-const hhmm=d=>String(d.getHours()).padStart(2,"0")+"h"+String(d.getMinutes()).padStart(2,"0");
+const hhmm=d=>String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
 const dayKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 
 function buildSegs({work,brk,total}){
@@ -1664,16 +1691,16 @@ function buildSegs({work,brk,total}){
   }
   return segs;
 }
-function planBar(segs,el,doneIdx=-1){
-  if(window.SCIslands&&window.SCIslands.planBar&&!window.__noIslands){try{window.SCIslands.planBar(el,{segs,doneIdx});return}catch(e){reportErr("island planBar: "+(e&&e.message))}}
+function planBar(segs,el,doneIdx=-1,into=0){
+  if(window.SCIslands&&window.SCIslands.planBar&&!window.__noIslands){try{window.SCIslands.planBar(el,{segs,doneIdx,into});return}catch(e){reportErr("island planBar: "+(e&&e.message))}}
   const tot=segs.reduce((a,s)=>a+s.d,0);
-  el.innerHTML=segs.map((s,i)=>`<i class="${s.t==="w"?"w":"b"} ${i<doneIdx?"past":""}" style="flex:${s.d/tot}"></i>`).join("");
+  el.innerHTML=segs.map((s,i)=>`<i class="${s.t==="w"?"w":"b"} ${i<doneIdx?"past":""}" style="flex:${s.t==="b"?"0 0 4px":s.d/tot}">${s.t==="w"?`<b style="width:${i<doneIdx?100:i===doneIdx?Math.min(1,into)*100:0}%"></b>`:""}</i>`).join("");
 }
 function renderSetup(){
   const c=P.cfg;
-  if(window.SCIslands&&window.SCIslands.pomoPresets&&!window.__noIslands){try{window.SCIslands.pomoPresets($("presets"),{presets:PRESETS,total:c.total,labels:PRESETS.map(m=>agI18n().tr(hm(m)))})}catch(e){reportErr("island presets: "+(e&&e.message));window.__noIslands=true;try{renderSetup()}finally{window.__noIslands=false}return}}
-  else $("presets").innerHTML=PRESETS.map(m=>`<button class="preset" data-total="${m}" aria-pressed="${c.total===m}">${hm(m)}</button>`).join("");
-  $("oWork").textContent=c.work+" min";$("oBrk").textContent=c.brk+" min";$("oTotal").textContent=hm(c.total);
+  if(window.SCIslands&&window.SCIslands.pomoPresets&&!window.__noIslands){try{window.SCIslands.pomoPresets($("presets"),{presets:PRESETS,total:c.total,labels:PRESETS.map(m=>pomoDuration(m))})}catch(e){reportErr("island presets: "+(e&&e.message));window.__noIslands=true;try{renderSetup()}finally{window.__noIslands=false}return}}
+  else $("presets").innerHTML=PRESETS.map(m=>`<button class="preset notr" data-total="${m}" aria-pressed="${c.total===m}">${pomoDuration(m)}</button>`).join("");
+  $("oWork").textContent=c.work+" min";$("oBrk").textContent=c.brk+" min";$("oTotal").textContent=pomoDuration(c.total);
   const segs=buildSegs(c),n=segs.filter(s=>s.t==="w").length,
         work=segs.filter(s=>s.t==="w").reduce((a,s)=>a+s.d,0),real=segs.reduce((a,s)=>a+s.d,0);
   planBar(segs,$("planBar"));
@@ -1685,7 +1712,7 @@ $("pomoSetup").addEventListener("click",e=>{
   else if(b.dataset.step){const[k,v]=b.dataset.step.split(",");const lim={work:[5,90],brk:[1,30],total:[15,480]}[k];
     P.cfg[k]=Math.min(lim[1],Math.max(lim[0],P.cfg[k]+ +v))}
   else return;
-  save();renderSetup();
+  pomoLastPosition=null;save();renderSetup();if(data.ui.view==="pomo"){$("vhead").dataset.progressChange="position";renderVhead("pomo")}
 });
 
 /* son : débloqué au clic sur Démarrer (obligatoire sur iPhone) */
@@ -1716,18 +1743,19 @@ function locate(r,el){
   return{i:r.segs.length,into:0,d:0};
 }
 function workDone(r,el){let t=0,w=0;for(const s of r.segs){const d=s.d*MIN;if(s.t==="w")w+=Math.max(0,Math.min(d,el-t));t+=d}return w}
-let lastIdx=null,pomoSched=false;
+let lastIdx=null,pomoSched=false,pomoProgressChange="position",pomoLastPosition=null;
 function pomoPlan(){const r=P.run;if(!r||r.pausedAt){chimeCancel("pomo");pomoSched=false;return}
   const el=elapsed(r),it=[];let t=0;r.segs.forEach((s,i)=>{if(i&&t>el)it.push([s.t,t-el]);t+=s.d*MIN});it.push(["end",t-el]);pomoSched=chimePlan("pomo",it)}
 function startPomo(){
-  unlockAudio();
+  pomoLastPosition=null;pomoProgressChange="position";unlockAudio();
   const segs=buildSegs(P.cfg);
   P.run={segs,startAt:Date.now(),pausedAt:null,pausedTotal:0};lastIdx=0;
-  save();chime("w");keepAwake(true);pomoPlan();renderPomo();
+  save();chime("w");keepAwake(true);pomoPlan();renderPomo();if(data.ui.view==="pomo"){window.scrollTo(0,0);elanCompact()}
 }
 function finishPomo(completed){
   const r=P.run;if(!r)return;
   const w=workDone(r,elapsed(r)),k=dayKey(new Date(r.startAt));
+  pomoLastPosition=completed?{total:r.segs.reduce((a,x)=>a+x.d*MIN,0),cycles:r.segs.filter(x=>x.t==="w").length}:null;pomoProgressChange=completed?(pomoProgressChange==="skip"?"skip":"cycle"):"position";
   P.log[k]=(P.log[k]||0)+w;P.run=null;lastIdx=null;save();keepAwake(false);
   const pre=pomoSched;if(!completed)chimeCancel("pomo");pomoSched=false;
   if(completed){if(!pre)chime("end");toast(`Bravo ! ${hm(w/MIN)} de travail terminées`)}
@@ -1738,7 +1766,7 @@ $("pomoPause").addEventListener("click",()=>{const r=P.run;if(!r)return;unlockAu
   if(r.pausedAt){r.pausedTotal+=Date.now()-r.pausedAt;r.pausedAt=null;keepAwake(true)}else{r.pausedAt=Date.now();keepAwake(false)}
   save();pomoPlan();renderPomo()});
 $("pomoSkip").addEventListener("click",()=>{const r=P.run;if(!r)return;unlockAudio();
-  const L=locate(r,elapsed(r));r.pausedTotal-=(L.d-L.into);save();chimeCancel("pomo");pomoSched=false;tickPomo();pomoPlan()});
+  pomoProgressChange="skip";const L=locate(r,elapsed(r));r.pausedTotal-=(L.d-L.into);save();chimeCancel("pomo");pomoSched=false;tickPomo();pomoPlan()});
 $("pomoStop").addEventListener("click",e=>{const b=e.currentTarget;
   if(b.dataset.armed){finishPomo(false);toast("Session arrêtée")}
   else{b.dataset.armed="1";b.textContent="Confirmer ?";setTimeout(()=>{delete b.dataset.armed;b.textContent="Arrêter"},3000)}});
@@ -1748,6 +1776,7 @@ function tickPomo(){
   const el=elapsed(r),L=locate(r,el);
   if(L.i>=r.segs.length){finishPomo(true);return}
   if(lastIdx!==null&&L.i!==lastIdx){
+    if(pomoProgressChange!=="skip")pomoProgressChange="cycle";
     const s=r.segs[L.i];if(!pomoSched)chime(s.t);toast(s.t==="w"?"Au travail !":`Pause de ${s.d} min`);
     $("stage").classList.remove("flash");void $("stage").offsetWidth;$("stage").classList.add("flash");
   }
@@ -1757,21 +1786,23 @@ function tickPomo(){
   $("stage").style.setProperty("--pc",`var(${isW?"--accent":"--ok"})`);
   $("phase").textContent=r.pausedAt?"En pause":isW?"Travail":"Pause";
   $("clock").textContent=clockTxt(L.d-L.into);
-  $("segInfo").textContent=isW?`Session ${curW} sur ${nW}`:`Prochaine : session ${curW+1} sur ${nW}`;
+  $("stage").classList.toggle("is-paused",!!r.pausedAt);
+  $("segInfo").textContent=r.pausedAt?"En pause":isW?`Session ${curW} sur ${nW}`:`Prochaine : session ${curW+1} sur ${nW}`;
   $("ring").style.strokeDashoffset=(339.29*(L.into/L.d)).toFixed(2);
-  planBar(r.segs,$("runBar"),L.i);
+  planBar(r.segs,$("runBar"),L.i,L.into/L.d);
   const totalMs=r.segs.reduce((a,x)=>a+x.d*MIN,0);
   $("mDone").textContent=hm(workDone(r,el)/MIN);
   $("mLeft").textContent=hm((totalMs-el)/MIN);
   $("mEnd").textContent=hhmm(new Date(Date.now()+(totalMs-el)));
   $("pomoPause").textContent=r.pausedAt?"Reprendre":"Pause";
+  if(data.ui.view==="pomo"){$("vhead").dataset.progressChange=pomoProgressChange;renderVhead("pomo")}pomoProgressChange="position";
   document.title=r.pausedAt?"Sid'compagnon":`${clockTxt(L.d-L.into)} · ${isW?"Travail":"Pause"}`;
 }
 function renderPomo(){
   const run=!!P.run;
   $("pomoSetup").hidden=run;$("pomoRun").hidden=!run;setBadge("pomo",run?"dot":0);
   if(run)tickPomo();else{renderSetup();document.title="Sid'compagnon"}
-  renderPomoStats();
+  renderPomoStats();if(data.ui.view==="pomo"){$("vhead").dataset.progressChange=pomoProgressChange;renderVhead("pomo")}pomoProgressChange="position";
 }
 function renderPomoStats(){
   const today=P.log[dayKey(new Date())]||0;
@@ -2221,27 +2252,32 @@ function parseShared(txt){
 // « Série 1 : [kg] – [reps] », « + Ajouter une série », × pour retirer une série. Rien n'est pré-rempli.
 // v73 : résumé d'une séance (exercices, séries, chrono en cours ou « faite aujourd'hui »)
 function seSub(se,nS){const r=msRunGet(se.id);return `${se.exercises.length} ${L(se.exercises.length>1?"exercices":"exercice")} · ${nS} ${L(nS>1?"séries":"série")}`+
-  (r?` · ⏱ ${msRunMin(r)} min`:msDoneToday(se)?` · ✓ ${L("faite aujourd'hui")}`:"")}
+  (r?` · ${msRunMin(r)} min`:msDoneToday(se)?` · ${L("faite aujourd'hui")}`:"")}
 const exKg=x=>String(x==null?"":x).replace(".",LANG==="en"?".":",");
+// T16 B : état d'affichage dérivé des champs, sans nouvel état enregistré.
+const muSetComplete=st=>!!st&&String(st.kg??"").trim()!==""&&Number(String(st.kg).replace(",","."))>=0&&Number(st.reps)>0;
+function muSetState(ex,j,se){if(muSetComplete(ex.sets[j]))return "done";const first=(se?.exercises||[ex]).find(e=>e.sets.some(x=>!muSetComplete(x)));return first?.id===ex.id&&j===ex.sets.findIndex(x=>!muSetComplete(x))?"next":"later"}
+function muSessionProgress(){const se=msFind(msOpenId)||msFind(msRunGet()?.se)||M().sessions.find(Boolean),sets=se?(se.exercises||[]).flatMap(x=>x.sets||[]):[];return {done:sets.filter(muSetComplete).length,total:sets.length}}
+function muRefreshSetUI(se){if(!se)return;const d=$("msList").querySelector(`[data-ms="${se.id}"]`);if(d)for(const ex of se.exercises)for(let j=0;j<ex.sets.length;j++){const row=d.querySelector(`[data-ex="${ex.id}"] [data-si="${j}"]`);if(!row)continue;const state=muSetState(ex,j,se);row.dataset.setState=state;const mark=row.querySelector(".set-mark");if(mark)mark.hidden=state!=="done"}
+ if(data.ui.view==="muscu"){const {done,total}=muSessionProgress(),prev=Number($("vhead").querySelector('[role="progressbar"]')?.getAttribute("aria-valuenow")||0);$("vhead").dataset.progressChange=total&&Math.round(done/total*100)>prev?"done":"adjust";renderVhead("muscu")}}
 function seCard(se,letter){const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0),ty=seType(se),T=ty&&SE_T[ty];
   // v47 (#14) : lettre de la séance dans son programme + type (poussée, tirage, jambes…) en couleur ; séance libre en pointillés
   const tag=letter||T?`<span class="se-tag">${letter?`<b>${letter}</b>`:""}${T?`<span>${L(T[0])}</span>`:""}</span>`:`<span class="se-tag se-free">${L("Libre")}</span>`;
   const shown=String(se.name||"").replace(/^(?:Séance|Session|Training)\s+[A-F]\s*·\s*/i,"")||L("Séance");
   return `<details class="ms${letter?"":" ms-free"}" data-ms="${se.id}" ${ty?`data-se="${ty}"`:""} ${se.id===msOpenId?"open":""}>
-    <summary><span class="chev">›</span><span class="grow">${tag}<span class="ms-name notr">${esc(shown)}</span><br><span class="small muted">${esc(seSub(se,nS))}</span></span><button type="button" class="x ms-del" data-msdel="1" aria-label="${L("Supprimer la séance")}">${IC("trash")}</button></summary>
+    <summary><span class="chev">${IC("chev")}</span><span class="grow"><span class="ms-name notr" data-user-label="" title="${esc(shown)}">${esc(shown)}</span><span class="ms-meta">${tag}<span class="small muted">${esc(seSub(se,nS))}</span></span></span><button type="button" class="x ms-del" data-msdel="1" aria-label="${L("Supprimer la séance")}">${IC("trash")}</button></summary>
     <div class="ms-body">
       <label class="small muted" style="display:grid;gap:4px">${L("Nom de la séance")}<input data-f="msname" value="${esc(se.name)}" autocomplete="off"></label>
       ${se.exercises.map((ex,i)=>`<div class="ex ex3" data-ex="${ex.id}">
-        <div class="ex-head"><span class="num">${i+1}</span><span class="ex-nm"><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><span class="ex-n notr" aria-hidden="true">${esc(ex.name)}</span></span><button type="button" class="mini ex-help" data-exhelp="1" aria-label="${L("Comment faire cet exercice")}" title="${L("Comment faire cet exercice")}"${exAide(ex.name)?"":" hidden"}>?</button><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">×</button></div>
-        ${exAdvHtml(ex)}${exPrmHtml(ex)}${(p=>p?`<div class="ex-pro small">↑ ${esc(p)}</div>`:"")(exProg(ex))}
-        <div class="set-rows">${ex.sets.map((st,j)=>`<div class="set-row" data-si="${j}"><span class="set-l">${L("Série")} ${j+1}</span>
-          <input class="set-in" data-f="setkg" value="${esc(exKg(st&&st.kg))}" placeholder="kg" aria-label="${L("Série")} ${j+1} : kg" autocomplete="off" inputmode="decimal">
-          <span class="set-sep" aria-hidden="true">–</span>
-          <input class="set-in" data-f="setreps" value="${esc(String((st&&st.reps)||""))}" placeholder="reps" aria-label="${L("Série")} ${j+1} : ${L("répétitions")}" autocomplete="off" inputmode="numeric">
-          <button type="button" class="set-del" data-msdelset="${j}" aria-label="${L("Retirer la série")} ${j+1}" ${ex.sets.length<=1?"disabled":""}>×</button></div>`).join("")}</div>
-        <div class="set-acts"><button type="button" class="set-add" data-msaddset="1" ${ex.sets.length>=20?"disabled":""}>+ ${L("Ajouter une série")}</button>${ex.sets.length>1?`<button type="button" class="set-add set-copy" data-mscopy1="1" title="${L("Recopier le poids et les répétitions de la série 1 dans toutes les séries")}">↓ ${L("Série 1 sur toutes")}</button>`:""}</div>
+        <div class="ex-head"><span class="num">${i+1}</span><span class="ex-nm"><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><span class="ex-n notr" aria-hidden="true">${esc(ex.name)}</span></span><button type="button" class="mini ex-help" data-exhelp="1" aria-label="${L("Comment faire cet exercice")}" title="${L("Comment faire cet exercice")}"${exAide(ex.name)?"":" hidden"}>${IC("help")}</button><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">${IC("close")}</button></div>
+        ${exAdvHtml(ex)}${exPrmHtml(ex)}${(p=>p?`<div class="ex-pro small">${IC("arrowup")} ${esc(p)}</div>`:"")(exProg(ex))}
+        <div class="set-rows">${ex.sets.map((st,j)=>`<div class="set-row" data-si="${j}" data-set-state="${muSetState(ex,j,se)}"><span class="set-l"><span class="set-mark" ${muSetComplete(st)?"":"hidden"}>${IC("tick")}</span>${L("Série")} ${j+1}</span>
+          <span class="set-field"><input class="set-in" data-f="setkg" value="${esc(exKg(st&&st.kg))}" placeholder="" aria-label="${L("Série")} ${j+1} : kg" autocomplete="off" inputmode="decimal"><span class="set-unit">kg</span></span>
+          <span class="set-field"><input class="set-in" data-f="setreps" value="${esc(String((st&&st.reps)||""))}" placeholder="" aria-label="${L("Série")} ${j+1} : ${L("répétitions")}" autocomplete="off" inputmode="numeric"><span class="set-unit">${L("reps")}</span></span>
+          <button type="button" class="set-del" data-msdelset="${j}" aria-label="${L("Retirer la série")} ${j+1}" ${ex.sets.length<=1?"disabled":""}>${IC("close")}</button></div>`).join("")}</div>
+        <div class="set-acts"><button type="button" class="set-add" data-msaddset="1" ${ex.sets.length>=20?"disabled":""}>${IC("plus")} ${L("Ajouter une série")}</button>${ex.sets.length>1?`<button type="button" class="set-add set-copy" data-mscopy1="1" title="${L("Recopier le poids et les répétitions de la série 1 dans toutes les séries")}">${IC("copy")} ${L("Série 1 sur toutes")}</button>`:""}</div>
       </div>`).join("")}
-      <button type="button" class="qbtn" data-msaddex="1">+ ${L("Ajouter un exercice")}</button>
+      <button type="button" class="qbtn" data-msaddex="1">${IC("plus")} ${L("Ajouter un exercice")}</button>
       <div class="ms-actions">
         <button type="button" class="btn ghost" data-msshare="1">${L("Partager")}</button>
         <button type="button" class="btn stop" data-msdel="1">${L("Supprimer")}</button>
@@ -2272,7 +2308,7 @@ function msIsland(groups,free){msLast=[groups,free];
       ex:se.exercises.map(ex=>{const a=exAdv(ex.name);return{id:ex.id,name:ex.name||"",help:!!exAide(ex.name),
         adv:a?{txt:`${L("Conseillé")} (${L(MU_GOALS[muGoal()])}) : `,val:exAdvVal(a),same:exAdvSame(ex,a)}:null,
         prm:{reps:ex.reps||"",rest:+ex.rest?String(+ex.rest):"",int:ex.int||"",rpe:ex.rpe||"",tempo:ex.tempo||"",sum:exPrmSum(ex),open:msPrmOpen.has(ex.id)},pro:exProg(ex),
-        sets:ex.sets.map(st=>({kg:exKg(st&&st.kg),reps:String((st&&st.reps)||"")}))}})}};
+        sets:ex.sets.map((st,j)=>({kg:exKg(st&&st.kg),reps:String((st&&st.reps)||""),state:muSetState(ex,j,se)}))}})}};
   const G=groups.map(g=>({id:g.id,name:g.name,free:false,more:true,sub:`${L(GSRC[g.src]||"Importé")} · ${g.ses.length} ${L(g.ses.length>1?"séances":"séance")}${g.plan?` · ${L("suivi")}`:""}`,
     empty:"Aucune séance dans ce programme.",ses:g.ses.map((se,i)=>seVM(se,"ABCDEFGHIJ"[i]||""))}));
   G.push({id:"",name:"Séances libres",free:true,more:!!free.length,sub:`${free.length} ${L(free.length>1?"séances":"séance")}`,empty:"Aucune séance libre. Crée-en une ci-dessous.",ses:free.map(se=>seVM(se))});
@@ -2285,10 +2321,10 @@ function msSaveSoon(se){if(se)seTouch(se);clearTimeout(msTimer);msTimer=setTimeo
 $("msForm").addEventListener("submit",e=>{e.preventDefault();const n=$("msName").value.trim();if(!n)return;
   const se={id:uid(),name:n,exercises:[newEx()],upd:Date.now()};M().sessions.push(se);msOpenId=se.id;save();renderMuscu();$("msName").value="";toast("Séance créée")});
 $("msList").addEventListener("toggle",e=>{const t=e.target;if(t.matches&&t.matches("[data-prm]")){if(t.open)msPrmOpen.add(t.dataset.prm);else msPrmOpen.delete(t.dataset.prm);return}
-  const d=t.closest("[data-ms]");if(d&&d.open)msOpenId=d.dataset.ms},true);
+  const d=t.closest("[data-ms]");if(d&&d.open){msOpenId=d.dataset.ms;muRefreshSetUI(msFind(msOpenId))}},true);
 $("msList").addEventListener("input",e=>{
   const inp=e.target,f=inp.dataset.f;if(!f)return;
-  const se=msFind(inp.closest("[data-ms]").dataset.ms);if(!se)return;
+  const se=msFind(inp.closest("[data-ms]").dataset.ms);if(!se)return;msOpenId=se.id;
   if(f==="msname"){se.name=inp.value;if(!msRedraw()){const n=inp.closest("[data-ms]").querySelector(".ms-name");if(n)n.textContent=inp.value||L("Séance")}}
   else{const ex=se.exercises.find(x=>x.id===inp.closest("[data-ex]").dataset.ex);if(!ex)return;
     if(f==="exname"){ex.name=inp.value;const sp=inp.parentElement.querySelector(".ex-n");if(sp)sp.textContent=inp.value; // v74.5 : nom complet affiché sur plusieurs lignes
@@ -2300,7 +2336,7 @@ $("msList").addEventListener("input",e=>{
     else if(f==="setkg"||f==="setreps"){const j=+inp.closest("[data-si]").dataset.si,st=ex.sets[j];if(!st)return;
       if(f==="setkg")st.kg=inp.value.replace(",",".").replace(/[^0-9.]/g,"").slice(0,7);else st.reps=inp.value.replace(/[^0-9]/g,"").slice(0,4);
       const was=msRunGet(se.id);if(String(st.kg||"").trim()||String(st.reps||"").trim()||was){msRunTouch(se,ex,j,!!String(st.reps||"").trim());msAutoLog(se);if(!was)msRedraw()}}}
-  msSaveSoon(se)});
+  muRefreshSetUI(se);msSaveSoon(se)});
 // v44.7 : fiche « comment faire » de chaque exercice proposé (site/exercices-aide.js), dans la langue de l'app
 function exAide(name){const A=window.SIDFIT_AIDE||{},k=fold(String(name||"").trim());if(!k)return null;
   const key=Object.keys(A).find(x=>fold(x)===k);return key?{name:key,f:A[key][LANG]||A[key].fr}:null}
@@ -2563,7 +2599,7 @@ const exAdvSame=(ex,a)=>ex.sets.length===a.sets&&ex.reps===a.reps&&(+ex.rest||0)
 const restFmt=r=>{r=Math.round(+r||0);if(r<60)return r+" s";const m=Math.floor(r/60),x=r%60;return x?`${m} min ${String(x).padStart(2,"0")}`:`${m} min`};
 const exAdvVal=a=>`${a.sets} × ${a.reps} · RPE ${a.rpe} · ${restFmt(a.rest)}`;
 function exAdvHtml(ex){const a=exAdv(ex.name);if(!a)return `<div class="ex-adv" hidden></div>`;
-  return `<div class="ex-adv"><span class="grow">${L("Conseillé")} (${L(MU_GOALS[muGoal()])}) : <b>${exAdvVal(a)}</b></span>${exAdvSame(ex,a)?`<span class="ok">✓</span>`:`<button type="button" class="linkbtn" data-msadv="1">${L("Appliquer")}</button>`}</div>`}
+  return `<div class="ex-adv"><span class="grow">${L("Conseillé")} (${L(MU_GOALS[muGoal()])}) : <b>${exAdvVal(a)}</b></span>${exAdvSame(ex,a)?`<span class="ok">${IC("tick")}</span>`:`<button type="button" class="linkbtn" data-msadv="1">${L("Appliquer")}</button>`}</div>`}
 // applique le conseil : séries (seules des séries vides sont retirées), répétitions visées, repos, intensité, RPE, tempo ; annulable
 function exAdvApply(se,ex){const a=exAdv(ex.name);if(!a)return;const K=["reps","rest","int","rpe","tempo"],before={sets:ex.sets.map(x=>({...x}))};K.forEach(k=>before[k]=ex[k]);
   while(ex.sets.length<a.sets)ex.sets.push(newSet());
@@ -2874,14 +2910,14 @@ function renderDocs(){
   const cnt=id=>all.filter(d=>d.folder===id).length;
   const isl=window.SCIslands&&window.SCIslands.docs&&!window.__noIslands;
   if(!isl)$("docFolders").innerHTML=`<button class="pill" data-dfold="all" aria-pressed="${!cf}">${L("Tous")}</button>`+
-    DF().map(f=>`<button class="pill" data-dfold="${f.id}" aria-pressed="${!!(cf&&cf.id===f.id)}">${IC("folder")} ${esc(f.name)} <span class="cnt">${cnt(f.id)||""}</span></button>`).join("")+
-    `<button class="pill add" data-dfoldnew="1">+ ${L("Classeur")}</button>`;
+    DF().map(f=>`<button class="pill" data-dfold="${f.id}" aria-pressed="${!!(cf&&cf.id===f.id)}">${IC("folder")} <span class="coffre-folder-name notr" data-user-label="" title="${esc(f.name)}">${esc(f.name)}</span> <span class="cnt">${cnt(f.id)||""}</span></button>`).join("")+
+    `<button class="pill add" data-dfoldnew="1">${IC("plus")} ${L("Classeur")}</button>`;
   $("folderBar").hidden=!cf;
-  if(cf&&shIsl("folderBar")){try{window.SCIslands.folderBar($("folderBar"),{name:cf.name,count:cnt(cf.id),editing:!!dfEditing,q:dfQ,icon:IC("folder"),i18n:agI18n()})}catch(e){reportErr("island folderBar: "+(e&&e.message))}}
+  if(cf&&shIsl("folderBar")){try{window.SCIslands.folderBar($("folderBar"),{name:cf.name,count:cnt(cf.id),editing:!!dfEditing,q:dfQ,icon:IC("folder"),searchIcon:IC("search"),i18n:agI18n()})}catch(e){reportErr("island folderBar: "+(e&&e.message))}}
   else if(cf)$("folderBar").innerHTML=dfEditing?`<form id="folderRename" style="display:flex;gap:8px;width:100%"><input id="folderRenIn" value="${esc(cf.name)}" aria-label="${L("Nouveau nom")}" autocomplete="off"><button class="btn" type="submit">OK</button></form>`
     :`<div class="grow"><b class="notr">${IC("folder")} ${esc(cf.name)}</b><div class="small muted">${cnt(cf.id)} ${L(cnt(cf.id)>1?"documents":"document")}</div></div>
-      <button class="mini" data-dfren="1">${L("Renommer")}</button><button class="x" data-dfdel="1" aria-label="${L("Supprimer le classeur")}">×</button>
-      <input type="search" class="search" id="folderSearch" style="margin:8px 0 0;width:100%" placeholder="${L("Rechercher dans ce classeur")}" aria-label="${L("Rechercher dans ce classeur")}" value="${esc(dfQ)}" autocomplete="off">`;
+      <button class="mini" data-dfren="1">${L("Renommer")}</button><button class="x" data-dfdel="1" aria-label="${L("Supprimer le classeur")}">${IC("close")}</button>
+      <label class="coffre-search-label" for="folderSearch">${L("Rechercher dans ce classeur")}</label><span class="coffre-search"><i class="ic">${IC("search")}</i><input type="search" class="search" id="folderSearch" placeholder="${L("Nom du document")}" aria-label="${L("Rechercher dans ce classeur")}" value="${esc(dfQ)}" autocomplete="off"></span>`;
   // liste : recherche globale (partout) > classeur ouvert (avec sa recherche) > tous
   let list,scope;
   if(q){list=all.filter(d=>!docHidden(d));scope="all"}
@@ -2895,13 +2931,13 @@ function renderDocs(){
   // v57 (#3) : classeurs et liste dessinés par React (app/src/Vault.tsx) ; affichage seulement, le chiffrement ne change pas
   if(isl){try{window.SCIslands.docs({folders:$("docFolders"),list:$("docList")},{folders:DF().map(f=>({id:f.id,name:f.name,count:cnt(f.id)})),cur:cf?cf.id:"",icon:IC("folder"),grip:!!DF().length,i18n:agI18n(),
       empty:sq?"Aucun document ne correspond.":scope==="folder"?"Ce classeur est vide. Importe ou scanne un document : il sera rangé ici.":"Aucun document pour l'instant. Importe un PDF ou scanne une feuille.",
-      docs:list.map(d=>{const f=folderOf(d);return{id:d.id,title:d.title,folder:f&&scope==="all"?f.name:"",meta:`${d.pages?`${d.pages} ${L(d.pages>1?"pages":"page")} · `:""}${fmtSize(d.size||0)} · ${fmtDay(d.createdAt)}`,
+      docs:list.map(d=>{const f=folderOf(d);return{id:d.id,title:d.title,folder:f&&scope==="all"?f.name:"",meta:`${d.pages?`${d.pages} ${L(d.pages>1?"pages":"page")} · `:""}${fmtSize(d.size||0)}`,when:fmtDay(d.createdAt),
         status:docBusy.has(d.id)?L("Envoi…"):d.up?"":L("Sur cet appareil seulement")}})})}
     catch(e){reportErr("island docs: "+(e&&e.message));window.__noIslands=true;try{renderDocs()}finally{window.__noIslands=false}return}}
   else $("docList").innerHTML=list.length?list.map(d=>{
     const st=docBusy.has(d.id)?L("Envoi…"):d.up?"":L("Sur cet appareil seulement"),f=folderOf(d);
     return `<div class="doc" data-doc="${d.id}">${DF().length?`<button class="grip" data-dgrip="${d.id}" aria-label="${L("Glisser vers un classeur")}" title="${L("Glisser vers un classeur")}">${GRIP}</button>`:""}<button class="doc-ic" data-docopen="${d.id}" aria-label="Ouvrir">PDF</button>
-      <button class="doc-open" data-docopen="${d.id}"><b>${esc(d.title)}</b><span class="small muted">${f&&scope==="all"?`${IC("folder")} <span class="notr">${esc(f.name)}</span> · `:""}${d.pages?`${d.pages} ${L(d.pages>1?"pages":"page")} · `:""}${fmtSize(d.size||0)} · ${fmtDay(d.createdAt)}${st?` · <span style="color:var(--warn)">${st}</span>`:""}</span></button>
+      <button class="doc-open" data-docopen="${d.id}"><b class="notr" data-user-label="" title="${esc(d.title)}">${esc(d.title)}</b><span class="small muted">${d.pages?`${d.pages} ${L(d.pages>1?"pages":"page")} · `:""}${fmtSize(d.size||0)}${f&&scope==="all"?` · <span class="notr">${esc(f.name)}</span>`:""} · ${fmtDay(d.createdAt)}${st?` · <span style="color:var(--warn)">${st}</span>`:""}</span></button>
       <button class="pen" data-docshare="${d.id}" aria-label="Partager ou enregistrer">${SHARE}</button>
       <button class="pen" data-edit="doc:${d.id}" aria-label="Modifier">${PEN}</button></div>`}).join("")
     :`<div class="empty">${sq?L("Aucun document ne correspond."):scope==="folder"?L("Ce classeur est vide. Importe ou scanne un document : il sera rangé ici."):L("Aucun document pour l'instant. Importe un PDF ou scanne une feuille.")}</div>`;
@@ -2970,7 +3006,7 @@ async function dvMigrate(){
   await docsSecure();toast("C'est fait : un seul code pour tes documents et tes mots de passe");return true;
 }
 // l'onglet Documents s'ouvre avec le code, comme Mots de passe
-function renderDocLock(){const lk=!dvOpen;$("v-docs").classList.toggle("is-locked",lk);$("docLocked").hidden=!lk||!!(ps&&ps.host)}
+function renderDocLock(){const lk=!dvOpen;$("v-docs").classList.toggle("is-locked",lk);elanRefreshCoffreMetric();$("docLocked").hidden=!lk||!!(ps&&ps.host)}
 async function docsEnter(){renderDocLock();if(dvOpen){renderDocs();return}if(await dvUnlock()){renderDocLock();renderDocs();docsSyncPending();docsSecure()}}
 $("docUnlockBtn").addEventListener("click",docsEnter);
 // glisser un document (poignée ⠿) sur un classeur pour l'y ranger ; sur « Tous » pour le sortir de son classeur
@@ -3116,10 +3152,10 @@ function makePDF(pages){
 }
 function renderScan(){
   if(shIsl("scanPages")){try{window.SCIslands.scanPages($("scanPages"),{pages:scanPages.map(p=>p.out.url),i18n:agI18n()})}catch(e){reportErr("island scanPages: "+(e&&e.message))}}else
-  $("scanPages").innerHTML=scanPages.map((p,i)=>`<div class="pg"><img src="${p.out.url}" alt="Page ${i+1}"><button class="rot" data-scrot="${i}" aria-label="Pivoter">↻</button><button class="rm" data-scrm="${i}" aria-label="Retirer">×</button><span>${i+1}</span></div>`).join("");
+  $("scanPages").innerHTML=scanPages.map((p,i)=>`<div class="pg"><img src="${p.out.url}" alt="Page ${i+1}"><button class="rot" data-scrot="${i}" aria-label="Pivoter">${IC("refresh")}</button><button class="rm" data-scrm="${i}" aria-label="Retirer">${IC("close")}</button><span>${i+1}</span></div>`).join("");
   document.querySelectorAll("#scanFilter button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.flt===scanFlt));
   $("scanSave").disabled=!scanPages.length;
-  $("scanAddTxt").textContent=L(scanPages.length?"◎ Page suivante":"◎ Prendre une photo");
+  $("scanAddTxt").innerHTML=IC("camera")+" "+L(scanPages.length?"Page suivante":"Prendre une photo");
   $("scanSave").textContent=scanPages.length?`${L("Enregistrer le PDF")} (${scanPages.length} ${L(scanPages.length>1?"pages":"page")})`:L("Enregistrer le PDF");
 }
 function openScan(){
@@ -3147,6 +3183,8 @@ $("scanSave").addEventListener("click",async()=>{
   const d=await addDoc(makePDF(scanPages.map(p=>p.out)),$("scanName").value.trim()||"Scan",scanPages.length);
   btn.disabled=false;if(d){$("scan").hidden=true;scanPages=[];toast("Scan enregistré dans Documents")}
 });
+
+$("docImport").parentElement.addEventListener("keydown",e=>{if(e.target!==e.currentTarget||!["Enter"," "].includes(e.key))return;e.preventDefault();$("docImport").click()});
 
 /* ---------- récupération d'un code oublié, grâce au mot de passe du compte ---------- */
 // Quand on choisit un code (mots de passe, notes secrètes, documents), on le garde aussi chiffré avec le mot de passe
@@ -3232,7 +3270,7 @@ const noteView=n=>!n?null:n.secret?(nsKey&&n.vid===nsVid&&nsPlain.get(n.id))||nu
 function noteQueue(fn){clearTimeout(noteSaveT);notePend=fn;noteSaveT=setTimeout(noteFlush,600)}
 async function noteFlush(){clearTimeout(noteSaveT);noteSaveT=null;const f=notePend;notePend=null;if(f)await f()}
 function renderNotes(){
-  if(!$("noteList"))return;if(typeof pvRefresh==="function")pvRefresh();
+  if(!$("noteList"))return;elanRefreshCoffreMetric();if(typeof pvRefresh==="function")pvRefresh();
   // coffre des notes remis à zéro ou recréé ailleurs : on reverrouille
   if(nsKey&&(!nsOn()||data.noteVault.id!==nsVid)){nsKey=null;nsVid=null;nsPlain=new Map()}
   // notes secrètes arrivées d'un autre appareil : on les déchiffre puis on réaffiche
@@ -3241,7 +3279,9 @@ function renderNotes(){
   if(noteOpenId&&!v)noteOpenId=null; // supprimée ailleurs, ou verrouillée
   $("notesList").hidden=!!noteOpenId;$("noteEdit").hidden=!noteOpenId;document.body.classList.toggle("note-full",data.ui.view==="notes"&&!!noteOpenId);if(data.ui.view==="notes")$("vhead").hidden=!!noteOpenId;
   if(noteOpenId){
+    $("noteAppHead").innerHTML=`<div class="elan-head-row"><button type="button" class="ah-home" data-go="home" aria-label="${L("Toutes les apps")}"><span class="ah-grid">${GRIDIC}</span></button><span class="ah-brand">${LOGO("note","ah-logo")}<span class="ah-names"><b>Sid Coffre</b><small>${L(APP_ROLES.note)}</small></span></span><button type="button" class="ah-claude" data-app-claude="1"><span class="ah-chat">${IC("message")}</span>Claude</button></div><h1 class="elan-title">${L("Notes")}</h1>`;
     if(document.activeElement!==$("noteTitle"))$("noteTitle").value=v.title||"";
+    noteTitleGrow();
     if(document.activeElement!==$("noteBody"))rtSet(v);
     $("noteWhen").textContent=fmtWhen(n.upd||Date.parse(n.createdAt));
     $("noteSecBar").hidden=!n.secret;
@@ -3255,17 +3295,17 @@ function renderNotes(){
   if(shIsl("nsBar")){try{window.SCIslands.nsBar($("nsBar"),{unlock:IC("unlock"),lock:IC("lock"),i18n:agI18n()})}catch(e){reportErr("island nsBar: "+(e&&e.message))}}
   else $("nsBar").innerHTML=`<span class="grow">${IC("unlock")} ${L("Notes secrètes déverrouillées")}</span><button type="button" class="mini" data-nslock="1">${IC("lock")} ${L("Verrouiller")}</button>`;
   let list=NT().slice().sort((a,b)=>(b.upd||0)-(a.upd||0));
-  if(noteDir&&!nfOf(noteDir))noteDir=null;$("nfNew").textContent=L(noteDir?"+ Sous-dossier":"+ Dossier");
+  if(noteDir&&!nfOf(noteDir))noteDir=null;$("nfNew").innerHTML=IC("plus")+" "+L(noteDir?"Sous-dossier":"Dossier");
   const path=nfPath(noteDir);$("nfPath").hidden=!!q||!noteDir;
   // v41 : dans un dossier, un vrai bouton retour (vers le dossier parent) + le chemin complet ; on peut y déposer une note ou un dossier
   const up=path.length>1?path[path.length-2]:null;
   const isl=window.SCIslands&&window.SCIslands.notes&&!window.__noIslands;
-  if(isl){}else $("nfPath").innerHTML=noteDir?`<button type="button" class="back nf-back" data-nfgo="${up?up.id:""}">‹ ${esc(up?up.name:L("Notes"))}</button>
-    <div class="nf-crumbs"><button type="button" class="nf-crumb" data-nfgo="">${L("Notes")}</button>`+path.map((f,i)=>`<span aria-hidden="true">›</span>${i===path.length-1?`<b class="notr">${esc(f.name)}</b>`:`<button type="button" class="nf-crumb notr" data-nfgo="${f.id}">${esc(f.name)}</button>`}`).join("")+`</div>`:"";
+  if(isl){}else $("nfPath").innerHTML=noteDir?`<button type="button" class="back nf-back" data-nfgo="${up?up.id:""}">${IC("chev")}<span class="notr">${esc(up?up.name:L("Notes"))}</span></button>
+    <div class="nf-crumbs"><button type="button" class="nf-crumb" data-nfgo="">${L("Notes")}</button>`+path.map((f,i)=>`<span aria-hidden="true">${IC("chev")}</span>${i===path.length-1?`<b class="notr">${esc(f.name)}</b>`:`<button type="button" class="nf-crumb notr" data-nfgo="${f.id}">${esc(f.name)}</button>`}`).join("")+`</div>`:"";
   $("notesList").classList.toggle("in-dir",!!noteDir&&!q);const h1=$("notesList").querySelector("h1");if(h1){h1.textContent=noteDir&&!q?path[path.length-1].name:L("Notes");h1.classList.toggle("notr",!!noteDir)}
   // v42 : les dossiers en tuiles (section « Dossiers »), bien distincts des notes en lignes (section « Notes »)
   const kids=q?[]:nfKids(noteDir);
-  const dirs=kids.length?`<h2 class="nl-h">${L(noteDir?"Sous-dossiers":"Dossiers")}</h2><div class="nf-grid">`+kids.map(f=>`<div class="nf-row nf-tile"><span class="ngrip" data-fgrip="${f.id}" aria-hidden="true" title="${L("Maintenir et glisser")}">${GRIP}</span><button type="button" class="nf-open" data-nfopen="${f.id}"><span class="nf-ic">${IC("folder")}</span><b class="grow notr">${esc(f.name)}</b><span class="nf-n">${nfCount(f.id)||"0"}</span></button><button type="button" class="pen" data-nfmore="${f.id}" aria-label="${L("Plus d'actions")}">${MORE}</button></div>`).join("")+`</div>`:"";
+  const dirs=kids.length?`<h2 class="nl-h">${L(noteDir?"Sous-dossiers":"Dossiers")}</h2><div class="nf-grid">`+kids.map(f=>`<div class="nf-row nf-tile"><span class="ngrip" data-fgrip="${f.id}" aria-hidden="true" title="${L("Maintenir et glisser")}">${GRIP}</span><button type="button" class="nf-open" data-nfopen="${f.id}"><span class="nf-ic">${IC("folder")}</span><b class="grow notr">${esc(f.name)}</b><span class="nf-n">${nfCount(f.id)?`${nfCount(f.id)} ${L(nfCount(f.id)===1?"note":"notes")}`:L("Vide")}</span></button><button type="button" class="pen" data-nfmore="${f.id}" aria-label="${L("Plus d'actions")}">${MORE}</button></div>`).join("")+`</div>`:"";
   if(!q)list=list.filter(x=>noteDirOf(x)===noteDir);
   if(q)list=list.filter(x=>noteView(x)).map(x=>{const w=noteView(x);return{x,s:Math.max(fuzzyScore(w.title||"",q),fold(w.body).includes(fold(q))?11:0)}}).filter(o=>o.s>0).sort((a,b)=>b.s-a.s).map(o=>o.x);
   // v57 (#3) : chemin et liste dessinés par React (app/src/Notes.tsx) ; les notes secrètes arrivent déchiffrées (en mémoire) ou « locked »
@@ -3472,7 +3512,7 @@ function pvOverlay(w){const ov=w.querySelector(".pv-ov"),pg=+w.dataset.pg,act=do
   for(const a of pvAnns(pv.note,pg)){if(keep&&keep.dataset.ann===a.id)continue;
     if(a.t==="ink"&&Array.isArray(a.pts)&&a.pts.length)svg.insertAdjacentHTML("beforeend",`<path data-ann="${a.id}" class="${a.hl?"ink-hl":"ink-pen"}" d="${pvPath(a.pts,r)}" stroke="${esc(/^#[0-9a-f]{6}$/i.test(a.c||"")?a.c:"#1C1A17")}" stroke-width="${((a.w||.004)*1000).toFixed(1)}"/>`);
     else if(a.t==="hl")ov.insertAdjacentHTML("beforeend",`<button type="button" class="pv-hl" data-ann="${a.id}" style="left:${pct(a.x)};top:${pct(a.y)};width:${pct(a.w)};height:${pct(a.h)}" aria-label="${L("Surlignage")}"></button>`);
-    else if(a.t==="text")ov.insertAdjacentHTML("beforeend",`<div class="pv-txt${pv.sel===a.id?" pv-on":""}" data-ann="${a.id}" style="left:${pct(a.x)};top:${pct(a.y)};width:${pct(a.w||.4)}${a.h?`;height:${pct(a.h)}`:""}"><textarea rows="1" class="notr" aria-label="${L("Texte sur le PDF")}" placeholder="${L("Écris ici…")}">${esc(a.txt||"")}</textarea><button type="button" class="pv-txt-x" data-pvdel="${a.id}" aria-label="${L("Supprimer ce texte")}">×</button><span class="pv-txt-mv" data-pvmv="${a.id}" title="${L("Déplacer")}" aria-hidden="true">${GRIP}</span><span class="pv-txt-rs" data-pvrs="${a.id}" title="${L("Agrandir ou rétrécir")}" aria-hidden="true"></span></div>`)}
+    else if(a.t==="text")ov.insertAdjacentHTML("beforeend",`<div class="pv-txt${pv.sel===a.id?" pv-on":""}" data-ann="${a.id}" style="left:${pct(a.x)};top:${pct(a.y)};width:${pct(a.w||.4)}${a.h?`;height:${pct(a.h)}`:""}"><textarea rows="1" class="notr" aria-label="${L("Texte sur le PDF")}" placeholder="${L("Écris ici…")}">${esc(a.txt||"")}</textarea><button type="button" class="pv-txt-x" data-pvdel="${a.id}" aria-label="${L("Supprimer ce texte")}">${IC("close")}</button><span class="pv-txt-mv" data-pvmv="${a.id}" title="${L("Déplacer")}" aria-hidden="true">${GRIP}</span><span class="pv-txt-rs" data-pvrs="${a.id}" title="${L("Agrandir ou rétrécir")}" aria-hidden="true"></span></div>`)}
   ov.querySelectorAll(".pv-txt textarea").forEach(pvGrow)}
 const pvGrow=t=>{t.style.height="auto";const box=t.parentElement,h=box&&box.style.height?box.clientHeight:0;t.style.height=Math.max(t.scrollHeight,h)+"px"};
 function pvRefresh(){if(!pv.note||$("pdfv").hidden)return;if(!noteFind(pv.note)){pvClose();return}document.querySelectorAll("#pvBody .pv-page").forEach(pvOverlay)}
@@ -3611,6 +3651,13 @@ function nsReset(){
   nsKey=null;nsVid=null;nsPlain=new Map();save();renderNotes();toast("Notes secrètes effacées");
 }
 
+
+// T16 C : accès clavier aux sélecteurs natifs de fichiers ; aucun changement d'import.
+for(const id of ["pdfNew","notePhotoBtn"]){$(id).addEventListener("keydown",e=>{if(e.target!==e.currentTarget||!["Enter"," "].includes(e.key))return;e.preventDefault();$(id).querySelector("input[type=file]").click()})}
+
+// Hauteur visuelle du titre ; Entrée garde son action historique vers le corps.
+function noteTitleGrow(){const e=$("noteTitle");e.style.height="auto";e.style.height=Math.min(97,Math.max(48,e.scrollHeight+3))+"px"}
+$("noteTitle").addEventListener("input",()=>{$("noteTitle").value=$("noteTitle").value.replace(/[\r\n]/g,"");noteTitleGrow()},true);
 
 /* ---------- fenêtre de code à 5 chiffres (réutilisable) ---------- */
 // askPin({mode:"new"}) → code choisi et confirmé ; askPin({mode:"unlock", verify}) → code vérifié ; null si annulé
@@ -3841,7 +3888,7 @@ function renderAiCards(){const ai=aiCur(),ok=!!(ai&&data.prefs.aiOk);
   else if(st){st.classList.toggle("on",ok);st.innerHTML=ok?`<span class="ai-dot"></span><b>${L("Claude est branché")}</b>`:`<span class="ai-dot"></span><b>${L("Claude n'est pas branché")}</b>`}
   const mb=$("aiMain");if(mb)mb.textContent=L(ok?"Tester la connexion":"Brancher Claude");
   const c=$("nuAiCard");if(!c)return;c.hidden=isTrial()||ok; // v43 : Claude branché → la carte cède la place à « Ajouter ce que tu manges » (en haut)
-  const lk=$("nuAiLink");if(lk){lk.hidden=!ok||isTrial();if(ok)lk.href=convUrl("nutri")||ai.ask(T3("J'ai mangé : ","I ate: ","Ik heb gegeten: "))}renderConv();
+  const lk=$("nuAiLink");if(lk){lk.hidden=false;if(ok)lk.href=convUrl("nutri")||ai.ask(T3("J'ai mangé : ","I ate: ","Ik heb gegeten: "))}renderConv();
   if(shIsl("nuAiCard")){try{window.SCIslands.nuAiCard(c,{ok,icon:IC("sparkle")||"",href:ok?ai.ask(T3("J'ai mangé : ","I ate: ","Ik heb gegeten: ")):"",name:ok?ai.name:"",i18n:agI18n()});return}catch(e){reportErr("island nuAiCard: "+(e&&e.message));try{window.SCIslands.unmount(c)}catch(_){}}}
   c.innerHTML=ok?`<div class="grow"><b>${IC("sparkle")||""} ${L("Claude calcule pour toi")}</b><div class="small muted">${L("Dis-lui ce que tu as mangé ou envoie-lui la photo de ton assiette : tout arrive ici.")}</div></div><a class="btn" href="${ai.ask(T3("J'ai mangé : ","I ate: ","Ik heb gegeten: "))}" target="_blank" rel="noopener">${L("Ouvrir")} ${esc(ai.name)}</a>`
     :`<div class="grow"><b>${L("Branche Claude")}</b><div class="small muted">${L("Calories, menus et bilans sont calculés par Claude, même avec la version gratuite. 2 minutes, une seule fois.")}</div></div><button type="button" class="btn" data-aiwiz="1">${L("Brancher")}</button>`}
@@ -4125,7 +4172,7 @@ function renderPwd(){
   if(!$("pinBox"))return;
   // coffre remis à zéro ou recréé sur un autre appareil : on reverrouille
   if(vaultKey&&(!vaultOn()||data.vault.id!==vaultVid)){vaultKey=null;vaultItems=new Map();pinStep=""}
-  const open=!!vaultKey;$("pinBox").hidden=open;$("vault").hidden=!open;
+  const open=!!vaultKey;$("pinBox").hidden=open;$("vault").hidden=!open;elanRefreshCoffreMetric();
   if(open){renderPwList();vaultLoad();return}
   // un coffre arrivé d'un autre appareil pendant qu'on était sur « Choisis ton code » : on passe au déverrouillage (sinon on en créerait un second)
   if(vaultOn()&&/^(new|confirm|adopt)$/.test(pinStep)){pinStep="";pinBuf="";pinFirst=""}
@@ -4204,7 +4251,7 @@ $("pwLock").addEventListener("click",()=>{pwdLock();toast("Mots de passe verroui
 const EYE=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>`;
 const COPY=`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2.5"/><path d="M15.5 8.5V6a2.5 2.5 0 0 0-2.5-2.5H6A2.5 2.5 0 0 0 3.5 6v7A2.5 2.5 0 0 0 6 15.5h2.5"/></svg>`;
 function renderPwList(){
-  if(!vaultKey)return;
+  if(!vaultKey)return;elanRefreshCoffreMetric();
   const q=pwQ.trim();let list=[...vaultItems.entries()].map(([id,v])=>({id,...v}));
   // v28 : classement au choix (data.prefs.pwSort) : A → Z (par défaut) ou les plus récents d'abord (date d'ajout ou de modification)
   const srt=data.prefs.pwSort==="date"?"date":"alpha",at=id=>{const r=PW().find(x=>x.id===id);return r?(r.upd||Date.parse(r.createdAt)||0):0};
@@ -4217,10 +4264,10 @@ function renderPwList(){
     catch(e){reportErr("island pwList: "+(e&&e.message))}}
   $("pwList").innerHTML=list.length?list.map(x=>{const show=pwShown.has(x.id);
     return `<div class="pw-row"><div class="pw-av notr">${esc((String(x.site).trim()[0]||"?"))}</div>
-      <div class="pw-main notr"><b>${esc(x.site)}</b>${x.user?`<span class="small muted">${esc(x.user)}</span>`:""}<span class="pw-sec">${show?esc(x.pw):"••••••••"}</span>${x.note&&show?`<span class="small muted">${esc(x.note)}</span>`:""}</div>
-      <button class="pen" data-pweye="${x.id}" aria-label="${L(show?"Masquer":"Afficher")}">${EYE}</button>
+      <div class="pw-main notr"><b>${esc(x.site)}</b>${x.user?`<span class="small muted">${esc(x.user)}</span>`:""}${x.note&&show?`<span class="small muted">${esc(x.note)}</span>`:""}</div>
+      <div class="pw-controls"><span class="pw-sec notr">${show?esc(x.pw):"••••••••"}</span><button class="pen" data-pweye="${x.id}" aria-label="${L(show?"Masquer":"Afficher")}">${EYE}</button>
       <button class="pen" data-pwcopy="${x.id}" aria-label="Copier le mot de passe">${COPY}</button>
-      <button class="pen" data-pwedit="${x.id}" aria-label="Modifier">${PEN}</button></div>`}).join("")
+      <button class="pen" data-pwedit="${x.id}" aria-label="Modifier">${PEN}</button></div></div>`}).join("")
     :`<div class="empty">${L(q?"Aucun site ne correspond.":"Aucun mot de passe pour l'instant. Touche « + Ajouter ».")}</div>`;
 }
 $("pwSearch").addEventListener("input",e=>{pwQ=e.target.value;renderPwList()});
@@ -4237,7 +4284,7 @@ function openPwSheet(id){
   if(!vaultKey)return;pwEditId=id||null;const v=id?vaultItems.get(id)||{}:{};
   $("pwSheetTitle").textContent=L(id?"Modifier le mot de passe":"Nouveau mot de passe");
   $("pwSite").value=v.site||"";$("pwUser").value=v.user||"";$("pwPass").value=v.pw||"";$("pwNote").value=v.note||"";
-  $("pwPass").type="password";$("pwEye").textContent=L("Voir");
+  $("pwPass").type="password";pwEyePaint(false);
   const d=$("pwDel");d.hidden=!id;d.classList.remove("armed");d.textContent=L("Supprimer");
   $("pwSheet").hidden=false;if(!id)setTimeout(()=>$("pwSite").focus(),50);
 }
@@ -4245,11 +4292,11 @@ function closePwSheet(){$("pwSheet").hidden=true;pwEditId=null;["pwSite","pwUser
 $("pwNew").addEventListener("click",()=>openPwSheet(null));
 $("pwClose").addEventListener("click",closePwSheet);
 $("pwSheet").addEventListener("click",e=>{if(e.target.id==="pwSheet")closePwSheet()});
-$("pwEye").addEventListener("click",()=>{const i=$("pwPass"),s=i.type==="password";i.type=s?"text":"password";$("pwEye").textContent=L(s?"Cacher":"Voir")});
+$("pwEye").addEventListener("click",()=>{const i=$("pwPass"),s=i.type==="password";i.type=s?"text":"password";pwEyePaint(s)});
 $("pwGen").addEventListener("click",()=>{
   const A="abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789",S="-_!?.@#",r=crypto.getRandomValues(new Uint32Array(16));
   let p=[...r].map(n=>A[n%A.length]);p[3]=S[r[3]%S.length];p[10]=String(r[10]%10);
-  $("pwPass").value=p.join("");$("pwPass").type="text";$("pwEye").textContent=L("Cacher");toast("Mot de passe généré");
+  $("pwPass").value=p.join("");$("pwPass").type="text";pwEyePaint(true);toast("Mot de passe généré");
 });
 $("pwForm").addEventListener("submit",async e=>{
   e.preventDefault();if(!vaultKey)return;
@@ -4265,6 +4312,9 @@ $("pwDel").addEventListener("click",e=>{const b=e.currentTarget;if(!pwEditId)ret
   const id=pwEditId;closePwSheet();
   undoable("Mot de passe supprimé",[id],()=>{tomb(id);data.pwds=PW().filter(x=>x.id!==id);vaultItems.delete(id);pwShown.delete(id)},{after:()=>{renderPwList();vaultLoad()}});
 });
+
+// Le même contrôle Voir/Cacher, présenté par son pictogramme et son nom accessible.
+function pwEyePaint(shown){const b=$("pwEye");b.innerHTML=IC("eye");b.setAttribute("aria-label",L(shown?"Cacher":"Voir"));b.setAttribute("aria-pressed",String(shown))}
 
 /* ---------- apparence : couleur et thème ---------- */
 // v29 : ambiances (couleur d'accent de toute l'app) ; [nom, accent clair, fond clair, accent sombre, fond sombre]
@@ -4423,6 +4473,7 @@ function micFor(inp){if(!inp||inp.dataset.mic)return;inp.dataset.mic="1";
 const nutriAllowed=()=>!!session; // v39 : pour tout le monde
 function applySoon(){const on=!nutriAllowed();document.querySelectorAll(".soonable").forEach(sec=>{sec.classList.toggle("is-soon",on);sec.querySelector(".soon").hidden=!on})}
 const NU=()=>{const n=data.nutri||(data.nutri={});if(!Array.isArray(n.log))n.log=[];if(!Array.isArray(n.weights))n.weights=[];if(!Array.isArray(n.weeks))n.weeks=[];return n};
+let nuProgressChange="adjust";
 let nuDay=iso(today()),nuEditing=false,nuDraft=null,nuPending=null,nuBusy="",nuEditId=null,nuPhoto=null;
 const r0=x=>Math.round(+x||0),r1=x=>Math.round((+x||0)*10)/10;
 const numIn=v=>{const n=parseFloat(String(v||"").replace(",",".").replace(/[^0-9.]/g,""));return isFinite(n)?n:0};
@@ -4508,7 +4559,7 @@ function nuDraftRender(){
       $("nuSports").querySelectorAll("input").forEach(i=>{if(i!==document.activeElement&&i.value!==i.defaultValue)i.value=i.defaultValue});return}catch(e){reportErr("island nuSports: "+(e&&e.message))}} // champs hors saisie = valeur enregistrée (ex. après « × »)
   $("nuSports").innerHTML=nuDraft.sports.map((x,i)=>`<div class="nu-sport">
     <input class="nu-name" data-sp="${i}" data-f="name" value="${esc(x.name)}" placeholder="${L("Ex. Musculation")}" aria-label="${L("Sport")}" autocomplete="off">
-    <button type="button" class="x" data-sprm="${i}" aria-label="${L("Retirer ce sport")}">×</button>
+    <button type="button" class="x" data-sprm="${i}" aria-label="${L("Retirer ce sport")}">${IC("close")}</button>
     <label class="nu-f"><span>${L("Fois par semaine")}</span><span class="nu-in"><input data-sp="${i}" data-f="freq" type="text" inputmode="numeric" maxlength="2" value="${esc(x.freq)}" autocomplete="off"><i>${L("/sem")}</i></span></label>
     <label class="nu-f"><span>${L("Durée d'une séance")}</span><span class="nu-in"><input data-sp="${i}" data-f="dur" type="text" maxlength="6" value="${esc(x.dur)}" placeholder="1h30" autocomplete="off"></span></label></div>`).join("");
 }
@@ -4572,8 +4623,8 @@ function renderNuWeek(){
   if(nuIsl("nuWeek")){try{window.SCIslands.nuWeek(el,{sports:ws.map(s=>({name:s.name,kps:s.kps,count:s.count,base:s.base})),range:`${m.getDate()} ${MO[m.getMonth()]} – ${e.getDate()} ${MO[e.getMonth()]}`,
     target:fmtFull(t.kcal),delta:t.delta||0,actIcon:IC("activity"),i18n:agI18n()});return}catch(x){reportErr("island nuWeek: "+(x&&x.message))}}
   el.innerHTML=`<div class="nu-week-h"><b>${IC("activity")} ${L("Ton sport cette semaine")}</b><span class="small muted">${m.getDate()} ${MO[m.getMonth()]} – ${e.getDate()} ${MO[e.getMonth()]}</span></div>`+
-    ws.map(s=>`<div class="nu-wsp"><div class="grow"><b class="notr">${esc(s.name)}</b><span class="small muted">≈ ${s.kps} kcal ${L("par séance")}${s.count!==s.base?` · ${L("d'habitude")} ${s.base}`:""}</span></div><div class="stepper"><button type="button" data-ws="${esc(s.name)}" data-d="-1" aria-label="${L("Une séance de moins")}">−</button><output>${s.count}</output><button type="button" data-ws="${esc(s.name)}" data-d="1" aria-label="${L("Une séance de plus")}">+</button></div></div>`).join("")+
-    `<div class="small">${L("Objectif par jour cette semaine")} : <b>${fmtFull(t.kcal)} kcal</b>${t.delta?` <span class="muted">(${t.delta>0?"+":""}${t.delta} ${L("selon ton sport")})</span>`:""}</div>`;
+    ws.map(s=>`<div class="nu-wsp"><div class="grow"><b class="notr">${esc(s.name)}</b><span class="small muted">≈ ${fmtFull(s.kps)}\u202fkcal ${L("par séance")}${s.count!==s.base?` · ${L("d'habitude")} ${s.base}`:""}</span></div><div class="stepper"><button type="button" data-ws="${esc(s.name)}" data-d="-1" aria-label="${L("Une séance de moins")}">${IC("minus")}</button><output>${s.count}</output><button type="button" data-ws="${esc(s.name)}" data-d="1" aria-label="${L("Une séance de plus")}">${IC("plus")}</button></div></div>`).join("")+
+    `<div class="small">${L("Objectif par jour cette semaine")} : <b>${fmtFull(t.kcal)}\u202fkcal</b>${t.delta?` <span class="muted">(${t.delta>0?"+":""}${t.delta} ${L("selon ton sport")})</span>`:""}</div>`;
 }
 $("nuWeek").addEventListener("click",e=>{const b=e.target.closest("[data-ws]");if(!b)return;const n=NU(),wk=wKey(nuDay);n.wsports=n.wsports||{};const o=n.wsports[wk]=n.wsports[wk]||{};
   const cur=weekSports(wk).find(s=>s.name===b.dataset.ws);if(!cur)return;o[cur.name]=Math.max(0,Math.min(21,cur.count+ +b.dataset.d));n.upd=Date.now();save();renderNutri()});
@@ -4585,15 +4636,16 @@ function nuDayLabel(d){const t=iso(today()),dt=parse(d),y=new Date(today());y.se
 // barre et pastilles de macros d'un plat
 function macroHtml(s){const tot=(s.p*4+s.c*4+s.f*9)||1;
   return `<div class="mbar" aria-hidden="true">${MAC.map(([k,,v])=>`<i style="--c:var(${v});width:${(k==="f"?9:4)*s[k]/tot*100}%"></i>`).join("")}</div>
-    <div class="mchips">${MAC.map(([k,l,v])=>`<span class="mchip"><b>${r1(s[k])} g</b><span><span class="mdot" style="--c:var(${v})"></span>${L(l)}</span></span>`).join("")}</div>`}
+    <div class="mchips">${MAC.map(([k,l,v])=>`<span class="mchip"><b>${fmtN(r1(s[k]))}\u202fg</b><span><span class="mdot" style="--c:var(${v})"></span>${L(l)}</span></span>`).join("")}</div>`}
 const thumbs=new Map();
 const thumbKey=g=>session.user.id+":thumb:"+g;
 async function loadThumb(g){if(thumbs.has(g))return;thumbs.set(g,null);const b=await idb.get(thumbKey(g));if(b){thumbs.set(g,b);
   if(nuIsl("nuLog")&&$("nuLog")._isl){nuLogDraw();return} // React dessine la vignette (on ne touche pas à son DOM)
   document.querySelectorAll(`[data-thumb="${g}"]`).forEach(el=>el.innerHTML=`<img src="${b}" alt="">`)}}
 // barres des macros (ancien rendu, gardé en secours de la version React)
-function nuMacrosHtml(s,tg){return MAC.map(([k,l,v])=>`<div class="nu-m"><div class="top"><b><span class="mdot" style="--c:var(${v})"></span>${L(l)}</b><span>${r0(s[k])} / ${tg[k]} g</span></div><div class="bar"><i style="--c:var(${v});width:${Math.min(100,tg[k]?s[k]/tg[k]*100:0)}%"></i></div></div>`).join("");}
+function nuMacrosHtml(s,tg){return MAC.map(([k,l,v])=>`<div class="nu-m"><div class="top"><b><span class="mdot" style="--c:var(${v})"></span>${L(l)}</b><span>${fmtFull(r0(s[k]))} / ${tg[k]}\u202fg</span></div><div class="bar"><i style="--c:var(${v});width:${Math.min(100,tg[k]?s[k]/tg[k]*100:0)}%"></i></div></div>`).join("");}
 function renderNutri(){try{renderAiCards()}catch(e){}
+  if(data.ui.view==="nutri"){$("vhead").dataset.progressChange=nuProgressChange;renderVhead("nutri")}nuProgressChange="adjust";
   if(!$("nuMain"))return;
   applySoon();
   const n=NU(),has=!!(n.plan&&n.plan.kcal);
@@ -4608,11 +4660,11 @@ function renderNutri(){try{renderAiCards()}catch(e){}
   $("nuForTxt").textContent=nuDayLabel(nuDay);$("nuForDate").value=nuDay;$("nuForDate").max=iso(today());$("nuForNext").disabled=nuDay>=iso(today());$("nuFor").classList.toggle("past",nuDay<iso(today()));
   const pct=Math.min(1,s.kcal/tg.kcal);$("nuRing").style.strokeDashoffset=326.73*(1-pct);
   $("nuRing").closest(".nu-ring").classList.toggle("over",s.kcal>tg.kcal*1.05);
-  $("nuKcal").textContent=r0(s.kcal);
+  $("nuKcal").textContent=fmtFull(r0(s.kcal));
   if(shIsl("nuKcalOf")){try{window.SCIslands.nuKcalOf($("nuKcalOf"),{target:tg.kcal,over:s.kcal>tg.kcal?r0(s.kcal-tg.kcal):0,left:r0(tg.kcal-s.kcal),i18n:agI18n()})}catch(e){reportErr("island nuKcalOf: "+(e&&e.message))}}
-  else $("nuKcalOf").innerHTML=`${L("sur")} ${tg.kcal} kcal<br>`+(s.kcal>tg.kcal?`<b style="color:var(--late)">+${r0(s.kcal-tg.kcal)}</b>`:`${L("reste")} ${r0(tg.kcal-s.kcal)}`);
+  else $("nuKcalOf").innerHTML=`${L("sur")} ${fmtFull(tg.kcal)}\u202fkcal<br>`+(s.kcal>tg.kcal?`<b style="color:var(--late)">+${fmtFull(r0(s.kcal-tg.kcal))}</b>`:`${L("reste")} ${fmtFull(r0(tg.kcal-s.kcal))}`);
   // v52 (ticket #3) : barres des macros dessinées par React (app/src/Small.tsx) ; ancien rendu en secours
-  if(window.SCIslands&&window.SCIslands.nuMacros&&!window.__noIslands){try{window.SCIslands.nuMacros($("nuMacros"),{rows:MAC.map(([k,l,v])=>({k,label:l,c:v,val:s[k],target:tg[k]})),i18n:{L,MOL,MO,DOWL}})}catch(e){reportErr("island nuMacros: "+(e&&e.message));$("nuMacros").innerHTML=nuMacrosHtml(s,tg)}}
+  if(window.SCIslands&&window.SCIslands.nuMacros&&!window.__noIslands){try{window.SCIslands.nuMacros($("nuMacros"),{rows:MAC.map(([k,l,v])=>({k,label:l,c:v,val:s[k],target:tg[k]})),i18n:{L,MOL,MO,DOWL,lang:LANG}})}catch(e){reportErr("island nuMacros: "+(e&&e.message));$("nuMacros").innerHTML=nuMacrosHtml(s,tg)}}
   else $("nuMacros").innerHTML=nuMacrosHtml(s,tg);
   $("nuLogH").textContent=nuDay===iso(today())?L("Ma journée"):L("Ce jour-là");
   // plats du jour : une carte par plat, ses aliments dedans
@@ -4621,11 +4673,11 @@ function renderNutri(){try{renderAiCards()}catch(e){}
   if(nuIsl("nuLog")){try{nuLogDraw(groups);groups.forEach(G=>loadThumb(G.g));renderNuResult();renderNuPlan();renderNuMenu();renderMenuForm();renderNuWeek();renderMenuLeft();nuShowTab();
     if(qtyEd){const i=$("qtyEdIn");if(i&&document.activeElement!==i){i.focus();i.select()}}return}catch(x){reportErr("island nuLog: "+(x&&x.message))}}
   $("nuLog").innerHTML=groups.length?groups.map(G=>{const t=sumOf(G.items),d=new Date(G.at);
-    return `<details class="dish" open><summary class="dish-h"><span class="dish-ic" data-thumb="${G.g}">${mono(G.name)}</span>
-      <span class="dish-t"><b class="notr">${esc(G.name)}</b><span class="dish-time">${two(d.getHours())}:${two(d.getMinutes())}</span>${G.items.length>1?` <span class="small muted">· ${G.items.length} ${L("aliments")}</span>`:""}</span>
-      <span class="dish-kcal">${r0(t.kcal)}<small>kcal</small></span><button type="button" class="pen nu-cp" data-nucopy="${G.g}" aria-label="${L("Copier ce repas sur d'autres jours")}" title="${L("Copier sur d'autres jours")}">+</button>${G.items.length===1?`<button class="pen" data-nuedit="${G.items[0].id}" aria-label="${L("Modifier")}">${PEN}</button>`:""}<button type="button" class="x" data-nudelg="${G.g}" aria-label="${L("Supprimer ce plat")}">×</button></summary>
-      ${macroHtml(t)}${G.items.length===1?`<div class="dish-note">${qtyCell("log:"+G.items[0].id,G.items[0])}</div>`:`<div class="dish-items">${G.items.map(x=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${qtyCell("log:"+x.id,x)}</div><span class="k">${r0(x.kcal)} kcal</span><button class="pen" data-nuedit="${x.id}" aria-label="${L("Modifier")}">${PEN}</button><button class="x" data-nudel="${x.id}" aria-label="${L("Supprimer")}">×</button></div>`).join("")}</div>`}</details>`}).join("")
-    :`<div class="card"><div class="empty">${L(nuDay===iso(today())?"Rien pour l'instant. Écris ce que tu manges ci-dessus, ou prends ton plat en photo.":"Rien d'enregistré ce jour-là. Tu peux encore le compléter.")}</div></div>`;
+    return `<details class="dish" open><summary class="dish-h"><span class="dish-clock">${two(d.getHours())}:${two(d.getMinutes())}</span><span class="dish-ic" data-thumb="${G.g}">${mono(G.name)}</span>
+      <span class="dish-t"><b class="notr" data-user-label="" title="${esc(G.name)}">${esc(G.name)}</b>${G.items.length>1?` <span class="small muted">· ${G.items.length} ${L("aliments")}</span>`:""}</span>
+      <span class="dish-kcal">${fmtFull(r0(t.kcal))}<small>\u202fkcal</small></span><button type="button" class="pen nu-cp" data-nucopy="${G.g}" aria-label="${L("Copier ce repas sur d'autres jours")}" title="${L("Copier sur d'autres jours")}">${IC("copy")}</button>${G.items.length===1?`<button class="pen" data-nuedit="${G.items[0].id}" aria-label="${L("Modifier")}">${PEN}</button>`:""}<button type="button" class="x" data-nudelg="${G.g}" aria-label="${L("Supprimer ce plat")}">${IC("close")}</button></summary>
+      ${macroHtml(t)}${G.items.length===1?`<div class="dish-note">${qtyCell("log:"+G.items[0].id,G.items[0])}</div>`:`<div class="dish-items">${G.items.map(x=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${qtyCell("log:"+x.id,x)}</div><span class="k">${fmtFull(r0(x.kcal))}\u202fkcal</span><button class="pen" data-nuedit="${x.id}" aria-label="${L("Modifier")}">${PEN}</button><button class="x" data-nudel="${x.id}" aria-label="${L("Supprimer")}">${IC("close")}</button></div>`).join("")}</div>`}</details>`}).join("")
+    :`<div class="card"><div class="empty">${L(nuDay===iso(today())?"Rien pour l'instant. Ajoute ton premier repas.":"Rien d'enregistré ce jour-là. Tu peux encore le compléter.")}</div></div>`;
   groups.forEach(G=>loadThumb(G.g));
   renderNuResult();renderNuPlan();renderNuMenu();renderMenuForm();renderNuWeek();renderMenuLeft();nuShowTab();
   if(qtyEd){const i=$("qtyEdIn");if(i&&document.activeElement!==i){i.focus();i.select()}}
@@ -4641,7 +4693,7 @@ $("nuMain").addEventListener("click",e=>{const b=e.target.closest("[data-nugo]")
 let qtyEd=null;
 function qtyCell(key,x){
   if(qtyEd===key)return `<span class="qty-in"><input id="qtyEdIn" value="${esc(x.qty||"")}" placeholder="${L("Ex. 150 g")}" aria-label="${L("Quantité")}" autocomplete="off" enterkeyhint="done"><button type="button" class="mini" data-qok="${key}">OK</button></span>`;
-  return `<button type="button" class="qty-ed notr" data-qed="${key}">${esc(qtyTxt(x)||L("Ajouter une quantité"))} ✎</button>`}
+  return `<button type="button" class="qty-ed notr" data-qed="${key}">${esc(qtyTxt(x)||L("Ajouter une quantité"))} ${PEN}</button>`}
 // « 2 c. à soupe » d'huile → grammes ; « 150 g » → 150 ; sinon le premier nombre
 function toGrams(name,t){t=String(t||"").toLowerCase().replace(",",".");
   const sp=t.match(/(\d+(?:\.\d+)?)\s*(?:c\.?|cuill[eè]res?)\s*(?:à|a)?\s*(soupe|s\b|caf[ée]|c\b)/),S=SPOONS.find(([re])=>re.test(name||""));
@@ -4661,14 +4713,14 @@ function nuGoalVM(button){const n=NU(),pl=n.plan,p=n.profile||{},w=pl&&pl.wg;if(
   const unit=p.durU==="m"?(LANG==="en"?(p.dur>1?"months":"month"):LANG==="nl"?(p.dur>1?"maanden":"maand"):"mois"):L(p.dur>1?"semaines":"semaine");
   const pace=w.wk?`${w.wk>0?"+":""}${String(w.wk).replace(".",LANG==="en"?".":",")} kg ${L("par semaine")}`:"";
   const PACE={fast:"Drastique",real:"Réaliste",easy:"À mon aise"}[p.pace];
-  return{ok:!!w.ok,head:`${p.weight} → ${p.target} kg${p.dur?` ${L("en")} ${p.dur} ${unit}`:""}`,pace:PACE?`${L("Rythme")} : ${L(PACE)}`:"",real:p.dur?L(w.ok?"Ton délai est réaliste.":"Ce délai n'est pas réaliste, ni bon pour ta santé."):"",
+  return{ok:!!w.ok,head:`${fmtN(p.weight)} → ${fmtN(p.target)} kg${p.dur?` ${L("en")} ${p.dur} ${unit}`:""}`,pace:PACE?`${L("Rythme")} : ${L(PACE)}`:"",real:p.dur?L(w.ok?"Ton délai est réaliste.":"Ce délai n'est pas réaliste, ni bon pour ta santé."):"",
     advice:w.advice||"",path:pace||w.weeks?` ${pace}${pace&&w.weeks?" · ":""}${w.weeks?`${L("environ")} ${w.weeks} ${L("semaines")}`:""}`:"",button}}
 function nuGoalHtml(){
   const n=NU(),pl=n.plan,p=n.profile||{},w=pl&&pl.wg;if(!w||!p.target)return"";
   const unit=p.durU==="m"?(LANG==="en"?(p.dur>1?"months":"month"):LANG==="nl"?(p.dur>1?"maanden":"maand"):"mois"):L(p.dur>1?"semaines":"semaine");
   const pace=w.wk?`${w.wk>0?"+":""}${String(w.wk).replace(".",LANG==="en"?".":",")} kg ${L("par semaine")}`:"";
   const PACE={fast:"Drastique",real:"Réaliste",easy:"À mon aise"}[p.pace];
-  return `<b>${w.ok?"✓ ":IC("alert")+" "}${p.weight} → ${p.target} kg${p.dur?` ${L("en")} ${p.dur} ${unit}`:""}</b>
+  return `<b>${w.ok?"✓ ":IC("alert")+" "}${fmtN(p.weight)} → ${fmtN(p.target)} kg${p.dur?` ${L("en")} ${p.dur} ${unit}`:""}</b>
     ${PACE?`<span class="small">${L("Rythme")} : ${L(PACE)}</span>`:""}
     ${p.dur?`<span class="small">${L(w.ok?"Ton délai est réaliste.":"Ce délai n'est pas réaliste, ni bon pour ta santé.")}</span>`:""}
     ${w.advice?`<span class="small muted notr">${esc(w.advice)}</span>`:""}
@@ -4678,13 +4730,13 @@ function nuGoalHtml(){
 $("nuGoalCard").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
   if(b.dataset.nugoalok){NU().plan.wgSeen=true;save();renderNutri()}
   else if(b.dataset.nugoaledit){nuEditing=true;nuFillForm();renderNutri();window.scrollTo(0,0);setTimeout(()=>$("nuTarget").focus(),100)}});
-const boxes=(items)=>`<div class="nu-plan ${items.length===4?"four":""}">${items.map(([v,l,c])=>`<div><b>${v}</b><span>${c?`<span class="mdot" style="--c:var(${c})"></span>`:""}${L(l)}</span></div>`).join("")}</div>`;
+const boxes=(items)=>`<div class="nu-plan ${items.length===4?"four":""}">${items.map(([v,l,c])=>`<div><b>${typeof v==="number"?fmtN(v):String(v).replace(/^(-?\d+(?:\.\d+)?)(.*)$/,(a,n,u)=>fmtN(+n)+u)}</b><span>${c?`<span class="mdot" style="--c:var(${c})"></span>`:""}${L(l)}</span></div>`).join("")}</div>`;
 function renderNuPlan(){
   const pl=NU().plan;if(!pl)return;
   if(nuIsl("nuPlan")){try{window.SCIslands.nuPlan($("nuPlan"),{alert:IC("alert"),i18n:agI18n(),pl:{bmr:pl.bmr,tdee:pl.tdee,kcal:pl.kcal,p:pl.p,c:pl.c,f:pl.f,text:pl.text||"",warn:pl.warn||[],goal:pl.wg?nuGoalVM(false):null}});return}
     catch(e){reportErr("island nuPlan: "+(e&&e.message))}}
   $("nuPlan").innerHTML=boxes([[pl.bmr,"Métabolisme de base"],[pl.tdee,"Dépense du jour"],[pl.kcal,"Objectif (kcal)"]])+
-    boxes([[pl.p+" g","Protéines","--m-p"],[pl.c+" g","Glucides","--m-c"],[pl.f+" g","Lipides","--m-f"]])+
+    boxes([[fmtN(pl.p)+"\u202fg","Protéines","--m-p"],[fmtN(pl.c)+"\u202fg","Glucides","--m-c"],[fmtN(pl.f)+"\u202fg","Lipides","--m-f"]])+
     `${pl.wg?`<div class="card nu-goalcard ${pl.wg.ok?"ok":""}" style="background:var(--bg)">${nuGoalHtml().replace(/<button[^>]*>.*?<\/button>/,"")}</div>`:""}
     <p class="small notr" style="margin:0 4px">${esc(pl.text)}</p>${pl.warn.map(w=>`<div class="nu-warn notr">${esc(w)}</div>`).join("")}`;
 }
@@ -4732,7 +4784,7 @@ $("nuPhoto").addEventListener("change",nuPhotoPick);$("nuPhotoLib").addEventList
 // v68 (#3) : vignette de la photo du plat (React, ancien rendu en secours)
 function nuPhotoPrevSet(src){const el=$("nuPhotoPrev");el.hidden=!src;
   if(shIsl("nuPhotoPrev")){try{window.SCIslands.nuPhotoPrev(el,{src:src||"",i18n:agI18n()});return}catch(e){reportErr("island nuPhotoPrev: "+(e&&e.message));try{window.SCIslands.unmount(el)}catch(_){}}}
-  el.innerHTML=src?`<img src="${src}" alt="${L("Photo du plat")}"><button type="button" aria-label="${L("Retirer la photo")}" data-nuphrm="1">×</button>`:""}
+  el.innerHTML=src?`<img src="${src}" alt="${L("Photo du plat")}"><button type="button" aria-label="${L("Retirer la photo")}" data-nuphrm="1">${IC("close")}</button>`:""}
 $("nuPhotoPrev").addEventListener("click",e=>{if(e.target.closest("[data-nuphrm]")){++nuPhotoSeq;nuPhotoDrop(nuPhoto);nuPhoto=null;nuPhotoPrevSet(null);nuAskLbl()}});
 // envoi direct : Claude s'ouvre avec le message ; la fenêtre est ouverte pendant le toucher (sinon le navigateur la bloque)
 // Sur iPhone (app installée), un lien vers Claude ouvre une petite fenêtre de navigateur qui passe la main à l'app Claude,
@@ -4804,6 +4856,7 @@ function nuLogDraw(groups){if(!groups){const list=dayLog(nuDay);groups=[];list.f
     items:G.items.map(x=>({id:x.id,name:x.name,kcal:x.kcal,qty:qtyVM("log:"+x.id,x)}))})),mac:NU_MAC(),today:nuDay===iso(today()),i18n:agI18n()});$("nuLog")._isl=true}
 const hhmm2=a=>{const d=new Date(a);return `${two(d.getHours())}:${two(d.getMinutes())}`};
 function renderNuResult(){
+  $("nuAskBtn").hidden=!!nuPending;
   const p=nuPending;
   // le chargement (nuLoading) est posé directement dans #nuResult : React ne prend la main que pour un résultat, et la rend ensuite
   if(nuIsl("nuResult")&&p){try{const el=$("nuResult");if(!el._isl){el.innerHTML="";el._isl=true}
@@ -4812,19 +4865,19 @@ function renderNuResult(){
   if($("nuResult")._isl){window.SCIslands.unmount($("nuResult"));$("nuResult")._isl=false}
   if(!p){if(!nuBusy)$("nuResult").innerHTML="";return}
   const s=sumOf(p.items);
-  $("nuResult").innerHTML=`<div class="dish"><div class="dish-h"><span class="dish-ic">${p.photo?`<img src="${p.photo}" alt="">`:mono(p.title)}</span><span class="dish-t"><b class="notr">${esc(p.title)}</b><span class="small muted">${p.items.length} ${L(p.items.length>1?"aliments":"aliment")}</span>${p.mem?`<span class="memtag">${IC("bolt")} ${L("Mémoire Sid Forme")}</span>`:""}</span><span class="dish-kcal">${r0(s.kcal)}<small>kcal</small></span></div>
-    ${macroHtml(s)}<div class="dish-items">${p.items.map((x,i)=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${x.extra?`<span class="notmention">${L("pas dans ta description")}</span>`:""}${qtyCell("res:"+i,x)}</div><span class="k">${x.kcal} kcal</span><button type="button" class="x" data-nurm="${i}" aria-label="${L("Retirer")}">×</button></div>`).join("")}</div>
+  $("nuResult").innerHTML=`<div class="dish"><div class="dish-h"><span class="dish-ic">${p.photo?`<img src="${p.photo}" alt="">`:IC("utensils")}</span><span class="dish-t"><b class="notr" data-user-label="" title="${esc(p.title)}">${esc(p.title)}</b><span class="small muted">${p.items.length} ${L(p.items.length>1?"aliments":"aliment")}</span>${p.mem?`<span class="memtag">${IC("bolt")} ${L("Mémoire Sid Forme")}</span>`:""}</span><span class="dish-kcal">${fmtFull(r0(s.kcal))}<small>\u202fkcal</small></span></div>
+    ${macroHtml(s)}<div class="dish-items">${p.items.map((x,i)=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${x.extra?`<span class="notmention">${L("pas dans ta description")}</span>`:""}${qtyCell("res:"+i,x)}</div><span class="k">${fmtFull(x.kcal)}\u202fkcal</span><button type="button" class="x" data-nurm="${i}" aria-label="${L("Retirer")}">${IC("close")}</button></div>`).join("")}</div>
     ${p.note?`<div class="dish-note notr" style="padding-top:8px">${esc(p.note)}</div>`:""}
-    <div class="dish-act"><button type="button" class="btn ghost" data-nucancel="1">${L("Annuler")}</button><button type="button" class="btn" data-nuadd="1">${L("Ajouter")} · ${r0(s.kcal)} kcal</button></div></div>`;
+    <div class="dish-act"><button type="button" class="btn ghost" data-nucancel="1">${L("Annuler")}</button><button type="button" class="btn" data-nuadd="1">${L("Ajouter")} · ${fmtFull(r0(s.kcal))}\u202fkcal</button></div></div>`;
 }
 $("nuResult").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b||!nuPending)return;
   if(b.dataset.nurm){nuPending.items.splice(+b.dataset.nurm,1);if(!nuPending.items.length)nuPending=null;renderNuResult()}
   else if(b.dataset.nucancel){nuPending=null;renderNuResult()}
   else if(b.dataset.nuadd){const p=nuPending,g=nuAddItems(p.items,null,{name:p.title,em:p.em});
     if(p.photo){try{await idb.put(thumbKey(g),p.photo);thumbs.set(g,p.photo)}catch(x){}}
-    nuPending=null;nuPhoto=null;nuPhotoPrevSet(null);$("nuAsk").value="";grow($("nuAsk"));renderNutri();toast(nuDay===iso(today())?"Ajouté à ta journée":"Ajouté à ce jour")}
+    nuPending=null;nuPhoto=null;nuPhotoPrevSet(null);$("nuAsk").value="";grow($("nuAsk"));nuMealClose();renderNutri();toast(nuDay===iso(today())?"Ajouté à ta journée":"Ajouté à ce jour")}
 });
-function nuAddItems(items,time,meta){const at=nuAt(time),grp=uid();
+function nuAddItems(items,time,meta){nuProgressChange="done";const at=nuAt(time),grp=uid();
   items.forEach(x=>NU().log.push({id:uid(),day:nuDay,at,grp,gname:meta&&meta.name||"",gem:meta&&meta.em||"",name:x.name,qty:x.qty||"",em:x.em||"",kcal:r0(x.kcal),p:r1(x.p),c:r1(x.c),f:r1(x.f),upd:Date.now()}));
   save();return grp}
 // supprimer un aliment, ou tout un plat
@@ -4835,6 +4888,13 @@ $("nuLog").addEventListener("click",e=>{const b=e.target.closest("button");if(!b
   else if(b.dataset.nudelg){e.preventDefault();e.stopPropagation();if(!c2ok(b))return;const g=b.dataset.nudelg,ids=NU().log.filter(x=>(x.grp||x.id)===g).map(x=>x.id);
     undoable("Plat supprimé",ids,()=>{ids.forEach(tomb);NU().log=NU().log.filter(x=>(x.grp||x.id)!==g)},{after:renderNutri,later:()=>{if(!NU().log.some(x=>(x.grp||x.id)===g))idb.del(thumbKey(g))}})}
 });
+// T16 B : les cinq entrées réutilisent leurs traitements, dans une même feuille.
+function nuMealClose(restore=true){if($("nuMealSheet").hidden)return;$("nuMealSheet").hidden=true;if(restore)$("nuMealAdd").focus({preventScroll:true})}
+$("nuMealAdd").addEventListener("click",()=>{$("nuMealSheet").hidden=false;$("nuMealSheet").querySelector('[role="dialog"]').focus({preventScroll:true})});
+$("nuMealClose").addEventListener("click",nuMealClose);
+$("nuMealSheet").addEventListener("click",e=>{if(e.target.id==="nuMealSheet")nuMealClose();if(e.target.closest("#nuManual")){$("nuSheet")._back=$("nuMealAdd");nuMealClose(false)}else if(e.target.closest("#nuAiLink"))nuMealClose()});
+$("nuMealSheet").addEventListener("keydown",e=>{const label=e.target.closest('label[role="button"]');if(label&&(e.key==="Enter"||e.key===" ")){e.preventDefault();label.querySelector('input').click()}});
+
 /* ---------- v47 : vues semaine / mois / année de la nutrition (#16) et copie d'un repas sur d'autres jours (#15) ---------- */
 // mêmes grilles que l'agenda (monthGrid / yearGrid, mêmes classes .day, .ym)
 let nuRange=null,nuRY=0,nuRM=0,nuRW="";
@@ -4846,14 +4906,14 @@ function nuCalOpen(mode){const d=parse(nuDay);nuRange=mode;nuRY=d.getFullYear();
 function renderNuCal(){const box=$("nuCal"),btn=$("nuDayBtn");if(!box)return;box.hidden=!nuRange;if(btn)btn.setAttribute("aria-expanded",String(!!nuRange));if(!nuRange)return;
   // v50 (ticket #3) : premier écran migré en TypeScript + React (app/src/NutritionCalendar.tsx, build site/react/islands.js) ;
   // même rendu, mêmes data-* (les clics restent gérés ici). Si le module n'est pas chargé, l'ancien rendu ci-dessous sert de secours.
-  if(window.SCIslands&&window.SCIslands.nuCal&&!window.__noIslands){try{window.SCIslands.nuCal(box,{range:nuRange,year:nuRY,month:nuRM,weekStart:nuRW,today:iso(today()),selected:nuDay,byDay:nuDays(),target:k=>dayTarget(k).kcal||0,i18n:{L,MOL,MO,DOWL}});return}catch(e){reportErr&&reportErr("island nuCal: "+(e&&e.message))}}
+  if(window.SCIslands&&window.SCIslands.nuCal&&!window.__noIslands){try{window.SCIslands.nuCal(box,{range:nuRange,year:nuRY,month:nuRM,weekStart:nuRW,today:iso(today()),selected:nuDay,byDay:nuDays(),target:k=>dayTarget(k).kcal||0,i18n:{L,MOL,MO,DOWL,lang:LANG}});return}catch(e){reportErr&&reportErr("island nuCal: "+(e&&e.message))}}
   const tIso=iso(today()),by=nuDays();let title="",body="",tot=0,nd=0,start="";
-  const sum=()=>`<div class="small muted nu-cal-sum">${nd?`${nd} ${L(nd>1?"jours notés":"jour noté")} · ${L("moyenne")} ${r0(tot/nd)} kcal`:L("Aucun repas noté sur cette période.")}</div>`;
+  const sum=()=>`<div class="small muted nu-cal-sum">${nd?`${nd} ${L(nd>1?"jours notés":"jour noté")} · ${L("moyenne")} ${fmtFull(r0(tot/nd))} kcal`:L("Aucun repas noté sur cette période.")}</div>`;
   const leg=`<div class="nu-leg small muted"><span><i class="nu-st ok"></i>${L("Dans l'objectif")}</span><span><i class="nu-st under"></i>${L("En dessous")}</span><span><i class="nu-st over"></i>${L("Au-dessus")}</span></div>`;
   if(nuRange==="week"){const m=parse(nuRW),e=new Date(m);e.setDate(e.getDate()+6);start=nuRW;
     title=`${m.getDate()} ${MO[m.getMonth()]} – ${e.getDate()} ${MO[e.getMonth()]} ${e.getFullYear()}`;
     let rows="";for(let i=0;i<7;i++){const d=new Date(m);d.setDate(d.getDate()+i);const k=iso(d),st=nuSt(by,k),tg=dayTarget(k).kcal||0,v=by[k];if(v!=null){tot+=v;nd++}
-      rows+=`<button type="button" class="nwk-row ${k===nuDay?"on":""} ${st}" data-nuday="${k}" ${k>tIso?"disabled":""}><span class="nwk-d"><b>${esc(DOWL[d.getDay()])}</b><small>${d.getDate()} ${MO[d.getMonth()]}</small></span><span class="nwk-bar"><i style="width:${tg&&v?Math.min(100,v/tg*100):0}%"></i></span><span class="nwk-k">${v!=null?r0(v):"–"}${v!=null&&tg?`<small> / ${tg}</small>`:""}</span></button>`}
+      rows+=`<button type="button" class="nwk-row ${k===nuDay?"on":""} ${st}" data-nuday="${k}" ${k>tIso?"disabled":""}><span class="nwk-d"><b>${esc(DOWL[d.getDay()])}</b><small>${d.getDate()} ${MO[d.getMonth()]}</small></span><span class="nwk-bar"><i style="width:${tg&&v?Math.min(100,v/tg*100):0}%"></i></span><span class="nwk-k">${v!=null?r0(v):"–"}${v!=null&&tg?`<small> / ${fmtFull(tg)}</small>`:""}</span></button>`}
     body=`<div class="nwk">${rows}</div>`+leg+sum()}
   else if(nuRange==="month"){title=`${MOL[nuRM]} ${nuRY}`;start=iso(new Date(nuRY,nuRM,1));
     const g=monthGrid(nuRY,nuRM,(k,d)=>{const st=nuSt(by,k);if(st){tot+=by[k];nd++}
@@ -4865,7 +4925,7 @@ function renderNuCal(){const box=$("nuCal"),btn=$("nuDayBtn");if(!box)return;box
   // période suivante seulement si elle a déjà commencé
   const nx=nuRange==="week"?(()=>{const d=parse(nuRW);d.setDate(d.getDate()+7);return iso(d)})():nuRange==="month"?iso(new Date(nuRY,nuRM+1,1)):iso(new Date(nuRY+1,0,1));
   box.innerHTML=`<div class="seg nu-cal-seg" role="group" aria-label="${L("Vue")}">${["week","month","year"].map(m=>`<button type="button" data-nurange="${m}" aria-pressed="${m===nuRange}">${L({week:"Semaine",month:"Mois",year:"Année"}[m])}</button>`).join("")}</div>
-    <div class="cal-head"><button type="button" class="cal-nav" data-nurn="-1" aria-label="${L("Période précédente")}">‹</button><b class="nu-cal-t">${esc(title)}</b><button type="button" class="cal-nav" data-nurn="1" aria-label="${L("Période suivante")}" ${nx>tIso?"disabled":""}>›</button></div>
+    <div class="cal-head"><button type="button" class="cal-nav" data-nurn="-1" aria-label="${L("Période précédente")}">${IC("chev")}</button><b class="nu-cal-t">${esc(title)}</b><button type="button" class="cal-nav" data-nurn="1" aria-label="${L("Période suivante")}" ${nx>tIso?"disabled":""}>${IC("chev")}</button></div>
     ${body}<button type="button" class="linkbtn nu-cal-x" data-nurange="">${L("Fermer le calendrier")}</button>`}
 $("nuDayBtn").addEventListener("click",()=>{if(nuRange){nuRange=null;renderNuCal()}else nuCalOpen("month")});
 window.addEventListener("sc-islands",()=>{if(nuRange)renderNuCal();if(data&&data.ui&&data.ui.view==="graph")renderGraph();if(data&&data.ui&&data.ui.view==="pomo")renderPomo();if(data&&data.ui&&data.ui.view==="muscu")renderMuscu();if(session&&data&&data.tasks){renderPlan();renderTodos();renderHome();try{setSync();renderCals()}catch(e){}}if(session&&data&&data.ui){const v=data.ui.view||"home";renderNav(v);renderVhead(v);renderSide(v)}
@@ -4887,7 +4947,7 @@ function renderNuCopy(){if(!nuCp)return;const tIso=iso(today()),mx=(()=>{const d
   if(nuIsl("nuCopy")){try{window.SCIslands.nuCopy($("nuCopyBody"),{MOL,i18n:agI18n(),c:{y:nuCp.y,m:nuCp.m,sel:[...nuCp.sel],src:nuCp.src,today:tIso,max:mx,nextOff:iso(new Date(nuCp.y,nuCp.m+1,1))>mx,
     dow:[1,2,3,4,5,6,0].map(i=>String(DOWL[i]||"").slice(0,1).toUpperCase())}});return}catch(e){reportErr("island nuCopy: "+(e&&e.message))}}
   $("nuCopyBody").innerHTML=`<p class="small muted" style="margin:0 0 8px">${L("Touche les jours où tu as mangé (ou mangeras) la même chose.")}</p>
-    <div class="cal-head"><button type="button" class="cal-nav" data-nucpn="-1" aria-label="${L("Mois précédent")}">‹</button><b>${MOL[nuCp.m]} ${nuCp.y}</b><button type="button" class="cal-nav" data-nucpn="1" aria-label="${L("Mois suivant")}" ${iso(new Date(nuCp.y,nuCp.m+1,1))>mx?"disabled":""}>›</button></div>
+    <div class="cal-head"><button type="button" class="cal-nav" data-nucpn="-1" aria-label="${L("Mois précédent")}">${IC("chev")}</button><b>${MOL[nuCp.m]} ${nuCp.y}</b><button type="button" class="cal-nav" data-nucpn="1" aria-label="${L("Mois suivant")}" ${iso(new Date(nuCp.y,nuCp.m+1,1))>mx?"disabled":""}>${IC("chev")}</button></div>
     <div class="cal-grid cal-dow">${dowHead()}</div>
     <div class="cal-grid nu-cpgrid">${monthGrid(nuCp.y,nuCp.m,(k,d)=>`<button type="button" class="day ${k===tIso?"today":""} ${nuCp.sel.has(k)?"sel":""} ${k===nuCp.src?"nu-cp-src":""}" data-nucpd="${k}" aria-pressed="${nuCp.sel.has(k)}" ${k>mx||k===nuCp.src?"disabled":""} aria-label="${d} ${MOL[nuCp.m]}"><span class="num">${d}</span></button>`)}</div>
     <button type="button" class="btn" id="nuCopyGo" ${n?"":"disabled"} style="width:100%;margin-top:12px">${n?`${L("Copier sur")} ${n} ${L(n>1?"jours":"jour")}`:L("Choisis au moins un jour")}</button>`}
@@ -4987,7 +5047,7 @@ function renderMenuForm(){
   document.querySelectorAll("#nuMType button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mtype===mp.type));
   $("nuMDay").hidden=!day;$("nuMOne").hidden=day;$("nuSnacks").textContent=mp.snacks||0;
   if(shIsl("nuSlots")){try{window.SCIslands.nuSlots($("nuSlots"),{i18n:agI18n(),slots:MAINS.map(s=>({k:s,on:!!mp.pick[s],icon:IC(SLOT[s][1]),name:SLOT[s][0]}))})}catch(e){reportErr("island nuSlots: "+(e&&e.message))}}
-  else $("nuSlots").innerHTML=MAINS.map(s=>`<button type="button" class="pill meal-tg" data-pick="${s}" aria-pressed="${!!mp.pick[s]}"><span class="tg-box" aria-hidden="true">${mp.pick[s]?"✓":""}</span>${IC(SLOT[s][1])} ${L(SLOT[s][0])}</button>`).join("");
+  else $("nuSlots").innerHTML=MAINS.map(s=>`<button type="button" class="pill meal-tg" data-pick="${s}" aria-pressed="${!!mp.pick[s]}"><span class="tg-box" aria-hidden="true">${mp.pick[s]?IC("tick"):""}</span>${IC(SLOT[s][1])} ${L(SLOT[s][0])}</button>`).join("");
   const sl=mpSlots();
   $("nuMenuBtn").textContent=L(day?(sl.length===1&&sl[0]==="meal"?"Générer mon repas unique":"Générer ma journée"):{breakfast:"Générer un petit-déjeuner",lunch:"Générer un déjeuner",snack:"Générer une collation",dinner:"Générer un dîner"}[mp.type]);
   if(day){const k=mpKcals(),tot=k.reduce((a,b)=>a+b,0),tg=dayTarget(iso(today())).kcal;
@@ -5025,7 +5085,7 @@ const SPOONS=/** @type {[RegExp,number,number][]} */([[/huile|oil/i,13.5,4.5],[/
 function spoonQty(name,g){if(!(g>0)||g>80)return"";const s=SPOONS.find(([re])=>re.test(name||""));if(!s)return"";
   const half=x=>Math.max(.5,Math.round(x*2)/2),fr=x=>String(x).replace(".",LANG==="en"?".":",");
   const tb=g/s[1];if(tb>=.75)return `${fr(half(tb))} ${L("c. à soupe")}`;return `${fr(half(g/s[2]))} ${L("c. à café")}`}
-const qtyTxt=x=>{const m=String(x.qty||"").trim().match(/^(\d+(?:[.,]\d+)?)\s*g$/i),g=x.g||(m?+m[1].replace(",","."):0),sp=g?spoonQty(x.name,g):"";return sp?`${sp} (${r0(g)} g)`:(x.qty||"")};
+const qtyTxt=x=>{const m=String(x.qty||"").trim().match(/^(\d+(?:[.,]\d+)?)\s*g$/i),g=x.g||(m?+m[1].replace(",","."):0),sp=g?spoonQty(x.name,g):"";return sp?`${sp} (${fmtFull(r0(g))} g)`:(x.qty||"")};
 // le serveur connaît les créneaux classiques : le repas unique part comme un déjeuner, avec son propre nom
 const srvSlot=s=>s==="meal"?"lunch":s;
 // la toute première génération peut échouer (serveur qui démarre, réponse vide) : on réessaie une fois tout seul
@@ -5054,7 +5114,7 @@ function recipeSteps(v){if(!v)return null;if(Array.isArray(v))return v.map(x=>St
 async function getRecipe(ml){
   const n=NU(),list=ml.items.map(x=>`${qtyTxt(x)} ${x.name}`).join(", ");
   try{const r=await nuRetry(()=>nuCall("recette",{data:{name:ml.name,kcal:ml.kcal,foods:ml.items.map(x=>({food:x.name,grams:x.g||null,quantity:x.qty}))}}),r=>r&&Array.isArray(r.steps)&&r.steps.length);
-    const st=recipeSteps(r.steps);if(st){const t=[r.prep_min?`${L("Préparation")} ${r0(r.prep_min)} min`:"",r.cook_min?`${L("Cuisson")} ${r0(r.cook_min)} min`:""].filter(Boolean).join(" · ");
+    const st=recipeSteps(r.steps);if(st){const t=[r.prep_min?`${L("Préparation")} ${fmtFull(r0(r.prep_min))} min`:"",r.cook_min?`${L("Cuisson")} ${fmtFull(r0(r.cook_min))} min`:""].filter(Boolean).join(" · ");
       if(t)st.unshift(L("Temps")+" : "+t);if(r.tips)st.push(L("Astuce")+" : "+r.tips);return st}}
   catch(ex){if(ex.status!==400)throw ex}
   const r=await nuRetry(()=>nuCall("menu",{data:{meal_type:srvSlot(ml.slot||"lunch"),meals:[{slot:srvSlot(ml.slot||"lunch"),name:ml.name,kcal:ml.kcal}],target_kcal:ml.kcal,protein_g:r0(ml.p),carbs_g:r0(ml.c),fat_g:r0(ml.f),
@@ -5086,7 +5146,7 @@ function renderNuMenu(){
       if(ok)m.meals.forEach(ml=>{const s=sumOf(ml.items);Object.assign(ml,{kcal:r0(s.kcal),p:r1(s.p),c:r1(s.c),f:r1(s.f)})});
       const el=$("nuMenu");if(!el._isl){el.innerHTML="";el._isl=true}
       window.SCIslands.nuMenu(el,{mac:NU_MAC(),icons:{book:IC("book")},i18n:agI18n(),m:ok?{total:sumOf(m.meals),tips:m.tips||"",edit:meEdit,add:meAdd,recipe:meRecipe,recipeBusy:nuBusy==="recipe",regen:meRegen,
-        meals:m.meals.map(ml=>({name:ml.name,mono:mono(ml.name),slot:slotName(ml.slot),target:ml.target||0,kcal:ml.kcal,sum:{kcal:ml.kcal,p:ml.p,c:ml.c,f:ml.f},ate:ml.ate===iso(today()),steps:ml.steps||null,
+        meals:m.meals.map(ml=>({name:ml.name,mono:mono(ml.name),icon:IC(SLOT[ml.slot]?.[1]||"utensils"),slot:slotName(ml.slot),target:ml.target||0,kcal:ml.kcal,sum:{kcal:ml.kcal,p:ml.p,c:ml.c,f:ml.f},ate:ml.ate===iso(today()),steps:ml.steps||null,
           items:ml.items.map(x=>({name:x.name,g:x.g||0,qty:x.qty||"",qtyLbl:qtyTxt(x),kcal:x.kcal}))}))}:null});
       if(meEdit){const i=$("meQtyIn");if(i){i.focus();i.select()}}if(meAdd!==null){const i=$("meAddIn");if(i)i.focus()}return}
     catch(e){reportErr("island nuMenu: "+(e&&e.message))}}
@@ -5095,8 +5155,8 @@ function renderNuMenu(){
   m.meals.forEach(ml=>{const s=sumOf(ml.items);Object.assign(ml,{kcal:r0(s.kcal),p:r1(s.p),c:r1(s.c),f:r1(s.f)})});
   const T=sumOf(m.meals),td=iso(today());
   $("nuMenu").innerHTML=`<h2 style="margin-top:16px">${L("Ton menu")}</h2>`+boxes([[r0(T.kcal),"kcal"],[r1(T.p)+" g","Protéines","--m-p"],[r1(T.c)+" g","Glucides","--m-c"],[r1(T.f)+" g","Lipides","--m-f"]])+
-    m.meals.map((ml,i)=>`<div class="dish"><div class="dish-h"><span class="dish-ic">${mono(ml.name)}</span><span class="dish-t"><b class="notr">${esc(ml.name)}</b><span class="small muted">${L(slotName(ml.slot))}${ml.target?` · ${L("objectif")} ${ml.target} kcal`:""}</span></span><span class="dish-kcal">${ml.kcal}<small>kcal</small></span><button type="button" class="x" data-medel="${i}" aria-label="${L("Retirer ce repas")}">×</button></div>
-      ${macroHtml(ml)}<div class="dish-items">${ml.items.map((x,j)=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${meEdit===`${i}:${j}`?`<span class="me-qty"><input type="text" inputmode="decimal" id="meQtyIn" value="${x.g||""}" aria-label="${L("Grammes")}"> g <button type="button" class="mini" data-meqok="${i}:${j}">OK</button></span>`:x.g?`<button type="button" class="qty-ed notr" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${esc(qtyTxt(x))}</button>`:`<span class="small muted notr">${esc(x.qty)}</span>`}</div><span class="k">${x.kcal} kcal</span>${x.g?`<button class="pen" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${PEN}</button>`:""}<button class="x" data-merm="${i}:${j}" aria-label="${L("Retirer")}">×</button></div>`).join("")}</div>
+    m.meals.map((ml,i)=>`<div class="dish"><div class="dish-h"><span class="dish-ic">${IC(SLOT[ml.slot]?.[1]||"utensils")}</span><span class="dish-t"><b class="notr" data-user-label="" title="${esc(ml.name)}">${esc(ml.name)}</b><span class="small muted">${L(slotName(ml.slot))}${ml.target?` · ${L("objectif")} ${fmtFull(ml.target)}\u202fkcal`:""}</span></span><span class="dish-kcal">${fmtFull(ml.kcal)}<small>\u202fkcal</small></span><button type="button" class="x" data-medel="${i}" aria-label="${L("Retirer ce repas")}">×</button></div>
+      ${macroHtml(ml)}<div class="dish-items">${ml.items.map((x,j)=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${meEdit===`${i}:${j}`?`<span class="me-qty"><input type="text" inputmode="decimal" id="meQtyIn" value="${x.g||""}" aria-label="${L("Grammes")}"> g <button type="button" class="mini" data-meqok="${i}:${j}">OK</button></span>`:x.g?`<button type="button" class="qty-ed notr" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${esc(qtyTxt(x))}</button>`:`<span class="small muted notr">${esc(x.qty)}</span>`}</div><span class="k">${fmtFull(x.kcal)}\u202fkcal</span>${x.g?`<button class="pen" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${PEN}</button>`:""}<button class="x" data-merm="${i}:${j}" aria-label="${L("Retirer")}">×</button></div>`).join("")}</div>
       ${meAdd===i?`<form class="me-add" data-meaddf="${i}"><input id="meAddIn" placeholder="${L("Ex. 30 g d'amandes")}" autocomplete="off"><button class="btn" type="submit">OK</button></form>`:""}
       ${meRecipe===i?`<div class="recipe"><b>${IC("book")} ${L("Recette")}</b>${nuBusy==="recipe"?`<div class="small muted" style="margin-top:6px"><span class="spin"></span> ${L("Préparation de la recette…")}</div>`:ml.steps&&ml.steps.length?`<ol class="notr">${ml.steps.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>`:`<div class="small muted">${L("Recette indisponible pour le moment.")}</div>`}</div>`:""}
       <div class="me-act"><button type="button" class="mini" data-meadd="${i}">+ ${L("Aliment")}</button><button type="button" class="mini" data-merec="${i}">${IC("book")} ${L(meRecipe===i?"Cacher la recette":"Recette")}</button><button type="button" class="mini" data-meregen="${i}">↻ ${L("Autre idée")}</button>
@@ -5108,13 +5168,13 @@ function renderNuMenu(){
 function nuMenuFree(){const el=$("nuMenu");if(el._isl){window.SCIslands.unmount(el);el._isl=false}}
 // bandeau du menu : ce qu'il reste à manger aujourd'hui
 function renderMenuLeft(){const el=$("nuMenuLeft");if(!el||!NU().plan)return;const t=dayTarget(iso(today())),s=sumOf(dayLog(iso(today()))),left=r0(t.kcal-s.kcal);
-  el.innerHTML=`${IC("target")}<span class="grow">${left>=0?`${L("Il te reste")} <b>${fmtFull(left)} kcal</b> ${L("à manger aujourd'hui")}`:`${L("Objectif dépassé de")} <b>${fmtFull(-left)} kcal</b>`} <span class="muted">(${L("objectif")} ${fmtFull(t.kcal)})</span></span>`}
+  el.innerHTML=`${IC("target")}<span class="grow">${left>=0?`${L("Il te reste")} <b>${fmtFull(left)}\u202fkcal</b> ${L("à manger aujourd'hui")}`:`${L("Objectif dépassé de")} <b>${fmtFull(-left)}\u202fkcal</b>`} <span class="muted">(${L("objectif")} ${fmtFull(t.kcal)})</span></span>`}
 // changer la quantité d'un aliment du menu : calories et macros suivent
 function meScale(i,j,g){const it=NU().menu.meals[i].items[j];if(!(g>0)||!it.g)return;const k=g/it.g;
   Object.assign(it,{g:r0(g),qty:r0(g)+" g",kcal:r0(it.kcal*k),p:r1(it.p*k),c:r1(it.c*k),f:r1(it.f*k)});NU().upd=Date.now();save()}
 $("nuMenu").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b)return;const n=NU(),M=n.menu;
   if(b.dataset.numeal){const ml=M.meals[+b.dataset.numeal],d0=nuDay;nuDay=iso(today());
-    nuAddItems(ml.items,null,{name:ml.name,em:ml.em});nuDay=d0;ml.ate=iso(today());n.upd=Date.now();save();renderNutri();toast(`${L("Ajouté à ta journée")} · ${ml.kcal} kcal`);return}
+    nuAddItems(ml.items,null,{name:ml.name,em:ml.em});nuDay=d0;ml.ate=iso(today());n.upd=Date.now();save();renderNutri();toast(`${L("Ajouté à ta journée")} · ${fmtFull(ml.kcal)} kcal`);return}
   if(b.dataset.merec){const i=+b.dataset.merec,ml=M.meals[i];if(meRecipe===i){meRecipe=null;renderNuMenu();return}
     meRecipe=i;if(ml.steps&&ml.steps.length||nuBusy){renderNuMenu();return}
     nuBusy="recipe";renderNuMenu();
@@ -5152,8 +5212,8 @@ function grDays(n){const out=[],t=today();for(let i=n-1;i>=0;i--){const d=new Da
 const dLbl=(k,long)=>{const d=parse(k);return long?`${DOW[d.getDay()]} ${d.getDate()} ${MO[d.getMonth()]}`:`${d.getDate()}/${d.getMonth()+1}`};
 function niceStep(v){if(!(v>0))return 1;const p=Math.pow(10,Math.floor(Math.log10(v))),f=v/p;return(f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p}
 function niceMax(v){const st=niceStep(v/4);return Math.max(st,Math.ceil(v/st)*st)}
-const fmtFull=v=>Math.round(v).toLocaleString(LANG==="en"?"en-US":LANG==="nl"?"nl-NL":"fr-FR");
-const fmtN=v=>{v=Math.round(v*10)/10;return v>=1000?(Math.round(v/100)/10+"K").replace(".",LANG==="en"?".":","):String(v).replace(".",LANG==="en"?".":",")};
+const fmtFull=v=>new Intl.NumberFormat(LANG==="en"?"en-US":"fr-FR",{maximumFractionDigits:0}).format(v);
+const fmtN=v=>new Intl.NumberFormat(LANG==="en"?"en-US":"fr-FR",{maximumFractionDigits:1}).format(v);
 function grTipShow(ev,html){const t=$("grTip");t.innerHTML=html;t.hidden=false;const x=ev.clientX,y=ev.clientY,w=t.offsetWidth,h=t.offsetHeight;
   t.style.left=Math.min(innerWidth-w-8,Math.max(8,x-w/2))+"px";t.style.top=Math.max(8,y-h-14)+"px";clearTimeout(grTipT)}
 function grTipHide(){$("grTip").hidden=true;document.querySelectorAll("#v-graph .gr-x").forEach(x=>x.setAttribute("visibility","hidden"))}
@@ -5165,13 +5225,13 @@ document.addEventListener("pointercancel",e=>{if(e.target.closest&&e.target.clos
 document.addEventListener("touchmove",e=>{if(!$("grTip").hidden&&!(e.target.closest&&e.target.closest("#v-graph svg")))grTipHide()},{passive:true,capture:true});
 // courbe(s) : 2px, points d'extrémité, réticule + bulle sur toutes les séries
 function lineChart(el,days,series,opt={}){
-  const W=Math.max(280,el.clientWidth||320),H=170,ml=34,mr=14,mt=12,mb=24,pw=W-ml-mr,ph=H-mt-mb;
+  const W=Math.max(240,el.clientWidth||320),H=170,ml=34,mr=14,mt=12,mb=24,pw=W-ml-mr,ph=H-mt-mb;
   const all=series.flatMap(s=>s.vals.filter(v=>v!=null));if(opt.ref)all.push(opt.ref.v);
   if(!series.some(s=>s.vals.some(v=>v!=null))){el.innerHTML=`<div class="gr-empty">${L(opt.empty||"Pas encore de données sur cette période.")}</div>`;return}
   let lo=opt.zero?0:Math.min(...all),hi=Math.max(...all);if(!opt.zero){const pad=Math.max(1,(hi-lo)*.15);lo=Math.floor(lo-pad);hi=hi+pad}
   const top=opt.zero?niceMax(hi):Math.ceil(hi),step=opt.zero?niceStep(hi/4):(top-lo)/4,X=i=>ml+(days.length<2?pw/2:i*pw/(days.length-1)),Y=v=>mt+ph-(v-lo)/(top-lo||1)*ph;
   let g="";for(let v=lo;v<=top+1e-9;v+=step){const y=Y(v);g+=`<line class="grid" x1="${ml}" x2="${W-mr}" y1="${y}" y2="${y}"/><text class="ax" x="${ml-6}" y="${y+4}" text-anchor="end">${fmtN(v)}</text>`}
-  const every=days.length>10?7:1;days.forEach((k,i)=>{if((days.length-1-i)%every===0)g+=`<text class="ax" x="${X(i)}" y="${H-6}" text-anchor="middle">${dLbl(k)}</text>`});
+  const every=days.length>10?7:W<300?2:1;days.forEach((k,i)=>{if((days.length-1-i)%every===0)g+=`<text class="ax" x="${X(i)}" y="${H-6}" text-anchor="middle">${dLbl(k)}</text>`});
   if(opt.ref){const y=Y(opt.ref.v);g+=`<line x1="${ml}" x2="${W-mr}" y1="${y}" y2="${y}" stroke="var(--muted)" stroke-width="1"/><text class="lbl" x="${W-mr}" y="${y-5}" text-anchor="end">${esc(opt.ref.label)}</text>`}
   series.forEach(s=>{let d="",on=false;s.vals.forEach((v,i)=>{if(v==null){on=false;return}d+=(on?"L":"M")+X(i).toFixed(1)+" "+Y(v).toFixed(1);on=true});
     g+=`<path d="${d}" fill="none" stroke="var(${s.c})" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
@@ -5181,28 +5241,28 @@ function lineChart(el,days,series,opt={}){
   const svg=el.querySelector("svg"),xl=svg.querySelector(".gr-x");
   const move=ev=>{const r=svg.getBoundingClientRect(),x=(ev.clientX-r.left)*W/r.width,i=Math.max(0,Math.min(days.length-1,Math.round((x-ml)/(pw/(Math.max(1,days.length-1))))));
     xl.setAttribute("x1",X(i));xl.setAttribute("x2",X(i));xl.setAttribute("visibility","visible");
-    const rows=series.map(s=>s.vals[i]==null?"":`<div><b>${fmtN(s.vals[i])}${opt.unit||""}</b> <span class="k" style="--c:var(${s.c})"></span>${esc(L(s.label))}</div>`).join("");
+    const rows=series.map(s=>s.vals[i]==null?"":`<div><b>${fmtN(s.vals[i])}${opt.unit?"\u202f"+opt.unit.trim():""}</b> <span class="k" style="--c:var(${s.c})"></span>${esc(L(s.label))}</div>`).join("");
     grTipShow(ev,`<div style="opacity:.75;margin-bottom:2px">${dLbl(days[i],true)}</div>${rows||L("Pas de données")}`)};
   svg.addEventListener("pointermove",move);svg.addEventListener("pointerdown",move);
   svg.addEventListener("pointerleave",ev=>{if(ev.pointerType!=="touch"){grTipHide();xl.setAttribute("visibility","hidden")}});
 }
 // colonnes des calories : couleur d'état (✓ dans l'objectif, ↓ pas assez, ↑ trop) + trait de l'objectif
 const KST=v=>v.k==null?null:v.k<v.t*.9?"low":v.k>v.t*1.1?"high":"ok";
-const KLAB={ok:["✓","Dans l'objectif","--st-good"],low:["↓","Pas assez","--st-warn"],high:["↑","Trop","--st-bad"]};
+const KLAB={ok:["","Dans l'objectif","--st-good"],low:["","Pas assez","--st-warn"],high:["","Trop","--st-bad"]};
 function colChart(el,days,vals){
   if(!vals.some(v=>v.k!=null)){el.innerHTML=`<div class="gr-empty">${L("Pas encore de données sur cette période.")}</div>`;return}
-  const W=Math.max(280,el.clientWidth||320),H=170,ml=38,mr=8,mt=14,mb=24,pw=W-ml-mr,ph=H-mt-mb,n=days.length,band=pw/n,bw=Math.min(24,band*.62);
+  const W=Math.max(240,el.clientWidth||320),H=170,ml=38,mr=8,mt=14,mb=24,pw=W-ml-mr,ph=H-mt-mb,n=days.length,band=pw/n,bw=Math.min(24,band*.62);
   const top=niceMax(Math.max(...vals.map(v=>Math.max(v.k||0,v.t||0)))*1.05),Y=v=>mt+ph-v/top*ph;
   const kst=niceStep(top/4);let g="";for(let v=0;v<=top+1e-9;v+=kst){const y=Y(v);g+=`<line class="grid" x1="${ml}" x2="${W-mr}" y1="${y}" y2="${y}"/><text class="ax" x="${ml-6}" y="${y+4}" text-anchor="end">${fmtN(v)}</text>`}
-  const every=n>10?7:1;
+  const every=n>10?7:W<300?2:1;
   vals.forEach((v,i)=>{const cx=ml+band*i+band/2;if((n-1-i)%every===0)g+=`<text class="ax" x="${cx}" y="${H-6}" text-anchor="middle">${dLbl(days[i])}</text>`;
     if(v.k==null||v.k<=0)return;const st=KST(v),y=Y(v.k),h=mt+ph-y,r=Math.min(4,h,bw/2),x0=cx-bw/2;
     g+=`<path d="M${x0} ${mt+ph}V${y+r}Q${x0} ${y} ${x0+r} ${y}H${x0+bw-r}Q${x0+bw} ${y} ${x0+bw} ${y+r}V${mt+ph}Z" fill="var(${KLAB[st][2]})"/>
       <rect class="gr-bar" data-i="${i}" x="${ml+band*i}" y="${mt}" width="${band}" height="${ph}" fill="transparent"/>`});
-  const t=vals[vals.length-1].t;if(t){const y=Y(t);g+=`<line x1="${ml}" x2="${W-mr}" y1="${y}" y2="${y}" stroke="var(--ink)" stroke-width="1" opacity=".55"/><text class="lbl" x="${W-mr}" y="${y-5}" text-anchor="end">${L("Objectif")} ${fmtFull(t)} kcal</text>`}
+  const t=vals[vals.length-1].t;if(t){const y=Y(t);g+=`<line x1="${ml}" x2="${W-mr}" y1="${y}" y2="${y}" stroke="var(--ink)" stroke-width="1" opacity=".55"/><text class="lbl" x="${W-mr}" y="${y-5}" text-anchor="end">${L("Objectif")} ${fmtFull(t)}\u202fkcal</text>`}
   el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${L("Calories par jour")}" style="touch-action:pan-y">${g}</svg>`;
   el.querySelector("svg").addEventListener("pointermove",ev=>{const b=ev.target.closest(".gr-bar");if(!b){grTipHide();return}const v=vals[+b.dataset.i],st=KLAB[KST(v)];
-    grTipShow(ev,`<div style="opacity:.75;margin-bottom:2px">${dLbl(days[+b.dataset.i],true)}</div><b>${r0(v.k)} kcal</b> / ${r0(v.t)}<div>${st[0]} ${L(st[1])}</div>`)});
+    grTipShow(ev,`<div style="opacity:.75;margin-bottom:2px">${dLbl(days[+b.dataset.i],true)}</div><b>${r0(v.k)}\u202fkcal</b> / ${r0(v.t)}<div>${st[0]} ${L(st[1])}</div>`)});
   el.querySelector("svg").addEventListener("pointerdown",ev=>ev.target.dispatchEvent(new PointerEvent("pointermove",ev)));
   el.querySelector("svg").addEventListener("pointerleave",ev=>{if(ev.pointerType!=="touch")grTipHide()});
 }
@@ -5218,13 +5278,13 @@ function renderGraph(){
       {days,D,macros:MAC.map(([k,l,v])=>({k,label:l,c:v,goal:pl[k]||undefined})),targetWeight:(n.profile&&n.profile.target)||null,
        widths:{macros:$("grMacros").clientWidth,weight:$("grWeight").clientWidth,kcal:$("grKcal").clientWidth},
        i18n:{L,MOL,MO,DOWL,DOW,lang:LANG},tip:{show:grTipShow,hide:grTipHide}});
-    const tw=n.profile&&n.profile.target;$("grWeightSub").textContent=tw?`${L("en kg")} · ${L("objectif")} ${fmtN(tw)} kg`:L("en kg");
+    const tw=n.profile&&n.profile.target;$("grWeightSub").textContent=tw?`${L("en kg")} · ${L("objectif")} ${fmtN(tw)}\u202fkg`:L("en kg");
     const tk=D.find(d=>d.k===iso(today()));if(document.activeElement!==$("grWIn"))$("grWIn").value=tk&&tk.kg!=null?String(tk.kg).replace(".",LANG==="en"?".":","):"";
     renderReviews();return}catch(e){reportErr("island graph: "+(e&&e.message))}}
   $("grMacroLeg").innerHTML=MAC.map(([k,l,v])=>`<span><i style="--c:var(${v})"></i>${L(l)}${pl[k]?` <span>(${L("objectif")} ${pl[k]} g)</span>`:""}</span>`).join("");
   lineChart($("grMacros"),days,MAC.map(([k,l,v])=>({label:l,c:v,vals:D.map(d=>d.has?r1(d[k]):null)})),{zero:true,unit:" g",aria:L("Macros par jour")});
-  const tw=n.profile&&n.profile.target;$("grWeightSub").textContent=tw?`${L("en kg")} · ${L("objectif")} ${fmtN(tw)} kg`:L("en kg");
-  lineChart($("grWeight"),days,[{label:"Poids",c:"--m-p",vals:D.map(d=>d.kg)}],{dots:true,unit:" kg",ref:tw?{v:tw,label:`${L("Objectif")} ${fmtN(tw)} kg`}:null,empty:"Entre ton poids ci-dessus pour suivre son évolution.",aria:L("Poids")});
+  const tw=n.profile&&n.profile.target;$("grWeightSub").textContent=tw?`${L("en kg")} · ${L("objectif")} ${fmtN(tw)}\u202fkg`:L("en kg");
+  lineChart($("grWeight"),days,[{label:"Poids",c:"--m-p",vals:D.map(d=>d.kg)}],{dots:true,unit:" kg",ref:tw?{v:tw,label:`${L("Objectif")} ${fmtN(tw)}\u202fkg`}:null,empty:"Entre ton poids ci-dessus pour suivre son évolution.",aria:L("Poids")});
   const tk=D.find(d=>d.k===iso(today()));if(document.activeElement!==$("grWIn"))$("grWIn").value=tk&&tk.kg!=null?String(tk.kg).replace(".",LANG==="en"?".":","):"";
   $("grKcalLeg").innerHTML=Object.values(KLAB).map(([ic,l,v])=>`<span><i class="box" style="--c:var(${v})"></i>${ic} ${L(l)}</span>`).join("");
   colChart($("grKcal"),days,D.map(d=>({k:d.has?d.kcal:null,t:d.t})));
@@ -5311,10 +5371,10 @@ function trStr(raw){
 function trNode(n){
   if(n.nodeType===3){const p=n.parentElement;if(!p||p.closest(NOTR)||p.closest("script,style"))return;const v=trStr(n.nodeValue);if(v!==n.nodeValue)n.nodeValue=v;return}
   if(n.nodeType!==1||n.matches("script,style"))return;
-  for(const a of ["placeholder","aria-label","title"]){const v=n.getAttribute(a);if(v){const w=trStr(v);if(w!==v)n.setAttribute(a,w)}}
+  for(const a of ["placeholder","aria-label","title"]){const v=n.hasAttribute("data-user-label")?null:n.getAttribute(a);if(v){const w=trStr(v);if(w!==v)n.setAttribute(a,w)}}
   if(n.closest(NOTR)&&!n.matches("input,select,textarea"))return;
   const w=document.createTreeWalker(n,NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT);let x;
-  while((x=w.nextNode()))if(x.nodeType===3)trNode(x);else for(const a of ["placeholder","aria-label","title"]){const v=x.getAttribute(a);if(v){const u=trStr(v);if(u!==v)x.setAttribute(a,u)}}
+  while((x=w.nextNode()))if(x.nodeType===3)trNode(x);else for(const a of ["placeholder","aria-label","title"]){const v=x.hasAttribute("data-user-label")?null:x.getAttribute(a);if(v){const u=trStr(v);if(u!==v)x.setAttribute(a,u)}}
 }
 function startTranslate(){
   document.documentElement.lang=LANG;document.title="Sid'compagnon";
@@ -5471,6 +5531,13 @@ if(window.visualViewport){const vv=visualViewport,de=document.documentElement,st
     if(e.key==="Tab"){const f=[...bg.querySelectorAll(FOC)].filter(vis);if(!f.length)return;const a=f[0],z=f[f.length-1];
       if(!bg.contains(document.activeElement)){e.preventDefault();a.focus();return}
       if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}},true)}
+// Fondu fonctionnel : il indique uniquement les commandes restant hors du cadre.
+{const rows=[...document.querySelectorAll('[data-elan-scroll]')];let frame=0;
+ const update=()=>{frame=0;rows.forEach(e=>{const max=e.scrollWidth-e.clientWidth;e.classList.toggle('scroll-more-start',max>1&&e.scrollLeft>1);e.classList.toggle('scroll-more-end',max>1&&e.scrollLeft<max-1)})};
+ const schedule=()=>{if(!frame)frame=requestAnimationFrame(update)};
+ rows.forEach(e=>{e.addEventListener('scroll',schedule,{passive:true});new MutationObserver(schedule).observe(e,{childList:true,subtree:true,characterData:true});if(window.ResizeObserver)new ResizeObserver(schedule).observe(e)});
+ addEventListener('resize',schedule);document.fonts.ready.then(schedule);schedule();}
+
 /* ---------- démarrage ---------- */
 hydrateIcons();document.querySelectorAll(".onb-floats [data-fn]").forEach(e=>e.innerHTML=ICON(e.dataset.fn));
 document.addEventListener("focusin",e=>{if(e.target.matches&&e.target.matches('input[list="typeList"]'))typeChipsFor(e.target)});

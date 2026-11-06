@@ -484,3 +484,35 @@ Object.assign(DICT_NL,{"Trois applications, un seul compte : Sid Journée pour t
 
 Object.assign(DICT,{"Faite":"Done","Marquer comme faite":"Mark as done"});
 Object.assign(DICT_NL,{"Faite":"Voltooid","Marquer comme faite":"Markeren als voltooid"});
+
+Object.assign(DICT,{"Nouvelle tâche":"New task","Nom de la catégorie":"Category name","tâches réalisées aujourd'hui":"tasks completed today"});
+Object.assign(DICT_NL,{"Nouvelle tâche":"Nieuwe taak","Nom de la catégorie":"Categorienaam","tâches réalisées aujourd'hui":"taken voltooid vandaag"});
+
+Object.assign(DICT,{"cycle":"cycle","sur":"of"});
+Object.assign(DICT_NL,{"cycle":"cyclus","sur":"van"});
+
+Object.assign(DICT,{"session":"session","sessions":"sessions"});
+Object.assign(DICT_NL,{"session":"sessie","sessions":"sessies"});
+
+Object.assign(DICT,{"Ajouter un repas":"Add a meal","Rien pour l'instant. Ajoute ton premier repas.":"Nothing yet. Add your first meal."});
+Object.assign(DICT_NL,{"Ajouter un repas":"Maaltijd toevoegen","Rien pour l'instant. Ajoute ton premier repas.":"Nog niets. Voeg je eerste maaltijd toe."});
+
+Object.assign(DICT,{"Dis-le à Claude":"Tell Claude"});
+Object.assign(DICT_NL,{"Dis-le à Claude":"Vertel het aan Claude"});
+
+Object.assign(DICT,{"Définis ton objectif alimentaire":"Set your nutrition goal"});
+Object.assign(DICT_NL,{"Définis ton objectif alimentaire":"Stel je voedingsdoel in"});
+
+Object.assign(DICT,{"séries complètes":"complete sets"});
+Object.assign(DICT_NL,{"séries complètes":"volledige sets"});
+
+Object.assign(DICT,{"Régler le repos":"Set rest time"});
+Object.assign(DICT_NL,{"Régler le repos":"Rusttijd instellen"});
+
+// T16 C : commandes et libellés visibles de Sid Coffre.
+Object.assign(DICT,{"Ajouter une note":"Add a note","Dossier":"Folder","Sous-dossier":"Subfolder","Rechercher dans les documents":"Search documents"});
+Object.assign(DICT_NL,{"Ajouter une note":"Notitie toevoegen","Dossier":"Map","Sous-dossier":"Submap","Rechercher dans les documents":"Documenten zoeken"});
+
+// Revue T16 C : recherches, compteurs et commandes du scanner.
+Object.assign(DICT,{"Titre, contenu…":"Title, content…","Nom du document":"Document name","Site ou identifiant":"Site or username","Importer un PDF":"Import a PDF","Vide":"Empty","mot de passe":"password","mots de passe":"passwords","Verrouillé":"Locked","Prendre une photo":"Take a photo","Page suivante":"Next page"});
+Object.assign(DICT_NL,{"Titre, contenu…":"Titel, inhoud…","Nom du document":"Documentnaam","Site ou identifiant":"Site of gebruikersnaam","Importer un PDF":"PDF importeren","Vide":"Leeg","mot de passe":"wachtwoord","mots de passe":"wachtwoorden","Verrouillé":"Vergrendeld","Prendre une photo":"Foto nemen","Page suivante":"Volgende pagina"});

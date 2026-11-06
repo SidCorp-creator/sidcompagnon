@@ -40,7 +40,7 @@ const exAdvSame=(ex,a)=>ex.sets.length===a.sets&&ex.reps===a.reps&&(+ex.rest||0)
 const restFmt=r=>{r=Math.round(+r||0);if(r<60)return r+" s";const m=Math.floor(r/60),x=r%60;return x?`${m} min ${String(x).padStart(2,"0")}`:`${m} min`};
 const exAdvVal=a=>`${a.sets} × ${a.reps} · RPE ${a.rpe} · ${restFmt(a.rest)}`;
 function exAdvHtml(ex){const a=exAdv(ex.name);if(!a)return `<div class="ex-adv" hidden></div>`;
-  return `<div class="ex-adv"><span class="grow">${L("Conseillé")} (${L(MU_GOALS[muGoal()])}) : <b>${exAdvVal(a)}</b></span>${exAdvSame(ex,a)?`<span class="ok">✓</span>`:`<button type="button" class="linkbtn" data-msadv="1">${L("Appliquer")}</button>`}</div>`}
+  return `<div class="ex-adv"><span class="grow">${L("Conseillé")} (${L(MU_GOALS[muGoal()])}) : <b>${exAdvVal(a)}</b></span>${exAdvSame(ex,a)?`<span class="ok">${IC("tick")}</span>`:`<button type="button" class="linkbtn" data-msadv="1">${L("Appliquer")}</button>`}</div>`}
 // applique le conseil : séries (seules des séries vides sont retirées), répétitions visées, repos, intensité, RPE, tempo ; annulable
 function exAdvApply(se,ex){const a=exAdv(ex.name);if(!a)return;const K=["reps","rest","int","rpe","tempo"],before={sets:ex.sets.map(x=>({...x}))};K.forEach(k=>before[k]=ex[k]);
   while(ex.sets.length<a.sets)ex.sets.push(newSet());

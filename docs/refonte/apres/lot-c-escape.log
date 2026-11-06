@@ -1,0 +1,15 @@
+
+> test
+> npm --prefix app test
+
+
+> sidcompagnon-app@0.1.0 test
+> node ../tests/run.cjs
+
+OK : chiffrement (ancien et nouveau code interchangeables)
+OK : mémoire des aliments, 6 tests réussis
+OK : fusion à 3 voies (ancienne et nouvelle version, 5000 cas identiques)
+OK : rappels, 7 tests réussis
+OK : site/app.js correspond aux sources (47 fichiers)
+OK 390-dark-react-fr
+OK 320-light-secours-fr

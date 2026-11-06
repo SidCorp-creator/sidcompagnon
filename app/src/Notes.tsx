@@ -1,3 +1,4 @@
+import {FormeIcon} from "./FormeIcon";
 // sid'note → Notes : chemin du dossier, dossiers en tuiles, notes en lignes. Migré en v57 (ticket #3).
 // Même rendu que renderNotes de site/app.js (mêmes classes et data-*) : clics, glisser-déposer, déverrouillage des notes secrètes
 // et l'éditeur (contenteditable) restent dans app.js. Les notes secrètes arrivent déjà déchiffrées ou marquées « locked » :
@@ -27,9 +28,9 @@ export function NotesPath({ path, i18n }: { path: NfVM[]; i18n: NotesI18n }) {
   if (!path.length) return null;
   const up = path.length > 1 ? path[path.length - 2] : null;
   return <>
-    <button type="button" className="back nf-back" data-nfgo={up ? up.id : ""}>{tr(`‹ ${up ? up.name : L("Notes")}`)}</button>
+    <button type="button" className="back nf-back" data-nfgo={up ? up.id : ""}><FormeIcon name="chev"/><span className="notr">{up ? up.name : tr(L("Notes"))}</span></button>
     <div className="nf-crumbs"><button type="button" className="nf-crumb" data-nfgo="">{tr(L("Notes"))}</button>
-      {path.map((f, i) => [<span key={"s" + f.id} aria-hidden="true">›</span>, i === path.length - 1 ? <b key={f.id} className="notr">{f.name}</b> : <button key={f.id} type="button" className="nf-crumb notr" data-nfgo={f.id}>{f.name}</button>])}</div>
+      {path.map((f, i) => [<span key={"s" + f.id} aria-hidden="true"><FormeIcon name="chev"/></span>, i === path.length - 1 ? <b key={f.id} className="notr">{f.name}</b> : <button key={f.id} type="button" className="nf-crumb notr" data-nfgo={f.id}>{f.name}</button>])}</div>
   </>;
 }
 
@@ -39,7 +40,7 @@ export function NoteList({ dirs, inDir, notes, search, empty, icons, i18n }: { d
   return <>
     {dirs.length ? <><h2 className="nl-h">{tr(L(inDir ? "Sous-dossiers" : "Dossiers"))}</h2>
       <div className="nf-grid">{dirs.map((f) => <div key={f.id} className="nf-row nf-tile"><span className="ngrip" data-fgrip={f.id} aria-hidden="true" title={tr(L("Maintenir et glisser"))}>{GRIP}</span>
-        <button type="button" className="nf-open" data-nfopen={f.id}><span className="nf-ic" dangerouslySetInnerHTML={{ __html: icons.folder }}></span><b className="grow notr">{f.name}</b><span className="nf-n">{f.count || "0"}</span></button>
+        <button type="button" className="nf-open" data-nfopen={f.id}><span className="nf-ic" dangerouslySetInnerHTML={{ __html: icons.folder }}></span><b className="grow notr">{f.name}</b><span className="nf-n">{tr(f.count ? `${f.count} ${L(f.count===1?"note":"notes")}` : L("Vide"))}</span></button>
         <button type="button" className="pen" data-nfmore={f.id} aria-label={tr(L("Plus d'actions"))}>{MORE}</button></div>)}</div></> : null}
     {notes.length && dirs.length ? <h2 className="nl-h">{tr(L("Notes"))}</h2> : null}
     {notes.length ? <div className="nl-notes">{notes.map((x) => {

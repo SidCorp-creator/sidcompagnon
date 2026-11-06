@@ -11,7 +11,7 @@ export interface LineOpt { zero?: boolean; dots?: boolean; unit?: string; ref?: 
 export function LineChart(p: Base & { width: number; days: string[]; series: Serie[]; opt: LineOpt; tip: Tip }) {
   const { L, DOW, MO, lang } = p.i18n, { days, series, opt } = p;
   const svgRef = useRef<SVGSVGElement>(null), xlRef = useRef<SVGLineElement>(null);
-  const W = Math.max(280, p.width || 320), H = 170, ml = 34, mr = 14, mt = 12, mb = 24, pw = W - ml - mr, ph = H - mt - mb;
+  const W = Math.max(240, p.width || 320), H = 170, ml = 34, mr = 14, mt = 12, mb = 24, pw = W - ml - mr, ph = H - mt - mb;
   const all = series.flatMap((s) => s.vals.filter((v): v is number => v != null));
   if (opt.ref) all.push(opt.ref.v);
   if (!series.some((s) => s.vals.some((v) => v != null))) return <div className="gr-empty">{L(opt.empty || "Pas encore de données sur cette période.")}</div>;
@@ -24,13 +24,13 @@ export function LineChart(p: Base & { width: number; days: string[]; series: Ser
     const y = Y(v);
     grid.push(<line key={"g" + v} className="grid" x1={ml} x2={W - mr} y1={y} y2={y} />, <text key={"t" + v} className="ax" x={ml - 6} y={y + 4} textAnchor="end">{fmtN(v, lang)}</text>);
   }
-  const every = days.length > 10 ? 7 : 1;
+  const every = days.length > 10 ? 7 : W<300?2:1;
   const xl = days.map((k, i) => (days.length - 1 - i) % every === 0 ? <text key={"x" + k} className="ax" x={X(i)} y={H - 6} textAnchor="middle">{dLbl(k, false, DOW, MO)}</text> : null);
   const move = (ev: React.PointerEvent) => {
     const svg = svgRef.current!, line = xlRef.current!, r = svg.getBoundingClientRect(), x = (ev.clientX - r.left) * W / r.width;
     const i = Math.max(0, Math.min(days.length - 1, Math.round((x - ml) / (pw / Math.max(1, days.length - 1)))));
     line.setAttribute("x1", String(X(i))); line.setAttribute("x2", String(X(i))); line.setAttribute("visibility", "visible");
-    const rows = series.map((s) => s.vals[i] == null ? "" : `<div><b>${fmtN(s.vals[i]!, lang)}${opt.unit || ""}</b> <span class="k" style="--c:var(${s.c})"></span>${esc(L(s.label))}</div>`).join("");
+    const rows = series.map((s) => s.vals[i] == null ? "" : `<div><b>${fmtN(s.vals[i]!, lang)}${opt.unit ? "\u202f"+opt.unit.trim() : ""}</b> <span class="k" style="--c:var(${s.c})"></span>${esc(L(s.label))}</div>`).join("");
     p.tip.show(ev.nativeEvent, `<div style="opacity:.75;margin-bottom:2px">${dLbl(days[i], true, DOW, MO)}</div>${rows || L("Pas de données")}`);
   };
   return <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={opt.aria || ""} style={{ touchAction: "pan-y" }}
@@ -54,21 +54,21 @@ export function LineChart(p: Base & { width: number; days: string[]; series: Ser
 }
 
 // colonnes des calories : couleur d'état (dans l'objectif, pas assez, trop) + trait de l'objectif
-export const KLAB: Record<"ok" | "low" | "high", [string, string, string]> = { ok: ["✓", "Dans l'objectif", "--st-good"], low: ["↓", "Pas assez", "--st-warn"], high: ["↑", "Trop", "--st-bad"] };
+export const KLAB: Record<"ok" | "low" | "high", [string, string, string]> = { ok: ["", "Dans l'objectif", "--st-good"], low: ["", "Pas assez", "--st-warn"], high: ["", "Trop", "--st-bad"] };
 type KV = { k: number | null; t: number };
 const KST = (v: KV) => v.k == null ? null : v.k < v.t * 0.9 ? "low" : v.k > v.t * 1.1 ? "high" : "ok";
 
 export function ColChart(p: Base & { width: number; days: string[]; vals: KV[]; tip: Tip }) {
   const { L, DOW, MO, lang } = p.i18n, { days, vals } = p;
   if (!vals.some((v) => v.k != null)) return <div className="gr-empty">{L("Pas encore de données sur cette période.")}</div>;
-  const W = Math.max(280, p.width || 320), H = 170, ml = 38, mr = 8, mt = 14, mb = 24, pw = W - ml - mr, ph = H - mt - mb, n = days.length, band = pw / n, bw = Math.min(24, band * 0.62);
+  const W = Math.max(240, p.width || 320), H = 170, ml = 38, mr = 8, mt = 14, mb = 24, pw = W - ml - mr, ph = H - mt - mb, n = days.length, band = pw / n, bw = Math.min(24, band * 0.62);
   const top = niceMax(Math.max(...vals.map((v) => Math.max(v.k || 0, v.t || 0))) * 1.05), Y = (v: number) => mt + ph - v / top * ph;
   const kst = niceStep(top / 4), out: (JSX.Element | null)[] = [];
   for (let v = 0; v <= top + 1e-9; v += kst) {
     const y = Y(v);
     out.push(<line key={"g" + v} className="grid" x1={ml} x2={W - mr} y1={y} y2={y} />, <text key={"t" + v} className="ax" x={ml - 6} y={y + 4} textAnchor="end">{fmtN(v, lang)}</text>);
   }
-  const every = n > 10 ? 7 : 1;
+  const every = n > 10 ? 7 : W<300?2:1;
   vals.forEach((v, i) => {
     const cx = ml + band * i + band / 2;
     if ((n - 1 - i) % every === 0) out.push(<text key={"x" + i} className="ax" x={cx} y={H - 6} textAnchor="middle">{dLbl(days[i], false, DOW, MO)}</text>);
@@ -81,7 +81,7 @@ export function ColChart(p: Base & { width: number; days: string[]; vals: KV[]; 
   if (t) {
     const y = Y(t);
     out.push(<line key="obj" x1={ml} x2={W - mr} y1={y} y2={y} stroke="var(--ink)" strokeWidth="1" opacity=".55" />,
-      <text key="objt" className="lbl" x={W - mr} y={y - 5} textAnchor="end">{`${L("Objectif")} ${fmtFull(t, lang)} kcal`}</text>);
+      <text key="objt" className="lbl" x={W - mr} y={y - 5} textAnchor="end">{`${L("Objectif")} ${fmtFull(t, lang)}\u202fkcal`}</text>);
   }
   const move = (ev: React.PointerEvent) => {
     const b = (ev.target as Element).closest(".gr-bar") as SVGElement | null;

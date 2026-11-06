@@ -4,6 +4,7 @@
 const nutriAllowed=()=>!!session; // v39 : pour tout le monde
 function applySoon(){const on=!nutriAllowed();document.querySelectorAll(".soonable").forEach(sec=>{sec.classList.toggle("is-soon",on);sec.querySelector(".soon").hidden=!on})}
 const NU=()=>{const n=data.nutri||(data.nutri={});if(!Array.isArray(n.log))n.log=[];if(!Array.isArray(n.weights))n.weights=[];if(!Array.isArray(n.weeks))n.weeks=[];return n};
+let nuProgressChange="adjust";
 let nuDay=iso(today()),nuEditing=false,nuDraft=null,nuPending=null,nuBusy="",nuEditId=null,nuPhoto=null;
 const r0=x=>Math.round(+x||0),r1=x=>Math.round((+x||0)*10)/10;
 const numIn=v=>{const n=parseFloat(String(v||"").replace(",",".").replace(/[^0-9.]/g,""));return isFinite(n)?n:0};
@@ -89,7 +90,7 @@ function nuDraftRender(){
       $("nuSports").querySelectorAll("input").forEach(i=>{if(i!==document.activeElement&&i.value!==i.defaultValue)i.value=i.defaultValue});return}catch(e){reportErr("island nuSports: "+(e&&e.message))}} // champs hors saisie = valeur enregistrée (ex. après « × »)
   $("nuSports").innerHTML=nuDraft.sports.map((x,i)=>`<div class="nu-sport">
     <input class="nu-name" data-sp="${i}" data-f="name" value="${esc(x.name)}" placeholder="${L("Ex. Musculation")}" aria-label="${L("Sport")}" autocomplete="off">
-    <button type="button" class="x" data-sprm="${i}" aria-label="${L("Retirer ce sport")}">×</button>
+    <button type="button" class="x" data-sprm="${i}" aria-label="${L("Retirer ce sport")}">${IC("close")}</button>
     <label class="nu-f"><span>${L("Fois par semaine")}</span><span class="nu-in"><input data-sp="${i}" data-f="freq" type="text" inputmode="numeric" maxlength="2" value="${esc(x.freq)}" autocomplete="off"><i>${L("/sem")}</i></span></label>
     <label class="nu-f"><span>${L("Durée d'une séance")}</span><span class="nu-in"><input data-sp="${i}" data-f="dur" type="text" maxlength="6" value="${esc(x.dur)}" placeholder="1h30" autocomplete="off"></span></label></div>`).join("");
 }
@@ -153,8 +154,8 @@ function renderNuWeek(){
   if(nuIsl("nuWeek")){try{window.SCIslands.nuWeek(el,{sports:ws.map(s=>({name:s.name,kps:s.kps,count:s.count,base:s.base})),range:`${m.getDate()} ${MO[m.getMonth()]} – ${e.getDate()} ${MO[e.getMonth()]}`,
     target:fmtFull(t.kcal),delta:t.delta||0,actIcon:IC("activity"),i18n:agI18n()});return}catch(x){reportErr("island nuWeek: "+(x&&x.message))}}
   el.innerHTML=`<div class="nu-week-h"><b>${IC("activity")} ${L("Ton sport cette semaine")}</b><span class="small muted">${m.getDate()} ${MO[m.getMonth()]} – ${e.getDate()} ${MO[e.getMonth()]}</span></div>`+
-    ws.map(s=>`<div class="nu-wsp"><div class="grow"><b class="notr">${esc(s.name)}</b><span class="small muted">≈ ${s.kps} kcal ${L("par séance")}${s.count!==s.base?` · ${L("d'habitude")} ${s.base}`:""}</span></div><div class="stepper"><button type="button" data-ws="${esc(s.name)}" data-d="-1" aria-label="${L("Une séance de moins")}">−</button><output>${s.count}</output><button type="button" data-ws="${esc(s.name)}" data-d="1" aria-label="${L("Une séance de plus")}">+</button></div></div>`).join("")+
-    `<div class="small">${L("Objectif par jour cette semaine")} : <b>${fmtFull(t.kcal)} kcal</b>${t.delta?` <span class="muted">(${t.delta>0?"+":""}${t.delta} ${L("selon ton sport")})</span>`:""}</div>`;
+    ws.map(s=>`<div class="nu-wsp"><div class="grow"><b class="notr">${esc(s.name)}</b><span class="small muted">≈ ${fmtFull(s.kps)}\u202fkcal ${L("par séance")}${s.count!==s.base?` · ${L("d'habitude")} ${s.base}`:""}</span></div><div class="stepper"><button type="button" data-ws="${esc(s.name)}" data-d="-1" aria-label="${L("Une séance de moins")}">${IC("minus")}</button><output>${s.count}</output><button type="button" data-ws="${esc(s.name)}" data-d="1" aria-label="${L("Une séance de plus")}">${IC("plus")}</button></div></div>`).join("")+
+    `<div class="small">${L("Objectif par jour cette semaine")} : <b>${fmtFull(t.kcal)}\u202fkcal</b>${t.delta?` <span class="muted">(${t.delta>0?"+":""}${t.delta} ${L("selon ton sport")})</span>`:""}</div>`;
 }
 $("nuWeek").addEventListener("click",e=>{const b=e.target.closest("[data-ws]");if(!b)return;const n=NU(),wk=wKey(nuDay);n.wsports=n.wsports||{};const o=n.wsports[wk]=n.wsports[wk]||{};
   const cur=weekSports(wk).find(s=>s.name===b.dataset.ws);if(!cur)return;o[cur.name]=Math.max(0,Math.min(21,cur.count+ +b.dataset.d));n.upd=Date.now();save();renderNutri()});
@@ -166,15 +167,16 @@ function nuDayLabel(d){const t=iso(today()),dt=parse(d),y=new Date(today());y.se
 // barre et pastilles de macros d'un plat
 function macroHtml(s){const tot=(s.p*4+s.c*4+s.f*9)||1;
   return `<div class="mbar" aria-hidden="true">${MAC.map(([k,,v])=>`<i style="--c:var(${v});width:${(k==="f"?9:4)*s[k]/tot*100}%"></i>`).join("")}</div>
-    <div class="mchips">${MAC.map(([k,l,v])=>`<span class="mchip"><b>${r1(s[k])} g</b><span><span class="mdot" style="--c:var(${v})"></span>${L(l)}</span></span>`).join("")}</div>`}
+    <div class="mchips">${MAC.map(([k,l,v])=>`<span class="mchip"><b>${fmtN(r1(s[k]))}\u202fg</b><span><span class="mdot" style="--c:var(${v})"></span>${L(l)}</span></span>`).join("")}</div>`}
 const thumbs=new Map();
 const thumbKey=g=>session.user.id+":thumb:"+g;
 async function loadThumb(g){if(thumbs.has(g))return;thumbs.set(g,null);const b=await idb.get(thumbKey(g));if(b){thumbs.set(g,b);
   if(nuIsl("nuLog")&&$("nuLog")._isl){nuLogDraw();return} // React dessine la vignette (on ne touche pas à son DOM)
   document.querySelectorAll(`[data-thumb="${g}"]`).forEach(el=>el.innerHTML=`<img src="${b}" alt="">`)}}
 // barres des macros (ancien rendu, gardé en secours de la version React)
-function nuMacrosHtml(s,tg){return MAC.map(([k,l,v])=>`<div class="nu-m"><div class="top"><b><span class="mdot" style="--c:var(${v})"></span>${L(l)}</b><span>${r0(s[k])} / ${tg[k]} g</span></div><div class="bar"><i style="--c:var(${v});width:${Math.min(100,tg[k]?s[k]/tg[k]*100:0)}%"></i></div></div>`).join("");}
+function nuMacrosHtml(s,tg){return MAC.map(([k,l,v])=>`<div class="nu-m"><div class="top"><b><span class="mdot" style="--c:var(${v})"></span>${L(l)}</b><span>${fmtFull(r0(s[k]))} / ${tg[k]}\u202fg</span></div><div class="bar"><i style="--c:var(${v});width:${Math.min(100,tg[k]?s[k]/tg[k]*100:0)}%"></i></div></div>`).join("");}
 function renderNutri(){try{renderAiCards()}catch(e){}
+  if(data.ui.view==="nutri"){$("vhead").dataset.progressChange=nuProgressChange;renderVhead("nutri")}nuProgressChange="adjust";
   if(!$("nuMain"))return;
   applySoon();
   const n=NU(),has=!!(n.plan&&n.plan.kcal);
@@ -189,11 +191,11 @@ function renderNutri(){try{renderAiCards()}catch(e){}
   $("nuForTxt").textContent=nuDayLabel(nuDay);$("nuForDate").value=nuDay;$("nuForDate").max=iso(today());$("nuForNext").disabled=nuDay>=iso(today());$("nuFor").classList.toggle("past",nuDay<iso(today()));
   const pct=Math.min(1,s.kcal/tg.kcal);$("nuRing").style.strokeDashoffset=326.73*(1-pct);
   $("nuRing").closest(".nu-ring").classList.toggle("over",s.kcal>tg.kcal*1.05);
-  $("nuKcal").textContent=r0(s.kcal);
+  $("nuKcal").textContent=fmtFull(r0(s.kcal));
   if(shIsl("nuKcalOf")){try{window.SCIslands.nuKcalOf($("nuKcalOf"),{target:tg.kcal,over:s.kcal>tg.kcal?r0(s.kcal-tg.kcal):0,left:r0(tg.kcal-s.kcal),i18n:agI18n()})}catch(e){reportErr("island nuKcalOf: "+(e&&e.message))}}
-  else $("nuKcalOf").innerHTML=`${L("sur")} ${tg.kcal} kcal<br>`+(s.kcal>tg.kcal?`<b style="color:var(--late)">+${r0(s.kcal-tg.kcal)}</b>`:`${L("reste")} ${r0(tg.kcal-s.kcal)}`);
+  else $("nuKcalOf").innerHTML=`${L("sur")} ${fmtFull(tg.kcal)}\u202fkcal<br>`+(s.kcal>tg.kcal?`<b style="color:var(--late)">+${fmtFull(r0(s.kcal-tg.kcal))}</b>`:`${L("reste")} ${fmtFull(r0(tg.kcal-s.kcal))}`);
   // v52 (ticket #3) : barres des macros dessinées par React (app/src/Small.tsx) ; ancien rendu en secours
-  if(window.SCIslands&&window.SCIslands.nuMacros&&!window.__noIslands){try{window.SCIslands.nuMacros($("nuMacros"),{rows:MAC.map(([k,l,v])=>({k,label:l,c:v,val:s[k],target:tg[k]})),i18n:{L,MOL,MO,DOWL}})}catch(e){reportErr("island nuMacros: "+(e&&e.message));$("nuMacros").innerHTML=nuMacrosHtml(s,tg)}}
+  if(window.SCIslands&&window.SCIslands.nuMacros&&!window.__noIslands){try{window.SCIslands.nuMacros($("nuMacros"),{rows:MAC.map(([k,l,v])=>({k,label:l,c:v,val:s[k],target:tg[k]})),i18n:{L,MOL,MO,DOWL,lang:LANG}})}catch(e){reportErr("island nuMacros: "+(e&&e.message));$("nuMacros").innerHTML=nuMacrosHtml(s,tg)}}
   else $("nuMacros").innerHTML=nuMacrosHtml(s,tg);
   $("nuLogH").textContent=nuDay===iso(today())?L("Ma journée"):L("Ce jour-là");
   // plats du jour : une carte par plat, ses aliments dedans
@@ -202,11 +204,11 @@ function renderNutri(){try{renderAiCards()}catch(e){}
   if(nuIsl("nuLog")){try{nuLogDraw(groups);groups.forEach(G=>loadThumb(G.g));renderNuResult();renderNuPlan();renderNuMenu();renderMenuForm();renderNuWeek();renderMenuLeft();nuShowTab();
     if(qtyEd){const i=$("qtyEdIn");if(i&&document.activeElement!==i){i.focus();i.select()}}return}catch(x){reportErr("island nuLog: "+(x&&x.message))}}
   $("nuLog").innerHTML=groups.length?groups.map(G=>{const t=sumOf(G.items),d=new Date(G.at);
-    return `<details class="dish" open><summary class="dish-h"><span class="dish-ic" data-thumb="${G.g}">${mono(G.name)}</span>
-      <span class="dish-t"><b class="notr">${esc(G.name)}</b><span class="dish-time">${two(d.getHours())}:${two(d.getMinutes())}</span>${G.items.length>1?` <span class="small muted">· ${G.items.length} ${L("aliments")}</span>`:""}</span>
-      <span class="dish-kcal">${r0(t.kcal)}<small>kcal</small></span><button type="button" class="pen nu-cp" data-nucopy="${G.g}" aria-label="${L("Copier ce repas sur d'autres jours")}" title="${L("Copier sur d'autres jours")}">+</button>${G.items.length===1?`<button class="pen" data-nuedit="${G.items[0].id}" aria-label="${L("Modifier")}">${PEN}</button>`:""}<button type="button" class="x" data-nudelg="${G.g}" aria-label="${L("Supprimer ce plat")}">×</button></summary>
-      ${macroHtml(t)}${G.items.length===1?`<div class="dish-note">${qtyCell("log:"+G.items[0].id,G.items[0])}</div>`:`<div class="dish-items">${G.items.map(x=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${qtyCell("log:"+x.id,x)}</div><span class="k">${r0(x.kcal)} kcal</span><button class="pen" data-nuedit="${x.id}" aria-label="${L("Modifier")}">${PEN}</button><button class="x" data-nudel="${x.id}" aria-label="${L("Supprimer")}">×</button></div>`).join("")}</div>`}</details>`}).join("")
-    :`<div class="card"><div class="empty">${L(nuDay===iso(today())?"Rien pour l'instant. Écris ce que tu manges ci-dessus, ou prends ton plat en photo.":"Rien d'enregistré ce jour-là. Tu peux encore le compléter.")}</div></div>`;
+    return `<details class="dish" open><summary class="dish-h"><span class="dish-clock">${two(d.getHours())}:${two(d.getMinutes())}</span><span class="dish-ic" data-thumb="${G.g}">${mono(G.name)}</span>
+      <span class="dish-t"><b class="notr" data-user-label="" title="${esc(G.name)}">${esc(G.name)}</b>${G.items.length>1?` <span class="small muted">· ${G.items.length} ${L("aliments")}</span>`:""}</span>
+      <span class="dish-kcal">${fmtFull(r0(t.kcal))}<small>\u202fkcal</small></span><button type="button" class="pen nu-cp" data-nucopy="${G.g}" aria-label="${L("Copier ce repas sur d'autres jours")}" title="${L("Copier sur d'autres jours")}">${IC("copy")}</button>${G.items.length===1?`<button class="pen" data-nuedit="${G.items[0].id}" aria-label="${L("Modifier")}">${PEN}</button>`:""}<button type="button" class="x" data-nudelg="${G.g}" aria-label="${L("Supprimer ce plat")}">${IC("close")}</button></summary>
+      ${macroHtml(t)}${G.items.length===1?`<div class="dish-note">${qtyCell("log:"+G.items[0].id,G.items[0])}</div>`:`<div class="dish-items">${G.items.map(x=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${qtyCell("log:"+x.id,x)}</div><span class="k">${fmtFull(r0(x.kcal))}\u202fkcal</span><button class="pen" data-nuedit="${x.id}" aria-label="${L("Modifier")}">${PEN}</button><button class="x" data-nudel="${x.id}" aria-label="${L("Supprimer")}">${IC("close")}</button></div>`).join("")}</div>`}</details>`}).join("")
+    :`<div class="card"><div class="empty">${L(nuDay===iso(today())?"Rien pour l'instant. Ajoute ton premier repas.":"Rien d'enregistré ce jour-là. Tu peux encore le compléter.")}</div></div>`;
   groups.forEach(G=>loadThumb(G.g));
   renderNuResult();renderNuPlan();renderNuMenu();renderMenuForm();renderNuWeek();renderMenuLeft();nuShowTab();
   if(qtyEd){const i=$("qtyEdIn");if(i&&document.activeElement!==i){i.focus();i.select()}}
@@ -222,7 +224,7 @@ $("nuMain").addEventListener("click",e=>{const b=e.target.closest("[data-nugo]")
 let qtyEd=null;
 function qtyCell(key,x){
   if(qtyEd===key)return `<span class="qty-in"><input id="qtyEdIn" value="${esc(x.qty||"")}" placeholder="${L("Ex. 150 g")}" aria-label="${L("Quantité")}" autocomplete="off" enterkeyhint="done"><button type="button" class="mini" data-qok="${key}">OK</button></span>`;
-  return `<button type="button" class="qty-ed notr" data-qed="${key}">${esc(qtyTxt(x)||L("Ajouter une quantité"))} ✎</button>`}
+  return `<button type="button" class="qty-ed notr" data-qed="${key}">${esc(qtyTxt(x)||L("Ajouter une quantité"))} ${PEN}</button>`}
 // « 2 c. à soupe » d'huile → grammes ; « 150 g » → 150 ; sinon le premier nombre
 function toGrams(name,t){t=String(t||"").toLowerCase().replace(",",".");
   const sp=t.match(/(\d+(?:\.\d+)?)\s*(?:c\.?|cuill[eè]res?)\s*(?:à|a)?\s*(soupe|s\b|caf[ée]|c\b)/),S=SPOONS.find(([re])=>re.test(name||""));
@@ -242,14 +244,14 @@ function nuGoalVM(button){const n=NU(),pl=n.plan,p=n.profile||{},w=pl&&pl.wg;if(
   const unit=p.durU==="m"?(LANG==="en"?(p.dur>1?"months":"month"):LANG==="nl"?(p.dur>1?"maanden":"maand"):"mois"):L(p.dur>1?"semaines":"semaine");
   const pace=w.wk?`${w.wk>0?"+":""}${String(w.wk).replace(".",LANG==="en"?".":",")} kg ${L("par semaine")}`:"";
   const PACE={fast:"Drastique",real:"Réaliste",easy:"À mon aise"}[p.pace];
-  return{ok:!!w.ok,head:`${p.weight} → ${p.target} kg${p.dur?` ${L("en")} ${p.dur} ${unit}`:""}`,pace:PACE?`${L("Rythme")} : ${L(PACE)}`:"",real:p.dur?L(w.ok?"Ton délai est réaliste.":"Ce délai n'est pas réaliste, ni bon pour ta santé."):"",
+  return{ok:!!w.ok,head:`${fmtN(p.weight)} → ${fmtN(p.target)} kg${p.dur?` ${L("en")} ${p.dur} ${unit}`:""}`,pace:PACE?`${L("Rythme")} : ${L(PACE)}`:"",real:p.dur?L(w.ok?"Ton délai est réaliste.":"Ce délai n'est pas réaliste, ni bon pour ta santé."):"",
     advice:w.advice||"",path:pace||w.weeks?` ${pace}${pace&&w.weeks?" · ":""}${w.weeks?`${L("environ")} ${w.weeks} ${L("semaines")}`:""}`:"",button}}
 function nuGoalHtml(){
   const n=NU(),pl=n.plan,p=n.profile||{},w=pl&&pl.wg;if(!w||!p.target)return"";
   const unit=p.durU==="m"?(LANG==="en"?(p.dur>1?"months":"month"):LANG==="nl"?(p.dur>1?"maanden":"maand"):"mois"):L(p.dur>1?"semaines":"semaine");
   const pace=w.wk?`${w.wk>0?"+":""}${String(w.wk).replace(".",LANG==="en"?".":",")} kg ${L("par semaine")}`:"";
   const PACE={fast:"Drastique",real:"Réaliste",easy:"À mon aise"}[p.pace];
-  return `<b>${w.ok?"✓ ":IC("alert")+" "}${p.weight} → ${p.target} kg${p.dur?` ${L("en")} ${p.dur} ${unit}`:""}</b>
+  return `<b>${w.ok?"✓ ":IC("alert")+" "}${fmtN(p.weight)} → ${fmtN(p.target)} kg${p.dur?` ${L("en")} ${p.dur} ${unit}`:""}</b>
     ${PACE?`<span class="small">${L("Rythme")} : ${L(PACE)}</span>`:""}
     ${p.dur?`<span class="small">${L(w.ok?"Ton délai est réaliste.":"Ce délai n'est pas réaliste, ni bon pour ta santé.")}</span>`:""}
     ${w.advice?`<span class="small muted notr">${esc(w.advice)}</span>`:""}
@@ -259,13 +261,13 @@ function nuGoalHtml(){
 $("nuGoalCard").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
   if(b.dataset.nugoalok){NU().plan.wgSeen=true;save();renderNutri()}
   else if(b.dataset.nugoaledit){nuEditing=true;nuFillForm();renderNutri();window.scrollTo(0,0);setTimeout(()=>$("nuTarget").focus(),100)}});
-const boxes=(items)=>`<div class="nu-plan ${items.length===4?"four":""}">${items.map(([v,l,c])=>`<div><b>${v}</b><span>${c?`<span class="mdot" style="--c:var(${c})"></span>`:""}${L(l)}</span></div>`).join("")}</div>`;
+const boxes=(items)=>`<div class="nu-plan ${items.length===4?"four":""}">${items.map(([v,l,c])=>`<div><b>${typeof v==="number"?fmtN(v):String(v).replace(/^(-?\d+(?:\.\d+)?)(.*)$/,(a,n,u)=>fmtN(+n)+u)}</b><span>${c?`<span class="mdot" style="--c:var(${c})"></span>`:""}${L(l)}</span></div>`).join("")}</div>`;
 function renderNuPlan(){
   const pl=NU().plan;if(!pl)return;
   if(nuIsl("nuPlan")){try{window.SCIslands.nuPlan($("nuPlan"),{alert:IC("alert"),i18n:agI18n(),pl:{bmr:pl.bmr,tdee:pl.tdee,kcal:pl.kcal,p:pl.p,c:pl.c,f:pl.f,text:pl.text||"",warn:pl.warn||[],goal:pl.wg?nuGoalVM(false):null}});return}
     catch(e){reportErr("island nuPlan: "+(e&&e.message))}}
   $("nuPlan").innerHTML=boxes([[pl.bmr,"Métabolisme de base"],[pl.tdee,"Dépense du jour"],[pl.kcal,"Objectif (kcal)"]])+
-    boxes([[pl.p+" g","Protéines","--m-p"],[pl.c+" g","Glucides","--m-c"],[pl.f+" g","Lipides","--m-f"]])+
+    boxes([[fmtN(pl.p)+"\u202fg","Protéines","--m-p"],[fmtN(pl.c)+"\u202fg","Glucides","--m-c"],[fmtN(pl.f)+"\u202fg","Lipides","--m-f"]])+
     `${pl.wg?`<div class="card nu-goalcard ${pl.wg.ok?"ok":""}" style="background:var(--bg)">${nuGoalHtml().replace(/<button[^>]*>.*?<\/button>/,"")}</div>`:""}
     <p class="small notr" style="margin:0 4px">${esc(pl.text)}</p>${pl.warn.map(w=>`<div class="nu-warn notr">${esc(w)}</div>`).join("")}`;
 }
@@ -313,7 +315,7 @@ $("nuPhoto").addEventListener("change",nuPhotoPick);$("nuPhotoLib").addEventList
 // v68 (#3) : vignette de la photo du plat (React, ancien rendu en secours)
 function nuPhotoPrevSet(src){const el=$("nuPhotoPrev");el.hidden=!src;
   if(shIsl("nuPhotoPrev")){try{window.SCIslands.nuPhotoPrev(el,{src:src||"",i18n:agI18n()});return}catch(e){reportErr("island nuPhotoPrev: "+(e&&e.message));try{window.SCIslands.unmount(el)}catch(_){}}}
-  el.innerHTML=src?`<img src="${src}" alt="${L("Photo du plat")}"><button type="button" aria-label="${L("Retirer la photo")}" data-nuphrm="1">×</button>`:""}
+  el.innerHTML=src?`<img src="${src}" alt="${L("Photo du plat")}"><button type="button" aria-label="${L("Retirer la photo")}" data-nuphrm="1">${IC("close")}</button>`:""}
 $("nuPhotoPrev").addEventListener("click",e=>{if(e.target.closest("[data-nuphrm]")){++nuPhotoSeq;nuPhotoDrop(nuPhoto);nuPhoto=null;nuPhotoPrevSet(null);nuAskLbl()}});
 // envoi direct : Claude s'ouvre avec le message ; la fenêtre est ouverte pendant le toucher (sinon le navigateur la bloque)
 // Sur iPhone (app installée), un lien vers Claude ouvre une petite fenêtre de navigateur qui passe la main à l'app Claude,
@@ -385,6 +387,7 @@ function nuLogDraw(groups){if(!groups){const list=dayLog(nuDay);groups=[];list.f
     items:G.items.map(x=>({id:x.id,name:x.name,kcal:x.kcal,qty:qtyVM("log:"+x.id,x)}))})),mac:NU_MAC(),today:nuDay===iso(today()),i18n:agI18n()});$("nuLog")._isl=true}
 const hhmm2=a=>{const d=new Date(a);return `${two(d.getHours())}:${two(d.getMinutes())}`};
 function renderNuResult(){
+  $("nuAskBtn").hidden=!!nuPending;
   const p=nuPending;
   // le chargement (nuLoading) est posé directement dans #nuResult : React ne prend la main que pour un résultat, et la rend ensuite
   if(nuIsl("nuResult")&&p){try{const el=$("nuResult");if(!el._isl){el.innerHTML="";el._isl=true}
@@ -393,19 +396,19 @@ function renderNuResult(){
   if($("nuResult")._isl){window.SCIslands.unmount($("nuResult"));$("nuResult")._isl=false}
   if(!p){if(!nuBusy)$("nuResult").innerHTML="";return}
   const s=sumOf(p.items);
-  $("nuResult").innerHTML=`<div class="dish"><div class="dish-h"><span class="dish-ic">${p.photo?`<img src="${p.photo}" alt="">`:mono(p.title)}</span><span class="dish-t"><b class="notr">${esc(p.title)}</b><span class="small muted">${p.items.length} ${L(p.items.length>1?"aliments":"aliment")}</span>${p.mem?`<span class="memtag">${IC("bolt")} ${L("Mémoire Sid Forme")}</span>`:""}</span><span class="dish-kcal">${r0(s.kcal)}<small>kcal</small></span></div>
-    ${macroHtml(s)}<div class="dish-items">${p.items.map((x,i)=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${x.extra?`<span class="notmention">${L("pas dans ta description")}</span>`:""}${qtyCell("res:"+i,x)}</div><span class="k">${x.kcal} kcal</span><button type="button" class="x" data-nurm="${i}" aria-label="${L("Retirer")}">×</button></div>`).join("")}</div>
+  $("nuResult").innerHTML=`<div class="dish"><div class="dish-h"><span class="dish-ic">${p.photo?`<img src="${p.photo}" alt="">`:IC("utensils")}</span><span class="dish-t"><b class="notr" data-user-label="" title="${esc(p.title)}">${esc(p.title)}</b><span class="small muted">${p.items.length} ${L(p.items.length>1?"aliments":"aliment")}</span>${p.mem?`<span class="memtag">${IC("bolt")} ${L("Mémoire Sid Forme")}</span>`:""}</span><span class="dish-kcal">${fmtFull(r0(s.kcal))}<small>\u202fkcal</small></span></div>
+    ${macroHtml(s)}<div class="dish-items">${p.items.map((x,i)=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${x.extra?`<span class="notmention">${L("pas dans ta description")}</span>`:""}${qtyCell("res:"+i,x)}</div><span class="k">${fmtFull(x.kcal)}\u202fkcal</span><button type="button" class="x" data-nurm="${i}" aria-label="${L("Retirer")}">${IC("close")}</button></div>`).join("")}</div>
     ${p.note?`<div class="dish-note notr" style="padding-top:8px">${esc(p.note)}</div>`:""}
-    <div class="dish-act"><button type="button" class="btn ghost" data-nucancel="1">${L("Annuler")}</button><button type="button" class="btn" data-nuadd="1">${L("Ajouter")} · ${r0(s.kcal)} kcal</button></div></div>`;
+    <div class="dish-act"><button type="button" class="btn ghost" data-nucancel="1">${L("Annuler")}</button><button type="button" class="btn" data-nuadd="1">${L("Ajouter")} · ${fmtFull(r0(s.kcal))}\u202fkcal</button></div></div>`;
 }
 $("nuResult").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b||!nuPending)return;
   if(b.dataset.nurm){nuPending.items.splice(+b.dataset.nurm,1);if(!nuPending.items.length)nuPending=null;renderNuResult()}
   else if(b.dataset.nucancel){nuPending=null;renderNuResult()}
   else if(b.dataset.nuadd){const p=nuPending,g=nuAddItems(p.items,null,{name:p.title,em:p.em});
     if(p.photo){try{await idb.put(thumbKey(g),p.photo);thumbs.set(g,p.photo)}catch(x){}}
-    nuPending=null;nuPhoto=null;nuPhotoPrevSet(null);$("nuAsk").value="";grow($("nuAsk"));renderNutri();toast(nuDay===iso(today())?"Ajouté à ta journée":"Ajouté à ce jour")}
+    nuPending=null;nuPhoto=null;nuPhotoPrevSet(null);$("nuAsk").value="";grow($("nuAsk"));nuMealClose();renderNutri();toast(nuDay===iso(today())?"Ajouté à ta journée":"Ajouté à ce jour")}
 });
-function nuAddItems(items,time,meta){const at=nuAt(time),grp=uid();
+function nuAddItems(items,time,meta){nuProgressChange="done";const at=nuAt(time),grp=uid();
   items.forEach(x=>NU().log.push({id:uid(),day:nuDay,at,grp,gname:meta&&meta.name||"",gem:meta&&meta.em||"",name:x.name,qty:x.qty||"",em:x.em||"",kcal:r0(x.kcal),p:r1(x.p),c:r1(x.c),f:r1(x.f),upd:Date.now()}));
   save();return grp}
 // supprimer un aliment, ou tout un plat
@@ -416,3 +419,9 @@ $("nuLog").addEventListener("click",e=>{const b=e.target.closest("button");if(!b
   else if(b.dataset.nudelg){e.preventDefault();e.stopPropagation();if(!c2ok(b))return;const g=b.dataset.nudelg,ids=NU().log.filter(x=>(x.grp||x.id)===g).map(x=>x.id);
     undoable("Plat supprimé",ids,()=>{ids.forEach(tomb);NU().log=NU().log.filter(x=>(x.grp||x.id)!==g)},{after:renderNutri,later:()=>{if(!NU().log.some(x=>(x.grp||x.id)===g))idb.del(thumbKey(g))}})}
 });
+// T16 B : les cinq entrées réutilisent leurs traitements, dans une même feuille.
+function nuMealClose(restore=true){if($("nuMealSheet").hidden)return;$("nuMealSheet").hidden=true;if(restore)$("nuMealAdd").focus({preventScroll:true})}
+$("nuMealAdd").addEventListener("click",()=>{$("nuMealSheet").hidden=false;$("nuMealSheet").querySelector('[role="dialog"]').focus({preventScroll:true})});
+$("nuMealClose").addEventListener("click",nuMealClose);
+$("nuMealSheet").addEventListener("click",e=>{if(e.target.id==="nuMealSheet")nuMealClose();if(e.target.closest("#nuManual")){$("nuSheet")._back=$("nuMealAdd");nuMealClose(false)}else if(e.target.closest("#nuAiLink"))nuMealClose()});
+$("nuMealSheet").addEventListener("keydown",e=>{const label=e.target.closest('label[role="button"]');if(label&&(e.key==="Enter"||e.key===" ")){e.preventDefault();label.querySelector('input').click()}});

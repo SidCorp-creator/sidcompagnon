@@ -131,14 +131,14 @@ function renderDocs(){
   const cnt=id=>all.filter(d=>d.folder===id).length;
   const isl=window.SCIslands&&window.SCIslands.docs&&!window.__noIslands;
   if(!isl)$("docFolders").innerHTML=`<button class="pill" data-dfold="all" aria-pressed="${!cf}">${L("Tous")}</button>`+
-    DF().map(f=>`<button class="pill" data-dfold="${f.id}" aria-pressed="${!!(cf&&cf.id===f.id)}">${IC("folder")} ${esc(f.name)} <span class="cnt">${cnt(f.id)||""}</span></button>`).join("")+
-    `<button class="pill add" data-dfoldnew="1">+ ${L("Classeur")}</button>`;
+    DF().map(f=>`<button class="pill" data-dfold="${f.id}" aria-pressed="${!!(cf&&cf.id===f.id)}">${IC("folder")} <span class="coffre-folder-name notr" data-user-label="" title="${esc(f.name)}">${esc(f.name)}</span> <span class="cnt">${cnt(f.id)||""}</span></button>`).join("")+
+    `<button class="pill add" data-dfoldnew="1">${IC("plus")} ${L("Classeur")}</button>`;
   $("folderBar").hidden=!cf;
-  if(cf&&shIsl("folderBar")){try{window.SCIslands.folderBar($("folderBar"),{name:cf.name,count:cnt(cf.id),editing:!!dfEditing,q:dfQ,icon:IC("folder"),i18n:agI18n()})}catch(e){reportErr("island folderBar: "+(e&&e.message))}}
+  if(cf&&shIsl("folderBar")){try{window.SCIslands.folderBar($("folderBar"),{name:cf.name,count:cnt(cf.id),editing:!!dfEditing,q:dfQ,icon:IC("folder"),searchIcon:IC("search"),i18n:agI18n()})}catch(e){reportErr("island folderBar: "+(e&&e.message))}}
   else if(cf)$("folderBar").innerHTML=dfEditing?`<form id="folderRename" style="display:flex;gap:8px;width:100%"><input id="folderRenIn" value="${esc(cf.name)}" aria-label="${L("Nouveau nom")}" autocomplete="off"><button class="btn" type="submit">OK</button></form>`
     :`<div class="grow"><b class="notr">${IC("folder")} ${esc(cf.name)}</b><div class="small muted">${cnt(cf.id)} ${L(cnt(cf.id)>1?"documents":"document")}</div></div>
-      <button class="mini" data-dfren="1">${L("Renommer")}</button><button class="x" data-dfdel="1" aria-label="${L("Supprimer le classeur")}">×</button>
-      <input type="search" class="search" id="folderSearch" style="margin:8px 0 0;width:100%" placeholder="${L("Rechercher dans ce classeur")}" aria-label="${L("Rechercher dans ce classeur")}" value="${esc(dfQ)}" autocomplete="off">`;
+      <button class="mini" data-dfren="1">${L("Renommer")}</button><button class="x" data-dfdel="1" aria-label="${L("Supprimer le classeur")}">${IC("close")}</button>
+      <label class="coffre-search-label" for="folderSearch">${L("Rechercher dans ce classeur")}</label><span class="coffre-search"><i class="ic">${IC("search")}</i><input type="search" class="search" id="folderSearch" placeholder="${L("Nom du document")}" aria-label="${L("Rechercher dans ce classeur")}" value="${esc(dfQ)}" autocomplete="off"></span>`;
   // liste : recherche globale (partout) > classeur ouvert (avec sa recherche) > tous
   let list,scope;
   if(q){list=all.filter(d=>!docHidden(d));scope="all"}
@@ -152,13 +152,13 @@ function renderDocs(){
   // v57 (#3) : classeurs et liste dessinés par React (app/src/Vault.tsx) ; affichage seulement, le chiffrement ne change pas
   if(isl){try{window.SCIslands.docs({folders:$("docFolders"),list:$("docList")},{folders:DF().map(f=>({id:f.id,name:f.name,count:cnt(f.id)})),cur:cf?cf.id:"",icon:IC("folder"),grip:!!DF().length,i18n:agI18n(),
       empty:sq?"Aucun document ne correspond.":scope==="folder"?"Ce classeur est vide. Importe ou scanne un document : il sera rangé ici.":"Aucun document pour l'instant. Importe un PDF ou scanne une feuille.",
-      docs:list.map(d=>{const f=folderOf(d);return{id:d.id,title:d.title,folder:f&&scope==="all"?f.name:"",meta:`${d.pages?`${d.pages} ${L(d.pages>1?"pages":"page")} · `:""}${fmtSize(d.size||0)} · ${fmtDay(d.createdAt)}`,
+      docs:list.map(d=>{const f=folderOf(d);return{id:d.id,title:d.title,folder:f&&scope==="all"?f.name:"",meta:`${d.pages?`${d.pages} ${L(d.pages>1?"pages":"page")} · `:""}${fmtSize(d.size||0)}`,when:fmtDay(d.createdAt),
         status:docBusy.has(d.id)?L("Envoi…"):d.up?"":L("Sur cet appareil seulement")}})})}
     catch(e){reportErr("island docs: "+(e&&e.message));window.__noIslands=true;try{renderDocs()}finally{window.__noIslands=false}return}}
   else $("docList").innerHTML=list.length?list.map(d=>{
     const st=docBusy.has(d.id)?L("Envoi…"):d.up?"":L("Sur cet appareil seulement"),f=folderOf(d);
     return `<div class="doc" data-doc="${d.id}">${DF().length?`<button class="grip" data-dgrip="${d.id}" aria-label="${L("Glisser vers un classeur")}" title="${L("Glisser vers un classeur")}">${GRIP}</button>`:""}<button class="doc-ic" data-docopen="${d.id}" aria-label="Ouvrir">PDF</button>
-      <button class="doc-open" data-docopen="${d.id}"><b>${esc(d.title)}</b><span class="small muted">${f&&scope==="all"?`${IC("folder")} <span class="notr">${esc(f.name)}</span> · `:""}${d.pages?`${d.pages} ${L(d.pages>1?"pages":"page")} · `:""}${fmtSize(d.size||0)} · ${fmtDay(d.createdAt)}${st?` · <span style="color:var(--warn)">${st}</span>`:""}</span></button>
+      <button class="doc-open" data-docopen="${d.id}"><b class="notr" data-user-label="" title="${esc(d.title)}">${esc(d.title)}</b><span class="small muted">${d.pages?`${d.pages} ${L(d.pages>1?"pages":"page")} · `:""}${fmtSize(d.size||0)}${f&&scope==="all"?` · <span class="notr">${esc(f.name)}</span>`:""} · ${fmtDay(d.createdAt)}${st?` · <span style="color:var(--warn)">${st}</span>`:""}</span></button>
       <button class="pen" data-docshare="${d.id}" aria-label="Partager ou enregistrer">${SHARE}</button>
       <button class="pen" data-edit="doc:${d.id}" aria-label="Modifier">${PEN}</button></div>`}).join("")
     :`<div class="empty">${sq?L("Aucun document ne correspond."):scope==="folder"?L("Ce classeur est vide. Importe ou scanne un document : il sera rangé ici."):L("Aucun document pour l'instant. Importe un PDF ou scanne une feuille.")}</div>`;
@@ -227,7 +227,7 @@ async function dvMigrate(){
   await docsSecure();toast("C'est fait : un seul code pour tes documents et tes mots de passe");return true;
 }
 // l'onglet Documents s'ouvre avec le code, comme Mots de passe
-function renderDocLock(){const lk=!dvOpen;$("v-docs").classList.toggle("is-locked",lk);$("docLocked").hidden=!lk||!!(ps&&ps.host)}
+function renderDocLock(){const lk=!dvOpen;$("v-docs").classList.toggle("is-locked",lk);elanRefreshCoffreMetric();$("docLocked").hidden=!lk||!!(ps&&ps.host)}
 async function docsEnter(){renderDocLock();if(dvOpen){renderDocs();return}if(await dvUnlock()){renderDocLock();renderDocs();docsSyncPending();docsSecure()}}
 $("docUnlockBtn").addEventListener("click",docsEnter);
 // glisser un document (poignée ⠿) sur un classeur pour l'y ranger ; sur « Tous » pour le sortir de son classeur
@@ -373,10 +373,10 @@ function makePDF(pages){
 }
 function renderScan(){
   if(shIsl("scanPages")){try{window.SCIslands.scanPages($("scanPages"),{pages:scanPages.map(p=>p.out.url),i18n:agI18n()})}catch(e){reportErr("island scanPages: "+(e&&e.message))}}else
-  $("scanPages").innerHTML=scanPages.map((p,i)=>`<div class="pg"><img src="${p.out.url}" alt="Page ${i+1}"><button class="rot" data-scrot="${i}" aria-label="Pivoter">↻</button><button class="rm" data-scrm="${i}" aria-label="Retirer">×</button><span>${i+1}</span></div>`).join("");
+  $("scanPages").innerHTML=scanPages.map((p,i)=>`<div class="pg"><img src="${p.out.url}" alt="Page ${i+1}"><button class="rot" data-scrot="${i}" aria-label="Pivoter">${IC("refresh")}</button><button class="rm" data-scrm="${i}" aria-label="Retirer">${IC("close")}</button><span>${i+1}</span></div>`).join("");
   document.querySelectorAll("#scanFilter button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.flt===scanFlt));
   $("scanSave").disabled=!scanPages.length;
-  $("scanAddTxt").textContent=L(scanPages.length?"◎ Page suivante":"◎ Prendre une photo");
+  $("scanAddTxt").innerHTML=IC("camera")+" "+L(scanPages.length?"Page suivante":"Prendre une photo");
   $("scanSave").textContent=scanPages.length?`${L("Enregistrer le PDF")} (${scanPages.length} ${L(scanPages.length>1?"pages":"page")})`:L("Enregistrer le PDF");
 }
 function openScan(){
@@ -404,3 +404,5 @@ $("scanSave").addEventListener("click",async()=>{
   const d=await addDoc(makePDF(scanPages.map(p=>p.out)),$("scanName").value.trim()||"Scan",scanPages.length);
   btn.disabled=false;if(d){$("scan").hidden=true;scanPages=[];toast("Scan enregistré dans Documents")}
 });
+
+$("docImport").parentElement.addEventListener("keydown",e=>{if(e.target!==e.currentTarget||!["Enter"," "].includes(e.key))return;e.preventDefault();$("docImport").click()});

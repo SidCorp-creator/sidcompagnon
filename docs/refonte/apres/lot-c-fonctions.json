@@ -1,0 +1,137 @@
+{
+  "baseline": "87897d9",
+  "files": [
+    {
+      "file": "26-documents.js",
+      "changed": [
+        "renderDocs",
+        "renderDocLock",
+        "renderScan"
+      ],
+      "unchanged": [
+        "idbClearUser",
+        "stor",
+        "storErr",
+        "docEncrypt",
+        "docDecrypt",
+        "docUpload",
+        "docsSyncPending",
+        "docsSecure",
+        "docBlob",
+        "addDoc",
+        "docDelete",
+        "fileShare",
+        "docShare",
+        "lev",
+        "tokScore",
+        "fuzzyScore",
+        "dvTry",
+        "vaultCheck",
+        "newDocVault",
+        "newPwVault",
+        "dvUnlock",
+        "dvMigrate",
+        "docsEnter",
+        "dvReset",
+        "dvLock",
+        "secLeave",
+        "secCheck",
+        "loadPdfJs",
+        "openViewer",
+        "closeViewer",
+        "loadImg",
+        "renderPage",
+        "makePDF",
+        "openScan",
+        "scanAdd"
+      ],
+      "new": []
+    },
+    {
+      "file": "29-notes-libres.js",
+      "changed": [
+        "renderNotes",
+        "pvOverlay"
+      ],
+      "unchanged": [
+        "rtClean",
+        "noteQueue",
+        "noteFlush",
+        "openNote",
+        "closeNote",
+        "nfFormOpen",
+        "nfDelete",
+        "nfChoices",
+        "nfActions",
+        "noteInput",
+        "noteRemove",
+        "noteActions",
+        "npGet",
+        "npUpload",
+        "notesPhotosPending",
+        "renderNotePhotos",
+        "pdfUpload",
+        "pdfBlob",
+        "pdfOpen",
+        "pvRender",
+        "pvClose",
+        "pvRefresh",
+        "pvTool",
+        "pvOpts",
+        "pvShare",
+        "pvFlushTxt",
+        "pvSelect",
+        "pvDel",
+        "pvErase",
+        "nsLoad",
+        "nsTry",
+        "nsUnlock",
+        "nsLock",
+        "nsReset"
+      ],
+      "new": [
+        "noteTitleGrow"
+      ]
+    },
+    {
+      "file": "35-coffre-renforce.js",
+      "changed": [
+        "renderPwd",
+        "renderPwList",
+        "openPwSheet"
+      ],
+      "unchanged": [
+        "phDerive",
+        "phCheck",
+        "mkWrap",
+        "mkUnwrap",
+        "v2Make",
+        "v2Key",
+        "vOpen",
+        "askPhrase",
+        "phEnd",
+        "phRecOffer",
+        "pwWrap",
+        "pwUnwrap",
+        "mkCreate",
+        "mkFromPw",
+        "phPwOffer",
+        "mkNeed",
+        "devSetup",
+        "vaultsReset",
+        "v2Upgrade",
+        "pwdLock",
+        "vaultLoad",
+        "pinDots",
+        "pinFail",
+        "pinDone",
+        "pinPress",
+        "copyTxt",
+        "closePwSheet"
+      ],
+      "new": [
+        "pwEyePaint"
+      ]
+    }
+  ]
+}

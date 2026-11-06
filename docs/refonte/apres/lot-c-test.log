@@ -1,0 +1,100 @@
+Parcours complet T13 + lots A/B/C, 17 configurations réparties en 3 groupes. Reprise finale de 1280 sombre secours après attente du média réduit.
+
+Groupe 1
+
+> test
+> npm --prefix app test
+
+
+> sidcompagnon-app@0.1.0 test
+> node ../tests/run.cjs
+
+OK : chiffrement (ancien et nouveau code interchangeables)
+OK : mémoire des aliments, 6 tests réussis
+OK : fusion à 3 voies (ancienne et nouvelle version, 5000 cas identiques)
+OK : rappels, 7 tests réussis
+OK : site/app.js correspond aux sources (47 fichiers)
+OK 390-dark-react-fr
+OK 390-dark-secours-fr
+OK 390-light-react-fr
+OK 390-light-secours-fr
+OK 1280-dark-react-fr
+ECHEC 1280-dark-secours-fr The expression evaluated to a falsy value:
+
+  assert.ok(await p.locator('#vhead .elan-progress-track i').evaluate(e=>parseFloat(getComputedStyle(e).transitionDuration)<=.001))
+
+AssertionError [ERR_ASSERTION]: 1280-dark-secours-fr: The expression evaluated to a falsy value:
+
+  assert.ok(await p.locator('#vhead .elan-progress-track i').evaluate(e=>parseFloat(getComputedStyle(e).transitionDuration)<=.001))
+
+
+1 !== 0
+
+    at /home/sidki/sidcompagnon-codex/tests/elan.js:53:479 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 1,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+Error: Parcours Élan en échec
+    at /home/sidki/sidcompagnon-codex/tests/run.cjs:6:162
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+
+Groupe 2
+
+> test
+> npm --prefix app test
+
+
+> sidcompagnon-app@0.1.0 test
+> node ../tests/run.cjs
+
+OK : chiffrement (ancien et nouveau code interchangeables)
+OK : mémoire des aliments, 6 tests réussis
+OK : fusion à 3 voies (ancienne et nouvelle version, 5000 cas identiques)
+OK : rappels, 7 tests réussis
+OK : site/app.js correspond aux sources (47 fichiers)
+OK 1280-light-react-fr
+OK 1280-light-secours-fr
+OK 900-dark-react-fr
+OK 320-dark-react-fr
+OK 320-dark-secours-fr
+OK 320-light-react-fr
+
+Groupe 3
+
+> test
+> npm --prefix app test
+
+
+> sidcompagnon-app@0.1.0 test
+> node ../tests/run.cjs
+
+OK : chiffrement (ancien et nouveau code interchangeables)
+OK : mémoire des aliments, 6 tests réussis
+OK : fusion à 3 voies (ancienne et nouvelle version, 5000 cas identiques)
+OK : rappels, 7 tests réussis
+OK : site/app.js correspond aux sources (47 fichiers)
+OK 320-light-secours-fr
+OK 390-dark-react-en
+OK 390-light-react-en
+OK 390-dark-react-nl
+OK 390-light-react-nl
+
+Reprise finale
+
+> test
+> npm --prefix app test
+
+
+> sidcompagnon-app@0.1.0 test
+> node ../tests/run.cjs
+
+OK : chiffrement (ancien et nouveau code interchangeables)
+OK : mémoire des aliments, 6 tests réussis
+OK : fusion à 3 voies (ancienne et nouvelle version, 5000 cas identiques)
+OK : rappels, 7 tests réussis
+OK : site/app.js correspond aux sources (47 fichiers)
+OK 1280-dark-secours-fr

@@ -111,12 +111,13 @@ Les 9 autres familles sortent de l'app quand plus rien ne les utilise. Le monosp
 
 - **L'italique est réservé aux titres de bandeau et au nom d'app sur sa carte.** Les chiffres de séries, de macros et d'heures restent droits et tabulaires (`font-variant-numeric: tabular-nums`).
 - Les champs restent à 16 px au minimum (zoom sur iPhone), en minuscules : pas de capitales espacées.
-- Tutoiement, phrases courtes ; « Ajouter » partout, et un verbe précis seulement pour une action différente (« Analyser », « Valider la série »).
+- Tutoiement, phrases courtes ; « Ajouter » partout, et un verbe précis seulement pour une action différente (« Analyser », « Démarrer »).
 
 ## 6. Espacement, densité, mise en page
 
 - **Échelle** : 4, 8, 12, 16, 20, 24, 32, 48. Marge d'écran de 20 px sur téléphone, 48 px sur ordinateur.
 - **Cibles** : 44 px au minimum, 48 px pour les boutons principaux et les lignes de liste. Les lignes denses (agenda, séries) font 56 px.
+- **Exception calendrier (écrans < 360 px)** : une grille à 7 colonnes ne peut pas tenir 7 × 44 px. Les cellules gardent 44 px de haut et descendent jusqu'à 36 px de large, sans espace mort entre elles. La grille peut empiéter sur la marge d'écran, jusqu'à 12 px. Le jour choisi est toujours signalé par plus que la couleur (fond plein + chiffre en gras). Au-delà de 360 px, la règle des 44 px s'applique.
 - **Rayons** : contrôle 10 ; bloc 16 ; carte d'accueil 18 ; fenêtre 22 ; pilule (puce, bouton Claude) 999.
 - **Un seul niveau de bloc** : les listes sont posées sur `--surface` avec des séparateurs `--line`. Jamais de carte dans une carte.
 - **Téléphone (390 px)** : bandeau, puis contenu, puis barre du bas à 3 onglets (+ zone de sécurité). Grilles en `minmax(0,1fr)`.
@@ -172,7 +173,8 @@ Les 9 autres familles sortent de l'app quand plus rien ne les utilise. Le monosp
 | Ouvrir une app depuis l'accueil | relier la carte au bandeau | la couleur s'étend en 260 ms |
 
 - Le rebond n'existe que pour la progression. Le reste est sobre.
-- **La barre de progression dit toujours la vérité** (faites / total du jour) : elle n'avance que quand quelque chose est **fait** (activité passée ou cochée, tâche cochée, série validée, repas noté contre l'objectif). **Ajouter** n'est pas progresser : à l'ajout, le chiffre se met à jour (défilement de 260 ms, sans rebond), la barre se recale sans rebond, et la nouvelle ligne apparaît sur `--app-soft` avec le message « Activité ajoutée ». Pas de fausse barre de confirmation.
+- **La barre de progression dit toujours la vérité** (faites / total du jour) : elle n'avance que quand quelque chose est **fait** (activité passée ou cochée, tâche cochée, série saisie complète (kg et répétitions), repas noté contre l'objectif). **Ajouter** n'est pas progresser : à l'ajout, le chiffre se met à jour (défilement de 260 ms, sans rebond), la barre se recale sans rebond, et la nouvelle ligne apparaît sur `--app-soft` avec le message « Activité ajoutée ». Pas de fausse barre de confirmation.
+- **Focus** : la barre montre la position dans le programme (temps écoulé / durée totale, pauses prévues comprises), libellée « 35 min sur 1 h 30 · session 2 sur 4 », jamais « travaillé ». Un seul mot pour les blocs de travail, « session », partout (bandeau, cadran, programme). Avant le démarrage, le bandeau affiche la durée prévue, par exemple « 1 h 30 · 4 sessions », jamais « session 0 ». Heures au format 10:41. « Passer » avance la barre sans rebond ; le rebond n'a lieu qu'à la fin naturelle d'une session. Logique du chrono et journal inchangés.
 - **Mouvement réduit** (préférence du système) : les durées passent à 1 ms et le rebond disparaît ; les fondus de moins de 150 ms restent. L'état final est le même.
 - Aucune animation en boucle, sauf l'indicateur de chargement, qui reste fixe en mouvement réduit.
 

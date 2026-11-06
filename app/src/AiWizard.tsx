@@ -1,3 +1,4 @@
+import {FormeIcon} from "./FormeIcon";
 // Assistant « Brancher Claude » (#aiBody), migré en v68 (ticket #3). Même rendu que aiRender de site/app.js.
 // Les étapes (none / setup / test), l'adresse et la vérification restent gérées par app.js ; clics délégués sur #aiBody.
 
@@ -49,11 +50,11 @@ export function AaActs({ a, i18n }: { a: AaVM; i18n: AI18n }) {
 export function NuPhotoPrev({ src, i18n }: { src: string; i18n: AI18n }) {
   const { tr, L } = i18n;
   if (!src) return null;
-  return <><img src={src} alt={tr(L("Photo du plat"))} /><button type="button" aria-label={tr(L("Retirer la photo"))} data-nuphrm="1">×</button></>;
+  return <><img src={src} alt={tr(L("Photo du plat"))} /><button type="button" aria-label={tr(L("Retirer la photo"))} data-nuphrm="1"><FormeIcon name="close"/></button></>;
 }
 
 export function ScanPages({ pages, i18n }: { pages: string[]; i18n: AI18n }) {
   const { tr } = i18n;
-  return <>{pages.map((u, i) => <div key={i} className="pg"><img src={u} alt={tr(`Page ${i + 1}`)} /><button className="rot" data-scrot={i} aria-label={tr("Pivoter")}>↻</button>
-    <button className="rm" data-scrm={i} aria-label={tr("Retirer")}>×</button><span>{i + 1}</span></div>)}</>;
+  return <>{pages.map((u, i) => <div key={i} className="pg"><img src={u} alt={tr(`Page ${i + 1}`)} /><button className="rot" data-scrot={i} aria-label={tr("Pivoter")}><FormeIcon name="refresh"/></button>
+    <button className="rm" data-scrm={i} aria-label={tr("Retirer")}><FormeIcon name="close"/></button><span>{i + 1}</span></div>)}</>;
 }

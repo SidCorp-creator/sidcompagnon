@@ -62,27 +62,32 @@ function parseShared(txt){
 // « Série 1 : [kg] – [reps] », « + Ajouter une série », × pour retirer une série. Rien n'est pré-rempli.
 // v73 : résumé d'une séance (exercices, séries, chrono en cours ou « faite aujourd'hui »)
 function seSub(se,nS){const r=msRunGet(se.id);return `${se.exercises.length} ${L(se.exercises.length>1?"exercices":"exercice")} · ${nS} ${L(nS>1?"séries":"série")}`+
-  (r?` · ⏱ ${msRunMin(r)} min`:msDoneToday(se)?` · ✓ ${L("faite aujourd'hui")}`:"")}
+  (r?` · ${msRunMin(r)} min`:msDoneToday(se)?` · ${L("faite aujourd'hui")}`:"")}
 const exKg=x=>String(x==null?"":x).replace(".",LANG==="en"?".":",");
+// T16 B : état d'affichage dérivé des champs, sans nouvel état enregistré.
+const muSetComplete=st=>!!st&&String(st.kg??"").trim()!==""&&Number(String(st.kg).replace(",","."))>=0&&Number(st.reps)>0;
+function muSetState(ex,j,se){if(muSetComplete(ex.sets[j]))return "done";const first=(se?.exercises||[ex]).find(e=>e.sets.some(x=>!muSetComplete(x)));return first?.id===ex.id&&j===ex.sets.findIndex(x=>!muSetComplete(x))?"next":"later"}
+function muSessionProgress(){const se=msFind(msOpenId)||msFind(msRunGet()?.se)||M().sessions.find(Boolean),sets=se?(se.exercises||[]).flatMap(x=>x.sets||[]):[];return {done:sets.filter(muSetComplete).length,total:sets.length}}
+function muRefreshSetUI(se){if(!se)return;const d=$("msList").querySelector(`[data-ms="${se.id}"]`);if(d)for(const ex of se.exercises)for(let j=0;j<ex.sets.length;j++){const row=d.querySelector(`[data-ex="${ex.id}"] [data-si="${j}"]`);if(!row)continue;const state=muSetState(ex,j,se);row.dataset.setState=state;const mark=row.querySelector(".set-mark");if(mark)mark.hidden=state!=="done"}
+ if(data.ui.view==="muscu"){const {done,total}=muSessionProgress(),prev=Number($("vhead").querySelector('[role="progressbar"]')?.getAttribute("aria-valuenow")||0);$("vhead").dataset.progressChange=total&&Math.round(done/total*100)>prev?"done":"adjust";renderVhead("muscu")}}
 function seCard(se,letter){const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0),ty=seType(se),T=ty&&SE_T[ty];
   // v47 (#14) : lettre de la séance dans son programme + type (poussée, tirage, jambes…) en couleur ; séance libre en pointillés
   const tag=letter||T?`<span class="se-tag">${letter?`<b>${letter}</b>`:""}${T?`<span>${L(T[0])}</span>`:""}</span>`:`<span class="se-tag se-free">${L("Libre")}</span>`;
   const shown=String(se.name||"").replace(/^(?:Séance|Session|Training)\s+[A-F]\s*·\s*/i,"")||L("Séance");
   return `<details class="ms${letter?"":" ms-free"}" data-ms="${se.id}" ${ty?`data-se="${ty}"`:""} ${se.id===msOpenId?"open":""}>
-    <summary><span class="chev">›</span><span class="grow">${tag}<span class="ms-name notr">${esc(shown)}</span><br><span class="small muted">${esc(seSub(se,nS))}</span></span><button type="button" class="x ms-del" data-msdel="1" aria-label="${L("Supprimer la séance")}">${IC("trash")}</button></summary>
+    <summary><span class="chev">${IC("chev")}</span><span class="grow"><span class="ms-name notr" data-user-label="" title="${esc(shown)}">${esc(shown)}</span><span class="ms-meta">${tag}<span class="small muted">${esc(seSub(se,nS))}</span></span></span><button type="button" class="x ms-del" data-msdel="1" aria-label="${L("Supprimer la séance")}">${IC("trash")}</button></summary>
     <div class="ms-body">
       <label class="small muted" style="display:grid;gap:4px">${L("Nom de la séance")}<input data-f="msname" value="${esc(se.name)}" autocomplete="off"></label>
       ${se.exercises.map((ex,i)=>`<div class="ex ex3" data-ex="${ex.id}">
-        <div class="ex-head"><span class="num">${i+1}</span><span class="ex-nm"><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><span class="ex-n notr" aria-hidden="true">${esc(ex.name)}</span></span><button type="button" class="mini ex-help" data-exhelp="1" aria-label="${L("Comment faire cet exercice")}" title="${L("Comment faire cet exercice")}"${exAide(ex.name)?"":" hidden"}>?</button><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">×</button></div>
-        ${exAdvHtml(ex)}${exPrmHtml(ex)}${(p=>p?`<div class="ex-pro small">↑ ${esc(p)}</div>`:"")(exProg(ex))}
-        <div class="set-rows">${ex.sets.map((st,j)=>`<div class="set-row" data-si="${j}"><span class="set-l">${L("Série")} ${j+1}</span>
-          <input class="set-in" data-f="setkg" value="${esc(exKg(st&&st.kg))}" placeholder="kg" aria-label="${L("Série")} ${j+1} : kg" autocomplete="off" inputmode="decimal">
-          <span class="set-sep" aria-hidden="true">–</span>
-          <input class="set-in" data-f="setreps" value="${esc(String((st&&st.reps)||""))}" placeholder="reps" aria-label="${L("Série")} ${j+1} : ${L("répétitions")}" autocomplete="off" inputmode="numeric">
-          <button type="button" class="set-del" data-msdelset="${j}" aria-label="${L("Retirer la série")} ${j+1}" ${ex.sets.length<=1?"disabled":""}>×</button></div>`).join("")}</div>
-        <div class="set-acts"><button type="button" class="set-add" data-msaddset="1" ${ex.sets.length>=20?"disabled":""}>+ ${L("Ajouter une série")}</button>${ex.sets.length>1?`<button type="button" class="set-add set-copy" data-mscopy1="1" title="${L("Recopier le poids et les répétitions de la série 1 dans toutes les séries")}">↓ ${L("Série 1 sur toutes")}</button>`:""}</div>
+        <div class="ex-head"><span class="num">${i+1}</span><span class="ex-nm"><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><span class="ex-n notr" aria-hidden="true">${esc(ex.name)}</span></span><button type="button" class="mini ex-help" data-exhelp="1" aria-label="${L("Comment faire cet exercice")}" title="${L("Comment faire cet exercice")}"${exAide(ex.name)?"":" hidden"}>${IC("help")}</button><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">${IC("close")}</button></div>
+        ${exAdvHtml(ex)}${exPrmHtml(ex)}${(p=>p?`<div class="ex-pro small">${IC("arrowup")} ${esc(p)}</div>`:"")(exProg(ex))}
+        <div class="set-rows">${ex.sets.map((st,j)=>`<div class="set-row" data-si="${j}" data-set-state="${muSetState(ex,j,se)}"><span class="set-l"><span class="set-mark" ${muSetComplete(st)?"":"hidden"}>${IC("tick")}</span>${L("Série")} ${j+1}</span>
+          <span class="set-field"><input class="set-in" data-f="setkg" value="${esc(exKg(st&&st.kg))}" placeholder="" aria-label="${L("Série")} ${j+1} : kg" autocomplete="off" inputmode="decimal"><span class="set-unit">kg</span></span>
+          <span class="set-field"><input class="set-in" data-f="setreps" value="${esc(String((st&&st.reps)||""))}" placeholder="" aria-label="${L("Série")} ${j+1} : ${L("répétitions")}" autocomplete="off" inputmode="numeric"><span class="set-unit">${L("reps")}</span></span>
+          <button type="button" class="set-del" data-msdelset="${j}" aria-label="${L("Retirer la série")} ${j+1}" ${ex.sets.length<=1?"disabled":""}>${IC("close")}</button></div>`).join("")}</div>
+        <div class="set-acts"><button type="button" class="set-add" data-msaddset="1" ${ex.sets.length>=20?"disabled":""}>${IC("plus")} ${L("Ajouter une série")}</button>${ex.sets.length>1?`<button type="button" class="set-add set-copy" data-mscopy1="1" title="${L("Recopier le poids et les répétitions de la série 1 dans toutes les séries")}">${IC("copy")} ${L("Série 1 sur toutes")}</button>`:""}</div>
       </div>`).join("")}
-      <button type="button" class="qbtn" data-msaddex="1">+ ${L("Ajouter un exercice")}</button>
+      <button type="button" class="qbtn" data-msaddex="1">${IC("plus")} ${L("Ajouter un exercice")}</button>
       <div class="ms-actions">
         <button type="button" class="btn ghost" data-msshare="1">${L("Partager")}</button>
         <button type="button" class="btn stop" data-msdel="1">${L("Supprimer")}</button>
@@ -113,7 +118,7 @@ function msIsland(groups,free){msLast=[groups,free];
       ex:se.exercises.map(ex=>{const a=exAdv(ex.name);return{id:ex.id,name:ex.name||"",help:!!exAide(ex.name),
         adv:a?{txt:`${L("Conseillé")} (${L(MU_GOALS[muGoal()])}) : `,val:exAdvVal(a),same:exAdvSame(ex,a)}:null,
         prm:{reps:ex.reps||"",rest:+ex.rest?String(+ex.rest):"",int:ex.int||"",rpe:ex.rpe||"",tempo:ex.tempo||"",sum:exPrmSum(ex),open:msPrmOpen.has(ex.id)},pro:exProg(ex),
-        sets:ex.sets.map(st=>({kg:exKg(st&&st.kg),reps:String((st&&st.reps)||"")}))}})}};
+        sets:ex.sets.map((st,j)=>({kg:exKg(st&&st.kg),reps:String((st&&st.reps)||""),state:muSetState(ex,j,se)}))}})}};
   const G=groups.map(g=>({id:g.id,name:g.name,free:false,more:true,sub:`${L(GSRC[g.src]||"Importé")} · ${g.ses.length} ${L(g.ses.length>1?"séances":"séance")}${g.plan?` · ${L("suivi")}`:""}`,
     empty:"Aucune séance dans ce programme.",ses:g.ses.map((se,i)=>seVM(se,"ABCDEFGHIJ"[i]||""))}));
   G.push({id:"",name:"Séances libres",free:true,more:!!free.length,sub:`${free.length} ${L(free.length>1?"séances":"séance")}`,empty:"Aucune séance libre. Crée-en une ci-dessous.",ses:free.map(se=>seVM(se))});
@@ -126,10 +131,10 @@ function msSaveSoon(se){if(se)seTouch(se);clearTimeout(msTimer);msTimer=setTimeo
 $("msForm").addEventListener("submit",e=>{e.preventDefault();const n=$("msName").value.trim();if(!n)return;
   const se={id:uid(),name:n,exercises:[newEx()],upd:Date.now()};M().sessions.push(se);msOpenId=se.id;save();renderMuscu();$("msName").value="";toast("Séance créée")});
 $("msList").addEventListener("toggle",e=>{const t=e.target;if(t.matches&&t.matches("[data-prm]")){if(t.open)msPrmOpen.add(t.dataset.prm);else msPrmOpen.delete(t.dataset.prm);return}
-  const d=t.closest("[data-ms]");if(d&&d.open)msOpenId=d.dataset.ms},true);
+  const d=t.closest("[data-ms]");if(d&&d.open){msOpenId=d.dataset.ms;muRefreshSetUI(msFind(msOpenId))}},true);
 $("msList").addEventListener("input",e=>{
   const inp=e.target,f=inp.dataset.f;if(!f)return;
-  const se=msFind(inp.closest("[data-ms]").dataset.ms);if(!se)return;
+  const se=msFind(inp.closest("[data-ms]").dataset.ms);if(!se)return;msOpenId=se.id;
   if(f==="msname"){se.name=inp.value;if(!msRedraw()){const n=inp.closest("[data-ms]").querySelector(".ms-name");if(n)n.textContent=inp.value||L("Séance")}}
   else{const ex=se.exercises.find(x=>x.id===inp.closest("[data-ex]").dataset.ex);if(!ex)return;
     if(f==="exname"){ex.name=inp.value;const sp=inp.parentElement.querySelector(".ex-n");if(sp)sp.textContent=inp.value; // v74.5 : nom complet affiché sur plusieurs lignes
@@ -141,7 +146,7 @@ $("msList").addEventListener("input",e=>{
     else if(f==="setkg"||f==="setreps"){const j=+inp.closest("[data-si]").dataset.si,st=ex.sets[j];if(!st)return;
       if(f==="setkg")st.kg=inp.value.replace(",",".").replace(/[^0-9.]/g,"").slice(0,7);else st.reps=inp.value.replace(/[^0-9]/g,"").slice(0,4);
       const was=msRunGet(se.id);if(String(st.kg||"").trim()||String(st.reps||"").trim()||was){msRunTouch(se,ex,j,!!String(st.reps||"").trim());msAutoLog(se);if(!was)msRedraw()}}}
-  msSaveSoon(se)});
+  muRefreshSetUI(se);msSaveSoon(se)});
 // v44.7 : fiche « comment faire » de chaque exercice proposé (site/exercices-aide.js), dans la langue de l'app
 function exAide(name){const A=window.SIDFIT_AIDE||{},k=fold(String(name||"").trim());if(!k)return null;
   const key=Object.keys(A).find(x=>fold(x)===k);return key?{name:key,f:A[key][LANG]||A[key].fr}:null}

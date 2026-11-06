@@ -56,7 +56,7 @@ function graph(els: GraphEls, p: GraphProps) {
   const series: Serie[] = p.macros.map((m) => ({ label: m.label, c: m.c, vals: p.D.map((d) => d.has ? r1(d[m.k]) : null) }));
   const mOpt: LineOpt = { zero: true, unit: " g", aria: L("Macros par jour") };
   const tw = p.targetWeight;
-  const wOpt: LineOpt = { dots: true, unit: " kg", ref: tw ? { v: tw, label: `${L("Objectif")} ${fmtN(tw, lang)} kg` } : null, empty: "Entre ton poids ci-dessus pour suivre son évolution.", aria: L("Poids") };
+  const wOpt: LineOpt = { dots: true, unit: " kg", ref: tw ? { v: tw, label: `${L("Objectif")} ${fmtN(tw, lang)}\u202fkg` } : null, empty: "Entre ton poids ci-dessus pour suivre son évolution.", aria: L("Poids") };
   mount(els.macroLeg, <MacroLegend i18n={p.i18n} macros={p.macros} />);
   mount(els.macros, <LineChart i18n={p.i18n} width={p.widths.macros} days={p.days} series={series} opt={mOpt} tip={p.tip} />);
   mount(els.weight, <LineChart i18n={p.i18n} width={p.widths.weight} days={p.days} series={[{ label: "Poids", c: "--m-p", vals: p.D.map((d) => d.kg) }]} opt={wOpt} tip={p.tip} />);
@@ -95,7 +95,7 @@ declare global {
       unmount: (el: Element) => void;
       authFeats: (el: Element, p: { items: { icon: string; t: string; d: string }[]; i18n: FI18n }) => void;
       nsBar: (el: Element, p: { unlock: string; lock: string; i18n: FI18n }) => void;
-      folderBar: (el: Element, p: { name: string; count: number; editing: boolean; q: string; icon: string; i18n: FI18n }) => void;
+      folderBar: (el: Element, p: { name: string; count: number; editing: boolean; q: string; icon: string; searchIcon: string; i18n: FI18n }) => void;
       nuSports: (el: Element, p: { sports: { name: string; freq: string; dur: string }[]; i18n: FI18n }) => void;
       nuSlots: (el: Element, p: { slots: { k: string; on: boolean; icon: string; name: string }[]; i18n: FI18n }) => void;
       nuMealKcal: (el: Element, p: { rows: { icon: string; name: string; kcal: number }[]; i18n: FI18n }) => void;
@@ -158,7 +158,7 @@ declare global {
       nuWeek: (el: Element, p: { sports: WeekSport[]; range: string; target: string; delta: number; actIcon: string; i18n: NuI18n }) => void;
       muList: (el: Element, p: { groups: MuGrp[]; trash: string; i18n: MuI18n }) => void;
       pomoPresets: (el: Element, p: { presets: number[]; total: number; labels: string[] }) => void;
-      planBar: (el: Element, p: { segs: { t: string; d: number }[]; doneIdx: number }) => void;
+      planBar: (el: Element, p: { segs: { t: string; d: number }[]; doneIdx: number; into?:number }) => void;
       todos: (els: { cats: Element; bar: Element; open: Element; paused: Element; done: Element }, p: TodosProps) => void;
     };
   }

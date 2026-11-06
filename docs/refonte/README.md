@@ -93,6 +93,7 @@ Rien n'est fusionné dans `main` ni mis en ligne sans l'accord de Sid. `main` = 
 | 6 nov. | Musculation : pas de bouton « Valider la série » ni de bouton « Repos » ; une série complète est faite dès la saisie (comportement inchangé) | arbitrage de Claude Code sans changement de comportement ; le minuteur de repos a été retiré en v44 |
 | 6 nov. | Le quota de Codex est épuisé : **Claude Code reprend les lots D et E** dans le worktree `refonte-tech` (Codex ne le modifie plus) | décision de Sid (« continue toi-même ») |
 | 6 nov. | Conversation Claude : **ligne repliée en bas** d'Agenda, Musculation, Nutrition et Notes ; le bouton Claude ouvre toujours la conversation d'un toucher | choix de Sid (option recommandée) |
+| 6 nov. | Version 75.1 (lots A à E, commit `9adb774`) envoyée sur `refonte-tech` et essayée par Sid sur iPhone : « ça marche bien » | `main` inchangé ; la mise en ligne pour tous attend l'accord de Sid |
 | 5 nov. | Tour 2 : règle commune « chaque écran dit à quoi sert l'app » (logo littéral, verbe + contenu + chiffre utile sur l'accueil, rôle dans l'en-tête) | répond directement au motif du refus |
 
 ## Points ouverts (questions pour Sid)

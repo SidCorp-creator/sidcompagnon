@@ -22,8 +22,8 @@ export function QuickHint({ icon, title, when, i18n }: { icon: string; title: st
 
 export function NuEHint({ st, i18n }: { st: "ok" | "none" | "busy"; i18n: MI18n }) {
   const { tr, L } = i18n;
-  if (st === "ok") return <>{tr(`✓ ${L("Calories recalculées selon la quantité")}`)}</>;
-  return <>{tr(L("Quantité sans chiffre : je ne peux pas recalculer seul."))}<button type="button" className="mini" id="nuERecalc">{st === "busy" ? <span className="spin"></span> : tr(`↻ ${L("Recalculer")}`)}</button></>;
+  if (st === "ok") return <><span className="gi gi-tick" aria-hidden="true" />{" " + tr(L("Calories recalculées selon la quantité"))}</>;
+  return <>{tr(L("Quantité sans chiffre : je ne peux pas recalculer seul."))}<button type="button" className="mini" id="nuERecalc">{st === "busy" ? <span className="spin"></span> : <><span className="gi gi-refresh" aria-hidden="true" />{" " + tr(L("Recalculer"))}</>}</button></>;
 }
 
 export function SpotEmbed({ ok, src, i18n }: { ok: boolean; src: string; i18n: MI18n }) {

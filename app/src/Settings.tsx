@@ -28,7 +28,7 @@ export function TypesCard({ types, i18n }: { types: { name: string; c: string; n
     {types.map((t, i) => <div key={i + t.name} className="row">
       <button className="swatch" data-tcol={i} style={{ background: `var(${t.c})` }} aria-label={tr(`Changer la couleur de ${t.name}`)}></button>
       <div className="grow">{tr(t.name + " ")}<span className="small muted">{tr(`· ${t.n}`)}</span></div>
-      <button className="x" data-tydel={i} aria-label={tr(`Supprimer ${t.name}`)}>×</button></div>)}
+      <button className="x" data-tydel={i} aria-label={tr(`Supprimer ${t.name}`)}><span className="gi gi-close" aria-hidden="true" /></button></div>)}
     <form className="row" id="typeForm"><input id="typeIn" placeholder={tr("Nouveau type, ex. Examen")} aria-label={tr("Nouveau type")} autoComplete="off" /><button className="btn" type="submit">{tr("Ajouter")}</button></form>
   </>;
 }

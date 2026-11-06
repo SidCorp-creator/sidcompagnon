@@ -81,7 +81,7 @@ export function ColChart(p: Base & { width: number; days: string[]; vals: KV[]; 
   if (t) {
     const y = Y(t);
     out.push(<line key="obj" x1={ml} x2={W - mr} y1={y} y2={y} stroke="var(--ink)" strokeWidth="1" opacity=".55" />,
-      <text key="objt" className="lbl" x={W - mr} y={y - 5} textAnchor="end">{`${L("Objectif")} ${fmtFull(t, lang)}\u202fkcal`}</text>);
+      <text key="objt" className="lbl" x={W - mr} y={y - 5} textAnchor="end">{`${L("Objectif")} ${fmtFull(t, lang)}\u00a0kcal`}</text>);
   }
   const move = (ev: React.PointerEvent) => {
     const b = (ev.target as Element).closest(".gr-bar") as SVGElement | null;

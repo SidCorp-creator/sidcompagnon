@@ -32,7 +32,7 @@ export function NotifBox({ kind, msg, leads, custom, cals, ical, i18n }: { kind:
       {leads.map((x) => x.m === 1440
         ? <span key={x.m} className="pill lock" aria-pressed="true" title={tr(L("Toujours active"))}>{tr(`${x.lbl} · ${L("toujours")}`)}</span>
         : <button key={x.m} type="button" className="pill" data-lead={x.m} aria-pressed={x.on}>{tr(x.lbl)}</button>)}
-      <button type="button" className="pill add" data-nf="custom">{tr(`+ ${L("Autre délai")}`)}</button></div>
+      <button type="button" className="pill add" data-nf="custom"><span className="gi gi-plus" aria-hidden="true" />{" " + tr(L("Autre délai"))}</button></div>
     {custom ? <Custom form={true} i18n={i18n} /> : null}
     {cals ? <label className="nf-ical"><input type="checkbox" data-nf="ical" defaultChecked={ical} />{" "}<span>{tr(L("Cours du calendrier relié : mêmes rappels que tes activités"))}</span></label> : null}
     <p className="small muted" style={{ margin: "8px 4px 0" }}>{tr(L("Tu peux en choisir plusieurs. Une activité sans heure compte pour 8 h. Sur smartphone, ouvre Sid'compagnon depuis l'écran d'accueil (iOS 16.4 ou plus)."))}</p>
@@ -47,7 +47,7 @@ export function RemBox({ kind, msg, leads, custom, bell, i18n }: { kind: NfKind;
     <div className="rem-chips">{leads.map((x) => x.m === 1440
       ? <span key={x.m} className="pill lock" aria-pressed="true">{tr(`${x.lbl} · ${L("toujours")}`)}</span>
       : <button key={x.m} type="button" className="pill" data-rl={x.m} aria-pressed={x.on}>{tr(x.lbl)}</button>)}
-      <button type="button" className="pill add" data-rcustom="1">{tr(`+ ${L("Autre")}`)}</button></div>
+      <button type="button" className="pill add" data-rcustom="1"><span className="gi gi-plus" aria-hidden="true" />{" " + tr(L("Autre"))}</button></div>
     {custom ? <Custom form={false} i18n={i18n} /> : null}
     {kind === "on" ? <div className="small muted">{tr(L("Sans heure, l'activité compte pour 8 h."))}</div>
       : kind === "na" ? <div className="small muted">{tr(L(msg))}</div>

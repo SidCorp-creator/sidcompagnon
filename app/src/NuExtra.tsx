@@ -30,7 +30,7 @@ export interface GoalVM { ok: boolean; head: string; pace: string; real: string;
 export function GoalBody({ g, alert, i18n }: { g: GoalVM; alert: string; i18n: NuI18n }) {
   const { tr, L } = i18n;
   return <>
-    <b dangerouslySetInnerHTML={{ __html: `${g.ok ? "✓ " : alert + " "}${esc(tr(g.head))}` }}></b>
+    <b dangerouslySetInnerHTML={{ __html: `${g.ok ? '<span class="gi gi-tick" aria-hidden="true"></span> ' : alert + " "}${esc(tr(g.head))}` }}></b>
     {g.pace ? <span className="small">{tr(g.pace)}</span> : null}
     {g.real ? <span className="small">{tr(g.real)}</span> : null}
     {g.advice ? <span className="small muted notr">{g.advice}</span> : null}
@@ -47,7 +47,7 @@ function Boxes({ items, i18n }: { items: [string | number, string, string?][]; i
 export function NuPlan({ pl, alert, i18n }: { pl: PlanVM; alert: string; i18n: NuI18n }) {
   return <>
     <Boxes i18n={i18n} items={[[pl.bmr, "Métabolisme de base"], [pl.tdee, "Dépense du jour"], [pl.kcal, "Objectif (kcal)"]]} />
-    <Boxes i18n={i18n} items={[[fmtN(pl.p,i18n.lang||"fr") + "\u202fg", "Protéines", "--m-p"], [fmtN(pl.c,i18n.lang||"fr") + "\u202fg", "Glucides", "--m-c"], [fmtN(pl.f,i18n.lang||"fr") + "\u202fg", "Lipides", "--m-f"]]} />
+    <Boxes i18n={i18n} items={[[fmtN(pl.p,i18n.lang||"fr") + "\u00a0g", "Protéines", "--m-p"], [fmtN(pl.c,i18n.lang||"fr") + "\u00a0g", "Glucides", "--m-c"], [fmtN(pl.f,i18n.lang||"fr") + "\u00a0g", "Lipides", "--m-f"]]} />
     {pl.goal ? <div className={`card nu-goalcard ${pl.goal.ok ? "ok" : ""}`} style={{ background: "var(--bg)" }}><GoalBody g={{ ...pl.goal, button: false }} alert={alert} i18n={i18n} /></div> : null}
     <p className="small notr" style={{ margin: "0 4px" }}>{pl.text}</p>{pl.warn.map((w, i) => <div key={i} className="nu-warn notr">{w}</div>)}
   </>;

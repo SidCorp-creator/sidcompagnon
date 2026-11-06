@@ -17,7 +17,7 @@ export interface MacroRow { k: string; label: string; c: string; val: number; ta
 export function NuMacros({ rows, i18n }: { rows: MacroRow[]; i18n: I18n }) {
   const { L } = i18n;
   return <>{rows.map((m) => <div key={m.k} className="nu-m">
-    <div className="top"><b><span className="mdot" style={{ "--c": `var(${m.c})` } as React.CSSProperties}></span>{L(m.label)}</b><span>{`${fmtFull(m.val,i18n.lang||"fr")} / ${fmtFull(m.target,i18n.lang||"fr")}\u202fg`}</span></div>
+    <div className="top"><b><span className="mdot" style={{ "--c": `var(${m.c})` } as React.CSSProperties}></span>{L(m.label)}</b><span>{`${fmtFull(m.val,i18n.lang||"fr")} / ${fmtFull(m.target,i18n.lang||"fr")}\u00a0g`}</span></div>
     <div className="bar"><i style={{ "--c": `var(${m.c})`, width: `${Math.min(100, m.target ? m.val / m.target * 100 : 0)}%` } as React.CSSProperties}></i></div>
   </div>)}</>;
 }

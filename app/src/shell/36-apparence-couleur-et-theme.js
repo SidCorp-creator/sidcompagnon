@@ -13,7 +13,7 @@ function applyLook(){
   const dark=theme==="dark"||(theme==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);
   document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content",dark?"#121212":"#F7F7F7"));
   ls.set("sidnote-look",{theme,palette:pal}); // pour l'écran de connexion
-  // v74 : identité propre à chaque fonction (ident.css), « Sobre » = l'apparence commune d'avant
+  // T13 (décision de Sid) : les identités par fonction sont retirées ; on efface l'ancien attribut s'il reste
   document.documentElement.removeAttribute("data-fx");
 }
 function renderLook(){

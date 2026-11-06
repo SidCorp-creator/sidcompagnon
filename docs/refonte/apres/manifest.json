@@ -62,9 +62,7 @@
         "390-dark-react-fr-lot-c-mots-de-passe-affiche.png",
         "390-dark-react-fr-lot-c-mots-de-passe-formulaire.png",
         "390-dark-react-fr-lot-c-mots-de-passe-clavier-simule.png",
-        "390-dark-react-fr-lot-c-mots-de-passe-verrouille.png",
-        "390-dark-react-fr-lot-c-notes-pdf-outils.png",
-        "390-dark-react-fr-lot-c-notes-pdf-annotation.png"
+        "390-dark-react-fr-lot-c-mots-de-passe-verrouille.png"
       ],
       "contrasts": [
         {
@@ -178,11 +176,7 @@
         "pdfNotesSaved": true,
         "reviewC1C13": true
       },
-      "ok": true,
-      "lotCPdf": {
-        "pdfTargets44": true,
-        "pdfTextAnnotationSaved": true
-      }
+      "ok": true
     },
     {
       "width": 390,
@@ -1133,9 +1127,7 @@
         "1280-light-react-fr-lot-c-mots-de-passe-affiche.png",
         "1280-light-react-fr-lot-c-mots-de-passe-formulaire.png",
         "1280-light-react-fr-lot-c-mots-de-passe-clavier-simule.png",
-        "1280-light-react-fr-lot-c-mots-de-passe-verrouille.png",
-        "1280-light-react-fr-lot-c-notes-pdf-outils.png",
-        "1280-light-react-fr-lot-c-notes-pdf-annotation.png"
+        "1280-light-react-fr-lot-c-mots-de-passe-verrouille.png"
       ],
       "contrasts": [
         {
@@ -1249,11 +1241,7 @@
         "pdfNotesSaved": true,
         "reviewC1C13": true
       },
-      "ok": true,
-      "lotCPdf": {
-        "pdfTargets44": true,
-        "pdfTextAnnotationSaved": true
-      }
+      "ok": true
     },
     {
       "width": 1280,
@@ -2201,9 +2189,7 @@
         "320-light-secours-fr-lot-c-mots-de-passe-affiche.png",
         "320-light-secours-fr-lot-c-mots-de-passe-formulaire.png",
         "320-light-secours-fr-lot-c-mots-de-passe-clavier-simule.png",
-        "320-light-secours-fr-lot-c-mots-de-passe-verrouille.png",
-        "320-light-secours-fr-lot-c-notes-pdf-outils.png",
-        "320-light-secours-fr-lot-c-notes-pdf-annotation.png"
+        "320-light-secours-fr-lot-c-mots-de-passe-verrouille.png"
       ],
       "contrasts": [
         {
@@ -2317,15 +2303,7 @@
         "pdfNotesSaved": true,
         "reviewC1C13": true
       },
-      "ok": true,
-      "lotCPdf": {
-        "pdfTargets44": true,
-        "pdfTextAnnotationSaved": true
-      },
-      "lotCEscaping": {
-        "folderLabelEscaped": true,
-        "renderDataUnchanged": true
-      }
+      "ok": true
     },
     {
       "width": 390,
@@ -3036,15 +3014,5 @@
       "ok": true
     }
   ],
-  "errors": [],
-  "validation": {
-    "revision": "C1–C13",
-    "lotCConfigurations": 17,
-    "fullRegressionCurrent": [
-      "390-dark-react-fr"
-    ],
-    "previousFullConfigurations": 17,
-    "keyboard": "Viewport 440 px, clavier simulé",
-    "locale": "fr-BE / en-GB / nl-BE, Europe/Brussels"
-  }
+  "errors": []
 }

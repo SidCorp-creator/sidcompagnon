@@ -21,8 +21,8 @@ function renderLists(){const el=$("slBody");if(!el)return;
   if(l){const mine=l.owner===session.user.id,todo=slItems.filter(i=>!i.done),done=slItems.filter(i=>i.done);
     const row=i=>`<div class="row sl-it ${i.done?"done":""}"><button class="check" data-sltg="${i.id}" aria-label="${L(i.done?"Remettre à faire":"Cocher")}">${i.done?CHECK:""}</button>
       <div class="grow"><span class="ttl notr">${esc(i.text)}</span>${i.by_name?`<span class="small muted notr"> · ${esc(i.by_name)}</span>`:""}</div>
-      <button class="x" data-sldel="${i.id}" aria-label="${L("Supprimer")}">×</button></div>`;
-    el.innerHTML=`<button type="button" class="linkbtn sl-back" data-slback="1">‹ ${L("Toutes les listes")}</button>
+      <button class="x" data-sldel="${i.id}" aria-label="${L("Supprimer")}"><span class="gi gi-close" aria-hidden="true"></span></button></div>`;
+    el.innerHTML=`<button type="button" class="linkbtn sl-back" data-slback="1">${GI("chevl")} ${L("Toutes les listes")}</button>
       <h2 class="notr sl-name">${esc(l.name)}</h2>${err}
       <form class="addbar" id="slAdd"><input id="slIn" placeholder="${L("Ajouter un élément…")}" aria-label="${L("Ajouter un élément")}" autocomplete="off" maxlength="200"><button class="btn" type="submit">${L("Ajouter")}</button></form>
       <div class="card">${todo.length?todo.map(row).join(""):`<div class="empty">${L(slItems.length?"Tout est coché.":"La liste est vide. Ajoute le premier élément.")}</div>`}</div>
@@ -31,7 +31,7 @@ function renderLists(){const el=$("slBody");if(!el)return;
         <button type="button" class="btn" data-slinvite="1">${L("Inviter")}</button></div></div>
       <button type="button" class="btn stop sl-leave" data-slleave="1">${L(slArmed==="leave"?(mine?"Supprimer pour tout le monde ? Touche encore":"Quitter ? Touche encore"):(mine?"Supprimer la liste":"Quitter la liste"))}</button>`;
     return}
-  el.innerHTML=`${err}<div class="sl-acts"><button type="button" class="btn" data-slnew="1">+ ${L("Nouvelle liste")}</button><button type="button" class="btn ghost" data-sljoin="1">${L("Rejoindre avec un code")}</button></div>
+  el.innerHTML=`${err}<div class="sl-acts"><button type="button" class="btn" data-slnew="1">${GI("plus")} ${L("Nouvelle liste")}</button><button type="button" class="btn ghost" data-sljoin="1">${L("Rejoindre avec un code")}</button></div>
     ${slForm==="new"?`<form class="addbar" id="slNewForm"><input id="slNewIn" placeholder="${L("Nom de la liste, ex. Courses")}" aria-label="${L("Nom de la liste")}" autocomplete="off" maxlength="80"><button class="btn" type="submit">${L("Créer")}</button></form>`:""}
     ${slForm==="join"?`<form class="addbar" id="slJoinForm"><input id="slJoinIn" placeholder="${L("Code à 6 caractères")}" aria-label="${L("Code d'invitation")}" autocomplete="off" autocapitalize="characters" maxlength="6"><button class="btn" type="submit">${L("Rejoindre")}</button></form>`:""}
     <div class="card">${slLists.length?slLists.map(x=>{const left=(x.shared_items||[]).filter(i=>!i.done).length,n=(x.shared_members||[]).length;

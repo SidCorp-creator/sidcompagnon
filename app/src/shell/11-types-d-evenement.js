@@ -5,7 +5,7 @@ function renderTypes(){
   $("typesCard").innerHTML=data.types.map((t,i)=>`<div class="row">
       <button class="swatch" data-tcol="${i}" style="background:var(${t.c})" aria-label="Changer la couleur de ${esc(t.name)}"></button>
       <div class="grow">${esc(t.name)} <span class="small muted">· ${cnt(t.name)}</span></div>
-      <button class="x" data-tydel="${i}" aria-label="Supprimer ${esc(t.name)}">×</button></div>`).join("")+
+      <button class="x" data-tydel="${i}" aria-label="Supprimer ${esc(t.name)}"><span class="gi gi-close" aria-hidden="true"></span></button></div>`).join("")+
     `<form class="row" id="typeForm"><input id="typeIn" placeholder="Nouveau type, ex. Examen" aria-label="Nouveau type" autocomplete="off"><button class="btn" type="submit">Ajouter</button></form>`;
 }
 $("typesCard").addEventListener("click",e=>{

@@ -21,7 +21,7 @@ export function AiWizard({ w, i18n }: { w: AiVM; i18n: AI18n }) {
     <button type="button" className="btn ai-back" data-aistep="setup">{tr(`↺ ${L("Revoir les étapes")}`)}</button>
     <div className="ai-step"><b>{tr(`3. ${L("Envoie ce message à")} ${w.name}`)}</b><div className="ai-prompt notr">{w.test}</div>
       <a className="btn" href={w.testHref} target="_blank" rel="noopener" style={{ width: "100%", marginTop: "8px" }}>{tr(`${L("Envoyer avec")} ${w.name}`)}</a></div>
-    <div className="ai-wait" id="aiWait">{w.ok ? <b className="ok">{tr(`✓ ${L("C'est branché !")}`)}</b> : <><span className="spin"></span>{tr(L("En attente de Claude… (accepte l'accès à Sid'note s'il te le demande)"))}</>}</div>
+    <div className="ai-wait" id="aiWait">{w.ok ? <b className="ok"><span className="gi gi-tick" aria-hidden="true" />{" " + tr(L("C'est branché !"))}</b> : <><span className="spin"></span>{tr(L("En attente de Claude… (accepte l'accès à Sid'note s'il te le demande)"))}</>}</div>
     <div className="ai-step" id="aiHabit" hidden={!w.ok}><b>{tr(L("Dernière astuce"))}</b><div className="small muted">{tr(L("Pour que tes repas arrivent tout seuls dans Sid'note, envoie-lui une fois ce message :"))}</div>
       <div className="ai-prompt notr">{w.habit}</div><a className="btn ghost" href={w.habitHref} target="_blank" rel="noopener" style={{ width: "100%", marginTop: "8px" }}>{tr(`${L("Envoyer avec")} ${w.name}`)}</a>
       <button type="button" className="btn ghost" data-convset="nutri" style={{ width: "100%", marginTop: "8px" }}>{tr(L("Une conversation par app"))}</button></div>

@@ -154,8 +154,8 @@ function renderNuWeek(){
   if(nuIsl("nuWeek")){try{window.SCIslands.nuWeek(el,{sports:ws.map(s=>({name:s.name,kps:s.kps,count:s.count,base:s.base})),range:`${m.getDate()} ${MO[m.getMonth()]} – ${e.getDate()} ${MO[e.getMonth()]}`,
     target:fmtFull(t.kcal),delta:t.delta||0,actIcon:IC("activity"),i18n:agI18n()});return}catch(x){reportErr("island nuWeek: "+(x&&x.message))}}
   el.innerHTML=`<div class="nu-week-h"><b>${IC("activity")} ${L("Ton sport cette semaine")}</b><span class="small muted">${m.getDate()} ${MO[m.getMonth()]} – ${e.getDate()} ${MO[e.getMonth()]}</span></div>`+
-    ws.map(s=>`<div class="nu-wsp"><div class="grow"><b class="notr">${esc(s.name)}</b><span class="small muted">≈ ${fmtFull(s.kps)}\u202fkcal ${L("par séance")}${s.count!==s.base?` · ${L("d'habitude")} ${s.base}`:""}</span></div><div class="stepper"><button type="button" data-ws="${esc(s.name)}" data-d="-1" aria-label="${L("Une séance de moins")}">${IC("minus")}</button><output>${s.count}</output><button type="button" data-ws="${esc(s.name)}" data-d="1" aria-label="${L("Une séance de plus")}">${IC("plus")}</button></div></div>`).join("")+
-    `<div class="small">${L("Objectif par jour cette semaine")} : <b>${fmtFull(t.kcal)}\u202fkcal</b>${t.delta?` <span class="muted">(${t.delta>0?"+":""}${t.delta} ${L("selon ton sport")})</span>`:""}</div>`;
+    ws.map(s=>`<div class="nu-wsp"><div class="grow"><b class="notr">${esc(s.name)}</b><span class="small muted">≈ ${fmtFull(s.kps)}\u00a0kcal ${L("par séance")}${s.count!==s.base?` · ${L("d'habitude")} ${s.base}`:""}</span></div><div class="stepper"><button type="button" data-ws="${esc(s.name)}" data-d="-1" aria-label="${L("Une séance de moins")}">${IC("minus")}</button><output>${s.count}</output><button type="button" data-ws="${esc(s.name)}" data-d="1" aria-label="${L("Une séance de plus")}">${IC("plus")}</button></div></div>`).join("")+
+    `<div class="small">${L("Objectif par jour cette semaine")} : <b>${fmtFull(t.kcal)}\u00a0kcal</b>${t.delta?` <span class="muted">(${t.delta>0?"+":""}${t.delta} ${L("selon ton sport")})</span>`:""}</div>`;
 }
 $("nuWeek").addEventListener("click",e=>{const b=e.target.closest("[data-ws]");if(!b)return;const n=NU(),wk=wKey(nuDay);n.wsports=n.wsports||{};const o=n.wsports[wk]=n.wsports[wk]||{};
   const cur=weekSports(wk).find(s=>s.name===b.dataset.ws);if(!cur)return;o[cur.name]=Math.max(0,Math.min(21,cur.count+ +b.dataset.d));n.upd=Date.now();save();renderNutri()});
@@ -167,14 +167,14 @@ function nuDayLabel(d){const t=iso(today()),dt=parse(d),y=new Date(today());y.se
 // barre et pastilles de macros d'un plat
 function macroHtml(s){const tot=(s.p*4+s.c*4+s.f*9)||1;
   return `<div class="mbar" aria-hidden="true">${MAC.map(([k,,v])=>`<i style="--c:var(${v});width:${(k==="f"?9:4)*s[k]/tot*100}%"></i>`).join("")}</div>
-    <div class="mchips">${MAC.map(([k,l,v])=>`<span class="mchip"><b>${fmtN(r1(s[k]))}\u202fg</b><span><span class="mdot" style="--c:var(${v})"></span>${L(l)}</span></span>`).join("")}</div>`}
+    <div class="mchips">${MAC.map(([k,l,v])=>`<span class="mchip"><b>${fmtN(r1(s[k]))}\u00a0g</b><span><span class="mdot" style="--c:var(${v})"></span>${L(l)}</span></span>`).join("")}</div>`}
 const thumbs=new Map();
 const thumbKey=g=>session.user.id+":thumb:"+g;
 async function loadThumb(g){if(thumbs.has(g))return;thumbs.set(g,null);const b=await idb.get(thumbKey(g));if(b){thumbs.set(g,b);
   if(nuIsl("nuLog")&&$("nuLog")._isl){nuLogDraw();return} // React dessine la vignette (on ne touche pas à son DOM)
   document.querySelectorAll(`[data-thumb="${g}"]`).forEach(el=>el.innerHTML=`<img src="${b}" alt="">`)}}
 // barres des macros (ancien rendu, gardé en secours de la version React)
-function nuMacrosHtml(s,tg){return MAC.map(([k,l,v])=>`<div class="nu-m"><div class="top"><b><span class="mdot" style="--c:var(${v})"></span>${L(l)}</b><span>${fmtFull(r0(s[k]))} / ${tg[k]}\u202fg</span></div><div class="bar"><i style="--c:var(${v});width:${Math.min(100,tg[k]?s[k]/tg[k]*100:0)}%"></i></div></div>`).join("");}
+function nuMacrosHtml(s,tg){return MAC.map(([k,l,v])=>`<div class="nu-m"><div class="top"><b><span class="mdot" style="--c:var(${v})"></span>${L(l)}</b><span>${fmtFull(r0(s[k]))} / ${tg[k]}\u00a0g</span></div><div class="bar"><i style="--c:var(${v});width:${Math.min(100,tg[k]?s[k]/tg[k]*100:0)}%"></i></div></div>`).join("");}
 function renderNutri(){try{renderAiCards()}catch(e){}
   if(data.ui.view==="nutri"){$("vhead").dataset.progressChange=nuProgressChange;renderVhead("nutri")}nuProgressChange="adjust";
   if(!$("nuMain"))return;
@@ -193,7 +193,7 @@ function renderNutri(){try{renderAiCards()}catch(e){}
   $("nuRing").closest(".nu-ring").classList.toggle("over",s.kcal>tg.kcal*1.05);
   $("nuKcal").textContent=fmtFull(r0(s.kcal));
   if(shIsl("nuKcalOf")){try{window.SCIslands.nuKcalOf($("nuKcalOf"),{target:tg.kcal,over:s.kcal>tg.kcal?r0(s.kcal-tg.kcal):0,left:r0(tg.kcal-s.kcal),i18n:agI18n()})}catch(e){reportErr("island nuKcalOf: "+(e&&e.message))}}
-  else $("nuKcalOf").innerHTML=`${L("sur")} ${fmtFull(tg.kcal)}\u202fkcal<br>`+(s.kcal>tg.kcal?`<b style="color:var(--late)">+${fmtFull(r0(s.kcal-tg.kcal))}</b>`:`${L("reste")} ${fmtFull(r0(tg.kcal-s.kcal))}`);
+  else $("nuKcalOf").innerHTML=`${L("sur")} ${fmtFull(tg.kcal)}\u00a0kcal<br>`+(s.kcal>tg.kcal?`<b style="color:var(--late)">+${fmtFull(r0(s.kcal-tg.kcal))}</b>`:`${L("reste")} ${fmtFull(r0(tg.kcal-s.kcal))}`);
   // v52 (ticket #3) : barres des macros dessinées par React (app/src/Small.tsx) ; ancien rendu en secours
   if(window.SCIslands&&window.SCIslands.nuMacros&&!window.__noIslands){try{window.SCIslands.nuMacros($("nuMacros"),{rows:MAC.map(([k,l,v])=>({k,label:l,c:v,val:s[k],target:tg[k]})),i18n:{L,MOL,MO,DOWL,lang:LANG}})}catch(e){reportErr("island nuMacros: "+(e&&e.message));$("nuMacros").innerHTML=nuMacrosHtml(s,tg)}}
   else $("nuMacros").innerHTML=nuMacrosHtml(s,tg);
@@ -206,8 +206,8 @@ function renderNutri(){try{renderAiCards()}catch(e){}
   $("nuLog").innerHTML=groups.length?groups.map(G=>{const t=sumOf(G.items),d=new Date(G.at);
     return `<details class="dish" open><summary class="dish-h"><span class="dish-clock">${two(d.getHours())}:${two(d.getMinutes())}</span><span class="dish-ic" data-thumb="${G.g}">${mono(G.name)}</span>
       <span class="dish-t"><b class="notr" data-user-label="" title="${esc(G.name)}">${esc(G.name)}</b>${G.items.length>1?` <span class="small muted">· ${G.items.length} ${L("aliments")}</span>`:""}</span>
-      <span class="dish-kcal">${fmtFull(r0(t.kcal))}<small>\u202fkcal</small></span><button type="button" class="pen nu-cp" data-nucopy="${G.g}" aria-label="${L("Copier ce repas sur d'autres jours")}" title="${L("Copier sur d'autres jours")}">${IC("copy")}</button>${G.items.length===1?`<button class="pen" data-nuedit="${G.items[0].id}" aria-label="${L("Modifier")}">${PEN}</button>`:""}<button type="button" class="x" data-nudelg="${G.g}" aria-label="${L("Supprimer ce plat")}">${IC("close")}</button></summary>
-      ${macroHtml(t)}${G.items.length===1?`<div class="dish-note">${qtyCell("log:"+G.items[0].id,G.items[0])}</div>`:`<div class="dish-items">${G.items.map(x=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${qtyCell("log:"+x.id,x)}</div><span class="k">${fmtFull(r0(x.kcal))}\u202fkcal</span><button class="pen" data-nuedit="${x.id}" aria-label="${L("Modifier")}">${PEN}</button><button class="x" data-nudel="${x.id}" aria-label="${L("Supprimer")}">${IC("close")}</button></div>`).join("")}</div>`}</details>`}).join("")
+      <span class="dish-kcal">${fmtFull(r0(t.kcal))}<small>\u00a0kcal</small></span><button type="button" class="pen nu-cp" data-nucopy="${G.g}" aria-label="${L("Copier ce repas sur d'autres jours")}" title="${L("Copier sur d'autres jours")}">${IC("copy")}</button>${G.items.length===1?`<button class="pen" data-nuedit="${G.items[0].id}" aria-label="${L("Modifier")}">${PEN}</button>`:""}<button type="button" class="x" data-nudelg="${G.g}" aria-label="${L("Supprimer ce plat")}">${IC("close")}</button></summary>
+      ${macroHtml(t)}${G.items.length===1?`<div class="dish-note">${qtyCell("log:"+G.items[0].id,G.items[0])}</div>`:`<div class="dish-items">${G.items.map(x=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${qtyCell("log:"+x.id,x)}</div><span class="k">${fmtFull(r0(x.kcal))}\u00a0kcal</span><button class="pen" data-nuedit="${x.id}" aria-label="${L("Modifier")}">${PEN}</button><button class="x" data-nudel="${x.id}" aria-label="${L("Supprimer")}">${IC("close")}</button></div>`).join("")}</div>`}</details>`}).join("")
     :`<div class="card"><div class="empty">${L(nuDay===iso(today())?"Rien pour l'instant. Ajoute ton premier repas.":"Rien d'enregistré ce jour-là. Tu peux encore le compléter.")}</div></div>`;
   groups.forEach(G=>loadThumb(G.g));
   renderNuResult();renderNuPlan();renderNuMenu();renderMenuForm();renderNuWeek();renderMenuLeft();nuShowTab();
@@ -251,7 +251,7 @@ function nuGoalHtml(){
   const unit=p.durU==="m"?(LANG==="en"?(p.dur>1?"months":"month"):LANG==="nl"?(p.dur>1?"maanden":"maand"):"mois"):L(p.dur>1?"semaines":"semaine");
   const pace=w.wk?`${w.wk>0?"+":""}${String(w.wk).replace(".",LANG==="en"?".":",")} kg ${L("par semaine")}`:"";
   const PACE={fast:"Drastique",real:"Réaliste",easy:"À mon aise"}[p.pace];
-  return `<b>${w.ok?"✓ ":IC("alert")+" "}${fmtN(p.weight)} → ${fmtN(p.target)} kg${p.dur?` ${L("en")} ${p.dur} ${unit}`:""}</b>
+  return `<b>${w.ok?GI("tick")+" ":IC("alert")+" "}${fmtN(p.weight)} → ${fmtN(p.target)} kg${p.dur?` ${L("en")} ${p.dur} ${unit}`:""}</b>
     ${PACE?`<span class="small">${L("Rythme")} : ${L(PACE)}</span>`:""}
     ${p.dur?`<span class="small">${L(w.ok?"Ton délai est réaliste.":"Ce délai n'est pas réaliste, ni bon pour ta santé.")}</span>`:""}
     ${w.advice?`<span class="small muted notr">${esc(w.advice)}</span>`:""}
@@ -267,7 +267,7 @@ function renderNuPlan(){
   if(nuIsl("nuPlan")){try{window.SCIslands.nuPlan($("nuPlan"),{alert:IC("alert"),i18n:agI18n(),pl:{bmr:pl.bmr,tdee:pl.tdee,kcal:pl.kcal,p:pl.p,c:pl.c,f:pl.f,text:pl.text||"",warn:pl.warn||[],goal:pl.wg?nuGoalVM(false):null}});return}
     catch(e){reportErr("island nuPlan: "+(e&&e.message))}}
   $("nuPlan").innerHTML=boxes([[pl.bmr,"Métabolisme de base"],[pl.tdee,"Dépense du jour"],[pl.kcal,"Objectif (kcal)"]])+
-    boxes([[fmtN(pl.p)+"\u202fg","Protéines","--m-p"],[fmtN(pl.c)+"\u202fg","Glucides","--m-c"],[fmtN(pl.f)+"\u202fg","Lipides","--m-f"]])+
+    boxes([[fmtN(pl.p)+"\u00a0g","Protéines","--m-p"],[fmtN(pl.c)+"\u00a0g","Glucides","--m-c"],[fmtN(pl.f)+"\u00a0g","Lipides","--m-f"]])+
     `${pl.wg?`<div class="card nu-goalcard ${pl.wg.ok?"ok":""}" style="background:var(--bg)">${nuGoalHtml().replace(/<button[^>]*>.*?<\/button>/,"")}</div>`:""}
     <p class="small notr" style="margin:0 4px">${esc(pl.text)}</p>${pl.warn.map(w=>`<div class="nu-warn notr">${esc(w)}</div>`).join("")}`;
 }
@@ -396,10 +396,10 @@ function renderNuResult(){
   if($("nuResult")._isl){window.SCIslands.unmount($("nuResult"));$("nuResult")._isl=false}
   if(!p){if(!nuBusy)$("nuResult").innerHTML="";return}
   const s=sumOf(p.items);
-  $("nuResult").innerHTML=`<div class="dish"><div class="dish-h"><span class="dish-ic">${p.photo?`<img src="${p.photo}" alt="">`:IC("utensils")}</span><span class="dish-t"><b class="notr" data-user-label="" title="${esc(p.title)}">${esc(p.title)}</b><span class="small muted">${p.items.length} ${L(p.items.length>1?"aliments":"aliment")}</span>${p.mem?`<span class="memtag">${IC("bolt")} ${L("Mémoire Sid Forme")}</span>`:""}</span><span class="dish-kcal">${fmtFull(r0(s.kcal))}<small>\u202fkcal</small></span></div>
-    ${macroHtml(s)}<div class="dish-items">${p.items.map((x,i)=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${x.extra?`<span class="notmention">${L("pas dans ta description")}</span>`:""}${qtyCell("res:"+i,x)}</div><span class="k">${fmtFull(x.kcal)}\u202fkcal</span><button type="button" class="x" data-nurm="${i}" aria-label="${L("Retirer")}">${IC("close")}</button></div>`).join("")}</div>
+  $("nuResult").innerHTML=`<div class="dish"><div class="dish-h"><span class="dish-ic">${p.photo?`<img src="${p.photo}" alt="">`:IC("utensils")}</span><span class="dish-t"><b class="notr" data-user-label="" title="${esc(p.title)}">${esc(p.title)}</b><span class="small muted">${p.items.length} ${L(p.items.length>1?"aliments":"aliment")}</span>${p.mem?`<span class="memtag">${IC("bolt")} ${L("Mémoire Sid Forme")}</span>`:""}</span><span class="dish-kcal">${fmtFull(r0(s.kcal))}<small>\u00a0kcal</small></span></div>
+    ${macroHtml(s)}<div class="dish-items">${p.items.map((x,i)=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${x.extra?`<span class="notmention">${L("pas dans ta description")}</span>`:""}${qtyCell("res:"+i,x)}</div><span class="k">${fmtFull(x.kcal)}\u00a0kcal</span><button type="button" class="x" data-nurm="${i}" aria-label="${L("Retirer")}">${IC("close")}</button></div>`).join("")}</div>
     ${p.note?`<div class="dish-note notr" style="padding-top:8px">${esc(p.note)}</div>`:""}
-    <div class="dish-act"><button type="button" class="btn ghost" data-nucancel="1">${L("Annuler")}</button><button type="button" class="btn" data-nuadd="1">${L("Ajouter")} · ${fmtFull(r0(s.kcal))}\u202fkcal</button></div></div>`;
+    <div class="dish-act"><button type="button" class="btn ghost" data-nucancel="1">${L("Annuler")}</button><button type="button" class="btn" data-nuadd="1">${L("Ajouter")} · ${fmtFull(r0(s.kcal))}\u00a0kcal</button></div></div>`;
 }
 $("nuResult").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b||!nuPending)return;
   if(b.dataset.nurm){nuPending.items.splice(+b.dataset.nurm,1);if(!nuPending.items.length)nuPending=null;renderNuResult()}

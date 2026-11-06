@@ -1,6 +1,6 @@
 # Élan — après T13 et T16 lots A/B/C
 
-[Lot A](lot-a.md) · [Lot B](lot-b.md) · [Lot C, corrections C1–C13](lot-c.md). Captures locales et données fictives ; clavier simulé par un viewport de 440 px.
+Captures locales, données fictives. React et secours ; FR/EN/NL, clair/sombre, 390/320/1280 px. Le clavier est **simulé par un viewport de 440 px de haut**, pas un clavier iOS réel.
 
 - OK 390-dark-react-fr
   - [390-dark-react-fr-accueil.png](390-dark-react-fr-accueil.png)
@@ -59,8 +59,6 @@
   - [390-dark-react-fr-lot-c-mots-de-passe-formulaire.png](390-dark-react-fr-lot-c-mots-de-passe-formulaire.png)
   - [390-dark-react-fr-lot-c-mots-de-passe-clavier-simule.png](390-dark-react-fr-lot-c-mots-de-passe-clavier-simule.png)
   - [390-dark-react-fr-lot-c-mots-de-passe-verrouille.png](390-dark-react-fr-lot-c-mots-de-passe-verrouille.png)
-  - [390-dark-react-fr-lot-c-notes-pdf-outils.png](390-dark-react-fr-lot-c-notes-pdf-outils.png)
-  - [390-dark-react-fr-lot-c-notes-pdf-annotation.png](390-dark-react-fr-lot-c-notes-pdf-annotation.png)
 - OK 390-dark-secours-fr
   - [390-dark-secours-fr-accueil.png](390-dark-secours-fr-accueil.png)
   - [390-dark-secours-fr-agenda.png](390-dark-secours-fr-agenda.png)
@@ -400,8 +398,6 @@
   - [1280-light-react-fr-lot-c-mots-de-passe-formulaire.png](1280-light-react-fr-lot-c-mots-de-passe-formulaire.png)
   - [1280-light-react-fr-lot-c-mots-de-passe-clavier-simule.png](1280-light-react-fr-lot-c-mots-de-passe-clavier-simule.png)
   - [1280-light-react-fr-lot-c-mots-de-passe-verrouille.png](1280-light-react-fr-lot-c-mots-de-passe-verrouille.png)
-  - [1280-light-react-fr-lot-c-notes-pdf-outils.png](1280-light-react-fr-lot-c-notes-pdf-outils.png)
-  - [1280-light-react-fr-lot-c-notes-pdf-annotation.png](1280-light-react-fr-lot-c-notes-pdf-annotation.png)
 - OK 1280-light-secours-fr
   - [1280-light-secours-fr-accueil.png](1280-light-secours-fr-accueil.png)
   - [1280-light-secours-fr-agenda.png](1280-light-secours-fr-agenda.png)
@@ -738,8 +734,6 @@
   - [320-light-secours-fr-lot-c-mots-de-passe-formulaire.png](320-light-secours-fr-lot-c-mots-de-passe-formulaire.png)
   - [320-light-secours-fr-lot-c-mots-de-passe-clavier-simule.png](320-light-secours-fr-lot-c-mots-de-passe-clavier-simule.png)
   - [320-light-secours-fr-lot-c-mots-de-passe-verrouille.png](320-light-secours-fr-lot-c-mots-de-passe-verrouille.png)
-  - [320-light-secours-fr-lot-c-notes-pdf-outils.png](320-light-secours-fr-lot-c-notes-pdf-outils.png)
-  - [320-light-secours-fr-lot-c-notes-pdf-annotation.png](320-light-secours-fr-lot-c-notes-pdf-annotation.png)
 - OK 390-dark-react-en
   - [390-dark-react-en-accueil.png](390-dark-react-en-accueil.png)
   - [390-dark-react-en-agenda.png](390-dark-react-en-agenda.png)
@@ -964,3 +958,4 @@
   - [390-light-react-nl-lot-c-mots-de-passe-formulaire.png](390-light-react-nl-lot-c-mots-de-passe-formulaire.png)
   - [390-light-react-nl-lot-c-mots-de-passe-clavier-simule.png](390-light-react-nl-lot-c-mots-de-passe-clavier-simule.png)
   - [390-light-react-nl-lot-c-mots-de-passe-verrouille.png](390-light-react-nl-lot-c-mots-de-passe-verrouille.png)
+

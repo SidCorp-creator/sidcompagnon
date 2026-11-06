@@ -323,3 +323,50 @@ Treize écarts restent, à corriger avant le lot D. **Aucun changement de compor
 | C13 | Mots de passe · formulaire | « Cacher » et « Générer » sont collés l'un à l'autre et au champ. « Enregistrer » est aligné à gauche, pas en pleine largeur. | « Cacher » devient le bouton icône œil, à l'intérieur du champ. « Générer » passe en secondaire, avec 8 px d'écart. « Enregistrer » en pleine largeur, en bas, comme dans les autres feuilles. Même style de segments pour « Récents / A → Z » dans Documents et dans Mots de passe. |
 
 Contrôles à refaire : 390 et 320 px pour Notes (liste, éditeur avec un titre de 80 caractères), Documents (liste de 31, scanner), Mots de passe (liste, formulaire) et PDF (Mes notes) ; un écran en EN.
+
+## Claude Code — T16 lots D et E (reprise après l'épuisement du quota de Codex)
+
+Décision de Sid du 6 nov. (« continue toi-même ») : Claude Code reprend les lots D et E dans le worktree `refonte-tech`, et Codex ne le modifie plus. Avant la reprise, un point de sauvegarde local a été fait (commit `2acd82c`, lots A à C, sans push).
+
+**Fin du lot C.** C6 : l'anneau de focus qui encadrait toute la hauteur de la note (les deux traits blancs) est retiré ; le curseur suffit. Le test `elan-lot-c` est mis à jour. Les autres points de C1 à C13 sont vérifiés sur les captures de Codex.
+
+**Retouches du lot B (B17).** L'espace fine U+202F fait 2 px en Barlow, presque invisible (« 2400kcal », « 140g »). Elle est remplacée par l'espace insécable U+00A0, entre le nombre et l'unité comme pour les milliers. Cela touche `fmtFull` et `fmtN` (shell et `format.ts`) et 12 fichiers. Les assertions des lots A et B sont ajustées.
+
+**Lot D (suite)**
+
+- **Conversation Claude.** Choix de Sid : une ligne repliée en bas d'Agenda, Musculation, Nutrition et Notes.
+  - Les 4 champs de Réglages › Claude › Avancé sont retirés.
+  - `convSettings(t)` mène désormais à la ligne de l'app concernée.
+  - L'état « reliée » est affiché sans glyphe.
+  - La donnée `aiConv`, le refus des liens `/share/`, les projets et « Retirer » sont inchangés.
+  - Les attentes du smoke historique (v44, v46.1, v74.2) sont adaptées dans `smoke-elan.cjs`.
+- **Réglages.**
+  - Une carte par sujet, sans carte dans la carte, avec des lignes de 56 px.
+  - Bouton secondaire plein partout ; les suppressions gardent leur contour rouge.
+  - « Reverrouiller le coffre » s'affiche en puces qui passent à la ligne, et les liens légaux passent à la ligne.
+  - « Avancé » a un chevron dessiné.
+  - Le bandeau de la suite passe en `--surface-2` : il ne fait plus de bloc clair sur fond sombre.
+- **Sélections pleines.** Elles s'appliquent partout : segments, puces, onglets de connexion, langue et thème de la présentation (règle B10, ajoutée à la charte § 8).
+- **Connexion.** Les icônes des atouts ont la couleur de leur app.
+- **Présentation.** Les flèches sont dessinées (« Suivant » et « Précédent » sont traduits en EN et NL) ; « C'est parti » est en bouton principal.
+- **Fenêtres.** La croix de fermeture est dessinée, avec une cible de 44 px, dans les 16 feuilles.
+
+**Lot E (nettoyage)**
+
+- **Glyphes.** Les glyphes ✓ ↻ ‹ › × ＋ utilisés comme icônes (shell, îlots React, `index.html`) sont remplacés par la famille au trait. On utilise `GI(nom)` ou `<span class="gi gi-…">` : un masque CSS avec les tracés de `ICS`, au format data: (autorisé par la CSP `img-src`). Seuls restent des signes de texte : « 4 × 8 », « Paramètres → Connecteurs », « ⋮ » qui désigne le menu de Chrome dans l'aide à l'installation, et le « + » d'un texte indicatif.
+- **Polices.** Les 10 familles retirées (Archivo, Fraunces, IBM Plex Mono, Instrument Sans, Instrument Serif, Inter Tight, JetBrains Mono, Manrope, Newsreader, Public Sans) perdent leurs règles et leurs 34 fichiers, ainsi que les anciens fichiers Barlow Condensed qui n'étaient plus référencés. Le dossier `site/fonts` passe de 1,6 Mo à 380 Ko. Les pages légales utilisent Barlow et les couleurs de la charte. Un relevé des polices calculées sur les 12 vues, la connexion, la présentation et les 3 pages légales ne trouve que Barlow et Barlow Condensed.
+- **CSS.** `design.css` est regroupé dans `app.css`, dans le même ordre de cascade, et son lien est retiré. 534 règles mortes (`[data-ds="edito"]`, `[data-fx]`) sont retirées. `ident.css` est supprimé.
+- **Version.** Version 75.1 (`APP_V`, pied de Réglages). Le cache `sw.js` passe à `sidnote-v75-1`, et `design.css` et `ident.css` sortent de la liste du cache.
+
+**Inchangé.** Données, chiffrement, coffre, code à 5 chiffres, Face ID, sauvegarde, `mcp` et connecteur « Sid'note », clés `sidnote-*`, CSP, Supabase.
+
+**Vérifications** : voir « Résultats » ci-dessous.
+
+**Résultats (6 nov.)**
+
+- **Tests de l'app.** `npm test` est vert : chiffrement, mémoire, fusion, rappels, `app.js` conforme aux sources, version de l'app identique au cache (nouveau contrôle), puis **17/17 configurations**. Les configurations couvrent React et la version de secours, 320, 390, 900 et 1280 px, le clair et le sombre, en FR, EN et NL, avec les parcours des lots A, B et C.
+- **Comparaison avec le point de sauvegarde `2acd82c`.** Le smoke historique est décomposé en 23 sections et tourne sur les deux versions avec le même faux backend. Il relève **les mêmes 17 messages hors CSP, aucun nouveau** (`apres/lot-de-smoke-comparaison.json`). Le message CSP `unsafe-eval` du lecteur PDF apparaît de façon variable sur les deux versions.
+- **Régression trouvée et corrigée.** `BUILD` (dans `46-demarrage.js`) n'avait pas suivi le cache de `sw.js`. L'app se serait donc rechargée une fois au démarrage. `tests/shell.test.js` vérifie désormais l'égalité des deux.
+- **Écarts de parité corrigés.** Les écarts entre React et la version de secours (`↻ Autre idée`, `↻ Recalculer`, `＋ Ajouter à ma journée`, la coche du total du menu) sont corrigés : les îlots produisent désormais le même DOM, soit l'icône suivie d'un seul nœud de texte.
+- **Instabilités connues, sans lien avec la refonte.** Deux tests sont instables : la saisie du deuxième mot de passe dans le smoke (la feuille n'est pas fermée au bout de 300 ms), qui bloque aussi le point de sauvegarde, et l'anneau B19 à 320 px en clair, qui passe à la relance.
+- **Limites.** Il n'y a pas encore eu d'essai sur un vrai iPhone avec cette version. Le clavier n'est que simulé.

@@ -4,7 +4,7 @@ data.pomo=data.pomo||{cfg:{work:25,brk:5,total:120},run:null,log:{}};
 const P=data.pomo;
 const PRESETS=[60,90,120,180];
 const hm=m=>{m=Math.round(m);const h=Math.floor(m/60),r=m%60;return h?`${h} h${r?" "+String(r).padStart(2,"0"):""}`:`${r} min`};
-const pomoDuration=m=>hm(m).replace(" h",LANG==="nl"?"\u202fu":"\u202fh");
+const pomoDuration=m=>hm(m).replace(" h",LANG==="nl"?"\u00a0u":"\u00a0h");
 const clockTxt=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")};
 const hhmm=d=>String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
 const dayKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;

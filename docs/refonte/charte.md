@@ -147,6 +147,12 @@ Les 9 autres familles sortent de l'app quand plus rien ne les utilise. Le monosp
 | **Message bref** | en bas au-dessus de la barre, fond `--ink` et texte `--bg`, avec une action « Annuler » quand c'est possible ; 4 s |
 | **État vide** | pictogramme de l'app en `--muted`, une phrase, le bouton principal |
 | **Lien entre apps** | puce avec le pictogramme et le nom de l'autre app (« Sid Forme ») dans une ligne d'agenda |
+| **Bandeau de la suite** (Réglages, Installer) | fond `--surface-2`, texte `--ink`, pas de bouton Claude ni de progression ; jamais un bloc clair sur fond sombre |
+| **Sélection** | un choix sélectionné (puce, segment, case de choix multiple) est **plein** : `--app` / `--on-app` dans une app, `--ink` / `--bg` dans la suite ; une simple bordure ne suffit jamais. Les choix multiples ajoutent une coche |
+| **Ligne repliée** | 56 px, chevron dessiné (jamais « › » ou « ▶ » en caractère), titre `--ink` 600, état à droite en `--muted` (en `--app-ink` quand il est actif) |
+| **Conversation Claude** | ligne repliée en bas de l'écran principal d'Agenda, Musculation, Nutrition et Notes (décision de Sid du 6 nov.) : lien, Enregistrer, Retirer. Plus dans Réglages. Le bouton Claude n'en dépend pas |
+| **Fermer** | bouton icône de 44 px, fond `--surface-2`, croix dessinée ; jamais le caractère « × » |
+| **Nombres** | format de la langue (« 2 400 », « 3,7 g » ; EN « 2,400 », « 3.7 g »), espace insécable normale (U+00A0) entre nombre et unité et pour les milliers : l'espace fine U+202F est quasi invisible en Barlow (2 px) |
 
 ## 9. États
 

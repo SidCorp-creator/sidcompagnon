@@ -90,6 +90,9 @@ Rien n'est fusionné dans `main` ni mis en ligne sans l'accord de Sid. `main` = 
 | 5 nov. | Sid autorise l'envoi de `refonte-tech` sur GitHub pour un essai sur iPhone (aperçu Vercel, pas `main`) | l'aperçu utilise le vrai compte et les vraies données de Sid |
 | 5 nov. | Nutrition : un seul bouton « Ajouter un repas » qui ouvre les 5 façons d'ajouter (aucune retirée) | validé par Sid |
 | 5 nov. | Réglages des conversations Claude seulement dans l'app concernée (retirés de Réglages) | validé par Sid |
+| 6 nov. | Musculation : pas de bouton « Valider la série » ni de bouton « Repos » ; une série complète est faite dès la saisie (comportement inchangé) | arbitrage de Claude Code sans changement de comportement ; le minuteur de repos a été retiré en v44 |
+| 6 nov. | Le quota de Codex est épuisé : **Claude Code reprend les lots D et E** dans le worktree `refonte-tech` (Codex ne le modifie plus) | décision de Sid (« continue toi-même ») |
+| 6 nov. | Conversation Claude : **ligne repliée en bas** d'Agenda, Musculation, Nutrition et Notes ; le bouton Claude ouvre toujours la conversation d'un toucher | choix de Sid (option recommandée) |
 | 5 nov. | Tour 2 : règle commune « chaque écran dit à quoi sert l'app » (logo littéral, verbe + contenu + chiffre utile sur l'accueil, rôle dans l'en-tête) | répond directement au motif du refus |
 
 ## Points ouverts (questions pour Sid)

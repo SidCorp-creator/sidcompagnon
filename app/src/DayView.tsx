@@ -34,7 +34,7 @@ function DayTasks({ p }: { p: DayViewProps }) {
     <div className="dt-h"><b dangerouslySetInnerHTML={{ __html: `${p.checkIcon} ${escHtml(tr(L("Tâches du jour")))}` }}></b><span className="small muted">{`${list.filter((t) => t.done).length}/${list.length}`}</span></div>
     {list.length ? list.map((t) => <div key={t.id} className={`dt-row ${t.done ? "done" : ""}`}>
       <button type="button" className="check" data-dtg={t.id} aria-label={tr(L(t.done ? "Remettre à faire" : "Terminer"))}>{t.done ? CHECK : null}</button>
-      <button type="button" className="grow ttl ttl-btn" data-dtmore={t.id}>{t.title}{!t.done && t.day && t.day < p.today ? <>{" "}<span className="tchip late">{`↻ ${L("reportée")}`}</span></> : null}</button>
+      <button type="button" className="grow ttl ttl-btn" data-dtmore={t.id}>{t.title}{!t.done && t.day && t.day < p.today ? <>{" "}<span className="tchip late"><span className="gi gi-refresh" aria-hidden="true" />{" " + L("reportée")}</span></> : null}</button>
     </div>) : <div className="small muted dt-empty">{tr(L(past ? "Aucune tâche ce jour-là." : "Aucune tâche prévue. Ajoute-en une ci-dessous."))}</div>}
     {past ? null : <form className="dt-add" data-dtadd={k}><input placeholder={tr(L("+ Tâche pour ce jour"))} aria-label={tr(L("Nouvelle tâche pour ce jour"))} autoComplete="off" enterKeyHint="done" /></form>}
   </div>;
@@ -58,13 +58,13 @@ export function DayView(p: DayViewProps) {
   const m = p.nowMin, now = k === p.today && m >= H0 * 60 && m <= H1 * 60 ? <div className="nowline" style={{ top: `${(m / 60 - H0) * PX}px` }}></div> : null;
   return <>
     <div className="dayv-head">
-      <button className="back" id="dayBack">{tr(`‹ ${MOL[sd.getMonth()]}`)}</button>
+      <button className="back" id="dayBack"><span className="gi gi-chevl" aria-hidden="true" />{" " + tr(MOL[sd.getMonth()])}</button>
       <div className="dayv-title">{tr(`${DOW[sd.getDay()]} ${sd.getDate()} ${mlow(sd.getMonth())}${k === p.today ? " · aujourd'hui" : ""}`)}</div>
-      <button className="cal-nav" data-dayjump={iso(prev)} aria-label={tr("Jour précédent")}>‹</button><button className="cal-nav" data-dayjump={iso(nxt)} aria-label={tr("Jour suivant")}>›</button>
+      <button className="cal-nav" data-dayjump={iso(prev)} aria-label={tr("Jour précédent")}><span className="gi gi-chevl" aria-hidden="true" /></button><button className="cal-nav" data-dayjump={iso(nxt)} aria-label={tr("Jour suivant")}><span className="gi gi-chevr" aria-hidden="true" /></button>
     </div>
     {allday.length ? <div className="allday">{allday.map((t) => <div key={t.id} className={`chip-ev ${t.canc ? "canc" : ""}`} style={{ "--c": `var(${p.color(t)})` } as Css}>
       <span className="grow ttl" style={t.status === "fait" ? { textDecoration: "line-through", color: "var(--muted)" } : undefined}>{t.time ? <><span className="time">{hrs(t)}</span>{" "}</> : null}{t.title}{t.end ? <>{" "}<span className="small muted">{`· ${fmt(t.date, MO)} → ${fmt(t.end, MO)}`}</span></> : null}</span>
-      {t.src === "ical" ? (t.canc ? <span className="canc-pill">{tr("Annulé")}</span> : null) : <><button className="pen" data-edit={"task:" + t.id} aria-label={tr("Modifier")}>{PEN}</button><button className="x" data-caldel={t.id} aria-label={tr("Supprimer")}>×</button></>}
+      {t.src === "ical" ? (t.canc ? <span className="canc-pill">{tr("Annulé")}</span> : null) : <><button className="pen" data-edit={"task:" + t.id} aria-label={tr("Modifier")}>{PEN}</button><button className="x" data-caldel={t.id} aria-label={tr("Supprimer")}><span className="gi gi-close" aria-hidden="true" /></button></>}
     </div>)}</div> : null}
     {p.todos ? <DayTasks p={p} /> : null}
     {!items.length ? <p className="small muted" style={{ margin: "0 4px 8px" }}>{tr("Rien de prévu ce jour-là.")}</p> : null}
@@ -79,6 +79,6 @@ export function DayView(p: DayViewProps) {
       <div className="small muted" style={{ margin: "2px 0 -4px" }}>{tr("Heures (optionnel)")}</div><div className="two"><label>{tr("Heure de début")}<input id="qTime" type="time" /></label><label>{tr("Heure de fin")}<input id="qTimeEnd" type="time" /></label></div>
       <div className="two"><label>{tr("Type")}<input id="qCat" list="typeList" placeholder={tr("Ex. Sport")} autoComplete="off" /></label><label>{tr("Jusqu'au (optionnel)")}<input id="qEnd" type="date" min={k} /></label></div>
       <div className="two"><button type="button" className="btn ghost" id="qCancel">{tr("Annuler")}</button><button className="btn" type="submit">{tr("Ajouter")}</button></div>
-    </form> : <button className="qbtn" id="qOpen">{tr("+ Ajouter une activité ce jour")}</button>}
+    </form> : <button className="qbtn" id="qOpen"><span className="gi gi-plus" aria-hidden="true" />{" " + tr("Ajouter une activité ce jour")}</button>}
   </>;
 }

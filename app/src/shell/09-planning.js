@@ -31,7 +31,7 @@ function renderMonth(){
 }
 // v39 : tâches du jour dans l'agenda (cocher, ajouter pour ce jour) ; les reportées arrivent sur aujourd'hui
 function dayTasksBox(k){if(!visibleTabs().includes("todo"))return"";const list=dayTodos(k),past=k<iso(today());
-  const row=t=>`<div class="dt-row ${t.done?"done":""}"><button type="button" class="check" data-dtg="${t.id}" aria-label="${L(t.done?"Remettre à faire":"Terminer")}">${t.done?CHECK:""}</button><button type="button" class="grow ttl ttl-btn" data-dtmore="${t.id}">${esc(t.title)}${tLate(t)?` <span class="tchip late">↻ ${L("reportée")}</span>`:""}</button></div>`;
+  const row=t=>`<div class="dt-row ${t.done?"done":""}"><button type="button" class="check" data-dtg="${t.id}" aria-label="${L(t.done?"Remettre à faire":"Terminer")}">${t.done?CHECK:""}</button><button type="button" class="grow ttl ttl-btn" data-dtmore="${t.id}">${esc(t.title)}${tLate(t)?` <span class="tchip late">${GI("refresh")} ${L("reportée")}</span>`:""}</button></div>`;
   return `<div class="card dt-box"><div class="dt-h"><b>${IC("check")||""} ${L("Tâches du jour")}</b><span class="small muted">${list.filter(t=>t.done).length}/${list.length}</span></div>
     ${list.map(row).join("")||`<div class="small muted dt-empty">${L(past?"Aucune tâche ce jour-là.":"Aucune tâche prévue. Ajoute-en une ci-dessous.")}</div>`}
     ${past?"":`<form class="dt-add" data-dtadd="${k}"><input placeholder="${L("+ Tâche pour ce jour")}" aria-label="${L("Nouvelle tâche pour ce jour")}" autocomplete="off" enterkeyhint="done"></form>`}</div>`}
@@ -55,11 +55,11 @@ function renderDayView(){
   let now="";if(k===tIso){const n=new Date(),m=n.getHours()*60+n.getMinutes();if(m>=H0*60&&m<=H1*60)now=`<div class="nowline" style="top:${(m/60-H0)*PX}px"></div>`}
   const prev=new Date(sd);prev.setDate(prev.getDate()-1);const nxt=new Date(sd);nxt.setDate(nxt.getDate()+1);
   $("calDayView").innerHTML=`<div class="dayv-head">
-      <button class="back" id="dayBack">‹ ${MOL[sd.getMonth()]}</button>
+      <button class="back" id="dayBack">${GI("chevl")} ${MOL[sd.getMonth()]}</button>
       <div class="dayv-title">${DOW[sd.getDay()]} ${sd.getDate()} ${mlow(sd.getMonth())}${k===tIso?" · aujourd'hui":""}</div>
-      <button class="cal-nav" data-dayjump="${iso(prev)}" aria-label="Jour précédent">‹</button><button class="cal-nav" data-dayjump="${iso(nxt)}" aria-label="Jour suivant">›</button>
+      <button class="cal-nav" data-dayjump="${iso(prev)}" aria-label="Jour précédent">${GI("chevl")}</button><button class="cal-nav" data-dayjump="${iso(nxt)}" aria-label="Jour suivant">${GI("chevr")}</button>
     </div>
-    ${allday.length?`<div class="allday">${allday.map(t=>`<div class="chip-ev ${t.canc?"canc":""}" style="--c:var(${colorOf(t)})"><span class="grow ttl" style="${t.status==="fait"?"text-decoration:line-through;color:var(--muted)":""}">${t.time?`<span class="time">${hrs(t)}</span> `:""}${esc(t.title)}${t.end?` <span class="small muted">· ${fmt(t.date)} → ${fmt(t.end)}</span>`:""}</span>${t.src==="ical"?(t.canc?'<span class="canc-pill">Annulé</span>':""):`<button class="pen" data-edit="task:${t.id}" aria-label="Modifier">${PEN}</button><button class="x" data-caldel="${t.id}" aria-label="Supprimer">×</button>`}</div>`).join("")}</div>`:""}
+    ${allday.length?`<div class="allday">${allday.map(t=>`<div class="chip-ev ${t.canc?"canc":""}" style="--c:var(${colorOf(t)})"><span class="grow ttl" style="${t.status==="fait"?"text-decoration:line-through;color:var(--muted)":""}">${t.time?`<span class="time">${hrs(t)}</span> `:""}${esc(t.title)}${t.end?` <span class="small muted">· ${fmt(t.date)} → ${fmt(t.end)}</span>`:""}</span>${t.src==="ical"?(t.canc?'<span class="canc-pill">Annulé</span>':""):`<button class="pen" data-edit="task:${t.id}" aria-label="Modifier">${PEN}</button><button class="x" data-caldel="${t.id}" aria-label="Supprimer"><span class="gi gi-close" aria-hidden="true"></span></button>`}</div>`).join("")}</div>`:""}
     ${dayTasksBox(k)}
     ${!items.length?`<p class="small muted" style="margin:0 4px 8px">Rien de prévu ce jour-là.</p>`:""}
     <div class="tline" style="height:${(H1-H0)*PX}px">${hours}${blocks}${now}</div>
@@ -68,7 +68,7 @@ function renderDayView(){
       <div class="small muted" style="margin:2px 0 -4px">Heures (optionnel)</div><div class="two"><label>Heure de début<input id="qTime" type="time"></label><label>Heure de fin<input id="qTimeEnd" type="time"></label></div>
       <div class="two"><label>Type<input id="qCat" list="typeList" placeholder="Ex. Sport" autocomplete="off"></label><label>Jusqu'au (optionnel)<input id="qEnd" type="date" min="${k}"></label></div>
       <div class="two"><button type="button" class="btn ghost" id="qCancel">Annuler</button><button class="btn" type="submit">Ajouter</button></div>
-    </form>`:`<button class="qbtn" id="qOpen">+ Ajouter une activité ce jour</button>`}`;
+    </form>`:`<button class="qbtn" id="qOpen">${GI("plus")} ${L("Ajouter une activité ce jour")}</button>`}`;
 }
 function renderCal(){
   if(!selDay)selDay=iso(today());
@@ -82,7 +82,7 @@ function renderYear(){
   if(window.SCIslands&&window.SCIslands.agYear&&!window.__noIslands){try{window.SCIslands.agYear($("calYear"),{y:calY,today:iso(today()),tasks:allT(),i18n:agI18n()});return}catch(e){reportErr("island agYear: "+(e&&e.message))}}
   const T=allT(),tIso=iso(today()),has=new Set();T.forEach(t=>{if(!t.date)return;const e=t.end&&t.end>t.date?t.end:t.date;for(let d=parse(t.date);iso(d)<=e;d.setDate(d.getDate()+1))has.add(iso(d))});
   const h=yearGrid(calY,k=>`${k===tIso?"td":has.has(k)?"ev":""} ${k<tIso?"past":""}`);
-  $("calYear").innerHTML=`<div class="yr-head"><button class="cal-nav" data-yrn="-1" aria-label="${L("Année précédente")}">‹</button><button type="button" class="yr-title" data-yrtoday="1" aria-label="${L("Revenir au mois actuel")}">${calY}<span class="yr-ic">↩ ${L("Mois actuel")}</span></button><button class="cal-nav" data-yrn="1" aria-label="${L("Année suivante")}">›</button></div><div class="yr-grid">${h}</div>
+  $("calYear").innerHTML=`<div class="yr-head"><button class="cal-nav" data-yrn="-1" aria-label="${L("Année précédente")}">${GI("chevl")}</button><button type="button" class="yr-title" data-yrtoday="1" aria-label="${L("Revenir au mois actuel")}">${calY}<span class="yr-ic">↩ ${L("Mois actuel")}</span></button><button class="cal-nav" data-yrn="1" aria-label="${L("Année suivante")}">${GI("chevr")}</button></div><div class="yr-grid">${h}</div>
     <p class="small muted" style="text-align:center;margin:10px 0 4px">${L("Touche un mois pour l'ouvrir.")} <button type="button" class="linkbtn" data-yrtoday="1" style="background:none;border:0;cursor:pointer">${L("Aujourd'hui")}</button></p>`;
 }
 $("calYear").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;

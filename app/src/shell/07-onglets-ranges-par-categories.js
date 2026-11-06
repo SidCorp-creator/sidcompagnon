@@ -105,7 +105,7 @@ function renderVhead(v){const el=$("vhead");
  if(v==="pomo"){const r=P.run,segs=r?r.segs:buildSegs(P.cfg),total=r?segs.reduce((a,x)=>a+x.d*MIN,0):pomoLastPosition?pomoLastPosition.total:segs.reduce((a,x)=>a+x.d*MIN,0),taken=r?Math.max(0,Math.min(total,elapsed(r))):pomoLastPosition?total:0,n=r?segs.filter(x=>x.t==="w").length:pomoLastPosition?pomoLastPosition.cycles:segs.filter(x=>x.t==="w").length,cycle=r?segs.slice(0,locate(r,taken).i+1).filter(x=>x.t==="w").length:pomoLastPosition?n:0;progress=!r&&!pomoLastPosition?`${pomoDuration(total/MIN)} · ${n} ${L(n===1?"session":"sessions")}`:`${pomoDuration(taken/MIN)} ${L("sur")} ${pomoDuration(total/MIN)} · ${L("session")} ${Math.min(n,cycle)} ${L("sur")} ${n}`;percent=total?Math.min(100,Math.round(taken/total*1000)/10):0;hasProgress=true}
  if(g.app==="fit"){const n=NU();
   if(v==="muscu"){const p=muSessionProgress();progress=`${p.done} / ${p.total} ${L("séries complètes")}`;percent=p.total?Math.round(p.done/p.total*100):0;hasProgress=true}
-  else if(nutriAllowed()&&n.plan?.kcal){const eaten=Math.round(sumOf(dayLog(iso(today()))).kcal),target=dayTarget(iso(today())).kcal;progress=`${fmtFull(eaten)} / ${fmtFull(Math.round(target))}\u202fkcal`;percent=Math.min(100,Math.round(eaten/target*100));hasProgress=true}
+  else if(nutriAllowed()&&n.plan?.kcal){const eaten=Math.round(sumOf(dayLog(iso(today()))).kcal),target=dayTarget(iso(today())).kcal;progress=`${fmtFull(eaten)} / ${fmtFull(Math.round(target))}\u00a0kcal`;percent=Math.min(100,Math.round(eaten/target*100));hasProgress=true}
   else{progress=L("Définis ton objectif alimentaire");hasProgress=false}}
  if(g.app==="note"){progress=elanCoffreMetric(v);hasProgress=false}
  if(g.app==="home"){progress="";hasProgress=false}

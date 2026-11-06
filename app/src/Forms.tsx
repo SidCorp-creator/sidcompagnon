@@ -56,10 +56,10 @@ export function NuMealKcal({ rows, i18n }: { rows: { icon: string; name: string;
 
 export function NuMkTot({ tot, tg, reset, i18n }: { tot: string; tg: string; reset: boolean; i18n: FI18n }) {
   const { tr, L } = i18n;
-  return <>{tr(`${L("Total")} `)}<b>{tot}</b>{tr(` / ${tg} kcal ✓`)}{reset ? <>{" "}<button type="button" className="mini" data-mkreset="1">{tr(L("Répartition conseillée"))}</button></> : null}</>;
+  return <>{tr(`${L("Total")} `)}<b>{tot}</b>{tr(` / ${tg} kcal `)}<span className="gi gi-tick" aria-hidden="true" />{reset ? <>{" "}<button type="button" className="mini" data-mkreset="1">{tr(L("Répartition conseillée"))}</button></> : null}</>;
 }
 
 export function NuKcalOf({ target, over, left, i18n }: { target: number; over: number; left: number; i18n: FI18n }) {
   const { tr, L } = i18n;
-  return <>{tr(`${L("sur")} ${fmtFull(target,i18n.lang||"fr")}\u202fkcal`)}<br />{over > 0 ? <b style={{ color: "var(--late)" }}>{`+${fmtFull(over,i18n.lang||"fr")}`}</b> : tr(`${L("reste")} ${fmtFull(left,i18n.lang||"fr")}`)}</>;
+  return <>{tr(`${L("sur")} ${fmtFull(target,i18n.lang||"fr")}\u00a0kcal`)}<br />{over > 0 ? <b style={{ color: "var(--late)" }}>{`+${fmtFull(over,i18n.lang||"fr")}`}</b> : tr(`${L("reste")} ${fmtFull(left,i18n.lang||"fr")}`)}</>;
 }

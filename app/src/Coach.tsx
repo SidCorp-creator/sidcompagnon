@@ -15,7 +15,7 @@ export function CoachCard({ c, more, i18n }: { c: CoachVM | null; more: string; 
     <div className="small muted">{tr(`${c.level ? L(c.level) + " · " : ""}${c.n} ${L(c.n > 1 ? "séances" : "séance")}`)}</div></div>
     <button type="button" className="pen" data-coach="more" aria-label={tr(L("Plus d'actions"))} dangerouslySetInnerHTML={{ __html: more }}></button></div>
     {c.wait ? <div className="coach-wait" role="status"><span className="grow">{tr(L("Demande envoyée à Claude : le programme ajusté arrivera ici tout seul."))}</span>
-      <button type="button" className="linkbtn" data-coach="resend">{tr(L("Renvoyer"))}</button><button type="button" className="x" data-coach="unwait" aria-label={tr(L("Masquer"))}>×</button></div> : null}
+      <button type="button" className="linkbtn" data-coach="resend">{tr(L("Renvoyer"))}</button><button type="button" className="x" data-coach="unwait" aria-label={tr(L("Masquer"))}><span className="gi gi-close" aria-hidden="true" /></button></div> : null}
     <div className="coach-adj"><label htmlFor="coRemark" className="eyebrow">{tr(L("Ta remarque sur ce programme"))}</label>
       <textarea id="coRemark" className="autogrow" rows={2} maxLength={600} placeholder={tr(L("Ex. remplace la 2e séance jambes par une séance haut du corps"))}></textarea>
       <div className="coach-adj-b"><button type="button" className="btn" data-coach="adjust">{tr(L("Ajuster avec Claude"))}</button></div>
@@ -25,7 +25,7 @@ export function CoachCard({ c, more, i18n }: { c: CoachVM | null; more: string; 
 }
 
 export function CfSel({ names, i18n }: { names: string[]; i18n: CI18n }) {
-  return <>{names.map((n) => <span key={n} className="pill on cf-chip"><span className="notr">{n}</span><button type="button" className="x" data-cfrm={n} aria-label={i18n.tr(i18n.L("Retirer"))}>×</button></span>)}</>;
+  return <>{names.map((n) => <span key={n} className="pill on cf-chip"><span className="notr">{n}</span><button type="button" className="x" data-cfrm={n} aria-label={i18n.tr(i18n.L("Retirer"))}><span className="gi gi-close" aria-hidden="true" /></button></span>)}</>;
 }
 
 export function CfRes({ q, hits, i18n }: { q: boolean; hits: { n: string; grp: string; p: boolean }[]; i18n: CI18n }) {

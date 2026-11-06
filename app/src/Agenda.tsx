@@ -39,9 +39,9 @@ export function AgendaYear({ y, today, tasks, i18n }: { y: number; today: string
   const now = parse(today);
   return <>
     <div className="yr-head">
-      <button className="cal-nav" data-yrn="-1" aria-label={tr("Année précédente")}>‹</button>
+      <button className="cal-nav" data-yrn="-1" aria-label={tr("Année précédente")}><span className="gi gi-chevl" aria-hidden="true" /></button>
       <button type="button" className="yr-title" data-yrtoday="1" aria-label={tr("Revenir au mois actuel")}>{y}<span className="yr-ic">{tr(`↩ ${i18n.L("Mois actuel")}`)}</span></button>
-      <button className="cal-nav" data-yrn="1" aria-label={tr("Année suivante")}>›</button>
+      <button className="cal-nav" data-yrn="1" aria-label={tr("Année suivante")}><span className="gi gi-chevr" aria-hidden="true" /></button>
     </div>
     <div className="yr-grid">{MOL.map((name, m) => <button key={m} className={`ym ${y === now.getFullYear() && m === now.getMonth() ? "cur" : ""}`} data-ym={m} aria-label={tr(`${name} ${y}`)}>
       <b>{tr(name)}</b>

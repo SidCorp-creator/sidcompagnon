@@ -39,7 +39,7 @@ function aiRender(){const b=$("aiBody"),ai=aiCur()||AIS.claude;aiStop();
     b.innerHTML=`<button type="button" class="btn ai-back" data-aistep="setup">↺ ${L("Revoir les étapes")}</button>
       <div class="ai-step"><b>3. ${L("Envoie ce message à")} ${esc(ai.name)}</b><div class="ai-prompt notr">${esc(AI_TEST())}</div>
         <a class="btn" href="${ai.ask(AI_TEST())}" target="_blank" rel="noopener" style="width:100%;margin-top:8px">${L("Envoyer avec")} ${esc(ai.name)}</a></div>
-      <div class="ai-wait" id="aiWait">${ok?`<b class="ok">✓ ${L("C'est branché !")}</b>`:`<span class="spin"></span>${L("En attente de Claude… (accepte l'accès à Sid'note s'il te le demande)")}`}</div>
+      <div class="ai-wait" id="aiWait">${ok?`<b class="ok">${GI("tick")} ${L("C'est branché !")}</b>`:`<span class="spin"></span>${L("En attente de Claude… (accepte l'accès à Sid'note s'il te le demande)")}`}</div>
       <div class="ai-step" id="aiHabit" ${ok?"":"hidden"}><b>${L("Dernière astuce")}</b><div class="small muted">${L("Pour que tes repas arrivent tout seuls dans Sid'note, envoie-lui une fois ce message :")}</div>
         <div class="ai-prompt notr">${esc(AI_HABIT())}</div><a class="btn ghost" href="${ai.ask(AI_HABIT())}" target="_blank" rel="noopener" style="width:100%;margin-top:8px">${L("Envoyer avec")} ${esc(ai.name)}</a>
         <button type="button" class="btn ghost" data-convset="nutri" style="width:100%;margin-top:8px">${L("Une conversation par app")}</button></div>
@@ -84,13 +84,16 @@ function aiGo(topic,prompt,quiet){const u=topic&&convUrl(topic),ai=aiCur()||AIS.
   if(pid){extOpen(`https://claude.ai/new?project=${encodeURIComponent(pid)}&q=${encodeURIComponent(prompt)}`);return "proj"}
   if(u){copyNow(prompt);extOpen(u);if(!quiet)toast("Prompt copié, colle-le dans la conversation");return "chat"}
   extOpen(ai.ask(convFirst(topic,prompt)));return ""}
-function convSettings(t){show("more");const d=$("mcpSec"),a=$("aiAdv");if(d){d.open=true;if(a)a.open=true;setTimeout(()=>{const i=$(CONV_IN[t]||"convAgenda");(i?i.closest(".conv-f"):a).scrollIntoView({block:"center",behavior:"smooth"});if(i&&!i.value&&!matchMedia("(pointer:coarse)").matches)i.focus({preventScroll:true})},120)}}
+// T16 D (décision de Sid) : le lien de conversation se règle en bas de chaque app, plus dans Réglages.
+const CONV_VIEW={agenda:"plan",nutri:"nutri",muscu:"muscu",note:"notes"};
+function convSettings(t){t=CONV_VIEW[t]?t:"agenda";show(CONV_VIEW[t]);if(t==="note"&&!$("noteEdit").hidden)closeNote();const d=document.querySelector(`[data-convtab="${t}"]`);if(!d)return;d.open=true;
+  setTimeout(()=>{d.scrollIntoView({block:"center",behavior:"smooth"});const i=d.querySelector("input");if(i&&!i.value&&!matchMedia("(pointer:coarse)").matches)i.focus({preventScroll:true})},120)}
 function renderConv(){const c=data.prefs.aiConv||{};for(const[t,id]of Object.entries(CONV_IN)){const i=$(id);if(i&&document.activeElement!==i)i.value=c[t]||""}convTabs()}
 // v74.2 (demande de Sid) : un petit onglet « Conversation Claude » sous le champ de chaque fonction (Agenda, Musculation, Nutrition, Notes) :
 // on y colle le lien d'une conversation et toutes les demandes de cette fonction y vont directement (sans passer par la fenêtre d'envoi)
 function convTabs(){const c=data.prefs.aiConv||{};
   document.querySelectorAll("[data-convin]").forEach(i=>{const el=/** @type {HTMLInputElement} */(i);if(document.activeElement!==el)el.value=c[el.dataset.convin]||""});
-  document.querySelectorAll("[data-convst]").forEach(e=>{const u=convUrl(e.dataset.convst);e.textContent=u?`✓ ${L("reliée")}`:L("aucune")});
+  document.querySelectorAll("[data-convst]").forEach(e=>{const u=convUrl(e.dataset.convst);e.textContent=u?L("reliée"):L("aucune");e.toggleAttribute("data-on",!!u)});
   document.querySelectorAll("[data-convdel]").forEach(b=>{b.hidden=!(data.prefs.aiConv||{})[b.dataset.convdel]})}
 document.addEventListener("click",e=>{const b=e.target.closest("[data-convdel]");if(!b)return;const t=b.dataset.convdel,c=data.prefs.aiConv||{};delete c[t];data.prefs.aiConv=c;save();renderConv();renderAiCards();
   toast(`${L("Conversation")} ${L(CONV_NAME[t])} ${L("retirée : une nouvelle conversation s'ouvrira à chaque fois")}`)});

@@ -27,7 +27,7 @@ function Macros({ s, mac, i18n }: { s: Sum; mac: Mac[]; i18n: NuI18n }) {
   const tot = (s.p * 4 + s.c * 4 + s.f * 9) || 1;
   return <>
     <div className="mbar" aria-hidden="true">{mac.map((m) => <i key={m.k} style={{ "--c": `var(${m.c})`, width: `${(m.k === "f" ? 9 : 4) * s[m.k] / tot * 100}%` } as Css}></i>)}</div>
-    <div className="mchips">{mac.map((m) => <span key={m.k} className="mchip"><b>{i18n.tr(`${r1(s[m.k],i18n.lang||"fr")}\u202fg`)}</b><span><span className="mdot" style={{ "--c": `var(${m.c})` } as Css}></span>{i18n.tr(i18n.L(m.label))}</span></span>)}</div>
+    <div className="mchips">{mac.map((m) => <span key={m.k} className="mchip"><b>{i18n.tr(`${r1(s[m.k],i18n.lang||"fr")}\u00a0g`)}</b><span><span className="mdot" style={{ "--c": `var(${m.c})` } as Css}></span>{i18n.tr(i18n.L(m.label))}</span></span>)}</div>
   </>;
 }
 
@@ -45,14 +45,14 @@ export function NuLog({ dishes, mac, today, i18n }: { dishes: Dish[]; mac: Mac[]
     return <details key={G.g} className="dish" open>
       <summary className="dish-h"><span className="dish-clock">{G.time}</span><span className="dish-ic" data-thumb={G.g}>{G.thumb ? <img src={G.thumb} alt="" /> : G.mono}</span>
         <span className="dish-t"><b className="notr" data-user-label="" title={G.name}>{G.name}</b>{!one ? <>{" "}<span className="small muted">{tr(`· ${G.items.length} ${L("aliments")}`)}</span></> : null}</span>
-        <span className="dish-kcal">{r0(G.sum.kcal,i18n.lang||"fr")}<small>{"\u202f"}{tr("kcal")}</small></span>
+        <span className="dish-kcal">{r0(G.sum.kcal,i18n.lang||"fr")}<small>{"\u00a0"}{tr("kcal")}</small></span>
         <button type="button" className="pen nu-cp" data-nucopy={G.g} aria-label={tr(L("Copier ce repas sur d'autres jours"))} title={tr(L("Copier sur d'autres jours"))}><FormeIcon name="copy"/></button>
         {one ? <button className="pen" data-nuedit={G.items[0].id} aria-label={tr(L("Modifier"))}>{PEN}</button> : null}
         <button type="button" className="x" data-nudelg={G.g} aria-label={tr(L("Supprimer ce plat"))}><FormeIcon name="close"/></button></summary>
       <Macros s={G.sum} mac={mac} i18n={i18n} />
       {one ? <div className="dish-note"><QtyCell q={G.items[0].qty} i18n={i18n} /></div>
         : <div className="dish-items">{G.items.map((x) => <div key={x.id} className="dish-it"><span className="em">·</span><div className="grow"><b className="notr">{x.name}</b><QtyCell q={x.qty} i18n={i18n} /></div>
-          <span className="k">{tr(`${r0(x.kcal,i18n.lang||"fr")}\u202fkcal`)}</span><button className="pen" data-nuedit={x.id} aria-label={tr(L("Modifier"))}>{PEN}</button><button className="x" data-nudel={x.id} aria-label={tr(L("Supprimer"))}><FormeIcon name="close"/></button></div>)}</div>}
+          <span className="k">{tr(`${r0(x.kcal,i18n.lang||"fr")}\u00a0kcal`)}</span><button className="pen" data-nuedit={x.id} aria-label={tr(L("Modifier"))}>{PEN}</button><button className="x" data-nudel={x.id} aria-label={tr(L("Supprimer"))}><FormeIcon name="close"/></button></div>)}</div>}
     </details>;
   })}</>;
 }
@@ -65,12 +65,12 @@ export function NuResult({ p, mac, boltIcon, i18n }: { p: NuResultVM | null; mac
     <div className="dish-h"><span className="dish-ic">{p.photo ? <img src={p.photo} alt="" /> : <FormeIcon name="meal"/>}</span>
       <span className="dish-t"><b className="notr" data-user-label="" title={p.title}>{p.title}</b><span className="small muted">{tr(`${p.items.length} ${L(p.items.length > 1 ? "aliments" : "aliment")}`)}</span>
         {p.mem ? <span className="memtag" dangerouslySetInnerHTML={{ __html: `${boltIcon} ${escHtml(tr(L("Mémoire Sid Forme")))}` }}></span> : null}</span>
-      <span className="dish-kcal">{r0(s.kcal,i18n.lang||"fr")}<small>{"\u202f"}{tr("kcal")}</small></span></div>
+      <span className="dish-kcal">{r0(s.kcal,i18n.lang||"fr")}<small>{"\u00a0"}{tr("kcal")}</small></span></div>
     <Macros s={s} mac={mac} i18n={i18n} />
     <div className="dish-items">{p.items.map((x, i) => <div key={i} className="dish-it"><span className="em">·</span><div className="grow"><b className="notr">{x.name}</b>{x.extra ? <span className="notmention">{tr(L("pas dans ta description"))}</span> : null}<QtyCell q={x.qty} i18n={i18n} /></div>
-      <span className="k">{tr(`${fmtFull(x.kcal,i18n.lang||"fr")}\u202fkcal`)}</span><button type="button" className="x" data-nurm={i} aria-label={tr(L("Retirer"))}><FormeIcon name="close"/></button></div>)}</div>
+      <span className="k">{tr(`${fmtFull(x.kcal,i18n.lang||"fr")}\u00a0kcal`)}</span><button type="button" className="x" data-nurm={i} aria-label={tr(L("Retirer"))}><FormeIcon name="close"/></button></div>)}</div>
     {p.note ? <div className="dish-note notr" style={{ paddingTop: "8px" }}>{p.note}</div> : null}
-    <div className="dish-act"><button type="button" className="btn ghost" data-nucancel="1">{tr(L("Annuler"))}</button><button type="button" className="btn" data-nuadd="1">{tr(`${L("Ajouter")} · ${r0(s.kcal,i18n.lang||"fr")}\u202fkcal`)}</button></div>
+    <div className="dish-act"><button type="button" className="btn ghost" data-nucancel="1">{tr(L("Annuler"))}</button><button type="button" className="btn" data-nuadd="1">{tr(`${L("Ajouter")} · ${r0(s.kcal,i18n.lang||"fr")}\u00a0kcal`)}</button></div>
   </div>;
 }
 
@@ -78,8 +78,8 @@ export function NuWeek({ sports, range, target, delta, actIcon, i18n }: { sports
   const { tr, L } = i18n;
   return <>
     <div className="nu-week-h"><b dangerouslySetInnerHTML={{ __html: `${actIcon} ${escHtml(tr(L("Ton sport cette semaine")))}` }}></b><span className="small muted">{tr(range)}</span></div>
-    {sports.map((s) => <div key={s.name} className="nu-wsp"><div className="grow"><b className="notr">{s.name}</b><span className="small muted">{tr(`≈ ${fmtFull(s.kps,i18n.lang||"fr")}\u202fkcal ${L("par séance")}${s.count !== s.base ? ` · ${L("d'habitude")} ${s.base}` : ""}`)}</span></div>
+    {sports.map((s) => <div key={s.name} className="nu-wsp"><div className="grow"><b className="notr">{s.name}</b><span className="small muted">{tr(`≈ ${fmtFull(s.kps,i18n.lang||"fr")}\u00a0kcal ${L("par séance")}${s.count !== s.base ? ` · ${L("d'habitude")} ${s.base}` : ""}`)}</span></div>
       <div className="stepper"><button type="button" data-ws={s.name} data-d="-1" aria-label={tr(L("Une séance de moins"))}><FormeIcon name="minus"/></button><output>{s.count}</output><button type="button" data-ws={s.name} data-d="1" aria-label={tr(L("Une séance de plus"))}><FormeIcon name="plus"/></button></div></div>)}
-    <div className="small">{tr(`${L("Objectif par jour cette semaine")} : `)}<b>{tr(`${target}\u202fkcal`)}</b>{delta ? <>{" "}<span className="muted">{tr(`(${delta > 0 ? "+" : ""}${delta} ${L("selon ton sport")})`)}</span></> : null}</div>
+    <div className="small">{tr(`${L("Objectif par jour cette semaine")} : `)}<b>{tr(`${target}\u00a0kcal`)}</b>{delta ? <>{" "}<span className="muted">{tr(`(${delta > 0 ? "+" : ""}${delta} ${L("selon ton sport")})`)}</span></> : null}</div>
   </>;
 }

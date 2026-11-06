@@ -55,6 +55,8 @@ const ICS={
   globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
   grad:'<path d="M22 9 12 4 2 9l10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/>',
   trash:'<path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>'};
+// T16 E : petites icônes au trait dessinées en CSS (masque), pour remplacer les caractères ✓ ↻ ‹ ›.
+const GI=n=>`<span class="gi gi-${n}" aria-hidden="true"></span>`;
 const IC=n=>ICS[n]?`<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICS[n]}</svg>`:"";
 // initiales d'un plat à la place de l'émoji : « Poulet riz » → « PR »
 const mono=s=>{const w=String(s||"").normalize("NFC").split(/[\s,'’-]+/).filter(x=>x&&/^\p{L}/u.test(x)&&!/^(de|du|des|la|le|les|au|aux|et|à|a|en|of|the|and|with|avec)$/i.test(x));return (w.length?w.slice(0,2).map(x=>x[0]).join(""):"·").toUpperCase()};
@@ -127,7 +129,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="75.0";const errSent=new Set();
+const APP_V="75.1";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -573,7 +575,7 @@ function renderVhead(v){const el=$("vhead");
  if(v==="pomo"){const r=P.run,segs=r?r.segs:buildSegs(P.cfg),total=r?segs.reduce((a,x)=>a+x.d*MIN,0):pomoLastPosition?pomoLastPosition.total:segs.reduce((a,x)=>a+x.d*MIN,0),taken=r?Math.max(0,Math.min(total,elapsed(r))):pomoLastPosition?total:0,n=r?segs.filter(x=>x.t==="w").length:pomoLastPosition?pomoLastPosition.cycles:segs.filter(x=>x.t==="w").length,cycle=r?segs.slice(0,locate(r,taken).i+1).filter(x=>x.t==="w").length:pomoLastPosition?n:0;progress=!r&&!pomoLastPosition?`${pomoDuration(total/MIN)} · ${n} ${L(n===1?"session":"sessions")}`:`${pomoDuration(taken/MIN)} ${L("sur")} ${pomoDuration(total/MIN)} · ${L("session")} ${Math.min(n,cycle)} ${L("sur")} ${n}`;percent=total?Math.min(100,Math.round(taken/total*1000)/10):0;hasProgress=true}
  if(g.app==="fit"){const n=NU();
   if(v==="muscu"){const p=muSessionProgress();progress=`${p.done} / ${p.total} ${L("séries complètes")}`;percent=p.total?Math.round(p.done/p.total*100):0;hasProgress=true}
-  else if(nutriAllowed()&&n.plan?.kcal){const eaten=Math.round(sumOf(dayLog(iso(today()))).kcal),target=dayTarget(iso(today())).kcal;progress=`${fmtFull(eaten)} / ${fmtFull(Math.round(target))}\u202fkcal`;percent=Math.min(100,Math.round(eaten/target*100));hasProgress=true}
+  else if(nutriAllowed()&&n.plan?.kcal){const eaten=Math.round(sumOf(dayLog(iso(today()))).kcal),target=dayTarget(iso(today())).kcal;progress=`${fmtFull(eaten)} / ${fmtFull(Math.round(target))}\u00a0kcal`;percent=Math.min(100,Math.round(eaten/target*100));hasProgress=true}
   else{progress=L("Définis ton objectif alimentaire");hasProgress=false}}
  if(g.app==="note"){progress=elanCoffreMetric(v);hasProgress=false}
  if(g.app==="home"){progress="";hasProgress=false}
@@ -1023,7 +1025,7 @@ function renderMonth(){
 }
 // v39 : tâches du jour dans l'agenda (cocher, ajouter pour ce jour) ; les reportées arrivent sur aujourd'hui
 function dayTasksBox(k){if(!visibleTabs().includes("todo"))return"";const list=dayTodos(k),past=k<iso(today());
-  const row=t=>`<div class="dt-row ${t.done?"done":""}"><button type="button" class="check" data-dtg="${t.id}" aria-label="${L(t.done?"Remettre à faire":"Terminer")}">${t.done?CHECK:""}</button><button type="button" class="grow ttl ttl-btn" data-dtmore="${t.id}">${esc(t.title)}${tLate(t)?` <span class="tchip late">↻ ${L("reportée")}</span>`:""}</button></div>`;
+  const row=t=>`<div class="dt-row ${t.done?"done":""}"><button type="button" class="check" data-dtg="${t.id}" aria-label="${L(t.done?"Remettre à faire":"Terminer")}">${t.done?CHECK:""}</button><button type="button" class="grow ttl ttl-btn" data-dtmore="${t.id}">${esc(t.title)}${tLate(t)?` <span class="tchip late">${GI("refresh")} ${L("reportée")}</span>`:""}</button></div>`;
   return `<div class="card dt-box"><div class="dt-h"><b>${IC("check")||""} ${L("Tâches du jour")}</b><span class="small muted">${list.filter(t=>t.done).length}/${list.length}</span></div>
     ${list.map(row).join("")||`<div class="small muted dt-empty">${L(past?"Aucune tâche ce jour-là.":"Aucune tâche prévue. Ajoute-en une ci-dessous.")}</div>`}
     ${past?"":`<form class="dt-add" data-dtadd="${k}"><input placeholder="${L("+ Tâche pour ce jour")}" aria-label="${L("Nouvelle tâche pour ce jour")}" autocomplete="off" enterkeyhint="done"></form>`}</div>`}
@@ -1047,11 +1049,11 @@ function renderDayView(){
   let now="";if(k===tIso){const n=new Date(),m=n.getHours()*60+n.getMinutes();if(m>=H0*60&&m<=H1*60)now=`<div class="nowline" style="top:${(m/60-H0)*PX}px"></div>`}
   const prev=new Date(sd);prev.setDate(prev.getDate()-1);const nxt=new Date(sd);nxt.setDate(nxt.getDate()+1);
   $("calDayView").innerHTML=`<div class="dayv-head">
-      <button class="back" id="dayBack">‹ ${MOL[sd.getMonth()]}</button>
+      <button class="back" id="dayBack">${GI("chevl")} ${MOL[sd.getMonth()]}</button>
       <div class="dayv-title">${DOW[sd.getDay()]} ${sd.getDate()} ${mlow(sd.getMonth())}${k===tIso?" · aujourd'hui":""}</div>
-      <button class="cal-nav" data-dayjump="${iso(prev)}" aria-label="Jour précédent">‹</button><button class="cal-nav" data-dayjump="${iso(nxt)}" aria-label="Jour suivant">›</button>
+      <button class="cal-nav" data-dayjump="${iso(prev)}" aria-label="Jour précédent">${GI("chevl")}</button><button class="cal-nav" data-dayjump="${iso(nxt)}" aria-label="Jour suivant">${GI("chevr")}</button>
     </div>
-    ${allday.length?`<div class="allday">${allday.map(t=>`<div class="chip-ev ${t.canc?"canc":""}" style="--c:var(${colorOf(t)})"><span class="grow ttl" style="${t.status==="fait"?"text-decoration:line-through;color:var(--muted)":""}">${t.time?`<span class="time">${hrs(t)}</span> `:""}${esc(t.title)}${t.end?` <span class="small muted">· ${fmt(t.date)} → ${fmt(t.end)}</span>`:""}</span>${t.src==="ical"?(t.canc?'<span class="canc-pill">Annulé</span>':""):`<button class="pen" data-edit="task:${t.id}" aria-label="Modifier">${PEN}</button><button class="x" data-caldel="${t.id}" aria-label="Supprimer">×</button>`}</div>`).join("")}</div>`:""}
+    ${allday.length?`<div class="allday">${allday.map(t=>`<div class="chip-ev ${t.canc?"canc":""}" style="--c:var(${colorOf(t)})"><span class="grow ttl" style="${t.status==="fait"?"text-decoration:line-through;color:var(--muted)":""}">${t.time?`<span class="time">${hrs(t)}</span> `:""}${esc(t.title)}${t.end?` <span class="small muted">· ${fmt(t.date)} → ${fmt(t.end)}</span>`:""}</span>${t.src==="ical"?(t.canc?'<span class="canc-pill">Annulé</span>':""):`<button class="pen" data-edit="task:${t.id}" aria-label="Modifier">${PEN}</button><button class="x" data-caldel="${t.id}" aria-label="Supprimer"><span class="gi gi-close" aria-hidden="true"></span></button>`}</div>`).join("")}</div>`:""}
     ${dayTasksBox(k)}
     ${!items.length?`<p class="small muted" style="margin:0 4px 8px">Rien de prévu ce jour-là.</p>`:""}
     <div class="tline" style="height:${(H1-H0)*PX}px">${hours}${blocks}${now}</div>
@@ -1060,7 +1062,7 @@ function renderDayView(){
       <div class="small muted" style="margin:2px 0 -4px">Heures (optionnel)</div><div class="two"><label>Heure de début<input id="qTime" type="time"></label><label>Heure de fin<input id="qTimeEnd" type="time"></label></div>
       <div class="two"><label>Type<input id="qCat" list="typeList" placeholder="Ex. Sport" autocomplete="off"></label><label>Jusqu'au (optionnel)<input id="qEnd" type="date" min="${k}"></label></div>
       <div class="two"><button type="button" class="btn ghost" id="qCancel">Annuler</button><button class="btn" type="submit">Ajouter</button></div>
-    </form>`:`<button class="qbtn" id="qOpen">+ Ajouter une activité ce jour</button>`}`;
+    </form>`:`<button class="qbtn" id="qOpen">${GI("plus")} ${L("Ajouter une activité ce jour")}</button>`}`;
 }
 function renderCal(){
   if(!selDay)selDay=iso(today());
@@ -1074,7 +1076,7 @@ function renderYear(){
   if(window.SCIslands&&window.SCIslands.agYear&&!window.__noIslands){try{window.SCIslands.agYear($("calYear"),{y:calY,today:iso(today()),tasks:allT(),i18n:agI18n()});return}catch(e){reportErr("island agYear: "+(e&&e.message))}}
   const T=allT(),tIso=iso(today()),has=new Set();T.forEach(t=>{if(!t.date)return;const e=t.end&&t.end>t.date?t.end:t.date;for(let d=parse(t.date);iso(d)<=e;d.setDate(d.getDate()+1))has.add(iso(d))});
   const h=yearGrid(calY,k=>`${k===tIso?"td":has.has(k)?"ev":""} ${k<tIso?"past":""}`);
-  $("calYear").innerHTML=`<div class="yr-head"><button class="cal-nav" data-yrn="-1" aria-label="${L("Année précédente")}">‹</button><button type="button" class="yr-title" data-yrtoday="1" aria-label="${L("Revenir au mois actuel")}">${calY}<span class="yr-ic">↩ ${L("Mois actuel")}</span></button><button class="cal-nav" data-yrn="1" aria-label="${L("Année suivante")}">›</button></div><div class="yr-grid">${h}</div>
+  $("calYear").innerHTML=`<div class="yr-head"><button class="cal-nav" data-yrn="-1" aria-label="${L("Année précédente")}">${GI("chevl")}</button><button type="button" class="yr-title" data-yrtoday="1" aria-label="${L("Revenir au mois actuel")}">${calY}<span class="yr-ic">↩ ${L("Mois actuel")}</span></button><button class="cal-nav" data-yrn="1" aria-label="${L("Année suivante")}">${GI("chevr")}</button></div><div class="yr-grid">${h}</div>
     <p class="small muted" style="text-align:center;margin:10px 0 4px">${L("Touche un mois pour l'ouvrir.")} <button type="button" class="linkbtn" data-yrtoday="1" style="background:none;border:0;cursor:pointer">${L("Aujourd'hui")}</button></p>`;
 }
 $("calYear").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
@@ -1437,7 +1439,7 @@ function renderTypes(){
   $("typesCard").innerHTML=data.types.map((t,i)=>`<div class="row">
       <button class="swatch" data-tcol="${i}" style="background:var(${t.c})" aria-label="Changer la couleur de ${esc(t.name)}"></button>
       <div class="grow">${esc(t.name)} <span class="small muted">· ${cnt(t.name)}</span></div>
-      <button class="x" data-tydel="${i}" aria-label="Supprimer ${esc(t.name)}">×</button></div>`).join("")+
+      <button class="x" data-tydel="${i}" aria-label="Supprimer ${esc(t.name)}"><span class="gi gi-close" aria-hidden="true"></span></button></div>`).join("")+
     `<form class="row" id="typeForm"><input id="typeIn" placeholder="Nouveau type, ex. Examen" aria-label="Nouveau type" autocomplete="off"><button class="btn" type="submit">Ajouter</button></form>`;
 }
 $("typesCard").addEventListener("click",e=>{
@@ -1619,8 +1621,8 @@ function renderLists(){const el=$("slBody");if(!el)return;
   if(l){const mine=l.owner===session.user.id,todo=slItems.filter(i=>!i.done),done=slItems.filter(i=>i.done);
     const row=i=>`<div class="row sl-it ${i.done?"done":""}"><button class="check" data-sltg="${i.id}" aria-label="${L(i.done?"Remettre à faire":"Cocher")}">${i.done?CHECK:""}</button>
       <div class="grow"><span class="ttl notr">${esc(i.text)}</span>${i.by_name?`<span class="small muted notr"> · ${esc(i.by_name)}</span>`:""}</div>
-      <button class="x" data-sldel="${i.id}" aria-label="${L("Supprimer")}">×</button></div>`;
-    el.innerHTML=`<button type="button" class="linkbtn sl-back" data-slback="1">‹ ${L("Toutes les listes")}</button>
+      <button class="x" data-sldel="${i.id}" aria-label="${L("Supprimer")}"><span class="gi gi-close" aria-hidden="true"></span></button></div>`;
+    el.innerHTML=`<button type="button" class="linkbtn sl-back" data-slback="1">${GI("chevl")} ${L("Toutes les listes")}</button>
       <h2 class="notr sl-name">${esc(l.name)}</h2>${err}
       <form class="addbar" id="slAdd"><input id="slIn" placeholder="${L("Ajouter un élément…")}" aria-label="${L("Ajouter un élément")}" autocomplete="off" maxlength="200"><button class="btn" type="submit">${L("Ajouter")}</button></form>
       <div class="card">${todo.length?todo.map(row).join(""):`<div class="empty">${L(slItems.length?"Tout est coché.":"La liste est vide. Ajoute le premier élément.")}</div>`}</div>
@@ -1629,7 +1631,7 @@ function renderLists(){const el=$("slBody");if(!el)return;
         <button type="button" class="btn" data-slinvite="1">${L("Inviter")}</button></div></div>
       <button type="button" class="btn stop sl-leave" data-slleave="1">${L(slArmed==="leave"?(mine?"Supprimer pour tout le monde ? Touche encore":"Quitter ? Touche encore"):(mine?"Supprimer la liste":"Quitter la liste"))}</button>`;
     return}
-  el.innerHTML=`${err}<div class="sl-acts"><button type="button" class="btn" data-slnew="1">+ ${L("Nouvelle liste")}</button><button type="button" class="btn ghost" data-sljoin="1">${L("Rejoindre avec un code")}</button></div>
+  el.innerHTML=`${err}<div class="sl-acts"><button type="button" class="btn" data-slnew="1">${GI("plus")} ${L("Nouvelle liste")}</button><button type="button" class="btn ghost" data-sljoin="1">${L("Rejoindre avec un code")}</button></div>
     ${slForm==="new"?`<form class="addbar" id="slNewForm"><input id="slNewIn" placeholder="${L("Nom de la liste, ex. Courses")}" aria-label="${L("Nom de la liste")}" autocomplete="off" maxlength="80"><button class="btn" type="submit">${L("Créer")}</button></form>`:""}
     ${slForm==="join"?`<form class="addbar" id="slJoinForm"><input id="slJoinIn" placeholder="${L("Code à 6 caractères")}" aria-label="${L("Code d'invitation")}" autocomplete="off" autocapitalize="characters" maxlength="6"><button class="btn" type="submit">${L("Rejoindre")}</button></form>`:""}
     <div class="card">${slLists.length?slLists.map(x=>{const left=(x.shared_items||[]).filter(i=>!i.done).length,n=(x.shared_members||[]).length;
@@ -1677,7 +1679,7 @@ data.pomo=data.pomo||{cfg:{work:25,brk:5,total:120},run:null,log:{}};
 const P=data.pomo;
 const PRESETS=[60,90,120,180];
 const hm=m=>{m=Math.round(m);const h=Math.floor(m/60),r=m%60;return h?`${h} h${r?" "+String(r).padStart(2,"0"):""}`:`${r} min`};
-const pomoDuration=m=>hm(m).replace(" h",LANG==="nl"?"\u202fu":"\u202fh");
+const pomoDuration=m=>hm(m).replace(" h",LANG==="nl"?"\u00a0u":"\u00a0h");
 const clockTxt=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")};
 const hhmm=d=>String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
 const dayKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -2064,7 +2066,7 @@ function renderLeads(){
       ${nfState.kind==="na"?"":`<div class="row" style="gap:8px"><button type="button" class="btn ${on?"ghost":""}" data-nf="toggle" style="flex:1">${L(on?"Désactiver":"Activer les notifications")}</button>${on?`<button type="button" class="btn ghost" data-nf="test">${L("Tester")}</button>`:""}</div>`}
     </div>
     <div class="label" style="margin:12px 4px 6px">${L("Me prévenir")}</div>
-    <div class="chips" style="flex-wrap:wrap;margin:0;padding-inline:0">${all.map(m=>m===1440?`<span class="pill lock" aria-pressed="true" title="${L("Toujours active")}">${leadLbl(m)} · ${L("toujours")}</span>`:`<button type="button" class="pill" data-lead="${m}" aria-pressed="${cur.includes(m)}">${leadLbl(m)}</button>`).join("")}<button type="button" class="pill add" data-nf="custom">+ ${L("Autre délai")}</button></div>
+    <div class="chips" style="flex-wrap:wrap;margin:0;padding-inline:0">${all.map(m=>m===1440?`<span class="pill lock" aria-pressed="true" title="${L("Toujours active")}">${leadLbl(m)} · ${L("toujours")}</span>`:`<button type="button" class="pill" data-lead="${m}" aria-pressed="${cur.includes(m)}">${leadLbl(m)}</button>`).join("")}<button type="button" class="pill add" data-nf="custom">${GI("plus")} ${L("Autre délai")}</button></div>
     ${nfCustom?`<form class="notif-lead-custom" data-nf="customf"><input type="text" inputmode="numeric" maxlength="3" name="n" placeholder="15" aria-label="${L("Durée")}" autocomplete="off"><select class="sel" name="u" aria-label="${L("Unité")}"><option value="1">${L("minutes")}</option><option value="60" selected>${L("heures")}</option><option value="1440">${L("jours")}</option></select><span class="small muted">${L("avant")}</span><button class="btn" type="submit" style="padding:8px 14px">OK</button></form>`:""}
     ${CALS().length?`<label class="nf-ical"><input type="checkbox" data-nf="ical" ${ical?"checked":""}> <span>${L("Cours du calendrier relié : mêmes rappels que tes activités")}</span></label>`:""}
     <p class="small muted" style="margin:8px 4px 0">${L("Tu peux en choisir plusieurs. Une activité sans heure compte pour 8 h. Sur smartphone, ouvre Sid'compagnon depuis l'écran d'accueil (iOS 16.4 ou plus).")}</p>`;
@@ -2129,7 +2131,7 @@ function renderRem(k){const box=$(k==="f"?"fRem":"eRem");if(!box)return;if(!remS
   if(shIsl("remBox")){try{window.SCIslands.remBox(box,{kind:nfState.kind,msg:nfState.msg||"",leads:all.map(m=>({m,lbl:leadLbl(m),on:sel.includes(m)})),custom:!!remCustom[k],bell:IC("bell"),i18n:agI18n()});return}
     catch(e){reportErr("island remBox: "+(e&&e.message));try{window.SCIslands.unmount(box)}catch(_){}}}
   box.innerHTML=`<div class="rem-h">${IC("bell")} ${L("Me prévenir")}</div>
-    <div class="rem-chips">${all.map(m=>m===1440?`<span class="pill lock" aria-pressed="true">${leadLbl(m)} · ${L("toujours")}</span>`:`<button type="button" class="pill" data-rl="${m}" aria-pressed="${sel.includes(m)}">${leadLbl(m)}</button>`).join("")}<button type="button" class="pill add" data-rcustom="1">+ ${L("Autre")}</button></div>
+    <div class="rem-chips">${all.map(m=>m===1440?`<span class="pill lock" aria-pressed="true">${leadLbl(m)} · ${L("toujours")}</span>`:`<button type="button" class="pill" data-rl="${m}" aria-pressed="${sel.includes(m)}">${leadLbl(m)}</button>`).join("")}<button type="button" class="pill add" data-rcustom="1">${GI("plus")} ${L("Autre")}</button></div>
     ${remCustom[k]?`<div class="notif-lead-custom"><input type="text" inputmode="numeric" maxlength="3" data-rn placeholder="15" aria-label="${L("Durée")}" autocomplete="off"><select class="sel" data-ru aria-label="${L("Unité")}"><option value="1">${L("minutes")}</option><option value="60" selected>${L("heures")}</option><option value="1440">${L("jours")}</option></select><span class="small muted">${L("avant")}</span><button type="button" class="btn" data-rok="1" style="padding:8px 14px">OK</button></div>`:""}
     ${on?`<div class="small muted">${L("Sans heure, l'activité compte pour 8 h.")}</div>`:nfState.kind==="na"?`<div class="small muted">${L(nfState.msg)}</div>`:`<button type="button" class="btn ghost rem-on" data-ron="1">${IC("bell")} ${L("Activer les notifications")}</button>`}`}
 const remApply=(t,k)=>{const s=[...new Set([...(remSel[k]||notifLeads()),1440])],d=notifLeads();delete t.leads;delete t.remind;
@@ -2495,7 +2497,7 @@ function renderCoach(){const box=$("coachBox");if(!box)return;const pl=PL(),ds=P
   if(!pl){box.innerHTML=`<div class="card coach-card"><div class="grow"><b>${L("Ton programme sur mesure")}</b><div class="small muted">${L("Quelques questions (niveau, objectif, jours, matériel) et Sid'compagnon crée tes séances.")}</div></div><button type="button" class="btn" data-coach="new">${L("Créer mon programme")}</button></div>`;return}
   const p=pl.profile||{},G={muscle:"Prendre du muscle",force:"Gagner en force",gras:"Perdre du gras",forme:"Être en forme",endu:"Gagner en endurance"},LV={deb:"Débutant",inter:"Intermédiaire",conf:"Confirmé"};
   box.innerHTML=`<div class="card coach-card coach-on"><div class="coach-top"><div class="grow"><span class="eyebrow">${L("Mon programme")}</span><b>${esc(L(G[p.goal]||"Sur mesure"))}${pl.src==="ia"?` · ${L("ajusté par Claude")}`:""}</b><div class="small muted">${p.level?esc(L(LV[p.level]||""))+" · ":""}${ds.length} ${L(ds.length>1?"séances":"séance")}</div></div><button type="button" class="pen" data-coach="more" aria-label="${L("Plus d'actions")}">${MORE}</button></div>
-    ${pl.aiWait?`<div class="coach-wait" role="status"><span class="grow">${L("Demande envoyée à Claude : le programme ajusté arrivera ici tout seul.")}</span><button type="button" class="linkbtn" data-coach="resend">${L("Renvoyer")}</button><button type="button" class="x" data-coach="unwait" aria-label="${L("Masquer")}">×</button></div>`:""}
+    ${pl.aiWait?`<div class="coach-wait" role="status"><span class="grow">${L("Demande envoyée à Claude : le programme ajusté arrivera ici tout seul.")}</span><button type="button" class="linkbtn" data-coach="resend">${L("Renvoyer")}</button><button type="button" class="x" data-coach="unwait" aria-label="${L("Masquer")}"><span class="gi gi-close" aria-hidden="true"></span></button></div>`:""}
     <div class="coach-adj"><label for="coRemark" class="eyebrow">${L("Ta remarque sur ce programme")}</label><textarea id="coRemark" class="autogrow" rows="2" maxlength="600" placeholder="${L("Ex. remplace la 2e séance jambes par une séance haut du corps")}">${esc(pl.aiWait?"":rmk)}</textarea>
       <div class="coach-adj-b"><button type="button" class="btn" data-coach="adjust">${L("Ajuster avec Claude")}</button></div>
       ${(p.remarks||[]).length?`<details class="coach-rem"><summary class="small muted">${(p.remarks||[]).length} ${L((p.remarks||[]).length>1?"remarques envoyées":"remarque envoyée")}</summary><ul>${p.remarks.slice().reverse().map(r=>`<li class="small"><span class="notr">${esc(r.text)}</span> <span class="muted">· ${fmtWhen(Date.parse(r.at))}</span></li>`).join("")}</ul></details>`:""}</div></div>`}
@@ -2510,7 +2512,7 @@ function cfRender(){{const n=cfOptN();$("cfMoreSum").textContent=n?`${n} ${L(n>1
   document.querySelectorAll("#coachForm [data-cf]").forEach(g=>{const k=g.dataset.cf,v=cfDraft[k];g.querySelectorAll("[data-v]").forEach(b=>b.setAttribute("aria-pressed",String(Array.isArray(v)?v.includes(b.dataset.v):String(v)===b.dataset.v)))});
   document.querySelectorAll("#coachForm .cf-pick").forEach(box=>{const k=box.dataset.cfx,a=cfDraft[k]||[];
     if(shIsl("cfSel")){try{window.SCIslands.cfSel(box.querySelector(".cf-sel"),{names:a,i18n:agI18n()});cfSearch(box);return}catch(e){reportErr("island cfSel: "+(e&&e.message))}}
-    box.querySelector(".cf-sel").innerHTML=a.map(n=>`<span class="pill on cf-chip"><span class="notr">${esc(n)}</span><button type="button" class="x" data-cfrm="${esc(n)}" aria-label="${L("Retirer")}">×</button></span>`).join("");cfSearch(box)})}
+    box.querySelector(".cf-sel").innerHTML=a.map(n=>`<span class="pill on cf-chip"><span class="notr">${esc(n)}</span><button type="button" class="x" data-cfrm="${esc(n)}" aria-label="${L("Retirer")}"><span class="gi gi-close" aria-hidden="true"></span></button></span>`).join("");cfSearch(box)})}
 // v42 : recherche d'exercices (sans accents, un morceau de mot suffit) pour « je veux absolument » / « je ne veux pas du tout »
 const cfFold=x=>String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
 function cfSearch(box){const q=cfFold(box.querySelector("input").value).trim(),k=box.dataset.cfx,a=cfDraft[k]||[],res=box.querySelector(".cf-res");
@@ -3780,7 +3782,7 @@ function aiRender(){const b=$("aiBody"),ai=aiCur()||AIS.claude;aiStop();
     b.innerHTML=`<button type="button" class="btn ai-back" data-aistep="setup">↺ ${L("Revoir les étapes")}</button>
       <div class="ai-step"><b>3. ${L("Envoie ce message à")} ${esc(ai.name)}</b><div class="ai-prompt notr">${esc(AI_TEST())}</div>
         <a class="btn" href="${ai.ask(AI_TEST())}" target="_blank" rel="noopener" style="width:100%;margin-top:8px">${L("Envoyer avec")} ${esc(ai.name)}</a></div>
-      <div class="ai-wait" id="aiWait">${ok?`<b class="ok">✓ ${L("C'est branché !")}</b>`:`<span class="spin"></span>${L("En attente de Claude… (accepte l'accès à Sid'note s'il te le demande)")}`}</div>
+      <div class="ai-wait" id="aiWait">${ok?`<b class="ok">${GI("tick")} ${L("C'est branché !")}</b>`:`<span class="spin"></span>${L("En attente de Claude… (accepte l'accès à Sid'note s'il te le demande)")}`}</div>
       <div class="ai-step" id="aiHabit" ${ok?"":"hidden"}><b>${L("Dernière astuce")}</b><div class="small muted">${L("Pour que tes repas arrivent tout seuls dans Sid'note, envoie-lui une fois ce message :")}</div>
         <div class="ai-prompt notr">${esc(AI_HABIT())}</div><a class="btn ghost" href="${ai.ask(AI_HABIT())}" target="_blank" rel="noopener" style="width:100%;margin-top:8px">${L("Envoyer avec")} ${esc(ai.name)}</a>
         <button type="button" class="btn ghost" data-convset="nutri" style="width:100%;margin-top:8px">${L("Une conversation par app")}</button></div>
@@ -3825,13 +3827,16 @@ function aiGo(topic,prompt,quiet){const u=topic&&convUrl(topic),ai=aiCur()||AIS.
   if(pid){extOpen(`https://claude.ai/new?project=${encodeURIComponent(pid)}&q=${encodeURIComponent(prompt)}`);return "proj"}
   if(u){copyNow(prompt);extOpen(u);if(!quiet)toast("Prompt copié, colle-le dans la conversation");return "chat"}
   extOpen(ai.ask(convFirst(topic,prompt)));return ""}
-function convSettings(t){show("more");const d=$("mcpSec"),a=$("aiAdv");if(d){d.open=true;if(a)a.open=true;setTimeout(()=>{const i=$(CONV_IN[t]||"convAgenda");(i?i.closest(".conv-f"):a).scrollIntoView({block:"center",behavior:"smooth"});if(i&&!i.value&&!matchMedia("(pointer:coarse)").matches)i.focus({preventScroll:true})},120)}}
+// T16 D (décision de Sid) : le lien de conversation se règle en bas de chaque app, plus dans Réglages.
+const CONV_VIEW={agenda:"plan",nutri:"nutri",muscu:"muscu",note:"notes"};
+function convSettings(t){t=CONV_VIEW[t]?t:"agenda";show(CONV_VIEW[t]);if(t==="note"&&!$("noteEdit").hidden)closeNote();const d=document.querySelector(`[data-convtab="${t}"]`);if(!d)return;d.open=true;
+  setTimeout(()=>{d.scrollIntoView({block:"center",behavior:"smooth"});const i=d.querySelector("input");if(i&&!i.value&&!matchMedia("(pointer:coarse)").matches)i.focus({preventScroll:true})},120)}
 function renderConv(){const c=data.prefs.aiConv||{};for(const[t,id]of Object.entries(CONV_IN)){const i=$(id);if(i&&document.activeElement!==i)i.value=c[t]||""}convTabs()}
 // v74.2 (demande de Sid) : un petit onglet « Conversation Claude » sous le champ de chaque fonction (Agenda, Musculation, Nutrition, Notes) :
 // on y colle le lien d'une conversation et toutes les demandes de cette fonction y vont directement (sans passer par la fenêtre d'envoi)
 function convTabs(){const c=data.prefs.aiConv||{};
   document.querySelectorAll("[data-convin]").forEach(i=>{const el=/** @type {HTMLInputElement} */(i);if(document.activeElement!==el)el.value=c[el.dataset.convin]||""});
-  document.querySelectorAll("[data-convst]").forEach(e=>{const u=convUrl(e.dataset.convst);e.textContent=u?`✓ ${L("reliée")}`:L("aucune")});
+  document.querySelectorAll("[data-convst]").forEach(e=>{const u=convUrl(e.dataset.convst);e.textContent=u?L("reliée"):L("aucune");e.toggleAttribute("data-on",!!u)});
   document.querySelectorAll("[data-convdel]").forEach(b=>{b.hidden=!(data.prefs.aiConv||{})[b.dataset.convdel]})}
 document.addEventListener("click",e=>{const b=e.target.closest("[data-convdel]");if(!b)return;const t=b.dataset.convdel,c=data.prefs.aiConv||{};delete c[t];data.prefs.aiConv=c;save();renderConv();renderAiCards();
   toast(`${L("Conversation")} ${L(CONV_NAME[t])} ${L("retirée : une nouvelle conversation s'ouvrira à chaque fois")}`)});
@@ -4331,7 +4336,7 @@ function applyLook(){
   const dark=theme==="dark"||(theme==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);
   document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.setAttribute("content",dark?"#121212":"#F7F7F7"));
   ls.set("sidnote-look",{theme,palette:pal}); // pour l'écran de connexion
-  // v74 : identité propre à chaque fonction (ident.css), « Sobre » = l'apparence commune d'avant
+  // T13 (décision de Sid) : les identités par fonction sont retirées ; on efface l'ancien attribut s'il reste
   document.documentElement.removeAttribute("data-fx");
 }
 function renderLook(){
@@ -4623,8 +4628,8 @@ function renderNuWeek(){
   if(nuIsl("nuWeek")){try{window.SCIslands.nuWeek(el,{sports:ws.map(s=>({name:s.name,kps:s.kps,count:s.count,base:s.base})),range:`${m.getDate()} ${MO[m.getMonth()]} – ${e.getDate()} ${MO[e.getMonth()]}`,
     target:fmtFull(t.kcal),delta:t.delta||0,actIcon:IC("activity"),i18n:agI18n()});return}catch(x){reportErr("island nuWeek: "+(x&&x.message))}}
   el.innerHTML=`<div class="nu-week-h"><b>${IC("activity")} ${L("Ton sport cette semaine")}</b><span class="small muted">${m.getDate()} ${MO[m.getMonth()]} – ${e.getDate()} ${MO[e.getMonth()]}</span></div>`+
-    ws.map(s=>`<div class="nu-wsp"><div class="grow"><b class="notr">${esc(s.name)}</b><span class="small muted">≈ ${fmtFull(s.kps)}\u202fkcal ${L("par séance")}${s.count!==s.base?` · ${L("d'habitude")} ${s.base}`:""}</span></div><div class="stepper"><button type="button" data-ws="${esc(s.name)}" data-d="-1" aria-label="${L("Une séance de moins")}">${IC("minus")}</button><output>${s.count}</output><button type="button" data-ws="${esc(s.name)}" data-d="1" aria-label="${L("Une séance de plus")}">${IC("plus")}</button></div></div>`).join("")+
-    `<div class="small">${L("Objectif par jour cette semaine")} : <b>${fmtFull(t.kcal)}\u202fkcal</b>${t.delta?` <span class="muted">(${t.delta>0?"+":""}${t.delta} ${L("selon ton sport")})</span>`:""}</div>`;
+    ws.map(s=>`<div class="nu-wsp"><div class="grow"><b class="notr">${esc(s.name)}</b><span class="small muted">≈ ${fmtFull(s.kps)}\u00a0kcal ${L("par séance")}${s.count!==s.base?` · ${L("d'habitude")} ${s.base}`:""}</span></div><div class="stepper"><button type="button" data-ws="${esc(s.name)}" data-d="-1" aria-label="${L("Une séance de moins")}">${IC("minus")}</button><output>${s.count}</output><button type="button" data-ws="${esc(s.name)}" data-d="1" aria-label="${L("Une séance de plus")}">${IC("plus")}</button></div></div>`).join("")+
+    `<div class="small">${L("Objectif par jour cette semaine")} : <b>${fmtFull(t.kcal)}\u00a0kcal</b>${t.delta?` <span class="muted">(${t.delta>0?"+":""}${t.delta} ${L("selon ton sport")})</span>`:""}</div>`;
 }
 $("nuWeek").addEventListener("click",e=>{const b=e.target.closest("[data-ws]");if(!b)return;const n=NU(),wk=wKey(nuDay);n.wsports=n.wsports||{};const o=n.wsports[wk]=n.wsports[wk]||{};
   const cur=weekSports(wk).find(s=>s.name===b.dataset.ws);if(!cur)return;o[cur.name]=Math.max(0,Math.min(21,cur.count+ +b.dataset.d));n.upd=Date.now();save();renderNutri()});
@@ -4636,14 +4641,14 @@ function nuDayLabel(d){const t=iso(today()),dt=parse(d),y=new Date(today());y.se
 // barre et pastilles de macros d'un plat
 function macroHtml(s){const tot=(s.p*4+s.c*4+s.f*9)||1;
   return `<div class="mbar" aria-hidden="true">${MAC.map(([k,,v])=>`<i style="--c:var(${v});width:${(k==="f"?9:4)*s[k]/tot*100}%"></i>`).join("")}</div>
-    <div class="mchips">${MAC.map(([k,l,v])=>`<span class="mchip"><b>${fmtN(r1(s[k]))}\u202fg</b><span><span class="mdot" style="--c:var(${v})"></span>${L(l)}</span></span>`).join("")}</div>`}
+    <div class="mchips">${MAC.map(([k,l,v])=>`<span class="mchip"><b>${fmtN(r1(s[k]))}\u00a0g</b><span><span class="mdot" style="--c:var(${v})"></span>${L(l)}</span></span>`).join("")}</div>`}
 const thumbs=new Map();
 const thumbKey=g=>session.user.id+":thumb:"+g;
 async function loadThumb(g){if(thumbs.has(g))return;thumbs.set(g,null);const b=await idb.get(thumbKey(g));if(b){thumbs.set(g,b);
   if(nuIsl("nuLog")&&$("nuLog")._isl){nuLogDraw();return} // React dessine la vignette (on ne touche pas à son DOM)
   document.querySelectorAll(`[data-thumb="${g}"]`).forEach(el=>el.innerHTML=`<img src="${b}" alt="">`)}}
 // barres des macros (ancien rendu, gardé en secours de la version React)
-function nuMacrosHtml(s,tg){return MAC.map(([k,l,v])=>`<div class="nu-m"><div class="top"><b><span class="mdot" style="--c:var(${v})"></span>${L(l)}</b><span>${fmtFull(r0(s[k]))} / ${tg[k]}\u202fg</span></div><div class="bar"><i style="--c:var(${v});width:${Math.min(100,tg[k]?s[k]/tg[k]*100:0)}%"></i></div></div>`).join("");}
+function nuMacrosHtml(s,tg){return MAC.map(([k,l,v])=>`<div class="nu-m"><div class="top"><b><span class="mdot" style="--c:var(${v})"></span>${L(l)}</b><span>${fmtFull(r0(s[k]))} / ${tg[k]}\u00a0g</span></div><div class="bar"><i style="--c:var(${v});width:${Math.min(100,tg[k]?s[k]/tg[k]*100:0)}%"></i></div></div>`).join("");}
 function renderNutri(){try{renderAiCards()}catch(e){}
   if(data.ui.view==="nutri"){$("vhead").dataset.progressChange=nuProgressChange;renderVhead("nutri")}nuProgressChange="adjust";
   if(!$("nuMain"))return;
@@ -4662,7 +4667,7 @@ function renderNutri(){try{renderAiCards()}catch(e){}
   $("nuRing").closest(".nu-ring").classList.toggle("over",s.kcal>tg.kcal*1.05);
   $("nuKcal").textContent=fmtFull(r0(s.kcal));
   if(shIsl("nuKcalOf")){try{window.SCIslands.nuKcalOf($("nuKcalOf"),{target:tg.kcal,over:s.kcal>tg.kcal?r0(s.kcal-tg.kcal):0,left:r0(tg.kcal-s.kcal),i18n:agI18n()})}catch(e){reportErr("island nuKcalOf: "+(e&&e.message))}}
-  else $("nuKcalOf").innerHTML=`${L("sur")} ${fmtFull(tg.kcal)}\u202fkcal<br>`+(s.kcal>tg.kcal?`<b style="color:var(--late)">+${fmtFull(r0(s.kcal-tg.kcal))}</b>`:`${L("reste")} ${fmtFull(r0(tg.kcal-s.kcal))}`);
+  else $("nuKcalOf").innerHTML=`${L("sur")} ${fmtFull(tg.kcal)}\u00a0kcal<br>`+(s.kcal>tg.kcal?`<b style="color:var(--late)">+${fmtFull(r0(s.kcal-tg.kcal))}</b>`:`${L("reste")} ${fmtFull(r0(tg.kcal-s.kcal))}`);
   // v52 (ticket #3) : barres des macros dessinées par React (app/src/Small.tsx) ; ancien rendu en secours
   if(window.SCIslands&&window.SCIslands.nuMacros&&!window.__noIslands){try{window.SCIslands.nuMacros($("nuMacros"),{rows:MAC.map(([k,l,v])=>({k,label:l,c:v,val:s[k],target:tg[k]})),i18n:{L,MOL,MO,DOWL,lang:LANG}})}catch(e){reportErr("island nuMacros: "+(e&&e.message));$("nuMacros").innerHTML=nuMacrosHtml(s,tg)}}
   else $("nuMacros").innerHTML=nuMacrosHtml(s,tg);
@@ -4675,8 +4680,8 @@ function renderNutri(){try{renderAiCards()}catch(e){}
   $("nuLog").innerHTML=groups.length?groups.map(G=>{const t=sumOf(G.items),d=new Date(G.at);
     return `<details class="dish" open><summary class="dish-h"><span class="dish-clock">${two(d.getHours())}:${two(d.getMinutes())}</span><span class="dish-ic" data-thumb="${G.g}">${mono(G.name)}</span>
       <span class="dish-t"><b class="notr" data-user-label="" title="${esc(G.name)}">${esc(G.name)}</b>${G.items.length>1?` <span class="small muted">· ${G.items.length} ${L("aliments")}</span>`:""}</span>
-      <span class="dish-kcal">${fmtFull(r0(t.kcal))}<small>\u202fkcal</small></span><button type="button" class="pen nu-cp" data-nucopy="${G.g}" aria-label="${L("Copier ce repas sur d'autres jours")}" title="${L("Copier sur d'autres jours")}">${IC("copy")}</button>${G.items.length===1?`<button class="pen" data-nuedit="${G.items[0].id}" aria-label="${L("Modifier")}">${PEN}</button>`:""}<button type="button" class="x" data-nudelg="${G.g}" aria-label="${L("Supprimer ce plat")}">${IC("close")}</button></summary>
-      ${macroHtml(t)}${G.items.length===1?`<div class="dish-note">${qtyCell("log:"+G.items[0].id,G.items[0])}</div>`:`<div class="dish-items">${G.items.map(x=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${qtyCell("log:"+x.id,x)}</div><span class="k">${fmtFull(r0(x.kcal))}\u202fkcal</span><button class="pen" data-nuedit="${x.id}" aria-label="${L("Modifier")}">${PEN}</button><button class="x" data-nudel="${x.id}" aria-label="${L("Supprimer")}">${IC("close")}</button></div>`).join("")}</div>`}</details>`}).join("")
+      <span class="dish-kcal">${fmtFull(r0(t.kcal))}<small>\u00a0kcal</small></span><button type="button" class="pen nu-cp" data-nucopy="${G.g}" aria-label="${L("Copier ce repas sur d'autres jours")}" title="${L("Copier sur d'autres jours")}">${IC("copy")}</button>${G.items.length===1?`<button class="pen" data-nuedit="${G.items[0].id}" aria-label="${L("Modifier")}">${PEN}</button>`:""}<button type="button" class="x" data-nudelg="${G.g}" aria-label="${L("Supprimer ce plat")}">${IC("close")}</button></summary>
+      ${macroHtml(t)}${G.items.length===1?`<div class="dish-note">${qtyCell("log:"+G.items[0].id,G.items[0])}</div>`:`<div class="dish-items">${G.items.map(x=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${qtyCell("log:"+x.id,x)}</div><span class="k">${fmtFull(r0(x.kcal))}\u00a0kcal</span><button class="pen" data-nuedit="${x.id}" aria-label="${L("Modifier")}">${PEN}</button><button class="x" data-nudel="${x.id}" aria-label="${L("Supprimer")}">${IC("close")}</button></div>`).join("")}</div>`}</details>`}).join("")
     :`<div class="card"><div class="empty">${L(nuDay===iso(today())?"Rien pour l'instant. Ajoute ton premier repas.":"Rien d'enregistré ce jour-là. Tu peux encore le compléter.")}</div></div>`;
   groups.forEach(G=>loadThumb(G.g));
   renderNuResult();renderNuPlan();renderNuMenu();renderMenuForm();renderNuWeek();renderMenuLeft();nuShowTab();
@@ -4720,7 +4725,7 @@ function nuGoalHtml(){
   const unit=p.durU==="m"?(LANG==="en"?(p.dur>1?"months":"month"):LANG==="nl"?(p.dur>1?"maanden":"maand"):"mois"):L(p.dur>1?"semaines":"semaine");
   const pace=w.wk?`${w.wk>0?"+":""}${String(w.wk).replace(".",LANG==="en"?".":",")} kg ${L("par semaine")}`:"";
   const PACE={fast:"Drastique",real:"Réaliste",easy:"À mon aise"}[p.pace];
-  return `<b>${w.ok?"✓ ":IC("alert")+" "}${fmtN(p.weight)} → ${fmtN(p.target)} kg${p.dur?` ${L("en")} ${p.dur} ${unit}`:""}</b>
+  return `<b>${w.ok?GI("tick")+" ":IC("alert")+" "}${fmtN(p.weight)} → ${fmtN(p.target)} kg${p.dur?` ${L("en")} ${p.dur} ${unit}`:""}</b>
     ${PACE?`<span class="small">${L("Rythme")} : ${L(PACE)}</span>`:""}
     ${p.dur?`<span class="small">${L(w.ok?"Ton délai est réaliste.":"Ce délai n'est pas réaliste, ni bon pour ta santé.")}</span>`:""}
     ${w.advice?`<span class="small muted notr">${esc(w.advice)}</span>`:""}
@@ -4736,7 +4741,7 @@ function renderNuPlan(){
   if(nuIsl("nuPlan")){try{window.SCIslands.nuPlan($("nuPlan"),{alert:IC("alert"),i18n:agI18n(),pl:{bmr:pl.bmr,tdee:pl.tdee,kcal:pl.kcal,p:pl.p,c:pl.c,f:pl.f,text:pl.text||"",warn:pl.warn||[],goal:pl.wg?nuGoalVM(false):null}});return}
     catch(e){reportErr("island nuPlan: "+(e&&e.message))}}
   $("nuPlan").innerHTML=boxes([[pl.bmr,"Métabolisme de base"],[pl.tdee,"Dépense du jour"],[pl.kcal,"Objectif (kcal)"]])+
-    boxes([[fmtN(pl.p)+"\u202fg","Protéines","--m-p"],[fmtN(pl.c)+"\u202fg","Glucides","--m-c"],[fmtN(pl.f)+"\u202fg","Lipides","--m-f"]])+
+    boxes([[fmtN(pl.p)+"\u00a0g","Protéines","--m-p"],[fmtN(pl.c)+"\u00a0g","Glucides","--m-c"],[fmtN(pl.f)+"\u00a0g","Lipides","--m-f"]])+
     `${pl.wg?`<div class="card nu-goalcard ${pl.wg.ok?"ok":""}" style="background:var(--bg)">${nuGoalHtml().replace(/<button[^>]*>.*?<\/button>/,"")}</div>`:""}
     <p class="small notr" style="margin:0 4px">${esc(pl.text)}</p>${pl.warn.map(w=>`<div class="nu-warn notr">${esc(w)}</div>`).join("")}`;
 }
@@ -4865,10 +4870,10 @@ function renderNuResult(){
   if($("nuResult")._isl){window.SCIslands.unmount($("nuResult"));$("nuResult")._isl=false}
   if(!p){if(!nuBusy)$("nuResult").innerHTML="";return}
   const s=sumOf(p.items);
-  $("nuResult").innerHTML=`<div class="dish"><div class="dish-h"><span class="dish-ic">${p.photo?`<img src="${p.photo}" alt="">`:IC("utensils")}</span><span class="dish-t"><b class="notr" data-user-label="" title="${esc(p.title)}">${esc(p.title)}</b><span class="small muted">${p.items.length} ${L(p.items.length>1?"aliments":"aliment")}</span>${p.mem?`<span class="memtag">${IC("bolt")} ${L("Mémoire Sid Forme")}</span>`:""}</span><span class="dish-kcal">${fmtFull(r0(s.kcal))}<small>\u202fkcal</small></span></div>
-    ${macroHtml(s)}<div class="dish-items">${p.items.map((x,i)=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${x.extra?`<span class="notmention">${L("pas dans ta description")}</span>`:""}${qtyCell("res:"+i,x)}</div><span class="k">${fmtFull(x.kcal)}\u202fkcal</span><button type="button" class="x" data-nurm="${i}" aria-label="${L("Retirer")}">${IC("close")}</button></div>`).join("")}</div>
+  $("nuResult").innerHTML=`<div class="dish"><div class="dish-h"><span class="dish-ic">${p.photo?`<img src="${p.photo}" alt="">`:IC("utensils")}</span><span class="dish-t"><b class="notr" data-user-label="" title="${esc(p.title)}">${esc(p.title)}</b><span class="small muted">${p.items.length} ${L(p.items.length>1?"aliments":"aliment")}</span>${p.mem?`<span class="memtag">${IC("bolt")} ${L("Mémoire Sid Forme")}</span>`:""}</span><span class="dish-kcal">${fmtFull(r0(s.kcal))}<small>\u00a0kcal</small></span></div>
+    ${macroHtml(s)}<div class="dish-items">${p.items.map((x,i)=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${x.extra?`<span class="notmention">${L("pas dans ta description")}</span>`:""}${qtyCell("res:"+i,x)}</div><span class="k">${fmtFull(x.kcal)}\u00a0kcal</span><button type="button" class="x" data-nurm="${i}" aria-label="${L("Retirer")}">${IC("close")}</button></div>`).join("")}</div>
     ${p.note?`<div class="dish-note notr" style="padding-top:8px">${esc(p.note)}</div>`:""}
-    <div class="dish-act"><button type="button" class="btn ghost" data-nucancel="1">${L("Annuler")}</button><button type="button" class="btn" data-nuadd="1">${L("Ajouter")} · ${fmtFull(r0(s.kcal))}\u202fkcal</button></div></div>`;
+    <div class="dish-act"><button type="button" class="btn ghost" data-nucancel="1">${L("Annuler")}</button><button type="button" class="btn" data-nuadd="1">${L("Ajouter")} · ${fmtFull(r0(s.kcal))}\u00a0kcal</button></div></div>`;
 }
 $("nuResult").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b||!nuPending)return;
   if(b.dataset.nurm){nuPending.items.splice(+b.dataset.nurm,1);if(!nuPending.items.length)nuPending=null;renderNuResult()}
@@ -4984,7 +4989,7 @@ $("nuEQty").addEventListener("input",()=>{if(!nuEBase)return;const a=qtyNum(nuEB
   else{h.hidden=false;nuEHintSet("none")}});
 // v69 (#3) : aide du recalcul (React, ancien rendu en secours)
 function nuEHintSet(st){const h=$("nuEHint");if(shIsl("nuEHint")){try{window.SCIslands.nuEHint(h,{st,i18n:agI18n()});return}catch(e){reportErr("island nuEHint: "+(e&&e.message));try{window.SCIslands.unmount(h)}catch(_){}}}
-  h.innerHTML=st==="ok"?`✓ ${L("Calories recalculées selon la quantité")}`:`${L("Quantité sans chiffre : je ne peux pas recalculer seul.")}<button type="button" class="mini" id="nuERecalc">${st==="busy"?`<span class="spin"></span>`:`↻ ${L("Recalculer")}`}</button>`}
+  h.innerHTML=st==="ok"?`${GI("tick")} ${L("Calories recalculées selon la quantité")}`:`${L("Quantité sans chiffre : je ne peux pas recalculer seul.")}<button type="button" class="mini" id="nuERecalc">${st==="busy"?`<span class="spin"></span>`:`${GI("refresh")} ${L("Recalculer")}`}</button>`}
 $("nuEHint").addEventListener("click",async e=>{if(!e.target.closest("#nuERecalc")||nuBusy)return;const q=`${$("nuEQty").value.trim()} ${$("nuEName").value.trim()}`.trim();if(!q)return;
   nuBusy="recalc";nuEHintSet("busy");
   try{const r=await nuCall("aliment",{text:q}),t=(r.items||[]).reduce((s,x)=>({k:s.k+(+x.kcal||0),p:s.p+(+x.protein_g||0),c:s.c+(+x.carbs_g||0),f:s.f+(+x.fat_g||0)}),{k:0,p:0,c:0,f:0});
@@ -5056,7 +5061,7 @@ function renderMenuForm(){
       $("nuMealKcal").querySelectorAll("input").forEach(i=>{if(i!==document.activeElement&&i.value!==i.defaultValue)i.value=i.defaultValue})}catch(e){reportErr("island nuMealKcal: "+(e&&e.message))}}
     else if(!mkIsl&&!$("nuMealKcal").contains(document.activeElement))$("nuMealKcal").innerHTML=sl.map((s,i)=>`<div class="row"><span class="em">${IC(SLOT[s][1])}</span><span class="grow">${L(slotName(s))}</span><span class="nu-in"><input data-mk="${i}" type="text" inputmode="numeric" maxlength="4" value="${k[i]}" aria-label="${L("Calories")} ${L(slotName(s))}"><i>kcal</i></span></div>`).join("");
     if(shIsl("nuMkTot")){try{window.SCIslands.nuMkTot($("nuMkTot"),{tot:fmtFull(tot),tg:fmtFull(tg),reset:!!mp.kcals,i18n:agI18n()})}catch(e){reportErr("island nuMkTot: "+(e&&e.message))}}
-    else $("nuMkTot").innerHTML=`${L("Total")} <b>${fmtFull(tot)}</b> / ${fmtFull(tg)} kcal ✓${mp.kcals?` <button type="button" class="mini" data-mkreset="1">${L("Répartition conseillée")}</button>`:""}`;
+    else $("nuMkTot").innerHTML=`${L("Total")} <b>${fmtFull(tot)}</b> / ${fmtFull(tg)} kcal ${GI("tick")}${mp.kcals?` <button type="button" class="mini" data-mkreset="1">${L("Répartition conseillée")}</button>`:""}`;
     document.querySelector(".nu-mk-note").hidden=sl.length<2}
   else if(document.activeElement!==$("nuOneKcal"))$("nuOneKcal").value=oneKcal(mp.type);
   // v74.5 (relu par Codex) : un NOUVEAU menu (menu.at a changé, par exemple enregistré par Claude puis reçu par la synchro) remet les deux
@@ -5155,12 +5160,12 @@ function renderNuMenu(){
   m.meals.forEach(ml=>{const s=sumOf(ml.items);Object.assign(ml,{kcal:r0(s.kcal),p:r1(s.p),c:r1(s.c),f:r1(s.f)})});
   const T=sumOf(m.meals),td=iso(today());
   $("nuMenu").innerHTML=`<h2 style="margin-top:16px">${L("Ton menu")}</h2>`+boxes([[r0(T.kcal),"kcal"],[r1(T.p)+" g","Protéines","--m-p"],[r1(T.c)+" g","Glucides","--m-c"],[r1(T.f)+" g","Lipides","--m-f"]])+
-    m.meals.map((ml,i)=>`<div class="dish"><div class="dish-h"><span class="dish-ic">${IC(SLOT[ml.slot]?.[1]||"utensils")}</span><span class="dish-t"><b class="notr" data-user-label="" title="${esc(ml.name)}">${esc(ml.name)}</b><span class="small muted">${L(slotName(ml.slot))}${ml.target?` · ${L("objectif")} ${fmtFull(ml.target)}\u202fkcal`:""}</span></span><span class="dish-kcal">${fmtFull(ml.kcal)}<small>\u202fkcal</small></span><button type="button" class="x" data-medel="${i}" aria-label="${L("Retirer ce repas")}">×</button></div>
-      ${macroHtml(ml)}<div class="dish-items">${ml.items.map((x,j)=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${meEdit===`${i}:${j}`?`<span class="me-qty"><input type="text" inputmode="decimal" id="meQtyIn" value="${x.g||""}" aria-label="${L("Grammes")}"> g <button type="button" class="mini" data-meqok="${i}:${j}">OK</button></span>`:x.g?`<button type="button" class="qty-ed notr" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${esc(qtyTxt(x))}</button>`:`<span class="small muted notr">${esc(x.qty)}</span>`}</div><span class="k">${fmtFull(x.kcal)}\u202fkcal</span>${x.g?`<button class="pen" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${PEN}</button>`:""}<button class="x" data-merm="${i}:${j}" aria-label="${L("Retirer")}">×</button></div>`).join("")}</div>
+    m.meals.map((ml,i)=>`<div class="dish"><div class="dish-h"><span class="dish-ic">${IC(SLOT[ml.slot]?.[1]||"utensils")}</span><span class="dish-t"><b class="notr" data-user-label="" title="${esc(ml.name)}">${esc(ml.name)}</b><span class="small muted">${L(slotName(ml.slot))}${ml.target?` · ${L("objectif")} ${fmtFull(ml.target)}\u00a0kcal`:""}</span></span><span class="dish-kcal">${fmtFull(ml.kcal)}<small>\u00a0kcal</small></span><button type="button" class="x" data-medel="${i}" aria-label="${L("Retirer ce repas")}"><span class="gi gi-close" aria-hidden="true"></span></button></div>
+      ${macroHtml(ml)}<div class="dish-items">${ml.items.map((x,j)=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${meEdit===`${i}:${j}`?`<span class="me-qty"><input type="text" inputmode="decimal" id="meQtyIn" value="${x.g||""}" aria-label="${L("Grammes")}"> g <button type="button" class="mini" data-meqok="${i}:${j}">OK</button></span>`:x.g?`<button type="button" class="qty-ed notr" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${esc(qtyTxt(x))}</button>`:`<span class="small muted notr">${esc(x.qty)}</span>`}</div><span class="k">${fmtFull(x.kcal)}\u00a0kcal</span>${x.g?`<button class="pen" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${PEN}</button>`:""}<button class="x" data-merm="${i}:${j}" aria-label="${L("Retirer")}"><span class="gi gi-close" aria-hidden="true"></span></button></div>`).join("")}</div>
       ${meAdd===i?`<form class="me-add" data-meaddf="${i}"><input id="meAddIn" placeholder="${L("Ex. 30 g d'amandes")}" autocomplete="off"><button class="btn" type="submit">OK</button></form>`:""}
       ${meRecipe===i?`<div class="recipe"><b>${IC("book")} ${L("Recette")}</b>${nuBusy==="recipe"?`<div class="small muted" style="margin-top:6px"><span class="spin"></span> ${L("Préparation de la recette…")}</div>`:ml.steps&&ml.steps.length?`<ol class="notr">${ml.steps.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>`:`<div class="small muted">${L("Recette indisponible pour le moment.")}</div>`}</div>`:""}
-      <div class="me-act"><button type="button" class="mini" data-meadd="${i}">+ ${L("Aliment")}</button><button type="button" class="mini" data-merec="${i}">${IC("book")} ${L(meRecipe===i?"Cacher la recette":"Recette")}</button><button type="button" class="mini" data-meregen="${i}">↻ ${L("Autre idée")}</button>
-        ${ml.ate===td?`<span class="me-done">✓ ${L("Dans ta journée")}</span>`:`<button type="button" class="mini" data-numeal="${i}" style="background:var(--accent);color:var(--on-accent)">＋ ${L("Ajouter à ma journée")}</button>`}</div></div>`).join("")+
+      <div class="me-act"><button type="button" class="mini" data-meadd="${i}">${GI("plus")} ${L("Aliment")}</button><button type="button" class="mini" data-merec="${i}">${IC("book")} ${L(meRecipe===i?"Cacher la recette":"Recette")}</button><button type="button" class="mini" data-meregen="${i}">${GI("refresh")} ${L("Autre idée")}</button>
+        ${ml.ate===td?`<span class="me-done">${GI("tick")} ${L("Dans ta journée")}</span>`:`<button type="button" class="mini" data-numeal="${i}" style="background:var(--accent);color:var(--on-accent)">${GI("plus")} ${L("Ajouter à ma journée")}</button>`}</div></div>`).join("")+
     (m.tips?`<p class="small muted notr" style="margin:6px 4px">${esc(m.tips)}</p>`:"");
   if(meEdit){const i=$("meQtyIn");if(i){i.focus();i.select()}}if(meAdd!==null){const i=$("meAddIn");if(i)i.focus()}
 }
@@ -5168,7 +5173,7 @@ function renderNuMenu(){
 function nuMenuFree(){const el=$("nuMenu");if(el._isl){window.SCIslands.unmount(el);el._isl=false}}
 // bandeau du menu : ce qu'il reste à manger aujourd'hui
 function renderMenuLeft(){const el=$("nuMenuLeft");if(!el||!NU().plan)return;const t=dayTarget(iso(today())),s=sumOf(dayLog(iso(today()))),left=r0(t.kcal-s.kcal);
-  el.innerHTML=`${IC("target")}<span class="grow">${left>=0?`${L("Il te reste")} <b>${fmtFull(left)}\u202fkcal</b> ${L("à manger aujourd'hui")}`:`${L("Objectif dépassé de")} <b>${fmtFull(-left)}\u202fkcal</b>`} <span class="muted">(${L("objectif")} ${fmtFull(t.kcal)})</span></span>`}
+  el.innerHTML=`${IC("target")}<span class="grow">${left>=0?`${L("Il te reste")} <b>${fmtFull(left)}\u00a0kcal</b> ${L("à manger aujourd'hui")}`:`${L("Objectif dépassé de")} <b>${fmtFull(-left)}\u00a0kcal</b>`} <span class="muted">(${L("objectif")} ${fmtFull(t.kcal)})</span></span>`}
 // changer la quantité d'un aliment du menu : calories et macros suivent
 function meScale(i,j,g){const it=NU().menu.meals[i].items[j];if(!(g>0)||!it.g)return;const k=g/it.g;
   Object.assign(it,{g:r0(g),qty:r0(g)+" g",kcal:r0(it.kcal*k),p:r1(it.p*k),c:r1(it.c*k),f:r1(it.f*k)});NU().upd=Date.now();save()}
@@ -5212,8 +5217,8 @@ function grDays(n){const out=[],t=today();for(let i=n-1;i>=0;i--){const d=new Da
 const dLbl=(k,long)=>{const d=parse(k);return long?`${DOW[d.getDay()]} ${d.getDate()} ${MO[d.getMonth()]}`:`${d.getDate()}/${d.getMonth()+1}`};
 function niceStep(v){if(!(v>0))return 1;const p=Math.pow(10,Math.floor(Math.log10(v))),f=v/p;return(f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p}
 function niceMax(v){const st=niceStep(v/4);return Math.max(st,Math.ceil(v/st)*st)}
-const fmtFull=v=>new Intl.NumberFormat(LANG==="en"?"en-US":"fr-FR",{maximumFractionDigits:0}).format(v);
-const fmtN=v=>new Intl.NumberFormat(LANG==="en"?"en-US":"fr-FR",{maximumFractionDigits:1}).format(v);
+const fmtFull=v=>new Intl.NumberFormat(LANG==="en"?"en-US":"fr-FR",{maximumFractionDigits:0}).format(v).replace(/\u202f/g,"\u00a0");
+const fmtN=v=>new Intl.NumberFormat(LANG==="en"?"en-US":"fr-FR",{maximumFractionDigits:1}).format(v).replace(/\u202f/g,"\u00a0");
 function grTipShow(ev,html){const t=$("grTip");t.innerHTML=html;t.hidden=false;const x=ev.clientX,y=ev.clientY,w=t.offsetWidth,h=t.offsetHeight;
   t.style.left=Math.min(innerWidth-w-8,Math.max(8,x-w/2))+"px";t.style.top=Math.max(8,y-h-14)+"px";clearTimeout(grTipT)}
 function grTipHide(){$("grTip").hidden=true;document.querySelectorAll("#v-graph .gr-x").forEach(x=>x.setAttribute("visibility","hidden"))}
@@ -5259,10 +5264,10 @@ function colChart(el,days,vals){
     if(v.k==null||v.k<=0)return;const st=KST(v),y=Y(v.k),h=mt+ph-y,r=Math.min(4,h,bw/2),x0=cx-bw/2;
     g+=`<path d="M${x0} ${mt+ph}V${y+r}Q${x0} ${y} ${x0+r} ${y}H${x0+bw-r}Q${x0+bw} ${y} ${x0+bw} ${y+r}V${mt+ph}Z" fill="var(${KLAB[st][2]})"/>
       <rect class="gr-bar" data-i="${i}" x="${ml+band*i}" y="${mt}" width="${band}" height="${ph}" fill="transparent"/>`});
-  const t=vals[vals.length-1].t;if(t){const y=Y(t);g+=`<line x1="${ml}" x2="${W-mr}" y1="${y}" y2="${y}" stroke="var(--ink)" stroke-width="1" opacity=".55"/><text class="lbl" x="${W-mr}" y="${y-5}" text-anchor="end">${L("Objectif")} ${fmtFull(t)}\u202fkcal</text>`}
+  const t=vals[vals.length-1].t;if(t){const y=Y(t);g+=`<line x1="${ml}" x2="${W-mr}" y1="${y}" y2="${y}" stroke="var(--ink)" stroke-width="1" opacity=".55"/><text class="lbl" x="${W-mr}" y="${y-5}" text-anchor="end">${L("Objectif")} ${fmtFull(t)}\u00a0kcal</text>`}
   el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${L("Calories par jour")}" style="touch-action:pan-y">${g}</svg>`;
   el.querySelector("svg").addEventListener("pointermove",ev=>{const b=ev.target.closest(".gr-bar");if(!b){grTipHide();return}const v=vals[+b.dataset.i],st=KLAB[KST(v)];
-    grTipShow(ev,`<div style="opacity:.75;margin-bottom:2px">${dLbl(days[+b.dataset.i],true)}</div><b>${r0(v.k)}\u202fkcal</b> / ${r0(v.t)}<div>${st[0]} ${L(st[1])}</div>`)});
+    grTipShow(ev,`<div style="opacity:.75;margin-bottom:2px">${dLbl(days[+b.dataset.i],true)}</div><b>${r0(v.k)}\u00a0kcal</b> / ${r0(v.t)}<div>${st[0]} ${L(st[1])}</div>`)});
   el.querySelector("svg").addEventListener("pointerdown",ev=>ev.target.dispatchEvent(new PointerEvent("pointermove",ev)));
   el.querySelector("svg").addEventListener("pointerleave",ev=>{if(ev.pointerType!=="touch")grTipHide()});
 }
@@ -5278,13 +5283,13 @@ function renderGraph(){
       {days,D,macros:MAC.map(([k,l,v])=>({k,label:l,c:v,goal:pl[k]||undefined})),targetWeight:(n.profile&&n.profile.target)||null,
        widths:{macros:$("grMacros").clientWidth,weight:$("grWeight").clientWidth,kcal:$("grKcal").clientWidth},
        i18n:{L,MOL,MO,DOWL,DOW,lang:LANG},tip:{show:grTipShow,hide:grTipHide}});
-    const tw=n.profile&&n.profile.target;$("grWeightSub").textContent=tw?`${L("en kg")} · ${L("objectif")} ${fmtN(tw)}\u202fkg`:L("en kg");
+    const tw=n.profile&&n.profile.target;$("grWeightSub").textContent=tw?`${L("en kg")} · ${L("objectif")} ${fmtN(tw)}\u00a0kg`:L("en kg");
     const tk=D.find(d=>d.k===iso(today()));if(document.activeElement!==$("grWIn"))$("grWIn").value=tk&&tk.kg!=null?String(tk.kg).replace(".",LANG==="en"?".":","):"";
     renderReviews();return}catch(e){reportErr("island graph: "+(e&&e.message))}}
   $("grMacroLeg").innerHTML=MAC.map(([k,l,v])=>`<span><i style="--c:var(${v})"></i>${L(l)}${pl[k]?` <span>(${L("objectif")} ${pl[k]} g)</span>`:""}</span>`).join("");
   lineChart($("grMacros"),days,MAC.map(([k,l,v])=>({label:l,c:v,vals:D.map(d=>d.has?r1(d[k]):null)})),{zero:true,unit:" g",aria:L("Macros par jour")});
-  const tw=n.profile&&n.profile.target;$("grWeightSub").textContent=tw?`${L("en kg")} · ${L("objectif")} ${fmtN(tw)}\u202fkg`:L("en kg");
-  lineChart($("grWeight"),days,[{label:"Poids",c:"--m-p",vals:D.map(d=>d.kg)}],{dots:true,unit:" kg",ref:tw?{v:tw,label:`${L("Objectif")} ${fmtN(tw)}\u202fkg`}:null,empty:"Entre ton poids ci-dessus pour suivre son évolution.",aria:L("Poids")});
+  const tw=n.profile&&n.profile.target;$("grWeightSub").textContent=tw?`${L("en kg")} · ${L("objectif")} ${fmtN(tw)}\u00a0kg`:L("en kg");
+  lineChart($("grWeight"),days,[{label:"Poids",c:"--m-p",vals:D.map(d=>d.kg)}],{dots:true,unit:" kg",ref:tw?{v:tw,label:`${L("Objectif")} ${fmtN(tw)}\u00a0kg`}:null,empty:"Entre ton poids ci-dessus pour suivre son évolution.",aria:L("Poids")});
   const tk=D.find(d=>d.k===iso(today()));if(document.activeElement!==$("grWIn"))$("grWIn").value=tk&&tk.kg!=null?String(tk.kg).replace(".",LANG==="en"?".":","):"";
   $("grKcalLeg").innerHTML=Object.values(KLAB).map(([ic,l,v])=>`<span><i class="box" style="--c:var(${v})"></i>${ic} ${L(l)}</span>`).join("");
   colChart($("grKcal"),days,D.map(d=>({k:d.has?d.kcal:null,t:d.t})));
@@ -5307,8 +5312,8 @@ function revHtml(r,scope){
   if(revBusy===scope)return `<h3>${head}</h3><div id="revLoad-${scope}"></div>`;
   if(!r)return `<h3>${head}</h3><p class="muted">${L(scope==="day"?"Un résumé de ta journée : macros, poids et calories.":"Ce que tu as bien fait cette semaine, ce qui reste à améliorer, et des pistes concrètes.")}</p><button type="button" class="btn" data-rev="${scope}">${L("Générer")}</button>`;
   const li=a=>a&&a.length?`<ul>${a.map(x=>`<li class="notr">${esc(x)}</li>`).join("")}</ul>`:"";
-  return `<h3>${head}<button type="button" class="mini" data-rev="${scope}">↻ ${L("Actualiser")}</button></h3><p class="notr">${esc(r.summary)}</p>
-    ${r.good&&r.good.length?`<div class="lab">✓ ${L("Bien joué")}</div>${li(r.good)}`:""}${r.improve&&r.improve.length?`<div class="lab">↓ ${L("À améliorer")}</div>${li(r.improve)}`:""}${r.tips&&r.tips.length?`<div class="lab">→ ${L("Pistes")}</div>${li(r.tips)}`:""}
+  return `<h3>${head}<button type="button" class="mini" data-rev="${scope}">${GI("refresh")} ${L("Actualiser")}</button></h3><p class="notr">${esc(r.summary)}</p>
+    ${r.good&&r.good.length?`<div class="lab">${GI("tick")} ${L("Bien joué")}</div>${li(r.good)}`:""}${r.improve&&r.improve.length?`<div class="lab">↓ ${L("À améliorer")}</div>${li(r.improve)}`:""}${r.tips&&r.tips.length?`<div class="lab">→ ${L("Pistes")}</div>${li(r.tips)}`:""}
     <span class="small muted">${L("Mis à jour")} ${fmtWhen(Date.parse(r.at))}</span>`;
 }
 function renderReviews(){
@@ -5586,7 +5591,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v75-0";
+const BUILD="sidnote-v75-1";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

@@ -14,7 +14,7 @@ function RevBody({ r, i18n }: P & { r: Rev }) {
   const li = (a?: string[]) => a && a.length ? <ul>{a.map((x, i) => <li key={i} className="notr">{x}</li>)}</ul> : null;
   return <>
     <p className="notr">{r.summary}</p>
-    {r.good && r.good.length ? <><div className="lab">✓ {L("Bien joué")}</div>{li(r.good)}</> : null}
+    {r.good && r.good.length ? <><div className="lab"><span className="gi gi-tick" aria-hidden="true" />{" " + L("Bien joué")}</div>{li(r.good)}</> : null}
     {r.improve && r.improve.length ? <><div className="lab">↓ {L("À améliorer")}</div>{li(r.improve)}</> : null}
     {r.tips && r.tips.length ? <><div className="lab">→ {L("Pistes")}</div>{li(r.tips)}</> : null}
     <span className="small muted">{L("Mis à jour")} {fmtWhen(Date.parse(r.at), MO)}</span>
@@ -30,7 +30,7 @@ export function RevCard({ r, scope, busy, i18n }: P & { r: Rev | null; scope: "d
     <button type="button" className="btn" data-rev={scope}>{L("Générer")}</button>
   </>;
   return <>
-    <h3>{head}<button type="button" className="mini" data-rev={scope}>↻ {L("Actualiser")}</button></h3>
+    <h3>{head}<button type="button" className="mini" data-rev={scope}><span className="gi gi-refresh" aria-hidden="true" />{" " + L("Actualiser")}</button></h3>
     <RevBody r={r} i18n={i18n} />
   </>;
 }

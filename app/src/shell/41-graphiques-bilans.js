@@ -6,8 +6,8 @@ function grDays(n){const out=[],t=today();for(let i=n-1;i>=0;i--){const d=new Da
 const dLbl=(k,long)=>{const d=parse(k);return long?`${DOW[d.getDay()]} ${d.getDate()} ${MO[d.getMonth()]}`:`${d.getDate()}/${d.getMonth()+1}`};
 function niceStep(v){if(!(v>0))return 1;const p=Math.pow(10,Math.floor(Math.log10(v))),f=v/p;return(f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p}
 function niceMax(v){const st=niceStep(v/4);return Math.max(st,Math.ceil(v/st)*st)}
-const fmtFull=v=>new Intl.NumberFormat(LANG==="en"?"en-US":"fr-FR",{maximumFractionDigits:0}).format(v);
-const fmtN=v=>new Intl.NumberFormat(LANG==="en"?"en-US":"fr-FR",{maximumFractionDigits:1}).format(v);
+const fmtFull=v=>new Intl.NumberFormat(LANG==="en"?"en-US":"fr-FR",{maximumFractionDigits:0}).format(v).replace(/\u202f/g,"\u00a0");
+const fmtN=v=>new Intl.NumberFormat(LANG==="en"?"en-US":"fr-FR",{maximumFractionDigits:1}).format(v).replace(/\u202f/g,"\u00a0");
 function grTipShow(ev,html){const t=$("grTip");t.innerHTML=html;t.hidden=false;const x=ev.clientX,y=ev.clientY,w=t.offsetWidth,h=t.offsetHeight;
   t.style.left=Math.min(innerWidth-w-8,Math.max(8,x-w/2))+"px";t.style.top=Math.max(8,y-h-14)+"px";clearTimeout(grTipT)}
 function grTipHide(){$("grTip").hidden=true;document.querySelectorAll("#v-graph .gr-x").forEach(x=>x.setAttribute("visibility","hidden"))}
@@ -53,10 +53,10 @@ function colChart(el,days,vals){
     if(v.k==null||v.k<=0)return;const st=KST(v),y=Y(v.k),h=mt+ph-y,r=Math.min(4,h,bw/2),x0=cx-bw/2;
     g+=`<path d="M${x0} ${mt+ph}V${y+r}Q${x0} ${y} ${x0+r} ${y}H${x0+bw-r}Q${x0+bw} ${y} ${x0+bw} ${y+r}V${mt+ph}Z" fill="var(${KLAB[st][2]})"/>
       <rect class="gr-bar" data-i="${i}" x="${ml+band*i}" y="${mt}" width="${band}" height="${ph}" fill="transparent"/>`});
-  const t=vals[vals.length-1].t;if(t){const y=Y(t);g+=`<line x1="${ml}" x2="${W-mr}" y1="${y}" y2="${y}" stroke="var(--ink)" stroke-width="1" opacity=".55"/><text class="lbl" x="${W-mr}" y="${y-5}" text-anchor="end">${L("Objectif")} ${fmtFull(t)}\u202fkcal</text>`}
+  const t=vals[vals.length-1].t;if(t){const y=Y(t);g+=`<line x1="${ml}" x2="${W-mr}" y1="${y}" y2="${y}" stroke="var(--ink)" stroke-width="1" opacity=".55"/><text class="lbl" x="${W-mr}" y="${y-5}" text-anchor="end">${L("Objectif")} ${fmtFull(t)}\u00a0kcal</text>`}
   el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${L("Calories par jour")}" style="touch-action:pan-y">${g}</svg>`;
   el.querySelector("svg").addEventListener("pointermove",ev=>{const b=ev.target.closest(".gr-bar");if(!b){grTipHide();return}const v=vals[+b.dataset.i],st=KLAB[KST(v)];
-    grTipShow(ev,`<div style="opacity:.75;margin-bottom:2px">${dLbl(days[+b.dataset.i],true)}</div><b>${r0(v.k)}\u202fkcal</b> / ${r0(v.t)}<div>${st[0]} ${L(st[1])}</div>`)});
+    grTipShow(ev,`<div style="opacity:.75;margin-bottom:2px">${dLbl(days[+b.dataset.i],true)}</div><b>${r0(v.k)}\u00a0kcal</b> / ${r0(v.t)}<div>${st[0]} ${L(st[1])}</div>`)});
   el.querySelector("svg").addEventListener("pointerdown",ev=>ev.target.dispatchEvent(new PointerEvent("pointermove",ev)));
   el.querySelector("svg").addEventListener("pointerleave",ev=>{if(ev.pointerType!=="touch")grTipHide()});
 }
@@ -72,13 +72,13 @@ function renderGraph(){
       {days,D,macros:MAC.map(([k,l,v])=>({k,label:l,c:v,goal:pl[k]||undefined})),targetWeight:(n.profile&&n.profile.target)||null,
        widths:{macros:$("grMacros").clientWidth,weight:$("grWeight").clientWidth,kcal:$("grKcal").clientWidth},
        i18n:{L,MOL,MO,DOWL,DOW,lang:LANG},tip:{show:grTipShow,hide:grTipHide}});
-    const tw=n.profile&&n.profile.target;$("grWeightSub").textContent=tw?`${L("en kg")} · ${L("objectif")} ${fmtN(tw)}\u202fkg`:L("en kg");
+    const tw=n.profile&&n.profile.target;$("grWeightSub").textContent=tw?`${L("en kg")} · ${L("objectif")} ${fmtN(tw)}\u00a0kg`:L("en kg");
     const tk=D.find(d=>d.k===iso(today()));if(document.activeElement!==$("grWIn"))$("grWIn").value=tk&&tk.kg!=null?String(tk.kg).replace(".",LANG==="en"?".":","):"";
     renderReviews();return}catch(e){reportErr("island graph: "+(e&&e.message))}}
   $("grMacroLeg").innerHTML=MAC.map(([k,l,v])=>`<span><i style="--c:var(${v})"></i>${L(l)}${pl[k]?` <span>(${L("objectif")} ${pl[k]} g)</span>`:""}</span>`).join("");
   lineChart($("grMacros"),days,MAC.map(([k,l,v])=>({label:l,c:v,vals:D.map(d=>d.has?r1(d[k]):null)})),{zero:true,unit:" g",aria:L("Macros par jour")});
-  const tw=n.profile&&n.profile.target;$("grWeightSub").textContent=tw?`${L("en kg")} · ${L("objectif")} ${fmtN(tw)}\u202fkg`:L("en kg");
-  lineChart($("grWeight"),days,[{label:"Poids",c:"--m-p",vals:D.map(d=>d.kg)}],{dots:true,unit:" kg",ref:tw?{v:tw,label:`${L("Objectif")} ${fmtN(tw)}\u202fkg`}:null,empty:"Entre ton poids ci-dessus pour suivre son évolution.",aria:L("Poids")});
+  const tw=n.profile&&n.profile.target;$("grWeightSub").textContent=tw?`${L("en kg")} · ${L("objectif")} ${fmtN(tw)}\u00a0kg`:L("en kg");
+  lineChart($("grWeight"),days,[{label:"Poids",c:"--m-p",vals:D.map(d=>d.kg)}],{dots:true,unit:" kg",ref:tw?{v:tw,label:`${L("Objectif")} ${fmtN(tw)}\u00a0kg`}:null,empty:"Entre ton poids ci-dessus pour suivre son évolution.",aria:L("Poids")});
   const tk=D.find(d=>d.k===iso(today()));if(document.activeElement!==$("grWIn"))$("grWIn").value=tk&&tk.kg!=null?String(tk.kg).replace(".",LANG==="en"?".":","):"";
   $("grKcalLeg").innerHTML=Object.values(KLAB).map(([ic,l,v])=>`<span><i class="box" style="--c:var(${v})"></i>${ic} ${L(l)}</span>`).join("");
   colChart($("grKcal"),days,D.map(d=>({k:d.has?d.kcal:null,t:d.t})));
@@ -101,8 +101,8 @@ function revHtml(r,scope){
   if(revBusy===scope)return `<h3>${head}</h3><div id="revLoad-${scope}"></div>`;
   if(!r)return `<h3>${head}</h3><p class="muted">${L(scope==="day"?"Un résumé de ta journée : macros, poids et calories.":"Ce que tu as bien fait cette semaine, ce qui reste à améliorer, et des pistes concrètes.")}</p><button type="button" class="btn" data-rev="${scope}">${L("Générer")}</button>`;
   const li=a=>a&&a.length?`<ul>${a.map(x=>`<li class="notr">${esc(x)}</li>`).join("")}</ul>`:"";
-  return `<h3>${head}<button type="button" class="mini" data-rev="${scope}">↻ ${L("Actualiser")}</button></h3><p class="notr">${esc(r.summary)}</p>
-    ${r.good&&r.good.length?`<div class="lab">✓ ${L("Bien joué")}</div>${li(r.good)}`:""}${r.improve&&r.improve.length?`<div class="lab">↓ ${L("À améliorer")}</div>${li(r.improve)}`:""}${r.tips&&r.tips.length?`<div class="lab">→ ${L("Pistes")}</div>${li(r.tips)}`:""}
+  return `<h3>${head}<button type="button" class="mini" data-rev="${scope}">${GI("refresh")} ${L("Actualiser")}</button></h3><p class="notr">${esc(r.summary)}</p>
+    ${r.good&&r.good.length?`<div class="lab">${GI("tick")} ${L("Bien joué")}</div>${li(r.good)}`:""}${r.improve&&r.improve.length?`<div class="lab">↓ ${L("À améliorer")}</div>${li(r.improve)}`:""}${r.tips&&r.tips.length?`<div class="lab">→ ${L("Pistes")}</div>${li(r.tips)}`:""}
     <span class="small muted">${L("Mis à jour")} ${fmtWhen(Date.parse(r.at))}</span>`;
 }
 function renderReviews(){

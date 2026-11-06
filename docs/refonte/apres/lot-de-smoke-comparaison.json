@@ -1,0 +1,205 @@
+{
+ "sections": {
+  "debut": {
+   "avant_hors_CSP": [
+    "v38 : Face ID ne s'ouvre pas tout seul",
+    "v38 : bouton Face ID absent sur le clavier du code",
+    "v38 : coffre pas créé",
+    "v44.7 PDF mobile : PDF ou annotations perdus après rechargement",
+    "v44.7 PDF mobile : annotations pas retrouvées à la réouverture",
+    "v44.7 PDF mobile : le PDF ne s'affiche pas",
+    "v44.7 PDF mobile : note PDF mal créée (dossier, pages)",
+    "v44.7 PDF pc : PDF ou annotations perdus après rechargement",
+    "v44.7 PDF pc : annotations pas retrouvées à la réouverture",
+    "v44.7 PDF pc : le PDF ne s'affiche pas",
+    "v44.7 PDF pc : note PDF mal créée (dossier, pages)"
+   ],
+   "apres_hors_CSP": [
+    "v38 : Face ID ne s'ouvre pas tout seul",
+    "v38 : bouton Face ID absent sur le clavier du code",
+    "v38 : coffre pas créé",
+    "v44.7 PDF mobile : PDF ou annotations perdus après rechargement",
+    "v44.7 PDF mobile : annotations pas retrouvées à la réouverture",
+    "v44.7 PDF mobile : le PDF ne s'affiche pas",
+    "v44.7 PDF mobile : note PDF mal créée (dossier, pages)",
+    "v44.7 PDF pc : PDF ou annotations perdus après rechargement",
+    "v44.7 PDF pc : annotations pas retrouvées à la réouverture",
+    "v44.7 PDF pc : le PDF ne s'affiche pas",
+    "v44.7 PDF pc : note PDF mal créée (dossier, pages)"
+   ]
+  },
+  "v44": {
+   "avant_hors_CSP": [],
+   "apres_hors_CSP": []
+  },
+  "sticky": {
+   "avant_hors_CSP": [],
+   "apres_hors_CSP": []
+  },
+  "v45": {
+   "avant_hors_CSP": [
+    "v45 mobile : PDF pas affiché",
+    "v45 pc : PDF pas affiché"
+   ],
+   "apres_hors_CSP": [
+    "v45 mobile : PDF pas affiché",
+    "v45 pc : PDF pas affiché"
+   ]
+  },
+  "suite": {
+   "avant_hors_CSP": [
+    "v65 mobile : PDF pas affiché",
+    "v65 mobile : zone sélectionnée pas marquée",
+    "v65 pc : PDF pas affiché",
+    "v65 pc : zone sélectionnée pas marquée"
+   ],
+   "apres_hors_CSP": [
+    "v65 mobile : PDF pas affiché",
+    "v65 mobile : zone sélectionnée pas marquée",
+    "v65 pc : PDF pas affiché",
+    "v65 pc : zone sélectionnée pas marquée"
+   ]
+  },
+  "calendar": {
+   "avant_hors_CSP": [],
+   "apres_hors_CSP": []
+  },
+  "graph": {
+   "avant_hors_CSP": [],
+   "apres_hors_CSP": []
+  },
+  "todo": {
+   "avant_hors_CSP": [],
+   "apres_hors_CSP": []
+  },
+  "focus": {
+   "avant_hors_CSP": [],
+   "apres_hors_CSP": []
+  },
+  "nutrition": {
+   "avant_hors_CSP": [],
+   "apres_hors_CSP": []
+  },
+  "coffre": {
+   "avant_hors_CSP": [],
+   "apres_hors_CSP": []
+  },
+  "parite": {
+   "avant_hors_CSP": [],
+   "apres_hors_CSP": []
+  },
+  "extra": {
+   "avant_hors_CSP": [],
+   "apres_hors_CSP": []
+  },
+  "nav": {
+   "avant_hors_CSP": [],
+   "apres_hors_CSP": []
+  },
+  "forms64": {
+   "avant_hors_CSP": [],
+   "apres_hors_CSP": []
+  },
+  "pdf65": {
+   "avant_hors_CSP": [
+    "v65 mobile : PDF pas affiché",
+    "v65 mobile : zone sélectionnée pas marquée",
+    "v65 pc : PDF pas affiché",
+    "v65 pc : zone sélectionnée pas marquée"
+   ],
+   "apres_hors_CSP": [
+    "v65 mobile : PDF pas affiché",
+    "v65 mobile : zone sélectionnée pas marquée",
+    "v65 pc : PDF pas affiché",
+    "v65 pc : zone sélectionnée pas marquée"
+   ]
+  },
+  "wizard68": {
+   "avant_hors_CSP": [],
+   "apres_hors_CSP": []
+  },
+  "toast": {
+   "avant_hors_CSP": [],
+   "apres_hors_CSP": []
+  },
+  "mu73": {
+   "avant_hors_CSP": [],
+   "apres_hors_CSP": []
+  },
+  "v745": {
+   "avant_hors_CSP": [],
+   "apres_hors_CSP": []
+  },
+  "v47": {
+   "avant_hors_CSP": [],
+   "apres_hors_CSP": []
+  },
+  "photo43": {
+   "avant_hors_CSP": [],
+   "apres_hors_CSP": []
+  },
+  "v444": {
+   "avant_hors_CSP": [
+    "v44.7 PDF mobile : PDF ou annotations perdus après rechargement",
+    "v44.7 PDF mobile : annotations pas retrouvées à la réouverture",
+    "v44.7 PDF mobile : le PDF ne s'affiche pas",
+    "v44.7 PDF mobile : note PDF mal créée (dossier, pages)",
+    "v44.7 PDF pc : PDF ou annotations perdus après rechargement",
+    "v44.7 PDF pc : annotations pas retrouvées à la réouverture",
+    "v44.7 PDF pc : le PDF ne s'affiche pas",
+    "v44.7 PDF pc : note PDF mal créée (dossier, pages)"
+   ],
+   "apres_hors_CSP": [
+    "v44.7 PDF mobile : PDF ou annotations perdus après rechargement",
+    "v44.7 PDF mobile : annotations pas retrouvées à la réouverture",
+    "v44.7 PDF mobile : le PDF ne s'affiche pas",
+    "v44.7 PDF mobile : note PDF mal créée (dossier, pages)",
+    "v44.7 PDF pc : PDF ou annotations perdus après rechargement",
+    "v44.7 PDF pc : annotations pas retrouvées à la réouverture",
+    "v44.7 PDF pc : le PDF ne s'affiche pas",
+    "v44.7 PDF pc : note PDF mal créée (dossier, pages)"
+   ]
+  }
+ },
+ "messages_avant_hors_CSP": [
+  "v38 : Face ID ne s'ouvre pas tout seul",
+  "v38 : bouton Face ID absent sur le clavier du code",
+  "v38 : coffre pas créé",
+  "v44.7 PDF mobile : PDF ou annotations perdus après rechargement",
+  "v44.7 PDF mobile : annotations pas retrouvées à la réouverture",
+  "v44.7 PDF mobile : le PDF ne s'affiche pas",
+  "v44.7 PDF mobile : note PDF mal créée (dossier, pages)",
+  "v44.7 PDF pc : PDF ou annotations perdus après rechargement",
+  "v44.7 PDF pc : annotations pas retrouvées à la réouverture",
+  "v44.7 PDF pc : le PDF ne s'affiche pas",
+  "v44.7 PDF pc : note PDF mal créée (dossier, pages)",
+  "v45 mobile : PDF pas affiché",
+  "v45 pc : PDF pas affiché",
+  "v65 mobile : PDF pas affiché",
+  "v65 mobile : zone sélectionnée pas marquée",
+  "v65 pc : PDF pas affiché",
+  "v65 pc : zone sélectionnée pas marquée"
+ ],
+ "messages_apres_hors_CSP": [
+  "v38 : Face ID ne s'ouvre pas tout seul",
+  "v38 : bouton Face ID absent sur le clavier du code",
+  "v38 : coffre pas créé",
+  "v44.7 PDF mobile : PDF ou annotations perdus après rechargement",
+  "v44.7 PDF mobile : annotations pas retrouvées à la réouverture",
+  "v44.7 PDF mobile : le PDF ne s'affiche pas",
+  "v44.7 PDF mobile : note PDF mal créée (dossier, pages)",
+  "v44.7 PDF pc : PDF ou annotations perdus après rechargement",
+  "v44.7 PDF pc : annotations pas retrouvées à la réouverture",
+  "v44.7 PDF pc : le PDF ne s'affiche pas",
+  "v44.7 PDF pc : note PDF mal créée (dossier, pages)",
+  "v45 mobile : PDF pas affiché",
+  "v45 pc : PDF pas affiché",
+  "v65 mobile : PDF pas affiché",
+  "v65 mobile : zone sélectionnée pas marquée",
+  "v65 pc : PDF pas affiché",
+  "v65 pc : zone sélectionnée pas marquée"
+ ],
+ "nouveaux": [],
+ "disparus": [],
+ "note": "Smoke décomposé en 23 sections, worktree (8766) contre point de sauvegarde 2acd82c (8767), même faux backend. Les messages CSP 'unsafe-eval' (lecteur PDF) apparaissent de façon variable sur les deux versions et sont écartés. Sections debut/suite/parite/forms64/toast relancées après corrections de parité. forms64 et toast : 0 message à la relance du 6 nov. (journal smokecmp2)."
+}

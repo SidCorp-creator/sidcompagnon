@@ -14,8 +14,8 @@ export function niceMax(v: number): number {
   const st = niceStep(v / 4);
   return Math.max(st, Math.ceil(v / st) * st);
 }
-export const fmtFull = (v:number,lang:string) => new Intl.NumberFormat(lang==="en"?"en-US":"fr-FR",{maximumFractionDigits:0}).format(v);
-export const fmtN = (v:number,lang:string) => new Intl.NumberFormat(lang==="en"?"en-US":"fr-FR",{maximumFractionDigits:1}).format(v);
+export const fmtFull = (v:number,lang:string) => new Intl.NumberFormat(lang==="en"?"en-US":"fr-FR",{maximumFractionDigits:0}).format(v).replace(/\u202f/g,"\u00a0");
+export const fmtN = (v:number,lang:string) => new Intl.NumberFormat(lang==="en"?"en-US":"fr-FR",{maximumFractionDigits:1}).format(v).replace(/\u202f/g,"\u00a0");
 /** Jour court (12/3) ou long (jeudi 12 mars). */
 export const dLbl = (k: string, long: boolean, DOW: string[], MO: string[]) => {
   const d = parse(k);

@@ -236,7 +236,7 @@ window.SIDFIT_AIDE = {
    ],
    "breath": "Inspire en descendant, expire en poussant.",
    "focus": [
-    "Si la dernière répétition se dégrade, finis la série sur les genoux."
+    "Arrête la série dès que la posture se dégrade."
    ],
    "errors": [
     "Laisser le bassin tomber vers le sol.",
@@ -252,7 +252,7 @@ window.SIDFIT_AIDE = {
    ],
    "breath": "Breathe in as you lower, out as you push.",
    "focus": [
-    "If your form slips, finish the set on your knees."
+    "Stop the set as soon as your form breaks down."
    ],
    "errors": [
     "Letting your hips sag towards the floor.",
@@ -841,7 +841,7 @@ window.SIDFIT_AIDE = {
  "Oiseau à la poulie": {
   "fr": {
    "mus": "Arrière des épaules",
-   "setup": "Entre deux poulies réglées à hauteur d'épaules, câbles croisés devant toi.",
+   "setup": "Entre deux poulies réglées en position haute, poignées croisées devant toi, bras presque tendus.",
    "steps": [
     "Écarte les bras sur les côtés et vers l'arrière, coudes légèrement fléchis.",
     "Reviens lentement en gardant la tension."
@@ -856,7 +856,7 @@ window.SIDFIT_AIDE = {
   },
   "en": {
    "mus": "Rear shoulders",
-   "setup": "Between two pulleys set at shoulder height, cables crossed in front of you.",
+   "setup": "Between two cables set high, handles crossed in front of you, arms almost straight.",
    "steps": [
     "Spread your arms out and back, elbows slightly bent.",
     "Return slowly while keeping tension."
@@ -1805,12 +1805,12 @@ window.SIDFIT_AIDE = {
    "mus": "Abdominaux (transverse, grand droit)",
    "setup": "Allongé sur le dos, bras tendus vers le plafond, hanches et genoux pliés à 90°, bas du dos plaqué au sol.",
    "steps": [
-    "Allonge lentement un bras derrière la tête et la jambe opposée vers le sol, sans décoller le bas du dos.",
-    "Reviens au centre, puis change de côté."
+    "Garde les bras tendus vers le plafond et allonge lentement une jambe vers le sol, sans décoller le bas du dos.",
+    "Ramène la jambe, puis change de jambe."
    ],
-   "breath": "Expire en allongeant bras et jambe, inspire en revenant.",
+   "breath": "Expire en allongeant la jambe, inspire en la ramenant.",
    "focus": [
-    "Va seulement aussi loin que ton bas du dos reste au sol."
+    "Va seulement aussi loin que ton bas du dos reste au sol ; plus tard, tu pourras ajouter le bras opposé."
    ],
    "errors": [
     "Aller trop vite ou laisser le dos se cambrer."
@@ -1820,12 +1820,12 @@ window.SIDFIT_AIDE = {
    "mus": "Abs (deep core, rectus abdominis)",
    "setup": "Lie on your back, arms straight up to the ceiling, hips and knees bent at 90°, lower back pressed into the floor.",
    "steps": [
-    "Slowly extend one arm overhead and the opposite leg towards the floor, without lifting your lower back.",
-    "Come back to the middle, then switch sides."
+    "Keep your arms pointing at the ceiling and slowly extend one leg towards the floor, without lifting your lower back.",
+    "Bring the leg back, then switch legs."
    ],
-   "breath": "Breathe out as you extend, in as you return.",
+   "breath": "Breathe out as you extend the leg, in as you bring it back.",
    "focus": [
-    "Only go as far as your lower back stays down."
+    "Only go as far as your lower back stays down; later you can add the opposite arm."
    ],
    "errors": [
     "Rushing or letting your back arch."

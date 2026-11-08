@@ -27,21 +27,20 @@ const OUT=path.resolve(__dirname,'out');fs.mkdirSync(OUT,{recursive:true});const
   await p.waitForTimeout(600);
   const pics=await p.evaluate(()=>[...document.querySelectorAll('#exHelpBody .exh-pics img')].map(i=>({ok:i.complete&&i.naturalWidth>0,src:i.getAttribute('src'),alt:i.alt})));
   assert.equal(pics.length,2);assert.ok(pics.every(x=>x.ok),'deux photos chargées '+JSON.stringify(pics));assert.notEqual(pics[0].src,pics[1].src);assert.ok(pics.every(x=>x.alt.length>5));
-  const txt=await p.locator('#exHelpBody').innerText();
+  const txt=(await p.locator('#exHelpBody').textContent());
   for(const k of lang==='fr'?['Placement','Exécution','Respiration','Points d\'attention','Erreurs fréquentes']:['Setup','Movement','Breathing','Key points','Common mistakes'])assert.ok(txt.includes(k),k+' présent');
   await p.waitForTimeout(400);await p.screenshot({path:path.join(OUT,`exh-${lang}-fiche.png`)});
   await p.keyboard.press('Escape');assert.equal(await p.isVisible('#exHelpSheet'),false);
   assert.equal(await p.evaluate(()=>document.activeElement&&document.activeElement.hasAttribute('data-exhelp')),true,'focus revenu sur « ? »');
   assert.equal(await p.evaluate(()=>JSON.stringify([M().sessions.find(s=>s.id==='s1').exercises[0].sets,typeof msRunGet==='function'?msRunGet('s1'):null])),before,'séries et minuteur intacts');
   // association explicite d'un exercice non reconnu
-  await e2.locator('[data-exlink]').click();await p.waitForSelector('#actSheet:not([hidden])');await p.locator('#actSheet button').first().click();await p.waitForTimeout(200);
+  await e2.locator('[data-exlink]').click();await p.waitForSelector('#actSheet:not([hidden])');await p.locator('#actList [data-act]').first().click();await p.waitForTimeout(200);
   assert.ok(await p.evaluate(()=>!!M().sessions.find(s=>s.id==='s1').exercises[1].ref),'association enregistrée');
   assert.equal(await p.evaluate(()=>M().sessions.find(s=>s.id==='s1').exercises[1].name),'Mon exercice maison','nom de l\'utilisateur gardé');
   assert.equal(await p.locator('#msList [data-ex="e2"] [data-exhelp]').isVisible(),true,'« ? » après association');
   // photo cassée -> état d'erreur
-  await c.route(/\/exercices\/[^/]+-1\.jpg/,rt=>rt.fulfill({status:404,body:''}));
-  await p.evaluate(k=>exHelpOpen(k+' ',null),ready.ok[ready.ok.length-1]);await p.waitForTimeout(800);
-  assert.ok(await p.locator('#exHelpBody .exh-miss').count()>=1,'photo cassée signalée');await p.keyboard.press('Escape');await c.unroute(/\/exercices\/[^/]+-1\.jpg/);
+  const kk=ready.ok[ready.ok.length-1],slug=await p.evaluate(k=>{const s=window.SIDFIT_IMG[k];window.SIDFIT_IMG[k]='introuvable-v79';exHelpOpen(k,null);return s},kk);await p.waitForTimeout(800);
+  assert.equal(await p.locator('#exHelpBody .exh-miss').count(),2,'photos introuvables signalées');await p.keyboard.press('Escape');await p.evaluate(([k,s])=>{window.SIDFIT_IMG[k]=s},[kk,slug]);
   // « ? » dans l'aperçu d'un programme
   await p.evaluate(()=>{muqOpen({fresh:true});muq.answers={v:1,goal:'muscle',level:'inter',days:3,dur:60,place:'gym',equip:['dumbbells','bench','pullup','barbell','machines','cables','bands'],prefer:[],avoidEx:[],avoidZones:[],pain:'',other:[],notes:''};muq.step='recap';muqRender()});
   await p.click('[data-muqgen="app"]');await p.waitForSelector('.muq-days');

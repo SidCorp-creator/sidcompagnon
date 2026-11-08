@@ -21,7 +21,7 @@ Pour Groq : avant activation réelle, vérifier compte Free sans paiement, accè
 - `node tests/weight-gap.test.cjs` : OK (React/secours, coordonnées calendaires, infobulles sans valeurs fictives, 0/1/n).
 - `node tests/sidbot-serveur.test.cjs` : OK (auth, contextes, secrets, actions, quotas, erreurs, photo et tailles, aucune bascule payante).
 - `PGLITE_MODULE=/tmp/v76-pg/node_modules/@electric-sql/pglite node tests/sidbot-sql.test.cjs` : OK (PostgreSQL/WASM isolé 0.5.15, SQL exécuté réellement, rôles, cadence/quota). Ce n'est pas un déploiement Supabase.
-- `tests/v76-forme.test.cjs` avec serveur isolé 8876/8890 : OK FR et EN, React et secours, iPhone 390 px, mouvement réduit, absence d'erreur JS et débordement après parcours. Captures : `docs/refonte/apres/v76-poids-{fr,en}-{react,secours}.png`.
+- `tests/v76-forme.test.cjs` avec serveur isolé 8876/8890 : OK FR et EN, React et secours, 24 combinaisons : 320/390/1280 px, clair/sombre, mouvement réduit, absence d'erreur JS et débordement après parcours. Captures : `docs/refonte/apres/v76-{nutrition,poids}-{light,dark}-{320,390,1280}-{fr,en}-{react,secours}.png`.
 - Mémoire alimentaire existante : 6 tests OK. Chiffrement : OK ; fusion : 5 000 cas OK ; rappels : 7 tests OK ; correspondance shell généré : OK.
 
 ## Revue demandée
@@ -33,3 +33,7 @@ Vérifier saisie nutrition, repas restauré, masses distinctes, interface + cont
 - E2 : historique client pouvant dépasser 24 000 caractères ; réponse potentiellement enregistrée dans le mauvais compte après un changement de session ; sélection de note conservée entre deux notes ; délai client trop court face aux délais serveur cumulés. Correctifs demandés dans le panneau Claude, sans modification de ses fichiers.
 - F : défaut **reproduit réellement** sur son aperçu React : détaillé → simple → détaillé laisse 3 `.hs-app` et 0 `.hc`. La racine React doit être démontée avant le rendu simple par innerHTML. Test de répétition sans rechargement demandé.
 - A/B : comparaison des littéraux de clés `ls`/`localStorage` dans les fichiers modifiés par rapport à 02b2806 : aucune ancienne clé retirée. C'est un contrôle ciblé, pas une preuve exhaustive de toute migration de données.
+
+Validation complémentaire finale : 24 parcours avec le thème réellement appliqué et vérifié par attribut `data-theme`, FR/EN × React/secours × 320/390/1280 × clair/sombre : OK. Captures produites dans le worktree Codex contre sa base v75 + lots C/D ; les libellés d'entête historiques qu'elles contiennent ne représentent pas le résultat final intégré des lots marques/Sid'Bot de Claude. Captures finales de l'ensemble à produire dans l'intégration.
+
+Après correction de Claude, répétition réelle détaillé → simple → détaillé → simple → détaillé : 3 `.hc` / 3 `.hs-app` alternent correctement, sans rechargement. Relecture complémentaire E2 transmise : vérifier l'identité aussi après consentement et token avant envoi réseau, et capturer le contrôleur AbortController dans chaque temporisateur.

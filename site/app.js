@@ -1571,12 +1571,12 @@ $("bkReplace").addEventListener("click",e=>{const b=e.currentTarget;
   bkApply("replace")});
 
 /* ---------- v35 : confidentialité, conditions d'utilisation, consentement santé, suppression du compte ---------- */
-// v43 : textes légaux mis à jour (connecteur Claude, Spotify à la demande, polices hébergées ici) ; version complète dans les pages publiques
+// v76 : Sid'Bot remplace le connecteur Claude. v43 : textes légaux mis à jour (connecteur Claude, Spotify à la demande, polices hébergées ici) ; version complète dans les pages publiques
 const LEGAL={privacy:[
   ["Qui est responsable","Sid'Compagnon est édité par SidCorp, qui est responsable du traitement de tes données. Les coordonnées complètes figurent dans la version complète de cette politique. Pas de publicité : aucune donnée n'est vendue ni utilisée à des fins commerciales."],
   ["Ce qui est enregistré, et pourquoi","Ton e-mail, ton pseudo et ton mot de passe (gardé haché par Supabase), pour ton compte. Ce que tu mets dans l'app (agenda, tâches, notes, documents, séances, nutrition, réglages), pour te rendre le service : c'est la base légale « exécution du contrat ». Des rapports d'erreur techniques (version, message d'erreur, type de navigateur, sans ton contenu), pour corriger les bugs : intérêt légitime. Ton abonnement aux notifications, seulement si tu les actives."],
-  ["Données de santé","Ton poids, tes repas, ton profil (âge, taille, sport), tes séances et les zones à ménager sont des données de santé. Sid'Compagnon ne les utilise qu'avec ton accord explicite, que tu peux retirer à tout moment dans Réglages. Sid'Compagnon ne les envoie à aucune IA de lui-même : si tu branches Claude, c'est ton propre compte Claude (Anthropic) qui les lit par le connecteur, quand tu le lui demandes, selon les conditions d'Anthropic. La photo d'assiette que tu envoies à Claude est déposée dans ton dossier privé, lue une seule fois par ton Claude, puis effacée (au plus tard après 24 h). Les aliments sont retenus dans une mémoire commune anonyme (jamais ton nom)."],
-  ["Où, et avec qui","Tes données sont dans ton compte chez Supabase, en Europe (Francfort, Allemagne). Le site est hébergé par Netlify, qui garde des journaux techniques (dont ton adresse IP) pour faire tourner le site. Anthropic n'intervient que si tu branches Claude, Spotify seulement si tu charges son lecteur. Plus aucune police ni bibliothèque n'est chargée chez un tiers. Sur ton appareil, l'app garde une copie de tes données pour marcher sans connexion."],
+  ["Données de santé","Ton poids, tes repas, ton profil (âge, taille, sport), tes séances et les zones à ménager sont des données de santé. Sid'Compagnon ne les utilise qu'avec ton accord explicite, que tu peux retirer à tout moment dans Réglages. Sid'Compagnon ne les envoie à aucune IA de lui-même : quand tu poses une question à Sid'Bot, seul ce que tu choisis de partager (affiché avant l'envoi) part vers son service d'IA, pour te répondre. La conversation reste sur ton appareil. La photo d'assiette que tu joins à Sid'Bot part avec ta question et n'est pas enregistrée dans ton compte. Les aliments sont retenus dans une mémoire commune anonyme (jamais ton nom)."],
+  ["Où, et avec qui","Tes données sont dans ton compte chez Supabase, en Europe (Francfort, Allemagne). Le site est hébergé par Netlify, qui garde des journaux techniques (dont ton adresse IP) pour faire tourner le site. Le service d'IA de Sid'Bot n'intervient que si tu lui poses une question, Spotify seulement si tu charges son lecteur. Plus aucune police ni bibliothèque n'est chargée chez un tiers. Sur ton appareil, l'app garde une copie de tes données pour marcher sans connexion."],
   ["Ce qui est chiffré","Mots de passe, notes secrètes et documents sont chiffrés sur ton appareil avec une clé protégée par le mot de passe de ton compte (ou ta phrase secrète pour les coffres créés avant) avant d'être envoyés : personne d'autre ne peut les lire, pas même SidCorp. Le reste est protégé par ton compte ; l'administrateur pourrait techniquement y accéder pour l'entretien, mais ne le fait pas."],
   ["Combien de temps","Tant que ton compte existe. Les éléments supprimés quittent la synchronisation après 90 jours ; les sauvegardes automatiques sont gardées 14 jours ; les rapports d'erreur 90 jours. « Supprimer mon compte » efface tout de suite ton compte et tes données (les sauvegardes disparaissent dans les 14 jours)."],
   ["Tes droits","Tu peux voir, télécharger, corriger et supprimer tes données à tout moment (Réglages, « Tes données et ta vie privée »), retirer ton accord pour les données de santé, t'opposer à un traitement et supprimer ton compte. Tu peux aussi porter plainte auprès de l'Autorité de protection des données (Belgique, www.autoriteprotectiondonnees.be)."]],
@@ -1585,7 +1585,7 @@ const LEGAL={privacy:[
   ["Ton compte","Ton compte est personnel. Garde ton mot de passe pour toi : il protège aussi tes coffres. Si tu le remets à zéro par e-mail, ouvre d'abord tes coffres sur un appareil où ils sont déjà ouverts pour garder l'accès ; sinon, ils ne peuvent pas être rouverts, même par SidCorp."],
   ["Ce que tu y mets","Tu restes propriétaire de ton contenu. N'y mets rien d'illégal. Fais de temps en temps une sauvegarde (Réglages, « Sauvegarde »)."],
   ["Santé : nutrition et musculation","Les calculs, menus et programmes sont donnés à titre indicatif, parfois par une IA qui peut se tromper. Ce n'est pas un avis médical : demande conseil à un médecin, un diététicien ou un coach, surtout en cas de douleur, de grossesse, de maladie ou de troubles alimentaires."],
-  ["Claude (facultatif)","Brancher Claude est facultatif. Claude est un service d'Anthropic, utilisé avec ton propre compte et selon ses conditions ; SidCorp n'en est pas responsable. Tu peux débrancher le connecteur à tout moment (Réglages)."],
+  ["Sid'Bot (facultatif)","Sid'Bot est facultatif. Ses réponses viennent d'une IA qui peut se tromper : vérifie ce qui compte. Il ne modifie rien sans ton accord. Il est gratuit dans la limite d'un quota quotidien : une fois épuisé, il s'arrête jusqu'au lendemain, sans aucune facturation."],
   ["Fin et droit applicable","Tu peux supprimer ton compte à tout moment. SidCorp peut fermer un compte utilisé de façon abusive. Ces conditions relèvent du droit belge ; elles ne retirent aucun droit que la loi te donne comme consommateur."]],
  cookies:[
   ["Pas de cookie","Sid'Compagnon ne dépose aucun cookie : ni publicité, ni mesure d'audience, ni pisteur."],
@@ -3824,14 +3824,17 @@ async function sbSend(retry){if(sbBusy)return;const i=$("sbIn");let text=i.value
   if(!retry){sbPush(app,{id:uid(),role:"user",content:text.slice(0,4000),img:!!sbImg},uid0);i.value="";grow(i)}
   if(!session){fail("auth");return}if(isTrial()){fail("trial");return}if(!navigator.onLine){fail("offline",true);return}
   if(app==="forme"&&!(await nuConsent())){sbBusy=false;sbRender();return}
+  if(!same())return;
   // les derniers échanges, du plus récent au plus ancien, tant que le total reste sous SB_HIST_CHARS
   const hist=/** @type {{role:string,content:string,image?:string}[]} */([]);let tot=0;
   for(const m of sbMsgs(app,uid0).filter(m=>m.role==="user"||m.role==="assistant").slice(-10).reverse()){const c=String(m.content).slice(0,4000);if(hist.length&&tot+c.length>SB_HIST_CHARS)break;tot+=c.length;hist.unshift({role:m.role,content:c})}
   if(sbImg&&hist.length){if(sbImg.length>SB_IMG_MAX){fail("bad_request");return}hist[hist.length-1].image=sbImg}
-  sbBusy=true;sbRender();sbCtl=new AbortController();const tm=setTimeout(()=>{try{sbCtl.abort()}catch(e){}},SB_TIMEOUT);
-  try{const r=await fetch(SUPABASE_URL+"/functions/v1/sidbot",{method:"POST",signal:sbCtl.signal,
-      headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",Authorization:"Bearer "+await token()},
-      body:JSON.stringify({app,locale:LANG==="en"?"en":"fr",messages:hist,context:sbContext(app)})});
+  sbBusy=true;sbRender();const ctl=sbCtl=new AbortController();const tm=setTimeout(()=>{try{ctl.abort()}catch(e){}},SB_TIMEOUT);
+  try{// revue Codex : jeton et contexte figés pour le même compte que l'historique, vérifiés avant l'envoi
+    const jwt=await token();if(!same()){clearTimeout(tm);sbBusy=false;return}const ctx=sbContext(app);
+    const r=await fetch(SUPABASE_URL+"/functions/v1/sidbot",{method:"POST",signal:ctl.signal,
+      headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",Authorization:"Bearer "+jwt},
+      body:JSON.stringify({app,locale:LANG==="en"?"en":"fr",messages:hist,context:ctx})});
     clearTimeout(tm);let j=null;try{j=await r.json()}catch(e){}
     if(!same()){sbBusy=false;return} // compte changé pendant la demande : la réponse est ignorée
     if(j&&j.usage)sbUse=j.usage;
@@ -4476,7 +4479,7 @@ const fmtDur=m=>!m?"":m>=60?`${Math.floor(m/60)}h${m%60?two(m%60):""}`:`${m} min
 const MAC=[["p","Protéines","--m-p"],["c","Glucides","--m-c"],["f","Lipides","--m-f"]];
 /* v39 : plus de clé Claude de Sid. Le profil est calculé dans l'app ; les aliments déjà connus viennent de la mémoire partagée (gratuite) ;
    le reste (aliment inconnu, photo, menu, recette, bilan) est confié à l'IA de la personne, branchée par le connecteur (aiHandoff). */
-const T3=(fr,en,..._old)=>LANG==="en"?en:fr;
+const T3=(fr,en)=>LANG==="en"?en:fr;
 async function nuCall(kind,payload){payload=payload||{};
   if(!(await nuConsent()))throw new Error(L("Il faut ton accord pour utiliser Nutrition (données de santé)."));
   if(kind==="profil")return nuProfileLocal(payload.data||{});

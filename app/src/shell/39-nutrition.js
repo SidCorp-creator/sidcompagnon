@@ -14,7 +14,7 @@ const fmtDur=m=>!m?"":m>=60?`${Math.floor(m/60)}h${m%60?two(m%60):""}`:`${m} min
 const MAC=[["p","Protéines","--m-p"],["c","Glucides","--m-c"],["f","Lipides","--m-f"]];
 /* v39 : plus de clé Claude de Sid. Le profil est calculé dans l'app ; les aliments déjà connus viennent de la mémoire partagée (gratuite) ;
    le reste (aliment inconnu, photo, menu, recette, bilan) est confié à l'IA de la personne, branchée par le connecteur (aiHandoff). */
-const T3=(fr,en,..._old)=>LANG==="en"?en:fr;
+const T3=(fr,en)=>LANG==="en"?en:fr;
 async function nuCall(kind,payload){payload=payload||{};
   if(!(await nuConsent()))throw new Error(L("Il faut ton accord pour utiliser Nutrition (données de santé)."));
   if(kind==="profil")return nuProfileLocal(payload.data||{});

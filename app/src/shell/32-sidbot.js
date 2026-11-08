@@ -92,14 +92,17 @@ async function sbSend(retry){if(sbBusy)return;const i=$("sbIn");let text=i.value
   if(!retry){sbPush(app,{id:uid(),role:"user",content:text.slice(0,4000),img:!!sbImg},uid0);i.value="";grow(i)}
   if(!session){fail("auth");return}if(isTrial()){fail("trial");return}if(!navigator.onLine){fail("offline",true);return}
   if(app==="forme"&&!(await nuConsent())){sbBusy=false;sbRender();return}
+  if(!same())return;
   // les derniers échanges, du plus récent au plus ancien, tant que le total reste sous SB_HIST_CHARS
   const hist=/** @type {{role:string,content:string,image?:string}[]} */([]);let tot=0;
   for(const m of sbMsgs(app,uid0).filter(m=>m.role==="user"||m.role==="assistant").slice(-10).reverse()){const c=String(m.content).slice(0,4000);if(hist.length&&tot+c.length>SB_HIST_CHARS)break;tot+=c.length;hist.unshift({role:m.role,content:c})}
   if(sbImg&&hist.length){if(sbImg.length>SB_IMG_MAX){fail("bad_request");return}hist[hist.length-1].image=sbImg}
-  sbBusy=true;sbRender();sbCtl=new AbortController();const tm=setTimeout(()=>{try{sbCtl.abort()}catch(e){}},SB_TIMEOUT);
-  try{const r=await fetch(SUPABASE_URL+"/functions/v1/sidbot",{method:"POST",signal:sbCtl.signal,
-      headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",Authorization:"Bearer "+await token()},
-      body:JSON.stringify({app,locale:LANG==="en"?"en":"fr",messages:hist,context:sbContext(app)})});
+  sbBusy=true;sbRender();const ctl=sbCtl=new AbortController();const tm=setTimeout(()=>{try{ctl.abort()}catch(e){}},SB_TIMEOUT);
+  try{// revue Codex : jeton et contexte figés pour le même compte que l'historique, vérifiés avant l'envoi
+    const jwt=await token();if(!same()){clearTimeout(tm);sbBusy=false;return}const ctx=sbContext(app);
+    const r=await fetch(SUPABASE_URL+"/functions/v1/sidbot",{method:"POST",signal:ctl.signal,
+      headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",Authorization:"Bearer "+jwt},
+      body:JSON.stringify({app,locale:LANG==="en"?"en":"fr",messages:hist,context:ctx})});
     clearTimeout(tm);let j=null;try{j=await r.json()}catch(e){}
     if(!same()){sbBusy=false;return} // compte changé pendant la demande : la réponse est ignorée
     if(j&&j.usage)sbUse=j.usage;

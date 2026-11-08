@@ -232,7 +232,7 @@
       "tractions-prise-neutre"
     ],
     "exact": true,
-    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps. Contrôle original 850×567 : petite poignée métallique en V posée au centre de la barre haute, mains sur cette poignée avec paumes face à face ; ce ne sont pas des mains en pronation sur la barre droite. Source V-Bar_Pullup.",
     "images": [
       {
         "file": "v-bar-pullup-0.jpg",
@@ -528,7 +528,7 @@
       "shoulder-press-a-la-smith"
     ],
     "exact": true,
-    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps. Contrôle original 850×567 : une barre continue traverse les deux mains et rejoint les montants guidés de la Smith ; aucun haltère indépendant. Source Smith_Machine_Overhead_Shoulder_Press, matériel machine.",
     "images": [
       {
         "file": "smith-machine-overhead-shoulder-press-0.jpg",
@@ -787,7 +787,7 @@
       "curl-barre-ez"
     ],
     "exact": true,
-    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps. Contrôle original 850×567, surtout image 1 : coudes de la barre EZ nettement visibles entre les mains et les disques. Source EZ-Bar_Curl, matériel e-z curl bar.",
     "images": [
       {
         "file": "ez-bar-curl-0.jpg",
@@ -935,7 +935,7 @@
       "extension-au-dessus-de-la-tete-a-la-poulie"
     ],
     "exact": true,
-    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps. Contrôle original 850×567 : visage orienté vers la gauche et tour de poulie derrière à droite ; câble venant de la poulie basse derrière le corps, bras se tendant au-dessus de la tête. La personne est dos à la poulie, pas face à elle.",
     "images": [
       {
         "file": "cable-rope-overhead-triceps-extension-0.jpg",
@@ -1442,43 +1442,6 @@
       }
     ]
   },
-  "plank": {
-    "src": "Plank",
-    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Plank.json",
-    "licence": "Unlicense",
-    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
-    "retrieved": "2026-11-08",
-    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
-    "exercises": [
-      "planche-sur-les-avant-bras"
-    ],
-    "exact": true,
-    "note": "Statique : photo 0 = installation à genoux, photo 1 = tenue sur les avant-bras ; pas deux répétitions.",
-    "images": [
-      {
-        "file": "plank-0.jpg",
-        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Plank/0.jpg",
-        "sourceSha256": "7a6545152b4c918a84b7e0fd2c3c7d10d571f8fbda8e4459354eb24059ff245d",
-        "sha256": "5bc9c49b4c5265e0207f6c27634009d6a778492602a87fb4cf6a43961936b018",
-        "phase": "setup",
-        "alt": {
-          "fr": "Planche sur les avant-bras — installation à genoux",
-          "en": "Forearm plank — kneeling setup"
-        }
-      },
-      {
-        "file": "plank-1.jpg",
-        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Plank/1.jpg",
-        "sourceSha256": "7f6b690f7594dfab002fb27d36f8247957171b08d19020f24208afd4d5186043",
-        "sha256": "e978eaa8de27c3dbcfd371a82175d1b770d1e56dc22031b5ea15b4f89e07b33a",
-        "phase": "hold",
-        "alt": {
-          "fr": "Planche sur les avant-bras — tenue sur les avant-bras",
-          "en": "Forearm plank — forearm hold"
-        }
-      }
-    ]
-  },
   "hack-squat-limited-range": {
     "provider": "commons",
     "src": "File:HackSquatMachineExercise.JPG",
@@ -1548,6 +1511,72 @@
         "changes": {
           "fr": "Deux photos originales juxtaposées séparées, ordre départ puis flexion, réduction et marges blanches ; JPEG progressif.",
           "en": "Two juxtaposed original photographs separated, ordered start then flexion, resized and white-padded; progressive JPEG."
+        }
+      }
+    ]
+  },
+  "plank": {
+    "provider": "mixed",
+    "src": "File:Forearm Plank Phalakasana variant (outdoor class).jpg",
+    "url": "https://commons.wikimedia.org/w/index.php?title=File:Forearm_Plank_Phalakasana_variant_(outdoor_class).jpg&oldid=1249502951",
+    "revision": "1249502951",
+    "licence": "CC BY-SA 4.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "author": "Andrea Coach G",
+    "retrieved": "2026-11-08",
+    "sourceSize": {
+      "width": 1904,
+      "height": 1447
+    },
+    "exercises": [
+      "planche-sur-les-avant-bras"
+    ],
+    "exact": true,
+    "note": "Photo 0 : recadrage sur la personne centrale, réduction et marges blanches ; recadrage antérieur par Chiswick Chap conservé. Photo 1 : vue latérale Free Exercise DB (Unlicense). Deux personnes, même posture sur les avant-bras ; pas un avant/après. Posture statique : vue oblique arrière (personne centrale), puis vue latérale. La mise en place à genoux est supprimée.",
+    "images": [
+      {
+        "file": "plank-0.jpg",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Forearm_Plank_Phalakasana_variant_%28outdoor_class%29.jpg",
+        "sourceSha256": "442d9660d653248efb4859dec950ca5170026fc3d7ca057c8ddd4a768a5ab391",
+        "sourceRegion": {
+          "left": 520,
+          "top": 250,
+          "width": 1250,
+          "height": 540
+        },
+        "sha256": "d6b975736dd6b87f23144086a310e6f57be899f16e0c33d7ceb2e85ce94f66d9",
+        "phase": "hold",
+        "alt": {
+          "fr": "Planche sur les avant-bras — personne centrale, vue oblique arrière de la tenue",
+          "en": "Forearm plank — central person holding the posture, oblique rear view"
+        },
+        "title": "File:Forearm Plank Phalakasana variant (outdoor class).jpg",
+        "author": "Andrea Coach G",
+        "licence": "CC BY-SA 4.0",
+        "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "sourcePage": "https://commons.wikimedia.org/w/index.php?title=File:Forearm_Plank_Phalakasana_variant_(outdoor_class).jpg&oldid=1249502951",
+        "changes": {
+          "fr": "Photo 0 : recadrage sur la personne centrale, réduction et marges blanches ; recadrage antérieur par Chiswick Chap conservé. Photo 1 : vue latérale Free Exercise DB (Unlicense). Deux personnes, même posture sur les avant-bras ; pas un avant/après.",
+          "en": "Photo 0: cropped to the central person, resized and white-padded; earlier crop by Chiswick Chap retained. Photo 1: side view from Free Exercise DB (Unlicense). Two people holding the same forearm posture, not before/after."
+        }
+      },
+      {
+        "file": "plank-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Plank/1.jpg",
+        "sourceSha256": "7f6b690f7594dfab002fb27d36f8247957171b08d19020f24208afd4d5186043",
+        "sha256": "e978eaa8de27c3dbcfd371a82175d1b770d1e56dc22031b5ea15b4f89e07b33a",
+        "phase": "hold",
+        "alt": {
+          "fr": "Planche sur les avant-bras — vue latérale de la tenue, jambes tendues",
+          "en": "Forearm plank — side view of the hold with straight legs"
+        },
+        "source": {
+          "provider": "free-exercise-db",
+          "src": "Plank",
+          "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+          "licence": "Unlicense",
+          "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+          "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Plank.json"
         }
       }
     ]

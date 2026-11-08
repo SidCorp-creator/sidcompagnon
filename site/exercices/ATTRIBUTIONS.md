@@ -13,3 +13,13 @@ Les paires de Free Exercise DB et leurs URLs figées sont détaillées dans [SOU
 - Les empreintes du fichier source et des deux dérivés, ainsi que les rectangles de découpe non superposés, figurent dans `SOURCES.json`.
 
 Ces deux fichiers dérivés restent sous CC BY-SA 3.0. La fiche dans l’application doit afficher le crédit spécifique fourni par `SIDFIT_PHOTO_CREDITS`, avec les liens de source et de licence, plutôt que le crédit Free Exercise DB.
+
+## Planche sur les avant-bras — vue oblique arrière
+
+- Fichier dérivé : `plank-0.jpg`.
+- Titre : **Forearm Plank Phalakasana variant (outdoor class).jpg**.
+- Auteur : **Andrea Coach G** ; premier recadrage de **Chiswick Chap** à partir de `STAGE RUNNING4YOU.jpg`.
+- [Page source consultée](https://commons.wikimedia.org/w/index.php?title=File:Forearm_Plank_Phalakasana_variant_(outdoor_class).jpg&oldid=1249502951).
+- Ce dérivé reste sous [Creative Commons Attribution-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-sa/4.0/).
+- Modifications : nouveau recadrage sur la personne centrale en tenue sur les avant-bras, redimensionnement, marges blanches et JPEG progressif. Le recadrage antérieur est conservé dans cette indication.
+- La vue latérale `plank-1.jpg` provient séparément de Free Exercise DB, `Plank/1.jpg`, sous Unlicense ; sa source et son empreinte restent distinctes dans `SOURCES.json`. Deux personnes montrent la même posture ; ce ne sont pas des photos « avant/après ».

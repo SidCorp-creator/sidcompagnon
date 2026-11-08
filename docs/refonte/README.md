@@ -138,3 +138,11 @@ Brief : `relais-codex-09.md`. Répartition décidée ensemble (accord de Codex, 
 Causes : **génération disparue** = `cf4774c` (74.1) avait mis `hidden` sur `#coachBox` (moteur et formulaire encore là, plus rien ne les affichait) ; **cadrages** = la règle Élan `:focus-visible` (décalage 2 px) battait la règle « champs : décalage 0 », d'où bordure + anneau sur **tous** les champs ; le contenu « Mes statistiques » était une `.card` sans marge intérieure (0 px) et à rayon 16 dans un cadre à 6 ; la zone d'import faisait 68 px (2 lignes par défaut).
 
 Skills retenus : `sid-charte` (M3, M4 : charte), `sid-relais` (tous : relais compacts, créé faute de skill externe audité), `smux` (canal), `supabase` côté Codex (M2), `skill-creator` lu par Codex pour la revue de M5. Écartés : pas de skill design/sport/accessibilité externe vérifié et pertinent ; vérification par tests Playwright locaux.
+
+### Correctif Sid'Note avant publication (8 nov., relais 11) — **pas publié, attend l'accord de Sid**
+- Cause : l'éditeur de notes construit son propre bandeau (`29-notes-libres.js`) ; sa copie du bouton était restée « Claude » en v76 (sans nom accessible). Le clic passait déjà par `elanHeadClick` → Sid'Bot ; aucun lien ni appel Claude dans le `app.js` en ligne (seulement un commentaire).
+- Correction (Claude) : bouton unique `ahBotBtn()` (07) utilisé par les deux bandeaux. Test `sidbot.test.cjs` : échoue avant (« Claude » trouvé), passe après ; bandeaux de toutes les fonctions sans « Claude », mobile et ordinateur, FR/EN.
+- Revue (Codex) : 8 cas 390/1280 × FR/EN × React/secours, 48 requêtes simulées ; note jointe seulement si choisie, note secrète jamais (même déverrouillée), serveur limité à title/body.
+- Appel réel Groq (code de la fonction, connexion/compteur simulés) : note FR résumée + proposition `add_note`, EN sans note jointe : OK.
+- Tests réunis après intégration : 13 tests ciblés + Élan 15/15 (avant ce correctif d'une ligne de bandeau), parcours musculation FR/EN.
+- À la publication : pousser `v77-muscu` sur `main` **et** redéployer la fonction `sidbot` (elle n'a pas encore la tâche `programme` ni le catalogue partagé).

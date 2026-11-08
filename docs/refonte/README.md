@@ -117,3 +117,5 @@ Brief : `brief-76.md`. Branche d'intégration : `v76-claude` (worktree `~/sidcom
 | G Bug capture 1 (Agenda resté sur la veille après minuit) | Claude | corrigé | `agenda-minuit.test.cjs` échoue avant (742b6b1^), passe après ; captures `avant/capture1-…`, `apres/v76-agenda-minuit-apres.png` |
 
 Décisions v76 : un seul fournisseur pour Sid'Bot (recommandé : Groq Free, à activer par Sid — `sidbot-fournisseurs.md`) ; Gemini API écarté (offre payante exigée pour l'EEE) ; aucune bascule payante ; Sid'Bot propose, la personne valide ; historique Sid'Bot sur l'appareil seulement ; Sid'Bot ne réécrit plus le programme de musculation (l'app le crée, Sid'Bot conseille) ; anciennes adresses du connecteur Claude visibles et révocables seulement ; fonction `mcp` non supprimée (décision à prendre par Sid). Relais : piège du Tab chez Codex occupé (message resté dans la saisie).
+
+Vérification finale v76 (8 nov.) : 14 tests ciblés verts (dont SQL PGlite) ; parcours Élan complet 15/15 (320/390/900/1280, clair/sombre, FR/EN, React/secours) ; `smoke.js` s'arrête au même clic sur 75.1 (02b2806) et sur v76 : test obsolète depuis Élan, pas une régression v76.

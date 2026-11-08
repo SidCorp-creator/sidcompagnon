@@ -8,6 +8,7 @@ const BASE=process.env.NOTE_BASE_URL||'http://localhost:8766';
   const c=await b.newContext({...vp,locale:lang==='fr'?'fr-BE':'en-GB',acceptDownloads:true}),p=await c.newPage();p.setDefaultTimeout(8000);
   await c.addInitScript(l=>{window.__noIntro=true;localStorage.setItem('sidnote-lang',JSON.stringify(l))},lang);p.on('pageerror',e=>errors.push(lang+': '+e.message));
   const sent=[];let reply='edit';
+  const until=async(fn,ms=9000)=>{const t=Date.now();while(!(await p.evaluate(fn))){if(Date.now()-t>ms)throw Error('délai : '+fn);await p.waitForTimeout(100)}};
   await c.route(/\/functions\/v1\/sidbot/,async rt=>{const body=JSON.parse(rt.request().postData()||'{}');sent.push(body);
     if(!body.context||!body.context.note)return rt.fulfill({status:200,contentType:'application/json',body:JSON.stringify({reply:'Touche « La note ouverte » puis redemande.',actions:[]})});
     const acts=reply==='edit'?[{type:'edit_note',label:'Note corrigée',payload:{title:'Courses (corrigé)',body:'## Marché\n- **pain** complet\n- lait\n1. payer'}}]:[{type:'share_note_pdf',label:'PDF',payload:{}}];
@@ -36,7 +37,7 @@ const BASE=process.env.NOTE_BASE_URL||'http://localhost:8766';
   await p.locator('#toast .toast-act,#toast button').first().click();await p.waitForTimeout(300);
   assert.equal(await p.evaluate(()=>noteFind('n1').title),'Courses','annulation : note restaurée');
   // 3) garde de version : la note change entre la demande et le remplacement -> refus
-  await p.fill('#sbIn','encore');await p.click('#sbSend');await p.waitForFunction(()=>document.querySelectorAll('[data-sbact]').length>=1);
+  await p.fill('#sbIn','encore');await p.click('#sbSend');await until(()=>document.querySelectorAll('[data-sbact]').length>=1);
   await p.evaluate(()=>{const n=noteFind('n1');n.body+='\najout';n.upd=Date.now();save()});
   await p.locator('[data-sbact]').last().click();await p.locator('[data-sbdiffok]').last().click();await p.waitForTimeout(200);
   assert.doesNotMatch(await p.evaluate(()=>noteFind('n1').body),/pain complet/,'note modifiée entre-temps : pas de remplacement');
@@ -50,7 +51,7 @@ const BASE=process.env.NOTE_BASE_URL||'http://localhost:8766';
    // action Sid'Bot share_note_pdf
    reply='pdf';await p.click('#noteAppHead [data-app-claude]');await p.click('[data-sbctx="note"]').catch(()=>{});
    if(await p.locator('[data-sbctx="note"]').getAttribute('aria-pressed')!=='true')await p.click('[data-sbctx="note"]');
-   await p.fill('#sbIn','exporte en pdf');await p.click('#sbSend');await p.waitForFunction(()=>[...document.querySelectorAll('[data-sbact]')].some(b=>/PDF/.test(b.textContent)));
+   await p.fill('#sbIn','exporte en pdf');await p.click('#sbSend');await until(()=>[...document.querySelectorAll('[data-sbact]')].some(b=>/PDF/.test(b.textContent)));
    const [dl2]=await Promise.all([p.waitForEvent('download'),p.locator('[data-sbact]').last().click()]);assert.match(dl2.suggestedFilename(),/\.pdf$/);await p.keyboard.press('Escape');
    // menu « ⋯ » de la liste
    await p.evaluate(()=>{closeNote&&closeNote();renderNotes()});await p.evaluate(()=>noteActions('n2'));

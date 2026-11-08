@@ -30,6 +30,7 @@
 27-recuperation-d-un-code.js
 28-claviers-de-code-appui.js
 29-notes-libres.js
+29b-note-pdf.js
 30-fenetre-de-code-a.js
 32-sidbot.js
 33-face-id-touch-id.js

@@ -79,7 +79,7 @@ function notePdf(input){
   const info=add(`<< /Title ${utf16(title)} /Producer ${utf16("Sid'Compagnon")} >>`),kids=[];
   for(const s of streams){const content=add(`<< /Length ${s.length} >>\nstream\n${s}endstream`);kids.push(add(`<< /Type /Page /Parent ${pages} 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << ${fonts.map((f,i)=>'/F'+(i+1)+' '+f+' 0 R').join(' ')} >> >> /Contents ${content} 0 R >>`))}
   objects[catalog]=`<< /Type /Catalog /Pages ${pages} 0 R /Lang (${en?'en':'fr'}) >>`;objects[pages]=`<< /Type /Pages /Count ${kids.length} /Kids [${kids.map(n=>n+' 0 R').join(' ')}] >>`;
-  let pdf='%PDF-1.4\n% SidNote text export\n';const offsets=[0];
+  let pdf='%PDF-1.4\n% Sid\'Note text export\n';const offsets=[0];
   for(let i=1;i<objects.length;i++){offsets.push(pdf.length);pdf+=i+' 0 obj\n'+objects[i]+'\nendobj\n'}const xref=pdf.length;
   pdf+='xref\n0 '+objects.length+'\n0000000000 65535 f \n'+offsets.slice(1).map(n=>String(n).padStart(10,'0')+' 00000 n \n').join('')+`trailer\n<< /Size ${objects.length} /Root ${catalog} 0 R /Info ${info} 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
   return Uint8Array.from(pdf,c=>c.charCodeAt(0));

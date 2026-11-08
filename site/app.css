@@ -2722,3 +2722,19 @@ html .sb-apps button[aria-pressed="true"]{background:var(--ink,#1a1a1a);color:va
 .hs-check svg.i{width:16px;height:16px}
 .hs-step:focus-visible{outline:2px solid var(--ink,#1a1a1a);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){.hs-app,.hs-tour-bar i{transition-duration:1ms}.hs-app:active{transform:none}}
+/* v77 (captures « Mes statistiques » et import) — cause commune : la règle Élan :focus-visible (décalage 2 px, l. 1838) l'emportait
+   sur « champs : décalage 0 » (l. 64) : bordure du champ + anneau décalé = deux contours. Focus des champs : un seul anneau de 2 px intégré. */
+html[data-ds="elan"] :is(input,textarea,select):focus-visible,html[data-ds="elan"] :is(#v-muscu,#v-nutri,#v-graph,#nuMealSheet) :is(input,textarea,select):focus-visible{outline:none;border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+@media (forced-colors:active){html[data-ds="elan"] :is(input,textarea,select):focus-visible{outline:2px solid CanvasText;outline-offset:0}}
+/* lignes repliables (Mes statistiques, et toutes les details>summary de ce type) : focus à l'intérieur, arrondis alignés sur le cadre */
+html[data-ds="elan"] .mu-stats-d{border-radius:12px;overflow:hidden;background:var(--surface)}
+html[data-ds="elan"] .mu-stats-d>summary{min-height:48px;padding:0 16px;border-radius:12px;font-size:15px}
+html[data-ds="elan"] .mu-stats-d[open]>summary{border-radius:12px 12px 0 0}
+html[data-ds="elan"] .mu-stats-d>summary:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+html[data-ds="elan"] #v-muscu .mu-stats-d>.mu-stats{margin:0;padding:12px 16px 16px;border-radius:0;background:transparent;gap:12px}
+html[data-ds="elan"] .mu-stats-d>.mu-stats :is(p,div,span){overflow-wrap:anywhere}
+/* importation d'une séance ou d'un programme : zone haute, redimensionnable, lisible ; tient avec le clavier ouvert */
+html[data-ds="elan"] #msImport{display:grid;gap:12px;padding:16px}
+html[data-ds="elan"] #v-muscu #msPaste{min-height:min(260px,42vh);max-height:70vh;resize:vertical;padding:12px 14px;line-height:1.5;white-space:pre-wrap;overflow:auto;border-radius:12px}
+html.kb-open[data-ds="elan"] #v-muscu #msPaste{min-height:min(200px,30vh)}
+html[data-ds="elan"] #msImport .two{gap:12px}

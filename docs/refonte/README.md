@@ -146,3 +146,5 @@ Skills retenus : `sid-charte` (M3, M4 : charte), `sid-relais` (tous : relais com
 - Appel réel Groq (code de la fonction, connexion/compteur simulés) : note FR résumée + proposition `add_note`, EN sans note jointe : OK.
 - Tests réunis après intégration : 13 tests ciblés + Élan 15/15 (avant ce correctif d'une ligne de bandeau), parcours musculation FR/EN.
 - À la publication : pousser `v77-muscu` sur `main` **et** redéployer la fonction `sidbot` (elle n'a pas encore la tâche `programme` ni le catalogue partagé).
+
+- **77 en ligne pour tout le monde** (8 nov., accord de Sid « mets en ligne pour tout le monde ») : fonction `sidbot` redéployée (moteur et catalogue partagés), puis `main` = `375485f` ; vérifié : `sw.js` = `sidnote-v77`, « version 77 », nouveau code servi, chat Sid'Bot (401 sans compte), tâche programme (400 sur demande incomplète), relais `/mcp` inchangé.

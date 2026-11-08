@@ -2799,3 +2799,6 @@ html .muq-seg button[aria-pressed="true"],html .muq-chips .pill[aria-pressed="tr
 .ex-link{min-height:44px;white-space:nowrap}
 .muq-alt{display:inline-flex;align-items:center;gap:4px}
 .muq-exn .ex-help{vertical-align:middle;margin-left:4px}
+/* v80 : illustration (pas une photo) */
+.exh-pics figure{position:relative}
+.exh-badge{position:absolute;top:8px;left:8px;padding:2px 8px;border-radius:999px;background:var(--ink,#1a1a1a);color:var(--bg,#fff);font-size:12px;font-weight:600}

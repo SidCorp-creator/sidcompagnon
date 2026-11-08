@@ -163,8 +163,10 @@ function exHelpOpen(name,ref){const a=exAide(name,ref);if(!a||!exHelpReady(name,
   $("exHelpTitle").textContent=L(a.name);
   // exercice statique : deux vues de la posture (libellés fournis avec les photos) au lieu de « départ / arrivée »
   const vl=((window.SIDFIT_PHOTO_LABELS||{})[a.name]||{})[LANG==="en"?"en":"fr"],cap=i=>vl&&vl[i]?vl[i]:L(i?"Arrivée":"Départ");
-  const alt=i=>`${L(a.name)} : ${vl&&vl[i]?vl[i]:L(i?"position d'arrivée":"position de départ")}`;
-  $("exHelpBody").innerHTML=`<div class="exh-pics">${[0,1].map(i=>`<figure><img src="exercices/${encodeURIComponent(im)}-${i}.jpg" alt="${esc(alt(i))}" loading="lazy" decoding="async" width="480" height="320"><figcaption>${esc(cap(i))}</figcaption></figure>`).join("")}</div>
+  // v80 : illustrations générées (jamais présentées comme des photos) : étiquette visible, alt et crédit explicites
+  const ill=(window.SIDFIT_ILLUS||{})[a.name];
+  const alt=i=>`${ill?L("Illustration")+" — ":""}${L(a.name)} : ${vl&&vl[i]?vl[i]:L(i?"position d'arrivée":"position de départ")}`;
+  $("exHelpBody").innerHTML=`<div class="exh-pics">${[0,1].map(i=>`<figure${ill?' class="exh-ill"':""}><img src="exercices/${encodeURIComponent(im)}-${i}.jpg" alt="${esc(alt(i))}" loading="lazy" decoding="async" width="480" height="320">${ill?`<span class="exh-badge" aria-hidden="true">${L("Illustration")}</span>`:""}<figcaption>${esc(cap(i))}</figcaption></figure>`).join("")}</div>
     ${String(a.name)!==String(name||"").trim()?`<p class="small muted">${L("Fiche de")} « <span class="notr">${esc(L(a.name))}</span> »</p>`:""}
     <p class="exh-lbl">${L("Muscles travaillés")}</p><p class="notr">${esc(f.mus)}</p>
     <p class="exh-lbl">${L("Placement")}</p><p class="notr">${esc(f.setup)}</p>
@@ -177,7 +179,8 @@ function exHelpOpen(name,ref){const a=exAide(name,ref);if(!a||!exHelpReady(name,
   $("exHelpBody").querySelectorAll(".exh-pics img").forEach(img=>img.addEventListener("error",()=>{const fg=img.closest("figure");if(fg)fg.outerHTML=`<figure class="exh-miss" role="img" aria-label="${esc(img.alt)}"><span>${L("Photo indisponible pour l'instant")}</span></figure>`},{once:true}));
   // crédit propre à la paire (licence avec attribution, ex. CC BY-SA) ; sinon Free Exercise DB (Unlicense, domaine public)
   {const cr=(window.SIDFIT_PHOTO_CREDITS||{})[a.name],el=$("exhSrc"),lk=(u,t)=>/^https:\/\//.test(u||"")?`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`:esc(t);
-    if(el)el.innerHTML=cr?`${L("Photos")} : ${lk(cr.url,cr.title||"")} · ${esc(cr.author||"")} · ${lk(cr.licenceUrl,cr.licence||"")}${cr.changes?` · ${L("Modifications")} : ${esc(cr.changes[LANG]||cr.changes.fr||"")}`:""}`:esc(L("Photos : Free Exercise DB (domaine public)"))}
+    if(el&&ill){el.textContent=`${L("Illustrations générées")} (${ill.tool||""}${ill.model?" · "+ill.model:""}) ${L("et vérifiées une à une ; ce ne sont pas des photos.")}`}
+    else if(el)el.innerHTML=cr?`${L("Photos")} : ${lk(cr.url,cr.title||"")} · ${esc(cr.author||"")} · ${lk(cr.licenceUrl,cr.licence||"")}${cr.changes?` · ${L("Modifications")} : ${esc(cr.changes[LANG]||cr.changes.fr||"")}`:""}`:esc(L("Photos : Free Exercise DB (domaine public)"))}
   $("exHelpSheet").hidden=false}
 // exercice non reconnu : association explicite à un exercice du catalogue (choisie par la personne, gardée sur l'exercice), sans renommer
 function exLinkOpen(se,ex){const X=window.SIDFIT_EXERCICES;if(!X)return;const w=fold(ex.name||"").split(/[^a-z0-9]+/).filter(x=>x.length>=4);

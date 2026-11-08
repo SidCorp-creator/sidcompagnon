@@ -617,7 +617,7 @@ window.SIDFIT_AIDE = {
  "Shrugs haltères ou machine": {
   "fr": {
    "mus": "Trapèzes",
-   "setup": "Debout, bras tendus le long du corps, charge en main.",
+   "setup": "Debout, un haltère dans chaque main le long du corps, bras tendus (illustré). À la machine : même mouvement des épaules, épaules sous les appuis.",
    "steps": [
     "Monte les épaules droit vers les oreilles et tiens une seconde.",
     "Redescends lentement, sans rouler les épaules."
@@ -632,7 +632,7 @@ window.SIDFIT_AIDE = {
   },
   "en": {
    "mus": "Traps",
-   "setup": "Standing, arms straight by your sides, weight in hand.",
+   "setup": "Stand with a dumbbell in each hand at your sides, arms straight (shown). On the machine: same shoulder movement, shoulders under the pads.",
    "steps": [
     "Raise your shoulders straight up towards your ears and hold for a second.",
     "Lower slowly, without rolling your shoulders."
@@ -1323,7 +1323,7 @@ window.SIDFIT_AIDE = {
  "Goblet squat": {
   "fr": {
    "mus": "Quadriceps, fessiers, gainage",
-   "setup": "Debout, pieds à largeur d'épaules, un haltère (tenu verticalement) ou une kettlebell contre la poitrine, coudes vers le bas.",
+   "setup": "Debout, pieds à largeur d'épaules, un haltère tenu verticalement contre la poitrine (mains sous la tête de l'haltère), coudes vers le bas. Avec une kettlebell : tiens-la par les côtés de la poignée, même mouvement.",
    "steps": [
     "Descends en gardant le buste droit et la charge contre la poitrine, coudes entre les genoux.",
     "Remonte en poussant dans le sol, genoux dans l'axe des pieds."
@@ -1338,7 +1338,7 @@ window.SIDFIT_AIDE = {
   },
   "en": {
    "mus": "Quads, glutes, core",
-   "setup": "Stand with feet shoulder-width apart, holding a dumbbell (vertically) or kettlebell against your chest, elbows down.",
+   "setup": "Stand with feet shoulder-width apart, a dumbbell held vertically against your chest (hands under the top end), elbows down. With a kettlebell: hold it by the sides of the handle, same movement.",
    "steps": [
     "Lower with your chest up and the weight against it, elbows between your knees.",
     "Stand up by pushing through the floor, knees in line with your feet."

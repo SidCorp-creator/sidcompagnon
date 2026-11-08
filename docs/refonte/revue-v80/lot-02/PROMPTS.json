@@ -20,7 +20,7 @@
       "originalSha256": "f9080a797e41561b103e1e3368947ea093a4e3eae70743542641dd40d8c8eebf",
       "sha256": "43203b73a5c01452f645582d763e1102edd587b17d830d096993a48b9e4441c2",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-48d8d01e-87a8-4b91-a235-935f263504e7.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "elevations-laterales-poulie-1",
@@ -35,7 +35,7 @@
       "originalSha256": "bae7448a2755927f90b89f938e9eac6f5f0c2c8218a9b6e2abdba02f21fc3b12",
       "sha256": "386f1ee4a11359e8b521d5a7f90fd87fdd53ad68fd28f3bcc3abd98fb99d1917",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-80bbf89c-4e8a-4180-81e9-543b18cd534e.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "elevations-laterales-machine-0",
@@ -50,7 +50,7 @@
       "originalSha256": "784ad05db4a84cf4e798603d4a8bbefe2b6da9284d5af3c585a32d21dcaf77b4",
       "sha256": "3eb16b215e6730e1591148629cd474022e2e9e26e44dcef6696c1ffe6317d1b5",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-48d8d01e-87a8-4b91-a235-935f263504e7.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "elevations-laterales-machine-1",
@@ -65,7 +65,7 @@
       "originalSha256": "c39284f4039a2ccba8bfba4589cfcc89508dbac2eef323c407dcacd65d6c5e32",
       "sha256": "bec6e37faa1913dd4e2705c8f5043d7fa10f75f53604462091b4228f58bb5161",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-2056ecf4-397c-4298-a95c-eae732d682df.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "hip-thrust-machine-0",
@@ -80,22 +80,7 @@
       "originalSha256": "801f514c9016d6e08eac6c4ab4c3db1bd488de57d84ae34f74289b1ee4849d37",
       "sha256": "0703b03222a913916483ffa42264156e9ff1f3ed34295289118846f0197c57a7",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-48d8d01e-87a8-4b91-a235-935f263504e7.png",
-      "review": "pending Claude V1"
-    },
-    {
-      "id": "hip-thrust-machine-1",
-      "phase": "phase clé",
-      "prompt": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration. Use the supplied starting-phase image as EXACT CHARACTER, CLOTHES, EQUIPMENT AND CAMERA REFERENCE. Change only the exercise pose to this next phase. MACHINE HIP THRUST, TOP: same machine, padded back support under upper back, same broad pelvic belt/padded lever attached to machine over hips. Extend hips until shoulders, pelvis and knees align approximately horizontally. Shins near vertical, feet flat, chin lightly tucked, ribs down. No exaggerated lumbar arch. Clearly show fixed back support AND belt/padded hip contact; NO barbell. Knees stable, not falling inward.",
-      "exercise": "Hip thrust machine",
-      "file": "hip-thrust-machine-1.jpg",
-      "width": 480,
-      "height": 320,
-      "bytes": 17438,
-      "original": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-fb40c792-1993-4e88-a5e7-2da7304f76aa.png",
-      "originalSha256": "2be5b5e20b0b6c7d665ca9ae3a95b4156dc81e89c9950395b3d98cfd54eac101",
-      "sha256": "8651ee10b1a84b6319f2c01cf7cd212118c0c6cf6926252d6a815b213977c8c5",
-      "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-75bc3916-5569-4230-ab28-7a8c5f36e948.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "presse-a-cuisses-amplitude-limitee-0",
@@ -110,7 +95,7 @@
       "originalSha256": "3049ca06a236b396aeb4957aa1b18731fefc542c30a02f657c2755a2c37e90c9",
       "sha256": "992a16fca7e5da3d85cc8608a95db4d5ebf4dc3b0147e0eedc5c99ceedb062fc",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-48d8d01e-87a8-4b91-a235-935f263504e7.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "presse-a-cuisses-amplitude-limitee-1",
@@ -125,6 +110,21 @@
       "originalSha256": "25734350341665c67c5a60aa425f386506cad5c97168c981cceb502007d8bf02",
       "sha256": "84e2525b3c8479adebe433665ab7c874caa87ef1e6aa83219cdd7940b2d5e253",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-ade1231b-c0ac-4d8e-9f8c-16465d338258.png",
+      "review": "validated Claude V1 2026-11-08"
+    },
+    {
+      "id": "hip-thrust-machine-1",
+      "phase": "phase clé",
+      "file": "hip-thrust-machine-1-v2.jpg",
+      "prompt": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration. MACHINE HIP THRUST TOP, corrected from the supplied starting illustration. Same hip-thrust machine, fixed padded back support, broad hip belt/padded lever across PELVIS, same foot positions flat on the platform and same side grips. Raise HIPS until the LINE FROM BOTH SHOULDERS THROUGH HIPS TO KNEES IS HORIZONTAL, approximately PARALLEL TO THE FLOOR. The torso is NOT still reclining at a 30–45 degree angle. Let the upper trunk/head hinge back/down around its upper-back support while the pelvis rises, so shoulders reach the SAME HEIGHT as hips and knees. Upper back supported on pad, hips fully extended without arching lower back, ribs down, CHIN TUCKED, gaze toward knees. Both shins VERTICAL, knees about 90 degrees, feet flat. Hip belt/boudin stays clearly on front of hips, not abdomen; no barbell. Show a clear complete hip extension, not the incomplete angled position previously produced.",
+      "exercise": "Hip thrust machine",
+      "width": 480,
+      "height": 320,
+      "bytes": 16500,
+      "original": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-4383bbfa-8f6b-4acb-8481-634779ebb7cf.png",
+      "originalSha256": "07a2760a2cebf035a6d152ca0dcfa5ad048bd817ceda6c95bac51439c2e8c9f4",
+      "sha256": "b2d6aff42f47c4737e19b29444a007793ff53b23fa2fa6a60373ef613741a0a4",
+      "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-75bc3916-5569-4230-ab28-7a8c5f36e948.png",
       "review": "pending Claude V1"
     }
   ],
@@ -158,7 +158,22 @@
       "sha256": "0b9f82809d6eb152e20ebe3129f670e5763543efc416502a71a8742c5c07db48",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-7d2ee367-502f-4585-8cb4-bf9cd5df7c85.png",
       "review": "rejected by Codex before V1: distorted shin/ankle proportions"
+    },
+    {
+      "id": "hip-thrust-machine-1",
+      "phase": "phase clé",
+      "prompt": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration. Use the supplied starting-phase image as EXACT CHARACTER, CLOTHES, EQUIPMENT AND CAMERA REFERENCE. Change only the exercise pose to this next phase. MACHINE HIP THRUST, TOP: same machine, padded back support under upper back, same broad pelvic belt/padded lever attached to machine over hips. Extend hips until shoulders, pelvis and knees align approximately horizontally. Shins near vertical, feet flat, chin lightly tucked, ribs down. No exaggerated lumbar arch. Clearly show fixed back support AND belt/padded hip contact; NO barbell. Knees stable, not falling inward.",
+      "exercise": "Hip thrust machine",
+      "file": "rejets/hip-thrust-machine-1.jpg",
+      "width": 480,
+      "height": 320,
+      "bytes": 17438,
+      "original": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-fb40c792-1993-4e88-a5e7-2da7304f76aa.png",
+      "originalSha256": "2be5b5e20b0b6c7d665ca9ae3a95b4156dc81e89c9950395b3d98cfd54eac101",
+      "sha256": "8651ee10b1a84b6319f2c01cf7cd212118c0c6cf6926252d6a815b213977c8c5",
+      "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-75bc3916-5569-4230-ab28-7a8c5f36e948.png",
+      "review": "rejected by Claude V1; correction requested in revue-v80-retours.md"
     }
   ],
-  "calls": 10
+  "calls": 11
 }

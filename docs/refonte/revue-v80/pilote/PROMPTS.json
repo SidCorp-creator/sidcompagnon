@@ -21,7 +21,7 @@
       "width": 480,
       "height": 320,
       "bytes": 8440,
-      "review": "pending Claude V1",
+      "review": "validated Claude V1 2026-11-08",
       "generation": "built-in image_gen only; no quota error reported"
     },
     {
@@ -39,7 +39,7 @@
       "width": 480,
       "height": 320,
       "bytes": 8569,
-      "review": "pending Claude V1",
+      "review": "validated Claude V1 2026-11-08",
       "generation": "built-in image_gen only; no quota error reported"
     },
     {
@@ -57,7 +57,7 @@
       "width": 480,
       "height": 320,
       "bytes": 7677,
-      "review": "pending Claude V1",
+      "review": "validated Claude V1 2026-11-08",
       "generation": "built-in image_gen only; no quota error reported"
     },
     {
@@ -75,7 +75,7 @@
       "width": 480,
       "height": 320,
       "bytes": 7414,
-      "review": "pending Claude V1",
+      "review": "validated Claude V1 2026-11-08",
       "generation": "built-in image_gen only; no quota error reported"
     }
   ],

@@ -8,21 +8,6 @@
   "commonStyle": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration.",
   "images": [
     {
-      "id": "pompes-sur-les-genoux-0",
-      "phase": "départ",
-      "prompt": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration. Use the supplied validated pilot as STYLE AND CHARACTER REFERENCE ONLY. Three-quarter side view of a KNEELING PUSH-UP, START: both palms on floor slightly wider than shoulders, elbows straight. Both knees rest on floor, lower legs relaxed behind them, feet not supporting bodyweight. Head, torso, hips and knees form one straight inclined line. Hips neither pike nor sag. Full body and both contact hands and knees visible; no wall or bench.",
-      "exercise": "Pompes sur les genoux",
-      "file": "pompes-sur-les-genoux-0.jpg",
-      "width": 480,
-      "height": 320,
-      "bytes": 9020,
-      "original": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-6098c35c-ca8a-4199-a666-81fb57438ae2.png",
-      "originalSha256": "24c756e7cf68ca23c003acabe55ac105bf7425782ca6e54eb2477f4b4f30b1ad",
-      "sha256": "bf04b81532bab40769c609883565ae1eeb63bd331e6ba5f52f988570add9400f",
-      "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-48d8d01e-87a8-4b91-a235-935f263504e7.png",
-      "review": "pending Claude V1"
-    },
-    {
       "id": "pompes-sur-les-genoux-1",
       "phase": "phase clé",
       "prompt": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration. Use the supplied starting-phase image as EXACT CHARACTER, CLOTHES, EQUIPMENT AND CAMERA REFERENCE. Change only the exercise pose to this next phase. KNEELING PUSH-UP, LOWERED: keep both hands and both knees fixed on floor. Bend elbows approximately 90 degrees, about 45 degrees from torso, chest close to floor. Maintain a straight line from shoulders through hips to knees, abdomen braced. Feet remain relaxed off-load. The pose must differ clearly from the straight-arm starting position.",
@@ -35,37 +20,7 @@
       "originalSha256": "7ebb42b21356d8caf976d47a8f1a75a363b9024d1d0d2d51f94653485051a048",
       "sha256": "f3bbd634720eda852c6ad5537db14c1a48f8ad84610b9d6c85b1a3adf9702655",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-6098c35c-ca8a-4199-a666-81fb57438ae2.png",
-      "review": "pending Claude V1"
-    },
-    {
-      "id": "elevations-en-w-au-sol-0",
-      "phase": "départ",
-      "prompt": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration. Use the supplied validated pilot as STYLE AND CHARACTER REFERENCE ONLY. PRONE FLOOR W RAISE, START: three-quarter view from above and beside the person, lying face down on floor, forehead resting on a small folded plain towel. Legs straight, feet down. Both upper arms angled about 45 degrees from torso, elbows bent about 90 degrees so the arms form a W, thumbs point upward. Chest stays on floor, arms resting gently on floor, neck neutral. No weights or bench.",
-      "exercise": "Élévations en W au sol",
-      "file": "elevations-en-w-au-sol-0.jpg",
-      "width": 480,
-      "height": 320,
-      "bytes": 10684,
-      "original": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-f1701a9a-1ac0-4c60-9b96-e0be3b7cf13b.png",
-      "originalSha256": "f6f010619d923efc03391497717fee7f264717b109ee264d1212e71c98dec8dc",
-      "sha256": "53f19a65d154197d78f942ff7b2f0eee1f58e2b83b7f0b7731a1412c9f169073",
-      "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-48d8d01e-87a8-4b91-a235-935f263504e7.png",
-      "review": "pending Claude V1"
-    },
-    {
-      "id": "elevations-en-w-au-sol-1",
-      "phase": "phase clé",
-      "prompt": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration. Use the supplied starting-phase image as EXACT CHARACTER, CLOTHES, EQUIPMENT AND CAMERA REFERENCE. Change only the exercise pose to this next phase. PRONE FLOOR W RAISE, RAISED PHASE: same prone pose, forehead supported on towel, chest, hips and legs stay on floor. Lift BOTH elbows and forearms a few centimetres off the floor together in the same W shape, gently retracting shoulder blades. Thumbs upward, wrists straight, elbows still bent, no extreme back extension and no lifting head or chest. Show small clear gaps and soft shadows underneath BOTH elbows and forearms, not a Superman.",
-      "exercise": "Élévations en W au sol",
-      "file": "elevations-en-w-au-sol-1.jpg",
-      "width": 480,
-      "height": 320,
-      "bytes": 11247,
-      "original": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-29e2ad2d-2f34-445d-bb52-3f05ec7bfc8f.png",
-      "originalSha256": "973338759b096d327850c93393de387d16fc86f91243e4683c3f8cc847b6a23c",
-      "sha256": "3ab4e6e48db4239b340e955f714d1132f19b294e9c7004b15f234c2bb420adef",
-      "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-f1701a9a-1ac0-4c60-9b96-e0be3b7cf13b.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "rowing-elastique-assis-0",
@@ -80,7 +35,7 @@
       "originalSha256": "efbd75a95e0ed074baf10952b3e3a37d96b4c6baf16b784afe1007ef941f1df7",
       "sha256": "672272173139cd43ed2cacd655935e01169f378275da334a6eaa78a1eeec33f8",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-48d8d01e-87a8-4b91-a235-935f263504e7.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "rowing-elastique-assis-1",
@@ -95,7 +50,7 @@
       "originalSha256": "b86c9b25f2f9ebec8ae11cc57b4a1e84aa22b3257046964a4878b8af01ec78ac",
       "sha256": "9f11d1cf6d79c86ded2dbe9b3a26e923851bebc48ca1ca3b3e3348b8a9bd4d8d",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-5f0f632a-1afe-4ecd-9025-cd9dd8206781.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "extension-triceps-elastique-debout-0",
@@ -110,7 +65,7 @@
       "originalSha256": "0d9cc03adc959a092c9f1c0def60706e8e9f5beff65b6ca64f4f6ba6890c29a8",
       "sha256": "785d5c5b62fd583066b4cd146e7d3de7384363c1f946fd38880dc016ee426e17",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-48d8d01e-87a8-4b91-a235-935f263504e7.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "extension-triceps-elastique-debout-1",
@@ -125,7 +80,100 @@
       "originalSha256": "b0fdf26514ebe62cf238125caa27bbd2ffa64855bbc68b9734095e678185668b",
       "sha256": "0c2b1d34a7bcd3e0c0f8250a69ef3267c6500d5c79e03f08ee7d7c1430f6c706",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-a74b9dab-a57a-45a4-ab6f-6f07c974428f.png",
+      "review": "validated Claude V1 2026-11-08"
+    },
+    {
+      "id": "pompes-sur-les-genoux-0",
+      "phase": "départ",
+      "file": "pompes-sur-les-genoux-0-v2.jpg",
+      "prompt": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration. KNEELING PUSH-UP START POSITION, correction to the reviewed pair. Use the supplied VALID LOWERED-PHASE illustration for person, clothing, hand placement and knee placement. Now straighten both elbows and LIFT THE ENTIRE TORSO AND HIPS together into an inclined plank supported ONLY on palms and knees. Knees stay on the floor; THIGHS SLOPE UP from the knees toward the elevated hips and DO NOT REST ON THE FLOOR. Shoulders, hips and knees must form one straight diagonal line. Hands are on the floor directly beneath shoulders, slightly wider than shoulders. Abdomen and chest clearly off the floor. Lower legs extend relaxed behind knees and do not bear the body's weight. Neutral neck and gaze diagonally down to floor, not an upward-tilted chin. Do not show sphinx, cobra, sitting back, or a tabletop with hips bent 90 degrees.",
+      "exercise": "Pompes sur les genoux",
+      "width": 480,
+      "height": 320,
+      "bytes": 8640,
+      "original": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-e1831014-ce32-43eb-8248-bc5ace6deaab.png",
+      "originalSha256": "6491a1745632759dc56b412029c18b3d54ab3288efb114578f79f2f8097d2db4",
+      "sha256": "d6b3c69c709c6a2fe1779e83ef6f344ce73c92c485297a9a503985f820ad435c",
+      "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-6f394fb6-eccf-4033-832c-8ccdd9071c24.png",
+      "review": "pending Claude V1"
+    },
+    {
+      "id": "elevations-en-w-au-sol-0",
+      "phase": "départ",
+      "file": "elevations-en-w-au-sol-0-v2.jpg",
+      "prompt": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration. PRONE W RAISE START, corrected teaching diagram with TOP-DOWN OVERHEAD VIEW to make BOTH arm bends unmistakable. Same person/clothes/hair as supplied style reference, lying face down, head toward top of frame, feet toward bottom. Forehead on a small folded towel, torso/hips/legs down. Arrange BOTH arms SYMMETRICALLY as a clear W: upper arms angled about 30–45 degrees out from the torso, elbows beside the lower ribs, BOTH ELBOWS BENT about 90 degrees, forearms angled outward and toward the head so BOTH hands lie near SHOULDER HEIGHT, thumbs pointing upward. Neither arm straight and neither arm parallel along the torso. Both elbows AND forearms resting on floor. Show the full body and both complete bent arms, no arrows, no letters and no weights.",
+      "exercise": "Élévations en W au sol",
+      "width": 480,
+      "height": 320,
+      "bytes": 6843,
+      "original": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-14b2b249-6ccc-40f4-bc0f-71c2d55aa269.png",
+      "originalSha256": "e19c0bc7f47edcca1343e8197142a86e995b8a91de9881aedd283a0fa7d310ac",
+      "sha256": "0b6c34b2f0a318cd3445411a918e24916179535b1d6043b8b5f80308f94b86c1",
+      "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-48d8d01e-87a8-4b91-a235-935f263504e7.png",
+      "review": "pending Claude V1"
+    },
+    {
+      "id": "elevations-en-w-au-sol-1",
+      "phase": "phase clé",
+      "file": "elevations-en-w-au-sol-1-v2.jpg",
+      "prompt": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration. PRONE W RAISE LIFTED PHASE, keep the EXACT corrected starting illustration: top-down overhead camera, head toward top of frame, both upper arms angled 30–45 degrees out from torso, BOTH elbows bent about 90 degrees beside lower ribs, BOTH hands near shoulder height. Change only this: lift BOTH elbows and forearms slightly a few centimetres away from the floor with visible small gaps and soft offset shadows, keeping the SAME clear symmetric W outline. Thumbs upward. Forehead remains on folded towel and chest, pelvis, legs remain down. Do not straighten either arm, do not lift chest/head and do not make a Superman. The W bend must be obvious in BOTH arms.",
+      "exercise": "Élévations en W au sol",
+      "width": 480,
+      "height": 320,
+      "bytes": 7040,
+      "original": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-d05b0792-af01-4604-9950-d808a1b34139.png",
+      "originalSha256": "ffe05780595cbe997f1c0b8c117b5575253772b3fdfb5d9997d9376f5eb60a04",
+      "sha256": "a57ec22e3000eccb32a78800fcef75f13a0a5c500a29499edbef60118886a064",
+      "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-14b2b249-6ccc-40f4-bc0f-71c2d55aa269.png",
       "review": "pending Claude V1"
     }
-  ]
+  ],
+  "rejected": [
+    {
+      "id": "pompes-sur-les-genoux-0",
+      "phase": "départ",
+      "prompt": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration. Use the supplied validated pilot as STYLE AND CHARACTER REFERENCE ONLY. Three-quarter side view of a KNEELING PUSH-UP, START: both palms on floor slightly wider than shoulders, elbows straight. Both knees rest on floor, lower legs relaxed behind them, feet not supporting bodyweight. Head, torso, hips and knees form one straight inclined line. Hips neither pike nor sag. Full body and both contact hands and knees visible; no wall or bench.",
+      "exercise": "Pompes sur les genoux",
+      "file": "rejets/pompes-sur-les-genoux-0.jpg",
+      "width": 480,
+      "height": 320,
+      "bytes": 9020,
+      "original": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-6098c35c-ca8a-4199-a666-81fb57438ae2.png",
+      "originalSha256": "24c756e7cf68ca23c003acabe55ac105bf7425782ca6e54eb2477f4b4f30b1ad",
+      "sha256": "bf04b81532bab40769c609883565ae1eeb63bd331e6ba5f52f988570add9400f",
+      "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-48d8d01e-87a8-4b91-a235-935f263504e7.png",
+      "review": "rejected by Claude V1; correction requested in revue-v80-retours.md"
+    },
+    {
+      "id": "elevations-en-w-au-sol-0",
+      "phase": "départ",
+      "prompt": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration. Use the supplied validated pilot as STYLE AND CHARACTER REFERENCE ONLY. PRONE FLOOR W RAISE, START: three-quarter view from above and beside the person, lying face down on floor, forehead resting on a small folded plain towel. Legs straight, feet down. Both upper arms angled about 45 degrees from torso, elbows bent about 90 degrees so the arms form a W, thumbs point upward. Chest stays on floor, arms resting gently on floor, neck neutral. No weights or bench.",
+      "exercise": "Élévations en W au sol",
+      "file": "rejets/elevations-en-w-au-sol-0.jpg",
+      "width": 480,
+      "height": 320,
+      "bytes": 10684,
+      "original": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-f1701a9a-1ac0-4c60-9b96-e0be3b7cf13b.png",
+      "originalSha256": "f6f010619d923efc03391497717fee7f264717b109ee264d1212e71c98dec8dc",
+      "sha256": "53f19a65d154197d78f942ff7b2f0eee1f58e2b83b7f0b7731a1412c9f169073",
+      "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-48d8d01e-87a8-4b91-a235-935f263504e7.png",
+      "review": "rejected by Claude V1; correction requested in revue-v80-retours.md"
+    },
+    {
+      "id": "elevations-en-w-au-sol-1",
+      "phase": "phase clé",
+      "prompt": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration. Use the supplied starting-phase image as EXACT CHARACTER, CLOTHES, EQUIPMENT AND CAMERA REFERENCE. Change only the exercise pose to this next phase. PRONE FLOOR W RAISE, RAISED PHASE: same prone pose, forehead supported on towel, chest, hips and legs stay on floor. Lift BOTH elbows and forearms a few centimetres off the floor together in the same W shape, gently retracting shoulder blades. Thumbs upward, wrists straight, elbows still bent, no extreme back extension and no lifting head or chest. Show small clear gaps and soft shadows underneath BOTH elbows and forearms, not a Superman.",
+      "exercise": "Élévations en W au sol",
+      "file": "rejets/elevations-en-w-au-sol-1.jpg",
+      "width": 480,
+      "height": 320,
+      "bytes": 11247,
+      "original": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-29e2ad2d-2f34-445d-bb52-3f05ec7bfc8f.png",
+      "originalSha256": "973338759b096d327850c93393de387d16fc86f91243e4683c3f8cc847b6a23c",
+      "sha256": "3ab4e6e48db4239b340e955f714d1132f19b294e9c7004b15f234c2bb420adef",
+      "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-f1701a9a-1ac0-4c60-9b96-e0be3b7cf13b.png",
+      "review": "rejected by Claude V1; correction requested in revue-v80-retours.md"
+    }
+  ],
+  "calls": 11
 }

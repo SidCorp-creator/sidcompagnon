@@ -1,9 +1,16 @@
 # Sid'note — mémoire du projet pour Claude Code
 
 Sid'note est l'application perso de **Mohamed « Sid » Sidki** (éditeur : **SidCorp**). C'est une PWA installée sur iPhone (écran d'accueil) et partagée avec ses proches. Chacun a son compte et ses données.
-Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 75.1.** L'app s'appelle **Sid'compagnon** depuis la v45 (avant : Sid'home, v42–44). Adresse : **https://sidcompagnon.com** depuis la 44.8 (sidnote.netlify.app répond encore).
+Le projet a été construit dans Cowork (versions 1 à 18), puis transféré ici. **Version actuelle : 76 (préparée, pas en ligne).** L'app s'appelle **Sid'compagnon** depuis la v45 (avant : Sid'home, v42–44). Adresse : **https://sidcompagnon.com** depuis la 44.8 (sidnote.netlify.app répond encore).
 
 > Important : les versions 23 à 27 ont été faites hors de ce dépôt (Netlify montrait la v27). Le 14 oct. 2026, la v27 a été récupérée depuis Netlify (Deploys → Download) et importée ici. **Avant chaque nouvelle version, vérifier que le dépôt contient bien la version en ligne** (numéro dans Réglages / `CACHE` de `sw.js`). Les fonctions Supabase ont pu changer aussi (ex. `rappels` lit `data.icalSoon`, `t.leads`) : ne pas renvoyer à Sid un ancien code de fonction sans vérifier.
+
+## Règles v76 (8 nov. 2026)
+- **Noms de marque** : Sid'Compagnon, Sid'Journée, Sid'Forme, Sid'Note, Sid'Bot — « Sid » + apostrophe droite `'` + majuscule, sans espace, identiques en FR et EN ; référence `MARQUES` dans `site/i18n.js` ; `node tests/marques.test.js` avant de livrer. Ne pas renommer les identifiants techniques (`sidnote-*`, `agenda/fit/note`, `mcp`…). Charte § 2.
+- **Langues** : français et anglais seulement (le néerlandais est retiré ; une préférence `nl` revient à `fr`). Toute nouvelle chaîne visible a sa traduction EN dans `DICT`.
+- **Assistant** : Sid'Bot (`app/src/shell/32-sidbot.js`, fonction Supabase `sidbot`, secrets `SIDBOT_*`), jamais de lien vers claude.ai. Il propose, la personne valide ; jamais de mot de passe, document ni note secrète dans le contexte ; aucune bascule vers un service payant.
+- **Accueil** : vue simple (3 logos) par défaut ; `data.prefs.homeView="detail"` pour la vue détaillée ; `data.prefs.tour` pour les Premiers pas.
+- Tests ciblés v76 : `tests/{marques,sidbot,accueil,agenda-minuit,nutrition-units,weight-gap,sidbot-serveur}.test.*` ; navigateur : bibliothèques dans `~/.local/share/refonte-libs` (relu par `tests/run.cjs`).
 
 ## Comment travailler avec Sid
 - Réponds **en français**, simplement et brièvement. Sid n'est pas développeur : explique en mots simples, avec des étapes cliquables.

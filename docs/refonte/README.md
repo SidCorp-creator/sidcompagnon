@@ -100,3 +100,20 @@ Rien n'est fusionné dans `main` ni mis en ligne sans l'accord de Sid. `main` = 
 ## Points ouverts (questions pour Sid)
 
 Tous les points du tour 1 sont réglés (voir Décisions). Restent à valider plus tard, au cas par cas : les simplifications de parcours de `audit-produit.md` § 6 qui changent un comportement.
+
+## v76 (8 nov. 2026) — suivi commun Claude Code / Codex
+
+Brief : `brief-76.md`. Branche d'intégration : `v76-claude` (worktree `~/sidcompagnon-claude`). Codex : `v76-codex` (`~/sidcompagnon-codex`), repris par cherry-pick. Intégration finale : Claude Code. **Rien n'est en ligne.**
+
+| Lot | Responsable | État | Vérification |
+|---|---|---|---|
+| A Noms Sid'… + référence `MARQUES` + charte/skill/CLAUDE.md | Claude | fait | `tests/marques.test.js` (106 fichiers, toutes les traductions) |
+| B Retrait du néerlandais (préférence `nl` → `fr`) | Claude | fait | build, `smoke.js` (option absente, retour au français) |
+| C Nutrition par pièce (masse de référence estimée, grammes acceptés) | Codex | fait, revu par Claude | `nutrition-units.test.cjs`, `v76-forme.test.cjs` (24 parcours) |
+| D Poids : courbe continue sur vraies dates, aucune mesure inventée | Codex | fait, revu par Claude | `weight-gap.test.cjs` (0/1/n, React/secours) |
+| E1 Sid'Bot serveur (`supabase/functions/sidbot`, `sql/sidbot.sql`) + recherche fournisseurs | Codex | fait, revu par Claude ; **non déployé, aucune clé** | `sidbot-serveur.test.cjs` (simulé), `sidbot-sql.test.cjs` (PGlite) |
+| E2 Sid'Bot dans l'app, retrait des liens/boutons Claude | Claude | fait, revu par Codex (6 remarques corrigées) | `sidbot.test.cjs` (faux serveur, FR/EN) |
+| F Aujourd'hui simple par défaut + « Affichage détaillé » + Premiers pas | Claude | fait, revu par Codex (1 défaut corrigé) | `accueil.test.cjs` (React/secours, FR/EN, clavier) |
+| G Bug capture 1 (Agenda resté sur la veille après minuit) | Claude | corrigé | `agenda-minuit.test.cjs` échoue avant (742b6b1^), passe après ; captures `avant/capture1-…`, `apres/v76-agenda-minuit-apres.png` |
+
+Décisions v76 : un seul fournisseur pour Sid'Bot (recommandé : Groq Free, à activer par Sid — `sidbot-fournisseurs.md`) ; Gemini API écarté (offre payante exigée pour l'EEE) ; aucune bascule payante ; Sid'Bot propose, la personne valide ; historique Sid'Bot sur l'appareil seulement ; Sid'Bot ne réécrit plus le programme de musculation (l'app le crée, Sid'Bot conseille) ; anciennes adresses du connecteur Claude visibles et révocables seulement ; fonction `mcp` non supprimée (décision à prendre par Sid). Relais : piège du Tab chez Codex occupé (message resté dans la saisie).

@@ -1,4 +1,4 @@
-# Charte Sid'compagnon · Élan
+# Charte Sid'Compagnon · Élan
 
 Responsable : Claude Code (rédaction). Jetons et composants : Codex (§ 11, proposés dans `revues.md`, tour 2).
 Version 1 du 5 nov. 2026 : direction **F · Élan** choisie par Sid. Elle intègre la revue T9 de Codex et les décisions du `README.md`.
@@ -11,7 +11,7 @@ C'est **la seule source** pour le skill du projet (`.claude/skills/sid-charte/`,
 1. **Chaque écran dit à quoi sert l'app.** Le nom, le rôle et ce qu'on regarde sont toujours visibles en tête.
 2. **Une app = une couleur pleine.** La couleur repère l'app. On ne s'en sert jamais pour décorer, et jamais seule : elle va toujours avec un pictogramme et un nom.
 3. **La fonction se reconnaît à son icône et à son titre**, jamais à une couleur à elle.
-4. **L'action principale vient en premier.** Claude est un bouton, toujours au même endroit.
+4. **L'action principale vient en premier.** Sid'Bot est un bouton, toujours au même endroit.
 5. **Rien de gratuit** : pas de dégradé, d'ombre portée décorative, de carte dans une carte, de texture ni d'animation sans rôle.
 6. **L'élan, c'est la progression du jour** : un chiffre en grand et une barre. Pas des effets.
 
@@ -19,13 +19,14 @@ C'est **la seule source** pour le skill du projet (`.claude/skills/sid-charte/`,
 
 | Niveau | Nom | Rôle (en-tête) | Phrase (accueil) | Fonctions |
 |---|---|---|---|---|
-| Suite | **Sid'compagnon** | — | « Bonjour Sid » + date | les 3 apps, Réglages |
-| App | **Sid Journée** | Agenda, tâches, focus | Organise tes journées | Agenda · Tâches · Focus |
-| App | **Sid Forme** | Sport et alimentation | Entraîne-toi, mange bien | Musculation · Nutrition · Graphiques |
-| App | **Sid Coffre** | Notes, documents, mots de passe | Écris, classe et protège | Notes · Documents · Mots de passe |
+| Suite | **Sid'Compagnon** | — | « Bonjour Sid » + date | les 3 apps, Réglages |
+| App | **Sid'Journée** | Agenda, tâches, focus | Organise tes journées | Agenda · Tâches · Focus |
+| App | **Sid'Forme** | Sport et alimentation | Entraîne-toi, mange bien | Musculation · Nutrition · Graphiques |
+| App | **Sid'Note** | Notes, documents, mots de passe | Écris, classe et protège | Notes · Documents · Mots de passe |
+| Assistant | **Sid'Bot** | — | dans les 3 apps (bouton du bandeau) | conversation, propositions à valider |
 
-- **Graphie** : « Sid Journée », avec une espace et une majuscule, jamais « SidJournée » ni « sid journée ». « Sid'compagnon » garde son apostrophe. En EN et NL, les noms d'apps restent en français (ce sont des noms propres) ; le rôle et la phrase sont traduits.
-- **Ne change pas** : le connecteur Claude reste « Sid'note » (fonction Supabase `mcp`), comme les clés de données (`plan`, `muscu`, `notes`…). Seuls les libellés affichés changent (inventaire : T11, Codex).
+- **Graphie (v76, décision de Sid du 8 nov.)** : toujours « Sid » + apostrophe droite `'` (U+0027) + nom avec majuscule, sans espace : **Sid'Compagnon, Sid'Journée, Sid'Forme, Sid'Note, Sid'Bot**. Jamais « Sid Journée », « SidNote », « Sid’Note » (apostrophe typographique) ni « Sid'note ». Tout futur nom de la famille suit la même règle. Les noms sont identiques en FR et EN (noms propres) ; le rôle et la phrase sont traduits. Référence unique dans le code : `MARQUES` (`site/i18n.js`) ; `tests/marques.test.js` refuse les anciennes graphies. Les noms de personnes, les contenus des utilisateurs et **SidCorp** (l'éditeur) ne sont pas concernés.
+- **Ne change pas** : les identifiants techniques (clés de données `plan`, `muscu`, `notes`…, `sidnote-*`, `agenda/fit/note`, sauvegarde `app:sidnote`, fonction Supabase `mcp` de l'ancien connecteur). Seuls les libellés affichés changent.
 - L'accueil n'a pas de couleur d'app : il est neutre, et les trois couleurs n'y apparaissent que sur leur carte.
 
 ## 3. Logos
@@ -34,18 +35,18 @@ Fichiers éditables : `docs/refonte/logos/*.svg`, sur une grille de 64 × 64.
 
 | Logo | Construction |
 |---|---|
-| Sid'compagnon | tuile `#1A1A1A`, rayon 18 ; 3 barres montantes penchées de 12°, une par app (Journée, Forme, Coffre), de gauche à droite |
-| Sid Journée | tuile bleue ; calendrier au trait avec une coche |
-| Sid Forme | tuile orange ; haltère au trait, en `#121212` |
-| Sid Coffre | tuile violette ; document à coin plié et **petit** cadenas (le contenu n'est pas tout verrouillé) |
+| Sid'Compagnon | tuile `#1A1A1A`, rayon 18 ; 3 barres montantes penchées de 12°, une par app (Journée, Forme, Coffre), de gauche à droite |
+| Sid'Journée | tuile bleue ; calendrier au trait avec une coche |
+| Sid'Forme | tuile orange ; haltère au trait, en `#121212` |
+| Sid'Note | tuile violette ; document à coin plié et **petit** cadenas (le contenu n'est pas tout verrouillé) |
 
 - **Trait** : 5 sur 64, bouts et angles arrondis ; le pictogramme est penché de 9° (`skewX(-9)`), c'est la signature d'Élan.
-- **Sur fond sombre**, la tuile de Sid'compagnon passe à `#2A2A2A` (`suite-sombre.svg`) pour rester visible.
+- **Sur fond sombre**, la tuile de Sid'Compagnon passe à `#2A2A2A` (`suite-sombre.svg`) pour rester visible.
 - **Taille minimale** : 16 px. Sous 24 px, on utilise la version `-mini` : sans coche ni cadenas, trait de 6.
 - **Une couleur** : version `-mono`, avec la tuile en `currentColor` et le pictogramme évidé. Elle sert pour les icônes « masque » de l'iPhone et l'impression.
 - **Zone de protection** : 1/8 de la taille autour de la tuile.
 - **Interdits** : déformer, changer la couleur d'une tuile, ajouter une ombre, un dégradé ou un contour, mettre le pictogramme sans sa tuile à côté d'un nom d'app, ou poser une tuile sur la couleur d'une autre app.
-- **Icône d'écran d'accueil** (validée par Sid) : logo Sid'compagnon, sans rayon (iOS arrondit lui-même), 180 et 512 px ; la version `maskable` a 20 % de marge.
+- **Icône d'écran d'accueil** (validée par Sid) : logo Sid'Compagnon, sans rayon (iOS arrondit lui-même), 180 et 512 px ; la version `maskable` a 20 % de marge.
 
 ## 4. Couleurs
 
@@ -53,7 +54,7 @@ Trois familles séparées, qu'on ne mélange jamais : **apps**, **interface** (n
 
 ### 4.1 Apps
 
-| Jeton | Sid Journée | Sid Forme | Sid Coffre | Usage |
+| Jeton | Sid'Journée | Sid'Forme | Sid'Note | Usage |
 |---|---|---|---|---|
 | `--app` | `#2563EB` | `#F25C19` | `#7C3AED` | bandeau, bouton principal, onglet actif, barre de progression, tuile de logo |
 | `--on-app` | `#FFFFFF` (5,17) | `#121212` (5,64) | `#FFFFFF` (5,70) | tout texte et toute icône posés sur `--app`, **toujours opaque** |
@@ -62,7 +63,7 @@ Trois familles séparées, qu'on ne mélange jamais : **apps**, **interface** (n
 | `--app-soft` clair / sombre | `#E4ECFD` / `#141D33` | `#FFECE2` / `#341708` | `#F0E8FE` / `#22163A` | sélection, jour courant, ligne nouvelle |
 
 - Le bandeau garde la même couleur en clair et en sombre : c'est le repère de l'app.
-- **Sid Forme ne prend jamais de texte blanc** (3,1:1) : texte et icônes en `#121212`.
+- **Sid'Forme ne prend jamais de texte blanc** (3,1:1) : texte et icônes en `#121212`.
 - Le couple `--app`/`--on-app` se pose **sur chaque surface colorée** (bandeau, carte d'accueil, bouton). Il ne s'hérite jamais d'un conteneur (défaut relevé par Codex sur l'accueil).
 - **Palette des types d'activité** (`--c-event`, `--c-cours`…, choisis par la personne dans Réglages) : aucun jeton n'est égal ou proche d'une couleur d'app. Le 5 nov. : `--c-event` passe de l'orange au sarcelle `#0F8B8D` ; `--c-cours` du bleu à l'olive `#66712E` / `#AAB76D` ; `--c-memoire` du violet au framboise `#9B427A` / `#D286B5` ; `--x4` de l'indigo à un brun désaturé (vers `#7C5A45` / `#C49A80`). Les types qui renvoient à ces jetons suivent, et aucune donnée n'est écrite. Les 5 types par défaut sont nettement distincts entre eux. Pastilles : 3:1 minimum, toujours avec le nom du type. Détail : `palette-types.md` (Codex).
 - L'orange n'est pas celui d'une marque existante : `#FC4C02` est remplacé par `#F25C19`.
@@ -118,7 +119,7 @@ Les 9 autres familles sortent de l'app quand plus rien ne les utilise. Le monosp
 - **Échelle** : 4, 8, 12, 16, 20, 24, 32, 48. Marge d'écran de 20 px sur téléphone, 48 px sur ordinateur.
 - **Cibles** : 44 px au minimum, 48 px pour les boutons principaux et les lignes de liste. Les lignes denses (agenda, séries) font 56 px.
 - **Exception calendrier (écrans < 360 px)** : une grille à 7 colonnes ne peut pas tenir 7 × 44 px. Les cellules gardent 44 px de haut et descendent jusqu'à 36 px de large, sans espace mort entre elles. La grille peut empiéter sur la marge d'écran, jusqu'à 12 px. Le jour choisi est toujours signalé par plus que la couleur (fond plein + chiffre en gras). Au-delà de 360 px, la règle des 44 px s'applique.
-- **Rayons** : contrôle 10 ; bloc 16 ; carte d'accueil 18 ; fenêtre 22 ; pilule (puce, bouton Claude) 999.
+- **Rayons** : contrôle 10 ; bloc 16 ; carte d'accueil 18 ; fenêtre 22 ; pilule (puce, bouton Sid'Bot) 999.
 - **Un seul niveau de bloc** : les listes sont posées sur `--surface` avec des séparateurs `--line`. Jamais de carte dans une carte.
 - **Téléphone (390 px)** : bandeau, puis contenu, puis barre du bas à 3 onglets (+ zone de sécurité). Grilles en `minmax(0,1fr)`.
 - **Accueil** : salutation, puis les 3 cartes compactes (bandeau de 56 px avec logo, nom et rôle ; chiffre clé ; fonctions en puces). Les **trois apps et leurs fonctions doivent se voir sans défiler** sur 390 × 844.
@@ -134,8 +135,8 @@ Les 9 autres familles sortent de l'app quand plus rien ne les utilise. Le monosp
 
 | Composant | Règle |
 |---|---|
-| **Bandeau d'app** | fond `--app`, texte `--on-app`. Ligne 1 : bouton « Toutes les apps », logo de 32, nom + rôle, bouton Claude. Ligne 2 : titre de la fonction (italique de 44). Ligne 3 : progression du jour (chiffre de 20 + barre de 6 px, en `--on-app` sur 18 % de noir). Il passe en **compact** (la ligne logo, nom, rôle et Claude reste ; le titre passe à 32 ; la progression disparaît) dès qu'on défile, quand le clavier est ouvert ou sous 700 px de haut |
-| **Bouton Claude** | pilule, fond `--on-app`, texte et icône `--app`, libellé « Claude ». Il est toujours en haut à droite du bandeau, dans les 3 apps. Il ouvre la conversation de l'app en cours. Il remplace le champ Claude en tête des écrans (validé par Sid) |
+| **Bandeau d'app** | fond `--app`, texte `--on-app`. Ligne 1 : bouton « Toutes les apps », logo de 32, nom + rôle, bouton Sid'Bot. Ligne 2 : titre de la fonction (italique de 44). Ligne 3 : progression du jour (chiffre de 20 + barre de 6 px, en `--on-app` sur 18 % de noir). Il passe en **compact** (la ligne logo, nom, rôle et Claude reste ; le titre passe à 32 ; la progression disparaît) dès qu'on défile, quand le clavier est ouvert ou sous 700 px de haut |
+| **Bouton Sid'Bot** | pilule, fond `--on-app`, texte et icône `--app`, libellé « Sid'Bot » (nom accessible « Ouvrir Sid'Bot, l'assistant »). Toujours en haut à droite du bandeau, dans les 3 apps ; il ouvre le panneau Sid'Bot de l'app en cours (v76) |
 | **Bouton principal** | un seul par écran, fond `--app`, texte `--on-app`, 48 px, rayon 10, verbe à l'infinitif |
 | **Bouton secondaire** | fond `--surface-2`, texte `--ink` |
 | **Barre du bas** | 3 onglets ; l'onglet actif a l'icône en `--app-ink` et le libellé en `--ink` 700, avec un trait de 3 px en `--app` au-dessus ; les inactifs sont en `--muted` |
@@ -146,11 +147,12 @@ Les 9 autres familles sortent de l'app quand plus rien ne les utilise. Le monosp
 | **Fenêtre (feuille)** | depuis le bas, rayon 22 en haut, poignée, titre en Condensed de 22, bouton principal en bas collé à la zone de sécurité |
 | **Message bref** | en bas au-dessus de la barre, fond `--ink` et texte `--bg`, avec une action « Annuler » quand c'est possible ; 4 s |
 | **État vide** | pictogramme de l'app en `--muted`, une phrase, le bouton principal |
-| **Lien entre apps** | puce avec le pictogramme et le nom de l'autre app (« Sid Forme ») dans une ligne d'agenda |
-| **Bandeau de la suite** (Réglages, Installer) | fond `--surface-2`, texte `--ink`, pas de bouton Claude ni de progression ; jamais un bloc clair sur fond sombre |
+| **Lien entre apps** | puce avec le pictogramme et le nom de l'autre app (« Sid'Forme ») dans une ligne d'agenda |
+| **Bandeau de la suite** (Réglages, Installer) | fond `--surface-2`, texte `--ink`, pas de bouton Sid'Bot ni de progression ; jamais un bloc clair sur fond sombre |
 | **Sélection** | un choix sélectionné (puce, segment, case de choix multiple) est **plein** : `--app` / `--on-app` dans une app, `--ink` / `--bg` dans la suite ; une simple bordure ne suffit jamais. Les choix multiples ajoutent une coche |
 | **Ligne repliée** | 56 px, chevron dessiné (jamais « › » ou « ▶ » en caractère), titre `--ink` 600, état à droite en `--muted` (en `--app-ink` quand il est actif) |
-| **Conversation Claude** | ligne repliée en bas de l'écran principal d'Agenda, Musculation, Nutrition et Notes (décision de Sid du 6 nov.) : lien, Enregistrer, Retirer. Plus dans Réglages. Le bouton Claude n'en dépend pas |
+| **Panneau Sid'Bot** (v76) | fenêtre neutre (pas de couleur d'app) : titre « Sid'Bot », choix de l'app (segment plein `--ink` / `--bg`), puces « Partagé avec Sid'Bot » retirables, bulles (moi : `--ink` / `--bg` ; Sid'Bot : `--surface-2`), propositions avec un bouton chacune, erreur avec icône + phrase qui dit quoi faire (`--err`), champ + « Envoyer ». Remplace la « Conversation Claude » (retirée en v76) |
+| **Accueil, vue simple** (v76, défaut) | 3 tuiles égales : logo de 72, nom, rôle ; « Affichage détaillé » en lien sous les tuiles et dans Réglages ; carte « Premiers pas » (3 actions réelles, « 1 sur 3 », masquable, relançable) |
 | **Fermer** | bouton icône de 44 px, fond `--surface-2`, croix dessinée ; jamais le caractère « × » |
 | **Nombres** | format de la langue (« 2 400 », « 3,7 g » ; EN « 2,400 », « 3.7 g »), espace insécable normale (U+00A0) entre nombre et unité et pour les milliers : l'espace fine U+202F est quasi invisible en Barlow (2 px) |
 

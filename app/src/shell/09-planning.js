@@ -70,8 +70,15 @@ function renderDayView(){
       <div class="two"><button type="button" class="btn ghost" id="qCancel">Annuler</button><button class="btn" type="submit">Ajouter</button></div>
     </form>`:`<button class="qbtn" id="qOpen">${GI("plus")} ${L("Ajouter une activité ce jour")}</button>`}`;
 }
+// v76 (bug capture 1) : l'app reste ouverte (iPhone, ordinateur) après minuit → l'Agenda restait sur la veille comme si c'était aujourd'hui.
+// Quand la date change, le jour affiché suit s'il était « aujourd'hui » ; un jour choisi exprès par la personne est gardé.
+let selToday=null;
+function planDayRoll(){const t=iso(today());if(!selToday){selToday=t;return false}if(selToday===t)return false;
+  if(!selDay||selDay===selToday){selDay=t;calY=today().getFullYear();calM=today().getMonth()}selToday=t;return true}
+setInterval(()=>{if(!document.hidden&&planDayRoll()){renderPlan();renderStats();if(data.ui.view==="home")renderHome()}},60000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&planDayRoll()&&data.ui.view==="home")renderHome()});
 function renderCal(){
-  if(!selDay)selDay=iso(today());
+  planDayRoll();if(!selDay)selDay=iso(today());
   const day=calMode==="day",yr=calMode==="year";
   $("calMonth").hidden=day||yr;$("calDayView").hidden=!day;$("calYear").hidden=!yr;
   $("calH2").textContent=L(day?"Journée":yr?"Cette année":"Ce mois-ci");
@@ -162,7 +169,7 @@ function renderElanDay(){const host=$("journeyDay");if(!host)return;
 }
 $("v-plan").addEventListener("click",e=>{const b=e.target.closest("[data-elan-day]");if(!b)return;selDay=b.dataset.elanDay;renderPlan()});
 function renderPlan(){
-  renderElanDay();if(data.ui.view&&data.ui.view!=="home")renderVhead(data.ui.view);
+  planDayRoll();renderElanDay();if(data.ui.view&&data.ui.view!=="home")renderVhead(data.ui.view);
   ephFill();
   const T=data.tasks,q=norm(planQ);
   $("planTop").hidden=!!q;

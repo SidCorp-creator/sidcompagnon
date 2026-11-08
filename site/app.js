@@ -571,7 +571,10 @@ function renderVhead(v){const el=$("vhead");
  const g=groupOf(v),previous=el.dataset.app===g.app?Number(el.querySelector("[role=progressbar]")?.getAttribute("aria-valuenow")||0):0;el.hidden=false;el.dataset.app=g.app;el.classList.remove("many");
  const list=allT().filter(t=>onDay(t,iso(today()))&&!t.canc),done=list.filter(t=>t.status==="fait"||(t.date===iso(today())&&t.timeEnd&&toMin(t.timeEnd)<=new Date().getHours()*60+new Date().getMinutes())).length;
  let progress=`${done} / ${list.length} ${L("activités réalisées")}`,percent=list.length?Math.round(done/list.length*100):0,hasProgress=g.app==="agenda";
+ // v76 (capture 1) : journée vide → une phrase claire au lieu de « 0 / 0 » et d'une barre vide
+ if(g.app==="agenda"&&!list.length){progress=L("Aucune activité aujourd'hui");hasProgress=false}
  if(v==="todo"){const day=iso(today()),items=data.todos.filter(t=>!t.paused&&(t.done?doneDay(t)===day:!t.day||tDay(t)===day)),completed=items.filter(t=>t.done).length;progress=`${completed} / ${items.length} ${L("tâches réalisées aujourd'hui")}`;percent=items.length?Math.round(completed/items.length*100):0;hasProgress=true}
+ if(v==="todo"&&progress.startsWith("0 / 0")){progress=L("Aucune tâche aujourd'hui");hasProgress=false}
  if(v==="pomo"){const r=P.run,segs=r?r.segs:buildSegs(P.cfg),total=r?segs.reduce((a,x)=>a+x.d*MIN,0):pomoLastPosition?pomoLastPosition.total:segs.reduce((a,x)=>a+x.d*MIN,0),taken=r?Math.max(0,Math.min(total,elapsed(r))):pomoLastPosition?total:0,n=r?segs.filter(x=>x.t==="w").length:pomoLastPosition?pomoLastPosition.cycles:segs.filter(x=>x.t==="w").length,cycle=r?segs.slice(0,locate(r,taken).i+1).filter(x=>x.t==="w").length:pomoLastPosition?n:0;progress=!r&&!pomoLastPosition?`${pomoDuration(total/MIN)} · ${n} ${L(n===1?"session":"sessions")}`:`${pomoDuration(taken/MIN)} ${L("sur")} ${pomoDuration(total/MIN)} · ${L("session")} ${Math.min(n,cycle)} ${L("sur")} ${n}`;percent=total?Math.min(100,Math.round(taken/total*1000)/10):0;hasProgress=true}
  if(g.app==="fit"){const n=NU();
   if(v==="muscu"){const p=muSessionProgress();progress=`${p.done} / ${p.total} ${L("séries complètes")}`;percent=p.total?Math.round(p.done/p.total*100):0;hasProgress=true}
@@ -1087,8 +1090,15 @@ function renderDayView(){
       <div class="two"><button type="button" class="btn ghost" id="qCancel">Annuler</button><button class="btn" type="submit">Ajouter</button></div>
     </form>`:`<button class="qbtn" id="qOpen">${GI("plus")} ${L("Ajouter une activité ce jour")}</button>`}`;
 }
+// v76 (bug capture 1) : l'app reste ouverte (iPhone, ordinateur) après minuit → l'Agenda restait sur la veille comme si c'était aujourd'hui.
+// Quand la date change, le jour affiché suit s'il était « aujourd'hui » ; un jour choisi exprès par la personne est gardé.
+let selToday=null;
+function planDayRoll(){const t=iso(today());if(!selToday){selToday=t;return false}if(selToday===t)return false;
+  if(!selDay||selDay===selToday){selDay=t;calY=today().getFullYear();calM=today().getMonth()}selToday=t;return true}
+setInterval(()=>{if(!document.hidden&&planDayRoll()){renderPlan();renderStats();if(data.ui.view==="home")renderHome()}},60000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&planDayRoll()&&data.ui.view==="home")renderHome()});
 function renderCal(){
-  if(!selDay)selDay=iso(today());
+  planDayRoll();if(!selDay)selDay=iso(today());
   const day=calMode==="day",yr=calMode==="year";
   $("calMonth").hidden=day||yr;$("calDayView").hidden=!day;$("calYear").hidden=!yr;
   $("calH2").textContent=L(day?"Journée":yr?"Cette année":"Ce mois-ci");
@@ -1179,7 +1189,7 @@ function renderElanDay(){const host=$("journeyDay");if(!host)return;
 }
 $("v-plan").addEventListener("click",e=>{const b=e.target.closest("[data-elan-day]");if(!b)return;selDay=b.dataset.elanDay;renderPlan()});
 function renderPlan(){
-  renderElanDay();if(data.ui.view&&data.ui.view!=="home")renderVhead(data.ui.view);
+  planDayRoll();renderElanDay();if(data.ui.view&&data.ui.view!=="home")renderVhead(data.ui.view);
   ephFill();
   const T=data.tasks,q=norm(planQ);
   $("planTop").hidden=!!q;
@@ -3802,7 +3812,7 @@ function sbRender(){const A=SB_APPS[sbApp],msgs=sbMsgs(sbApp);
 function sbSuggest(app){return app==="journee"?["Qu'est-ce que j'ai de prévu cette semaine ?","Aide-moi à organiser ma journée"]:
   app==="forme"?["Que manger ce soir pour compléter ma journée ?","Explique-moi mon programme"]:["Aide-moi à structurer une note","Résume la note ouverte"]}
 const sbActVerb=a=>a.type==="add_task"?"Ajouter à l'agenda":a.type==="add_note"?"Créer la note":a.type==="log_meal"?"Ajouter au repas":"Appliquer";
-const sbActLabel=a=>{const p=a.payload||{};return a.type==="add_task"?`${p.title||""} · ${p.date||""}${p.time?" "+p.time:""}`:a.type==="add_note"?String(p.title||""):String(p.name||p.title||"")};
+const sbActLabel=a=>{const p=a.payload||{};return a.type==="add_task"?`${p.title||""} · ${p.date||""}${p.time?" "+p.time:""}`:a.type==="add_note"?String(p.title||""):a.type==="log_meal"?`${p.name||""} · ${Math.round((p.items||[]).reduce((t,x)=>t+(+x.kcal||0),0))} kcal`:String(p.name||p.title||"")};
 // ---- envoi ----
 async function sbSend(retry){if(sbBusy)return;const i=$("sbIn");let text=i.value.trim();const app=sbApp;
   if(retry){const last=sbMsgs(app).filter(m=>m.role==="user").pop();if(!last)return;text=last.content}
@@ -3830,7 +3840,9 @@ const SB_D=/^\d{4}-\d{2}-\d{2}$/,SB_T=/^([01]\d|2[0-3]):[0-5]\d$/;
 function sbActOk(a){if(!a||typeof a!=="object"||!a.payload||typeof a.payload!=="object")return false;const p=a.payload;
   if(a.type==="add_task")return typeof p.title==="string"&&p.title.trim()&&SB_D.test(p.date||"")&&(!p.time||SB_T.test(p.time));
   if(a.type==="add_note")return typeof p.title==="string"&&typeof (p.body??"")==="string";
-  if(a.type==="log_meal")return typeof nuLogFromBot==="function"&&SB_D.test(p.date||"")&&typeof p.name==="string"&&p.name.trim()!=="";
+  // contrat figé avec Codex (v76) : {date,time?,name,items:[{name,qty,kcal,p,c,f,g?,unit_g?,unit_label?}]} ; kcal/p/c/f = totaux de la quantité
+  if(a.type==="log_meal")return typeof nuLogFromBot==="function"&&SB_D.test(p.date||"")&&(!p.time||SB_T.test(p.time))&&typeof p.name==="string"&&p.name.trim()!==""&&
+    Array.isArray(p.items)&&p.items.length>0&&p.items.length<=30&&p.items.every(x=>x&&typeof x.name==="string"&&x.name.trim()&&["kcal","p","c","f"].every(k=>Number.isFinite(+x[k])&&+x[k]>=0&&+x[k]<1e4));
   return false}
 function sbApply(a){const p=a.payload;
   if(a.type==="add_task"){const t={id:uid(),title:p.title.trim().slice(0,200),date:p.date,status:"à faire",tbc:false,cat:""};if(p.time)t.time=p.time;

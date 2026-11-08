@@ -81,7 +81,7 @@ function sbRender(){const A=SB_APPS[sbApp],msgs=sbMsgs(sbApp);
 function sbSuggest(app){return app==="journee"?["Qu'est-ce que j'ai de prévu cette semaine ?","Aide-moi à organiser ma journée"]:
   app==="forme"?["Que manger ce soir pour compléter ma journée ?","Explique-moi mon programme"]:["Aide-moi à structurer une note","Résume la note ouverte"]}
 const sbActVerb=a=>a.type==="add_task"?"Ajouter à l'agenda":a.type==="add_note"?"Créer la note":a.type==="log_meal"?"Ajouter au repas":"Appliquer";
-const sbActLabel=a=>{const p=a.payload||{};return a.type==="add_task"?`${p.title||""} · ${p.date||""}${p.time?" "+p.time:""}`:a.type==="add_note"?String(p.title||""):String(p.name||p.title||"")};
+const sbActLabel=a=>{const p=a.payload||{};return a.type==="add_task"?`${p.title||""} · ${p.date||""}${p.time?" "+p.time:""}`:a.type==="add_note"?String(p.title||""):a.type==="log_meal"?`${p.name||""} · ${Math.round((p.items||[]).reduce((t,x)=>t+(+x.kcal||0),0))} kcal`:String(p.name||p.title||"")};
 // ---- envoi ----
 async function sbSend(retry){if(sbBusy)return;const i=$("sbIn");let text=i.value.trim();const app=sbApp;
   if(retry){const last=sbMsgs(app).filter(m=>m.role==="user").pop();if(!last)return;text=last.content}
@@ -109,7 +109,9 @@ const SB_D=/^\d{4}-\d{2}-\d{2}$/,SB_T=/^([01]\d|2[0-3]):[0-5]\d$/;
 function sbActOk(a){if(!a||typeof a!=="object"||!a.payload||typeof a.payload!=="object")return false;const p=a.payload;
   if(a.type==="add_task")return typeof p.title==="string"&&p.title.trim()&&SB_D.test(p.date||"")&&(!p.time||SB_T.test(p.time));
   if(a.type==="add_note")return typeof p.title==="string"&&typeof (p.body??"")==="string";
-  if(a.type==="log_meal")return typeof nuLogFromBot==="function"&&SB_D.test(p.date||"")&&typeof p.name==="string"&&p.name.trim()!=="";
+  // contrat figé avec Codex (v76) : {date,time?,name,items:[{name,qty,kcal,p,c,f,g?,unit_g?,unit_label?}]} ; kcal/p/c/f = totaux de la quantité
+  if(a.type==="log_meal")return typeof nuLogFromBot==="function"&&SB_D.test(p.date||"")&&(!p.time||SB_T.test(p.time))&&typeof p.name==="string"&&p.name.trim()!==""&&
+    Array.isArray(p.items)&&p.items.length>0&&p.items.length<=30&&p.items.every(x=>x&&typeof x.name==="string"&&x.name.trim()&&["kcal","p","c","f"].every(k=>Number.isFinite(+x[k])&&+x[k]>=0&&+x[k]<1e4));
   return false}
 function sbApply(a){const p=a.payload;
   if(a.type==="add_task"){const t={id:uid(),title:p.title.trim().slice(0,200),date:p.date,status:"à faire",tbc:false,cat:""};if(p.time)t.time=p.time;

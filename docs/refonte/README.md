@@ -155,3 +155,9 @@ Skills retenus : `sid-charte` (M3, M4 : charte), `sid-relais` (tous : relais com
 - Vérifié : tests ciblés (PDF relu par pdf.js, actions serveur, client FR mobile / EN ordinateur, clavier et focus), Élan 15/15 ; vrais appels Groq (code serveur, connexion/compteur simulés) : correction d'orthographe proposée, export PDF proposé, sans note jointe aucune action.
 - À la publication : pousser sur `main` **et** redéployer `sidbot` (actions note).
 - 8 nov. : connecteur Claude (`mcp`) **gardé** pendant que Sid teste Sid'Bot (semaine du 9 nov.) ; suppression prévue si Sid'Bot convient, sur demande explicite de Sid.
+
+## v79 (8 nov.) — fiche « ? » des exercices — **prête, non publiée**
+- Inventaire : 58 exercices ; **41 fiches complètes** (2 photos exactes vérifiées + conseils FR/EN), **17 incomplètes** documentées (`site/exercices/MISSING.json`) : marquées `help:false`, gardées dans la génération avec « Fiche en préparation » et un avertissement avant génération ; jamais de « ? » vide ni de photo approchante.
+- Répartition : Codex E1 (photos Free Exercise DB + Wikimedia Commons, `SOURCES.json`, crédits) + E2 (identifiants, alias, `help`, moteur/Edge, test de couverture) ; Claude E3 (conseils des 58 : placement, exécution, respiration, points d'attention, erreurs) + E4 (interface : « ? » en séance, aperçu, remplacement ; association explicite des exercices non reconnus ; crédits ; états d'erreur) + intégration.
+- Revues : Codex a corrigé 3 conseils pour coller aux photos ; Claude a fait la revue visuelle des 41 paires (planches `apres/v79-planches/`) : 5 doutes, 4 levés par Codex sur les originaux, 1 remplacé (planche).
+- Vérifié : 18 suites de tests + Élan 15/15 ; `exercices-aide.test.cjs --require-complete` échoue volontairement (17 manques).

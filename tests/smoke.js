@@ -542,14 +542,10 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.waitForTimeout(3000); // laisse finir l'ouverture Face ID précédente (sinon le coffre se rouvre pendant le test)
     await pg.waitForFunction(()=>{if(vaultKey)pwdLock();return !vaultKey&&pinStep==="unlock"&&!$("pinBio").hidden},null,{timeout:5000}).catch(()=>{});await pg.evaluate(()=>{if(vaultKey)pwdLock();renderPwd()});await pg.click("#pinBio");await pg.waitForTimeout(2500);
     if(await pg.evaluate(()=>!!vaultKey||bioHas("main")))err("mauvais code Face ID mal géré");
-    // adresse pour Claude
-    await pg.evaluate(()=>{show("more");document.querySelector('[data-sec="claude"]').open=true;$("aiAdv").open=true});await pg.waitForTimeout(500);
-    await pg.click("#mcpNew");await pg.waitForTimeout(800);
-    const url=await pg.textContent("#mcpUrl");if(!/^https:\/\/sidcompagnon\.com\/mcp\/[A-Za-z0-9_-]{40,}$/.test(url))err("adresse Claude incorrecte : "+url); // v45.2 : sur le domaine de l'app
-    if(await pg.locator("#mcpList [data-mcpdel]").count()!==1)err("adresse Claude absente de la liste");
-    await shot(pg,"v38-claude");
-    await pg.click("#mcpList [data-mcpdel]");await pg.click("#mcpList [data-mcpdel]");await pg.waitForTimeout(600);
-    if(await pg.locator("#mcpList [data-mcpdel]").count()!==0)err("adresse Claude pas retirée");
+    // v76 : plus d'adresse Claude à créer ; la section Sid'Bot remplace celle de Claude
+    await pg.evaluate(()=>{show("more")});await pg.waitForTimeout(300);
+    if(await pg.locator('[data-sec="claude"],#mcpNew,#aiAdv').count())err("la création d'adresse Claude existe encore");
+    if(!(await pg.locator('#sbSec [data-sidbot]').count()))err("section Sid'Bot absente des Réglages");
     // note en plein écran
     await pg.evaluate(()=>show("notes"));await pg.waitForTimeout(300);await pg.click("#noteNew");await pg.fill("#noteTitle","Plein écran");await pg.waitForTimeout(300);
     const box=await pg.$eval("#noteEdit",e=>{const r=e.getBoundingClientRect();return [r.width,r.height,innerWidth,innerHeight]});
@@ -607,28 +603,16 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     // tout se referme au retour
     await pg.evaluate(()=>{openActions("x",[{l:"y",fn:()=>{}}]);show("more");document.querySelector('[data-sec="privacy"]').open=true;closeAll()});await pg.waitForTimeout(200);
     if(await pg.evaluate(()=>!$("actSheet").hidden||document.querySelector('[data-sec="privacy"]').open))err("closeAll laisse des choses ouvertes");
-    // Mon IA : choisir Claude, adresse créée et copiée, test confirmé
-    // v44.7 : plus de carte Claude sur Aujourd'hui (elle reste dans Nutrition et Réglages)
-    await pg.evaluate(()=>show("home"));await pg.waitForTimeout(200);
-    if(await pg.isVisible("#homeBody .hm-ai"))err("la carte Claude est encore sur Aujourd'hui");
-    // v42 : Claude seulement, l'assistant va directement aux étapes de Claude
-    await pg.evaluate(()=>aiWizard());await pg.waitForTimeout(900);await shot(pg,"v39-ia-etapes");
-    if(await pg.locator("[data-aipick]").count())err("le choix d'une autre IA est encore proposé");
-    const au=await pg.textContent("#aiUrl");if(!/^https:\/\/sidcompagnon\.com\/mcp\//.test(au))err("adresse pas créée dans l'assistant : "+au);
-    const ah=await pg.getAttribute("[data-aiadd]","href").catch(()=>"");
-    if(!(ah.startsWith("https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=Sid'note")&&ah.includes("connectorUrl="+encodeURIComponent(au))))err("lien Claude pré-rempli incorrect : "+ah);
-    await pg.click('[data-aistep="test"]');await pg.waitForTimeout(300);await pg.evaluate(async()=>{await fetch(SUPABASE_URL+"/__mcpuse")});
-    await pg.waitForSelector("#aiDone:not([hidden])",{timeout:10000}).catch(()=>err("branchement pas détecté"));await shot(pg,"v39-ia-branchee");
-    if(await pg.isVisible("#aiDone"))await pg.click("#aiDone");
-    if(!(await pg.evaluate(()=>!!data.prefs.aiOk&&data.prefs.ai==="claude")))err("IA branchée pas retenue");
+    // v76 : l'assistant est Sid'Bot, dans l'app (plus de branchement à Claude)
+    await pg.evaluate(()=>{aiWizard()});await pg.waitForTimeout(300);
+    if(!(await pg.isVisible("#sbSheet")))err("Sid'Bot ne s'ouvre pas");await shot(pg,"v76-sidbot");await pg.click("#sbClose");
     // nutrition sans clé : profil calculé dans l'app, menu confié à l'IA
     await pg.evaluate(()=>{data.prefs.tabs.nutri=true;save();applyTabs();NU().consent=new Date().toISOString();show("nutri")});await pg.waitForTimeout(300);
     const pr=await pg.evaluate(()=>{const r=nuProfileLocal({sex:"male",age:24,height_cm:180,weight_kg:75,sports:[{sport:"Musculation",times_per_week:4,minutes_per_session:60}],goal:"gain",pace:"realistic",target_weight_kg:80,timeframe_weeks:4});return r});
     if(!(pr.bmr_kcal===1760&&pr.target_kcal>pr.tdee_kcal&&pr.protein_g===135&&pr.weight_goal.realistic===false&&pr.sports_kcal[0].kcal_per_session>300))err("profil local incorrect : "+JSON.stringify(pr));
     await pg.evaluate(()=>nuCall("menu",{data:{meals:[{name:"Dîner",kcal:700}],must_include:"poulet"}}).catch(()=>{}));await pg.waitForTimeout(300);
-    if(!(await pg.isVisible("#aiAskSheet"))||!(await pg.textContent("#aaPrompt")).includes("poulet"))err("menu pas confié à l'IA");
-    await shot(pg,"v39-ia-demande");await pg.click("#aaClose");
-    if(await pg.evaluate(()=>!!data.prefs.aiOk)?!(await pg.evaluate(()=>!$("nuAiLink").hidden&&$("nuAiLink").href.includes("claude"))):!(await pg.isVisible("#nuAiCard")))err("ni carte IA ni lien Claude dans Nutrition");
+    if(!(await pg.isVisible("#sbSheet"))||!(await pg.inputValue("#sbIn").catch(()=>"")+await pg.textContent("#sbList")).includes("poulet"))err("menu pas confié à Sid'Bot");
+    await shot(pg,"v76-sidbot-menu");await pg.click("#sbClose");
     // notifications : la veille toujours active
     await pg.evaluate(()=>{data.prefs.notif={leads:[10]};save()});if(!(await pg.evaluate(()=>notifLeads().includes(1440))))err("la veille n'est pas toujours active");
     await ctx.close()}
@@ -672,10 +656,9 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     // v43 : remarque → ajustement par Claude (le message part dans son Claude, comme Nutrition)
     await pg.evaluate(()=>{$("coachBox").hidden=false});await pg.fill("#coRemark","remplace la 2e séance jambes par une séance haut du corps");await pg.click('#coachBox [data-coach="adjust"]');await pg.waitForTimeout(300);
     if(await pg.isVisible("#consentSheet")){await pg.click("#consentYes");await pg.waitForTimeout(300)}
-    if(!(await pg.isVisible("#aiAskSheet"))||!(await pg.textContent("#aaPrompt")).includes("remplace la 2e séance jambes"))err("l'ajustement n'envoie pas la remarque à Claude");
-    if(!(await pg.evaluate(()=>PL().aiWait&&PL().profile.remarks.length===1)))err("remarque pas gardée / attente non signalée");
-    await shot(pg,"v43-coach-ajuster");await pg.click("#aaClose");await pg.waitForTimeout(150);
-    if(!(await pg.isVisible("#coachBox .coach-wait")))err("« demande envoyée à Claude » pas affiché");
+    if(!(await pg.isVisible("#sbSheet"))||!(await pg.textContent("#sbList")).includes("remplace la 2e séance jambes"))err("l'ajustement n'envoie pas la remarque à Sid'Bot");
+    if(!(await pg.evaluate(()=>!PL().aiWait&&PL().profile.remarks.length===1)))err("remarque pas gardée (ou attente encore créée)");
+    await shot(pg,"v76-coach-sidbot");await pg.click("#sbClose");await pg.waitForTimeout(150);
     // le programme de Claude arrive (comme par le connecteur) : l'attente disparaît
     await pg.evaluate(()=>{const o=PL();PLD().forEach(s=>{s.grp={...s.grp,id:"ia1",src:"claude"};s.upd=Date.now()});M().plan={id:"ia1",v:2,profile:o.profile,at:new Date().toISOString(),upd:Date.now(),src:"ia"};M().upd=Date.now();renderMuscu()});
     if(await pg.isVisible("#coachBox .coach-wait"))err("l'attente reste après l'arrivée du programme de Claude");

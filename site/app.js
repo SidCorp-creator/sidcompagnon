@@ -4715,7 +4715,16 @@ function nuQtyRatio(x,q){const a=nuQtyGrams(x,x.qty),b=nuQtyGrams(x,q);
   return unit(x.qty)===unit(q)&&qtyNum(x.qty)>0?qtyNum(q)/qtyNum(x.qty):0
 }
 function nuQtyMeta(x){const ref=nuUnitRef(x),g=nuQtyGrams(x,x.qty);return {...(g>0?{g:r1(g)}:{}),...(ref?{unit_g:ref.g,unit_label:ref.label}:{})}}
-function nuQtyHelp(x){const ref=nuUnitRef(x);if(!ref)return "";return T3(`Pièce estimée : ${ref.label}, ≈ ${fmtN(ref.g)} g. Tu peux aussi saisir des grammes (ex. 100 g).`,`Estimated piece: ${ref.label}, ≈ ${fmtN(ref.g)} g. You can also enter grams (e.g. 100 g).`)}
+function nuQtyHelp(x){const ref=nuUnitRef(x);if(!ref)return "";
+  let label=String(ref.label||"").replace(/(?:,\s*)?(?:estimé(?:e)?|estimated|estimation)(?=[\s,;·]|$)/gi,"").replace(/[,;·\s]+$/g,"").trim();
+  if(/^(?:moyen(?:ne)?|medium|grand(?:e)?|large|petit(?:e)?|small)$/.test(label.toLowerCase())){
+    const size=/moyen|medium/i.test(label)?T3("moyen","medium"):/grand|large/i.test(label)?T3("grand","large"):T3("petit","small");
+    const egg=/^(?:oeufs?|eggs?)\b/.test(nz(x.name).replace(/œ/g,"oe"));
+    label=egg?T3(`Œuf ${size}`,`${size.charAt(0).toUpperCase()+size.slice(1)} egg`):`${x.name} · ${size}`
+  }
+  if(!label)label=String(x.name||T3("Pièce","Piece"));label=label.charAt(0).toUpperCase()+label.slice(1);
+  return T3(`${label} ≈ ${fmtN(ref.g)} g (estimation). Tu peux aussi saisir des grammes (ex. 100 g).`,`${label} ≈ ${fmtN(ref.g)} g (estimate). You can also enter grams (e.g. 100 g).`)}
+
 function scaleQty(x,q){const k=nuQtyRatio(x,q);if(!(k>0)){if(q)toast(T3("Unité inconnue : garde la même unité ou précise les grammes.","Unknown unit: keep the same unit or specify grams."));return false}
   x.qty=q;Object.assign(x,nuQtyMeta(x));
   x.kcal=r0(x.kcal*k);x.p=r1(x.p*k);x.c=r1(x.c*k);x.f=r1(x.f*k);return true}

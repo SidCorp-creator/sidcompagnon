@@ -23,6 +23,7 @@
 22-musculation.js
 23-programme-de-musculation-sur.js
 23a-parcours-programme.js
+23b-programme-moteur.js
 24-objectif-visible-series-conseillees.js
 25-musique.js
 26-documents.js

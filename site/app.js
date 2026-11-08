@@ -2465,54 +2465,8 @@ const EXDB=((window.SIDFIT_EXERCICES&&window.SIDFIT_EXERCICES.groupes)||[]).flat
 const exListTxt=()=>((window.SIDFIT_EXERCICES&&window.SIDFIT_EXERCICES.groupes)||[]).map(g=>`${g.nom} : ${g.exercices.map(x=>x.nom+(x.p?" (P)":"")+(x.note?` (${x.note.toLowerCase()})`:"")).join(", ")}`).join(" ; ");
 const EXN=n=>EXDB.find(e=>e.n===n);
 const MUS={chest:"Pectoraux",back:"Dos",traps:"Trapèzes",shoulders:"Épaules",triceps:"Triceps",biceps:"Biceps",quads:"Quadriceps",hams:"Ischios",glutes:"Fessiers",adductors:"Adducteurs",calves:"Mollets",abs:"Abdos"};
-const PRIO={chest:["chest"],back:["back","traps"],shoulders:["shoulders"],arms:["biceps","triceps"],legs:["quads","hams","calves","adductors"],glutes:["glutes"],abs:["abs"]};
-// séances types : chaque ligne = un rôle « muscle:schéma », dans l'ordre de priorité
-// v44 : rôles adaptés à la liste d'exercices de exercices.js
-const DAYT={
-  full1:["quads:squat","chest:hpress","back:hrow","hams:curl","shoulders:lat","abs:flex","biceps:curl"],
-  full2:["back:vpull","shoulders:ohp","quads:iso","chest:ipress","triceps:oh","calves:seated","shoulders:rear"],
-  full3:["quads:squat","chest:fly","back:hrow","hams:curl","shoulders:rear","biceps:stretch","triceps:push"],
-  push:["chest:hpress","chest:ipress","shoulders:ohp","shoulders:lat","chest:fly","triceps:oh","triceps:push"],
-  pull:["back:vpull","back:hrow","shoulders:rear","biceps:curl","biceps:stretch","back:pullover","traps:shrug"],
-  legs:["quads:squat","hams:curl","quads:iso","glutes:thrust","calves:seated","adductors:add","abs:flex"],
-  upper1:["chest:hpress","back:vpull","shoulders:lat","back:hrow","shoulders:ohp","triceps:push","biceps:curl"],
-  upper2:["chest:ipress","back:vpull","back:hrow","chest:fly","shoulders:rear","biceps:stretch","triceps:oh"],
-  lower1:["quads:squat","hams:curl","quads:iso","calves:seated","glutes:abd","abs:flex","adductors:add"],
-  lower2:["hams:curl","quads:squat","glutes:thrust","quads:iso","calves:calf","abs:flex","glutes:abd"]};
-const DAYN={full1:"Corps complet A",full2:"Corps complet B",full3:"Corps complet C",push:"Poussée (pecs, épaules, triceps)",pull:"Tirage (dos, biceps)",legs:"Jambes",
-  upper1:"Haut du corps",upper2:"Haut du corps",lower1:"Bas du corps",lower2:"Bas du corps",upper:"Haut du corps",lower:"Bas du corps"};
-// repos par défaut (demande de Sid : bien récupérer) : très lourd 4 min, polyarticulaire 3 min, le reste 2 min ; modifiable ensuite
-const REST={H:240,C:180,L:120,I:120};
-const EXHEAVY=e=>e.t!=="I";
-function coachBuild(p){const split={2:["full1","full2"],3:p.level==="deb"?["full1","full2","full3"]:["push","pull","legs"],4:["upper1","lower1","upper2","lower2"],
-    5:["push","pull","legs","upper1","lower2"],6:["push","pull","legs","push","pull","legs"]}[p.days]||["full1","full2"];
-  const nEx={45:4,60:5,75:6,90:7}[p.dur]||5,eq=p.equip==="gym"?"g":p.equip==="db"?"d":"b",av=(p.avoid||[]).map(x=>({shoulder:"s",back:"b",knee:"k"}[x])).filter(Boolean);
-  const never=new Set(p.never||[]),R={muscle:["6–10","10–15"],force:["3–5","8–10"],gras:["8–12","12–15"],forme:["8–12","12–15"],endu:["12–15","15–20"]}[p.goal]||["8–12","10–15"];
-  const rir={deb:"2–3",inter:"1–2",conf:"0–1"}[p.level]||"2",prio=new Set((p.prio||[]).flatMap(k=>PRIO[k]||[])),turn={};
-  let relax=false; // v44 : la liste d'exercices est surtout faite pour la salle : si le matériel laisse une séance presque vide, on l'ignore pour cette séance
-  const ok=e=>(relax||e.eq.includes(eq))&&!never.has(e.n)&&!av.some(z=>e.z.includes(z));
-  // v73 : séries, répétitions, repos, intensité, RPE et tempo suivent les paramètres de référence de l'objectif (MU_PARAMS)
-  const PP=MU_PARAMS[p.goal]||MU_PARAMS.muscle;
-  const mk=(e,far)=>{const x=PP[EXHEAVY(e)?"H":"I"];let sets=p.level==="deb"?Math.min(3,x.sets):x.sets;if(prio.has(e.m))sets++;
-    return{name:e.n,pat:e.m+":"+e.pat,sets,reps:x.reps,rest:x.rest,rir,...(PP.int?{int:PP.int}:{}),rpe:PP.rpe,tempo:PP.tempo,note:[e.note,p.level==="conf"&&!EXHEAVY(e)?"Dernière série au plus près de l'échec":"",far?L("Matériel de salle : remplace-le si tu ne l'as pas"):""].filter(Boolean).join(". ")}};
-  // exercices imposés : chacun va dans la séance qui travaille déjà ce muscle (la moins chargée en imposés)
-  const forced=split.map(()=>[]);
-  for(const n of p.must||[]){const e=EXN(n);if(!e||never.has(n)||av.some(z=>e.z.includes(z)))continue; // v74.4 : les zones à ménager passent avant les exercices imposés
-    const fit=split.map((t,i)=>({i,score:(DAYT[t].includes(e.m+":"+e.pat)?2:DAYT[t].some(r=>r.startsWith(e.m+":"))?1:0)-forced[i].length*0.1})).sort((a,b)=>b.score-a.score);
-    forced[fit[0].i].push(e)}
-  const days=split.map((t,di)=>{relax=false;let d=buildDay(t,di);if(d.ex.length<3){relax=true;d=buildDay(t,di)}relax=false;return d});
-  function buildDay(t,di){const ex=[...forced[di]],gest=new Set(ex.map(e=>e.g)),pats=new Set(ex.map(e=>e.m+":"+e.pat)),names=new Set(ex.map(e=>e.n));
-    const free=e=>ok(e)&&!names.has(e.n)&&!gest.has(e.g)&&!pats.has(e.m+":"+e.pat);
-    const add=e=>{ex.push(e);gest.add(e.g);pats.add(e.m+":"+e.pat);names.add(e.n)};
-    for(const role of DAYT[t]){if(ex.length>=Math.max(nEx,forced[di].length))break;const[m,pat]=role.split(":");
-      // zone à ménager ou matériel absent : on prend un autre schéma pour le même muscle, jamais un exercice qui la sollicite
-      let c=EXDB.filter(e=>e.m===m&&e.pat===pat&&free(e));if(!c.length)c=EXDB.filter(e=>e.m===m&&free(e));if(!c.length)continue;
-      if(c.some(e=>e.p))c=c.filter(e=>e.p); // v44 : exercices prioritaires (P) d'abord
-      const k=turn[role]=(turn[role]||0)+1;add(c[(k-1+di)%c.length])}
-    ex.sort((a,b)=>"HCLI".indexOf(a.t)-"HCLI".indexOf(b.t));
-    // v74.4 : un exercice hors du matériel de la personne (secours « relax » ou exercice imposé) est signalé, pas glissé en silence
-    return{id:uid(),name:`${L("Séance")} ${"ABCDEF"[di]} · ${L(DAYN[t])}`,ex:ex.map(e=>mk(e,!e.eq.includes(eq)))}}
-  return{id:uid(),profile:p,days,at:new Date().toISOString(),upd:Date.now(),src:"app"}}
+// v77 : tables et générateur déplacés dans 23b (moteur partagé avec Sid'Bot, lot M1 Codex) ; compatibilité pour les anciens appels
+function coachBuild(p){return muBuild(p,LANG==="en"?"en":"fr").plan}
 // v44 : le programme devient le programme suivi : ses séances passent au format commun, celles de l'ancien programme suivi sont retirées
 // v77 : l'ancien programme n'est plus effacé : ses séances (et donc leur historique) passent dans un groupe « Programme précédent » de « Mes séances »
 function planApply(pl){const m=M(),old=PL();
@@ -2649,17 +2603,20 @@ const sbReadyForProgram=()=>!!(session&&!isTrial()&&navigator.onLine);
 async function muqGenerate(mode){if(muq.busy)return;const a=muq.answers,reqId=uid();muq.req=reqId;muq.err="";muq.errApp=false;muq.busy=mode;muqRender();
   try{let r;
     if(mode==="ia"){if(!(await nuConsent())){muq.busy=false;muqRender();return}r=await muqAskSidbot(a,reqId)}
-    else{if(typeof muBuild!=="function")throw Object.assign(new Error("Le créateur de programme n'est pas disponible dans cette version."),{fatal:true});r=muBuild(a,{locale:LANG==="en"?"en":"fr"});r.src="app"}
+    else{if(typeof muBuild!=="function")throw Object.assign(new Error("Le créateur de programme n'est pas disponible dans cette version."),{fatal:true});r=muBuild(a,LANG==="en"?"en":"fr");r.src="app"}
     if(muq.req!==reqId)return; // une demande plus récente a pris le relais (double toucher, nouvel essai)
     if(!r||!r.plan||!Array.isArray(r.plan.days)||!r.plan.days.length)throw new Error("Le programme reçu est incomplet.");
     muq.preview={plan:r.plan,why:r.why||[],warnings:r.warnings||[],est:r.est||[],src:r.src||mode};muq.busy=false;muqRender()}
-  catch(e){if(muq.req!==reqId)return;muq.busy=false;muq.err=e&&e.message?e.message:"Création impossible pour l'instant.";muq.errApp=mode==="ia"&&typeof muBuild==="function";muqRender()}}
-async function muqAskSidbot(a,reqId,change){const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),60000);
-  try{const r=await fetch(SUPABASE_URL+"/functions/v1/sidbot",{method:"POST",signal:ctl.signal,headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",Authorization:"Bearer "+await token()},
-      body:JSON.stringify({app:"forme",task:"programme",locale:LANG==="en"?"en":"fr",requestId:reqId,answers:a,...(change?{change:String(change).slice(0,600)}:{})})});
+  catch(e){if(!muq||muq.req!==reqId||e&&e.stale)return;muq.busy=false;muq.err=e&&e.message?e.message:"Création impossible pour l'instant.";muq.errApp=mode==="ia"&&typeof muBuild==="function";muqRender()}}
+// revue Codex : la réponse n'est appliquée que pour le compte qui a fait la demande (déconnexion ou changement de compte pendant l'appel)
+async function muqAskSidbot(a,reqId,change,current){const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),60000),uid0=sbUid(),same=()=>sbUid()===uid0;
+  try{const jwt=await token();if(!same())throw Object.assign(new Error("Compte changé : demande annulée."),{stale:true});
+    const r=await fetch(SUPABASE_URL+"/functions/v1/sidbot",{method:"POST",signal:ctl.signal,headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",Authorization:"Bearer "+jwt},
+      body:JSON.stringify({app:"forme",task:"programme",locale:LANG==="en"?"en":"fr",requestId:reqId,answers:a,...(change?{change:String(change).slice(0,600)}:{}),...(current?{currentPlan:current}:{})})});
     let j=null;try{j=await r.json()}catch(e){}
+    if(!same())throw Object.assign(new Error("Compte changé : demande annulée."),{stale:true});
     if(j&&j.usage)sbUse=j.usage;
-    if(!r.ok||!j||j.error){const code=(j&&j.error)||(r.status===429?"rate":r.status===401?"auth":"unavailable");throw new Error(SB_ERR[code]||SB_ERR.unavailable)}
+    if(!r.ok||!j||j.error){const code=(j&&j.error)||(r.status===429?"rate":r.status===401?"auth":"unavailable");throw new Error(SB_ERR[code]||(j&&typeof j.message==="string"?j.message.slice(0,200):SB_ERR.unavailable))}
     return {...j,src:"ia"}}
   catch(e){if(e&&e.name==="AbortError")throw new Error(SB_ERR.timeout);if(e instanceof TypeError)throw new Error(SB_ERR.offline);throw e}
   finally{clearTimeout(tm)}}
@@ -2705,7 +2662,7 @@ $("muqBody").addEventListener("click",e=>{const t=e.target.closest("button");if(
   if(d.muqalt){muq.alt=muq.alt===d.muqalt?null:d.muqalt;muqRender();return}
   if(d.muqpick){const [di,ei]=String(muq.alt||"").split(":").map(Number),ex=muq.preview.plan.days[di]&&muq.preview.plan.days[di].ex[ei];if(ex){ex.name=d.muqpick;delete ex.note}muq.alt=null;muqRender();return}
   if(d.muqchange){const c=$("muqChange"),txt=c?c.value.trim():"";if(!txt){toast("Écris d'abord ta demande");return}if(muq.busy)return;const reqId=uid();muq.req=reqId;muq.busy="ia";muq.err="";muqRender();
-    muqAskSidbot(a,reqId,txt).then(r=>{if(muq.req!==reqId)return;if(!r.plan||!Array.isArray(r.plan.days)||!r.plan.days.length)throw new Error("Le programme reçu est incomplet.");muq.preview={plan:r.plan,why:r.why||[],warnings:r.warnings||[],est:r.est||[],src:"ia"};muq.busy=false;muqRender()})
+    muqAskSidbot(a,reqId,txt,muq.preview&&muq.preview.plan).then(r=>{if(muq.req!==reqId)return;if(!r.plan||!Array.isArray(r.plan.days)||!r.plan.days.length)throw new Error("Le programme reçu est incomplet.");muq.preview={plan:r.plan,why:r.why||[],warnings:r.warnings||[],est:r.est||[],src:"ia"};muq.busy=false;muqRender()})
       .catch(err=>{if(muq.req!==reqId)return;muq.busy=false;muq.err=err.message||"Modification impossible pour l'instant.";muqRender()});return}
   if(d.muqactivate){if(PL()&&d.muqactivate==="1"){muq.confirm=true;muqRender();setTimeout(()=>{const b=document.querySelector('[data-muqactivate="2"]');if(b)b.focus()},30);return}muqActivate();return}
   if(d.muqcancel){muq.confirm=false;muqRender();return}});
@@ -2721,6 +2678,125 @@ function muCoachCard(box){box.hidden=false;const pl=PL(),ds=PLD(),d=data.prefs.m
       <button type="button" class="pen" data-coach="more" aria-label="${L("Plus d'actions")}">${MORE}</button></div>
     ${nx?`<div class="muq-next"><span class="small muted">${L("Prochaine séance")}</span><b class="notr">${esc(nx.name||"")}</b><button type="button" class="btn" data-coach="go" data-se="${esc(nx.id)}">${L("Ouvrir la séance")}</button></div>`:""}
     <div class="muq-card-acts"><button type="button" class="linkbtn" data-coach="prefs">${L("Objectif et préférences")}</button><button type="button" class="linkbtn" data-coach="new">${L(d&&d.answers?"Reprendre mon nouveau programme":"Créer un nouveau programme")}</button></div></div>`}
+// revue Codex : à la déconnexion ou au changement de compte, le parcours en cours est fermé et ses demandes ignorées
+let muqUid=null;setInterval(()=>{const u=sbUid();if(muqUid!==null&&u!==muqUid&&muq){muq.req=null;muq=null;$("coachSheet").hidden=true}muqUid=u},1000);
+
+// Generated by node app/scripts/build-muscu-engine.mjs; edit supabase/functions/_shared/muscu-programme.js.
+// v77. Pure rules shared by browser and Edge; no account, DOM, network or storage access.
+// app/src/shell/23b-programme-moteur.js is generated from this file, never maintained separately.
+/** @param {any} catalogue @param {any} [deps] */
+function createMuscuEngine(catalogue, deps={}) {
+  const tr=(locale,fr,en)=>locale==='en'?en:fr;
+  const obj=x=>!!x&&typeof x==='object'&&!Array.isArray(x);
+  const fail=()=>{throw new Error('bad_request')};
+  const fold=s=>String(s||'').replace(/œ/gi,'oe').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const id=deps.id||(()=>globalThis.crypto.randomUUID());
+  const now=deps.now||(()=>Date.now());
+  const equipment=['none','bands','dumbbells','kettlebell','bench','pullup','barbell','machines','cables'];
+  const zones={shoulder:'s',back:'b',knee:'k'};
+  const db=(catalogue.groupes||[]).flatMap(g=>(g.exercices||[]).map(e=>({...e,m:g.muscle,pat:g.muscle+':'+e.schema})));
+  const byName=new Map(db.map(e=>[e.nom,e]));
+  const roles={
+    fullA:['quads:squat','chest:hpress','back:hrow','hams:hinge','abs:brace','calves:calf','shoulders:lat'],
+    fullB:['hams:curl','back:vpull','chest:ipress','quads:squat','glutes:thrust','shoulders:rear','abs:flex'],
+    fullC:['quads:squat','chest:hpress','back:hrow','hams:hinge','shoulders:lat','biceps:curl','abs:brace'],
+    upper:['chest:hpress','back:vpull','shoulders:ohp','back:hrow','biceps:curl','triceps:push','shoulders:rear'],
+    lower:['quads:squat','hams:curl','glutes:thrust','calves:calf','abs:brace','glutes:abd','adductors:add'],
+    push:['chest:hpress','shoulders:ohp','triceps:push','shoulders:lat','chest:fly'],
+    pull:['back:vpull','back:hrow','biceps:curl','shoulders:rear','traps:shrug'],
+    legs:['quads:squat','hams:hinge','glutes:thrust','calves:calf','abs:brace','glutes:abd']
+  };
+  const splits={1:['fullA'],2:['fullA','fullB'],3:['fullA','fullB','fullC'],4:['upper','lower','upper','lower'],5:['upper','lower','push','pull','legs'],6:['push','pull','legs','push','pull','legs']};
+  const daysOfWeek={1:[0],2:[0,3],3:[0,2,4],4:[0,1,3,4],5:[0,1,3,4,5],6:[0,1,2,3,4,5]};
+  const labels={fullA:['Corps complet A','Full body A'],fullB:['Corps complet B','Full body B'],fullC:['Corps complet C','Full body C'],upper:['Haut du corps','Upper body'],lower:['Bas du corps','Lower body'],push:['Poussée','Push'],pull:['Tirage','Pull'],legs:['Jambes','Legs']};
+  const string=(x,max)=>typeof x==='string'&&x.length<=max;
+  const finite=(x,min,max)=>typeof x==='number'&&Number.isFinite(x)&&x>=min&&x<=max;
+  /** Accept legacy profiles at the client boundary, but return only the versioned public contract. */
+  function muAnswers(raw) {
+    if(!obj(raw))return fail();const a={...raw};
+    if(a.v===undefined){a.v=1;a.place=a.place||(a.equip==='gym'?'gym':'home');a.avoidZones=a.avoidZones||a.avoid||[];a.avoidEx=a.avoidEx||a.never||[];a.prefer=a.prefer||a.must||[];
+      if(typeof a.equip==='string')a.equip=a.equip==='gym'?['dumbbells','bench','barbell','machines','cables','pullup']:a.equip==='db'?['dumbbells']:['none']}
+    if(a.v!==1||!['muscle','force','gras','forme','endu'].includes(a.goal)||!['deb','inter','conf'].includes(a.level)||!Number.isInteger(a.days)||!finite(a.days,1,6)||!Number.isInteger(a.dur)||!finite(a.dur,20,120)||!['home','gym','outdoor'].includes(a.place))return fail();
+    function arr(value,max,allowed){if(value===undefined)return [];if(!Array.isArray(value)||value.length>max||!value.every(x=>string(x,160)&&(!allowed||allowed.includes(x))))return fail();return [...new Set(value)]}
+    const equip=arr(a.equip,9,equipment);if(!equip.length||equip.includes('none')&&equip.length>1)return fail();
+    const avoidZones=arr(a.avoidZones,3,Object.keys(zones)),avoidEx=arr(a.avoidEx,40),prefer=arr(a.prefer,20);
+    if(a.pain!==undefined&&!['none','some','yes'].includes(a.pain)||a.notes!==undefined&&!string(a.notes,600))return fail();
+    if(a.other!==undefined&&(!Array.isArray(a.other)||a.other.length>7))return fail();
+    const other=(a.other||[]).map(o=>{if(!obj(o)||!string(o.sport,80)||!o.sport.trim()||!Number.isInteger(o.perWeek)||!finite(o.perWeek,0,14))return fail();return {sport:o.sport.trim(),perWeek:o.perWeek}});
+    return {v:1,goal:a.goal,level:a.level,days:a.days,dur:a.dur,place:a.place,equip,avoidZones,avoidEx,prefer,...(a.pain?{pain:a.pain}:{}),other,notes:(a.notes||'').trim()}
+  }
+  function compatible(e,a){return !!e&&!a.avoidEx.includes(e.nom)&&!a.avoidZones.some(z=>(e.zones||'').includes(zones[z]))&&Array.isArray(e.needs)&&e.needs.some(req=>req.every(k=>a.equip.includes(k)))}
+  function muAlternatives(name,raw){const a=muAnswers(raw),e=byName.get(name);if(!e)return [];
+    return db.filter(x=>x.nom!==name&&x.m===e.m&&compatible(x,a)).sort((x,y)=>Number(y.schema===e.schema)-Number(x.schema===e.schema)||Number(a.prefer.includes(y.nom))-Number(a.prefer.includes(x.nom))||x.nom.localeCompare(y.nom)).map(x=>x.nom)}
+  function parameters(e,a,locale){const compound=e.type!=='I',other=a.other.reduce((s,x)=>s+x.perWeek,0),sets=a.level==='deb'||other>=4?2:a.level==='conf'&&a.goal==='muscle'?4:3;
+    const strength=a.goal==='force'&&a.level!=='deb',endurance=a.goal==='endu',hold=e.nom==='Planche sur les avant-bras';
+    const reps=hold?'20–30 s':strength&&compound?'4–6':endurance?'12–18':compound?'8–12':'10–15';
+    const rest=hold?60:strength&&compound?150:endurance?45:compound?90:60,rir=a.level==='deb'?'3':'2';
+    const note=tr(locale,`Garde ${rir} répétitions possibles en fin de série. Commence léger ; quand toutes les séries atteignent le haut de la fourchette avec une technique stable, augmente progressivement la résistance.`,`Finish each set with ${rir} repetitions in reserve. Start light; when every set reaches the top of the range with steady technique, gradually increase resistance.`);
+    return {name:e.nom,pat:e.pat,sets,reps,rest,rir,rpe:a.level==='deb'?'6–7':'7–8',note:hold?tr(locale,'Respire régulièrement, arrête avant de perdre la posture. Allonge progressivement la tenue sans douleur.','Breathe steadily and stop before losing posture. Gradually extend a pain-free hold.'):note}
+  }
+  function repSeconds(x){const nums=String(x.reps).match(/\d+/g)||[];const max=Math.max(1,...nums.map(Number));return /\bs\b/.test(x.reps)?max:max*3}
+  function muEstimate(ex){return Math.ceil((300+ex.reduce((s,x)=>s+x.sets*repSeconds(x)+Math.max(0,x.sets-1)*x.rest+30,0))/60)}
+  function commonWarnings(a,locale){const w=[];
+    if(a.pain==='some'||a.pain==='yes')w.push(tr(locale,'Une douleur signalée ne peut pas être évaluée ici. Ne fais pas un mouvement douloureux et demande un avis professionnel avant de suivre ce programme.','Pain cannot be assessed here. Do not perform a painful movement and seek professional advice before following this program.'));
+    if(a.days===1)w.push(tr(locale,'Une séance est un point de départ ; elle ne couvre pas la recommandation générale de renforcement sur au moins deux jours par semaine.','One session is a starting point; it does not meet the general recommendation of strength activity on at least two days per week.'));
+    if(a.equip.every(x=>x==='none'||x==='bench'))w.push(tr(locale,'Sans résistance de tirage, le travail du dos reste limité : les mouvements au sol ne remplacent pas un véritable tirage chargé.','Without pulling resistance, back training is limited: floor movements do not replace a loaded pulling exercise.'));
+    return w
+  }
+  function muBuild(raw,locale='fr') {
+    if(!['fr','en'].includes(locale))return fail();const a=muAnswers(raw),warnings=commonWarnings(a,locale),pool=db.filter(e=>compatible(e,a)),used=new Map(),selected=new Set();
+    if(!pool.length)throw new Error('no_compatible_exercises');
+    const split=splits[a.days],days=split.map((kind,di)=>{
+      const ex=[],pats=new Set(),scope=new Set(roles[kind].map(r=>r.split(':')[0]));
+      function add(e){if(pats.has(e.pat))return false;const x=parameters(e,a,locale);if(muEstimate([...ex,x])>a.dur)return false;ex.push(x);pats.add(e.pat);selected.add(e.nom);used.set(e.nom,(used.get(e.nom)||0)+1);return true}
+      const ordered=roles[kind].slice();if(di%2&&kind==='upper')ordered.splice(0,2,'back:vpull','chest:ipress');
+      for(const role of ordered){const [m,pat]=role.split(':');const candidates=pool.filter(e=>e.m===m&&!pats.has(e.pat));
+        candidates.sort((x,y)=>Number(a.prefer.includes(y.nom))-Number(a.prefer.includes(x.nom))||Number(y.schema===pat)-Number(x.schema===pat)||(used.get(x.nom)||0)-(used.get(y.nom)||0)||Number(!!y.p)-Number(!!x.p)||x.nom.localeCompare(y.nom));
+        if(candidates.length)add(candidates[0])}
+      // Fill spare time only with distinct movement patterns from this session's scope.
+      for(const e of pool.filter(e=>scope.has(e.m)).sort((x,y)=>Number(a.prefer.includes(y.nom))-Number(a.prefer.includes(x.nom))||(used.get(x.nom)||0)-(used.get(y.nom)||0)||x.nom.localeCompare(y.nom))){if(ex.length>=8)break;add(e)}
+      if(!ex.length)throw new Error('no_compatible_exercises');
+      const required=kind.startsWith('full')?['quads','chest','back','hams']:kind==='upper'?['chest','back']:kind==='lower'||kind==='legs'?['quads','hams']:[];
+      if(required.some(m=>!ex.some(x=>byName.get(x.name).m===m)))warnings.push(tr(locale,`Séance ${di+1} : certains mouvements ne rentrent pas dans la durée ou les exclusions. Vérifie les groupes couverts.`,`Session ${di+1}: some movements do not fit the time or exclusions. Review the muscle groups covered.`));
+      const li=locale==='en'?1:0;return {id:id(),name:tr(locale,'Séance','Session')+' '+(di+1)+' · '+labels[kind][li],ex}
+    });
+    const missed=a.prefer.filter(n=>!selected.has(n));if(missed.length)warnings.push(tr(locale,'Préférences non retenues (matériel, exclusions ou temps) : ','Preferences not included (equipment, exclusions or time): ')+missed.join(', '));
+    const why=[tr(locale,`Programme local par règles : ${a.days} séance(s), niveau ${a.level}, plafond de ${a.dur} min par séance.`,`Local rules program: ${a.days} session(s), level ${a.level}, maximum ${a.dur} minutes per session.`),
+      tr(locale,'Le matériel et les exclusions sont des limites strictes ; aucune charge de départ n’est inventée.','Equipment and exclusions are strict limits; no starting weight is invented.'),
+      tr(locale,'Répartis les séances sur la semaine avec des jours de récupération ; les jours proposés sont des repères, pas des rendez-vous créés.','Spread sessions across the week with recovery days; suggested days are guides, not scheduled events.')];
+    if(a.other.length)why.push(tr(locale,'Tes autres activités sont prises en compte dans le volume ; leurs jours précis ne sont pas connus ici.','Your other activities are considered in the volume; their exact days are not known here.'));
+    if(a.other.reduce((s,x)=>s+x.perWeek,0)>=4)why.push(tr(locale,'Volume réduit à deux séries pour tenir compte de tes autres activités.','Volume reduced to two sets to account for your other activities.'));
+    const at=now();return {plan:{id:id(),name:tr(locale,'Mon programme sur mesure','My tailored program'),profile:a,days,at:new Date(at).toISOString(),upd:at,src:'app',schedule:daysOfWeek[a.days].slice()},why,warnings:[...new Set(warnings)],est:days.map(d=>muEstimate(d.ex))}
+  }
+  // Validate model output against the same catalogue, answers, time budget and coverage as the local baseline.
+  function muValidate(raw,answers,locale='fr') {
+    const a=muAnswers(answers),base=muBuild(a,locale);if(!obj(raw)||!obj(raw.plan)||!string(raw.plan.name,160)||!raw.plan.name.trim()||!Array.isArray(raw.plan.days)||raw.plan.days.length!==a.days)throw new Error('invalid_programme');
+    const invalid=()=>{throw new Error('invalid_programme')};
+    const freeText=(v,max)=>string(v,max)&&!/(?:\b\d+(?:[.,]\d+)?\s*(?:kg|lbs?)\b)|https?:\/\//i.test(v);
+    const days=raw.plan.days.map((d,i)=>{
+      if(!obj(d)||!string(d.name,160)||!d.name.trim()||!Array.isArray(d.ex)||!d.ex.length||d.ex.length>8)return invalid();
+      const pats=new Set(),scope=new Set(roles[splits[a.days][i]].map(r=>r.split(':')[0]));
+      const ex=d.ex.map(x=>{
+        if(!obj(x)||!string(x.name,160)||!byName.has(x.name))return invalid();const e=byName.get(x.name);
+        if(!compatible(e,a)||!scope.has(e.m)||pats.has(e.pat)||x.pat!==e.pat||!Number.isInteger(x.sets)||!finite(x.sets,1,a.level==='deb'?3:4)||!Number.isInteger(x.rest)||!finite(x.rest,45,240))return invalid();pats.add(e.pat);
+        if(!string(x.reps,24)||!/^\d{1,2}(?:[–-]\d{1,2})?(?: s)?$/.test(x.reps))return invalid();const reps=x.reps.match(/\d+/g).map(Number);if(reps.some(n=>n<3||n>60)||reps[0]>reps.at(-1))return invalid();
+        if(!string(x.rir,8)||!/^\d(?:[–-]\d)?$/.test(x.rir))return invalid();const rir=x.rir.match(/\d/g).map(Number);if(rir.some(n=>n<(a.level==='deb'?2:1)||n>4)||rir[0]>rir.at(-1))return invalid();
+        if(['kg','weight','load','charges'].some(k=>x[k]!==undefined)||!freeText(x.note||'',1000)||x.int!==undefined&&!freeText(x.int,100)||x.rpe!==undefined&&(!string(x.rpe,8)||!(/^[6-8](?:[–-][6-8])?$/.test(x.rpe))))return invalid();
+        return {name:e.nom,pat:e.pat,sets:x.sets,reps:x.reps,rest:x.rest,rir:x.rir,...(x.rpe?{rpe:x.rpe}:{}),note:x.note||parameters(e,a,locale).note}
+      });
+      if(muEstimate(ex)>a.dur)return invalid();
+      for(const muscle of new Set(base.plan.days[i].ex.map(x=>byName.get(x.name).m)))if(!ex.some(x=>byName.get(x.name).m===muscle))return invalid();
+      return {id:id(),name:d.name,ex}
+    });
+    const chosen=new Set(days.flatMap(d=>d.ex.map(x=>x.name)));for(const preferred of a.prefer)if(base.plan.days.some(d=>d.ex.some(x=>x.name===preferred))&&!chosen.has(preferred))return invalid();
+    const texts=(x,max)=>{if(!Array.isArray(x)||x.length>max||!x.every(s=>freeText(s,1200)&&s.trim()))return invalid();return x};
+    const why=texts(raw.why,8),warnings=raw.warnings===undefined?[]:texts(raw.warnings,8);
+    return {...base,plan:{...base.plan,name:raw.plan.name,days,src:'ia'},why,warnings:[...new Set([...base.warnings,...warnings])],est:days.map(d=>muEstimate(d.ex))}
+  }
+  return {muAnswers,muBuild,muAlternatives,muEstimate,muValidate};
+}
+
+const {muAnswers,muBuild,muAlternatives,muEstimate,muValidate}=createMuscuEngine(window.SIDFIT_EXERCICES);
 
 /* ---------- v47 : objectif visible, séries conseillées, types de séances, demande à Sid'Bot (#13, #14, #17) ---------- */
 // objectif d'entraînement (data.prefs.muGoal, synchronisé ; repris du programme suivi s'il n'est pas réglé)

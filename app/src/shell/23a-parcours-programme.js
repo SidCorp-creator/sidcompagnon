@@ -92,17 +92,20 @@ const sbReadyForProgram=()=>!!(session&&!isTrial()&&navigator.onLine);
 async function muqGenerate(mode){if(muq.busy)return;const a=muq.answers,reqId=uid();muq.req=reqId;muq.err="";muq.errApp=false;muq.busy=mode;muqRender();
   try{let r;
     if(mode==="ia"){if(!(await nuConsent())){muq.busy=false;muqRender();return}r=await muqAskSidbot(a,reqId)}
-    else{if(typeof muBuild!=="function")throw Object.assign(new Error("Le créateur de programme n'est pas disponible dans cette version."),{fatal:true});r=muBuild(a,{locale:LANG==="en"?"en":"fr"});r.src="app"}
+    else{if(typeof muBuild!=="function")throw Object.assign(new Error("Le créateur de programme n'est pas disponible dans cette version."),{fatal:true});r=muBuild(a,LANG==="en"?"en":"fr");r.src="app"}
     if(muq.req!==reqId)return; // une demande plus récente a pris le relais (double toucher, nouvel essai)
     if(!r||!r.plan||!Array.isArray(r.plan.days)||!r.plan.days.length)throw new Error("Le programme reçu est incomplet.");
     muq.preview={plan:r.plan,why:r.why||[],warnings:r.warnings||[],est:r.est||[],src:r.src||mode};muq.busy=false;muqRender()}
-  catch(e){if(muq.req!==reqId)return;muq.busy=false;muq.err=e&&e.message?e.message:"Création impossible pour l'instant.";muq.errApp=mode==="ia"&&typeof muBuild==="function";muqRender()}}
-async function muqAskSidbot(a,reqId,change){const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),60000);
-  try{const r=await fetch(SUPABASE_URL+"/functions/v1/sidbot",{method:"POST",signal:ctl.signal,headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",Authorization:"Bearer "+await token()},
-      body:JSON.stringify({app:"forme",task:"programme",locale:LANG==="en"?"en":"fr",requestId:reqId,answers:a,...(change?{change:String(change).slice(0,600)}:{})})});
+  catch(e){if(!muq||muq.req!==reqId||e&&e.stale)return;muq.busy=false;muq.err=e&&e.message?e.message:"Création impossible pour l'instant.";muq.errApp=mode==="ia"&&typeof muBuild==="function";muqRender()}}
+// revue Codex : la réponse n'est appliquée que pour le compte qui a fait la demande (déconnexion ou changement de compte pendant l'appel)
+async function muqAskSidbot(a,reqId,change,current){const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),60000),uid0=sbUid(),same=()=>sbUid()===uid0;
+  try{const jwt=await token();if(!same())throw Object.assign(new Error("Compte changé : demande annulée."),{stale:true});
+    const r=await fetch(SUPABASE_URL+"/functions/v1/sidbot",{method:"POST",signal:ctl.signal,headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",Authorization:"Bearer "+jwt},
+      body:JSON.stringify({app:"forme",task:"programme",locale:LANG==="en"?"en":"fr",requestId:reqId,answers:a,...(change?{change:String(change).slice(0,600)}:{}),...(current?{currentPlan:current}:{})})});
     let j=null;try{j=await r.json()}catch(e){}
+    if(!same())throw Object.assign(new Error("Compte changé : demande annulée."),{stale:true});
     if(j&&j.usage)sbUse=j.usage;
-    if(!r.ok||!j||j.error){const code=(j&&j.error)||(r.status===429?"rate":r.status===401?"auth":"unavailable");throw new Error(SB_ERR[code]||SB_ERR.unavailable)}
+    if(!r.ok||!j||j.error){const code=(j&&j.error)||(r.status===429?"rate":r.status===401?"auth":"unavailable");throw new Error(SB_ERR[code]||(j&&typeof j.message==="string"?j.message.slice(0,200):SB_ERR.unavailable))}
     return {...j,src:"ia"}}
   catch(e){if(e&&e.name==="AbortError")throw new Error(SB_ERR.timeout);if(e instanceof TypeError)throw new Error(SB_ERR.offline);throw e}
   finally{clearTimeout(tm)}}
@@ -148,7 +151,7 @@ $("muqBody").addEventListener("click",e=>{const t=e.target.closest("button");if(
   if(d.muqalt){muq.alt=muq.alt===d.muqalt?null:d.muqalt;muqRender();return}
   if(d.muqpick){const [di,ei]=String(muq.alt||"").split(":").map(Number),ex=muq.preview.plan.days[di]&&muq.preview.plan.days[di].ex[ei];if(ex){ex.name=d.muqpick;delete ex.note}muq.alt=null;muqRender();return}
   if(d.muqchange){const c=$("muqChange"),txt=c?c.value.trim():"";if(!txt){toast("Écris d'abord ta demande");return}if(muq.busy)return;const reqId=uid();muq.req=reqId;muq.busy="ia";muq.err="";muqRender();
-    muqAskSidbot(a,reqId,txt).then(r=>{if(muq.req!==reqId)return;if(!r.plan||!Array.isArray(r.plan.days)||!r.plan.days.length)throw new Error("Le programme reçu est incomplet.");muq.preview={plan:r.plan,why:r.why||[],warnings:r.warnings||[],est:r.est||[],src:"ia"};muq.busy=false;muqRender()})
+    muqAskSidbot(a,reqId,txt,muq.preview&&muq.preview.plan).then(r=>{if(muq.req!==reqId)return;if(!r.plan||!Array.isArray(r.plan.days)||!r.plan.days.length)throw new Error("Le programme reçu est incomplet.");muq.preview={plan:r.plan,why:r.why||[],warnings:r.warnings||[],est:r.est||[],src:"ia"};muq.busy=false;muqRender()})
       .catch(err=>{if(muq.req!==reqId)return;muq.busy=false;muq.err=err.message||"Modification impossible pour l'instant.";muqRender()});return}
   if(d.muqactivate){if(PL()&&d.muqactivate==="1"){muq.confirm=true;muqRender();setTimeout(()=>{const b=document.querySelector('[data-muqactivate="2"]');if(b)b.focus()},30);return}muqActivate();return}
   if(d.muqcancel){muq.confirm=false;muqRender();return}});
@@ -164,3 +167,5 @@ function muCoachCard(box){box.hidden=false;const pl=PL(),ds=PLD(),d=data.prefs.m
       <button type="button" class="pen" data-coach="more" aria-label="${L("Plus d'actions")}">${MORE}</button></div>
     ${nx?`<div class="muq-next"><span class="small muted">${L("Prochaine séance")}</span><b class="notr">${esc(nx.name||"")}</b><button type="button" class="btn" data-coach="go" data-se="${esc(nx.id)}">${L("Ouvrir la séance")}</button></div>`:""}
     <div class="muq-card-acts"><button type="button" class="linkbtn" data-coach="prefs">${L("Objectif et préférences")}</button><button type="button" class="linkbtn" data-coach="new">${L(d&&d.answers?"Reprendre mon nouveau programme":"Créer un nouveau programme")}</button></div></div>`}
+// revue Codex : à la déconnexion ou au changement de compte, le parcours en cours est fermé et ses demandes ignorées
+let muqUid=null;setInterval(()=>{const u=sbUid();if(muqUid!==null&&u!==muqUid&&muq){muq.req=null;muq=null;$("coachSheet").hidden=true}muqUid=u},1000);

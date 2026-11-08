@@ -40,6 +40,7 @@
     "src/shell/22-musculation.js",
     "src/shell/23-programme-de-musculation-sur.js",
     "src/shell/23a-parcours-programme.js",
+    "src/shell/23b-programme-moteur.js",
     "src/shell/24-objectif-visible-series-conseillees.js",
     "src/shell/25-musique.js",
     "src/shell/26-documents.js",

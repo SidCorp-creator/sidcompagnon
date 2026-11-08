@@ -32,7 +32,7 @@ const PROFILS={
    if(await p.locator('[data-muqedit]').count()){await p.evaluate(()=>{delete data.prefs.muDraft;muqOpen({fresh:true,step:'goal'})})}
    await answer(p,pr);
    // Sid'Bot en panne : message clair + repli honnête sur les règles de l'app
-   if(nom==='debutant'&&lang==='fr'){await p.click('[data-muqgen="ia"]');await p.waitForSelector('#muqBody .muq-warn [data-muqgen="app"]');
+   if(nom==='debutant'&&lang==='fr'){await p.click('[data-muqgen="ia"]');if(await p.locator('#consentSheet:not([hidden])').count()){await p.click('#consentYes')}await p.waitForSelector('#muqBody .muq-warn [data-muqgen="app"]');
      assert.ok(sbSeen.at(-1).task==='programme'&&sbSeen.at(-1).answers.days===2,'demande Sid\'Bot structurée');assert.ok(!('messages' in sbSeen.at(-1)));
      await p.click('#muqBody .muq-warn [data-muqgen="app"]')}
    else await p.click('[data-muqgen="app"]');
@@ -62,7 +62,7 @@ const PROFILS={
   const sig=k=>JSON.stringify(plans[lang+':'+k].plan.days.map(d=>d.ex.map(e=>e.name+e.sets+e.reps)));
   assert.notEqual(sig('debutant'),sig('confirme'));assert.notEqual(sig('confirme'),sig('limite'));assert.notEqual(sig('debutant'),sig('limite'));
   // Sid'Bot fonctionnel (simulé) puis quota épuisé
-  if(lang==='fr'){sbMode='ok';await p.click('#coachBox [data-coach="prefs"]');await p.click('[data-muqgen="ia"]');await p.waitForSelector('.muq-days');
+  if(lang==='fr'){sbMode='ok';await p.click('#coachBox [data-coach="prefs"]');await p.click('[data-muqgen="ia"]');if(await p.locator('#consentSheet:not([hidden])').count())await p.click('#consentYes');await p.waitForSelector('.muq-days');
     assert.match(await p.locator('#muqBody').innerText(),/Composé par Sid'Bot/);await p.click('[data-muqback]');
     sbMode='quota';await p.click('[data-muqgen="ia"]');await p.waitForSelector('#muqBody .muq-warn');assert.match(await p.locator('#muqBody .muq-warn').last().innerText(),/quota gratuit/);
     await p.click('#coachClose')}

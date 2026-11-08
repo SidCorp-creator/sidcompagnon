@@ -31,7 +31,7 @@ Ouvert : question précise ou prochaine action
 Interdits : recopier l'historique, un gros fichier, une sortie d'outil entière, des confirmations sans contenu (« bien reçu, je continue »), un pourcentage d'économie non mesuré.
 
 ## 4. Canal tmux-bridge (pièges vérifiés)
-- `read` → `message` → `read` → `keys Enter`, puis **relire 25 lignes** : le message doit apparaître au-dessus de `• Working`. S'il reste sur la ligne `›`, il n'est pas envoyé : renvoyer `keys Enter`.
+- `read` → `message` → `read` → `keys Enter`. Puis **une seule** relecture courte de la ligne de saisie, pour vérifier l'envoi (exigence de Sid : un texte resté dans la saisie n'est pas un échange) : s'il est encore sur la ligne `›`, renvoyer `keys Enter`. Ce n'est jamais une attente de réponse : aucune relecture en boucle (règle `smux`).
 - Codex occupé : Entrée ne soumet pas (« tab to queue message ») → `keys codex Tab`, vérifier « Queued follow-up inputs ».
 - Ne jamais attendre une réponse en relisant en boucle : elle arrive dans le panneau de l'expéditeur.
 

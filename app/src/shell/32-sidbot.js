@@ -176,7 +176,8 @@ $("sbSheet").addEventListener("click",e=>{if(e.target.id==="sbSheet"){sbClose();
   const ac=e.target.closest("[data-sbact]");if(ac){const [mid,ix]=ac.dataset.sbact.split(":"),h=sbHist(),m=(h[sbApp]||[]).find(x=>x.id===mid),a=m&&m.actions&&m.actions[+ix];
     if(!a||a.done||!sbActOk(a))return;
     if(a.type==="edit_note"){sbOpenDiff=sbOpenDiff===mid+":"+ix?null:mid+":"+ix;sbRender();return}
-    if(a.type==="share_note_pdf"){const n=sbNoteOf(m);if(!n){toast("La note jointe n'est plus disponible.");return}noteExportPdf(n).then(()=>{a.done=true;sbSave(h);sbRender()});return}
+    if(a.type==="share_note_pdf"){const n=sbNoteOf(m);if(!n){toast("La note jointe n'est plus disponible.");return}const u0=sbUid(),app0=sbApp;
+      noteExportPdf(n).then(ok=>{if(!ok||sbUid()!==u0)return;const h2=sbHist(u0),m2=(h2[app0]||[]).find(x=>x.id===mid),a2=m2&&m2.actions&&m2.actions[+ix];if(a2){a2.done=true;sbSave(h2,u0)}sbRender()});return} // revue Codex : compte figé, « Exporté » seulement si réussi
     if(sbApply(a)){a.done=true;sbSave(h);sbRender()}return}
   if(e.target.closest("[data-sbdiffno]")){sbOpenDiff=null;sbRender();return}
   const dk=e.target.closest("[data-sbdiffok]");if(dk){const [mid,ix]=dk.dataset.sbdiffok.split(":"),h=sbHist(),m=(h[sbApp]||[]).find(x=>x.id===mid),a=m&&m.actions&&m.actions[+ix];

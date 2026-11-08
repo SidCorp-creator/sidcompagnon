@@ -455,16 +455,17 @@ function noteBlocks(v){const t=document.createElement("template");t.innerHTML=v.
   return out}
 const notePdfName=s=>(String(s||"").replace(/[\\/:*?"<>|\u0000-\u001f]+/g," ").replace(/\s+/g," ").trim().slice(0,60)||L("Note"))+".pdf";
 let npdfOk=false;
-async function noteExportPdf(n){n=n||noteFind(noteOpenId);if(!n)return;if(!n)return;if(n.id===noteOpenId&&typeof noteFlush==="function")await noteFlush();
-  const v=noteView(n);if(!v){toast("Déverrouille d'abord la note");return}
-  if(n.secret&&!npdfOk){openActions(L("Cette note est secrète : le PDF ne sera pas protégé par ton code."),[{l:"Exporter quand même",fn:()=>{npdfOk=true;noteExportPdf(n).finally(()=>{npdfOk=false})}}]);return}
-  if(typeof notePdf!=="function"){toast("L'export PDF n'est pas disponible dans cette version.");return}
+// renvoie true seulement si le PDF a été partagé ou son téléchargement lancé (revue Codex)
+async function noteExportPdf(n){n=n||noteFind(noteOpenId);if(!n)return false;if(n.id===noteOpenId&&typeof noteFlush==="function")await noteFlush();
+  const v=noteView(n);if(!v){toast("Déverrouille d'abord la note");return false}
+  if(n.secret&&!npdfOk){openActions(L("Cette note est secrète : le PDF ne sera pas protégé par ton code."),[{l:"Exporter quand même",fn:()=>{npdfOk=true;noteExportPdf(n).finally(()=>{npdfOk=false})}}]);return false}
+  if(typeof notePdf!=="function"){toast("L'export PDF n'est pas disponible dans cette version.");return false}
   const title=String(v.title||"").trim()||String(v.body||"").trim().split("\n")[0]||L("Note");
   let bytes;try{bytes=notePdf({title,date:new Date(n.upd||Date.now()).toLocaleDateString(LANG==="en"?"en-GB":"fr-BE",{day:"numeric",month:"long",year:"numeric"}),
       blocks:noteBlocks(v),locale:LANG==="en"?"en":"fr",photosOmitted:!!((n.photos||[]).length)})}
-  catch(e){reportErr("notePdf: "+(e&&e.message));toast("Création du PDF impossible");return}
+  catch(e){reportErr("notePdf: "+(e&&e.message));toast("Création du PDF impossible");return false}
   const file=new File([bytes],notePdfName(title),{type:"application/pdf"});
-  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title});return}}
-  catch(e){if(e&&e.name==="AbortError")return}
-  const u=URL.createObjectURL(file),a=document.createElement("a");a.href=u;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast("PDF enregistré")}
+  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title});return true}}
+  catch(e){if(e&&e.name==="AbortError")return false}
+  const u=URL.createObjectURL(file),a=document.createElement("a");a.href=u;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast("PDF enregistré");return true}
 $("notePdf").addEventListener("click",()=>noteExportPdf());

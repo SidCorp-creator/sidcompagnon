@@ -129,7 +129,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="77";const errSent=new Set();
+const APP_V="78";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -3956,18 +3956,19 @@ function noteBlocks(v){const t=document.createElement("template");t.innerHTML=v.
   return out}
 const notePdfName=s=>(String(s||"").replace(/[\\/:*?"<>|\u0000-\u001f]+/g," ").replace(/\s+/g," ").trim().slice(0,60)||L("Note"))+".pdf";
 let npdfOk=false;
-async function noteExportPdf(n){n=n||noteFind(noteOpenId);if(!n)return;if(!n)return;if(n.id===noteOpenId&&typeof noteFlush==="function")await noteFlush();
-  const v=noteView(n);if(!v){toast("Déverrouille d'abord la note");return}
-  if(n.secret&&!npdfOk){openActions(L("Cette note est secrète : le PDF ne sera pas protégé par ton code."),[{l:"Exporter quand même",fn:()=>{npdfOk=true;noteExportPdf(n).finally(()=>{npdfOk=false})}}]);return}
-  if(typeof notePdf!=="function"){toast("L'export PDF n'est pas disponible dans cette version.");return}
+// renvoie true seulement si le PDF a été partagé ou son téléchargement lancé (revue Codex)
+async function noteExportPdf(n){n=n||noteFind(noteOpenId);if(!n)return false;if(n.id===noteOpenId&&typeof noteFlush==="function")await noteFlush();
+  const v=noteView(n);if(!v){toast("Déverrouille d'abord la note");return false}
+  if(n.secret&&!npdfOk){openActions(L("Cette note est secrète : le PDF ne sera pas protégé par ton code."),[{l:"Exporter quand même",fn:()=>{npdfOk=true;noteExportPdf(n).finally(()=>{npdfOk=false})}}]);return false}
+  if(typeof notePdf!=="function"){toast("L'export PDF n'est pas disponible dans cette version.");return false}
   const title=String(v.title||"").trim()||String(v.body||"").trim().split("\n")[0]||L("Note");
   let bytes;try{bytes=notePdf({title,date:new Date(n.upd||Date.now()).toLocaleDateString(LANG==="en"?"en-GB":"fr-BE",{day:"numeric",month:"long",year:"numeric"}),
       blocks:noteBlocks(v),locale:LANG==="en"?"en":"fr",photosOmitted:!!((n.photos||[]).length)})}
-  catch(e){reportErr("notePdf: "+(e&&e.message));toast("Création du PDF impossible");return}
+  catch(e){reportErr("notePdf: "+(e&&e.message));toast("Création du PDF impossible");return false}
   const file=new File([bytes],notePdfName(title),{type:"application/pdf"});
-  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title});return}}
-  catch(e){if(e&&e.name==="AbortError")return}
-  const u=URL.createObjectURL(file),a=document.createElement("a");a.href=u;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast("PDF enregistré")}
+  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title});return true}}
+  catch(e){if(e&&e.name==="AbortError")return false}
+  const u=URL.createObjectURL(file),a=document.createElement("a");a.href=u;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast("PDF enregistré");return true}
 $("notePdf").addEventListener("click",()=>noteExportPdf());
 
 /* v78 — Pure note PDF writer. No DOM, network, external dependency or data write.
@@ -4285,7 +4286,8 @@ $("sbSheet").addEventListener("click",e=>{if(e.target.id==="sbSheet"){sbClose();
   const ac=e.target.closest("[data-sbact]");if(ac){const [mid,ix]=ac.dataset.sbact.split(":"),h=sbHist(),m=(h[sbApp]||[]).find(x=>x.id===mid),a=m&&m.actions&&m.actions[+ix];
     if(!a||a.done||!sbActOk(a))return;
     if(a.type==="edit_note"){sbOpenDiff=sbOpenDiff===mid+":"+ix?null:mid+":"+ix;sbRender();return}
-    if(a.type==="share_note_pdf"){const n=sbNoteOf(m);if(!n){toast("La note jointe n'est plus disponible.");return}noteExportPdf(n).then(()=>{a.done=true;sbSave(h);sbRender()});return}
+    if(a.type==="share_note_pdf"){const n=sbNoteOf(m);if(!n){toast("La note jointe n'est plus disponible.");return}const u0=sbUid(),app0=sbApp;
+      noteExportPdf(n).then(ok=>{if(!ok||sbUid()!==u0)return;const h2=sbHist(u0),m2=(h2[app0]||[]).find(x=>x.id===mid),a2=m2&&m2.actions&&m2.actions[+ix];if(a2){a2.done=true;sbSave(h2,u0)}sbRender()});return} // revue Codex : compte figé, « Exporté » seulement si réussi
     if(sbApply(a)){a.done=true;sbSave(h);sbRender()}return}
   if(e.target.closest("[data-sbdiffno]")){sbOpenDiff=null;sbRender();return}
   const dk=e.target.closest("[data-sbdiffok]");if(dk){const [mid,ix]=dk.dataset.sbdiffok.split(":"),h=sbHist(),m=(h[sbApp]||[]).find(x=>x.id===mid),a=m&&m.actions&&m.actions[+ix];
@@ -6000,7 +6002,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v77";
+const BUILD="sidnote-v78";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

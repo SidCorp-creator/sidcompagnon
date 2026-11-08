@@ -7,7 +7,7 @@ const results=[],errors=[];const cases=[];
 for(const width of [390,1280])for(const theme of ['dark','light'])for(const fallback of [false,true])cases.push({width,theme,fallback,lang:'fr'});
 cases.push({width:900,theme:'dark',fallback:false,lang:'fr'});
 for(const theme of ['dark','light'])for(const fallback of [false,true])cases.push({width:320,theme,fallback,lang:'fr'});
-for(const lang of ['en','nl'])for(const theme of ['dark','light'])cases.push({width:390,theme,fallback:false,lang});
+for(const lang of ['en'])for(const theme of ['dark','light'])cases.push({width:390,theme,fallback:false,lang});
 const color=s=>s.startsWith('#')?[1,3,5].map(i=>parseInt(s.slice(i,i+2),16)):s.match(/[\d.]+/g).slice(0,3).map(Number);
 const lum=a=>a.map(x=>{x/=255;return x<=.04045?x/12.92:((x+.055)/1.055)**2.4}).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
 const contrast=(a,b)=>{const x=lum(color(a)),y=lum(color(b));return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)};

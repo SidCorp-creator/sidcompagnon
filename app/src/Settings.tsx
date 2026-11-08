@@ -33,13 +33,6 @@ export function TypesCard({ types, i18n }: { types: { name: string; c: string; n
   </>;
 }
 
-export function McpList({ rows, i18n }: { rows: { hash: string; created: string; used: string }[]; i18n: SI18n }) {
-  const { tr, L } = i18n;
-  return <>{rows.map((r) => <div key={r.hash} className="row mcp-it"><div className="grow"><b>{tr(`${L("Adresse du")} ${r.created}`)}</b>
-    <span className="small muted">{tr(r.used ? `${L("Utilisée le")} ${r.used}` : L("Pas encore utilisée"))}</span></div>
-    <button type="button" className="mini" data-mcpdel={r.hash}>{tr(L("Retirer"))}</button></div>)}</>;
-}
-
 const CHEVR = <svg className="chev-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>;
 export function QuickAdd({ acts, i18n }: { acts: { k: string; t: string; s: string; icon: string }[]; i18n: SI18n }) {
   const { tr, L } = i18n;

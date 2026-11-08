@@ -534,7 +534,7 @@ function show(v){
   {const was=wasApp,nx=appOf(v);if(introReady&&was&&nx!=="home"&&was!==nx)appIntro(nx)}
   data.ui.view=v;if(GROUPS.some(x=>x.tabs.includes(v))){data.ui.glast=data.ui.glast||{};data.ui.glast[g.k]=v}saveUI();
   document.body.dataset.g=g.k;document.body.dataset.v=v;if(v==="muscu"){const sd=$("muStatsD");if(sd)sd.open=false} // v74.2 : statistiques toujours refermées
-if(v!=="notes")document.body.classList.remove("note-full");if(v==="more"){try{renderBio();renderAiCards();$("mcpSec").hidden=!session||isTrial()}catch(e){}}
+if(v!=="notes")document.body.classList.remove("note-full");if(v==="more"){try{renderBio();renderAiCards();mcpLoad()}catch(e){}}
   document.querySelectorAll(".view").forEach(s=>s.hidden=s.id!=="v-"+v);
   document.documentElement.dataset.app=appOf(v);renderNav(v);renderVhead(v);renderSide(v);
   if(v==="home")renderHome();
@@ -583,14 +583,12 @@ function renderVhead(v){const el=$("vhead");
  document.title=`${g.label} · ${L(title)} — Sid'Compagnon`;
  const props={app:g.app,label:g.label,role:APP_ROLES[g.app],title,progress,percent,hasProgress,gridIcon:GRIDIC,askIcon:IC("message"),i18n:agI18n()};
  if(shIsl("appHead")){try{window.SCIslands.appHead(el,props);return}catch(e){reportErr("island appHead: "+(e&&e.message))}}
- el.innerHTML=`<div class="elan-head-row"><button type="button" class="ah-home" data-go="home" aria-label="${L("Toutes les apps")}"><span class="ah-grid">${GRIDIC}</span></button><span class="ah-brand">${LOGO(g.app,"ah-logo")}<span class="ah-names"><b>${g.label}</b><small>${L(APP_ROLES[g.app])}</small></span></span><button type="button" class="ah-claude" data-app-claude="1"><span class="ah-chat">${IC("message")}</span>Claude</button></div><h1 class="elan-title">${L(title)}</h1><div class="elan-progress"><span>${progress}</span><span class="elan-progress-track" ${hasProgress?"":"hidden"} role="progressbar" aria-label="${L("Progression du jour")}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><i style="width:${percent}%"></i></span></div>`;
+ el.innerHTML=`<div class="elan-head-row"><button type="button" class="ah-home" data-go="home" aria-label="${L("Toutes les apps")}"><span class="ah-grid">${GRIDIC}</span></button><span class="ah-brand">${LOGO(g.app,"ah-logo")}<span class="ah-names"><b>${g.label}</b><small>${L(APP_ROLES[g.app])}</small></span></span><button type="button" class="ah-claude" data-app-claude="1" aria-label="${L("Ouvrir Sid'Bot, l'assistant")}"><span class="ah-chat">${IC("message")}</span><span class="notr">Sid'Bot</span></button></div><h1 class="elan-title">${L(title)}</h1><div class="elan-progress"><span>${progress}</span><span class="elan-progress-track" ${hasProgress?"":"hidden"} role="progressbar" aria-label="${L("Progression du jour")}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><i style="width:${percent}%"></i></span></div>`;
  const bar=el.querySelector(".elan-progress-track i");if(bar&&hasProgress){bar.style.width=previous+"%";bar.getBoundingClientRect();requestAnimationFrame(()=>bar.style.width=percent+"%")}
 
 }
-function elanHeadClick(e){const b=e.target.closest("[data-go]");if(b)show(b.dataset.go);if(e.target.closest("[data-app-claude]")){
- const v=data.ui.view,topic=appOf(v)==="agenda"?"agenda":appOf(v)==="note"?"note":v==="muscu"?"muscu":"nutri";
- const cv=convUrl(topic);if(cv)extOpen(cv);else aiGo(topic,T3("Je veux utiliser ","I want to use ","Ik wil werken met ")+groupOf(v).label+" · "+L(SHORT[v]));
-}}
+function elanHeadClick(e){const b=e.target.closest("[data-go]");if(b)show(b.dataset.go);if(e.target.closest("[data-app-claude]"))sbOpen(sbAppOfView(data.ui.view)); // v76 : Sid'Bot, dans l'app (plus de lien vers Claude)
+}
 for(const id of ["vhead","noteAppHead"])$(id).addEventListener("click",elanHeadClick);
 let compactMotion=null,headerPointer=false;
 // Un bandeau ne doit pas déplacer la cible entre l’appui et le clic.
@@ -652,17 +650,32 @@ function openQuickAdd(){const vis=visibleTabs(),acts=[
   $("qaList").innerHTML=acts.map(([k,t,s,ic])=>`<button type="button" class="qa-it" data-qa="${k}"><span class="sp-ic">${ic}</span><span class="grow"><b>${L(t)}</b><span class="small muted">${L(s)}</span></span>${CHEVR}</button>`).join("");
   $("qaSheet").hidden=false}
 $("qaClose").addEventListener("click",()=>$("qaSheet").hidden=true);
-$("qaSheet").addEventListener("click",e=>{if(e.target.id==="qaSheet"){$("qaSheet").hidden=true;return}const b=e.target.closest("[data-qa]");if(!b)return;$("qaSheet").hidden=true;const k=b.dataset.qa;show(k);
+$("qaSheet").addEventListener("click",e=>{if(e.target.id==="qaSheet"){$("qaSheet").hidden=true;return}const b=e.target.closest("[data-qa]");if(!b)return;$("qaSheet").hidden=true;qaGo(b.dataset.qa)});
+// v76 : ouvrir directement le bon champ (ajout rapide, premiers pas de l'accueil, états vides)
+function qaGo(k){show(k);
   setTimeout(()=>{if(k==="plan")openTaskSheet()
     else if(k==="todo")$("todoIn").focus();
     else if(k==="notes"){if(noteOpenId)closeNote();$("noteNew").click()}
     else if(k==="nutri"){nuGoTab("day");$("nuAsk").focus();$("nuAsk").scrollIntoView({block:"center"})}
-    else if(k==="muscu"){$("msName")&&$("msName").focus()}},80)});
+    else if(k==="muscu"){$("msName")&&$("msName").focus()}},80)}
+// v76 : « Premiers pas » sur l'accueil : trois petites actions réelles, une par app, cochées d'après tes vraies données (rien n'est créé pour toi).
+// Facultatif : « Masquer » (data.prefs.tour="hidden"), « Revoir les premiers pas » dans Réglages le relance. Pas de récompense : juste « 1 sur 3 ».
+function tourSteps(){const vis=visibleTabs(),st=[];
+  if(vis.includes("plan")||vis.includes("todo"))st.push({k:vis.includes("plan")?"plan":"todo",app:"agenda",t:"Ajoute ta première activité",s:"Sid'Journée · un cours, un rendez-vous, une tâche",done:(data.tasks||[]).some(t=>t&&t.src!=="ical")||(data.todos||[]).length>0});
+  if(vis.includes("nutri")||vis.includes("muscu"))st.push({k:vis.includes("nutri")&&nutriAllowed()?"nutri":"muscu",app:"fit",t:"Note un repas ou une séance",s:"Sid'Forme · ce que tu manges ou ton entraînement",done:NU().log.length>0||M().sessions.length>0});
+  if(vis.includes("notes"))st.push({k:"notes",app:"note",t:"Écris ta première note",s:"Sid'Note · une idée, une liste, un cours",done:NT().length>0});
+  return st}
+function homeNext(){if(data.prefs&&data.prefs.tour==="hidden")return "";const st=tourSteps();if(!st.length)return "";const n=st.filter(x=>x.done).length;
+  if(n===st.length){if(data.prefs.tour!=="done"){data.prefs.tour="done";save()}return ""}
+  if(data.prefs.tour==="done")return "";
+  return `<section class="hs-tour" aria-labelledby="hsTourT"><div class="hs-tour-h"><b id="hsTourT">${L("Premiers pas")}</b><span class="small muted">${n} ${L("sur")} ${st.length}</span><button type="button" class="linkbtn" id="hsTourHide">${L("Masquer")}</button></div>
+    <div class="elan-progress-track hs-tour-bar" role="progressbar" aria-label="${L("Premiers pas")}" aria-valuemin="0" aria-valuemax="${st.length}" aria-valuenow="${n}"><i style="width:${Math.round(n/st.length*100)}%"></i></div>
+    <ul class="hs-steps">${st.map(x=>`<li><button type="button" class="hs-step" data-app="${x.app}" data-tourgo="${x.k}" ${x.done?'aria-disabled="true"':""}><span class="hs-check" aria-hidden="true">${x.done?(IC("tick")||""):""}</span><span class="grow"><b>${L(x.t)}</b><span class="small muted">${L(x.s)}</span></span><span class="sr-only">${L(x.done?"Fait":"À faire")}</span></button></li>`).join("")}</ul></section>`}
 // --- page Aujourd'hui : la journée en un coup d'œil ---
 function inCount(ms){const m=Math.round(ms/60000);if(m<60)return `${L("dans")} ${m} min`;const h=Math.floor(m/60),r=m%60;return `${L("dans")} ${h} h${r?" "+two(r):""}`}
 function renderHome(){if(!$("homeBody"))return;
   const now=new Date(),t0=iso(today()),nm=(session&&session.name||"").trim(); // v42 : surnom complet
-  $("homeDate").textContent=now.toLocaleDateString(LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE",{weekday:"long",day:"numeric",month:"long"});
+  $("homeDate").textContent=now.toLocaleDateString(LANG==="en"?"en-GB":"fr-BE",{weekday:"long",day:"numeric",month:"long"});
   $("homeHello").textContent=`${L(now.getHours()>=18?"Bonsoir":"Bonjour")}${nm?" "+nm:""}.`;
   $("homeAvatar").textContent=(nm||"S").slice(0,2).toUpperCase();
   const vis=visibleTabs(),T=vis.includes("plan")?allT().filter(t=>t.status!=="fait"&&!t.canc):[];
@@ -670,7 +683,7 @@ function renderHome(){if(!$("homeBody"))return;
   const next=T.filter(t=>t.time&&start(t)>now).sort((a,b)=>start(a)-start(b))[0]||T.filter(t=>!t.time&&t.date>t0).sort((a,b)=>a.date.localeCompare(b.date))[0];
   // v44.7 : Sid'Compagnon = 3 grandes cartes, une par app (nom, identité, ce qu'elle fait en une ligne, 1 ou 2 repères du jour) ;
   // toucher une carte ouvre l'app. Tout le reste a quitté cette page (il est dans chaque app).
-  const cards=[];
+  const cards=[];$("homeBody").dataset.view="simple";
   {const g=APP_GROUPS.find(x=>x.app==="agenda");if(groupTabs(g).length){const it=[];
     if(next){const s=start(next),same=next.date===t0,tm=parse(next.date);tm.setDate(tm.getDate()-1);
       const when=next.time&&same?inCount(s-(+now)):next.time&&iso(tm)===t0?`${L("demain")} · ${next.time}`:`${DOW[s.getDay()]} ${s.getDate()} ${MO[s.getMonth()]}${next.time?" · "+next.time:""}`;
@@ -697,10 +710,20 @@ function renderHome(){if(!$("homeBody"))return;
     else if(g.app==="fit"){if(vis.includes("nutri")&&nutriAllowed()&&NU().plan?.kcal){count=fmtFull(Math.max(0,Math.round(dayTarget(t0).kcal-sumOf(dayLog(t0)).kcal)));metric="kcal restantes aujourd'hui"}else{count=String(M().sessions.length);metric="séances"}}
     else{count=String(NT().length);metric=NT().length===1?"note":"notes"}
     return {app:g.app,k:g.k,label:g.label,desc:phrases[g.app],count,metric,functions:groupTabs(g).map(k=>({label:SHORT[k],icon:ICON(k)||""})),items:it.map(([k,v,w])=>({k,v:typeof v==="object"?v.u:v,user:typeof v==="object",w:w||""}))};});
+  // v76 : vue simple par défaut (les 3 logos), pour tous les comptes tant que la personne n'a pas choisi « Affichage détaillé » (data.prefs.homeView="detail")
+  const detail=homeDetail(),sw=`<button type="button" class="linkbtn" id="homeViewSw" aria-pressed="${detail}">${L(detail?"Affichage simple":"Affichage détaillé")}</button>`;$("homeViewBox").innerHTML=sw;
+  if(!detail){$("homeBody").innerHTML=`<div class="hs-grid" role="group" aria-label="${L("Tes applications")}">${models.map(c=>`<button type="button" class="hs-app" data-app="${c.app}" data-gapp="${c.k}" aria-label="${esc(c.label)} — ${esc(L(APP_ROLES[c.app]))}">${LOGO(c.app,"hs-logo")}<span class="hs-name notr">${c.label}</span><span class="hs-role">${L(APP_ROLES[c.app])}</span></button>`).join("")}</div>${homeNext()}`;return}
+  $("homeBody").dataset.view="detail";
   if(shIsl("home")){try{window.SCIslands.home($("homeBody"),{i18n:agI18n(),cards:models});return}catch(e){reportErr("island home: "+(e&&e.message))}}
   $("homeBody").innerHTML=`<div class="hc-list">${models.map(c=>`<button type="button" class="hc" data-app="${c.app}" data-gapp="${c.k}"><span class="hc-top">${LOGO(c.app,"home-applogo hc-logo")}<span class="hc-heading"><span class="hc-name">${c.label}</span><span class="hc-desc">${L(c.desc)}</span></span><svg class="hc-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></span><span class="hc-main"><span class="hc-count">${c.count}</span><span class="hc-metric">${L(c.metric)}</span></span><span class="hc-detail">${c.items.slice(0,1).map(it=>`<span class="hc-it"><span class="hc-k">${it.k}</span><span class="hc-v">${it.user?`<span class="notr">${esc(it.v)}</span>`:esc(it.v)}</span></span>`).join("")}</span><span class="hc-fns">${c.functions.map(f=>`<span class="hc-fn"><span>${f.icon}</span>${L(f.label)}</span>`).join("")}</span></button>`).join("")}</div>`;
 }
+const homeDetail=()=>!!(data.prefs&&data.prefs.homeView==="detail");
+function setHomeView(v){data.prefs.homeView=v==="detail"?"detail":"simple";save();renderHome();const hs=$("homeViewSel");if(hs)hs.value=data.prefs.homeView;
+  toast(v==="detail"?"Affichage détaillé activé":"Affichage simple activé");setTimeout(()=>{const b=$("homeViewSw");if(b)b.focus({preventScroll:true})},30)}
+$("homeViewBox").addEventListener("click",e=>{if(e.target.closest("#homeViewSw"))setHomeView(homeDetail()?"simple":"detail")});
 $("homeBody").addEventListener("click",e=>{
+  if(e.target.closest("#hsTourHide")){data.prefs.tour="hidden";save();renderHome();toast("Premiers pas masqués : tu peux les revoir dans Réglages");return}
+  const tg=e.target.closest("[data-tourgo]");if(tg){if(tg.getAttribute("aria-disabled")==="true")return;qaGo(tg.dataset.tourgo);return}
   const ga=e.target.closest("[data-gapp]");if(ga){openGroup(ga.dataset.gapp);return}
   if(e.target.closest("[data-aioff]")){data.ui.aiCardOff=1;saveUI();renderHome();return}
   const hg=e.target.closest("[data-htg]");if(hg){const t=data.todos.find(x=>x.id===hg.dataset.htg);if(t){todoToggle(t);renderHome()}return}
@@ -1131,12 +1154,10 @@ $("planSearchBtn").addEventListener("click",()=>{const i=$("planSearch"),open=i.
 $("plMic").addEventListener("click",e=>dictate(e.currentTarget,$("plAsk")));
 $("plAsk").addEventListener("input",e=>grow(e.target));
 $("plAsk").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();$("plAskForm").requestSubmit()}});
-function plPrompt(q){const d=today(),day=`${d.toLocaleDateString(LANG==="en"?"en-GB":"fr-BE",{weekday:"long"})} ${iso(d)}`;
-  return T3(`Ajoute dans mon agenda Sid'Compagnon : ${q}\n(Aujourd'hui : ${day}, heure de Bruxelles. Utilise ajouter_activite avec le titre, la date, l'heure de début et de fin, le type et les rappels si je les donne. S'il y a plusieurs activités, ajoute-les toutes. Si la date ou l'heure n'est pas claire, demande-moi avant.)`,
-    `Add to my Sid'Compagnon calendar: ${q}\n(Today: ${day}, Brussels time. Use ajouter_activite with the title, date, start and end time, type and reminders if I give them. If there are several activities, add them all. If the date or time is unclear, ask me first.)`,
-    `Voeg toe aan mijn Sid'Compagnon-agenda: ${q}\n(Vandaag: ${day}, Brusselse tijd. Gebruik ajouter_activite met de titel, datum, begin- en einduur, het type en herinneringen als ik die geef. Bij meerdere activiteiten: voeg ze allemaal toe. Als de datum of het uur niet duidelijk is, vraag het me eerst.)`)}
+// v76 : la demande part chez Sid'Bot ; il propose les activités (date, heure), la personne les ajoute d'un toucher
+const plPrompt=q=>T3(`Ajoute dans mon agenda : ${q}`,`Add to my calendar: ${q}`);
 $("plAskForm").addEventListener("submit",e=>{e.preventDefault();const q=$("plAsk").value.trim();if(!q)return;dictStop();
-  aiHandoff(plPrompt(q),"agenda");$("plAsk").value="";grow($("plAsk"))});
+  aiHandoff(plPrompt(q),"agenda",{send:true});$("plAsk").value="";grow($("plAsk"))});
 let planOpenMem={}; // mois ouverts dans « Toutes les dates » ; v44.6 : tous repliés par défaut (à l'ouverture de sid'agenda et au rechargement)
 // v74 : éphéméride en haut de l'Agenda (style « Unique ») : mois, semaine, grand chiffre du jour, jour de la semaine, activités du jour
 function ephFill(){const el=$("plEph");if(!el)return;const d=today(),loc=LANG==="en"?"en-GB":"fr-BE",k=iso(d);
@@ -2497,9 +2518,9 @@ function renderCoach(){const box=$("coachBox");if(!box)return;const pl=PL(),ds=P
   if(!pl){box.innerHTML=`<div class="card coach-card"><div class="grow"><b>${L("Ton programme sur mesure")}</b><div class="small muted">${L("Quelques questions (niveau, objectif, jours, matériel) et Sid'Compagnon crée tes séances.")}</div></div><button type="button" class="btn" data-coach="new">${L("Créer mon programme")}</button></div>`;return}
   const p=pl.profile||{},G={muscle:"Prendre du muscle",force:"Gagner en force",gras:"Perdre du gras",forme:"Être en forme",endu:"Gagner en endurance"},LV={deb:"Débutant",inter:"Intermédiaire",conf:"Confirmé"};
   box.innerHTML=`<div class="card coach-card coach-on"><div class="coach-top"><div class="grow"><span class="eyebrow">${L("Mon programme")}</span><b>${esc(L(G[p.goal]||"Sur mesure"))}${pl.src==="ia"?` · ${L("ajusté par Claude")}`:""}</b><div class="small muted">${p.level?esc(L(LV[p.level]||""))+" · ":""}${ds.length} ${L(ds.length>1?"séances":"séance")}</div></div><button type="button" class="pen" data-coach="more" aria-label="${L("Plus d'actions")}">${MORE}</button></div>
-    ${pl.aiWait?`<div class="coach-wait" role="status"><span class="grow">${L("Demande envoyée à Claude : le programme ajusté arrivera ici tout seul.")}</span><button type="button" class="linkbtn" data-coach="resend">${L("Renvoyer")}</button><button type="button" class="x" data-coach="unwait" aria-label="${L("Masquer")}"><span class="gi gi-close" aria-hidden="true"></span></button></div>`:""}
+    ${pl.aiWait?`<div class="coach-wait" role="status"><span class="grow">${L("Une ancienne demande d'ajustement est en attente : tu peux l'annuler.")}</span><button type="button" class="linkbtn" data-coach="resend">${L("Renvoyer")}</button><button type="button" class="x" data-coach="unwait" aria-label="${L("Masquer")}"><span class="gi gi-close" aria-hidden="true"></span></button></div>`:""}
     <div class="coach-adj"><label for="coRemark" class="eyebrow">${L("Ta remarque sur ce programme")}</label><textarea id="coRemark" class="autogrow" rows="2" maxlength="600" placeholder="${L("Ex. remplace la 2e séance jambes par une séance haut du corps")}">${esc(pl.aiWait?"":rmk)}</textarea>
-      <div class="coach-adj-b"><button type="button" class="btn" data-coach="adjust">${L("Ajuster avec Claude")}</button></div>
+      <div class="coach-adj-b"><button type="button" class="btn" data-coach="adjust">${L("Demander conseil à Sid'Bot")}</button></div>
       ${(p.remarks||[]).length?`<details class="coach-rem"><summary class="small muted">${(p.remarks||[]).length} ${L((p.remarks||[]).length>1?"remarques envoyées":"remarque envoyée")}</summary><ul>${p.remarks.slice().reverse().map(r=>`<li class="small"><span class="notr">${esc(r.text)}</span> <span class="muted">· ${fmtWhen(Date.parse(r.at))}</span></li>`).join("")}</ul></details>`:""}</div></div>`}
 let cfDraft={};
 const restLbl=r=>r>=60?String(Math.round(r/60*10)/10).replace(".",",")+" min":r+" s";
@@ -2534,32 +2555,24 @@ $("coachForm").addEventListener("submit",async e=>{e.preventDefault();const p=cf
   const old=PL();p.remarks=(old&&old.profile&&old.profile.remarks)||[];if(p.notes&&!p.remarks.some(r=>r.text===p.notes))p.remarks=[...p.remarks,{at:new Date().toISOString(),text:p.notes}].slice(-10);
   // v43 : le programme de l'app est toujours créé (il sert de base, et de secours si Claude ne répond pas)
   planApply(coachBuild(p));
-  if(withAi){if(!(await nuConsent())){save();$("coachSheet").hidden=true;renderMuscu();toast("Ton programme est prêt (sans Claude)");return}
-    M().plan.aiWait=Date.now();save();$("coachSheet").hidden=true;renderMuscu();aiHandoff(coachPrompt("new"),"muscu")}
+  // v76 : avec Sid'Bot, le programme de l'app est créé tout de suite, puis Sid'Bot l'explique et propose des ajustements (il ne le réécrit pas seul)
+  if(withAi){save();$("coachSheet").hidden=true;renderMuscu();toast("Ton programme est prêt");aiHandoff(coachPrompt("new"),"muscu",{send:true})}
   else{save();$("coachSheet").hidden=true;renderMuscu();toast("Ton programme est prêt")}});
-// v43 : demandes envoyées au Claude de la personne (même principe que Nutrition) : il lit le profil et les remarques
-// avec muscu_programme, puis enregistre le programme avec enregistrer_programme ; le résultat revient ici tout seul.
-const GOALS={muscle:["prendre du muscle","build muscle","spiermassa opbouwen"],force:["gagner en force","get stronger","sterker worden"],gras:["perdre du gras","lose fat","vet verliezen"],forme:["être en forme","get fit","fit worden"],endu:["gagner en endurance","build endurance","uithoudingsvermogen opbouwen"]};
-function coachPrompt(kind,remark){const p=(PL()&&PL().profile)||cfDraft||{},li=LANG==="en"?1:LANG==="nl"?2:0,g=(GOALS[p.goal]||GOALS.muscle)[li];
-  const AV={shoulder:["épaules","shoulders","schouders"],back:["bas du dos","lower back","onderrug"],knee:["genoux","knees","knieën"]};
-  const av=[...(p.avoid||[]).map(x=>(AV[x]||[x,x,x])[li]),p.avoidTxt].filter(Boolean).join(", ");
-  const extra=[p.notes&&T3(`Mes remarques : ${p.notes}`,`My wishes: ${p.notes}`,`Mijn wensen: ${p.notes}`),av&&T3(`À ménager : ${av}`,`Go easy on: ${av}`,`Ontzien: ${av}`),(p.must||[]).length&&T3(`Exercices voulus : ${p.must.join(", ")}`,`Exercises I want: ${p.must.join(", ")}`,`Oefeningen die ik wil: ${p.must.join(", ")}`),(p.never||[]).length&&T3(`Exercices exclus : ${p.never.join(", ")}`,`Exercises to avoid: ${p.never.join(", ")}`,`Oefeningen om te vermijden: ${p.never.join(", ")}`)].filter(Boolean).join(". ");
-  // v44 : seulement les exercices de exercices.js, les prioritaires (P) en premier dans leur groupe (noms gardés en français : ce sont ceux de l'app)
-  const only=T3(`Utilise uniquement ces exercices, avec leur nom exact ; ceux marqués (P) sont à privilégier en premier dans leur groupe musculaire : ${exListTxt()}. N'ajoute aucun autre exercice, sauf un exercice que je demande moi-même.`,
-    `Use only these exercises, with their exact names; those marked (P) come first in their muscle group: ${exListTxt()}. Do not add any other exercise, unless I ask for it myself.`,
-    `Gebruik alleen deze oefeningen, met hun exacte naam; die met (P) krijgen voorrang in hun spiergroep: ${exListTxt()}. Voeg geen andere oefening toe, tenzij ik er zelf om vraag.`);
-  if(kind==="improve")return T3("Avec Sid'note : lis mon programme de musculation et mon historique (muscu_programme), puis améliore-le pour moi (choix des exercices, volume, progression). Enregistre la nouvelle version avec enregistrer_programme.","With Sid'note: read my workout program and history (muscu_programme), then improve it for me (exercise choice, volume, progression). Save the new version with enregistrer_programme.","Met Sid'note: lees mijn trainingsschema en geschiedenis (muscu_programme) en verbeter het (oefeningen, volume, progressie). Sla de nieuwe versie op met enregistrer_programme.")+" "+only;
-  if(kind==="adjust")return T3(`Avec Sid'note : lis mon programme de musculation (muscu_programme) et ajuste-le selon ma remarque, sans tout recommencer : « ${remark} ». Garde ce qui va bien, puis enregistre la nouvelle version avec enregistrer_programme.`,
-    `With Sid'note: read my workout program (muscu_programme) and adjust it to my remark without starting over: "${remark}". Keep what works, then save the new version with enregistrer_programme.`,
-    `Met Sid'note: lees mijn trainingsschema (muscu_programme) en pas het aan volgens mijn opmerking, zonder opnieuw te beginnen: "${remark}". Houd wat goed is en sla de nieuwe versie op met enregistrer_programme.`)+" "+only;
-  return T3(`Avec Sid'note : compose mon programme de musculation. Objectif ${g}, ${p.days} séances par semaine de ${p.dur} min. Lis d'abord mon profil complet avec muscu_programme.${extra?" "+extra+".":""} Enregistre-le ensuite avec enregistrer_programme.`,
-    `With Sid'note: build my workout program. Goal: ${g}, ${p.days} sessions a week of ${p.dur} min. First read my full profile with muscu_programme.${extra?" "+extra+".":""} Then save it with enregistrer_programme.`,
-    `Met Sid'note: stel mijn trainingsschema samen. Doel: ${g}, ${p.days} trainingen per week van ${p.dur} min. Lees eerst mijn volledige profiel met muscu_programme.${extra?" "+extra+".":""} Sla het daarna op met enregistrer_programme.`)+" "+only}
+// v76 : demandes envoyées à Sid'Bot (le programme suivi part dans le contexte « Ton programme de musculation ») : il explique et propose, la personne décide
+const GOALS={muscle:["prendre du muscle","build muscle"],force:["gagner en force","get stronger"],gras:["perdre du gras","lose fat"],forme:["être en forme","get fit"],endu:["gagner en endurance","build endurance"]};
+function coachPrompt(kind,remark){const p=(PL()&&PL().profile)||cfDraft||{},li=LANG==="en"?1:0,g=(GOALS[p.goal]||GOALS.muscle)[li];
+  const AV={shoulder:["épaules","shoulders"],back:["bas du dos","lower back"],knee:["genoux","knees"]};
+  const av=[...(p.avoid||[]).map(x=>(AV[x]||[x,x])[li]),p.avoidTxt].filter(Boolean).join(", ");
+  const extra=[p.notes&&T3(`Mes remarques : ${p.notes}`,`My wishes: ${p.notes}`),av&&T3(`À ménager : ${av}`,`Go easy on: ${av}`)].filter(Boolean).join(". ");
+  if(kind==="improve")return T3("Regarde mon programme de musculation et dis-moi ce que tu améliorerais (exercices, volume, progression), avec tes raisons.","Look at my workout program and tell me what you would improve (exercises, volume, progression), with your reasons.");
+  if(kind==="adjust")return T3(`Voici ma remarque sur mon programme de musculation : « ${remark} ». Que me conseilles-tu de changer, sans tout recommencer ?`,`Here is my remark on my workout program: "${remark}". What do you suggest I change, without starting over?`);
+  return T3(`Je viens de créer mon programme de musculation : objectif ${g}, ${p.days} séances par semaine de ${p.dur} min.${extra?" "+extra+".":""} Explique-le moi simplement et dis-moi comment bien progresser.`,
+    `I just created my workout program: goal ${g}, ${p.days} sessions a week of ${p.dur} min.${extra?" "+extra+".":""} Explain it simply and tell me how to progress well.`)}
 async function coachAdjust(text){text=String(text||"").trim();if(!text){toast("Écris d'abord ta remarque");return}const pl=PL();if(!pl)return;
   if(!(await nuConsent()))return;
-  const pr=pl.profile||(pl.profile={});pr.remarks=[...(pr.remarks||[]),{at:new Date().toISOString(),text:text.slice(0,600)}].slice(-10);pl.aiWait=Date.now();pl.upd=Date.now();M().upd=Date.now();save();renderMuscu();
-  aiHandoff(coachPrompt("adjust",text.slice(0,600)),"muscu")}
-/* ---------- v47 : objectif visible, séries conseillées, types de séances, demande à Claude (#13, #14, #17) ---------- */
+  const pr=pl.profile||(pl.profile={});pr.remarks=[...(pr.remarks||[]),{at:new Date().toISOString(),text:text.slice(0,600)}].slice(-10);pl.upd=Date.now();M().upd=Date.now();save();renderMuscu();
+  aiHandoff(coachPrompt("adjust",text.slice(0,600)),"muscu",{send:true})}
+/* ---------- v47 : objectif visible, séries conseillées, types de séances, demande à Sid'Bot (#13, #14, #17) ---------- */
 // objectif d'entraînement (data.prefs.muGoal, synchronisé ; repris du programme suivi s'il n'est pas réglé)
 const MU_GOALS={force:"Force",muscle:"Prise de masse",gras:"Sèche",endu:"Endurance",forme:"Forme"};
 // v73 (demande de Sid du 30 oct. 2026) : paramètres de référence par objectif. H = polyarticulaire (squat, développé, rowing, tractions…),
@@ -2722,18 +2735,13 @@ function seType(se){const n=fold(se.name||"");
   const up=c.push+c.pull;if(!up&&!c.legs)return null;
   if(c.legs&&up)return c.legs>=2&&up>=2?"full":c.legs>up?"legs":"upper";
   if(c.legs)return "legs";return c.push&&c.pull?(c.push>=c.pull*3?"push":c.pull>=c.push*3?"pull":"upper"):c.push?"push":"pull"}
-// v47 (#17) : un champ en haut de Musculation et de Notes, comme « Planifier » : la demande part chez Claude, le résultat revient par le connecteur
-function muPrompt(q){const g=L(MU_GOALS[muGoal()]);return T3(`Avec Sid'note, pour ma musculation : ${q}\n(Lis d'abord mon programme et mes séances avec muscu_programme. Pour changer le programme, enregistre-le avec enregistrer_programme ; pour une séance faite, note-la avec noter_seance. Utilise les exercices de la liste donnée par muscu_programme. Mon objectif : ${g}. Pars des paramètres de référence de cet objectif donnés par muscu_programme et ajuste-les exercice par exercice si je le demande : séries, répétitions, repos (rest_s), intensité, RPE et tempo.)`,
-  `With Sid'note, for my workouts: ${q}\n(First read my program and sessions with muscu_programme. To change the program, save it with enregistrer_programme; for a finished session, log it with noter_seance. Use the exercises listed by muscu_programme. My goal: ${g}. Start from the reference parameters for this goal given by muscu_programme and adjust them per exercise if I ask: sets, reps, rest (rest_s), intensity, RPE and tempo.)`,
-  `Met Sid'note, voor mijn training: ${q}\n(Lees eerst mijn schema en trainingen met muscu_programme. Om het schema te wijzigen: sla het op met enregistrer_programme; een gedane training noteer je met noter_seance. Gebruik de oefeningen uit de lijst van muscu_programme. Mijn doel: ${g}. Vertrek van de referentiewaarden voor dit doel uit muscu_programme en pas ze per oefening aan als ik dat vraag: sets, herhalingen, rust (rest_s), intensiteit, RPE en tempo.)`)}
-function ntPrompt(q){return T3(`Avec Sid'note, dans mes notes : ${q}\n(Retrouve les notes avec notes et lire_note. Pour une nouvelle note, utilise ajouter_note et propose un dossier si c'est utile ; pour changer une note qui existe, utilise modifier_note, sans créer de doublon. Tu ne vois pas mes notes secrètes.)`,
-  `With Sid'note, in my notes: ${q}\n(Find notes with notes and lire_note. For a new note, use ajouter_note and suggest a folder if useful; to change an existing note, use modifier_note without creating a duplicate. You can't see my secret notes.)`,
-  `Met Sid'note, in mijn notities: ${q}\n(Zoek notities met notes en lire_note. Voor een nieuwe notitie: ajouter_note en stel een map voor als dat helpt; om een bestaande notitie te wijzigen: modifier_note, zonder dubbel. Je ziet mijn geheime notities niet.)`)}
+// v47 (#17) : un champ en haut de Musculation et de Notes, comme « Planifier ». v76 : la demande part chez Sid'Bot (dans l'app), telle qu'écrite
+const muPrompt=q=>q,ntPrompt=q=>q;
 for(const[k,topic,mk,health]of/** @type {[string,string,(q:string)=>string,boolean][]} */([["mu","muscu",muPrompt,true],["nt","note",ntPrompt,false]])){const f=$(k+"AskForm"),t=$(k+"Ask");
   $(k+"Mic").addEventListener("click",e=>dictate(e.currentTarget,t));t.addEventListener("input",()=>grow(t));
   t.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();f.requestSubmit()}});
   f.addEventListener("submit",async e=>{e.preventDefault();const q=t.value.trim();if(!q)return;dictStop();
-    if(health&&!(await nuConsent()))return;aiHandoff(mk(q.slice(0,1500)),topic);t.value="";grow(t)})}
+    if(health&&!(await nuConsent()))return;aiHandoff(mk(q.slice(0,1500)),topic,{send:true});t.value="";grow(t)})}
 $("coachClose").addEventListener("click",()=>$("coachSheet").hidden=true);
 $("coachSheet").addEventListener("click",e=>{if(e.target.id==="coachSheet")$("coachSheet").hidden=true});
 $("coachBox").addEventListener("click",e=>{
@@ -2743,7 +2751,7 @@ $("coachBox").addEventListener("click",e=>{
   else if(k==="resend"){const pl=PL(),rm=pl&&pl.profile&&(pl.profile.remarks||[]).slice(-1)[0];aiHandoff(rm&&rm.text!==pl.profile.notes?coachPrompt("adjust",rm.text):coachPrompt("new"),"muscu")}
   else if(k==="unwait"){const pl=PL();if(pl){delete pl.aiWait;pl.upd=Date.now();save();renderMuscu()}}
   else if(k==="more")openActions(L("Mon programme"),[{l:"Modifier mes réponses",fn:coachOpen},
-    {l:"Ajuster avec Claude",fn:async()=>{if(!(await nuConsent()))return;aiHandoff(coachPrompt("improve"),"muscu")}},
+    {l:"Demander conseil à Sid'Bot",fn:async()=>{if(!(await nuConsent()))return;aiHandoff(coachPrompt("improve"),"muscu",{send:true})}},
     {l:"Partager le programme",fn:()=>copyText(shareTxt(PLD(),L("Mon programme")),"prog")},
     {l:"Supprimer le programme",danger:true,fn:()=>grpActions(PL().id)}])});
 // v43 : au retour de veille, on resynchronise les sons programmés du Focus (l'horloge audio a pu être suspendue)
@@ -3711,192 +3719,152 @@ $("psForgot").addEventListener("click",async e=>{const b=e.currentTarget;if(!ps)
   if(!b.dataset.armed){b.dataset.armed="1";b.textContent=L(ps.forgotText||"La récupération n'était pas activée. Effacer toutes les notes secrètes et choisir un nouveau code ? Touche encore pour confirmer.");return}
   const f=ps.forgot;psEnd(null);f()});
 
-/* ---------- v38 : connecteur Claude (fonction Edge « mcp ») ---------- */
-// v45.2 : adresse sur le domaine de l'app (sidcompagnon.com/mcp/<clé>, relayée par Vercel vers la fonction Supabase, voir vercel.json) :
-// Claude affiche l'icône du site de l'adresse. Les anciennes adresses …supabase.co/functions/v1/mcp/<clé> marchent toujours.
-const MCP_BASE="https://sidcompagnon.com/mcp/";
-// Une adresse secrète par personne : …/functions/v1/mcp/<clé>. Seule l'empreinte SHA-256 de la clé est gardée (table mcp_tokens) ;
-// la clé n'est montrée qu'une fois. Retirer une adresse coupe aussitôt l'accès de Claude.
+/* ---------- v76 : Sid'Bot, l'assistant intégré aux trois apps (remplace Claude : liens claude.ai, conversations reliées, assistant de branchement) ---------- */
+// Tout se passe dans Sid'Compagnon : la fonction Supabase « sidbot » relaie la demande vers le fournisseur choisi côté serveur (clé jamais dans le site).
+// Ce qui part : la question et un résumé de l'app ouverte, que la personne voit et peut retirer (puces « Partagé avec Sid'Bot »).
+// Jamais : mots de passe, documents, notes secrètes. Une note n'est jointe que si la personne le demande.
+// Sid'Bot ne modifie rien seul : il propose des actions (ajouter une activité, une note, un repas) que la personne valide d'un toucher.
+// Historique : les 20 derniers messages par app, sur cet appareil seulement (localStorage, par compte).
+const SB_NAME="Sid'Bot";
+const SB_APPS={journee:{label:"Sid'Journée",app:"agenda",hint:"Ex. : ajoute « réviser chimie » jeudi à 14 h"},
+  forme:{label:"Sid'Forme",app:"fit",hint:"Ex. : propose-moi un dîner riche en protéines"},
+  note:{label:"Sid'Note",app:"note",hint:"Ex. : résume la note ouverte en 5 points"}};
+const SB_TOPIC={agenda:"journee",nutri:"forme",muscu:"forme",note:"note"};
+const SB_MAX=20,SB_TIMEOUT=30000,SB_IMG_MAX=1100000;
+const SB_ERR={auth:"Reconnecte-toi pour utiliser Sid'Bot.",quota:"Le quota gratuit de Sid'Bot est épuisé pour aujourd'hui. Il revient demain : rien n'est facturé.",
+  rate:"Trop de demandes d'un coup. Réessaie dans un instant.",timeout:"Sid'Bot met trop de temps à répondre. Réessaie.",
+  unavailable:"Sid'Bot est indisponible pour l'instant. Réessaie plus tard.",not_configured:"Sid'Bot n'est pas encore activé sur ce serveur.",
+  bad_request:"Cette demande n'a pas pu être envoyée. Raccourcis-la ou retire la photo.",offline:"Pas de connexion internet : Sid'Bot a besoin du réseau.",
+  trial:"Mode essai : crée ton compte pour utiliser Sid'Bot."};
+// compatibilité : plus aucune IA externe à brancher (anciennes préférences ai / aiOk / aiConv laissées telles quelles dans les données)
+const AIS={},aiCur=()=>null;
+let sbApp="journee",sbBusy=false,sbImg=null,sbCtl=null,sbUse={},sbShare={};
+const sbKey=()=>"sidnote-sidbot-"+((session&&session.user&&session.user.id)||"anon");
+function sbHist(){try{const h=JSON.parse(ls.get(sbKey())||"{}");return h&&typeof h==="object"?h:{}}catch(e){return {}}}
+function sbSave(h){try{ls.set(sbKey(),JSON.stringify(h))}catch(e){}}
+function sbMsgs(app){const h=sbHist();return Array.isArray(h[app])?h[app]:[]}
+function sbPush(app,m){const h=sbHist(),a=Array.isArray(h[app])?h[app]:[];a.push(m);h[app]=a.slice(-SB_MAX);sbSave(h)}
+function sbClear(app){const h=sbHist();delete h[app];sbSave(h)}
+const sbAppOfView=v=>{const a=appOf(v);return a==="agenda"?"journee":a==="note"?"note":a==="fit"?"forme":"journee"};
+// ---- contexte par app : un résumé court, jamais de secrets ----
+function sbCtxParts(app){
+  const t=iso(today()),end=new Date(today());end.setDate(end.getDate()+7);const e7=iso(end);
+  if(app==="journee"){const tasks=(data.tasks||[]).filter(x=>x&&x.date>=t&&x.date<=e7&&!x.canc).sort((a,b)=>(a.date+(a.time||"")).localeCompare(b.date+(b.time||""))).slice(0,40)
+      .map(x=>({title:String(x.title||"").slice(0,120),date:x.date,time:x.time||"",status:x.status==="fait"?"done":"todo"}));
+    const todos=(data.todos||[]).filter(x=>x&&!x.done).slice(0,20).map(x=>({title:String(x.title||"").slice(0,120),day:x.day||""}));
+    return [{k:"agenda",label:"Ton agenda des 7 prochains jours",on:true,v:{tasks,todos}}]}
+  if(app==="forme"){const n=NU(),day=n.log.filter(x=>x&&x.day===t),tot={kcal:0,p:0,c:0,f:0};
+    day.forEach(x=>{for(const k in tot)tot[k]+=+x[k]||0});
+    const meals=day.slice(0,30).map(x=>({name:String(x.name||"").slice(0,80),qty:String(x.qty||"").slice(0,40),kcal:Math.round(+x.kcal||0)}));
+    const goal=n.plan&&n.plan.kcal?Math.round(+n.plan.kcal):null;
+    const weights=n.weights.filter(w=>w&&w.day&&+w.kg).sort((a,b)=>a.day.localeCompare(b.day)).slice(-5).map(w=>({date:w.day,kg:+w.kg}));
+    const pl=typeof PL==="function"?PL():null,pr=(pl&&pl.profile)||{};
+    return [{k:"nutrition",label:"Ta nutrition du jour",on:true,v:{goal,totals:{kcal:Math.round(tot.kcal),p:Math.round(tot.p),c:Math.round(tot.c),f:Math.round(tot.f)},meals}},
+      {k:"weights",label:"Tes 5 dernières pesées",on:false,v:weights},
+      {k:"muscu",label:"Ton programme de musculation",on:true,v:{goal:pr.goal||"",days:pr.days||null,minutes:pr.dur||null,name:pl&&pl.name?String(pl.name).slice(0,80):""}}]}
+  if(app==="note"){const n=typeof noteOpenId!=="undefined"&&noteOpenId&&typeof noteFind==="function"?noteFind(noteOpenId):null;
+    // une note secrète n'est jamais jointe, même déverrouillée
+    if(n&&!n.secret&&!$("noteEdit").hidden)return [{k:"note",label:"La note ouverte",on:false,v:{title:String(n.title||"").slice(0,200),body:String(n.body||"").slice(0,6000)}}];
+    return []}
+  return []}
+function sbContext(app){const out={today:iso(today())};for(const p of sbCtxParts(app))if(sbShare[app+":"+p.k]??p.on)out[p.k]=p.v;return out}
+// ---- ouverture ----
+function sbOpen(app,opt){opt=opt||{};sbApp=SB_APPS[app]?app:"journee";sbImg=opt.img||null;
+  $("sbSheet").hidden=false;sbRender();
+  const i=$("sbIn");if(opt.prompt){i.value=opt.prompt;grow(i);if(opt.send){sbSend();return}}
+  setTimeout(()=>{if(!matchMedia("(pointer:coarse)").matches)i.focus({preventScroll:true})},80)}
+function sbClose(){$("sbSheet").hidden=true;if(sbCtl){try{sbCtl.abort()}catch(e){}}}
+// anciens points d'entrée (Agenda, Musculation, Nutrition, Notes) : la demande arrive dans Sid'Bot, déjà écrite, envoyée d'un toucher
+function aiHandoff(prompt,topic,opt){sbOpen(SB_TOPIC[topic]||sbAppOfView(data.ui.view),{prompt,img:opt&&opt.img,send:!!(opt&&opt.send)})}
+function aiGo(topic,prompt,quiet){aiHandoff(prompt,topic);return ""}
+const convUrl=()=>"",convTabs=()=>{},renderConv=()=>{};
+function aiWizard(){sbOpen(sbAppOfView(data.ui.view))}
+function renderAiCards(){const c=$("nuAiCard");if(c)c.hidden=true;const st=$("sbState");if(st)st.textContent=sbUse.limit?`${L("Aujourd'hui")} : ${sbUse.used} / ${sbUse.limit} ${L("demandes")}`:""}
+// ---- affichage ----
+function sbBubble(m){if(m.role==="user")return `<div class="sb-msg me notr">${esc(m.content)}${m.img?`<span class="sb-att">${IC("image")||""} ${L("Photo jointe")}</span>`:""}</div>`;
+  if(m.role==="error")return `<div class="sb-msg err" role="alert">${IC("alert")||""}<span>${esc(L(m.content))}</span>${m.retry?`<button type="button" class="linkbtn" data-sbretry="1">${L("Réessayer")}</button>`:""}</div>`;
+  const acts=(m.actions||[]).map((a,i)=>`<div class="sb-act" data-done="${a.done?1:0}"><span class="grow notr">${esc(a.label||sbActLabel(a))}</span>${a.done?`<span class="sb-ok">${IC("tick")||""}${L("Ajouté")}</span>`:`<button type="button" class="btn ghost sm" data-sbact="${m.id}:${i}">${L(sbActVerb(a))}</button>`}</div>`).join("");
+  return `<div class="sb-msg bot"><div class="notr">${esc(m.content).replace(/\n/g,"<br>")}</div>${acts?`<div class="sb-acts">${acts}</div>`:""}</div>`}
+function sbRender(){const A=SB_APPS[sbApp],msgs=sbMsgs(sbApp);
+  $("sbTitle").textContent=SB_NAME;$("sbSub").textContent=`${L("Avec")} ${A.label}`;
+  document.querySelectorAll("[data-sbapp]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.sbapp===sbApp)));
+  const parts=sbCtxParts(sbApp);
+  $("sbCtx").innerHTML=parts.length?`<span class="small muted">${L("Partagé avec Sid'Bot :")}</span>`+parts.map(p=>{const on=sbShare[sbApp+":"+p.k]??p.on;
+    return `<button type="button" class="sb-chip" data-sbctx="${p.k}" aria-pressed="${on}">${on?(IC("tick")||""):""}${L(p.label)}</button>`}).join(""):
+    `<span class="small muted">${L(sbApp==="note"?"Ouvre une note pour pouvoir la joindre. Tes mots de passe, documents et notes secrètes ne sont jamais envoyés.":"Rien d'autre que ta question n'est envoyé.")}</span>`;
+  const list=$("sbList");
+  list.innerHTML=msgs.length?msgs.map(sbBubble).join(""):`<div class="sb-empty"><b>${L("Pose ta question")}</b><span class="small muted">${L(A.hint)}</span>
+    <div class="sb-sugg">${sbSuggest(sbApp).map(s=>`<button type="button" class="sb-chip" data-sbsugg="1">${L(s)}</button>`).join("")}</div></div>`;
+  if(sbBusy)list.insertAdjacentHTML("beforeend",`<div class="sb-msg bot sb-wait" aria-live="polite"><span class="spin" aria-hidden="true"></span>${L("Sid'Bot réfléchit…")}</div>`);
+  list.scrollTop=list.scrollHeight;
+  $("sbImg").hidden=!sbImg;if(sbImg)$("sbImg").innerHTML=`<img src="${sbImg}" alt="${L("Photo de ton plat")}"><button type="button" class="linkbtn" id="sbImgDel">${L("Retirer la photo")}</button>`;
+  $("sbSend").disabled=sbBusy;$("sbClear").hidden=!msgs.length;renderAiCards()}
+function sbSuggest(app){return app==="journee"?["Qu'est-ce que j'ai de prévu cette semaine ?","Aide-moi à organiser ma journée"]:
+  app==="forme"?["Que manger ce soir pour compléter ma journée ?","Explique-moi mon programme"]:["Aide-moi à structurer une note","Résume la note ouverte"]}
+const sbActVerb=a=>a.type==="add_task"?"Ajouter à l'agenda":a.type==="add_note"?"Créer la note":a.type==="log_meal"?"Ajouter au repas":"Appliquer";
+const sbActLabel=a=>{const p=a.payload||{};return a.type==="add_task"?`${p.title||""} · ${p.date||""}${p.time?" "+p.time:""}`:a.type==="add_note"?String(p.title||""):String(p.name||p.title||"")};
+// ---- envoi ----
+async function sbSend(retry){if(sbBusy)return;const i=$("sbIn");let text=i.value.trim();const app=sbApp;
+  if(retry){const last=sbMsgs(app).filter(m=>m.role==="user").pop();if(!last)return;text=last.content}
+  if(!text)return;
+  const fail=(code,again)=>{sbPush(app,{id:uid(),role:"error",content:SB_ERR[code]||SB_ERR.unavailable,retry:!!again});sbBusy=false;sbRender()};
+  if(!retry){sbPush(app,{id:uid(),role:"user",content:text.slice(0,4000),img:!!sbImg});i.value="";grow(i)}
+  if(!session){fail("auth");return}if(isTrial()){fail("trial");return}if(!navigator.onLine){fail("offline",true);return}
+  if(app==="forme"&&!(await nuConsent())){sbBusy=false;sbRender();return}
+  const hist=/** @type {{role:string,content:string,image?:string}[]} */(sbMsgs(app).filter(m=>m.role==="user"||m.role==="assistant").slice(-10).map(m=>({role:m.role,content:String(m.content).slice(0,4000)})));
+  if(sbImg&&hist.length){if(sbImg.length>SB_IMG_MAX){fail("bad_request");return}hist[hist.length-1].image=sbImg}
+  sbBusy=true;sbRender();sbCtl=new AbortController();const tm=setTimeout(()=>{try{sbCtl.abort()}catch(e){}},SB_TIMEOUT);
+  try{const r=await fetch(SUPABASE_URL+"/functions/v1/sidbot",{method:"POST",signal:sbCtl.signal,
+      headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",Authorization:"Bearer "+await token()},
+      body:JSON.stringify({app,locale:LANG==="en"?"en":"fr",messages:hist,context:sbContext(app)})});
+    clearTimeout(tm);let j=null;try{j=await r.json()}catch(e){}
+    if(j&&j.usage)sbUse=j.usage;
+    if(!r.ok||!j||j.error){const code=j&&j.error||(r.status===401?"auth":r.status===429?"rate":r.status===504?"timeout":"unavailable");
+      fail(code,code==="rate"||code==="timeout"||code==="unavailable");return}
+    sbImg=null;
+    const actions=(Array.isArray(j.actions)?j.actions:[]).filter(sbActOk).slice(0,5).map(a=>({type:a.type,payload:a.payload,label:String(a.label||"").slice(0,160)}));
+    sbPush(app,{id:uid(),role:"assistant",content:String(j.reply||"").slice(0,8000),actions});sbBusy=false;sbRender()}
+  catch(e){clearTimeout(tm);fail(e&&e.name==="AbortError"&&!$("sbSheet").hidden?"timeout":navigator.onLine?"unavailable":"offline",true)}}
+// ---- actions proposées : validées ici, appliquées seulement après un toucher ----
+const SB_D=/^\d{4}-\d{2}-\d{2}$/,SB_T=/^([01]\d|2[0-3]):[0-5]\d$/;
+function sbActOk(a){if(!a||typeof a!=="object"||!a.payload||typeof a.payload!=="object")return false;const p=a.payload;
+  if(a.type==="add_task")return typeof p.title==="string"&&p.title.trim()&&SB_D.test(p.date||"")&&(!p.time||SB_T.test(p.time));
+  if(a.type==="add_note")return typeof p.title==="string"&&typeof (p.body??"")==="string";
+  if(a.type==="log_meal")return typeof nuLogFromBot==="function"&&SB_D.test(p.date||"")&&typeof p.name==="string"&&p.name.trim()!=="";
+  return false}
+function sbApply(a){const p=a.payload;
+  if(a.type==="add_task"){const t={id:uid(),title:p.title.trim().slice(0,200),date:p.date,status:"à faire",tbc:false,cat:""};if(p.time)t.time=p.time;
+    data.tasks.push(t);save();renderPlan();toast(`${L("Ajouté à l'agenda")} : ${t.title}`);return true}
+  if(a.type==="add_note"){const n={id:uid(),title:p.title.trim().slice(0,200),body:String(p.body||"").slice(0,20000),createdAt:new Date().toISOString(),upd:Date.now()};
+    if(p.folder&&typeof p.folder==="string")n.folder=p.folder.slice(0,80);NT().push(n);save();renderNotes();toast(`${L("Note créée")} : ${n.title}`);return true}
+  if(a.type==="log_meal"){const ok=nuLogFromBot(p);if(ok)toast(`${L("Ajouté au repas")} : ${p.name}`);return !!ok}
+  return false}
+// ---- évènements ----
+$("sbForm").addEventListener("submit",e=>{e.preventDefault();sbSend()});
+$("sbIn").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!matchMedia("(pointer:coarse)").matches){e.preventDefault();sbSend()}});
+$("sbIn").addEventListener("input",e=>grow(e.target));
+$("sbClose").addEventListener("click",sbClose);
+$("sbSheet").addEventListener("click",e=>{if(e.target.id==="sbSheet"){sbClose();return}
+  const ap=e.target.closest("[data-sbapp]");if(ap){sbApp=ap.dataset.sbapp;sbImg=null;sbRender();return}
+  const cx=e.target.closest("[data-sbctx]");if(cx){const k=sbApp+":"+cx.dataset.sbctx,p=sbCtxParts(sbApp).find(x=>x.k===cx.dataset.sbctx);sbShare[k]=!(sbShare[k]??(p&&p.on));sbRender();return}
+  const sg=e.target.closest("[data-sbsugg]");if(sg){$("sbIn").value=sg.textContent;sbSend();return}
+  if(e.target.closest("[data-sbretry]")){const h=sbHist();h[sbApp]=sbMsgs(sbApp).filter(m=>m.role!=="error");sbSave(h);sbSend(true);return}
+  if(e.target.closest("#sbImgDel")){sbImg=null;sbRender();return}
+  if(e.target.closest("#sbClear")){sbClear(sbApp);sbRender();toast("Conversation effacée de cet appareil");return}
+  const ac=e.target.closest("[data-sbact]");if(ac){const [mid,ix]=ac.dataset.sbact.split(":"),h=sbHist(),m=(h[sbApp]||[]).find(x=>x.id===mid),a=m&&m.actions&&m.actions[+ix];
+    if(!a||a.done||!sbActOk(a))return;if(sbApply(a)){a.done=true;sbSave(h);sbRender()}}});
+// le bouton Sid'Bot du bandeau (même place dans les trois apps)
+document.addEventListener("click",e=>{const b=e.target.closest("[data-sidbot]");if(b){e.preventDefault();sbOpen(b.dataset.sidbot||sbAppOfView(data.ui.view))}});
+// v76 : anciennes adresses du connecteur (créées avant Sid'Bot) : on peut encore les voir et les retirer, plus en créer
 let mcpRows=[];
-const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
-async function mcpLoad(){const sec=$("mcpSec");if(!sec)return;sec.hidden=!session||isTrial();if(sec.hidden)return;
-  try{mcpRows=await api("/rest/v1/mcp_tokens?select=hash,label,created_at,last_used&order=created_at",{token:await token()})||[]}catch(e){mcpRows=[]}
-  const d=v=>v?new Date(v).toLocaleDateString(LANG==="fr"?"fr-BE":LANG==="nl"?"nl-BE":"en-GB",{day:"numeric",month:"short",year:"numeric"}):"";
-  if(shIsl("mcpList")){try{window.SCIslands.mcpList($("mcpList"),{i18n:agI18n(),rows:mcpRows.map(r=>({hash:r.hash,created:d(r.created_at),used:r.last_used?d(r.last_used):""}))})}catch(e){reportErr("island mcpList: "+(e&&e.message))}}
-  else $("mcpList").innerHTML=mcpRows.map(r=>`<div class="row mcp-it"><div class="grow"><b>${esc(L("Adresse du"))} ${esc(d(r.created_at))}</b><span class="small muted">${r.last_used?`${esc(L("Utilisée le"))} ${esc(d(r.last_used))}`:esc(L("Pas encore utilisée"))}</span></div><button type="button" class="mini" data-mcpdel="${esc(r.hash)}">${esc(L("Retirer"))}</button></div>`).join("");
-  $("mcpNew").textContent=L(mcpRows.length?"Créer une nouvelle adresse":"Créer mon adresse pour Claude")}
-// nouvelle adresse secrète : seule son empreinte part sur le serveur ; renvoie {url, hash}
-async function mcpCreate(label){const key=b64e(crypto.getRandomValues(new Uint8Array(32))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
-  const hash=hex(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(key)));
-  await api("/rest/v1/mcp_tokens",{method:"POST",token:await token(),headers:{Prefer:"return=minimal"},body:{hash,user_id:session.user.id,label:String(label||"IA").slice(0,40)}});
-  return {url:MCP_BASE+key,hash}}
-$("mcpNew").addEventListener("click",async e=>{const b=e.currentTarget;if(b.disabled)return;b.disabled=true;
-  try{const r=await mcpCreate("Claude");$("mcpUrl").textContent=r.url;$("mcpOut").hidden=false;await mcpLoad()}
-  catch(ex){toast(ex instanceof TypeError?"Pas de connexion internet":"Création impossible pour l'instant")}
-  b.disabled=false});
-$("mcpCopy").addEventListener("click",async()=>{toast(await copyTxt($("mcpUrl").textContent)?"Adresse copiée":"Copie impossible : sélectionne-la et copie-la")});
+async function mcpLoad(){const sec=$("mcpOld");if(!sec)return;if(!session||isTrial()){sec.hidden=true;return}
+  try{mcpRows=await api("/rest/v1/mcp_tokens?select=hash,created_at,last_used&order=created_at",{token:await token()})||[]}catch(e){mcpRows=[]}
+  sec.hidden=!mcpRows.length;const d=v=>v?new Date(v).toLocaleDateString(LANG==="en"?"en-GB":"fr-BE",{day:"numeric",month:"short",year:"numeric"}):"";
+  $("mcpList").innerHTML=mcpRows.map(r=>`<div class="row mcp-it"><div class="grow"><b>${esc(L("Adresse du"))} ${esc(d(r.created_at))}</b><span class="small muted">${r.last_used?`${esc(L("Utilisée le"))} ${esc(d(r.last_used))}`:esc(L("Pas encore utilisée"))}</span></div><button type="button" class="btn ghost sm" data-mcpdel="${esc(r.hash)}">${L("Retirer")}</button></div>`).join("")}
 $("mcpList").addEventListener("click",async e=>{const b=e.target.closest("[data-mcpdel]");if(!b)return;
   if(!b.dataset.armed){b.dataset.armed="1";b.textContent=L("Confirmer");return}
-  try{await api("/rest/v1/mcp_tokens?hash=eq."+b.dataset.mcpdel,{method:"DELETE",token:await token()});toast("Adresse retirée : Claude n'a plus accès");$("mcpOut").hidden=true;mcpLoad()}
+  try{await api("/rest/v1/mcp_tokens?hash=eq."+encodeURIComponent(b.dataset.mcpdel),{method:"DELETE",token:await token()});toast("Adresse retirée");mcpLoad()}
   catch(ex){toast("Impossible pour l'instant")}});
-$("mcpSec").addEventListener("toggle",e=>{if(e.currentTarget.open)mcpLoad()});
-
-/* ---------- v39 : brancher Claude en quelques touches et lui confier les calculs (v42 : Claude seulement) ---------- */
-// data.prefs.ai = "claude" (v42 : seule IA proposée ; une ancienne valeur "chatgpt"/"mistral" compte comme non branchée) ; data.prefs.aiOk = date du premier appel reçu de cette IA (branchement vérifié)
-const AIS={
-  claude:{name:"Claude",ask:q=>"https://claude.ai/new?q="+encodeURIComponent(q),conn:"https://claude.ai/settings/connectors",
-    // v40 : la fenêtre « Ajouter un connecteur personnalisé » s'ouvre déjà remplie (nom + adresse) : il ne reste qu'à toucher « Ajouter »
-    add:u=>"https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName="+encodeURIComponent("Sid'note")+"&connectorUrl="+encodeURIComponent(u),
-    steps:()=>[T3("Touche « Ouvrir Claude » : la page Connecteurs s'ouvre (connecte-toi si besoin).","Tap “Open Claude”: the Connectors page opens (sign in if needed).","Tik op ‘Claude openen’: de pagina Connectoren opent (log in indien nodig)."),
-      T3("Touche « Ajouter un connecteur personnalisé ».","Tap “Add custom connector”.","Tik op ‘Aangepaste connector toevoegen’."),
-      T3("Nom : Sid'note. URL : colle l'adresse (elle est déjà copiée). Authentification : « Aucune connexion ».","Name: Sid'note. URL: paste the address (already copied). Authentication: “None”.","Naam: Sid'note. URL: plak het adres (al gekopieerd). Authenticatie: ‘Geen’."),
-      T3("Touche « Ajouter », puis reviens ici.","Tap “Add”, then come back here.","Tik op ‘Toevoegen’ en kom dan hier terug.")]}};
-const aiCur=()=>data.prefs.ai==="claude"?AIS.claude:null; // v42 : Claude seulement (un ancien choix ChatGPT / Le Chat = pas encore branché)
-const AI_TEST=()=>T3("Qu'est-ce que j'ai de prévu aujourd'hui dans Sid'note ?","What do I have planned today in Sid'note?","Wat staat er vandaag gepland in Sid'note?");
-const AI_HABIT=()=>T3("À partir de maintenant, quand je te dis ce que j'ai mangé ou que je t'envoie la photo de mon assiette, calcule les calories et note-le toujours dans Sid'note, sans me le redemander.","From now on, whenever I tell you what I ate or send a photo of my plate, work out the calories and always log it in Sid'note without asking me again.","Vanaf nu: als ik je vertel wat ik gegeten heb of een foto van mijn bord stuur, bereken de calorieën en noteer het altijd in Sid'note zonder het opnieuw te vragen.");
-let aiW={step:"pick",url:"",hash:"",poll:null};
-function aiWizard(step){if(data.prefs.ai!=="claude"){data.prefs.ai="claude";delete data.prefs.aiOk;save()}aiW={step:step==="setup"?"setup":data.prefs.aiOk?"test":"setup",url:"",hash:"",poll:null};$("aiSheet").hidden=false;aiRender()}
-function aiStop(){if(aiW.poll){clearInterval(aiW.poll);aiW.poll=null}}
-function aiRender(){const b=$("aiBody"),ai=aiCur()||AIS.claude;aiStop();
-  if(shIsl("aiWizard")&&["none","setup","test"].includes(aiW.step)){try{const ok=!!data.prefs.aiOk&&!aiW.hash; // v68 (#3)
-    $("aiTitle").textContent=aiW.step==="none"?L("Créer un compte Claude"):ai.name;
-    window.SCIslands.aiWizard(b,{w:{step:aiW.step,name:ai.name,url:aiW.url||"",urlErr:aiW.err||"",add:aiW.url?ai.add(aiW.url):"",ok,test:AI_TEST(),testHref:ai.ask(AI_TEST()),habit:AI_HABIT(),habitHref:ai.ask(AI_HABIT())},i18n:agI18n()});
-    if(aiW.step==="setup"&&!aiW.url&&!aiW.busy){aiW.busy=true;mcpCreate(ai.name).then(r=>{aiW.busy=false;aiW.url=r.url;aiW.hash=r.hash;aiW.err="";mcpLoad();if(aiW.step==="setup")aiRender()})
-      .catch(ex=>{aiW.busy=false;aiW.err=ex instanceof TypeError?"Pas de connexion internet":"Création impossible pour l'instant";if(aiW.step==="setup")aiRender();toast(aiW.err)})}
-    if(aiW.step==="test"&&!ok)aiW.poll=setInterval(aiCheck,3000);return}
-    catch(e){reportErr("island aiWizard: "+(e&&e.message));try{window.SCIslands.unmount(b)}catch(_){}}}
-  if(aiW.step==="none"){$("aiTitle").textContent=L("Créer un compte Claude");
-    b.innerHTML=`<p>${L("Crée un compte Claude gratuit (e-mail ou Google), puis reviens ici pour continuer.")}</p>
-      <div class="ai-acts"><a class="btn" href="https://claude.ai/login" target="_blank" rel="noopener">${L("Créer mon compte Claude")}</a><button type="button" class="btn ghost" data-aistep="setup">${L("C'est fait, continuer")}</button></div>`;return}
-  if(aiW.step==="setup"){$("aiTitle").textContent=ai.name;
-    b.innerHTML=`<div class="ai-step"><b>${L("Tout est prêt")}</b><div class="small muted">${L("Touche le bouton : Claude s'ouvre avec Sid'note déjà rempli. Là-bas, touche simplement « Ajouter », puis reviens ici.")}</div>
-        ${aiW.url?`<a class="btn" href="${esc(ai.add(aiW.url))}" target="_blank" rel="noopener" style="width:100%;margin-top:10px" data-aiadd="1">${L("Ajouter Sid'Compagnon à")} ${esc(ai.name)}</a>`:`<button type="button" class="btn" disabled style="width:100%;margin-top:10px">${L("Préparation…")}</button>`}
-        <div class="small muted" style="margin-top:8px">${L("Si Claude te demande de te connecter, fais-le : la fenêtre s'ouvrira ensuite toute seule.")}</div></div>
-      <details class="ai-more"><summary class="small">${L("Voir mon adresse (si besoin)")}</summary><div class="mcp-url notr" id="aiUrl">${aiW.url?esc(aiW.url):L("Création…")}</div>
-        <button type="button" class="btn ghost" data-aicopy="1" style="width:100%;margin-top:8px">${L("Copier l'adresse")}</button></details>
-      <div class="ai-acts"><button type="button" class="btn ghost" data-aistep="none">${L("Pas encore de compte Claude ?")}</button><button type="button" class="btn" data-aistep="test">${L("C'est fait : tester")}</button></div>`;
-    if(!aiW.url)mcpCreate(ai.name).then(r=>{aiW.url=r.url;aiW.hash=r.hash;mcpLoad();if(aiW.step==="setup")aiRender()})
-      .catch(ex=>{const u=$("aiUrl");if(u)u.textContent=L(ex instanceof TypeError?"Pas de connexion internet":"Création impossible pour l'instant");toast(ex instanceof TypeError?"Pas de connexion internet":"Création impossible pour l'instant")});
-    return}
-  if(aiW.step==="test"){$("aiTitle").textContent=ai.name;const ok=!!data.prefs.aiOk&&!aiW.hash;
-    b.innerHTML=`<button type="button" class="btn ai-back" data-aistep="setup">↺ ${L("Revoir les étapes")}</button>
-      <div class="ai-step"><b>3. ${L("Envoie ce message à")} ${esc(ai.name)}</b><div class="ai-prompt notr">${esc(AI_TEST())}</div>
-        <a class="btn" href="${ai.ask(AI_TEST())}" target="_blank" rel="noopener" style="width:100%;margin-top:8px">${L("Envoyer avec")} ${esc(ai.name)}</a></div>
-      <div class="ai-wait" id="aiWait">${ok?`<b class="ok">${GI("tick")} ${L("C'est branché !")}</b>`:`<span class="spin"></span>${L("En attente de Claude… (accepte l'accès à Sid'note s'il te le demande)")}`}</div>
-      <div class="ai-step" id="aiHabit" ${ok?"":"hidden"}><b>${L("Dernière astuce")}</b><div class="small muted">${L("Pour que tes repas arrivent tout seuls dans Sid'note, envoie-lui une fois ce message :")}</div>
-        <div class="ai-prompt notr">${esc(AI_HABIT())}</div><a class="btn ghost" href="${ai.ask(AI_HABIT())}" target="_blank" rel="noopener" style="width:100%;margin-top:8px">${L("Envoyer avec")} ${esc(ai.name)}</a>
-        <button type="button" class="btn ghost" data-convset="nutri" style="width:100%;margin-top:8px">${L("Une conversation par app")}</button></div>
-      <div class="ai-acts"><button type="button" class="btn" id="aiDone" ${ok?"":"hidden"}>${L("Terminer")}</button></div>`;
-    if(!ok)aiW.poll=setInterval(aiCheck,3000);return}}
-// le branchement est confirmé dès que l'IA a utilisé l'adresse (mcp_tokens.last_used)
-async function aiCheck(){if($("aiSheet").hidden){aiStop();return}
-  try{const q=aiW.hash?`&hash=eq.${aiW.hash}`:"";const r=await api(`/rest/v1/mcp_tokens?select=last_used${q}&last_used=not.is.null&limit=1`,{token:await token()});
-    if(Array.isArray(r)&&r.length){aiStop();data.prefs.aiOk=new Date().toISOString();save();aiW.hash="";aiRender();renderAiCards();if(navigator.vibrate)navigator.vibrate([20,40,20])}}catch(e){}}
-$("aiBody").addEventListener("click",e=>{const p=e.target.closest("[data-aipick]");
-  if(p){aiW.step="setup";aiRender();return}
-  const st=e.target.closest("[data-aistep]");if(st){aiW.step=st.dataset.aistep;aiRender();return}
-  if(e.target.closest("[data-aiadd]")){setTimeout(()=>{if(aiW.step==="setup"){aiW.step="test";aiRender()}},800);return}
-  if(e.target.closest("[data-aicopy]")){copyTxt(aiW.url).then(ok=>toast(ok?"Adresse copiée":"Copie impossible : sélectionne-la et copie-la"));return}
-  if(e.target.closest("#aiDone")){$("aiSheet").hidden=true;aiStop();toast("Claude est branché sur Sid'note")}});
-$("aiClose").addEventListener("click",()=>{$("aiSheet").hidden=true;aiStop()});
-$("aiSheet").addEventListener("click",e=>{if(e.target.id==="aiSheet"){$("aiSheet").hidden=true;aiStop()}});
-document.addEventListener("click",e=>{const w=e.target.closest("[data-aiwiz]");if(w){$("aiAskSheet").hidden=true;aiWizard(w.dataset.aiwiz)}
-  else if(e.target.closest("[data-convset]")){$("aiAskSheet").hidden=true;$("aiSheet").hidden=true;aiStop();convSettings(e.target.closest("[data-convset]").dataset.convset)}});
-document.addEventListener("visibilitychange",()=>{if(!document.hidden&&!$("aiSheet").hidden&&aiW.step==="test")aiCheck()});
-// demande confiée à Claude : message prêt, ouvert dans Claude d'un toucher (ou copié)
-// v44 : une conversation fixe par sujet (data.prefs.aiConv = {nutri, muscu}, liens claude.ai/chat/… ou claude.ai/project/…) pour ne pas
-// ouvrir une nouvelle conversation à chaque demande : une conversation existante ne peut pas être pré-remplie, donc le message est copié
-// puis la conversation s'ouvre, il n'y a plus qu'à coller. Ancien « Dossier Santé » (data.prefs.aiProj) : sert de repli pour les deux sujets.
-const CONV_OK=u=>/^https:\/\/claude\.ai\/(?:chat|project)\/[\w-]+/.test(u||"");
-// v46.1 : une conversation par app (agenda, nutri, muscu, note) ; l'ancien dossier Santé ne sert qu'à sid'fit
-const convUrl=t=>{const c=(data.prefs.aiConv||{})[t];return CONV_OK(c)?c:(t==="nutri"||t==="muscu")&&CONV_OK(data.prefs.aiProj)?data.prefs.aiProj:""};
-const CONV_NAME={nutri:"Nutrition",muscu:"Musculation",agenda:"Sid'Journée",note:"Sid'Note"};
-const CONV_TITLE={agenda:"Sid'Journée — discussion avec Claude",nutri:"Sid'Forme — Nutrition",muscu:"Sid'Forme — Musculation",note:"Sid'Note — discussion avec Claude"};
-const CONV_IN={agenda:"convAgenda",nutri:"convNutri",muscu:"convMuscu",note:"convNote"};
-// nouvelle conversation : le titre de l'app en tête du premier message, pour la retrouver dans Claude et la garder
-const convFirst=(t,p)=>CONV_TITLE[t]&&!convUrl(t)?`${L(CONV_TITLE[t])}\n\n${p}`:p;
-// copie pendant le toucher (sinon l'iPhone la refuse), avec un repli sans l'API du presse-papiers
-function copyNow(t){try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).catch(()=>{});return}}catch(e){}
-  const x=document.createElement("textarea");x.value=t;x.setAttribute("readonly","");x.style.position="fixed";x.style.opacity="0";document.body.appendChild(x);x.select();try{document.execCommand("copy")}catch(e){}x.remove()}
-// ouvre Claude pour un sujet : la conversation fixe si elle est réglée (message copié), sinon une nouvelle conversation pré-remplie
-// v44 : un lien de projet (claude.ai/project/…) ouvre une nouvelle discussion DANS le projet avec le message déjà écrit
-// (claude.ai/new?project=…&q=…) : rien à coller. Une conversation existante ne peut pas être pré-remplie : message copié.
-const projId=u=>(String(u||"").match(/^https:\/\/claude\.ai\/project\/([\w-]+)/)||[])[1]||"";
-const convKind=t=>{const u=convUrl(t);return !u?"":projId(u)?"proj":"chat"};
-function aiGo(topic,prompt,quiet){const u=topic&&convUrl(topic),ai=aiCur()||AIS.claude,pid=projId(u);
-  if(pid){extOpen(`https://claude.ai/new?project=${encodeURIComponent(pid)}&q=${encodeURIComponent(prompt)}`);return "proj"}
-  if(u){copyNow(prompt);extOpen(u);if(!quiet)toast("Prompt copié, colle-le dans la conversation");return "chat"}
-  extOpen(ai.ask(convFirst(topic,prompt)));return ""}
-// T16 D (décision de Sid) : le lien de conversation se règle en bas de chaque app, plus dans Réglages.
-const CONV_VIEW={agenda:"plan",nutri:"nutri",muscu:"muscu",note:"notes"};
-function convSettings(t){t=CONV_VIEW[t]?t:"agenda";show(CONV_VIEW[t]);if(t==="note"&&!$("noteEdit").hidden)closeNote();const d=document.querySelector(`[data-convtab="${t}"]`);if(!d)return;d.open=true;
-  setTimeout(()=>{d.scrollIntoView({block:"center",behavior:"smooth"});const i=d.querySelector("input");if(i&&!i.value&&!matchMedia("(pointer:coarse)").matches)i.focus({preventScroll:true})},120)}
-function renderConv(){const c=data.prefs.aiConv||{};for(const[t,id]of Object.entries(CONV_IN)){const i=$(id);if(i&&document.activeElement!==i)i.value=c[t]||""}convTabs()}
-// v74.2 (demande de Sid) : un petit onglet « Conversation Claude » sous le champ de chaque fonction (Agenda, Musculation, Nutrition, Notes) :
-// on y colle le lien d'une conversation et toutes les demandes de cette fonction y vont directement (sans passer par la fenêtre d'envoi)
-function convTabs(){const c=data.prefs.aiConv||{};
-  document.querySelectorAll("[data-convin]").forEach(i=>{const el=/** @type {HTMLInputElement} */(i);if(document.activeElement!==el)el.value=c[el.dataset.convin]||""});
-  document.querySelectorAll("[data-convst]").forEach(e=>{const u=convUrl(e.dataset.convst);e.textContent=u?L("reliée"):L("aucune");e.toggleAttribute("data-on",!!u)});
-  document.querySelectorAll("[data-convdel]").forEach(b=>{b.hidden=!(data.prefs.aiConv||{})[b.dataset.convdel]})}
-document.addEventListener("click",e=>{const b=e.target.closest("[data-convdel]");if(!b)return;const t=b.dataset.convdel,c=data.prefs.aiConv||{};delete c[t];data.prefs.aiConv=c;save();renderConv();renderAiCards();
-  toast(`${L("Conversation")} ${L(CONV_NAME[t])} ${L("retirée : une nouvelle conversation s'ouvrira à chaque fois")}`)});
-document.addEventListener("submit",e=>{const f=e.target.closest(".conv-f");if(!f)return;e.preventDefault();const t=f.dataset.conv,v=f.querySelector("input").value.trim();
-  if(v&&/^https:\/\/claude\.ai\/share\//.test(v)){toast("Ce lien de partage est public : copie plutôt l'adresse de la conversation (https://claude.ai/chat/…)");return}
-  if(v&&!CONV_OK(v)){toast("Colle le lien complet de la conversation (https://claude.ai/chat/…)");return}
-  const c=data.prefs.aiConv=data.prefs.aiConv||{};if(v)c[t]=v;else delete c[t];save();renderAiCards();renderConv();
-  if(f.closest("#aaActs"))$("aiAskSheet").hidden=true;
-  toast(v?`${L("Conversation")} ${L(CONV_NAME[t])} ${L("enregistrée")}`:`${L("Conversation")} ${L(CONV_NAME[t])} ${L("retirée : une nouvelle conversation s'ouvrira à chaque fois")}`)});
-// v43 : une photo ne passe pas dans un lien (?q= ne prend que du texte). On la partage avec la feuille de partage
-// (iPhone : app Claude, photo + message), sinon on la copie pour la coller dans Claude (ordinateur), ou on l'enregistre.
-let aaImg=null;
-async function aaImgPrep(dataUrl){aaImg={url:dataUrl,file:null,png:null};
-  try{const b=await (await fetch(dataUrl)).blob();aaImg.file=new File([b],"assiette.jpg",{type:"image/jpeg"});
-    const bm=await createImageBitmap(b),c=document.createElement("canvas");c.width=bm.width;c.height=bm.height;c.getContext("2d").drawImage(bm,0,0);
-    aaImg.png=await new Promise(r=>c.toBlob(r,"image/png"))}catch(e){}
-  const can=!!(aaImg.file&&navigator.canShare&&navigator.canShare({files:[aaImg.file]}));
-  const sh=$("aaShare");if(sh)sh.hidden=!can;const cp=$("aaImgCopy");if(cp)cp.hidden=can||!(aaImg.png&&window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write)}
-function aiHandoff(prompt,topic,opt){const ai=aiCur()||AIS.claude,cv=topic&&convUrl(topic),img=opt&&opt.img;
-  // v74.2 : conversation reliée + geste en cours (copie et ouverture permises) → directement dans la conversation, sans fenêtre
-  const ua=/** @type {any} */(navigator).userActivation;if(cv&&!img&&ua&&ua.isActive){aiGo(topic,prompt);return}
-  $("aaPrompt").textContent=prompt;aaImg=null;
-  $("aaActs").dataset.topic=topic||"";
-  if(shIsl("aaActs")){try{const proj=!!cv&&convKind(topic)==="proj"; // v68 (#3)
-    window.SCIslands.aaActs($("aaActs"),{a:{wiz:!(ai&&data.prefs.aiOk),img:img||"",conv:!!cv,proj,convName:CONV_NAME[topic]||"",ask:ai&&!cv&&!img?ai.ask(convFirst(topic,prompt)):"",askOk:!!data.prefs.aiOk,name:ai?ai.name:"",
-      form:false,topic:topic||""},i18n:agI18n()});const ci=$("aaConvIn");if(ci&&document.activeElement!==ci)ci.value="";
-    $("aiAskSheet").hidden=false;if(img)aaImgPrep(img);return}catch(e){reportErr("island aaActs: "+(e&&e.message));try{window.SCIslands.unmount($("aaActs"))}catch(_){}}}
-  $("aaActs").innerHTML=(ai&&data.prefs.aiOk?"":`<button type="button" class="btn" data-aiwiz="1">${L("Brancher Claude")}</button>`)+
-    (img?`<div class="aa-img"><img src="${img}" alt="${L("Photo de ton plat")}"><span class="small muted">${L("La photo part avec le message : choisis Claude dans la liste de partage.")}</span></div>
-      <button type="button" class="btn" id="aaShare">${L("Envoyer la photo à Claude")}</button>
-      <button type="button" class="btn" id="aaImgCopy" hidden>${L("Copier la photo et ouvrir Claude")}</button>
-      <a class="btn ghost" id="aaImgSave" href="${img}" download="assiette.jpg">${L("Enregistrer la photo")}</a>`:"")+
-    (cv&&!img?`<button type="button" class="btn" data-aaconv="1">${L(convKind(topic)==="proj"?"Ouvrir dans le projet":"Ouvrir la conversation")} ${L(CONV_NAME[topic])}</button><div class="small muted" style="text-align:center">${L(convKind(topic)==="proj"?"Le message sera déjà écrit dans ton projet : il ne reste qu'à l'envoyer.":"Le message sera copié : colle-le dans la conversation.")}</div>`:"")+
-    (ai&&!cv&&!img?`<a class="btn ${data.prefs.aiOk?"":"ghost"}" href="${ai.ask(convFirst(topic,prompt))}" target="_blank" rel="noopener">${L("Envoyer avec")} ${esc(ai.name)}</a>`:"")+
-    `<button type="button" class="btn ghost" id="aaCopy">${L("Copier le message")}</button>`+
-    (false?`<form class="conv-f aa-conv" data-conv="${topic}"><label class="small muted" for="aaConvIn">${L("Ensuite, pour que toutes les demandes")} ${L(CONV_NAME[topic])} ${L("arrivent dans cette même conversation, colle ici son lien :")}</label>
-      <div class="conv-row"><input id="aaConvIn" type="url" inputmode="url" placeholder="https://claude.ai/chat/…" autocomplete="off"><button class="btn ghost" type="submit">${L("Enregistrer")}</button></div></form>`:"");
-  $("aiAskSheet").hidden=false;if(img)aaImgPrep(img)}
-$("aaActs").addEventListener("click",e=>{
-  if(e.target.closest("#aaShare")){if(!aaImg||!aaImg.file){toast("Photo en préparation, réessaie");return}
-    navigator.share({files:[aaImg.file],text:$("aaPrompt").textContent}).then(()=>{$("aiAskSheet").hidden=true}).catch(x=>{if(x&&x.name!=="AbortError")toast("Partage impossible : enregistre la photo puis ajoute-la dans Claude")});return}
-  if(e.target.closest("#aaImgCopy")){const ai=aiCur()||AIS.claude;
-    // la copie d'abord (pendant le clic, sinon le navigateur la refuse), puis Claude s'ouvre avec le message
-    try{navigator.clipboard.write([new ClipboardItem({"image/png":Promise.resolve(aaImg.png)})]).then(()=>toast("Photo copiée : colle-la dans Claude (Ctrl+V ou ⌘V)"),()=>toast("Copie impossible : enregistre la photo"))}catch(x){toast("Copie impossible : enregistre la photo")}
-    extOpen(ai.ask($("aaPrompt").textContent));return}
-  if(e.target.closest("[data-aaconv]")){aiGo($("aaActs").dataset.topic,$("aaPrompt").textContent);setTimeout(()=>{$("aiAskSheet").hidden=true},300);return}
-  if(e.target.closest("#aaCopy"))copyTxt($("aaPrompt").textContent).then(ok=>toast(ok?"Message copié : colle-le dans Claude":"Copie impossible"));
-  else if(e.target.closest("a"))setTimeout(()=>{$("aiAskSheet").hidden=true},300)});
-$("aaClose").addEventListener("click",()=>$("aiAskSheet").hidden=true);
-$("aiAskSheet").addEventListener("click",e=>{if(e.target.id==="aiAskSheet")$("aiAskSheet").hidden=true});
-// cartes « Mon IA » : Nutrition, Réglages
-function renderAiCards(){const ai=aiCur(),ok=!!(ai&&data.prefs.aiOk);
-  const st=$("aiState");if(st&&shIsl("aiState")){st.classList.toggle("on",ok);try{window.SCIslands.aiState(st,{ok,i18n:agI18n()})}catch(e){reportErr("island aiState: "+(e&&e.message))}}
-  else if(st){st.classList.toggle("on",ok);st.innerHTML=ok?`<span class="ai-dot"></span><b>${L("Claude est branché")}</b>`:`<span class="ai-dot"></span><b>${L("Claude n'est pas branché")}</b>`}
-  const mb=$("aiMain");if(mb)mb.textContent=L(ok?"Tester la connexion":"Brancher Claude");
-  const c=$("nuAiCard");if(!c)return;c.hidden=isTrial()||ok; // v43 : Claude branché → la carte cède la place à « Ajouter ce que tu manges » (en haut)
-  const lk=$("nuAiLink");if(lk){lk.hidden=false;if(ok)lk.href=convUrl("nutri")||ai.ask(T3("J'ai mangé : ","I ate: ","Ik heb gegeten: "))}renderConv();
-  if(shIsl("nuAiCard")){try{window.SCIslands.nuAiCard(c,{ok,icon:IC("sparkle")||"",href:ok?ai.ask(T3("J'ai mangé : ","I ate: ","Ik heb gegeten: ")):"",name:ok?ai.name:"",i18n:agI18n()});return}catch(e){reportErr("island nuAiCard: "+(e&&e.message));try{window.SCIslands.unmount(c)}catch(_){}}}
-  c.innerHTML=ok?`<div class="grow"><b>${IC("sparkle")||""} ${L("Claude calcule pour toi")}</b><div class="small muted">${L("Dis-lui ce que tu as mangé ou envoie-lui la photo de ton assiette : tout arrive ici.")}</div></div><a class="btn" href="${ai.ask(T3("J'ai mangé : ","I ate: ","Ik heb gegeten: "))}" target="_blank" rel="noopener">${L("Ouvrir")} ${esc(ai.name)}</a>`
-    :`<div class="grow"><b>${L("Branche Claude")}</b><div class="small muted">${L("Calories, menus et bilans sont calculés par Claude, même avec la version gratuite. 2 minutes, une seule fois.")}</div></div><button type="button" class="btn" data-aiwiz="1">${L("Brancher")}</button>`}
 
 /* ---------- v38 : Face ID / Touch ID (WebAuthn + extension PRF) ---------- */
 // Une clé d'accès (passkey) propre à Sid'note donne, après Face ID, un secret (PRF) qui chiffre le code à 5 chiffres sur cet appareil.
@@ -5407,6 +5375,10 @@ function renderHomeSel(){
   $("homeSel").value=[...$("homeSel").options].some(o=>o.value===cur)?cur:"home";
 }
 $("homeSel").addEventListener("change",e=>{data.prefs.home=e.target.value;data.prefs.homeV=1;save();toast("Page d'accueil enregistrée")});
+// v76 : affichage de la page Aujourd'hui (simple par défaut) et premiers pas relançables
+$("homeViewSel").value=homeDetail()?"detail":"simple";
+$("homeViewSel").addEventListener("change",e=>setHomeView(e.target.value));
+$("tourAgain").addEventListener("click",()=>{delete data.prefs.tour;save();renderHome();show("home");toast("Premiers pas affichés sur la page Aujourd'hui")});
 // présentation au premier lancement
 const ONB_DESC={
   lists:"Une liste de courses ou de choses à faire, partagée avec tes proches : chacun la voit et la coche.",

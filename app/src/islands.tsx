@@ -19,14 +19,14 @@ import { NuMenu, type MenuVM } from "./NuMenu";
 import { HomeCards, type HcCard } from "./Home";
 import { GoalBody, NuCopy, NuPlan, type GoalVM, type NuCopyVM, type PlanVM } from "./NuExtra";
 import { AppHead, NavBar, SideBar, type NavItem, type NavI18n, type SideGroup, type SideIcons, type AppHeadProps } from "./Shell";
-import { ExHelp, McpList, QuickAdd, Stats, TabsCard, TypesCard, type ExHelpVM, type SI18n, type TabGroup } from "./Settings";
+import { ExHelp, QuickAdd, Stats, TabsCard, TypesCard, type ExHelpVM, type SI18n, type TabGroup } from "./Settings";
 import { Keypad, OnbDots, OnbGroups, OnbPal, type OI18n, type OnbGroup, type PalVM } from "./Onboarding";
 import { AuthFeats, FolderBar, NsBar, NuKcalOf, NuMealKcal, NuMkTot, NuSlots, NuSports, type FI18n } from "./Forms";
 import { NotePhotos, PvOpts, PvOverlay, RtMenu, type PI18n, type PvAnn } from "./PdfView";
-import { ActList, AiState, BkList, NuAiCard, TypeChips, CalLegend, CalList, HomeSync, LegalBody, SyncState, type CalVM, type WI18n } from "./Sheets";
+import { ActList, BkList, TypeChips, CalLegend, CalList, HomeSync, LegalBody, SyncState, type CalVM, type WI18n } from "./Sheets";
 import { CfRes, CfSel, CoachCard, type CI18n, type CoachVM } from "./Coach";
 import { NotifBox, RemBox, type Lead, type NI18n } from "./Notif";
-import { AaActs, AiWizard, NuPhotoPrev, ScanPages, type AaVM, type AI18n, type AiVM } from "./AiWizard";
+import { NuPhotoPrev, ScanPages, type AI18n } from "./AiWizard";
 import { AppStatus, CalTitle, NuEHint, QuickHint, SpotEmbed, Toast, type MI18n } from "./Misc";
 import type { AgTask, GrDay, I18n, Tip } from "./types";
 import { fmtN, r1 } from "./format";
@@ -110,16 +110,12 @@ declare global {
       calList: (el: Element, p: { cals: CalVM[]; more: string; i18n: WI18n }) => void;
       calLegend: (el: Element, p: { cals: CalVM[] }) => void;
       bkList: (el: Element, p: { rows: { lb: string; n: number; now: number }[]; i18n: WI18n }) => void;
-      aiState: (el: Element, p: { ok: boolean; i18n: WI18n }) => void;
-      nuAiCard: (el: Element, p: { ok: boolean; icon: string; href: string; name: string; i18n: WI18n }) => void;
       typeChips: (el: Element, p: { types: { name: string; c: string }[]; cur: string; i18n: WI18n }) => void;
       coach: (el: Element, p: { c: CoachVM | null; more: string; i18n: CI18n }) => void;
       cfSel: (el: Element, p: { names: string[]; i18n: CI18n }) => void;
       cfRes: (el: Element, p: { q: boolean; hits: { n: string; grp: string; p: boolean }[]; i18n: CI18n }) => void;
       notifBox: (el: Element, p: { kind: "na" | "on" | "off"; msg: string; leads: Lead[]; custom: boolean; cals: boolean; ical: boolean; i18n: NI18n }) => void;
       remBox: (el: Element, p: { kind: "na" | "on" | "off"; msg: string; leads: Lead[]; custom: boolean; bell: string; i18n: NI18n }) => void;
-      aiWizard: (el: Element, p: { w: AiVM; i18n: AI18n }) => void;
-      aaActs: (el: Element, p: { a: AaVM; i18n: AI18n }) => void;
       nuPhotoPrev: (el: Element, p: { src: string; i18n: AI18n }) => void;
       scanPages: (el: Element, p: { pages: string[]; i18n: AI18n }) => void;
       toast: (el: Element, p: { m: string; label: string; onAct: (() => void) | null; i18n: MI18n }) => void;
@@ -138,7 +134,6 @@ declare global {
       stats: (el: Element, p: { rows: [string, string | number][]; i18n: SI18n }) => void;
       tabsCard: (el: Element, p: { groups: TabGroup[]; i18n: SI18n }) => void;
       typesCard: (el: Element, p: { types: { name: string; c: string; n: number }[]; i18n: SI18n }) => void;
-      mcpList: (el: Element, p: { rows: { hash: string; created: string; used: string }[]; i18n: SI18n }) => void;
       quickAdd: (el: Element, p: { acts: { k: string; t: string; s: string; icon: string }[]; i18n: SI18n }) => void;
       exHelp: (el: Element, p: { h: ExHelpVM; i18n: SI18n }) => void;
       nav: (el: Element, p: { items: NavItem[]; cur: string; i18n: NavI18n }) => void;
@@ -207,7 +202,6 @@ window.SCIslands = {
   stats: (el, p) => mount(el, <Stats {...p} />),
   tabsCard: (el, p) => mount(el, <TabsCard {...p} />),
   typesCard: (el, p) => mount(el, <TypesCard {...p} />),
-  mcpList: (el, p) => mount(el, <McpList {...p} />),
   quickAdd: (el, p) => mount(el, <QuickAdd {...p} />),
   exHelp: (el, p) => mount(el, <ExHelp {...p} />),
   onbGroups: (el, p) => mount(el, <OnbGroups {...p} />),
@@ -239,17 +233,13 @@ window.SCIslands = {
   nuEHint: (el, p) => mount(el, <NuEHint {...p} />),
   spotEmbed: (el, p) => mount(el, <SpotEmbed {...p} />),
   appStatus: (el, p) => mount(el, <AppStatus {...p} />),
-  aaActs: (el, p) => mount(el, <AaActs {...p} />),
   nuPhotoPrev: (el, p) => mount(el, <NuPhotoPrev {...p} />),
   scanPages: (el, p) => mount(el, <ScanPages {...p} />),
-  aiWizard: (el, p) => mount(el, <AiWizard {...p} />),
   notifBox: (el, p) => mount(el, <NotifBox {...p} />),
   remBox: (el, p) => mount(el, <RemBox {...p} />),
   coach: (el, p) => mount(el, <CoachCard {...p} />),
   cfSel: (el, p) => mount(el, <CfSel {...p} />),
   cfRes: (el, p) => mount(el, <CfRes {...p} />),
-  aiState: (el, p) => mount(el, <AiState {...p} />),
-  nuAiCard: (el, p) => mount(el, <NuAiCard {...p} />),
   typeChips: (el, p) => mount(el, <TypeChips {...p} />),
   notePhotos: (el, p) => mount(el, <NotePhotos {...p} />),
   nuLog: (el, p) => mount(el, <NuLog {...p} />),

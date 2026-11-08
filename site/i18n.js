@@ -451,3 +451,32 @@ Object.assign(DICT,{"Ajouter une note":"Add a note","Dossier":"Folder","Sous-dos
 
 // Revue T16 C : recherches, compteurs et commandes du scanner.
 Object.assign(DICT,{"Titre, contenu…":"Title, content…","Nom du document":"Document name","Site ou identifiant":"Site or username","Importer un PDF":"Import a PDF","Vide":"Empty","mot de passe":"password","mots de passe":"passwords","Verrouillé":"Locked","Prendre une photo":"Take a photo","Page suivante":"Next page"});
+// v76 : Sid'Bot (assistant intégré) — noms de marque identiques en FR et EN
+Object.assign(DICT,{
+"Ex. : ajoute « réviser chimie » jeudi à 14 h":"E.g.: add “revise chemistry” Thursday at 2 pm","Ex. : propose-moi un dîner riche en protéines":"E.g.: suggest a high-protein dinner","Ex. : résume la note ouverte en 5 points":"E.g.: sum up the open note in 5 points",
+"Reconnecte-toi pour utiliser Sid'Bot.":"Sign in again to use Sid'Bot.","Le quota gratuit de Sid'Bot est épuisé pour aujourd'hui. Il revient demain : rien n'est facturé.":"Sid'Bot's free quota is used up for today. It comes back tomorrow: nothing is charged.",
+"Trop de demandes d'un coup. Réessaie dans un instant.":"Too many requests at once. Try again in a moment.","Sid'Bot met trop de temps à répondre. Réessaie.":"Sid'Bot is taking too long to answer. Try again.",
+"Sid'Bot est indisponible pour l'instant. Réessaie plus tard.":"Sid'Bot is unavailable right now. Try again later.","Sid'Bot n'est pas encore activé sur ce serveur.":"Sid'Bot isn't switched on on this server yet.",
+"Cette demande n'a pas pu être envoyée. Raccourcis-la ou retire la photo.":"This request couldn't be sent. Shorten it or remove the photo.","Pas de connexion internet : Sid'Bot a besoin du réseau.":"No internet connection: Sid'Bot needs the network.",
+"Mode essai : crée ton compte pour utiliser Sid'Bot.":"Trial mode: create your account to use Sid'Bot.",
+"Ton agenda des 7 prochains jours":"Your calendar for the next 7 days","Ta nutrition du jour":"Today's nutrition","Tes 5 dernières pesées":"Your last 5 weigh-ins","Ton programme de musculation":"Your workout program","La note ouverte":"The open note",
+"Avec":"With","Partagé avec Sid'Bot :":"Shared with Sid'Bot:","Ouvre une note pour pouvoir la joindre. Tes mots de passe, documents et notes secrètes ne sont jamais envoyés.":"Open a note to attach it. Your passwords, documents and secret notes are never sent.",
+"Rien d'autre que ta question n'est envoyé.":"Nothing but your question is sent.","Pose ta question":"Ask your question","Sid'Bot réfléchit…":"Sid'Bot is thinking…","Retirer la photo":"Remove the photo","Photo jointe":"Photo attached",
+"Qu'est-ce que j'ai de prévu cette semaine ?":"What do I have planned this week?","Aide-moi à organiser ma journée":"Help me organise my day","Que manger ce soir pour compléter ma journée ?":"What should I eat tonight to round off my day?",
+"Explique-moi mon programme":"Explain my program","Aide-moi à structurer une note":"Help me structure a note","Résume la note ouverte":"Sum up the open note",
+"Ajouter à l'agenda":"Add to calendar","Créer la note":"Create the note","Ajouter au repas":"Add to meal","Appliquer":"Apply","Ajouté":"Added","Réessayer":"Try again",
+"Ajouté à l'agenda":"Added to calendar","Note créée":"Note created","Conversation effacée de cet appareil":"Conversation cleared from this device","demandes":"requests",
+"Ouvrir Sid'Bot, l'assistant":"Open Sid'Bot, the assistant","Écris ta question…":"Type your question…","Ta question pour Sid'Bot":"Your question for Sid'Bot","Envoyer":"Send",
+"Sid'Bot peut se tromper : vérifie ce qui compte.":"Sid'Bot can make mistakes: check what matters.","Effacer la conversation":"Clear the conversation","Application":"App",
+"Sid'Bot, ton assistant":"Sid'Bot, your assistant","Il répond dans Sid'Journée, Sid'Forme et Sid'Note, sans quitter l'app. Il ne voit que ta question et ce que tu choisis de partager ; jamais tes mots de passe, tes documents ni tes notes secrètes. Il propose, tu valides : rien n'est modifié sans ton accord.":"It answers in Sid'Journée, Sid'Forme and Sid'Note, without leaving the app. It only sees your question and what you choose to share; never your passwords, documents or secret notes. It suggests, you decide: nothing changes without your approval.",
+"Ouvrir Sid'Bot":"Open Sid'Bot","Anciennes adresses du connecteur":"Old connector addresses","Créées pour l'ancien branchement à Claude. Tu peux les retirer : elles ne servent plus à Sid'Bot.":"Created for the old Claude connection. You can remove them: Sid'Bot doesn't use them.",
+"Adresse retirée":"Address removed","Demande à Sid'Bot":"Ask Sid'Bot","Demander conseil à Sid'Bot":"Ask Sid'Bot for advice","Une ancienne demande d'ajustement est en attente : tu peux l'annuler.":"An old adjustment request is pending: you can cancel it.",
+"Ton programme est prêt":"Your program is ready","Les calculs sont réalisés par Sid'Bot (une IA) à partir de ces informations. Ce n'est pas un avis médical.":"Calculations are made by Sid'Bot (an AI) from this information. This is not medical advice.",
+"Si tu poses une question à Sid'Bot, seul ce que tu choisis de partager part vers le service d'IA, pour te répondre.":"If you ask Sid'Bot a question, only what you choose to share goes to the AI service, to answer you."});
+// v76 : page Aujourd'hui (vue simple, premiers pas)
+Object.assign(DICT,{"Affichage simple":"Simple view","Affichage détaillé":"Detailed view","Tes applications":"Your apps","Affichage détaillé activé":"Detailed view on","Affichage simple activé":"Simple view on",
+"Affichage de la page Aujourd'hui":"Today page layout","Premiers pas":"First steps","Revoir les premiers pas":"Show first steps again","Masquer":"Hide","Fait":"Done","À faire":"To do",
+"Premiers pas masqués : tu peux les revoir dans Réglages":"First steps hidden: you can show them again in Settings","Premiers pas affichés sur la page Aujourd'hui":"First steps shown on the Today page",
+"Ajoute ta première activité":"Add your first activity","Sid'Journée · un cours, un rendez-vous, une tâche":"Sid'Journée · a class, an appointment, a task",
+"Note un repas ou une séance":"Log a meal or a workout","Sid'Forme · ce que tu manges ou ton entraînement":"Sid'Forme · what you eat or your training",
+"Écris ta première note":"Write your first note","Sid'Note · une idée, une liste, un cours":"Sid'Note · an idea, a list, a class"});

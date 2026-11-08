@@ -137,12 +137,10 @@ $("planSearchBtn").addEventListener("click",()=>{const i=$("planSearch"),open=i.
 $("plMic").addEventListener("click",e=>dictate(e.currentTarget,$("plAsk")));
 $("plAsk").addEventListener("input",e=>grow(e.target));
 $("plAsk").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();$("plAskForm").requestSubmit()}});
-function plPrompt(q){const d=today(),day=`${d.toLocaleDateString(LANG==="en"?"en-GB":"fr-BE",{weekday:"long"})} ${iso(d)}`;
-  return T3(`Ajoute dans mon agenda Sid'Compagnon : ${q}\n(Aujourd'hui : ${day}, heure de Bruxelles. Utilise ajouter_activite avec le titre, la date, l'heure de début et de fin, le type et les rappels si je les donne. S'il y a plusieurs activités, ajoute-les toutes. Si la date ou l'heure n'est pas claire, demande-moi avant.)`,
-    `Add to my Sid'Compagnon calendar: ${q}\n(Today: ${day}, Brussels time. Use ajouter_activite with the title, date, start and end time, type and reminders if I give them. If there are several activities, add them all. If the date or time is unclear, ask me first.)`,
-    `Voeg toe aan mijn Sid'Compagnon-agenda: ${q}\n(Vandaag: ${day}, Brusselse tijd. Gebruik ajouter_activite met de titel, datum, begin- en einduur, het type en herinneringen als ik die geef. Bij meerdere activiteiten: voeg ze allemaal toe. Als de datum of het uur niet duidelijk is, vraag het me eerst.)`)}
+// v76 : la demande part chez Sid'Bot ; il propose les activités (date, heure), la personne les ajoute d'un toucher
+const plPrompt=q=>T3(`Ajoute dans mon agenda : ${q}`,`Add to my calendar: ${q}`);
 $("plAskForm").addEventListener("submit",e=>{e.preventDefault();const q=$("plAsk").value.trim();if(!q)return;dictStop();
-  aiHandoff(plPrompt(q),"agenda");$("plAsk").value="";grow($("plAsk"))});
+  aiHandoff(plPrompt(q),"agenda",{send:true});$("plAsk").value="";grow($("plAsk"))});
 let planOpenMem={}; // mois ouverts dans « Toutes les dates » ; v44.6 : tous repliés par défaut (à l'ouverture de sid'agenda et au rechargement)
 // v74 : éphéméride en haut de l'Agenda (style « Unique ») : mois, semaine, grand chiffre du jour, jour de la semaine, activités du jour
 function ephFill(){const el=$("plEph");if(!el)return;const d=today(),loc=LANG==="en"?"en-GB":"fr-BE",k=iso(d);

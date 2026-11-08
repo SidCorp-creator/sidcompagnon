@@ -79,9 +79,9 @@ function renderCoach(){const box=$("coachBox");if(!box)return;const pl=PL(),ds=P
   if(!pl){box.innerHTML=`<div class="card coach-card"><div class="grow"><b>${L("Ton programme sur mesure")}</b><div class="small muted">${L("Quelques questions (niveau, objectif, jours, matériel) et Sid'Compagnon crée tes séances.")}</div></div><button type="button" class="btn" data-coach="new">${L("Créer mon programme")}</button></div>`;return}
   const p=pl.profile||{},G={muscle:"Prendre du muscle",force:"Gagner en force",gras:"Perdre du gras",forme:"Être en forme",endu:"Gagner en endurance"},LV={deb:"Débutant",inter:"Intermédiaire",conf:"Confirmé"};
   box.innerHTML=`<div class="card coach-card coach-on"><div class="coach-top"><div class="grow"><span class="eyebrow">${L("Mon programme")}</span><b>${esc(L(G[p.goal]||"Sur mesure"))}${pl.src==="ia"?` · ${L("ajusté par Claude")}`:""}</b><div class="small muted">${p.level?esc(L(LV[p.level]||""))+" · ":""}${ds.length} ${L(ds.length>1?"séances":"séance")}</div></div><button type="button" class="pen" data-coach="more" aria-label="${L("Plus d'actions")}">${MORE}</button></div>
-    ${pl.aiWait?`<div class="coach-wait" role="status"><span class="grow">${L("Demande envoyée à Claude : le programme ajusté arrivera ici tout seul.")}</span><button type="button" class="linkbtn" data-coach="resend">${L("Renvoyer")}</button><button type="button" class="x" data-coach="unwait" aria-label="${L("Masquer")}"><span class="gi gi-close" aria-hidden="true"></span></button></div>`:""}
+    ${pl.aiWait?`<div class="coach-wait" role="status"><span class="grow">${L("Une ancienne demande d'ajustement est en attente : tu peux l'annuler.")}</span><button type="button" class="linkbtn" data-coach="resend">${L("Renvoyer")}</button><button type="button" class="x" data-coach="unwait" aria-label="${L("Masquer")}"><span class="gi gi-close" aria-hidden="true"></span></button></div>`:""}
     <div class="coach-adj"><label for="coRemark" class="eyebrow">${L("Ta remarque sur ce programme")}</label><textarea id="coRemark" class="autogrow" rows="2" maxlength="600" placeholder="${L("Ex. remplace la 2e séance jambes par une séance haut du corps")}">${esc(pl.aiWait?"":rmk)}</textarea>
-      <div class="coach-adj-b"><button type="button" class="btn" data-coach="adjust">${L("Ajuster avec Claude")}</button></div>
+      <div class="coach-adj-b"><button type="button" class="btn" data-coach="adjust">${L("Demander conseil à Sid'Bot")}</button></div>
       ${(p.remarks||[]).length?`<details class="coach-rem"><summary class="small muted">${(p.remarks||[]).length} ${L((p.remarks||[]).length>1?"remarques envoyées":"remarque envoyée")}</summary><ul>${p.remarks.slice().reverse().map(r=>`<li class="small"><span class="notr">${esc(r.text)}</span> <span class="muted">· ${fmtWhen(Date.parse(r.at))}</span></li>`).join("")}</ul></details>`:""}</div></div>`}
 let cfDraft={};
 const restLbl=r=>r>=60?String(Math.round(r/60*10)/10).replace(".",",")+" min":r+" s";
@@ -116,28 +116,20 @@ $("coachForm").addEventListener("submit",async e=>{e.preventDefault();const p=cf
   const old=PL();p.remarks=(old&&old.profile&&old.profile.remarks)||[];if(p.notes&&!p.remarks.some(r=>r.text===p.notes))p.remarks=[...p.remarks,{at:new Date().toISOString(),text:p.notes}].slice(-10);
   // v43 : le programme de l'app est toujours créé (il sert de base, et de secours si Claude ne répond pas)
   planApply(coachBuild(p));
-  if(withAi){if(!(await nuConsent())){save();$("coachSheet").hidden=true;renderMuscu();toast("Ton programme est prêt (sans Claude)");return}
-    M().plan.aiWait=Date.now();save();$("coachSheet").hidden=true;renderMuscu();aiHandoff(coachPrompt("new"),"muscu")}
+  // v76 : avec Sid'Bot, le programme de l'app est créé tout de suite, puis Sid'Bot l'explique et propose des ajustements (il ne le réécrit pas seul)
+  if(withAi){save();$("coachSheet").hidden=true;renderMuscu();toast("Ton programme est prêt");aiHandoff(coachPrompt("new"),"muscu",{send:true})}
   else{save();$("coachSheet").hidden=true;renderMuscu();toast("Ton programme est prêt")}});
-// v43 : demandes envoyées au Claude de la personne (même principe que Nutrition) : il lit le profil et les remarques
-// avec muscu_programme, puis enregistre le programme avec enregistrer_programme ; le résultat revient ici tout seul.
-const GOALS={muscle:["prendre du muscle","build muscle","spiermassa opbouwen"],force:["gagner en force","get stronger","sterker worden"],gras:["perdre du gras","lose fat","vet verliezen"],forme:["être en forme","get fit","fit worden"],endu:["gagner en endurance","build endurance","uithoudingsvermogen opbouwen"]};
-function coachPrompt(kind,remark){const p=(PL()&&PL().profile)||cfDraft||{},li=LANG==="en"?1:LANG==="nl"?2:0,g=(GOALS[p.goal]||GOALS.muscle)[li];
-  const AV={shoulder:["épaules","shoulders","schouders"],back:["bas du dos","lower back","onderrug"],knee:["genoux","knees","knieën"]};
-  const av=[...(p.avoid||[]).map(x=>(AV[x]||[x,x,x])[li]),p.avoidTxt].filter(Boolean).join(", ");
-  const extra=[p.notes&&T3(`Mes remarques : ${p.notes}`,`My wishes: ${p.notes}`,`Mijn wensen: ${p.notes}`),av&&T3(`À ménager : ${av}`,`Go easy on: ${av}`,`Ontzien: ${av}`),(p.must||[]).length&&T3(`Exercices voulus : ${p.must.join(", ")}`,`Exercises I want: ${p.must.join(", ")}`,`Oefeningen die ik wil: ${p.must.join(", ")}`),(p.never||[]).length&&T3(`Exercices exclus : ${p.never.join(", ")}`,`Exercises to avoid: ${p.never.join(", ")}`,`Oefeningen om te vermijden: ${p.never.join(", ")}`)].filter(Boolean).join(". ");
-  // v44 : seulement les exercices de exercices.js, les prioritaires (P) en premier dans leur groupe (noms gardés en français : ce sont ceux de l'app)
-  const only=T3(`Utilise uniquement ces exercices, avec leur nom exact ; ceux marqués (P) sont à privilégier en premier dans leur groupe musculaire : ${exListTxt()}. N'ajoute aucun autre exercice, sauf un exercice que je demande moi-même.`,
-    `Use only these exercises, with their exact names; those marked (P) come first in their muscle group: ${exListTxt()}. Do not add any other exercise, unless I ask for it myself.`,
-    `Gebruik alleen deze oefeningen, met hun exacte naam; die met (P) krijgen voorrang in hun spiergroep: ${exListTxt()}. Voeg geen andere oefening toe, tenzij ik er zelf om vraag.`);
-  if(kind==="improve")return T3("Avec Sid'note : lis mon programme de musculation et mon historique (muscu_programme), puis améliore-le pour moi (choix des exercices, volume, progression). Enregistre la nouvelle version avec enregistrer_programme.","With Sid'note: read my workout program and history (muscu_programme), then improve it for me (exercise choice, volume, progression). Save the new version with enregistrer_programme.","Met Sid'note: lees mijn trainingsschema en geschiedenis (muscu_programme) en verbeter het (oefeningen, volume, progressie). Sla de nieuwe versie op met enregistrer_programme.")+" "+only;
-  if(kind==="adjust")return T3(`Avec Sid'note : lis mon programme de musculation (muscu_programme) et ajuste-le selon ma remarque, sans tout recommencer : « ${remark} ». Garde ce qui va bien, puis enregistre la nouvelle version avec enregistrer_programme.`,
-    `With Sid'note: read my workout program (muscu_programme) and adjust it to my remark without starting over: "${remark}". Keep what works, then save the new version with enregistrer_programme.`,
-    `Met Sid'note: lees mijn trainingsschema (muscu_programme) en pas het aan volgens mijn opmerking, zonder opnieuw te beginnen: "${remark}". Houd wat goed is en sla de nieuwe versie op met enregistrer_programme.`)+" "+only;
-  return T3(`Avec Sid'note : compose mon programme de musculation. Objectif ${g}, ${p.days} séances par semaine de ${p.dur} min. Lis d'abord mon profil complet avec muscu_programme.${extra?" "+extra+".":""} Enregistre-le ensuite avec enregistrer_programme.`,
-    `With Sid'note: build my workout program. Goal: ${g}, ${p.days} sessions a week of ${p.dur} min. First read my full profile with muscu_programme.${extra?" "+extra+".":""} Then save it with enregistrer_programme.`,
-    `Met Sid'note: stel mijn trainingsschema samen. Doel: ${g}, ${p.days} trainingen per week van ${p.dur} min. Lees eerst mijn volledige profiel met muscu_programme.${extra?" "+extra+".":""} Sla het daarna op met enregistrer_programme.`)+" "+only}
+// v76 : demandes envoyées à Sid'Bot (le programme suivi part dans le contexte « Ton programme de musculation ») : il explique et propose, la personne décide
+const GOALS={muscle:["prendre du muscle","build muscle"],force:["gagner en force","get stronger"],gras:["perdre du gras","lose fat"],forme:["être en forme","get fit"],endu:["gagner en endurance","build endurance"]};
+function coachPrompt(kind,remark){const p=(PL()&&PL().profile)||cfDraft||{},li=LANG==="en"?1:0,g=(GOALS[p.goal]||GOALS.muscle)[li];
+  const AV={shoulder:["épaules","shoulders"],back:["bas du dos","lower back"],knee:["genoux","knees"]};
+  const av=[...(p.avoid||[]).map(x=>(AV[x]||[x,x])[li]),p.avoidTxt].filter(Boolean).join(", ");
+  const extra=[p.notes&&T3(`Mes remarques : ${p.notes}`,`My wishes: ${p.notes}`),av&&T3(`À ménager : ${av}`,`Go easy on: ${av}`)].filter(Boolean).join(". ");
+  if(kind==="improve")return T3("Regarde mon programme de musculation et dis-moi ce que tu améliorerais (exercices, volume, progression), avec tes raisons.","Look at my workout program and tell me what you would improve (exercises, volume, progression), with your reasons.");
+  if(kind==="adjust")return T3(`Voici ma remarque sur mon programme de musculation : « ${remark} ». Que me conseilles-tu de changer, sans tout recommencer ?`,`Here is my remark on my workout program: "${remark}". What do you suggest I change, without starting over?`);
+  return T3(`Je viens de créer mon programme de musculation : objectif ${g}, ${p.days} séances par semaine de ${p.dur} min.${extra?" "+extra+".":""} Explique-le moi simplement et dis-moi comment bien progresser.`,
+    `I just created my workout program: goal ${g}, ${p.days} sessions a week of ${p.dur} min.${extra?" "+extra+".":""} Explain it simply and tell me how to progress well.`)}
 async function coachAdjust(text){text=String(text||"").trim();if(!text){toast("Écris d'abord ta remarque");return}const pl=PL();if(!pl)return;
   if(!(await nuConsent()))return;
-  const pr=pl.profile||(pl.profile={});pr.remarks=[...(pr.remarks||[]),{at:new Date().toISOString(),text:text.slice(0,600)}].slice(-10);pl.aiWait=Date.now();pl.upd=Date.now();M().upd=Date.now();save();renderMuscu();
-  aiHandoff(coachPrompt("adjust",text.slice(0,600)),"muscu")}
+  const pr=pl.profile||(pl.profile={});pr.remarks=[...(pr.remarks||[]),{at:new Date().toISOString(),text:text.slice(0,600)}].slice(-10);pl.upd=Date.now();M().upd=Date.now();save();renderMuscu();
+  aiHandoff(coachPrompt("adjust",text.slice(0,600)),"muscu",{send:true})}

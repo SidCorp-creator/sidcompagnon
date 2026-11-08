@@ -14,11 +14,11 @@ export function CoachCard({ c, more, i18n }: { c: CoachVM | null; more: string; 
     <b>{tr(L(c.goal))}{c.ia ? tr(` · ${L("ajusté par Claude")}`) : null}</b>
     <div className="small muted">{tr(`${c.level ? L(c.level) + " · " : ""}${c.n} ${L(c.n > 1 ? "séances" : "séance")}`)}</div></div>
     <button type="button" className="pen" data-coach="more" aria-label={tr(L("Plus d'actions"))} dangerouslySetInnerHTML={{ __html: more }}></button></div>
-    {c.wait ? <div className="coach-wait" role="status"><span className="grow">{tr(L("Demande envoyée à Claude : le programme ajusté arrivera ici tout seul."))}</span>
+    {c.wait ? <div className="coach-wait" role="status"><span className="grow">{tr(L("Une ancienne demande d'ajustement est en attente : tu peux l'annuler."))}</span>
       <button type="button" className="linkbtn" data-coach="resend">{tr(L("Renvoyer"))}</button><button type="button" className="x" data-coach="unwait" aria-label={tr(L("Masquer"))}><span className="gi gi-close" aria-hidden="true" /></button></div> : null}
     <div className="coach-adj"><label htmlFor="coRemark" className="eyebrow">{tr(L("Ta remarque sur ce programme"))}</label>
       <textarea id="coRemark" className="autogrow" rows={2} maxLength={600} placeholder={tr(L("Ex. remplace la 2e séance jambes par une séance haut du corps"))}></textarea>
-      <div className="coach-adj-b"><button type="button" className="btn" data-coach="adjust">{tr(L("Ajuster avec Claude"))}</button></div>
+      <div className="coach-adj-b"><button type="button" className="btn" data-coach="adjust">{tr(L("Demander conseil à Sid'Bot"))}</button></div>
       {nr ? <details className="coach-rem"><summary className="small muted">{tr(`${nr} ${L(nr > 1 ? "remarques envoyées" : "remarque envoyée")}`)}</summary>
         <ul>{c.remarks.map((r, i) => <li key={i} className="small"><span className="notr">{r.text}</span>{" "}<span className="muted">{tr(`· ${r.when}`)}</span></li>)}</ul></details> : null}
     </div></div>;

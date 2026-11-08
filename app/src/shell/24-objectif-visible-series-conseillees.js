@@ -1,4 +1,4 @@
-/* ---------- v47 : objectif visible, séries conseillées, types de séances, demande à Claude (#13, #14, #17) ---------- */
+/* ---------- v47 : objectif visible, séries conseillées, types de séances, demande à Sid'Bot (#13, #14, #17) ---------- */
 // objectif d'entraînement (data.prefs.muGoal, synchronisé ; repris du programme suivi s'il n'est pas réglé)
 const MU_GOALS={force:"Force",muscle:"Prise de masse",gras:"Sèche",endu:"Endurance",forme:"Forme"};
 // v73 (demande de Sid du 30 oct. 2026) : paramètres de référence par objectif. H = polyarticulaire (squat, développé, rowing, tractions…),
@@ -161,18 +161,13 @@ function seType(se){const n=fold(se.name||"");
   const up=c.push+c.pull;if(!up&&!c.legs)return null;
   if(c.legs&&up)return c.legs>=2&&up>=2?"full":c.legs>up?"legs":"upper";
   if(c.legs)return "legs";return c.push&&c.pull?(c.push>=c.pull*3?"push":c.pull>=c.push*3?"pull":"upper"):c.push?"push":"pull"}
-// v47 (#17) : un champ en haut de Musculation et de Notes, comme « Planifier » : la demande part chez Claude, le résultat revient par le connecteur
-function muPrompt(q){const g=L(MU_GOALS[muGoal()]);return T3(`Avec Sid'note, pour ma musculation : ${q}\n(Lis d'abord mon programme et mes séances avec muscu_programme. Pour changer le programme, enregistre-le avec enregistrer_programme ; pour une séance faite, note-la avec noter_seance. Utilise les exercices de la liste donnée par muscu_programme. Mon objectif : ${g}. Pars des paramètres de référence de cet objectif donnés par muscu_programme et ajuste-les exercice par exercice si je le demande : séries, répétitions, repos (rest_s), intensité, RPE et tempo.)`,
-  `With Sid'note, for my workouts: ${q}\n(First read my program and sessions with muscu_programme. To change the program, save it with enregistrer_programme; for a finished session, log it with noter_seance. Use the exercises listed by muscu_programme. My goal: ${g}. Start from the reference parameters for this goal given by muscu_programme and adjust them per exercise if I ask: sets, reps, rest (rest_s), intensity, RPE and tempo.)`,
-  `Met Sid'note, voor mijn training: ${q}\n(Lees eerst mijn schema en trainingen met muscu_programme. Om het schema te wijzigen: sla het op met enregistrer_programme; een gedane training noteer je met noter_seance. Gebruik de oefeningen uit de lijst van muscu_programme. Mijn doel: ${g}. Vertrek van de referentiewaarden voor dit doel uit muscu_programme en pas ze per oefening aan als ik dat vraag: sets, herhalingen, rust (rest_s), intensiteit, RPE en tempo.)`)}
-function ntPrompt(q){return T3(`Avec Sid'note, dans mes notes : ${q}\n(Retrouve les notes avec notes et lire_note. Pour une nouvelle note, utilise ajouter_note et propose un dossier si c'est utile ; pour changer une note qui existe, utilise modifier_note, sans créer de doublon. Tu ne vois pas mes notes secrètes.)`,
-  `With Sid'note, in my notes: ${q}\n(Find notes with notes and lire_note. For a new note, use ajouter_note and suggest a folder if useful; to change an existing note, use modifier_note without creating a duplicate. You can't see my secret notes.)`,
-  `Met Sid'note, in mijn notities: ${q}\n(Zoek notities met notes en lire_note. Voor een nieuwe notitie: ajouter_note en stel een map voor als dat helpt; om een bestaande notitie te wijzigen: modifier_note, zonder dubbel. Je ziet mijn geheime notities niet.)`)}
+// v47 (#17) : un champ en haut de Musculation et de Notes, comme « Planifier ». v76 : la demande part chez Sid'Bot (dans l'app), telle qu'écrite
+const muPrompt=q=>q,ntPrompt=q=>q;
 for(const[k,topic,mk,health]of/** @type {[string,string,(q:string)=>string,boolean][]} */([["mu","muscu",muPrompt,true],["nt","note",ntPrompt,false]])){const f=$(k+"AskForm"),t=$(k+"Ask");
   $(k+"Mic").addEventListener("click",e=>dictate(e.currentTarget,t));t.addEventListener("input",()=>grow(t));
   t.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();f.requestSubmit()}});
   f.addEventListener("submit",async e=>{e.preventDefault();const q=t.value.trim();if(!q)return;dictStop();
-    if(health&&!(await nuConsent()))return;aiHandoff(mk(q.slice(0,1500)),topic);t.value="";grow(t)})}
+    if(health&&!(await nuConsent()))return;aiHandoff(mk(q.slice(0,1500)),topic,{send:true});t.value="";grow(t)})}
 $("coachClose").addEventListener("click",()=>$("coachSheet").hidden=true);
 $("coachSheet").addEventListener("click",e=>{if(e.target.id==="coachSheet")$("coachSheet").hidden=true});
 $("coachBox").addEventListener("click",e=>{
@@ -182,7 +177,7 @@ $("coachBox").addEventListener("click",e=>{
   else if(k==="resend"){const pl=PL(),rm=pl&&pl.profile&&(pl.profile.remarks||[]).slice(-1)[0];aiHandoff(rm&&rm.text!==pl.profile.notes?coachPrompt("adjust",rm.text):coachPrompt("new"),"muscu")}
   else if(k==="unwait"){const pl=PL();if(pl){delete pl.aiWait;pl.upd=Date.now();save();renderMuscu()}}
   else if(k==="more")openActions(L("Mon programme"),[{l:"Modifier mes réponses",fn:coachOpen},
-    {l:"Ajuster avec Claude",fn:async()=>{if(!(await nuConsent()))return;aiHandoff(coachPrompt("improve"),"muscu")}},
+    {l:"Demander conseil à Sid'Bot",fn:async()=>{if(!(await nuConsent()))return;aiHandoff(coachPrompt("improve"),"muscu",{send:true})}},
     {l:"Partager le programme",fn:()=>copyText(shareTxt(PLD(),L("Mon programme")),"prog")},
     {l:"Supprimer le programme",danger:true,fn:()=>grpActions(PL().id)}])});
 // v43 : au retour de veille, on resynchronise les sons programmés du Focus (l'horloge audio a pu être suspendue)

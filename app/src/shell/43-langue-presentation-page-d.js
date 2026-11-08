@@ -51,6 +51,10 @@ function renderHomeSel(){
   $("homeSel").value=[...$("homeSel").options].some(o=>o.value===cur)?cur:"home";
 }
 $("homeSel").addEventListener("change",e=>{data.prefs.home=e.target.value;data.prefs.homeV=1;save();toast("Page d'accueil enregistrée")});
+// v76 : affichage de la page Aujourd'hui (simple par défaut) et premiers pas relançables
+$("homeViewSel").value=homeDetail()?"detail":"simple";
+$("homeViewSel").addEventListener("change",e=>setHomeView(e.target.value));
+$("tourAgain").addEventListener("click",()=>{delete data.prefs.tour;save();renderHome();show("home");toast("Premiers pas affichés sur la page Aujourd'hui")});
 // présentation au premier lancement
 const ONB_DESC={
   lists:"Une liste de courses ou de choses à faire, partagée avec tes proches : chacun la voit et la coche.",

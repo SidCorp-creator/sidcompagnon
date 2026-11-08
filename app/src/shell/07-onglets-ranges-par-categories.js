@@ -64,7 +64,7 @@ function show(v){
   {const was=wasApp,nx=appOf(v);if(introReady&&was&&nx!=="home"&&was!==nx)appIntro(nx)}
   data.ui.view=v;if(GROUPS.some(x=>x.tabs.includes(v))){data.ui.glast=data.ui.glast||{};data.ui.glast[g.k]=v}saveUI();
   document.body.dataset.g=g.k;document.body.dataset.v=v;if(v==="muscu"){const sd=$("muStatsD");if(sd)sd.open=false} // v74.2 : statistiques toujours refermées
-if(v!=="notes")document.body.classList.remove("note-full");if(v==="more"){try{renderBio();renderAiCards();$("mcpSec").hidden=!session||isTrial()}catch(e){}}
+if(v!=="notes")document.body.classList.remove("note-full");if(v==="more"){try{renderBio();renderAiCards();mcpLoad()}catch(e){}}
   document.querySelectorAll(".view").forEach(s=>s.hidden=s.id!=="v-"+v);
   document.documentElement.dataset.app=appOf(v);renderNav(v);renderVhead(v);renderSide(v);
   if(v==="home")renderHome();
@@ -113,14 +113,12 @@ function renderVhead(v){const el=$("vhead");
  document.title=`${g.label} · ${L(title)} — Sid'Compagnon`;
  const props={app:g.app,label:g.label,role:APP_ROLES[g.app],title,progress,percent,hasProgress,gridIcon:GRIDIC,askIcon:IC("message"),i18n:agI18n()};
  if(shIsl("appHead")){try{window.SCIslands.appHead(el,props);return}catch(e){reportErr("island appHead: "+(e&&e.message))}}
- el.innerHTML=`<div class="elan-head-row"><button type="button" class="ah-home" data-go="home" aria-label="${L("Toutes les apps")}"><span class="ah-grid">${GRIDIC}</span></button><span class="ah-brand">${LOGO(g.app,"ah-logo")}<span class="ah-names"><b>${g.label}</b><small>${L(APP_ROLES[g.app])}</small></span></span><button type="button" class="ah-claude" data-app-claude="1"><span class="ah-chat">${IC("message")}</span>Claude</button></div><h1 class="elan-title">${L(title)}</h1><div class="elan-progress"><span>${progress}</span><span class="elan-progress-track" ${hasProgress?"":"hidden"} role="progressbar" aria-label="${L("Progression du jour")}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><i style="width:${percent}%"></i></span></div>`;
+ el.innerHTML=`<div class="elan-head-row"><button type="button" class="ah-home" data-go="home" aria-label="${L("Toutes les apps")}"><span class="ah-grid">${GRIDIC}</span></button><span class="ah-brand">${LOGO(g.app,"ah-logo")}<span class="ah-names"><b>${g.label}</b><small>${L(APP_ROLES[g.app])}</small></span></span><button type="button" class="ah-claude" data-app-claude="1" aria-label="${L("Ouvrir Sid'Bot, l'assistant")}"><span class="ah-chat">${IC("message")}</span><span class="notr">Sid'Bot</span></button></div><h1 class="elan-title">${L(title)}</h1><div class="elan-progress"><span>${progress}</span><span class="elan-progress-track" ${hasProgress?"":"hidden"} role="progressbar" aria-label="${L("Progression du jour")}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><i style="width:${percent}%"></i></span></div>`;
  const bar=el.querySelector(".elan-progress-track i");if(bar&&hasProgress){bar.style.width=previous+"%";bar.getBoundingClientRect();requestAnimationFrame(()=>bar.style.width=percent+"%")}
 
 }
-function elanHeadClick(e){const b=e.target.closest("[data-go]");if(b)show(b.dataset.go);if(e.target.closest("[data-app-claude]")){
- const v=data.ui.view,topic=appOf(v)==="agenda"?"agenda":appOf(v)==="note"?"note":v==="muscu"?"muscu":"nutri";
- const cv=convUrl(topic);if(cv)extOpen(cv);else aiGo(topic,T3("Je veux utiliser ","I want to use ","Ik wil werken met ")+groupOf(v).label+" · "+L(SHORT[v]));
-}}
+function elanHeadClick(e){const b=e.target.closest("[data-go]");if(b)show(b.dataset.go);if(e.target.closest("[data-app-claude]"))sbOpen(sbAppOfView(data.ui.view)); // v76 : Sid'Bot, dans l'app (plus de lien vers Claude)
+}
 for(const id of ["vhead","noteAppHead"])$(id).addEventListener("click",elanHeadClick);
 let compactMotion=null,headerPointer=false;
 // Un bandeau ne doit pas déplacer la cible entre l’appui et le clic.
@@ -182,17 +180,32 @@ function openQuickAdd(){const vis=visibleTabs(),acts=[
   $("qaList").innerHTML=acts.map(([k,t,s,ic])=>`<button type="button" class="qa-it" data-qa="${k}"><span class="sp-ic">${ic}</span><span class="grow"><b>${L(t)}</b><span class="small muted">${L(s)}</span></span>${CHEVR}</button>`).join("");
   $("qaSheet").hidden=false}
 $("qaClose").addEventListener("click",()=>$("qaSheet").hidden=true);
-$("qaSheet").addEventListener("click",e=>{if(e.target.id==="qaSheet"){$("qaSheet").hidden=true;return}const b=e.target.closest("[data-qa]");if(!b)return;$("qaSheet").hidden=true;const k=b.dataset.qa;show(k);
+$("qaSheet").addEventListener("click",e=>{if(e.target.id==="qaSheet"){$("qaSheet").hidden=true;return}const b=e.target.closest("[data-qa]");if(!b)return;$("qaSheet").hidden=true;qaGo(b.dataset.qa)});
+// v76 : ouvrir directement le bon champ (ajout rapide, premiers pas de l'accueil, états vides)
+function qaGo(k){show(k);
   setTimeout(()=>{if(k==="plan")openTaskSheet()
     else if(k==="todo")$("todoIn").focus();
     else if(k==="notes"){if(noteOpenId)closeNote();$("noteNew").click()}
     else if(k==="nutri"){nuGoTab("day");$("nuAsk").focus();$("nuAsk").scrollIntoView({block:"center"})}
-    else if(k==="muscu"){$("msName")&&$("msName").focus()}},80)});
+    else if(k==="muscu"){$("msName")&&$("msName").focus()}},80)}
+// v76 : « Premiers pas » sur l'accueil : trois petites actions réelles, une par app, cochées d'après tes vraies données (rien n'est créé pour toi).
+// Facultatif : « Masquer » (data.prefs.tour="hidden"), « Revoir les premiers pas » dans Réglages le relance. Pas de récompense : juste « 1 sur 3 ».
+function tourSteps(){const vis=visibleTabs(),st=[];
+  if(vis.includes("plan")||vis.includes("todo"))st.push({k:vis.includes("plan")?"plan":"todo",app:"agenda",t:"Ajoute ta première activité",s:"Sid'Journée · un cours, un rendez-vous, une tâche",done:(data.tasks||[]).some(t=>t&&t.src!=="ical")||(data.todos||[]).length>0});
+  if(vis.includes("nutri")||vis.includes("muscu"))st.push({k:vis.includes("nutri")&&nutriAllowed()?"nutri":"muscu",app:"fit",t:"Note un repas ou une séance",s:"Sid'Forme · ce que tu manges ou ton entraînement",done:NU().log.length>0||M().sessions.length>0});
+  if(vis.includes("notes"))st.push({k:"notes",app:"note",t:"Écris ta première note",s:"Sid'Note · une idée, une liste, un cours",done:NT().length>0});
+  return st}
+function homeNext(){if(data.prefs&&data.prefs.tour==="hidden")return "";const st=tourSteps();if(!st.length)return "";const n=st.filter(x=>x.done).length;
+  if(n===st.length){if(data.prefs.tour!=="done"){data.prefs.tour="done";save()}return ""}
+  if(data.prefs.tour==="done")return "";
+  return `<section class="hs-tour" aria-labelledby="hsTourT"><div class="hs-tour-h"><b id="hsTourT">${L("Premiers pas")}</b><span class="small muted">${n} ${L("sur")} ${st.length}</span><button type="button" class="linkbtn" id="hsTourHide">${L("Masquer")}</button></div>
+    <div class="elan-progress-track hs-tour-bar" role="progressbar" aria-label="${L("Premiers pas")}" aria-valuemin="0" aria-valuemax="${st.length}" aria-valuenow="${n}"><i style="width:${Math.round(n/st.length*100)}%"></i></div>
+    <ul class="hs-steps">${st.map(x=>`<li><button type="button" class="hs-step" data-app="${x.app}" data-tourgo="${x.k}" ${x.done?'aria-disabled="true"':""}><span class="hs-check" aria-hidden="true">${x.done?(IC("tick")||""):""}</span><span class="grow"><b>${L(x.t)}</b><span class="small muted">${L(x.s)}</span></span><span class="sr-only">${L(x.done?"Fait":"À faire")}</span></button></li>`).join("")}</ul></section>`}
 // --- page Aujourd'hui : la journée en un coup d'œil ---
 function inCount(ms){const m=Math.round(ms/60000);if(m<60)return `${L("dans")} ${m} min`;const h=Math.floor(m/60),r=m%60;return `${L("dans")} ${h} h${r?" "+two(r):""}`}
 function renderHome(){if(!$("homeBody"))return;
   const now=new Date(),t0=iso(today()),nm=(session&&session.name||"").trim(); // v42 : surnom complet
-  $("homeDate").textContent=now.toLocaleDateString(LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE",{weekday:"long",day:"numeric",month:"long"});
+  $("homeDate").textContent=now.toLocaleDateString(LANG==="en"?"en-GB":"fr-BE",{weekday:"long",day:"numeric",month:"long"});
   $("homeHello").textContent=`${L(now.getHours()>=18?"Bonsoir":"Bonjour")}${nm?" "+nm:""}.`;
   $("homeAvatar").textContent=(nm||"S").slice(0,2).toUpperCase();
   const vis=visibleTabs(),T=vis.includes("plan")?allT().filter(t=>t.status!=="fait"&&!t.canc):[];
@@ -200,7 +213,7 @@ function renderHome(){if(!$("homeBody"))return;
   const next=T.filter(t=>t.time&&start(t)>now).sort((a,b)=>start(a)-start(b))[0]||T.filter(t=>!t.time&&t.date>t0).sort((a,b)=>a.date.localeCompare(b.date))[0];
   // v44.7 : Sid'Compagnon = 3 grandes cartes, une par app (nom, identité, ce qu'elle fait en une ligne, 1 ou 2 repères du jour) ;
   // toucher une carte ouvre l'app. Tout le reste a quitté cette page (il est dans chaque app).
-  const cards=[];
+  const cards=[];$("homeBody").dataset.view="simple";
   {const g=APP_GROUPS.find(x=>x.app==="agenda");if(groupTabs(g).length){const it=[];
     if(next){const s=start(next),same=next.date===t0,tm=parse(next.date);tm.setDate(tm.getDate()-1);
       const when=next.time&&same?inCount(s-(+now)):next.time&&iso(tm)===t0?`${L("demain")} · ${next.time}`:`${DOW[s.getDay()]} ${s.getDate()} ${MO[s.getMonth()]}${next.time?" · "+next.time:""}`;
@@ -227,10 +240,20 @@ function renderHome(){if(!$("homeBody"))return;
     else if(g.app==="fit"){if(vis.includes("nutri")&&nutriAllowed()&&NU().plan?.kcal){count=fmtFull(Math.max(0,Math.round(dayTarget(t0).kcal-sumOf(dayLog(t0)).kcal)));metric="kcal restantes aujourd'hui"}else{count=String(M().sessions.length);metric="séances"}}
     else{count=String(NT().length);metric=NT().length===1?"note":"notes"}
     return {app:g.app,k:g.k,label:g.label,desc:phrases[g.app],count,metric,functions:groupTabs(g).map(k=>({label:SHORT[k],icon:ICON(k)||""})),items:it.map(([k,v,w])=>({k,v:typeof v==="object"?v.u:v,user:typeof v==="object",w:w||""}))};});
+  // v76 : vue simple par défaut (les 3 logos), pour tous les comptes tant que la personne n'a pas choisi « Affichage détaillé » (data.prefs.homeView="detail")
+  const detail=homeDetail(),sw=`<button type="button" class="linkbtn" id="homeViewSw" aria-pressed="${detail}">${L(detail?"Affichage simple":"Affichage détaillé")}</button>`;$("homeViewBox").innerHTML=sw;
+  if(!detail){$("homeBody").innerHTML=`<div class="hs-grid" role="group" aria-label="${L("Tes applications")}">${models.map(c=>`<button type="button" class="hs-app" data-app="${c.app}" data-gapp="${c.k}" aria-label="${esc(c.label)} — ${esc(L(APP_ROLES[c.app]))}">${LOGO(c.app,"hs-logo")}<span class="hs-name notr">${c.label}</span><span class="hs-role">${L(APP_ROLES[c.app])}</span></button>`).join("")}</div>${homeNext()}`;return}
+  $("homeBody").dataset.view="detail";
   if(shIsl("home")){try{window.SCIslands.home($("homeBody"),{i18n:agI18n(),cards:models});return}catch(e){reportErr("island home: "+(e&&e.message))}}
   $("homeBody").innerHTML=`<div class="hc-list">${models.map(c=>`<button type="button" class="hc" data-app="${c.app}" data-gapp="${c.k}"><span class="hc-top">${LOGO(c.app,"home-applogo hc-logo")}<span class="hc-heading"><span class="hc-name">${c.label}</span><span class="hc-desc">${L(c.desc)}</span></span><svg class="hc-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></span><span class="hc-main"><span class="hc-count">${c.count}</span><span class="hc-metric">${L(c.metric)}</span></span><span class="hc-detail">${c.items.slice(0,1).map(it=>`<span class="hc-it"><span class="hc-k">${it.k}</span><span class="hc-v">${it.user?`<span class="notr">${esc(it.v)}</span>`:esc(it.v)}</span></span>`).join("")}</span><span class="hc-fns">${c.functions.map(f=>`<span class="hc-fn"><span>${f.icon}</span>${L(f.label)}</span>`).join("")}</span></button>`).join("")}</div>`;
 }
+const homeDetail=()=>!!(data.prefs&&data.prefs.homeView==="detail");
+function setHomeView(v){data.prefs.homeView=v==="detail"?"detail":"simple";save();renderHome();const hs=$("homeViewSel");if(hs)hs.value=data.prefs.homeView;
+  toast(v==="detail"?"Affichage détaillé activé":"Affichage simple activé");setTimeout(()=>{const b=$("homeViewSw");if(b)b.focus({preventScroll:true})},30)}
+$("homeViewBox").addEventListener("click",e=>{if(e.target.closest("#homeViewSw"))setHomeView(homeDetail()?"simple":"detail")});
 $("homeBody").addEventListener("click",e=>{
+  if(e.target.closest("#hsTourHide")){data.prefs.tour="hidden";save();renderHome();toast("Premiers pas masqués : tu peux les revoir dans Réglages");return}
+  const tg=e.target.closest("[data-tourgo]");if(tg){if(tg.getAttribute("aria-disabled")==="true")return;qaGo(tg.dataset.tourgo);return}
   const ga=e.target.closest("[data-gapp]");if(ga){openGroup(ga.dataset.gapp);return}
   if(e.target.closest("[data-aioff]")){data.ui.aiCardOff=1;saveUI();renderHome();return}
   const hg=e.target.closest("[data-htg]");if(hg){const t=data.todos.find(x=>x.id===hg.dataset.htg);if(t){todoToggle(t);renderHome()}return}

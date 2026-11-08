@@ -82,6 +82,7 @@
     <div id="homeSync" class="sync-warn" role="alert" hidden></div>
     <div id="homeTrial" class="trial-card" hidden><span class="grow"><b>Mode essai</b><span class="small">Tes données restent sur cet appareil. Crée ton compte pour les garder et les retrouver partout.</span></span><button type="button" class="btn" data-trialacc="1">Créer mon compte</button></div>
     <div id="homeBody"></div>
+    <div id="homeViewBox" class="home-view-sw"></div>
   </section>
   <!-- ESPACES (v25) -->
   <section class="view" id="v-spaces" hidden>
@@ -207,7 +208,6 @@
     <div class="chips" id="chips"></div>
     <div id="tasks"></div>
     </details>
-    <details class="conv-tab" data-convtab="agenda"><summary><span>Conversation Claude</span><span class="conv-st small muted" data-convst="agenda"></span></summary><form class="conv-f conv-tab-f" data-conv="agenda"><p class="small muted">Colle ici le lien d'une conversation Claude : toutes tes demandes iront directement dedans. Le message est copié, il ne reste qu'à le coller et l'envoyer.</p><div class="conv-row"><input type="url" inputmode="url" class="conv-tab-in" data-convin="agenda" placeholder="https://claude.ai/chat/…" aria-label="Lien de la conversation Claude" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div><p class="small muted">Pour trouver le lien : ouvre la conversation sur claude.ai (navigateur ou ordinateur) et copie l'adresse de la page. Avec un projet (https://claude.ai/project/…), le message est déjà écrit ; avec une conversation, il est copié et il suffit de le coller. N'utilise pas « Partager » dans Claude : ce lien-là est public.</p><button type="button" class="linkbtn conv-del" data-convdel="agenda" hidden>Retirer</button></form></details>
   </section>
 
   <!-- POMODORO -->
@@ -294,7 +294,6 @@
       <textarea id="msPaste" placeholder="Programme « Push Pull » (Sid'Compagnon)&#10;Séance « Push »&#10;1. Développé couché haltères : 4 séries × 6–10, repos 3 min&#10;2. Pec deck : 3 séries × 10–15, repos 2 min"></textarea>
       <div class="two"><button class="btn ghost" type="button" id="msImportCancel">Annuler</button><button class="btn" type="button" id="msImportBtn">Importer</button></div>
     </div>
-    <details class="conv-tab" data-convtab="muscu"><summary><span>Conversation Claude</span><span class="conv-st small muted" data-convst="muscu"></span></summary><form class="conv-f conv-tab-f" data-conv="muscu"><p class="small muted">Colle ici le lien d'une conversation Claude : toutes tes demandes iront directement dedans. Le message est copié, il ne reste qu'à le coller et l'envoyer.</p><div class="conv-row"><input type="url" inputmode="url" class="conv-tab-in" data-convin="muscu" placeholder="https://claude.ai/chat/…" aria-label="Lien de la conversation Claude" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div><p class="small muted">Pour trouver le lien : ouvre la conversation sur claude.ai (navigateur ou ordinateur) et copie l'adresse de la page. Avec un projet (https://claude.ai/project/…), le message est déjà écrit ; avec une conversation, il est copié et il suffit de le coller. N'utilise pas « Partager » dans Claude : ce lien-là est public.</p><button type="button" class="linkbtn conv-del" data-convdel="muscu" hidden>Retirer</button></form></details>
   </section>
 
   <!-- NUTRITION -->
@@ -349,7 +348,7 @@
         <button class="btn" type="submit" id="nuCalc" style="padding:14px;font-size:17px">Calculer mes besoins</button>
         <button type="button" class="btn ghost" id="nuCancel" hidden>Annuler</button>
       </form>
-      <p class="small muted" style="margin:8px 4px 0">Les calculs sont réalisés par une IA (Claude, d'Anthropic) à partir de ces informations. Ce n'est pas un avis médical.</p>
+      <p class="small muted" style="margin:8px 4px 0">Les calculs sont réalisés par Sid'Bot (une IA) à partir de ces informations. Ce n'est pas un avis médical.</p>
     </div>
     <!-- journée -->
     <div id="nuMain" hidden>
@@ -408,7 +407,6 @@
       <button type="button" class="qbtn" id="nuEditProfile" style="margin-top:10px"><i class="ic" data-i="plus"></i> Modifier mon profil</button>
       </div>
     </div>
-    <details class="conv-tab" data-convtab="nutri"><summary><span>Conversation Claude</span><span class="conv-st small muted" data-convst="nutri"></span></summary><form class="conv-f conv-tab-f" data-conv="nutri"><p class="small muted">Colle ici le lien d'une conversation Claude : toutes tes demandes iront directement dedans. Le message est copié, il ne reste qu'à le coller et l'envoyer.</p><div class="conv-row"><input type="url" inputmode="url" class="conv-tab-in" data-convin="nutri" placeholder="https://claude.ai/chat/…" aria-label="Lien de la conversation Claude" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div><p class="small muted">Pour trouver le lien : ouvre la conversation sur claude.ai (navigateur ou ordinateur) et copie l'adresse de la page. Avec un projet (https://claude.ai/project/…), le message est déjà écrit ; avec une conversation, il est copié et il suffit de le coller. N'utilise pas « Partager » dans Claude : ce lien-là est public.</p><button type="button" class="linkbtn conv-del" data-convdel="nutri" hidden>Retirer</button></form></details>
     <div class="soon" hidden><div class="soon-card"><div class="soon-ic"><i class="ic" data-i="lock"></i></div><b>Bientôt disponible</b><span class="small muted soon-en">Coming soon</span></div></div>
   </section>
 
@@ -454,7 +452,7 @@
           <button type="button" class="mini nu-mic nu-tool" id="nuMic" aria-label="Dicter"><i class="ic" data-i="mic"></i></button>
           <button class="btn" type="submit" id="nuAskBtn">Analyser</button>
         </div>
-        <a class="linkbtn nu-ai-link" id="nuAiLink" href="#" target="_blank" rel="noopener" >Dis-le à Claude</a>
+        <a class="linkbtn nu-ai-link" id="nuAiLink" href="#" data-sidbot="forme">Demande à Sid'Bot</a>
         <div id="nuResult"></div>
         <button type="button" class="linkbtn" id="nuManual" style="background:none;border:0;cursor:pointer;font-size:14px;justify-self:center">Saisir les valeurs à la main</button>
       </form>
@@ -514,7 +512,6 @@
       <form id="nfForm" class="nf-form" hidden><input id="nfIn" placeholder="Nom du dossier" aria-label="Nom du dossier" autocomplete="off" enterkeyhint="done"><button class="btn ghost" type="submit">Ajouter</button><button type="button" class="btn ghost" id="nfCancel">Annuler</button></form>
       <div class="ns-bar" id="nsBar" hidden></div>
       <div class="card" id="noteList"></div>
-      <details class="conv-tab" data-convtab="note"><summary><span>Conversation Claude</span><span class="conv-st small muted" data-convst="note"></span></summary><form class="conv-f conv-tab-f" data-conv="note"><p class="small muted">Colle ici le lien d'une conversation Claude : toutes tes demandes iront directement dedans. Le message est copié, il ne reste qu'à le coller et l'envoyer.</p><div class="conv-row"><input type="url" inputmode="url" class="conv-tab-in" data-convin="note" placeholder="https://claude.ai/chat/…" aria-label="Lien de la conversation Claude" autocomplete="off"><button class="btn" type="submit">Enregistrer</button></div><p class="small muted">Pour trouver le lien : ouvre la conversation sur claude.ai (navigateur ou ordinateur) et copie l'adresse de la page. Avec un projet (https://claude.ai/project/…), le message est déjà écrit ; avec une conversation, il est copié et il suffit de le coller. N'utilise pas « Partager » dans Claude : ce lien-là est public.</p><button type="button" class="linkbtn conv-del" data-convdel="note" hidden>Retirer</button></form></details>
     </div>
     <div id="noteEdit" hidden>
       <div class="coffre-editor-chrome">
@@ -614,6 +611,8 @@
 
       <label class="row"><span class="grow">Langue</span><select id="langSel" class="sel"><option value="fr">Français</option><option value="en">English</option></select></label>
       <label class="row" hidden><span class="grow">Page d'accueil</span><select id="homeSel" class="sel"></select></label>
+      <label class="row"><span class="grow">Affichage de la page Aujourd'hui</span><select id="homeViewSel" class="sel"><option value="simple">Affichage simple</option><option value="detail">Affichage détaillé</option></select></label>
+      <div class="row"><span class="grow">Premiers pas</span><button type="button" class="btn ghost sm" id="tourAgain">Revoir les premiers pas</button></div>
     </div>
 
       </div>
@@ -638,28 +637,16 @@
     </div>
       </div>
     </details>
-    <details class="setsec" data-sec="claude" id="mcpSec"><summary><span>Claude</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+    <details class="setsec" data-sec="sidbot" id="sbSec"><summary><span>Sid'Bot</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
       <div class="setsec-in">
     <div class="card">
-      <div class="ai-st" id="aiState"></div>
-      <div class="row"><button type="button" class="btn" data-aiwiz="1" id="aiMain" style="width:100%">Brancher Claude</button></div>
-      <div class="row"><div class="grow small muted">Claude calcule tes repas, crée tes menus et tes programmes, lit ton agenda et ajoute tâches et notes, puis tout arrive ici. Il ne voit jamais tes mots de passe, tes documents ni tes notes secrètes.</div></div>
-      <details class="ai-adv" id="aiAdv"><summary>Avancé</summary>
-        <div class="ai-adv-h">Adresses du connecteur</div>
+      <div class="row"><div class="grow"><b>Sid'Bot, ton assistant</b><div class="small muted">Il répond dans Sid'Journée, Sid'Forme et Sid'Note, sans quitter l'app. Il ne voit que ta question et ce que tu choisis de partager ; jamais tes mots de passe, tes documents ni tes notes secrètes. Il propose, tu valides : rien n'est modifié sans ton accord.</div><div class="small muted" id="sbState"></div></div></div>
+      <div class="row"><button type="button" class="btn" data-sidbot="" style="width:100%">Ouvrir Sid'Bot</button></div>
+      <div id="mcpOld" hidden>
+        <div class="ai-adv-h">Anciennes adresses du connecteur</div>
+        <div class="row"><div class="grow small muted">Créées pour l'ancien branchement à Claude. Tu peux les retirer : elles ne servent plus à Sid'Bot.</div></div>
         <div id="mcpList"></div>
-        <div class="row"><button type="button" class="btn ghost" id="mcpNew" style="width:100%">Créer mon adresse pour Claude</button></div>
-        <div id="mcpOut" hidden>
-          <div class="row" style="display:block"><div class="small muted" style="margin-bottom:6px">Ton adresse (affichée une seule fois, garde-la pour toi) :</div>
-            <div class="mcp-url notr" id="mcpUrl"></div>
-            <button type="button" class="btn ghost" id="mcpCopy" style="width:100%;margin-top:8px">Copier l'adresse</button></div>
-          <div class="row" style="display:block"><ol class="small mcp-steps">
-            <li>Ouvre claude.ai → Paramètres → Connecteurs.</li>
-            <li>Touche « Ajouter un connecteur personnalisé ».</li>
-            <li>Nom : Sid'note. URL : colle l'adresse. Authentification : « Aucune connexion ».</li>
-            <li>Touche « Ajouter » : c'est prêt.</li></ol></div>
-        </div>
-        <div class="row"><button type="button" class="btn ghost" data-aiwiz="setup" style="width:100%">Rebrancher Claude</button></div>
-      </details>
+      </div>
     </div>
       </div>
     </details>
@@ -789,18 +776,15 @@
     </form>
   </div>
 </div>
-<div class="sheet-bg" id="aiSheet" hidden>
-  <div class="sheet card">
-    <div class="sheet-head"><b id="aiTitle">Brancher Claude</b><button type="button" class="x" id="aiClose" aria-label="Fermer"><span class="gi gi-close" aria-hidden="true"></span></button></div>
-    <div id="aiBody"></div>
-  </div>
-</div>
-<div class="sheet-bg" id="aiAskSheet" hidden>
-  <div class="sheet card">
-    <div class="sheet-head"><b id="aaTitle">Demande à Claude</b><button type="button" class="x" id="aaClose" aria-label="Fermer"><span class="gi gi-close" aria-hidden="true"></span></button></div>
-    <p class="small muted" style="margin:0 0 10px">Claude calcule, puis écrit le résultat directement ici.</p>
-    <div class="ai-prompt notr" id="aaPrompt"></div>
-    <div class="ai-acts" id="aaActs"></div>
+<div class="sheet-bg" id="sbSheet" hidden>
+  <div class="sheet card sb-sheet">
+    <div class="sheet-head"><span class="sb-head"><b id="sbTitle" class="notr">Sid'Bot</b><span class="small muted notr" id="sbSub"></span></span><button type="button" class="x" id="sbClose" aria-label="Fermer"><span class="gi gi-close" aria-hidden="true"></span></button></div>
+    <div class="seg sb-apps" role="group" aria-label="Application" style="grid-template-columns:repeat(3,minmax(0,1fr))"><button type="button" data-sbapp="journee" aria-pressed="true" class="notr">Sid'Journée</button><button type="button" data-sbapp="forme" aria-pressed="false" class="notr">Sid'Forme</button><button type="button" data-sbapp="note" aria-pressed="false" class="notr">Sid'Note</button></div>
+    <div class="sb-ctx" id="sbCtx"></div>
+    <div class="sb-list" id="sbList" aria-live="polite"></div>
+    <div class="sb-img" id="sbImg" hidden></div>
+    <form class="sb-form" id="sbForm"><textarea id="sbIn" rows="1" maxlength="4000" placeholder="Écris ta question…" aria-label="Ta question pour Sid'Bot" enterkeyhint="send"></textarea><button class="btn" type="submit" id="sbSend">Envoyer</button></form>
+    <div class="sb-foot"><span class="small muted">Sid'Bot peut se tromper : vérifie ce qui compte.</span><button type="button" class="linkbtn" id="sbClear" hidden>Effacer la conversation</button></div>
   </div>
 </div>
 <div class="sheet-bg" id="nuCopySheet" hidden role="dialog" aria-modal="true" aria-labelledby="nuCopyTitle">
@@ -826,7 +810,7 @@
   <div class="sheet card">
     <div class="sheet-head"><b>Tes données de santé</b><button type="button" class="x" id="consentClose" aria-label="Fermer"><span class="gi gi-close" aria-hidden="true"></span></button></div>
     <p class="small" style="margin:0">Pour la nutrition, les graphiques et ton programme de musculation, Sid'Compagnon utilise ton âge, ton poids, ta taille, ton sport, ce que tu manges, tes séances et les zones à ménager. Ce sont des données de santé.</p>
-    <p class="small muted" style="margin:0">Elles restent dans ton compte (Supabase, Europe). Si tu branches Claude, c'est ton propre compte Claude (Anthropic, États-Unis) qui les lit par le connecteur, quand tu le lui demandes. Tu peux retirer ton accord à tout moment dans Réglages, et supprimer tes données.</p>
+    <p class="small muted" style="margin:0">Elles restent dans ton compte (Supabase, Europe). Si tu poses une question à Sid'Bot, seul ce que tu choisis de partager part vers le service d'IA, pour te répondre. Tu peux retirer ton accord à tout moment dans Réglages, et supprimer tes données.</p>
     <button type="button" class="linkbtn" data-openlegal="privacy">Lire la politique de confidentialité</button>
     <div class="two"><button type="button" class="btn ghost" id="consentNo">Pas maintenant</button><button type="button" class="btn" id="consentYes">J'accepte</button></div>
   </div>

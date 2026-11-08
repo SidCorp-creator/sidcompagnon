@@ -14,3 +14,6 @@ interface Credential { [k: string]: any }
 interface AuthenticationExtensionsClientInputs { prf?: any }
 interface Element { setAttribute(name: string, value: any): void }
 interface Storage { setItem(key: string, value: any): void }
+
+// v76 : défini par 39-nutrition.js (lot nutrition) : ajoute un repas proposé par Sid'Bot, après confirmation ; renvoie true si c'est fait
+declare function nuLogFromBot(p: any): boolean;

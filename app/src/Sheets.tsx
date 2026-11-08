@@ -57,18 +57,6 @@ export function LegalBody({ parts, page, i18n }: { parts: [string, string][]; pa
 }
 
 // v66 : état de Claude (Réglages > Claude), carte Claude de la Nutrition, pastilles de types sous les champs « Type »
-export function AiState({ ok, i18n }: { ok: boolean; i18n: WI18n }) {
-  return <><span className="ai-dot"></span><b>{i18n.tr(i18n.L(ok ? "Claude est branché" : "Claude n'est pas branché"))}</b></>;
-}
-
-export function NuAiCard({ ok, icon, href, name, i18n }: { ok: boolean; icon: string; href: string; name: string; i18n: WI18n }) {
-  const { tr, L } = i18n;
-  if (ok) return <><div className="grow"><b dangerouslySetInnerHTML={{ __html: `${icon} ${esc(tr(L("Claude calcule pour toi")))}` }}></b><div className="small muted">{tr(L("Dis-lui ce que tu as mangé ou envoie-lui la photo de ton assiette : tout arrive ici."))}</div></div>
-    <a className="btn" href={href} target="_blank" rel="noopener">{tr(`${L("Ouvrir")} ${name}`)}</a></>;
-  return <><div className="grow"><b>{tr(L("Branche Claude"))}</b><div className="small muted">{tr(L("Calories, menus et bilans sont calculés par Claude, même avec la version gratuite. 2 minutes, une seule fois."))}</div></div>
-    <button type="button" className="btn" data-aiwiz="1">{tr(L("Brancher"))}</button></>;
-}
-
 export function TypeChips({ types, cur, i18n }: { types: { name: string; c: string }[]; cur: string; i18n: WI18n }) {
   const norm = (x: string) => String(x || "").trim().toLowerCase();
   return <>{types.map((t) => <button key={t.name} type="button" className="pill" data-tchip={t.name} aria-pressed={norm(t.name) === cur}>

@@ -11,6 +11,6 @@ Illustrations générées par OpenAI image_gen uniquement, même référence de 
 | Extension triceps élastique debout | phase clé | [extension-triceps-elastique-debout-1.jpg](extension-triceps-elastique-debout-1.jpg) |
 | Pompes sur les genoux | départ | [pompes-sur-les-genoux-0-v2.jpg](pompes-sur-les-genoux-0-v2.jpg) |
 | Élévations en W au sol | départ | [elevations-en-w-au-sol-0-v2.jpg](elevations-en-w-au-sol-0-v2.jpg) |
-| Élévations en W au sol | phase clé | [elevations-en-w-au-sol-1-v2.jpg](elevations-en-w-au-sol-1-v2.jpg) |
+| Élévations en W au sol | phase clé | [elevations-en-w-au-sol-1-v3.jpg](elevations-en-w-au-sol-1-v3.jpg) |
 
-Prompts exacts, références, empreintes et éventuels rejets : [PROMPTS.json](PROMPTS.json). 11 appels ; aucun signal de quota. Les fichiers dans `rejets/` ne sont pas proposés à la validation.
+Prompts exacts, références, empreintes et éventuels rejets : [PROMPTS.json](PROMPTS.json). 12 appels ; aucun signal de quota. Les fichiers dans `rejets/` ne sont pas proposés à la validation.

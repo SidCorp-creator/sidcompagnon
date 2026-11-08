@@ -95,7 +95,7 @@
       "originalSha256": "6491a1745632759dc56b412029c18b3d54ab3288efb114578f79f2f8097d2db4",
       "sha256": "d6b3c69c709c6a2fe1779e83ef6f344ce73c92c485297a9a503985f820ad435c",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-6f394fb6-eccf-4033-832c-8ccdd9071c24.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "elevations-en-w-au-sol-0",
@@ -110,20 +110,24 @@
       "originalSha256": "e19c0bc7f47edcca1343e8197142a86e995b8a91de9881aedd283a0fa7d310ac",
       "sha256": "0b6c34b2f0a318cd3445411a918e24916179535b1d6043b8b5f80308f94b86c1",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-48d8d01e-87a8-4b91-a235-935f263504e7.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "elevations-en-w-au-sol-1",
       "phase": "phase clé",
-      "file": "elevations-en-w-au-sol-1-v2.jpg",
-      "prompt": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration. PRONE W RAISE LIFTED PHASE, keep the EXACT corrected starting illustration: top-down overhead camera, head toward top of frame, both upper arms angled 30–45 degrees out from torso, BOTH elbows bent about 90 degrees beside lower ribs, BOTH hands near shoulder height. Change only this: lift BOTH elbows and forearms slightly a few centimetres away from the floor with visible small gaps and soft offset shadows, keeping the SAME clear symmetric W outline. Thumbs upward. Forehead remains on folded towel and chest, pelvis, legs remain down. Do not straighten either arm, do not lift chest/head and do not make a Superman. The W bend must be obvious in BOTH arms.",
+      "file": "elevations-en-w-au-sol-1-v3.jpg",
+      "prompt": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration. PRONE W RAISE, LIFTED PHASE. The supplied reference is the APPROVED TOP VIEW of the correct W posture. KEEP THAT SAME CHARACTER AND W ARM GEOMETRY, but CHANGE THE CAMERA to a LOW THREE-QUARTER SIDE VIEW so the gap UNDER BOTH ARMS is unmistakable. Full body lies face down, head to image right and feet to left. Forehead rests on the SAME folded towel, neck long, chest, abdomen, hips and legs remain ON the floor. BOTH upper arms splay about 30–45 degrees from the torso, BOTH elbows are bent about 90 degrees close to the lower ribs, BOTH hands are near shoulder height toward the head, thumbs up. Both elbows AND forearms are lifted about 5 cm above the floor, visibly floating with clear empty off-white gaps between arms and their soft ground shadows. Near elbow and near hand are both off floor. Also show the far bent elbow/forearm, not a straight far arm. Gently retract shoulder blades. Never straighten either arm or lay one along the torso; no Superman and no lifted chest/head. Do not merely duplicate the top view or add shadows without changing camera: the SIDE VIEW must clearly demonstrate the physical arm-floor separation. No text or arrows.",
+      "labels": {
+        "fr": "Vue de côté : bras décollés",
+        "en": "Side view: arms lifted"
+      },
       "exercise": "Élévations en W au sol",
       "width": 480,
       "height": 320,
-      "bytes": 7040,
-      "original": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-d05b0792-af01-4604-9950-d808a1b34139.png",
-      "originalSha256": "ffe05780595cbe997f1c0b8c117b5575253772b3fdfb5d9997d9376f5eb60a04",
-      "sha256": "a57ec22e3000eccb32a78800fcef75f13a0a5c500a29499edbef60118886a064",
+      "bytes": 8639,
+      "original": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-3d9e5c41-69de-48e5-b257-82ea105d2c7a.png",
+      "originalSha256": "2cb9c09b631bcc3c5b38290f25776364c5c3d443fd4266221796ca52ca8f1a67",
+      "sha256": "1d4be50e531f2b2000c258f9f85f24ad65b9706d9bf35bdcaf1c1b90a853cbdb",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-14b2b249-6ccc-40f4-bc0f-71c2d55aa269.png",
       "review": "pending Claude V1"
     }
@@ -173,7 +177,22 @@
       "sha256": "3ab4e6e48db4239b340e955f714d1132f19b294e9c7004b15f234c2bb420adef",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-f1701a9a-1ac0-4c60-9b96-e0be3b7cf13b.png",
       "review": "rejected by Claude V1; correction requested in revue-v80-retours.md"
+    },
+    {
+      "id": "elevations-en-w-au-sol-1",
+      "phase": "phase clé",
+      "file": "rejets/elevations-en-w-au-sol-1-v2.jpg",
+      "prompt": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration. PRONE W RAISE LIFTED PHASE, keep the EXACT corrected starting illustration: top-down overhead camera, head toward top of frame, both upper arms angled 30–45 degrees out from torso, BOTH elbows bent about 90 degrees beside lower ribs, BOTH hands near shoulder height. Change only this: lift BOTH elbows and forearms slightly a few centimetres away from the floor with visible small gaps and soft offset shadows, keeping the SAME clear symmetric W outline. Thumbs upward. Forehead remains on folded towel and chest, pelvis, legs remain down. Do not straighten either arm, do not lift chest/head and do not make a Superman. The W bend must be obvious in BOTH arms.",
+      "exercise": "Élévations en W au sol",
+      "width": 480,
+      "height": 320,
+      "bytes": 7040,
+      "original": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-d05b0792-af01-4604-9950-d808a1b34139.png",
+      "originalSha256": "ffe05780595cbe997f1c0b8c117b5575253772b3fdfb5d9997d9376f5eb60a04",
+      "sha256": "a57ec22e3000eccb32a78800fcef75f13a0a5c500a29499edbef60118886a064",
+      "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-14b2b249-6ccc-40f4-bc0f-71c2d55aa269.png",
+      "review": "rejected Claude V1: top view does not show arm lift"
     }
   ],
-  "calls": 11
+  "calls": 12
 }

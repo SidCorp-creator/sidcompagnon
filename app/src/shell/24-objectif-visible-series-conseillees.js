@@ -69,7 +69,8 @@ function exProg(ex){const top=repTop(ex.reps),last=exLastLog(ex.name),g=muGoal()
   if(g==="endu")return L("Haut de la fourchette atteint : réduis le repos, puis augmente la charge");
   if(g==="gras")return "";
   return L("Haut de la fourchette atteint : augmente la charge et repars du bas")}
-function renderMuGoal(){const box=$("muGoal");if(!box)return;const g=muGoal(),keys=["force","muscle","gras","endu"].concat(g==="forme"?["forme"]:[]);
+function renderMuGoal(){const box=$("muGoal");if(!box)return;box.hidden=true;box.innerHTML="";return; // v77 (demande de Sid) : plus de bloc permanent « Mon objectif » ; objectif dans « Objectif et préférences » (data.prefs.muGoal gardé)
+const g=muGoal(),keys=["force","muscle","gras","endu"].concat(g==="forme"?["forme"]:[]);
   // v52 (ticket #3) : dessiné par React (app/src/Small.tsx) ; ancien rendu en secours
   if(window.SCIslands&&window.SCIslands.muGoal&&!window.__noIslands){try{window.SCIslands.muGoal(box,{keys,goal:g,names:MU_GOALS,i18n:{L,MOL,MO,DOWL}});return}catch(e){reportErr("island muGoal: "+(e&&e.message))}}
   box.innerHTML=`<span class="eyebrow">${L("Mon objectif")}</span><div class="seg mu-goal-seg" role="group" aria-label="${L("Mon objectif")}" style="grid-template-columns:repeat(${keys.length},minmax(0,1fr))">${keys.map(k=>`<button type="button" data-mugoal="${k}" aria-pressed="${k===g}">${L(MU_GOALS[k])}</button>`).join("")}</div>
@@ -168,15 +169,18 @@ for(const[k,topic,mk,health]of/** @type {[string,string,(q:string)=>string,boole
   t.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();f.requestSubmit()}});
   f.addEventListener("submit",async e=>{e.preventDefault();const q=t.value.trim();if(!q)return;dictStop();
     if(health&&!(await nuConsent()))return;aiHandoff(mk(q.slice(0,1500)),topic,{send:true});t.value="";grow(t)})}
-$("coachClose").addEventListener("click",()=>$("coachSheet").hidden=true);
-$("coachSheet").addEventListener("click",e=>{if(e.target.id==="coachSheet")$("coachSheet").hidden=true});
+$("coachClose").addEventListener("click",()=>muqClose());
+$("coachSheet").addEventListener("click",e=>{if(e.target.id==="coachSheet")muqClose()});
 $("coachBox").addEventListener("click",e=>{
   const b=e.target.closest("[data-coach]");if(!b)return;const k=b.dataset.coach;
-  if(k==="new")coachOpen();
+  if(k==="new")muqOpen();
+  else if(k==="restart"){delete data.prefs.muDraft;save();muqOpen({fresh:true})}
+  else if(k==="prefs")muqOpen({fresh:true,step:"recap"});
+  else if(k==="go"){const el=document.querySelector(`#msList [data-ms="${CSS.escape(b.dataset.se||"")}"]`);if(el){if(el.tagName==="DETAILS")el.open=true;el.scrollIntoView({block:"start",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});const f=el.querySelector("summary,button,input");if(f)f.focus({preventScroll:true})}}
   else if(k==="adjust")coachAdjust($("coRemark").value);
   else if(k==="resend"){const pl=PL(),rm=pl&&pl.profile&&(pl.profile.remarks||[]).slice(-1)[0];aiHandoff(rm&&rm.text!==pl.profile.notes?coachPrompt("adjust",rm.text):coachPrompt("new"),"muscu")}
   else if(k==="unwait"){const pl=PL();if(pl){delete pl.aiWait;pl.upd=Date.now();save();renderMuscu()}}
-  else if(k==="more")openActions(L("Mon programme"),[{l:"Modifier mes réponses",fn:coachOpen},
+  else if(k==="more")openActions(L("Mon programme"),[{l:"Objectif et préférences",fn:()=>muqOpen({fresh:true,step:"recap"})},
     {l:"Demander conseil à Sid'Bot",fn:async()=>{if(!(await nuConsent()))return;aiHandoff(coachPrompt("improve"),"muscu",{send:true})}},
     {l:"Partager le programme",fn:()=>copyText(shareTxt(PLD(),L("Mon programme")),"prog")},
     {l:"Supprimer le programme",danger:true,fn:()=>grpActions(PL().id)}])});

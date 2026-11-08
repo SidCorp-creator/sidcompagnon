@@ -18,3 +18,6 @@ interface Storage { setItem(key: string, value: any): void }
 // v76 : défini par 39-nutrition.js (lot nutrition) : ajoute un repas proposé par Sid'Bot, après confirmation ; renvoie true si c'est fait
 declare function nuLogFromBot(p: any): boolean;
 declare const MARQUES: Readonly<{ compagnon: string; journee: string; forme: string; note: string; bot: string }>;
+// v77 : moteur de programme (23b, lot M1 Codex)
+declare function muBuild(answers: any, opt?: { locale?: string }): { plan: any; why: string[]; warnings: string[]; est: number[]; src?: string };
+declare function muAlternatives(name: string, answers: any): string[];

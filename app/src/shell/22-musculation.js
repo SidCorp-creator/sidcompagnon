@@ -13,7 +13,7 @@ const msFind=id=>M().sessions.find(x=>x.id===id);
 const newSet=()=>({reps:"",kg:""});
 const newEx=(name="",n=3)=>({id:uid(),name,ps:1,sets:Array.from({length:n},newSet)});
 const seTouch=se=>{se.upd=Date.now();M().upd=Date.now()};
-const GSRC={app:"Créé par Sid'Compagnon",claude:"Créé par Claude",import:"Importé"};
+const GSRC={app:"Créé par Sid'Compagnon",claude:"Créé par Claude",import:"Importé",ia:"Composé avec Sid'Bot",archive:"Archivé : séances et historique conservés"};
 // ancien programme (avant la v44 : plan.days, exercices avec un nombre de séries) → séances au format commun, sans rien perdre
 function muMigrate(){const m=M(),p=m.plan;if(!Array.isArray(m.sessions))m.sessions=[];let ch=false;
   if(p&&!p.deleted&&Array.isArray(p.days)){const grp={id:p.id,name:L("Mon programme"),src:p.src==="ia"?"claude":"app"};

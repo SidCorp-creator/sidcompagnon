@@ -2237,7 +2237,7 @@ const msFind=id=>M().sessions.find(x=>x.id===id);
 const newSet=()=>({reps:"",kg:""});
 const newEx=(name="",n=3)=>({id:uid(),name,ps:1,sets:Array.from({length:n},newSet)});
 const seTouch=se=>{se.upd=Date.now();M().upd=Date.now()};
-const GSRC={app:"Créé par Sid'Compagnon",claude:"Créé par Claude",import:"Importé"};
+const GSRC={app:"Créé par Sid'Compagnon",claude:"Créé par Claude",import:"Importé",ia:"Composé avec Sid'Bot",archive:"Archivé : séances et historique conservés"};
 // ancien programme (avant la v44 : plan.days, exercices avec un nombre de séries) → séances au format commun, sans rien perdre
 function muMigrate(){const m=M(),p=m.plan;if(!Array.isArray(m.sessions))m.sessions=[];let ch=false;
   if(p&&!p.deleted&&Array.isArray(p.days)){const grp={id:p.id,name:L("Mon programme"),src:p.src==="ia"?"claude":"app"};
@@ -2514,13 +2514,18 @@ function coachBuild(p){const split={2:["full1","full2"],3:p.level==="deb"?["full
     return{id:uid(),name:`${L("Séance")} ${"ABCDEF"[di]} · ${L(DAYN[t])}`,ex:ex.map(e=>mk(e,!e.eq.includes(eq)))}}
   return{id:uid(),profile:p,days,at:new Date().toISOString(),upd:Date.now(),src:"app"}}
 // v44 : le programme devient le programme suivi : ses séances passent au format commun, celles de l'ancien programme suivi sont retirées
-function planApply(pl){const m=M(),old=PL();if(old)for(const s of grpSe(old.id)){tomb(s.id);m.sessions=m.sessions.filter(x=>x!==s)}
+// v77 : l'ancien programme n'est plus effacé : ses séances (et donc leur historique) passent dans un groupe « Programme précédent » de « Mes séances »
+function planApply(pl){const m=M(),old=PL();
+  if(old){const when=new Date(old.at||Date.now()).toLocaleDateString(LANG==="en"?"en-GB":"fr-BE",{day:"numeric",month:"short",year:"numeric"});
+    const grp={id:"arch-"+old.id,name:`${L("Programme précédent")} · ${when}`,src:"archive"};
+    for(const s of grpSe(old.id)){s.grp=grp;seTouch(s)}}
   m.plan=pl;muMigrate();m.upd=Date.now()}
 const ML=()=>{const m=M();if(!Array.isArray(m.log))m.log=[];return m.log};
 const coachNext=()=>{const ds=PLD();if(!ds.length)return null;const last=ML().filter(l=>ds.some(d=>d.id===l.day)).sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0];
   const i=last?ds.findIndex(d=>d.id===last.day):-1;return ds[(i+1)%ds.length]};
-// v74.1 (demande de Sid) : la section « Mon programme » n'est plus affichée (#coachBox caché) ; le programme et ses séances restent dans « Mes séances »
-function renderCoach(){const box=$("coachBox");if(!box)return;const pl=PL(),ds=PLD();
+// v74.1 : section « Mon programme » cachée ; v77 (demande de Sid) : rétablie, avec « Créer mon programme » et la prochaine séance
+function renderCoach(){const box=$("coachBox");if(!box)return;muCoachCard(box);return; // v77 : section de nouveau visible (cachée en 74.1), carte de 23a
+  const pl=PL(),ds=PLD();
   const rmk=$("coRemark")?$("coRemark").value:""; // v43 : le rendu garde la remarque en cours
   if(shIsl("coach")){try{const p=(pl&&pl.profile)||{},G={muscle:"Prendre du muscle",force:"Gagner en force",gras:"Perdre du gras",forme:"Être en forme",endu:"Gagner en endurance"},LV={deb:"Débutant",inter:"Intermédiaire",conf:"Confirmé"};
     window.SCIslands.coach(box,{c:pl?{goal:G[p.goal]||"Sur mesure",ia:pl.src==="ia",level:p.level?LV[p.level]||"":"",n:ds.length,wait:!!pl.aiWait,remarks:(p.remarks||[]).slice().reverse().map(r=>({text:r.text,when:fmtWhen(Date.parse(r.at))}))}:null,more:MORE,i18n:agI18n()});
@@ -2533,42 +2538,9 @@ function renderCoach(){const box=$("coachBox");if(!box)return;const pl=PL(),ds=P
     <div class="coach-adj"><label for="coRemark" class="eyebrow">${L("Ta remarque sur ce programme")}</label><textarea id="coRemark" class="autogrow" rows="2" maxlength="600" placeholder="${L("Ex. remplace la 2e séance jambes par une séance haut du corps")}">${esc(pl.aiWait?"":rmk)}</textarea>
       <div class="coach-adj-b"><button type="button" class="btn" data-coach="adjust">${L("Demander conseil à Sid'Bot")}</button></div>
       ${(p.remarks||[]).length?`<details class="coach-rem"><summary class="small muted">${(p.remarks||[]).length} ${L((p.remarks||[]).length>1?"remarques envoyées":"remarque envoyée")}</summary><ul>${p.remarks.slice().reverse().map(r=>`<li class="small"><span class="notr">${esc(r.text)}</span> <span class="muted">· ${fmtWhen(Date.parse(r.at))}</span></li>`).join("")}</ul></details>`:""}</div></div>`}
-let cfDraft={};
+let cfDraft={}; // v77 : ancien formulaire « 5 questions » remplacé par le parcours de 23a ; gardé vide pour coachPrompt
 const restLbl=r=>r>=60?String(Math.round(r/60*10)/10).replace(".",",")+" min":r+" s";
-function coachOpen(){const p=(PL()&&PL().profile)||{level:"deb",goal:"muscle",days:3,dur:60,equip:"gym",avoid:[],prio:[],must:[],never:[]};cfDraft=JSON.parse(JSON.stringify(p));
-  document.querySelectorAll("#coachForm .cf-pick input").forEach(i=>i.value="");cfDraft.notes="";cfDraft.avoidTxt="";$("cfNotes").value="";$("cfAvoidTxt").value=""; // v43 : textes libres envoyés à Claude, jamais pré-remplis ensuite
-  cfRender();$("coachErr").hidden=true;$("coachSheet").hidden=false}
-// v43 : nombre de précisions facultatives remplies (résumé du bloc replié)
-const cfOptN=()=>["prio","avoid","must","never"].reduce((n,k)=>n+((cfDraft[k]||[]).length?1:0),0)+(String(cfDraft.notes||"").trim()?1:0)+(String(cfDraft.avoidTxt||"").trim()?1:0);
-function cfRender(){{const n=cfOptN();$("cfMoreSum").textContent=n?`${n} ${L(n>1?"précisions":"précision")}`:L("facultatif")}
-  document.querySelectorAll("#coachForm [data-cf]").forEach(g=>{const k=g.dataset.cf,v=cfDraft[k];g.querySelectorAll("[data-v]").forEach(b=>b.setAttribute("aria-pressed",String(Array.isArray(v)?v.includes(b.dataset.v):String(v)===b.dataset.v)))});
-  document.querySelectorAll("#coachForm .cf-pick").forEach(box=>{const k=box.dataset.cfx,a=cfDraft[k]||[];
-    if(shIsl("cfSel")){try{window.SCIslands.cfSel(box.querySelector(".cf-sel"),{names:a,i18n:agI18n()});cfSearch(box);return}catch(e){reportErr("island cfSel: "+(e&&e.message))}}
-    box.querySelector(".cf-sel").innerHTML=a.map(n=>`<span class="pill on cf-chip"><span class="notr">${esc(n)}</span><button type="button" class="x" data-cfrm="${esc(n)}" aria-label="${L("Retirer")}"><span class="gi gi-close" aria-hidden="true"></span></button></span>`).join("");cfSearch(box)})}
-// v42 : recherche d'exercices (sans accents, un morceau de mot suffit) pour « je veux absolument » / « je ne veux pas du tout »
-const cfFold=x=>String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
-function cfSearch(box){const q=cfFold(box.querySelector("input").value).trim(),k=box.dataset.cfx,a=cfDraft[k]||[],res=box.querySelector(".cf-res");
-  const hits=q?EXDB.filter(e=>!a.includes(e.n)&&q.split(/\s+/).every(x=>cfFold(e.n+" "+MUS[e.m]+" "+e.part).includes(x))).slice(0,8):[];
-  if(shIsl("cfRes")){try{window.SCIslands.cfRes(res,{q:!!q,hits:hits.map(e=>({n:e.n,grp:e.grp,p:!!e.p})),i18n:agI18n()});return}catch(e){reportErr("island cfRes: "+(e&&e.message));try{window.SCIslands.unmount(res)}catch(_){}}}
-  if(!q){res.innerHTML="";return}
-  res.innerHTML=hits.length?hits.map(e=>`<button type="button" class="cf-hit" data-cfadd="${esc(e.n)}"><span class="notr">${esc(e.n)}</span><small>${esc(L(e.grp))}${e.p?` · ${L("prioritaire")}`:""}</small></button>`).join(""):`<div class="small muted">${L("Aucun exercice trouvé")}</div>`}
-$("coachForm").addEventListener("input",e=>{const box=e.target.closest(".cf-pick");if(box)cfSearch(box);
-  if(e.target.id==="cfNotes"||e.target.id==="cfAvoidTxt"){cfDraft[e.target.id==="cfNotes"?"notes":"avoidTxt"]=e.target.value.slice(0,600);const n=cfOptN();$("cfMoreSum").textContent=n?`${n} ${L(n>1?"précisions":"précision")}`:L("facultatif")}});
-$("coachForm").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.closest(".cf-pick")){e.preventDefault();const f=e.target.closest(".cf-pick").querySelector("[data-cfadd]");if(f)f.click()}});
-$("coachForm").addEventListener("click",e=>{const ad=e.target.closest("[data-cfadd]"),rm=e.target.closest("[data-cfrm]");
-  if(ad){const box=ad.closest(".cf-pick"),k=box.dataset.cfx,o=k==="must"?"never":"must",n=ad.dataset.cfadd;cfDraft[k]=[...new Set([...(cfDraft[k]||[]),n])];cfDraft[o]=(cfDraft[o]||[]).filter(x=>x!==n);box.querySelector("input").value="";cfRender();return}
-  if(rm){const k=rm.closest(".cf-pick").dataset.cfx;cfDraft[k]=(cfDraft[k]||[]).filter(x=>x!==rm.dataset.cfrm);cfRender();return}
-  const b=e.target.closest("[data-cf] [data-v]");if(!b)return;const g=b.closest("[data-cf]"),k=g.dataset.cf,v=b.dataset.v;
-  if(g.classList.contains("cf-multi")){const a=cfDraft[k]||(cfDraft[k]=[]);cfDraft[k]=a.includes(v)?a.filter(x=>x!==v):[...a,v]}else cfDraft[k]=/^\d+$/.test(v)?+v:v;cfRender()});
-$("coachForm").addEventListener("submit",async e=>{e.preventDefault();const p=cfDraft,withAi=!(e.submitter&&e.submitter.dataset.cfgo==="app");
-  if(!p.level||!p.goal||!p.days||!p.dur||!p.equip){$("coachErr").textContent=L("Réponds aux cinq premières questions.");$("coachErr").hidden=false;return}
-  p.notes=String(p.notes||"").trim();p.avoidTxt=String(p.avoidTxt||"").trim();
-  const old=PL();p.remarks=(old&&old.profile&&old.profile.remarks)||[];if(p.notes&&!p.remarks.some(r=>r.text===p.notes))p.remarks=[...p.remarks,{at:new Date().toISOString(),text:p.notes}].slice(-10);
-  // v43 : le programme de l'app est toujours créé (il sert de base, et de secours si Claude ne répond pas)
-  planApply(coachBuild(p));
-  // v76 : avec Sid'Bot, le programme de l'app est créé tout de suite, puis Sid'Bot l'explique et propose des ajustements (il ne le réécrit pas seul)
-  if(withAi){save();$("coachSheet").hidden=true;renderMuscu();toast("Ton programme est prêt");aiHandoff(coachPrompt("new"),"muscu",{send:true})}
-  else{save();$("coachSheet").hidden=true;renderMuscu();toast("Ton programme est prêt")}});
+function coachOpen(o){muqOpen(o)} // v77 : ouvre le parcours « Créer mon programme »
 // v76 : demandes envoyées à Sid'Bot (le programme suivi part dans le contexte « Ton programme de musculation ») : il explique et propose, la personne décide
 const GOALS={muscle:["prendre du muscle","build muscle"],force:["gagner en force","get stronger"],gras:["perdre du gras","lose fat"],forme:["être en forme","get fit"],endu:["gagner en endurance","build endurance"]};
 function coachPrompt(kind,remark){const p=(PL()&&PL().profile)||cfDraft||{},li=LANG==="en"?1:0,g=(GOALS[p.goal]||GOALS.muscle)[li];
@@ -2583,6 +2555,173 @@ async function coachAdjust(text){text=String(text||"").trim();if(!text){toast("�
   if(!(await nuConsent()))return;
   const pr=pl.profile||(pl.profile={});pr.remarks=[...(pr.remarks||[]),{at:new Date().toISOString(),text:text.slice(0,600)}].slice(-10);pl.upd=Date.now();M().upd=Date.now();save();renderMuscu();
   aiHandoff(coachPrompt("adjust",text.slice(0,600)),"muscu",{send:true})}
+/* ---------- v77 : « Créer mon programme » — parcours de questions, récapitulatif, aperçu, activation (lot M3, Claude Code) ---------- */
+// Le moteur (muBuild, muAlternatives) est dans 23b (lot M1, Codex) ; la génération par Sid'Bot passe par la fonction « sidbot » (task "programme", lot M2).
+// Réponses par compte : data.prefs.muDraft = {v:1, answers, step, at} (synchronisé avec le compte, donc séparé entre personnes).
+// Rien n'est activé sans aperçu ni confirmation ; l'ancien programme est archivé (ses séances et leur historique restent dans « Mes séances »).
+const MUQ_GOALS=[["muscle","Prendre du muscle"],["force","Gagner en force"],["gras","Perdre du gras"],["forme","Être en forme"],["endu","Gagner en endurance"]];
+const MUQ_LEVELS=[["deb","Débutant","moins de 6 mois de pratique"],["inter","Intermédiaire","6 mois à 2 ans"],["conf","Confirmé","plus de 2 ans, technique sûre"]];
+const MUQ_PLACES=[["home","À la maison"],["gym","En salle"],["outdoor","Dehors"]];
+const MUQ_EQUIP=[["none","Rien (poids du corps)"],["bands","Élastiques"],["dumbbells","Haltères"],["kettlebell","Kettlebell"],["bench","Banc"],["pullup","Barre de traction"],["barbell","Barre et disques"]];
+const MUQ_ZONES=[["shoulder","Épaules"],["back","Bas du dos"],["knee","Genoux"],["wrist","Poignets"],["hip","Hanches"]];
+const MUQ_PAIN=[["none","Non"],["some","Une gêne légère"],["yes","Oui, une douleur"]];
+const MUQ_OTHER=[["run","Course à pied"],["bike","Vélo"],["swim","Natation"],["team","Sport collectif"],["combat","Sport de combat"],["walk","Beaucoup de marche"]];
+const MUQ_DUR=[20,30,45,60,75,90];
+const muqLbl=(list,v)=>{const x=list.find(a=>a[0]===v);return x?L(x[1]):""};
+// étapes : id, titre, utilité (une phrase), requise ?, condition d'affichage
+const MUQ_STEPS=[
+  {id:"goal",t:"Quel est ton objectif principal ?",why:"Il règle les répétitions, les repos et la progression.",req:a=>!!a.goal},
+  {id:"level",t:"Quelle est ton expérience en musculation ?",why:"Elle décide du nombre d'exercices et de la difficulté des mouvements.",req:a=>!!a.level},
+  {id:"freq",t:"Combien de séances par semaine, et combien de temps ?",why:"Le programme tient dans ce temps-là, échauffement compris.",req:a=>!!a.days&&!!a.dur},
+  {id:"place",t:"Où vas-tu t'entraîner ?",why:"On ne te propose que des exercices faisables là où tu es.",req:a=>!!a.place},
+  {id:"equip",t:"Quel matériel as-tu ?",why:"Coche tout ce qui est disponible ; sans rien, le programme se fait au poids du corps.",req:a=>(a.equip||[]).length>0,show:a=>a.place!=="gym"},
+  {id:"prefs",t:"Des exercices à privilégier ou à éviter ?",why:"Facultatif : tes exclusions sont toujours respectées.",opt:true},
+  {id:"body",t:"Des zones à ménager ?",why:"Facultatif. Sert seulement à éviter certains mouvements ; ce n'est pas un avis médical.",opt:true},
+  {id:"other",t:"Pratiques-tu d'autres sports ?",why:"Facultatif. La récupération en tient compte (moins de jambes lourdes avant une course, par exemple).",opt:true},
+  {id:"notes",t:"Une précision ?",why:"Facultatif. Utilisée seulement par Sid'Bot quand tu crées avec lui.",opt:true},
+  {id:"recap",t:"Récapitulatif",why:"Vérifie, corrige une réponse si besoin, puis crée ton programme."}];
+const muqSteps=a=>MUQ_STEPS.filter(s=>!s.show||s.show(a));
+// réponses de départ : brouillon en cours, sinon profil du programme actuel (ancien format compris), sinon valeurs courantes
+function muqFromProfile(p){p=p||{};const eq=p.equip;
+  return {v:1,goal:p.goal||data.prefs.muGoal||"",level:p.level||"",days:+p.days||0,dur:+p.dur||0,
+    place:p.place||(eq==="gym"?"gym":eq==="db"||eq==="bw"?"home":""),
+    equip:Array.isArray(p.equip)?p.equip.slice():eq==="db"?["dumbbells"]:eq==="bw"?["none"]:[],
+    prefer:(p.prefer||p.must||[]).slice(0,12),avoidEx:(p.avoidEx||p.never||[]).slice(0,20),avoidZones:(p.avoidZones||p.avoid||[]).slice(0,8),
+    pain:p.pain||"",other:(p.other||[]).slice(0,6),notes:typeof p.notes==="string"?p.notes.slice(0,600):""}}
+let muq=null; // {answers, step, back:"recap"|null, preview:{plan,why,warnings,est,src}, busy, req}
+function muqSave(){data.prefs.muDraft={v:1,answers:muq.answers,step:muq.step,at:new Date().toISOString()};save()}
+function muqOpen(opt){opt=opt||{};const d=data.prefs.muDraft;
+  const a=opt.fresh||!d||!d.answers?muqFromProfile(PL()&&PL().profile):d.answers;
+  muq={answers:JSON.parse(JSON.stringify(a)),step:opt.step||(!opt.fresh&&d&&d.step)||"goal",back:null,preview:null,busy:false,req:null,q:""};
+  if(opt.step==="recap")muq.step="recap";
+  $("coachSheet").hidden=false;muqRender()}
+function muqClose(){if(muq&&!muq.preview)muqSave();$("coachSheet").hidden=true}
+function muqGo(id){muq.step=id;muqSave();muqRender();const f=$("muqBody");if(f)f.scrollTop=0;setTimeout(()=>{const h=$("muqTitle");if(h)h.focus({preventScroll:true})},30)}
+function muqNext(){const st=muqSteps(muq.answers),i=st.findIndex(s=>s.id===muq.step);if(muq.back==="recap"){muq.back=null;muqGo("recap");return}muqGo(st[Math.min(st.length-1,i+1)].id)}
+function muqPrev(){const st=muqSteps(muq.answers),i=st.findIndex(s=>s.id===muq.step);if(i>0)muqGo(st[i-1].id)}
+// ---- rendu ----
+const muqChoice=(k,list,v,cols)=>`<div class="seg muq-seg" role="group" style="grid-template-columns:repeat(${cols||2},minmax(0,1fr))">${list.map(([id,lbl,sub])=>`<button type="button" data-muq="${k}" data-v="${id}" aria-pressed="${String(v)===String(id)}">${esc(L(lbl))}${sub?`<small>${esc(L(sub))}</small>`:""}</button>`).join("")}</div>`;
+const muqMulti=(k,list,vals)=>`<div class="chips muq-chips">${list.map(([id,lbl])=>`<button type="button" class="pill" data-muqm="${k}" data-v="${id}" aria-pressed="${(vals||[]).includes(id)}">${esc(L(lbl))}</button>`).join("")}</div>`;
+function muqExNames(){return ((window.SIDFIT_EXERCICES&&window.SIDFIT_EXERCICES.groupes)||[]).flatMap(g=>g.exercices.map(x=>x.nom))}
+function muqPicker(k,label){const sel=muq.answers[k]||[],q=muq.q&&muq.qk===k?muq.q:"",n=norm(q);
+  const hits=n?muqExNames().filter(x=>norm(x).includes(n)&&!sel.includes(x)).slice(0,8):[];
+  return `<div class="muq-pick"><label class="eyebrow" for="muqQ-${k}">${L(label)}</label><input type="search" id="muqQ-${k}" class="search" data-muqq="${k}" value="${esc(q)}" placeholder="${L("Rechercher un exercice")}" autocomplete="off" enterkeyhint="search">
+    ${hits.length?`<div class="muq-hits">${hits.map(h=>`<button type="button" class="muq-hit" data-muqadd="${k}" data-v="${esc(h)}"><span class="notr">${esc(h)}</span></button>`).join("")}</div>`:n?`<div class="small muted">${L("Aucun exercice trouvé")}</div>`:""}
+    <div class="chips">${sel.map(x=>`<span class="pill on"><span class="notr">${esc(x)}</span><button type="button" class="x" data-muqrm="${k}" data-v="${esc(x)}" aria-label="${L("Retirer")} ${esc(x)}"><span class="gi gi-close" aria-hidden="true"></span></button></span>`).join("")}</div></div>`}
+function muqStepBody(id,a){
+  if(id==="goal")return muqChoice("goal",MUQ_GOALS,a.goal,2);
+  if(id==="level")return muqChoice("level",MUQ_LEVELS,a.level,1);
+  if(id==="freq")return `<span class="eyebrow">${L("Séances par semaine")}</span>${muqChoice("days",[1,2,3,4,5,6].map(n=>[String(n),String(n)]),a.days,6)}
+    <span class="eyebrow">${L("Durée d'une séance")}</span>${muqChoice("dur",MUQ_DUR.map(n=>[String(n),n+" min"]),a.dur,3)}`;
+  if(id==="place")return muqChoice("place",MUQ_PLACES,a.place,3);
+  if(id==="equip")return muqMulti("equip",MUQ_EQUIP,a.equip);
+  if(id==="prefs")return muqPicker("prefer","À privilégier")+muqPicker("avoidEx","À éviter");
+  if(id==="body")return `${muqMulti("avoidZones",MUQ_ZONES,a.avoidZones)}<span class="eyebrow">${L("As-tu une douleur en ce moment ?")}</span>${muqChoice("pain",MUQ_PAIN,a.pain,3)}
+    ${a.pain==="yes"?`<p class="muq-warn" role="note">${IC("alert")||""}<span>${L("En cas de douleur, demande d'abord l'avis d'un médecin ou d'un kinésithérapeute. Le programme évitera les zones cochées, sans adaptation médicale.")}</span></p>`:""}`;
+  if(id==="other")return muqMulti("other",MUQ_OTHER,(a.other||[]).map(o=>o.sport||o));
+  if(id==="notes")return `<label class="eyebrow" for="muqNotes">${L("Ta précision")}</label><textarea id="muqNotes" rows="4" maxlength="600" placeholder="${L("Ex. je veux des abdos à chaque séance")}">${esc(a.notes||"")}</textarea>`;
+  if(id==="recap"){const rows=[["goal","Objectif",muqLbl(MUQ_GOALS,a.goal)],["level","Expérience",muqLbl(MUQ_LEVELS,a.level)],["freq","Rythme",a.days&&a.dur?`${a.days} × ${a.dur} min ${L("par semaine")}`:""],
+      ["place","Lieu",muqLbl(MUQ_PLACES,a.place)],...(a.place!=="gym"?[["equip","Matériel",(a.equip||[]).map(e=>muqLbl(MUQ_EQUIP,e)).join(", ")]]:[]),
+      ["prefs","Préférences",[...(a.prefer||[]).map(x=>"+ "+x),...(a.avoidEx||[]).map(x=>"− "+x)].join(", ")],["body","Zones à ménager",[...(a.avoidZones||[]).map(z=>muqLbl(MUQ_ZONES,z)),a.pain&&a.pain!=="none"?muqLbl(MUQ_PAIN,a.pain):""].filter(Boolean).join(", ")],
+      ["other","Autres sports",(a.other||[]).map(o=>muqLbl(MUQ_OTHER,o.sport||o)).join(", ")],["notes","Précision",a.notes||""]];
+    const missing=muqSteps(a).filter(s=>s.req&&!s.req(a));
+    return `<dl class="muq-recap">${rows.map(([s,k,v])=>`<div class="muq-rr"><dt>${L(k)}</dt><dd class="notr">${v?esc(v):`<span class="muted">${L("Non renseigné")}</span>`}</dd><button type="button" class="linkbtn" data-muqedit="${s}" aria-label="${L("Modifier")} : ${L(k)}">${L("Modifier")}</button></div>`).join("")}</dl>
+      ${missing.length?`<p class="muq-warn" role="alert">${IC("alert")||""}<span>${L("Il manque une réponse")} : ${missing.map(s=>L(s.t)).join(" ; ")}</span></p>`:""}
+      <div class="muq-gen">${sbReadyForProgram()?`<button type="button" class="btn" data-muqgen="ia" ${missing.length||muq.busy?"disabled":""}>${L("Créer avec Sid'Bot")}</button>`:""}
+        <button type="button" class="btn ${sbReadyForProgram()?"ghost":""}" data-muqgen="app" ${missing.length||muq.busy?"disabled":""}>${L(sbReadyForProgram()?"Créer avec les règles de l'app":"Créer mon programme")}</button></div>
+      <p class="small muted">${L("Sid'Bot compose à partir de tes réponses ; les règles de l'app fonctionnent sans connexion. Dans les deux cas, tu vois l'aperçu avant d'activer.")}</p>
+      ${PL()?`<button type="button" class="linkbtn" data-muqsaveprefs="1">${L("Enregistrer mes réponses sans changer de programme")}</button>`:""}`}
+  return ""}
+function muqRender(){const box=$("muqBody");if(!box)return;
+  if(muq.preview){muqRenderPreview();return}
+  const st=muqSteps(muq.answers),i=Math.max(0,st.findIndex(s=>s.id===muq.step)),s=st[i];
+  $("coachTitle").textContent=L("Créer mon programme");
+  box.innerHTML=`<div class="muq-prog"><span class="small muted">${s.id==="recap"?L("Dernière étape"):`${L("Étape")} ${i+1} ${L("sur")} ${st.length-1}`}</span><span class="muq-bar" aria-hidden="true"><i style="width:${Math.round((i+1)/st.length*100)}%"></i></span></div>
+    <h2 class="muq-t" id="muqTitle" tabindex="-1">${L(s.t)}</h2><p class="small muted muq-why">${L(s.why)}</p>
+    <div class="muq-body">${muqStepBody(s.id,muq.answers)}</div>
+    ${muq.busy?`<div class="muq-busy" role="status"><span class="spin" aria-hidden="true"></span>${L(muq.busy==="ia"?"Sid'Bot compose ton programme…":"Création du programme…")}</div>`:""}
+    ${muq.err?`<p class="muq-warn" role="alert">${IC("alert")||""}<span>${esc(L(muq.err))}</span>${muq.errApp?`<button type="button" class="linkbtn" data-muqgen="app">${L("Créer avec les règles de l'app")}</button>`:""}</p>`:""}
+    ${s.id!=="recap"?`<div class="muq-nav"><button type="button" class="btn ghost" data-muqprev="1" ${i?"":"disabled"}>${L("Retour")}</button>
+      <button type="button" class="btn" data-muqnext="1" ${s.req&&!s.req(muq.answers)?"disabled":""}>${L(muq.back==="recap"?"Revenir au récapitulatif":s.opt&&!muqHas(s.id)?"Passer":"Suivant")}</button></div>`:`<div class="muq-nav"><button type="button" class="btn ghost" data-muqprev="1">${L("Retour")}</button></div>`}`}
+function muqHas(id){const a=muq.answers;return id==="prefs"?(a.prefer||[]).length+(a.avoidEx||[]).length>0:id==="body"?(a.avoidZones||[]).length>0||!!a.pain:id==="other"?(a.other||[]).length>0:id==="notes"?!!String(a.notes||"").trim():true}
+// ---- génération ----
+const sbReadyForProgram=()=>!!(session&&!isTrial()&&navigator.onLine);
+async function muqGenerate(mode){if(muq.busy)return;const a=muq.answers,reqId=uid();muq.req=reqId;muq.err="";muq.errApp=false;muq.busy=mode;muqRender();
+  try{let r;
+    if(mode==="ia"){if(!(await nuConsent())){muq.busy=false;muqRender();return}r=await muqAskSidbot(a,reqId)}
+    else{if(typeof muBuild!=="function")throw Object.assign(new Error("Le créateur de programme n'est pas disponible dans cette version."),{fatal:true});r=muBuild(a,{locale:LANG==="en"?"en":"fr"});r.src="app"}
+    if(muq.req!==reqId)return; // une demande plus récente a pris le relais (double toucher, nouvel essai)
+    if(!r||!r.plan||!Array.isArray(r.plan.days)||!r.plan.days.length)throw new Error("Le programme reçu est incomplet.");
+    muq.preview={plan:r.plan,why:r.why||[],warnings:r.warnings||[],est:r.est||[],src:r.src||mode};muq.busy=false;muqRender()}
+  catch(e){if(muq.req!==reqId)return;muq.busy=false;muq.err=e&&e.message?e.message:"Création impossible pour l'instant.";muq.errApp=mode==="ia"&&typeof muBuild==="function";muqRender()}}
+async function muqAskSidbot(a,reqId,change){const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),60000);
+  try{const r=await fetch(SUPABASE_URL+"/functions/v1/sidbot",{method:"POST",signal:ctl.signal,headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",Authorization:"Bearer "+await token()},
+      body:JSON.stringify({app:"forme",task:"programme",locale:LANG==="en"?"en":"fr",requestId:reqId,answers:a,...(change?{change:String(change).slice(0,600)}:{})})});
+    let j=null;try{j=await r.json()}catch(e){}
+    if(j&&j.usage)sbUse=j.usage;
+    if(!r.ok||!j||j.error){const code=(j&&j.error)||(r.status===429?"rate":r.status===401?"auth":"unavailable");throw new Error(SB_ERR[code]||SB_ERR.unavailable)}
+    return {...j,src:"ia"}}
+  catch(e){if(e&&e.name==="AbortError")throw new Error(SB_ERR.timeout);if(e instanceof TypeError)throw new Error(SB_ERR.offline);throw e}
+  finally{clearTimeout(tm)}}
+// ---- aperçu ----
+const muqRest=s=>{s=+s||0;return s>=60?(Math.round(s/60*10)/10+"").replace(".",",")+" min":s+" s"};
+const muqRir=r=>{const n=parseInt(r,10);return isFinite(n)?`${L("garde")} ${n} ${L(n>1?"répétitions en réserve":"répétition en réserve")}`:""};
+function muqRenderPreview(){const pv=muq.preview,box=$("muqBody"),old=PL();$("coachTitle").textContent=L("Aperçu du programme");
+  box.innerHTML=`<p class="small muted">${L(pv.src==="ia"?"Composé par Sid'Bot à partir de tes réponses, vérifié par l'app.":"Créé par les règles de l'app à partir de tes réponses.")} ${L("Rien n'est activé tant que tu n'as pas confirmé.")}</p>
+    ${pv.why.length?`<div class="muq-why-box"><b>${L("Pourquoi cette organisation")}</b><ul>${pv.why.map(w=>`<li>${esc(w)}</li>`).join("")}</ul></div>`:""}
+    ${pv.warnings.map(w=>`<p class="muq-warn" role="note">${IC("alert")||""}<span>${esc(w)}</span></p>`).join("")}
+    <ol class="muq-days">${pv.plan.days.map((d,di)=>`<li class="muq-day"><div class="muq-dh"><b class="notr">${esc(d.name||L("Séance")+" "+(di+1))}</b>${pv.est[di]?`<span class="small muted">≈ ${pv.est[di]} min</span>`:""}</div>
+      <ul class="muq-ex">${(d.ex||[]).map((e,ei)=>`<li><div class="grow"><span class="notr muq-exn">${esc(e.name)}</span><span class="small muted">${esc([e.sets?`${e.sets} × ${e.reps||""}`.trim():"",e.rest?`${L("repos")} ${muqRest(e.rest)}`:"",muqRir(e.rir)].filter(Boolean).join(" · "))}</span>${e.note?`<span class="small muted notr">${esc(e.note)}</span>`:""}</div>
+        <button type="button" class="linkbtn" data-muqalt="${di}:${ei}">${L("Remplacer")}</button>${muq.alt===di+":"+ei?muqAltList(e):""}</li>`).join("")}</ul></li>`).join("")}</ol>
+    <p class="small muted">${L("Charges : commence léger, avec une charge que tu peux soulever 2 à 3 répétitions de plus que prévu ; augmente quand toutes les séries atteignent le haut de la fourchette.")} ${L("Ce programme n'est pas un avis médical.")}</p>
+    ${sbReadyForProgram()?`<div class="muq-change"><label class="eyebrow" for="muqChange">${L("Demander une modification à Sid'Bot")}</label><textarea id="muqChange" rows="2" maxlength="600" placeholder="${L("Ex. remplace la séance jambes du vendredi par du haut du corps")}"></textarea><button type="button" class="btn ghost" data-muqchange="1" ${muq.busy?"disabled":""}>${L("Demander")}</button></div>`:""}
+    ${muq.busy?`<div class="muq-busy" role="status"><span class="spin" aria-hidden="true"></span>${L("Sid'Bot modifie le programme…")}</div>`:""}
+    ${muq.err?`<p class="muq-warn" role="alert">${IC("alert")||""}<span>${esc(L(muq.err))}</span></p>`:""}
+    ${muq.confirm?`<div class="muq-confirm" role="alertdialog" aria-labelledby="muqCfT"><b id="muqCfT">${L("Remplacer ton programme actuel ?")}</b><p class="small">${L("Ton programme actuel")} « <span class="notr">${esc((old&&old.name)||L("Mon programme"))}</span> » ${L("sera rangé dans « Mes séances » comme programme précédent : ses séances et ton historique sont conservés. Le nouveau programme devient ton programme suivi.")}</p>
+      <div class="two"><button type="button" class="btn ghost" data-muqcancel="1">${L("Annuler")}</button><button type="button" class="btn" data-muqactivate="2">${L("Oui, activer")}</button></div></div>`:""}
+    <div class="muq-nav"><button type="button" class="btn ghost" data-muqback="1">${L("Modifier mes réponses")}</button><button type="button" class="btn" data-muqactivate="1" ${muq.busy?"disabled":""}>${L("Enregistrer et activer")}</button></div>`}
+function muqAltList(e){const alts=typeof muAlternatives==="function"?muAlternatives(e.name,muq.answers):[];
+  return `<div class="muq-alts" role="group" aria-label="${L("Remplacer par")}">${alts.length?alts.slice(0,6).map(n=>`<button type="button" class="pill" data-muqpick="${esc(n)}"><span class="notr">${esc(n)}</span></button>`).join(""):`<span class="small muted">${L("Aucune alternative compatible avec ton matériel et tes exclusions.")}</span>`}</div>`}
+// ---- activation : archive l'ancien programme, jamais de remplacement silencieux ----
+function muqActivate(){const pv=muq.preview;if(!pv||muq.activating)return;muq.activating=true;
+  try{const a=muq.answers,pl={...pv.plan,id:pv.plan.id||uid(),v:undefined,profile:{...a},at:new Date().toISOString(),upd:Date.now(),src:pv.src==="ia"?"ia":"app"};delete pl.v;
+    planApply(pl);data.prefs.muGoal=a.goal;delete data.prefs.muDraft;save();
+    $("coachSheet").hidden=true;muq=null;renderMuscu();toast("Programme activé : tes anciennes séances restent dans « Mes séances »")}
+  finally{if(muq)muq.activating=false}}
+// ---- événements ----
+$("muqBody").addEventListener("click",e=>{const t=e.target.closest("button");if(!t||!muq)return;const a=muq.answers,d=t.dataset;
+  if(d.muq){const k=d.muq,v=d.v;a[k]=k==="days"||k==="dur"?+v:v;if(k==="place"&&v==="gym")a.equip=[];muqSave();muqRender();return}
+  if(d.muqm){const k=d.muqm,v=d.v;if(k==="other"){const cur=(a.other||[]).map(o=>o.sport||o);a.other=(cur.includes(v)?cur.filter(x=>x!==v):[...cur,v]).map(s=>({sport:s}))}
+    else{let cur=a[k]||[];if(k==="equip"&&v==="none")cur=cur.includes("none")?[]:["none"];else{cur=cur.filter(x=>x!=="none"||k!=="equip");cur=cur.includes(v)?cur.filter(x=>x!==v):[...cur,v]}a[k]=cur}
+    muqSave();muqRender();return}
+  if(d.muqadd){const k=d.muqadd;a[k]=[...(a[k]||[]),d.v].slice(0,20);if(k==="prefer")a.avoidEx=(a.avoidEx||[]).filter(x=>x!==d.v);else a.prefer=(a.prefer||[]).filter(x=>x!==d.v);muq.q="";muqSave();muqRender();const i=$("muqQ-"+k);if(i)i.focus();return}
+  if(d.muqrm){a[d.muqrm]=(a[d.muqrm]||[]).filter(x=>x!==d.v);muqSave();muqRender();return}
+  if(d.muqnext){if(muq.step==="notes"){const n=$("muqNotes");if(n)a.notes=n.value.trim().slice(0,600)}muqNext();return}
+  if(d.muqprev){if(muq.step==="notes"){const n=$("muqNotes");if(n)a.notes=n.value.trim().slice(0,600)}muq.back=null;muqPrev();return}
+  if(d.muqedit){muq.back="recap";muqGo(d.muqedit);return}
+  if(d.muqgen){muqGenerate(d.muqgen);return}
+  if(d.muqsaveprefs){const pl=PL();if(pl){pl.profile={...(pl.profile||{}),...a};pl.upd=Date.now();M().upd=Date.now()}data.prefs.muGoal=a.goal;delete data.prefs.muDraft;save();$("coachSheet").hidden=true;muq=null;renderMuscu();toast("Préférences enregistrées");return}
+  if(d.muqback){muq.preview=null;muq.confirm=false;muq.err="";muqGo("recap");return}
+  if(d.muqalt){muq.alt=muq.alt===d.muqalt?null:d.muqalt;muqRender();return}
+  if(d.muqpick){const [di,ei]=String(muq.alt||"").split(":").map(Number),ex=muq.preview.plan.days[di]&&muq.preview.plan.days[di].ex[ei];if(ex){ex.name=d.muqpick;delete ex.note}muq.alt=null;muqRender();return}
+  if(d.muqchange){const c=$("muqChange"),txt=c?c.value.trim():"";if(!txt){toast("Écris d'abord ta demande");return}if(muq.busy)return;const reqId=uid();muq.req=reqId;muq.busy="ia";muq.err="";muqRender();
+    muqAskSidbot(a,reqId,txt).then(r=>{if(muq.req!==reqId)return;if(!r.plan||!Array.isArray(r.plan.days)||!r.plan.days.length)throw new Error("Le programme reçu est incomplet.");muq.preview={plan:r.plan,why:r.why||[],warnings:r.warnings||[],est:r.est||[],src:"ia"};muq.busy=false;muqRender()})
+      .catch(err=>{if(muq.req!==reqId)return;muq.busy=false;muq.err=err.message||"Modification impossible pour l'instant.";muqRender()});return}
+  if(d.muqactivate){if(PL()&&d.muqactivate==="1"){muq.confirm=true;muqRender();setTimeout(()=>{const b=document.querySelector('[data-muqactivate="2"]');if(b)b.focus()},30);return}muqActivate();return}
+  if(d.muqcancel){muq.confirm=false;muqRender();return}});
+$("muqBody").addEventListener("input",e=>{const i=e.target.closest("[data-muqq]");if(!i||!muq)return;muq.q=i.value;muq.qk=i.dataset.muqq;const pos=i.selectionStart;muqRender();const n=$("muqQ-"+muq.qk);if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}});
+$("muqBody").addEventListener("change",e=>{if(e.target.id==="muqNotes"&&muq){muq.answers.notes=e.target.value.trim().slice(0,600);muqSave()}});
+// ---- carte « Mon programme » sur l'écran principal (remplace le bloc permanent « Mon objectif ») ----
+function muCoachCard(box){box.hidden=false;const pl=PL(),ds=PLD(),d=data.prefs.muDraft;
+  if(!pl){box.innerHTML=`<div class="card coach-card muq-card"><div class="grow"><b>${L("Ton programme sur mesure")}</b><div class="small muted">${L("Quelques questions rapides, un aperçu, puis tes séances sont prêtes. Tu peux t'arrêter et reprendre plus tard.")}</div></div>
+    <div class="muq-card-acts"><button type="button" class="btn" data-coach="new">${L(d&&d.answers?"Reprendre mon programme":"Créer mon programme")}</button>${d&&d.answers?`<button type="button" class="linkbtn" data-coach="restart">${L("Recommencer")}</button>`:""}</div></div>`;return}
+  const p=pl.profile||{},nx=coachNext();
+  box.innerHTML=`<div class="card coach-card coach-on muq-card"><div class="coach-top"><div class="grow"><span class="eyebrow">${L("Mon programme")}</span><b>${esc(muqLbl(MUQ_GOALS,p.goal)||L("Sur mesure"))}</b>
+      <div class="small muted">${[p.level?muqLbl(MUQ_LEVELS,p.level):"",`${ds.length} ${L(ds.length>1?"séances":"séance")}`,p.days&&p.dur?`${p.days} × ${p.dur} min`:""].filter(Boolean).map(esc).join(" · ")}</div></div>
+      <button type="button" class="pen" data-coach="more" aria-label="${L("Plus d'actions")}">${MORE}</button></div>
+    ${nx?`<div class="muq-next"><span class="small muted">${L("Prochaine séance")}</span><b class="notr">${esc(nx.name||"")}</b><button type="button" class="btn" data-coach="go" data-se="${esc(nx.id)}">${L("Ouvrir la séance")}</button></div>`:""}
+    <div class="muq-card-acts"><button type="button" class="linkbtn" data-coach="prefs">${L("Objectif et préférences")}</button><button type="button" class="linkbtn" data-coach="new">${L(d&&d.answers?"Reprendre mon nouveau programme":"Créer un nouveau programme")}</button></div></div>`}
+
 /* ---------- v47 : objectif visible, séries conseillées, types de séances, demande à Sid'Bot (#13, #14, #17) ---------- */
 // objectif d'entraînement (data.prefs.muGoal, synchronisé ; repris du programme suivi s'il n'est pas réglé)
 const MU_GOALS={force:"Force",muscle:"Prise de masse",gras:"Sèche",endu:"Endurance",forme:"Forme"};
@@ -2654,7 +2793,8 @@ function exProg(ex){const top=repTop(ex.reps),last=exLastLog(ex.name),g=muGoal()
   if(g==="endu")return L("Haut de la fourchette atteint : réduis le repos, puis augmente la charge");
   if(g==="gras")return "";
   return L("Haut de la fourchette atteint : augmente la charge et repars du bas")}
-function renderMuGoal(){const box=$("muGoal");if(!box)return;const g=muGoal(),keys=["force","muscle","gras","endu"].concat(g==="forme"?["forme"]:[]);
+function renderMuGoal(){const box=$("muGoal");if(!box)return;box.hidden=true;box.innerHTML="";return; // v77 (demande de Sid) : plus de bloc permanent « Mon objectif » ; objectif dans « Objectif et préférences » (data.prefs.muGoal gardé)
+const g=muGoal(),keys=["force","muscle","gras","endu"].concat(g==="forme"?["forme"]:[]);
   // v52 (ticket #3) : dessiné par React (app/src/Small.tsx) ; ancien rendu en secours
   if(window.SCIslands&&window.SCIslands.muGoal&&!window.__noIslands){try{window.SCIslands.muGoal(box,{keys,goal:g,names:MU_GOALS,i18n:{L,MOL,MO,DOWL}});return}catch(e){reportErr("island muGoal: "+(e&&e.message))}}
   box.innerHTML=`<span class="eyebrow">${L("Mon objectif")}</span><div class="seg mu-goal-seg" role="group" aria-label="${L("Mon objectif")}" style="grid-template-columns:repeat(${keys.length},minmax(0,1fr))">${keys.map(k=>`<button type="button" data-mugoal="${k}" aria-pressed="${k===g}">${L(MU_GOALS[k])}</button>`).join("")}</div>
@@ -2753,15 +2893,18 @@ for(const[k,topic,mk,health]of/** @type {[string,string,(q:string)=>string,boole
   t.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();f.requestSubmit()}});
   f.addEventListener("submit",async e=>{e.preventDefault();const q=t.value.trim();if(!q)return;dictStop();
     if(health&&!(await nuConsent()))return;aiHandoff(mk(q.slice(0,1500)),topic,{send:true});t.value="";grow(t)})}
-$("coachClose").addEventListener("click",()=>$("coachSheet").hidden=true);
-$("coachSheet").addEventListener("click",e=>{if(e.target.id==="coachSheet")$("coachSheet").hidden=true});
+$("coachClose").addEventListener("click",()=>muqClose());
+$("coachSheet").addEventListener("click",e=>{if(e.target.id==="coachSheet")muqClose()});
 $("coachBox").addEventListener("click",e=>{
   const b=e.target.closest("[data-coach]");if(!b)return;const k=b.dataset.coach;
-  if(k==="new")coachOpen();
+  if(k==="new")muqOpen();
+  else if(k==="restart"){delete data.prefs.muDraft;save();muqOpen({fresh:true})}
+  else if(k==="prefs")muqOpen({fresh:true,step:"recap"});
+  else if(k==="go"){const el=document.querySelector(`#msList [data-ms="${CSS.escape(b.dataset.se||"")}"]`);if(el){if(el.tagName==="DETAILS")el.open=true;el.scrollIntoView({block:"start",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});const f=el.querySelector("summary,button,input");if(f)f.focus({preventScroll:true})}}
   else if(k==="adjust")coachAdjust($("coRemark").value);
   else if(k==="resend"){const pl=PL(),rm=pl&&pl.profile&&(pl.profile.remarks||[]).slice(-1)[0];aiHandoff(rm&&rm.text!==pl.profile.notes?coachPrompt("adjust",rm.text):coachPrompt("new"),"muscu")}
   else if(k==="unwait"){const pl=PL();if(pl){delete pl.aiWait;pl.upd=Date.now();save();renderMuscu()}}
-  else if(k==="more")openActions(L("Mon programme"),[{l:"Modifier mes réponses",fn:coachOpen},
+  else if(k==="more")openActions(L("Mon programme"),[{l:"Objectif et préférences",fn:()=>muqOpen({fresh:true,step:"recap"})},
     {l:"Demander conseil à Sid'Bot",fn:async()=>{if(!(await nuConsent()))return;aiHandoff(coachPrompt("improve"),"muscu",{send:true})}},
     {l:"Partager le programme",fn:()=>copyText(shareTxt(PLD(),L("Mon programme")),"prog")},
     {l:"Supprimer le programme",danger:true,fn:()=>grpActions(PL().id)}])});

@@ -2738,3 +2738,49 @@ html[data-ds="elan"] #msImport{display:grid;gap:12px;padding:16px}
 html[data-ds="elan"] #v-muscu #msPaste{min-height:min(260px,42vh);max-height:70vh;resize:vertical;padding:12px 14px;line-height:1.5;white-space:pre-wrap;overflow:auto;border-radius:12px}
 html.kb-open[data-ds="elan"] #v-muscu #msPaste{min-height:min(200px,30vh)}
 html[data-ds="elan"] #msImport .two{gap:12px}
+/* v77 : parcours « Créer mon programme » (fenêtre), aperçu, carte de l'écran Musculation */
+.muq-sheet{max-height:92vh;display:flex;flex-direction:column}
+.muq{display:grid;gap:14px;overflow:auto;padding:2px 2px 4px}
+.muq-prog{display:grid;gap:6px}
+.muq-bar{display:block;height:6px;border-radius:3px;background:var(--surface-2,#ececec);overflow:hidden}
+.muq-bar i{display:block;height:100%;background:var(--ink,#1a1a1a);border-radius:3px;transition:width 240ms cubic-bezier(.2,.8,.2,1)}
+.muq-t{font:700 22px/1.2 var(--digits,inherit);margin:4px 0 0;outline:none}
+.muq-t:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:4px}
+.muq-why{margin:-6px 0 0}
+.muq-body{display:grid;gap:12px}
+.muq-seg button{min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 10px;text-align:center;white-space:normal}
+.muq-seg button small{font-size:13px;opacity:.8;font-weight:400}
+html .muq-seg button[aria-pressed="true"],html .muq-chips .pill[aria-pressed="true"]{background:var(--ink,#1a1a1a);color:var(--bg,#fff);border-color:var(--ink,#1a1a1a)}
+.muq-chips{display:flex;flex-wrap:wrap;gap:8px}.muq-chips .pill{min-height:44px;padding:8px 14px}
+.muq-pick{display:grid;gap:8px}
+.muq-hits{display:grid;gap:4px}
+.muq-hit{min-height:44px;text-align:left;padding:8px 12px;border-radius:10px;border:1px solid var(--line,#e1e1e1);background:transparent;color:var(--ink,inherit);font:inherit}
+.muq-warn{display:flex;gap:8px;align-items:flex-start;margin:0;padding:10px 12px;border-radius:12px;border:1px solid var(--warn,#9a5b00);font-size:15px;flex-wrap:wrap}
+.muq-warn svg.i{color:var(--warn,#9a5b00);flex:none;width:20px;height:20px}
+.muq-nav{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:12px;position:sticky;bottom:0;padding-top:8px;background:var(--surface,#fff)}
+.muq-nav .btn{min-height:48px}
+.muq-recap{display:grid;gap:0;margin:0}
+.muq-rr{display:grid;grid-template-columns:minmax(0,9em) minmax(0,1fr) auto;gap:8px 12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line,#e1e1e1)}
+.muq-rr dt{color:var(--muted,#5e5e5e);font-size:14px}.muq-rr dd{margin:0;overflow-wrap:anywhere}
+.muq-rr .linkbtn{min-height:44px}
+@media (max-width:420px){.muq-rr{grid-template-columns:minmax(0,1fr) auto}.muq-rr dt{grid-column:1/-1;margin-bottom:-6px}}
+.muq-gen{display:grid;gap:10px}.muq-gen .btn{min-height:48px}
+.muq-busy{display:flex;gap:10px;align-items:center}
+.muq-why-box{padding:12px 14px;border-radius:12px;background:var(--surface-2,#ececec)}.muq-why-box ul{margin:6px 0 0;padding-left:18px}
+.muq-days{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.muq-day{border:1px solid var(--line,#e1e1e1);border-radius:14px;padding:12px 14px}
+.muq-dh{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:6px}
+.muq-ex{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.muq-ex>li{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;padding:6px 0;border-top:1px solid var(--line,#e1e1e1)}
+.muq-ex>li:first-child{border-top:0}
+.muq-ex .grow{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.muq-exn{font-weight:600}
+.muq-alts{flex-basis:100%;display:flex;flex-wrap:wrap;gap:6px;padding:4px 0}
+.muq-alts .pill{min-height:40px}
+.muq-change{display:grid;gap:8px}
+.muq-confirm{display:grid;gap:10px;padding:14px;border-radius:14px;border:2px solid var(--ink,#1a1a1a)}
+.muq-card .muq-card-acts{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin-top:10px}
+.muq-card .muq-card-acts .linkbtn{min-height:44px}
+.muq-next{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--line,#e1e1e1)}
+.muq-next>span{grid-column:1}.muq-next>b{grid-column:1}.muq-next>.btn{grid-column:2;grid-row:1/3}
+@media (prefers-reduced-motion:reduce){.muq-bar i{transition-duration:1ms}}

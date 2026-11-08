@@ -79,7 +79,7 @@ function seCard(se,letter){const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0
     <div class="ms-body">
       <label class="small muted" style="display:grid;gap:4px">${L("Nom de la séance")}<input data-f="msname" value="${esc(se.name)}" autocomplete="off"></label>
       ${se.exercises.map((ex,i)=>`<div class="ex ex3" data-ex="${ex.id}">
-        <div class="ex-head"><span class="num">${i+1}</span><span class="ex-nm"><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><span class="ex-n notr" aria-hidden="true">${esc(ex.name)}</span></span><button type="button" class="mini ex-help" data-exhelp="1" aria-label="${L("Comment faire cet exercice")}" title="${L("Comment faire cet exercice")}"${exAide(ex.name)?"":" hidden"}>${IC("help")}</button><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">${IC("close")}</button></div>
+        <div class="ex-head"><span class="num">${i+1}</span><span class="ex-nm"><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><span class="ex-n notr" aria-hidden="true">${esc(ex.name)}</span></span><button type="button" class="mini ex-help" data-exhelp="1" aria-label="${L("Voir comment effectuer cet exercice")}" title="${L("Voir comment effectuer cet exercice")}"${exHelpReady(ex.name,ex.ref)?"":" hidden"}>${IC("help")}</button><button type="button" class="linkbtn ex-link small" data-exlink="1"${ex.name&&String(ex.name).trim()&&!exHelpReady(ex.name,ex.ref)?"":" hidden"}>${L("Pas de fiche · associer")}</button><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">${IC("close")}</button></div>
         ${exAdvHtml(ex)}${exPrmHtml(ex)}${(p=>p?`<div class="ex-pro small">${IC("arrowup")} ${esc(p)}</div>`:"")(exProg(ex))}
         <div class="set-rows">${ex.sets.map((st,j)=>`<div class="set-row" data-si="${j}" data-set-state="${muSetState(ex,j,se)}"><span class="set-l"><span class="set-mark" ${muSetComplete(st)?"":"hidden"}>${IC("tick")}</span>${L("Série")} ${j+1}</span>
           <span class="set-field"><input class="set-in" data-f="setkg" value="${esc(exKg(st&&st.kg))}" placeholder="" aria-label="${L("Série")} ${j+1} : kg" autocomplete="off" inputmode="decimal"><span class="set-unit">kg</span></span>
@@ -115,7 +115,7 @@ function msIsland(groups,free){msLast=[groups,free];
   const seVM=(se,letter)=>{const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0),ty=seType(se),T=ty&&SE_T[ty];
     return{id:se.id,name:se.name||"",shown:String(se.name||"").replace(/^(?:Séance|Session|Training)\s+[A-F]\s*·\s*/i,"")||L("Séance"),letter:letter||"",ty:ty||"",tag:T?T[0]:"",open:se.id===msOpenId,
       sub:seSub(se,nS),done:msDoneToday(se),
-      ex:se.exercises.map(ex=>{const a=exAdv(ex.name);return{id:ex.id,name:ex.name||"",help:!!exAide(ex.name),
+      ex:se.exercises.map(ex=>{const a=exAdv(ex.name);return{id:ex.id,name:ex.name||"",help:exHelpReady(ex.name,ex.ref),link:!!(ex.name&&String(ex.name).trim())&&!exHelpReady(ex.name,ex.ref),
         adv:a?{txt:`${L("Conseillé")} (${L(MU_GOALS[muGoal()])}) : `,val:exAdvVal(a),same:exAdvSame(ex,a)}:null,
         prm:{reps:ex.reps||"",rest:+ex.rest?String(+ex.rest):"",int:ex.int||"",rpe:ex.rpe||"",tempo:ex.tempo||"",sum:exPrmSum(ex),open:msPrmOpen.has(ex.id)},pro:exProg(ex),
         sets:ex.sets.map((st,j)=>({kg:exKg(st&&st.kg),reps:String((st&&st.reps)||""),state:muSetState(ex,j,se)}))}})}};
@@ -138,7 +138,7 @@ $("msList").addEventListener("input",e=>{
   if(f==="msname"){se.name=inp.value;if(!msRedraw()){const n=inp.closest("[data-ms]").querySelector(".ms-name");if(n)n.textContent=inp.value||L("Séance")}}
   else{const ex=se.exercises.find(x=>x.id===inp.closest("[data-ex]").dataset.ex);if(!ex)return;
     if(f==="exname"){ex.name=inp.value;const sp=inp.parentElement.querySelector(".ex-n");if(sp)sp.textContent=inp.value; // v74.5 : nom complet affiché sur plusieurs lignes
-      if(msRedraw()){msSaveSoon(se);return}const h=inp.closest(".ex-head").querySelector("[data-exhelp]");if(h)h.hidden=!exAide(ex.name);
+      if(msRedraw()){msSaveSoon(se);return}const hd=inp.closest(".ex-head"),h=hd.querySelector("[data-exhelp]"),lk=hd.querySelector("[data-exlink]"),ok=exHelpReady(ex.name,ex.ref);if(h)h.hidden=!ok;if(lk)lk.hidden=ok||!String(ex.name||"").trim();
       const av=inp.closest("[data-ex]").querySelector(".ex-adv");if(av)av.outerHTML=exAdvHtml(ex)}
     else if(/^x(reps|rest|int|rpe|tempo)$/.test(f)){const k=f.slice(1); // v73 : réglages propres à l'exercice
       if(k==="rest"){const v=parseInt(inp.value.replace(/[^0-9]/g,""));if(v)ex.rest=Math.min(900,v);else delete ex.rest}else{const v=inp.value.slice(0,16).trim();if(v)ex[k]=v;else delete ex[k]}
@@ -147,17 +147,41 @@ $("msList").addEventListener("input",e=>{
       if(f==="setkg")st.kg=inp.value.replace(",",".").replace(/[^0-9.]/g,"").slice(0,7);else st.reps=inp.value.replace(/[^0-9]/g,"").slice(0,4);
       const was=msRunGet(se.id);if(String(st.kg||"").trim()||String(st.reps||"").trim()||was){msRunTouch(se,ex,j,!!String(st.reps||"").trim());msAutoLog(se);if(!was)msRedraw()}}}
   muRefreshSetUI(se);msSaveSoon(se)});
-// v44.7 : fiche « comment faire » de chaque exercice proposé (site/exercices-aide.js), dans la langue de l'app
-function exAide(name){const A=window.SIDFIT_AIDE||{},k=fold(String(name||"").trim());if(!k)return null;
-  const key=Object.keys(A).find(x=>fold(x)===k);return key?{name:key,f:A[key][LANG]||A[key].fr}:null}
-function exHelpOpen(name){const a=exAide(name);if(!a)return;const[mus,steps,err]=a.f;
-  $("exHelpTitle").textContent=name.trim();
-  const im=(window.SIDFIT_IMG||{})[a.name];
-  if(shIsl("exHelp")){try{window.SCIslands.exHelp($("exHelpBody"),{i18n:agI18n(),h:{name:name.trim(),img:im||null,mus,steps,err}});$("exHelpSheet").hidden=false;return}catch(e){reportErr("island exHelp: "+(e&&e.message))}}
-  $("exHelpBody").innerHTML=(im?`<div class="exh-pics">${[0,1].map(i=>`<figure><img src="exercices/${encodeURIComponent(im)}-${i}.jpg" alt="${esc(name.trim())} : ${L(i?"arrivée":"départ")}" loading="lazy" decoding="async" width="480" height="320"><figcaption>${L(i?"Arrivée":"Départ")}</figcaption></figure>`).join("")}</div>`:"")+`<p class="exh-lbl">${L("Muscles travaillés")}</p><p class="notr">${esc(mus)}</p>
-    <p class="exh-lbl">${L("Comment faire")}</p><ol class="exh-steps notr">${steps.map(x=>`<li>${esc(x)}</li>`).join("")}</ol>
-    <p class="exh-lbl">${L("À éviter")}</p><p class="exh-err notr">${esc(err)}</p>${im?`<p class="small muted exh-src">${L("Photos : Free Exercise DB (domaine public)")}</p>`:""}`;
+// v79 : fiche « ? » de chaque exercice. Correspondance stricte (nom exact, alias déclaré, identifiant du catalogue, ou association
+// choisie par la personne : ex.ref) — jamais de rapprochement approximatif. Le « ? » n'apparaît que si la fiche est complète :
+// exercice du catalogue sans help:false, conseils FR/EN (exercices-aide.js) et deux photos (exercices-photos.js, SOURCES.json).
+function exCat(){const X=window.SIDFIT_EXERCICES,m=new Map();if(X&&X.groupes)for(const g of X.groupes)for(const e of g.exercices){
+    for(const k of [e.nom,e.id,...(e.aliases||[])])if(k)m.set(fold(String(k).trim()),e)}return m}
+let exCatMap=null;
+function exHelpKey(name,ref){exCatMap=exCatMap||exCat();for(const k of [ref,name]){if(!k)continue;const e=exCatMap.get(fold(String(k).trim()));if(e)return e}return null}
+const exAideNorm=v=>Array.isArray(v)?{mus:v[0]||"",setup:(v[1]||[])[0]||"",steps:(v[1]||[]).slice(1),breath:"",focus:[],errors:v[2]?[v[2]]:[]}:v;
+function exAide(name,ref){const e=exHelpKey(name,ref);if(!e)return null;const A=window.SIDFIT_AIDE||{},a=A[e.nom];if(!a||!a.fr||!a.en)return null;
+  return {name:e.nom,e,f:exAideNorm(a[LANG]||a.fr)}}
+// fiche complète = conseils + deux photos déclarées ; sinon pas de bouton « ? » (jamais une fiche vide)
+function exHelpReady(name,ref){const a=exAide(name,ref);return !!(a&&a.e.help!==false&&(window.SIDFIT_IMG||{})[a.name])}
+let exSrc=null;function exSources(){if(!exSrc)exSrc=fetch("exercices/SOURCES.json").then(r=>r.ok?r.json():{}).catch(()=>({}));return exSrc}
+function exHelpOpen(name,ref){const a=exAide(name,ref);if(!a||!exHelpReady(name,ref))return;const f=a.f,im=(window.SIDFIT_IMG||{})[a.name];
+  $("exHelpTitle").textContent=L(a.name);
+  const alt=i=>`${L(a.name)} : ${L(i?"position d'arrivée":"position de départ")}`;
+  $("exHelpBody").innerHTML=`<div class="exh-pics">${[0,1].map(i=>`<figure><img src="exercices/${encodeURIComponent(im)}-${i}.jpg" alt="${esc(alt(i))}" loading="lazy" decoding="async" width="480" height="320"><figcaption>${L(i?"Arrivée":"Départ")}</figcaption></figure>`).join("")}</div>
+    ${String(a.name)!==String(name||"").trim()?`<p class="small muted">${L("Fiche de")} « <span class="notr">${esc(L(a.name))}</span> »</p>`:""}
+    <p class="exh-lbl">${L("Muscles travaillés")}</p><p class="notr">${esc(f.mus)}</p>
+    <p class="exh-lbl">${L("Placement")}</p><p class="notr">${esc(f.setup)}</p>
+    <p class="exh-lbl">${L("Exécution")}</p><ol class="exh-steps notr">${(f.steps||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ol>
+    ${f.breath?`<p class="exh-lbl">${L("Respiration")}</p><p class="notr">${esc(f.breath)}</p>`:""}
+    ${(f.focus||[]).length?`<p class="exh-lbl">${L("Points d'attention")}</p><ul class="exh-list notr">${f.focus.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
+    <p class="exh-lbl">${L("Erreurs fréquentes")}</p><ul class="exh-list exh-err notr">${(f.errors||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+    <p class="small muted">${L("Ces conseils ne remplacent pas l'avis d'un professionnel ; arrête en cas de douleur.")}</p>
+    <p class="small muted exh-src" id="exhSrc"></p>`;
+  $("exHelpBody").querySelectorAll(".exh-pics img").forEach(img=>img.addEventListener("error",()=>{const fg=img.closest("figure");if(fg)fg.outerHTML=`<figure class="exh-miss" role="img" aria-label="${esc(img.alt)}"><span>${L("Photo indisponible pour l'instant")}</span></figure>`},{once:true}));
+  exSources().then(S=>{const el=$("exhSrc");if(!el)return;const s=S&&S[im];el.textContent=s?`${L("Photos")} : ${s.src||""}${s.author?" · "+s.author:""}${s.licence?" · "+s.licence:""}`:L("Photos : Free Exercise DB (domaine public)")});
   $("exHelpSheet").hidden=false}
+// exercice non reconnu : association explicite à un exercice du catalogue (choisie par la personne, gardée sur l'exercice), sans renommer
+function exLinkOpen(se,ex){const X=window.SIDFIT_EXERCICES;if(!X)return;const w=fold(ex.name||"").split(/[^a-z0-9]+/).filter(x=>x.length>=4);
+  const all=X.groupes.flatMap(g=>g.exercices.filter(e=>e.help!==false&&exHelpReady(e.nom)).map(e=>({e,g:g.nom})));
+  const hit=all.filter(x=>w.some(t=>fold(x.e.nom).includes(t)));const list=(hit.length?hit:all).slice(0,hit.length?8:60);
+  openActions(L(hit.length?"Associer à un exercice proche":"Associer à un exercice du catalogue"),[...list.map(x=>({l:`${L(x.e.nom)} · ${L(x.g)}`,fn:()=>{ex.ref=x.e.nom;seTouch(se);save();renderMuscu();toast("Fiche associée : tes séries ne changent pas")}})),
+    ...(ex.ref?[{l:"Retirer l'association",fn:()=>{delete ex.ref;seTouch(se);save();renderMuscu()}}]:[])])}
 $("exHelpClose").addEventListener("click",()=>$("exHelpSheet").hidden=true);
 $("exHelpSheet").addEventListener("click",e=>{if(e.target.id==="exHelpSheet")$("exHelpSheet").hidden=true});
 async function copyText(txt,what){
@@ -173,7 +197,8 @@ $("msList").addEventListener("click",e=>{
   const exOf=()=>se.exercises.find(x=>x.id===b.closest("[data-ex]").dataset.ex);
   if(b.dataset.msaddex){se.exercises.push(newEx());seTouch(se);save();renderMuscu();const ins=$("msList").querySelectorAll(`[data-ms="${se.id}"] [data-f=exname]`);ins[ins.length-1]?.focus()}
   else if(b.dataset.msdelex){armDelete(b,()=>{se.exercises=se.exercises.filter(x=>x.id!==b.dataset.msdelex);seTouch(se);save();renderMuscu();if(msTT(se.id))msAutoLog(se)})}
-  else if(b.dataset.exhelp){const ex=exOf();if(ex)exHelpOpen(ex.name)}
+  else if(b.dataset.exhelp){const ex=exOf();if(ex)exHelpOpen(ex.name,ex.ref)} // n'ouvre qu'une fenêtre : séance, séries et minuteur intacts
+  else if(b.dataset.exlink){const ex=exOf();if(ex)exLinkOpen(se,ex)}
   else if(b.dataset.msadv){const ex=exOf();if(ex)exAdvApply(se,ex)}
   else if(b.dataset.mscopy1){const ex=exOf();if(!ex||ex.sets.length<2)return;const f=ex.sets[0]||{};
     // v45 : la série 1 (poids et répétitions) est recopiée dans toutes les autres séries de l'exercice

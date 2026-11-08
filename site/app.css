@@ -2793,3 +2793,9 @@ html .muq-seg button[aria-pressed="true"],html .muq-chips .pill[aria-pressed="tr
 .toast{z-index:45}
 .sb-dtxt ul,.sb-dtxt ol{margin:4px 0;padding-left:22px}.sb-dtxt h3{font-size:16px;margin:6px 0 2px}
 .sb-diff{align-items:start}.sb-dcol .sb-dtxt{min-height:0}
+/* v79 : fiche « ? » des exercices */
+.exh-list{margin:0;padding-left:20px;display:grid;gap:4px}
+.exh-miss{display:grid;place-items:center;aspect-ratio:3/2;border-radius:12px;background:var(--surface-2,#ececec);color:var(--muted,#5e5e5e);padding:12px;text-align:center;font-size:14px;margin:0}
+.ex-link{min-height:44px;white-space:nowrap}
+.muq-alt{display:inline-flex;align-items:center;gap:4px}
+.muq-exn .ex-help{vertical-align:middle;margin-left:4px}

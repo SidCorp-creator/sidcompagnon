@@ -1,0 +1,26 @@
+const assert=require('node:assert/strict');const {contextFor,validateRequest,validateResult,noteActionShapes,instructions,createHandler}=require('./sidbot-loader.cjs');
+const attached={note:{title:'Original',body:'Paragraph 1\n\nParagraph 2',complete:true}},partial={note:{title:'Original',body:'Excerpt'}};
+const edit={type:'edit_note',label:'Modifier',payload:{body:'Paragraph 1\n\n**Paragraph 2 corrigé**'}},pdf={type:'share_note_pdf',label:'Exporter',payload:{}};
+const actions=(a,ctx=attached,app='note')=>validateResult({reply:'Proposition',actions:a},app,ctx).actions;
+assert.deepEqual(actions([edit,pdf]).map(x=>x.type),['edit_note','share_note_pdf']);assert.ok(!('title' in actions([edit])[0].payload),'omitted title must stay omitted');
+assert.deepEqual(actions([edit,pdf],{}),[]);assert.deepEqual(actions([edit,pdf],partial).map(x=>x.type),['share_note_pdf']);assert.deepEqual(actions([edit,pdf],attached,'forme'),[]);assert.deepEqual(actions([edit,pdf],attached,'journee'),[]);
+for(const marker of [{secret:true},{iv:'x'},{ct:'x'},{vid:'x'}])assert.deepEqual(actions([edit,pdf],{note:{...attached.note,...marker}}),[]);
+assert.equal(actions([edit,{...edit,payload:{body:'Different replacement'}},pdf,pdf]).length,2,'one edit and one PDF proposal, no duplicates');
+assert.equal(actions([{...edit,payload:{body:'x'.repeat(8000)}}]).length,1);assert.equal(actions([{...edit,payload:{body:'x'.repeat(8001)}}]).length,0);assert.equal(actions([{...edit,payload:{body:'',title:''}}]).length,1);
+for(const payload of [{body:'x',title:'x'.repeat(301)},{body:'x',noteId:'different-note'},{body:'x',html:'<script>'}])assert.equal(actions([{...edit,payload}]).length,0);
+assert.equal(actions([{...pdf,payload:{id:'different-note'}}]).length,0);
+assert.equal(validateResult({reply:'x',actions:[{type:'add_note',label:'Create',payload:{title:'New',body:'Note'}}]},'note').actions.length,1,'existing add_note unaffected');
+const normalized=contextFor('note',{...attached,notes:['secret'],pwds:['secret'],docs:['secret']});assert.deepEqual(normalized,attached);assert.throws(()=>contextFor('note',{note:{...attached.note,complete:'true'}}));
+const b={app:'note',locale:'en',messages:[{role:'user',content:'Correct paragraph 2; then propose a PDF'}],context:attached};assert.match(noteActionShapes(attached),/edit_note/);assert.doesNotMatch(noteActionShapes(partial),/edit_note/);assert.doesNotMatch(noteActionShapes({}),/share_note_pdf/);assert.match(instructions(validateRequest(b)),/changing ONLY what was requested/);
+let captured,calls=[],mode='';const config={SUPABASE_URL:'https://db.fixture',SUPABASE_SERVICE_ROLE_KEY:'fake-service',SIDBOT_PROVIDER:'groq',SIDBOT_FREE_PLAN_CONFIRMED:'true',SIDBOT_API_KEY:'fake-provider'};
+const fetchMock=async(url,opt)=>{calls.push(url);if(url.endsWith('/auth/v1/user'))return Response.json({id:'user-fixture'});if(url.includes('/rpc/'))return Response.json({used:1,limit:20,reset:'2026-11-09T00:00:00Z'});captured=JSON.parse(opt.body);if(mode==='quota')return new Response('',{status:429,headers:{'Retry-After':'10'}});return Response.json({choices:[{message:{content:JSON.stringify({reply:'I propose these changes and an export.',actions:[edit,pdf]})}}]})};
+const handler=createHandler(k=>config[k],fetchMock);const request=body=>new Request('https://edge.fixture',{method:'POST',headers:{Authorization:'Bearer fixture'},body:JSON.stringify(body)});
+(async()=>{
+let r=await handler(request(b)),j=await r.json();assert.equal(r.status,200);assert.deepEqual(j.actions.map(x=>x.type),['edit_note','share_note_pdf']);assert.equal(captured.max_tokens,3800);assert.equal(j.usage.used,1);
+r=await handler(request({...b,context:partial}));j=await r.json();assert.equal(r.status,200);assert.deepEqual(j.actions.map(x=>x.type),['share_note_pdf']);
+r=await handler(request({...b,context:{}}));j=await r.json();assert.deepEqual(j.actions,[]);
+calls=[];r=await handler(request({...b,context:{note:{...attached.note,secret:true}}}));assert.equal(r.status,400);assert.equal(calls.length,0,'secret note rejected before all upstream calls');
+mode='quota';r=await handler(request(b));assert.equal(r.status,429);assert.equal(r.headers.get('Retry-After'),'10');
+assert.ok(calls.every(url=>url.includes('/auth/v1/')||url.includes('/rpc/sidbot_take')||url.includes('/chat/completions')),'server never modifies a note or creates/shares a PDF');
+console.log('sidbot note actions: explicit attachment/complete body, edit/PDF bounds and scope, secrets, deduplication, prompt, end-to-end mocked response/quota, existing add_note OK');
+})().catch(e=>{console.error(e);process.exitCode=1});

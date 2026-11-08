@@ -52,6 +52,9 @@ const OUT=path.resolve(__dirname,'out');fs.mkdirSync(OUT,{recursive:true});
  await p.keyboard.press('Escape');assert.equal(await p.isVisible('#sbSheet'),false);
  // Sid'Note : une note ouverte n'est jamais jointe par défaut, une note secrète jamais
  await p.evaluate(()=>{NT().push({id:'n1',title:'Courses',body:'pain',createdAt:new Date().toISOString(),upd:Date.now()},{id:'n2',title:'Secret',body:'',secret:true,iv:'x',vid:'v',createdAt:new Date().toISOString(),upd:Date.now()});save();show('notes');openNote('n1')});
+ // v77 (capture Sid'Note) : le bandeau de l'éditeur de notes a son propre rendu : même bouton Sid'Bot, jamais « Claude »
+ const nbt=p.locator('#noteAppHead [data-app-claude]');assert.equal((await nbt.innerText()).trim(),"Sid'Bot");assert.match(await nbt.getAttribute('aria-label'),/Sid'Bot/);
+ assert.ok(!/Claude/.test(await p.locator('#noteAppHead').innerText()),'aucun « Claude » dans le bandeau de la note');
  await p.click('#noteAppHead [data-app-claude]');await p.waitForSelector('#sbSheet:not([hidden])');
  assert.match(await p.locator('#sbSub').innerText(),/Sid'Note/);
  assert.equal(await p.locator('[data-sbctx="note"]').getAttribute('aria-pressed'),'false');
@@ -64,6 +67,9 @@ const OUT=path.resolve(__dirname,'out');fs.mkdirSync(OUT,{recursive:true});
  // plus aucun lien claude.ai dans la page
  assert.equal(await p.evaluate(()=>document.querySelectorAll('a[href*="claude.ai"]').length),0);
  assert.ok(!/claude\.ai/.test(await p.content()),'aucune adresse claude.ai dans la page');
+ await p.setViewportSize({width:1280,height:900});await p.evaluate(()=>{show('notes');openNote('n1')});await p.waitForTimeout(200);
+ assert.equal((await p.locator('#noteAppHead [data-app-claude]').innerText()).trim(),"Sid'Bot",'ordinateur : bouton Sid\'Bot');await p.click('#noteAppHead [data-app-claude]');assert.equal(await p.isVisible('#sbSheet'),true);await p.keyboard.press('Escape');
+ for(const v of ['plan','todo','pomo','muscu','nutri','graph','notes','docs','pwd'])assert.ok(!/Claude/.test(await p.evaluate(x=>{show(x);return (document.querySelector('#vhead')||{}).innerText||''},v)),'bandeau '+v+' sans « Claude »');
  await c.close();console.log('OK Sid\'Bot',lang)}
  await b.close();if(errors.length){console.error(errors.join('\n'));process.exitCode=1}
 })().catch(e=>{console.error(e);process.exitCode=1});

@@ -116,10 +116,13 @@ function renderVhead(v){const el=$("vhead");
  document.title=`${g.label} · ${L(title)} — Sid'Compagnon`;
  const props={app:g.app,label:g.label,role:APP_ROLES[g.app],title,progress,percent,hasProgress,gridIcon:GRIDIC,askIcon:IC("message"),i18n:agI18n()};
  if(shIsl("appHead")){try{window.SCIslands.appHead(el,props);return}catch(e){reportErr("island appHead: "+(e&&e.message))}}
- el.innerHTML=`<div class="elan-head-row"><button type="button" class="ah-home" data-go="home" aria-label="${L("Toutes les apps")}"><span class="ah-grid">${GRIDIC}</span></button><span class="ah-brand">${LOGO(g.app,"ah-logo")}<span class="ah-names"><b>${g.label}</b><small>${L(APP_ROLES[g.app])}</small></span></span><button type="button" class="ah-claude" data-app-claude="1" aria-label="${L("Ouvrir Sid'Bot, l'assistant")}"><span class="ah-chat">${IC("message")}</span><span class="notr">Sid'Bot</span></button></div><h1 class="elan-title">${L(title)}</h1><div class="elan-progress"><span>${progress}</span><span class="elan-progress-track" ${hasProgress?"":"hidden"} role="progressbar" aria-label="${L("Progression du jour")}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><i style="width:${percent}%"></i></span></div>`;
+ el.innerHTML=`<div class="elan-head-row"><button type="button" class="ah-home" data-go="home" aria-label="${L("Toutes les apps")}"><span class="ah-grid">${GRIDIC}</span></button><span class="ah-brand">${LOGO(g.app,"ah-logo")}<span class="ah-names"><b>${g.label}</b><small>${L(APP_ROLES[g.app])}</small></span></span>${ahBotBtn()}</div><h1 class="elan-title">${L(title)}</h1><div class="elan-progress"><span>${progress}</span><span class="elan-progress-track" ${hasProgress?"":"hidden"} role="progressbar" aria-label="${L("Progression du jour")}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><i style="width:${percent}%"></i></span></div>`;
  const bar=el.querySelector(".elan-progress-track i");if(bar&&hasProgress){bar.style.width=previous+"%";bar.getBoundingClientRect();requestAnimationFrame(()=>bar.style.width=percent+"%")}
 
 }
+// v77 (capture Sid'Note) : un seul bouton Sid'Bot pour tous les bandeaux d'app (bandeau commun et éditeur de notes) ;
+// avant, l'éditeur de notes avait sa copie, restée « Claude ». Le clic est géré par elanHeadClick → sbOpen (Sid'Bot, dans l'app).
+const ahBotBtn=()=>`<button type="button" class="ah-claude" data-app-claude="1" aria-label="${L("Ouvrir Sid'Bot, l'assistant")}"><span class="ah-chat">${IC("message")}</span><span class="notr">${MARQUES.bot}</span></button>`;
 function elanHeadClick(e){const b=e.target.closest("[data-go]");if(b)show(b.dataset.go);if(e.target.closest("[data-app-claude]"))sbOpen(sbAppOfView(data.ui.view)); // v76 : Sid'Bot, dans l'app (plus de lien vers Claude)
 }
 for(const id of ["vhead","noteAppHead"])$(id).addEventListener("click",elanHeadClick);

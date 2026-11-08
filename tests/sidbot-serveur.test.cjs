@@ -12,7 +12,11 @@ assert.equal(contextFor('journee',{agenda:{tasks:[{title:'x',date:'2026-11-08'}]
 assert.throws(()=>contextFor('note',{note:{secret:true,title:'secret',body:'secret'}}));
 const meal={type:'log_meal',label:'Ajouter',payload:{date:'2026-11-07',name:'Œufs',items:[{name:'Œufs',qty:'2 pièces',g:100,unit_g:50,unit_label:'moyen',kcal:140,p:12,c:1,f:10}]}};
 assert.equal(validateResult({reply:'Estimation',actions:[meal]},'forme').actions[0].payload.date,'2026-11-07');
-assert.throws(()=>validateResult({reply:'x',actions:[meal]},'note'));assert.throws(()=>validateResult({reply:'x',actions:[{...meal,payload:{...meal.payload,items:[{name:'x',qty:'1',kcal:-1}]}}]},'forme'));
+// v76 (essai réel) : une proposition invalide est écartée, la réponse est gardée
+assert.equal(validateResult({reply:'x',actions:[meal]},'note').actions.length,0);assert.equal(validateResult({reply:'x',actions:[{...meal,payload:{...meal.payload,items:[{name:'x',qty:'1',kcal:-1}]}}]},'forme').actions.length,0);assert.equal(validateResult({reply:'x',actions:[{...meal,payload:{...meal.payload,items:[{name:'x',qty:'1',kcal:-1}]}}]},'forme').reply,'x');
+// formes confondues par le modèle réel : type = nom de l'app, qty en nombre, name absent
+{const r=validateResult({reply:'ok',actions:[{type:'forme',label:'log_meal',payload:{date:'2026-11-08',items:[{name:'Œuf',qty:2,kcal:144,p:12,c:1,f:10}]}}]},'forme');assert.equal(r.actions[0].type,'log_meal');assert.equal(r.actions[0].payload.items[0].qty,'2');assert.equal(r.actions[0].payload.name,'Œuf')}
+{const r=validateResult({reply:'ok',actions:[{type:'note add_note',label:'L',payload:{title:'T',body:'B'}}]},'note');assert.equal(r.actions[0].type,'add_note')}
 const config={SUPABASE_URL:'https://db.test',SUPABASE_SERVICE_ROLE_KEY:'server-secret',SIDBOT_PROVIDER:'groq',SIDBOT_FREE_PLAN_CONFIRMED:'true',SIDBOT_API_KEY:'provider-secret'};
 let mode='',calls=[],received;const fake=async(url,opt)=>{calls.push(url);if(url.endsWith('/auth/v1/user'))return Response.json(mode==='auth'?{}:{id:'u1'},{status:mode==='auth'?401:200});
 if(url.includes('/rpc/'))return Response.json(mode==='quota'?{error:'quota',retry_after:100}:mode==='rate'?{error:'rate',retry_after:5}:{used:1,limit:20,reset:'2026-11-09T00:00:00Z'});

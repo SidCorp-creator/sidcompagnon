@@ -10,7 +10,7 @@ export interface NuI18n { lang?:string; tr: (fr: string) => string; L: (fr: stri
 export interface Mac { k: "p" | "c" | "f"; label: string; c: string }
 export interface Sum { kcal: number; p: number; c: number; f: number }
 /** Une quantité modifiable : key = « log:<id> » ou « res:<n> » ; editing = champ ouvert. */
-export interface Qty { key: string; label: string; value: string; editing: boolean }
+export interface Qty { key: string; label: string; value: string; help?: string; editing: boolean }
 export interface DishItem { id: string; name: string; kcal: number; qty: Qty; extra?: boolean }
 export interface Dish { g: string; name: string; mono: string; thumb: string | null; time: string; sum: Sum; items: DishItem[] }
 export interface NuResultVM { title: string; mono: string; photo: string | null; mem: boolean; note: string; sum: Sum; items: DishItem[] }
@@ -34,7 +34,7 @@ function Macros({ s, mac, i18n }: { s: Sum; mac: Mac[]; i18n: NuI18n }) {
 function QtyCell({ q, i18n }: { q: Qty; i18n: NuI18n }) {
   const { tr, L } = i18n;
   if (q.editing) return <span className="qty-in"><input id="qtyEdIn" defaultValue={q.value} placeholder={tr(L("Ex. 150 g"))} aria-label={tr(L("Quantité"))} autoComplete="off" enterKeyHint="done" /><button type="button" className="mini" data-qok={q.key}>{tr("OK")}</button></span>;
-  return <button type="button" className="qty-ed notr" data-qed={q.key}>{q.label || L("Ajouter une quantité")}{PEN}</button>;
+  return <><button type="button" className="qty-ed notr" data-qed={q.key}>{q.label || L("Ajouter une quantité")}{PEN}</button>{q.help ? <small className="muted">{q.help}</small> : null}</>;
 }
 
 export function NuLog({ dishes, mac, today, i18n }: { dishes: Dish[]; mac: Mac[]; today: boolean; i18n: NuI18n }) {

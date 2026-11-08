@@ -71,18 +71,23 @@ function nuOpenSheet(id){
   const x=id?NU().log.find(e=>e.id===id):null;nuEditId=x?x.id:null;
   $("nuSheetTitle").textContent=L(x?"Modifier":"Ajouter à la main");$("nuEDel").hidden=!x;$("nuEDel").classList.remove("armed");$("nuEDel").textContent=L("Supprimer");
   const d=x?new Date(x.at):null;
-  $("nuEName").value=x?x.name:($("nuAsk").value.trim());$("nuEQty").value=x?x.qty:"";$("nuETime").value=d?`${two(d.getHours())}:${two(d.getMinutes())}`:"";
+  $("nuEName").value=x?x.name:($("nuAsk").value.trim());$("nuEQty").value=x?nuQtyEditValue(x):"";$("nuETime").value=d?`${two(d.getHours())}:${two(d.getMinutes())}`:"";
   $("nuEKcal").value=x?x.kcal:"";$("nuEP").value=x?x.p:"";$("nuEC").value=x?x.c:"";$("nuEF").value=x?x.f:"";
-  nuEBase=x?{qty:x.qty,kcal:x.kcal,p:x.p,c:x.c,f:x.f}:null;$("nuEHint").hidden=true;
-  $("nuSheet").hidden=false;
+  nuEBase=x?{...x}:null;$("nuEHint").hidden=true;
+  nuEHelp();$("nuSheet").hidden=false;
 }
 $("nuManual").addEventListener("click",()=>nuOpenSheet(null));
 // quantité lue dans un texte : « 1/3 de baguette » → 0,333 ; « 150 g » → 150 ; « ½ » → 0,5 ; « 2 oeufs » → 2
 function qtyNum(t){t=String(t||"").replace(/½/g,"1/2").replace(/¼/g,"1/4").replace(/¾/g,"3/4").replace(",",".");
   let m=t.match(/(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)/);if(m&&+m[2])return +m[1]/+m[2];m=t.match(/\d+(?:\.\d+)?/);return m?+m[0]:0}
 let nuEBase=null;
-$("nuEQty").addEventListener("input",()=>{if(!nuEBase)return;const a=qtyNum(nuEBase.qty),b=qtyNum($("nuEQty").value),h=$("nuEHint");
-  if(a>0&&b>0){const k=b/a;$("nuEKcal").value=r0(nuEBase.kcal*k);$("nuEP").value=r1(nuEBase.p*k);$("nuEC").value=r1(nuEBase.c*k);$("nuEF").value=r1(nuEBase.f*k);
+function nuEHelp(){let h=$("nuEUnitHelp");if(!h){h=document.createElement("small");h.id="nuEUnitHelp";h.className="muted";$("nuEQty").parentElement.after(h)}
+  const x={...(nuEBase||{}),name:$("nuEName").value};h.textContent=nuQtyHelp(x);h.hidden=!h.textContent;
+  if(!nuEditId&&!$("nuEQty").value&&nuUnitRef(x))$("nuEQty").value=T3("1 pièce","1 piece")
+}
+$("nuEName").addEventListener("input",nuEHelp);
+$("nuEQty").addEventListener("input",()=>{if(!nuEBase)return;const k=nuQtyRatio(nuEBase,$("nuEQty").value),h=$("nuEHint");
+  if(k>0){$("nuEKcal").value=r0(nuEBase.kcal*k);$("nuEP").value=r1(nuEBase.p*k);$("nuEC").value=r1(nuEBase.c*k);$("nuEF").value=r1(nuEBase.f*k);
     h.hidden=k===1;nuEHintSet("ok")}
   else{h.hidden=false;nuEHintSet("none")}});
 // v69 (#3) : aide du recalcul (React, ancien rendu en secours)
@@ -99,6 +104,7 @@ $("nuEntryForm").addEventListener("submit",e=>{
   e.preventDefault();const name=$("nuEName").value.trim(),num=id=>Math.max(0,numIn($(id).value));
   if(!name){toast("Indique l'aliment");return}
   const v={name,qty:$("nuEQty").value.trim(),kcal:num("nuEKcal"),p:num("nuEP"),c:num("nuEC"),f:num("nuEF")};
+  Object.assign(v,nuQtyMeta({...nuEBase,...v}));
   if(nuEditId){const x=NU().log.find(e=>e.id===nuEditId);if(x){Object.assign(x,{...v,kcal:r0(v.kcal),p:r1(v.p),c:r1(v.c),f:r1(v.f),upd:Date.now()});
       if($("nuETime").value){const d=parse(x.day),[h,m]=$("nuETime").value.split(":").map(Number);d.setHours(h,m);NU().log.filter(y=>(y.grp||y.id)===(x.grp||x.id)).forEach(y=>y.at=d.toISOString())}save()}}
   else nuAddItems([v],$("nuETime").value,{name:v.name,em:"✍️"});
@@ -188,7 +194,9 @@ const SPOONS=/** @type {[RegExp,number,number][]} */([[/huile|oil/i,13.5,4.5],[/
 function spoonQty(name,g){if(!(g>0)||g>80)return"";const s=SPOONS.find(([re])=>re.test(name||""));if(!s)return"";
   const half=x=>Math.max(.5,Math.round(x*2)/2),fr=x=>String(x).replace(".",LANG==="en"?".":",");
   const tb=g/s[1];if(tb>=.75)return `${fr(half(tb))} ${L("c. à soupe")}`;return `${fr(half(g/s[2]))} ${L("c. à café")}`}
-const qtyTxt=x=>{const m=String(x.qty||"").trim().match(/^(\d+(?:[.,]\d+)?)\s*g$/i),g=x.g||(m?+m[1].replace(",","."):0),sp=g?spoonQty(x.name,g):"";return sp?`${sp} (${fmtFull(r0(g))} g)`:(x.qty||"")};
+const qtyTxt=x=>{const m=String(x.qty||"").trim().match(/^(\d+(?:[.,]\d+)?)\s*g$/i),g=x.g||(m?+m[1].replace(",","."):0),ref=nuUnitRef(x);
+  if(ref&&g>0)return `${fmtN(g/ref.g)} ${T3(g/ref.g===1?"pièce":"pièces",g/ref.g===1?"piece":"pieces")} (≈ ${fmtN(g)} g)`;
+  const sp=g?spoonQty(x.name,g):"";return sp?`${sp} (${fmtFull(r0(g))} g)`:(x.qty||"")};
 // le serveur connaît les créneaux classiques : le repas unique part comme un déjeuner, avec son propre nom
 const srvSlot=s=>s==="meal"?"lunch":s;
 // la toute première génération peut échouer (serveur qui démarre, réponse vide) : on réessaie une fois tout seul
@@ -250,7 +258,7 @@ function renderNuMenu(){
       const el=$("nuMenu");if(!el._isl){el.innerHTML="";el._isl=true}
       window.SCIslands.nuMenu(el,{mac:NU_MAC(),icons:{book:IC("book")},i18n:agI18n(),m:ok?{total:sumOf(m.meals),tips:m.tips||"",edit:meEdit,add:meAdd,recipe:meRecipe,recipeBusy:nuBusy==="recipe",regen:meRegen,
         meals:m.meals.map(ml=>({name:ml.name,mono:mono(ml.name),icon:IC(SLOT[ml.slot]?.[1]||"utensils"),slot:slotName(ml.slot),target:ml.target||0,kcal:ml.kcal,sum:{kcal:ml.kcal,p:ml.p,c:ml.c,f:ml.f},ate:ml.ate===iso(today()),steps:ml.steps||null,
-          items:ml.items.map(x=>({name:x.name,g:x.g||0,qty:x.qty||"",qtyLbl:qtyTxt(x),kcal:x.kcal}))}))}:null});
+          items:ml.items.map(x=>({name:x.name,g:x.g||0,qty:nuQtyEditValue(x),qtyLbl:qtyTxt(x),help:nuQtyHelp(x),kcal:x.kcal}))}))}:null});
       if(meEdit){const i=$("meQtyIn");if(i){i.focus();i.select()}}if(meAdd!==null){const i=$("meAddIn");if(i)i.focus()}return}
     catch(e){reportErr("island nuMenu: "+(e&&e.message))}}
   nuMenuFree();
@@ -259,7 +267,7 @@ function renderNuMenu(){
   const T=sumOf(m.meals),td=iso(today());
   $("nuMenu").innerHTML=`<h2 style="margin-top:16px">${L("Ton menu")}</h2>`+boxes([[r0(T.kcal),"kcal"],[r1(T.p)+" g","Protéines","--m-p"],[r1(T.c)+" g","Glucides","--m-c"],[r1(T.f)+" g","Lipides","--m-f"]])+
     m.meals.map((ml,i)=>`<div class="dish"><div class="dish-h"><span class="dish-ic">${IC(SLOT[ml.slot]?.[1]||"utensils")}</span><span class="dish-t"><b class="notr" data-user-label="" title="${esc(ml.name)}">${esc(ml.name)}</b><span class="small muted">${L(slotName(ml.slot))}${ml.target?` · ${L("objectif")} ${fmtFull(ml.target)}\u00a0kcal`:""}</span></span><span class="dish-kcal">${fmtFull(ml.kcal)}<small>\u00a0kcal</small></span><button type="button" class="x" data-medel="${i}" aria-label="${L("Retirer ce repas")}"><span class="gi gi-close" aria-hidden="true"></span></button></div>
-      ${macroHtml(ml)}<div class="dish-items">${ml.items.map((x,j)=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${meEdit===`${i}:${j}`?`<span class="me-qty"><input type="text" inputmode="decimal" id="meQtyIn" value="${x.g||""}" aria-label="${L("Grammes")}"> g <button type="button" class="mini" data-meqok="${i}:${j}">OK</button></span>`:x.g?`<button type="button" class="qty-ed notr" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${esc(qtyTxt(x))}</button>`:`<span class="small muted notr">${esc(x.qty)}</span>`}</div><span class="k">${fmtFull(x.kcal)}\u00a0kcal</span>${x.g?`<button class="pen" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${PEN}</button>`:""}<button class="x" data-merm="${i}:${j}" aria-label="${L("Retirer")}"><span class="gi gi-close" aria-hidden="true"></span></button></div>`).join("")}</div>
+      ${macroHtml(ml)}<div class="dish-items">${ml.items.map((x,j)=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${meEdit===`${i}:${j}`?`<span class="me-qty"><input type="text" inputmode="decimal" id="meQtyIn" value="${esc(nuQtyEditValue(x))}" aria-label="${L("Quantité")}"> <button type="button" class="mini" data-meqok="${i}:${j}">OK</button></span>`:x.g?`<button type="button" class="qty-ed notr" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${esc(qtyTxt(x))}</button>`:`<span class="small muted notr">${esc(x.qty)}</span>`}</div><span class="k">${fmtFull(x.kcal)}\u00a0kcal</span>${x.g?`<button class="pen" data-meq="${i}:${j}" aria-label="${L("Changer la quantité")}">${PEN}</button>`:""}<button class="x" data-merm="${i}:${j}" aria-label="${L("Retirer")}"><span class="gi gi-close" aria-hidden="true"></span></button></div>`).join("")}</div>
       ${meAdd===i?`<form class="me-add" data-meaddf="${i}"><input id="meAddIn" placeholder="${L("Ex. 30 g d'amandes")}" autocomplete="off"><button class="btn" type="submit">OK</button></form>`:""}
       ${meRecipe===i?`<div class="recipe"><b>${IC("book")} ${L("Recette")}</b>${nuBusy==="recipe"?`<div class="small muted" style="margin-top:6px"><span class="spin"></span> ${L("Préparation de la recette…")}</div>`:ml.steps&&ml.steps.length?`<ol class="notr">${ml.steps.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>`:`<div class="small muted">${L("Recette indisponible pour le moment.")}</div>`}</div>`:""}
       <div class="me-act"><button type="button" class="mini" data-meadd="${i}">${GI("plus")} ${L("Aliment")}</button><button type="button" class="mini" data-merec="${i}">${IC("book")} ${L(meRecipe===i?"Cacher la recette":"Recette")}</button><button type="button" class="mini" data-meregen="${i}">${GI("refresh")} ${L("Autre idée")}</button>
@@ -273,8 +281,8 @@ function nuMenuFree(){const el=$("nuMenu");if(el._isl){window.SCIslands.unmount(
 function renderMenuLeft(){const el=$("nuMenuLeft");if(!el||!NU().plan)return;const t=dayTarget(iso(today())),s=sumOf(dayLog(iso(today()))),left=r0(t.kcal-s.kcal);
   el.innerHTML=`${IC("target")}<span class="grow">${left>=0?`${L("Il te reste")} <b>${fmtFull(left)}\u00a0kcal</b> ${L("à manger aujourd'hui")}`:`${L("Objectif dépassé de")} <b>${fmtFull(-left)}\u00a0kcal</b>`} <span class="muted">(${L("objectif")} ${fmtFull(t.kcal)})</span></span>`}
 // changer la quantité d'un aliment du menu : calories et macros suivent
-function meScale(i,j,g){const it=NU().menu.meals[i].items[j];if(!(g>0)||!it.g)return;const k=g/it.g;
-  Object.assign(it,{g:r0(g),qty:r0(g)+" g",kcal:r0(it.kcal*k),p:r1(it.p*k),c:r1(it.c*k),f:r1(it.f*k)});NU().upd=Date.now();save()}
+function nuQtyEditValue(x){const ref=nuUnitRef(x);const count=ref&&x.g?x.g/ref.g:0;return count&&Math.abs(count*100-Math.round(count*100))<1e-8?`${Math.round(count*100)/100} ${T3("pièce","piece")}`:x.qty||(x.g?`${x.g} g`:"")}
+function meScale(i,j,q){const it=NU().menu.meals[i].items[j];if(!scaleQty(it,q))return;NU().upd=Date.now();save()}
 $("nuMenu").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b)return;const n=NU(),M=n.menu;
   if(b.dataset.numeal){const ml=M.meals[+b.dataset.numeal],d0=nuDay;nuDay=iso(today());
     nuAddItems(ml.items,null,{name:ml.name,em:ml.em});nuDay=d0;ml.ate=iso(today());n.upd=Date.now();save();renderNutri();toast(`${L("Ajouté à ta journée")} · ${fmtFull(ml.kcal)} kcal`);return}
@@ -284,7 +292,7 @@ $("nuMenu").addEventListener("click",async e=>{const b=e.target.closest("button"
     try{const st=await getRecipe(ml);if(st){ml.steps=st;n.upd=Date.now();save()}else toast("Recette indisponible pour le moment.")}catch(ex){toast(nuErrMsg(ex))}
     nuBusy="";renderNuMenu();return}
   if(b.dataset.meq){meEdit=b.dataset.meq;meAdd=null;renderNuMenu();return}
-  if(b.dataset.meqok){const[i,j]=b.dataset.meqok.split(":").map(Number);meScale(i,j,numIn($("meQtyIn").value));meEdit=null;renderNuMenu();return}
+  if(b.dataset.meqok){const[i,j]=b.dataset.meqok.split(":").map(Number);meScale(i,j,$("meQtyIn").value);meEdit=null;renderNuMenu();return}
   if(b.dataset.merm){const[i,j]=b.dataset.merm.split(":").map(Number);M.meals[i].items.splice(j,1);if(!M.meals[i].items.length)M.meals.splice(i,1);n.upd=Date.now();save();renderNuMenu();return}
   if(b.dataset.medel){armDelete(b,()=>{M.meals.splice(+b.dataset.medel,1);n.upd=Date.now();save();renderNuMenu()});return}
   if(b.dataset.meadd){meAdd=+b.dataset.meadd;meEdit=null;renderNuMenu();return}
@@ -295,7 +303,7 @@ $("nuMenu").addEventListener("click",async e=>{const b=e.target.closest("button"
       if(g.meals[0]&&cm&&Array.isArray(cm.meals)&&cm.meals[i])cm.meals[i]=g.meals[0];wipe();toast("Nouvelle idée prête")}catch(ex){toast(nuErrMsg(ex));if(ex.ai)wipe()}
     nuBusy="";meRegen=null;renderNuMenu()}
 });
-$("nuMenu").addEventListener("keydown",e=>{if(e.target.id==="meQtyIn"&&e.key==="Enter"){e.preventDefault();const[i,j]=meEdit.split(":").map(Number);meScale(i,j,numIn(e.target.value));meEdit=null;renderNuMenu()}});
+$("nuMenu").addEventListener("keydown",e=>{if(e.target.id==="meQtyIn"&&e.key==="Enter"){e.preventDefault();const[i,j]=meEdit.split(":").map(Number);meScale(i,j,e.target.value);meEdit=null;renderNuMenu()}});
 // ajouter un aliment à un repas du menu (mémoire ou analyse)
 $("nuMenu").addEventListener("submit",async e=>{const f=e.target.closest("[data-meaddf]");if(!f)return;e.preventDefault();const q=$("meAddIn").value.trim();if(!q||nuBusy)return;
   const i=+f.dataset.meaddf;nuBusy="add";f.querySelector("button").innerHTML=`<span class="spin"></span>`;

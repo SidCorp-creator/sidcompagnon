@@ -6,7 +6,7 @@ import type { CSSProperties } from "react";
 import type { Mac, NuI18n, Sum } from "./Nutrition";
 
 type Css = CSSProperties & Record<string, string | number>;
-export interface MeItem { name: string; g: number; qty: string; qtyLbl: string; kcal: number }
+export interface MeItem { name: string; g: number; qty: string; qtyLbl: string; help?: string; kcal: number }
 export interface MeMeal { name: string; mono: string; icon:string; slot: string; target: number; kcal: number; sum: Sum; items: MeItem[]; ate: boolean; steps: string[] | null }
 export interface MenuVM { meals: MeMeal[]; total: Sum; tips: string; edit: string | null; add: number | null; recipe: number | null; recipeBusy: boolean; regen: number | null }
 
@@ -37,7 +37,7 @@ export function NuMenu({ m, mac, icons, i18n }: { m: MenuVM | null; mac: Mac[]; 
         <span className="dish-kcal">{fmtFull(ml.kcal,i18n.lang||"fr")}<small>{"\u00a0"}{tr("kcal")}</small></span><button type="button" className="x" data-medel={i} aria-label={tr(L("Retirer ce repas"))}><span className="gi gi-close" aria-hidden="true" /></button></div>
       <Macros s={ml.sum} mac={mac} i18n={i18n} />
       <div className="dish-items">{ml.items.map((x, j) => <div key={j} className="dish-it"><span className="em">·</span><div className="grow"><b className="notr">{x.name}</b>
-        {m.edit === `${i}:${j}` ? <span className="me-qty"><input type="text" inputMode="decimal" id="meQtyIn" defaultValue={x.g || ""} aria-label={tr(L("Grammes"))} />{tr(" g ")}<button type="button" className="mini" data-meqok={`${i}:${j}`}>{tr("OK")}</button></span>
+        {m.edit === `${i}:${j}` ? <span className="me-qty"><input type="text" id="meQtyIn" defaultValue={x.qty} aria-label={tr(L("Quantité"))} /><button type="button" className="mini" data-meqok={`${i}:${j}`}>{tr("OK")}</button></span>
           : x.g ? <button type="button" className="qty-ed notr" data-meq={`${i}:${j}`} aria-label={tr(L("Changer la quantité"))}>{x.qtyLbl}</button> : <span className="small muted notr">{x.qty}</span>}</div>
         <span className="k">{tr(`${fmtFull(x.kcal,i18n.lang||"fr")}\u00a0kcal`)}</span>{x.g ? <button className="pen" data-meq={`${i}:${j}`} aria-label={tr(L("Changer la quantité"))}>{PEN}</button> : null}<button className="x" data-merm={`${i}:${j}`} aria-label={tr(L("Retirer"))}><span className="gi gi-close" aria-hidden="true" /></button></div>)}</div>
       {m.add === i ? <form className="me-add" data-meaddf={i}><input id="meAddIn" placeholder={tr(L("Ex. 30 g d'amandes"))} autoComplete="off" /><button className="btn" type="submit">{tr("OK")}</button></form> : null}

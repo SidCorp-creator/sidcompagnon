@@ -53,7 +53,7 @@ function fromFood(f: any, q: { grams?: number; count?: number }): any | null {
   const g = q.grams ?? (q.count && f.unit_g ? q.count * Number(f.unit_g) : 0);
   if (!(g > 0)) return null;
   const k = g / 100, label = q.grams ? `${r1(g)} g` : `${q.count} × ${f.unit_label ? String(f.unit_label).replace(/^1\s*/, "") : "portion"} (${Math.round(g)} g)`;
-  const item = { name: f.name, emoji: f.emoji || "", quantity: label, grams: Math.round(g),
+  const item = { name: f.name, emoji: f.emoji || "", quantity: label, grams: r1(g), unit_g: Number(f.unit_g) || undefined, unit_label: f.unit_label || undefined,
     kcal: Math.round(f.kcal100 * k), protein_g: r1(f.p100 * k), carbs_g: r1(f.c100 * k), fat_g: r1(f.f100 * k) };
   return { dish: f.name, emoji: f.emoji || "🍽️", items: [item], note: "" };
 }

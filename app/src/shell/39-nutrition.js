@@ -14,7 +14,7 @@ const fmtDur=m=>!m?"":m>=60?`${Math.floor(m/60)}h${m%60?two(m%60):""}`:`${m} min
 const MAC=[["p","Protéines","--m-p"],["c","Glucides","--m-c"],["f","Lipides","--m-f"]];
 /* v39 : plus de clé Claude de Sid. Le profil est calculé dans l'app ; les aliments déjà connus viennent de la mémoire partagée (gratuite) ;
    le reste (aliment inconnu, photo, menu, recette, bilan) est confié à l'IA de la personne, branchée par le connecteur (aiHandoff). */
-const T3=(fr,en,nl)=>LANG==="en"?en:LANG==="nl"?nl:fr;
+const T3=(fr,en,..._old)=>LANG==="en"?en:fr;
 async function nuCall(kind,payload){payload=payload||{};
   if(!(await nuConsent()))throw new Error(L("Il faut ton accord pour utiliser Nutrition (données de santé)."));
   if(kind==="profil")return nuProfileLocal(payload.data||{});
@@ -23,7 +23,7 @@ async function nuCall(kind,payload){payload=payload||{};
     const j=await api("/functions/v1/nutrition",{method:"POST",token:await token(),body:{kind,lang:LANG,text:payload.text}});
     if(j&&j.result){j.result._src="memory";return j.result}}
   throw aiNeed(kind,payload)}
-function aiNeed(kind,p){aiHandoff(aiPrompt(kind,p),"nutri",p&&p.image?{img:"data:image/jpeg;base64,"+p.image}:null);const e=new Error(L("Claude s'en charge : suis les étapes à l'écran, le résultat arrivera ici."));e.ai=true;return e}
+function aiNeed(kind,p){aiHandoff(aiPrompt(kind,p),"nutri",p&&p.image?{img:"data:image/jpeg;base64,"+p.image}:null);const e=new Error(L("Sid'Bot a reçu ta demande : vérifie sa proposition avant de l’ajouter."));e.ai=true;return e}
 // profil : métabolisme (Mifflin-St Jeor), dépense avec le sport, objectif selon le rythme, macros (mêmes règles prudentes qu'avant)
 const SPORT_MET=/** @type {[RegExp,number][]} */([[/muscu|fitness|gym|halt|crossfit|weight|kracht/,5.5],[/course|running|jogg|run|lopen|hardlo/,9.8],[/v[eé]lo|cycl|bike|fiets|spinning/,7.5],[/nata|swim|zwem|piscine/,7],
   [/foot|basket|tennis|padel|hand|volley|rugby|hockey/,7],[/marche|walk|wandel|randon/,3.8],[/boxe|box|mma|judo|karat|combat|lutte/,9],[/yoga|pilates|stretch/,3],[/danse|dance|dans/,5.5]]);
@@ -35,38 +35,36 @@ function nuProfileLocal(d){const w=+d.weight_kg||70,h=+d.height_cm||170,a=+d.age
   const pct=goal==="maintain"?0:(PCT[goal]||PCT.lose)[pace]||PCT[goal].realistic,wk=Math.round(pct*w*100)/100,delta=Math.round(wk*7700/7);
   let target=goal==="lose"?tdee-delta:goal==="gain"?tdee+delta:tdee;if(goal==="lose")target=Math.max(target,bmr,male?1500:1200);target=Math.round(target);
   const p=Math.round(w*(goal==="lose"?2:goal==="gain"?1.8:1.6)),f=Math.round(Math.max(w*.8,target*.25/9)),c=Math.max(0,Math.round((target-p*4-f*9)/4));
-  const warn=[];if(a<18)warn.push(T3("Moins de 18 ans : demande conseil à un médecin avant de changer ton alimentation.","Under 18: ask a doctor before changing your diet.","Jonger dan 18: vraag een arts om advies voor je je voeding verandert."));
-  if(/enceinte|grossesse|allait|pregnan|breastfeed|zwanger|borstvoed|diab|trouble|anorex|boulim|eating disorder|eetstoornis/i.test(d.notes||""))warn.push(T3("Avec ce que tu indiques dans tes notes, demande l'avis d'un médecin ou d'un diététicien avant de suivre ces chiffres.","Given what you wrote in your notes, check with a doctor or dietitian before following these numbers.","Gezien wat je in je notities schreef: vraag een arts of diëtist om advies voor je deze cijfers volgt."));
+  const warn=[];if(a<18)warn.push(T3("Moins de 18 ans : demande conseil à un médecin avant de changer ton alimentation.","Under 18: ask a doctor before changing your diet."));
+  if(/enceinte|grossesse|allait|pregnan|breastfeed|zwanger|borstvoed|diab|trouble|anorex|boulim|eating disorder|eetstoornis/i.test(d.notes||""))warn.push(T3("Avec ce que tu indiques dans tes notes, demande l'avis d'un médecin ou d'un diététicien avant de suivre ces chiffres.","Given what you wrote in your notes, check with a doctor or dietitian before following these numbers."));
   const tw=+d.target_weight_kg||0;let wg={realistic:true,weekly_change_kg:0,suggested_weeks:0,advice:""};
   if(tw){const diff=tw-w,dir=goal==="lose"?-1:goal==="gain"?1:0,weeks=wk?Math.ceil(Math.abs(diff)/wk):0,tf=+d.timeframe_weeks||0;
-    if(dir&&Math.sign(diff)!==dir&&diff)wg={realistic:false,weekly_change_kg:dir*wk,suggested_weeks:0,advice:T3("Ce poids visé va dans le sens contraire de ton objectif : vérifie l'un des deux.","This target weight goes against your goal: check one of them.","Dit streefgewicht gaat tegen je doel in: controleer een van beide.")};
+    if(dir&&Math.sign(diff)!==dir&&diff)wg={realistic:false,weekly_change_kg:dir*wk,suggested_weeks:0,advice:T3("Ce poids visé va dans le sens contraire de ton objectif : vérifie l'un des deux.","This target weight goes against your goal: check one of them.")};
     else{const max=goal==="gain"?.005:.01,ok=!tf||Math.abs(diff)/tf<=max*w+1e-9;
-      wg={realistic:ok,weekly_change_kg:dir*wk,suggested_weeks:weeks,advice:ok?T3(`À ce rythme (environ ${wk} kg par semaine), compte à peu près ${weeks} semaines. Tu peux y arriver !`,`At this pace (about ${wk} kg a week), count roughly ${weeks} weeks. You can do it!`,`In dit tempo (ongeveer ${wk} kg per week) reken je op zo'n ${weeks} weken. Dat lukt je!`)
-        :T3(`En ${tf} semaines, il faudrait changer de plus de ${Math.round(max*w*10)/10} kg par semaine : c'est trop rapide pour rester en bonne santé. Compte plutôt ${weeks} semaines.`,`In ${tf} weeks you would need to change more than ${Math.round(max*w*10)/10} kg a week: too fast to stay healthy. Plan for about ${weeks} weeks instead.`,`In ${tf} weken zou je meer dan ${Math.round(max*w*10)/10} kg per week moeten veranderen: te snel om gezond te blijven. Reken eerder op ${weeks} weken.`)}}}
-  const gl=T3({lose:"perdre du poids",gain:"prendre du poids",maintain:"garder ton poids"}[goal],{lose:"lose weight",gain:"gain weight",maintain:"keep your weight"}[goal],{lose:"af te vallen",gain:"aan te komen",maintain:"je gewicht te behouden"}[goal]);
+      wg={realistic:ok,weekly_change_kg:dir*wk,suggested_weeks:weeks,advice:ok?T3(`À ce rythme (environ ${wk} kg par semaine), compte à peu près ${weeks} semaines. Tu peux y arriver !`,`At this pace (about ${wk} kg a week), count roughly ${weeks} weeks. You can do it!`)
+        :T3(`En ${tf} semaines, il faudrait changer de plus de ${Math.round(max*w*10)/10} kg par semaine : c'est trop rapide pour rester en bonne santé. Compte plutôt ${weeks} semaines.`,`In ${tf} weeks you would need to change more than ${Math.round(max*w*10)/10} kg a week: too fast to stay healthy. Plan for about ${weeks} weeks instead.`)}}}
+  const gl=T3({lose:"perdre du poids",gain:"prendre du poids",maintain:"garder ton poids"}[goal],{lose:"lose weight",gain:"gain weight",maintain:"keep your weight"}[goal]);
   const explanation=T3(`Ton corps brûle environ ${bmr} kcal par jour au repos (formule de Mifflin-St Jeor). Avec ta vie de tous les jours et ton sport, tu dépenses environ ${tdee} kcal par jour. Pour ${gl}, vise ${target} kcal par jour${goal==="maintain"?"":` (environ ${wk} kg par semaine)`}. Protéines ${p} g, glucides ${c} g, lipides ${f} g : de quoi garder tes muscles et ton énergie.`,
-    `Your body burns about ${bmr} kcal a day at rest (Mifflin-St Jeor formula). With daily life and your sport, you spend about ${tdee} kcal a day. To ${gl}, aim for ${target} kcal a day${goal==="maintain"?"":` (about ${wk} kg a week)`}. Protein ${p} g, carbs ${c} g, fat ${f} g: enough to keep your muscles and energy.`,
-    `Je lichaam verbrandt in rust ongeveer ${bmr} kcal per dag (formule van Mifflin-St Jeor). Met je dagelijkse leven en je sport verbruik je ongeveer ${tdee} kcal per dag. Om ${gl}, mik op ${target} kcal per dag${goal==="maintain"?"":` (ongeveer ${wk} kg per week)`}. Eiwitten ${p} g, koolhydraten ${c} g, vetten ${f} g: genoeg om je spieren en energie te behouden.`);
+    `Your body burns about ${bmr} kcal a day at rest (Mifflin-St Jeor formula). With daily life and your sport, you spend about ${tdee} kcal a day. To ${gl}, aim for ${target} kcal a day${goal==="maintain"?"":` (about ${wk} kg a week)`}. Protein ${p} g, carbs ${c} g, fat ${f} g: enough to keep your muscles and energy.`);
   return {bmr_kcal:bmr,tdee_kcal:tdee,target_kcal:target,protein_g:p,carbs_g:c,fat_g:f,explanation,warnings:warn,weight_goal:wg,sports_kcal:sports.map(x=>({sport:x.sport,kcal_per_session:x.kcal}))}}
-// ce qu'on demande à l'IA de la personne (elle lit et écrit dans Sid'note grâce au connecteur)
+// ce qu'on demande à l'IA de la personne (elle lit et écrit après ma confirmation grâce au connecteur)
 function aiPrompt(kind,p){const d=(p&&p.data)||{};
   if(kind==="aliment")return aiPrompt0(kind,p)+nuDayNote();
   return aiPrompt0(kind,p)}
 // v44.4 : repas d'un jour passé → la date est dite à Claude (sinon il note le repas aujourd'hui)
 function nuDayNote(){if(nuDay>=iso(today()))return "";const d=parse(nuDay),txt=`${DOWL[d.getDay()]} ${d.getDate()} ${MOL[d.getMonth()].toLowerCase()}`;
-  return T3(` C'était le ${txt} : note-le à la date ${nuDay} (pas aujourd'hui).`,` It was on ${nuDay}: log it on that date (not today).`,` Het was op ${nuDay}: noteer het op die datum (niet vandaag).`)}
+  return T3(` C'était le ${txt} : note-le à la date ${nuDay} (pas aujourd'hui).`,` It was on ${nuDay}: log it on that date (not today).`)}
 function aiPrompt0(kind,p){const d=(p&&p.data)||{};
-  if(kind==="aliment"&&p.image)return T3("Je t'envoie la photo de mon assiette (je la joins). Estime ce que j'ai mangé et note-le dans Sid'note.","I'm sending you a photo of my plate (attached). Estimate what I ate and log it in Sid'note.","Ik stuur je een foto van mijn bord (bijgevoegd). Schat wat ik gegeten heb en noteer het in Sid'note.");
-  if(kind==="aliment")return T3(`Note dans Sid'note ce que j'ai mangé : ${p.text}`,`Log in Sid'note what I ate: ${p.text}`,`Noteer in Sid'note wat ik gegeten heb: ${p.text}`);
+  if(kind==="aliment"&&p.image)return T3("Je t'envoie la photo de mon assiette (je la joins). Estime ce que j'ai mangé et note-le après ma confirmation.","I'm sending you a photo of my plate (attached). Estimate what I ate and log it after my confirmation.");
+  if(kind==="aliment")return T3(`Note après ma confirmation ce que j'ai mangé : ${p.text}`,`Log after my confirmation what I ate: ${p.text}`);
   if(kind==="menu"){const meals=(d.meals||[]).map(m=>`${m.name} (~${m.kcal} kcal)`).join(", "),inc=d.must_include,exc=d.avoid;
-    return T3(`Avec Sid'note : lis ma journée nutrition, puis compose-moi ${(d.meals||[]).length>1?"un menu pour la journée":"un repas"} : ${meals}.${inc?` À inclure : ${inc}.`:""}${exc?` À éviter : ${exc}.`:""}${d.notes?` ${d.notes}`:""} Poids crus en grammes, puis enregistre le menu dans Sid'note.`,
-      `With Sid'note: read my nutrition day, then make me ${(d.meals||[]).length>1?"a menu for the day":"a meal"}: ${meals}.${inc?` Include: ${inc}.`:""}${exc?` Avoid: ${exc}.`:""}${d.notes?` ${d.notes}`:""} Raw weights in grams, then save the menu in Sid'note.`,
-      `Met Sid'note: lees mijn voedingsdag en stel ${(d.meals||[]).length>1?"een dagmenu":"een maaltijd"} voor me samen: ${meals}.${inc?` Opnemen: ${inc}.`:""}${exc?` Vermijden: ${exc}.`:""}${d.notes?` ${d.notes}`:""} Rauwe gewichten in gram, en sla het menu op in Sid'note.`)}
+    return T3(`lis ma journée nutrition, puis compose-moi ${(d.meals||[]).length>1?"un menu pour la journée":"un repas"} : ${meals}.${inc?` À inclure : ${inc}.`:""}${exc?` À éviter : ${exc}.`:""}${d.notes?` ${d.notes}`:""} Poids crus en grammes, puis enregistre le menu après ma confirmation.`,
+      `read my nutrition day, then make me ${(d.meals||[]).length>1?"a menu for the day":"a meal"}: ${meals}.${inc?` Include: ${inc}.`:""}${exc?` Avoid: ${exc}.`:""}${d.notes?` ${d.notes}`:""} Raw weights in grams, then save the menu after my confirmation.`)}
   if(kind==="recette"){const f=(d.foods||[]).map(x=>`${x.food}${x.grams?` ${x.grams} g`:""}`).join(", ");
-    return T3(`Avec Sid'note : donne-moi la recette de « ${d.name} » (${f}), avec exactement ces aliments et ces quantités, puis ajoute les étapes à ce repas dans mon menu Sid'note.`,`With Sid'note: give me the recipe for "${d.name}" (${f}) with exactly these foods and amounts, then add the steps to this meal in my Sid'note menu.`,`Met Sid'note: geef me het recept voor "${d.name}" (${f}) met precies deze ingrediënten en hoeveelheden, en voeg de stappen toe aan deze maaltijd in mijn Sid'note-menu.`)}
-  if(kind==="bilan")return p.scope==="week"?T3("Avec Sid'note : fais le bilan nutrition de ma semaine (calories, macros, poids) : ce qui va bien, ce qui peut s'améliorer, et 2 ou 3 conseils concrets. Puis enregistre ce commentaire dans Sid'note pour que je le voie dans l'app.","With Sid'note: review my nutrition week (calories, macros, weight): what went well, what could improve, and 2 or 3 concrete tips. Then save this review in Sid'note so I can see it in the app.","Met Sid'note: maak een voedingsoverzicht van mijn week (calorieën, macro's, gewicht): wat goed ging, wat beter kan, en 2 of 3 concrete tips. Sla dit overzicht daarna op in Sid'note zodat ik het in de app zie.")
-    :T3("Avec Sid'note : commente ma journée nutrition d'aujourd'hui et donne-moi 1 ou 2 conseils pour la suite. Puis enregistre ce commentaire dans Sid'note pour que je le voie dans l'app.","With Sid'note: comment on my nutrition today and give me 1 or 2 tips for the rest of the day. Then save this comment in Sid'note so I can see it in the app.","Met Sid'note: geef commentaar op mijn voedingsdag van vandaag en 1 of 2 tips voor de rest van de dag. Sla dit commentaar daarna op in Sid'note zodat ik het in de app zie.");
-  return T3("Avec Sid'note : aide-moi pour ma nutrition.","With Sid'note: help me with my nutrition.","Met Sid'note: help me met mijn voeding.")}
+    return T3(`donne-moi la recette de « ${d.name} » (${f}), avec exactement ces aliments et ces quantités, puis ajoute les étapes à ce repas dans mon menu après confirmation.`,`give me the recipe for "${d.name}" (${f}) with exactly these foods and amounts, then add the steps to this meal in my menu after confirmation.`)}
+  if(kind==="bilan")return p.scope==="week"?T3("fais le bilan nutrition de ma semaine (calories, macros, poids) : ce qui va bien, ce qui peut s'améliorer, et 2 ou 3 conseils concrets. Puis enregistre ce commentaire après ma confirmation pour que je le voie dans l'app.","review my nutrition week (calories, macros, weight): what went well, what could improve, and 2 or 3 concrete tips. Then save this review after my confirmation so I can see it in the app.")
+    :T3("commente ma journée nutrition d'aujourd'hui et donne-moi 1 ou 2 conseils pour la suite. Puis enregistre ce commentaire après ma confirmation pour que je le voie dans l'app.","comment on my nutrition today and give me 1 or 2 tips for the rest of the day. Then save this comment after my confirmation so I can see it in the app.");
+  return T3("aide-moi pour ma nutrition.","help me with my nutrition.")}
 const nuErrMsg=ex=>ex instanceof TypeError?L("Pas de connexion internet"):ex.status===404?L("La fonction « nutrition » n'est pas encore installée sur Supabase."):ex.message;
 // animation pendant que Claude travaille
 function nuLoading(el,msgs){const EM=[""];let i=0;
@@ -147,7 +145,7 @@ function dayTarget(d){const pl=NU().plan||{},delta=Math.round(weekSports(wKey(d)
 // v56 (#3) : plats, résultat d'analyse et sport de la semaine dessinés par React (app/src/Nutrition.tsx)
 const nuIsl=k=>!!(window.SCIslands&&window.SCIslands[k]&&!window.__noIslands);
 const NU_MAC=()=>MAC.map(([k,label,c])=>({k,label,c}));
-const qtyVM=(key,x)=>({key,label:qtyTxt(x)||"",value:x.qty||"",editing:qtyEd===key});
+const qtyVM=(key,x)=>({key,label:qtyTxt(x)||"",value:nuQtyEditValue(x),help:nuQtyHelp(x),editing:qtyEd===key});
 function renderNuWeek(){
   const ws=weekSports(wKey(nuDay)),el=$("nuWeek");el.hidden=!ws.length;if(!ws.length)return;
   const m=parse(wKey(nuDay)),e=new Date(m),t=dayTarget(nuDay);e.setDate(e.getDate()+6);
@@ -223,15 +221,39 @@ $("nuMain").addEventListener("click",e=>{const b=e.target.closest("[data-nugo]")
 // --- quantité modifiable directement (journée et analyse) : calories et macros suivent ---
 let qtyEd=null;
 function qtyCell(key,x){
-  if(qtyEd===key)return `<span class="qty-in"><input id="qtyEdIn" value="${esc(x.qty||"")}" placeholder="${L("Ex. 150 g")}" aria-label="${L("Quantité")}" autocomplete="off" enterkeyhint="done"><button type="button" class="mini" data-qok="${key}">OK</button></span>`;
-  return `<button type="button" class="qty-ed notr" data-qed="${key}">${esc(qtyTxt(x)||L("Ajouter une quantité"))} ${PEN}</button>`}
+  if(qtyEd===key)return `<span class="qty-in"><input id="qtyEdIn" value="${esc(nuQtyEditValue(x))}" placeholder="${L("Ex. 150 g")}" aria-label="${L("Quantité")}" autocomplete="off" enterkeyhint="done"><button type="button" class="mini" data-qok="${key}">OK</button></span>`;
+  return `<button type="button" class="qty-ed notr" data-qed="${key}">${esc(qtyTxt(x)||L("Ajouter une quantité"))} ${PEN}</button>${nuQtyHelp(x)?`<small class="muted">${esc(nuQtyHelp(x))}</small>`:""}`}
 // « 2 c. à soupe » d'huile → grammes ; « 150 g » → 150 ; sinon le premier nombre
 function toGrams(name,t){t=String(t||"").toLowerCase().replace(",",".");
   const sp=t.match(/(\d+(?:\.\d+)?)\s*(?:c\.?|cuill[eè]res?)\s*(?:à|a)?\s*(soupe|s\b|caf[ée]|c\b)/),S=SPOONS.find(([re])=>re.test(name||""));
   if(sp&&S)return +sp[1]*(/^s/.test(sp[2])?S[1]:S[2]);const g=t.match(/(\d+(?:\.\d+)?)\s*g\b/);return g?+g[1]:0}
-function scaleQty(x,q){const a=toGrams(x.name,x.qty),b=toGrams(x.name,q),k=a>0&&b>0?b/a:(qtyNum(x.qty)>0&&qtyNum(q)>0?qtyNum(q)/qtyNum(x.qty):0);
-  x.qty=q;if(x.g&&b)x.g=r0(b);if(!k){if(q)toast("Quantité sans chiffre : calories inchangées");return}
-  x.kcal=r0(x.kcal*k);x.p=r1(x.p*k);x.c=r1(x.c*k);x.f=r1(x.f*k)}
+// Piece masses are edible estimates, overridden by food-memory or saved metadata.
+// Never rewrite historical totals merely to select a display unit.
+function nuUnitRef(x){
+  if(+x.unit_g>0)return {g:+x.unit_g,label:x.unit_label||T3("pièce estimée","estimated piece")};
+  const n=nz(x.name).replace(/œ/g,"oe");
+  const refs=/** @type {[RegExp,number,string,string][]} */([[/^(?:oeuf|oeufs|egg|eggs)\b/,50,"œuf moyen sans coquille","medium egg without shell"],
+    [/^(?:banane|bananes|banana|bananas)\b/,120,"banane moyenne sans peau","medium peeled banana"],
+    [/^(?:pommes?(?! de terre)|apples?)\b/,150,"pomme moyenne, partie comestible","medium apple, edible part"]]);const ref=refs.find(r=>r[0].test(n));
+  return ref?{g:ref[1],label:T3(ref[2],ref[3])}:null
+}
+function nuQtyGrams(x,q){
+  const t=String(q||"").trim(),g=t.match(/^(\d+(?:[.,]\d+)?)\s*(kg|g|grammes?|grams?)\b/i);
+  if(g)return +g[1].replace(",",".")*(g[2].toLowerCase()==="kg"?1000:1);
+  const spoon=toGrams(x.name,t);if(spoon)return spoon;
+  const ref=nuUnitRef(x);return ref&&qtyNum(t)>0?qtyNum(t)*ref.g:0
+}
+function nuQtyRatio(x,q){const a=nuQtyGrams(x,x.qty),b=nuQtyGrams(x,q);
+  if(a>0&&b>0)return b/a;
+  // Unknown units may scale counts only if the unit itself is unchanged.
+  const unit=t=>String(t||"").replace(/[0-9.,/½¼¾\s]/g,"").toLowerCase();
+  return unit(x.qty)===unit(q)&&qtyNum(x.qty)>0?qtyNum(q)/qtyNum(x.qty):0
+}
+function nuQtyMeta(x){const ref=nuUnitRef(x),g=nuQtyGrams(x,x.qty);return {...(g>0?{g:r1(g)}:{}),...(ref?{unit_g:ref.g,unit_label:ref.label}:{})}}
+function nuQtyHelp(x){const ref=nuUnitRef(x);if(!ref)return "";return T3(`Pièce estimée : ${ref.label}, ≈ ${fmtN(ref.g)} g. Tu peux aussi saisir des grammes (ex. 100 g).`,`Estimated piece: ${ref.label}, ≈ ${fmtN(ref.g)} g. You can also enter grams (e.g. 100 g).`)}
+function scaleQty(x,q){const k=nuQtyRatio(x,q);if(!(k>0)){if(q)toast(T3("Unité inconnue : garde la même unité ou précise les grammes.","Unknown unit: keep the same unit or specify grams."));return false}
+  x.qty=q;Object.assign(x,nuQtyMeta(x));
+  x.kcal=r0(x.kcal*k);x.p=r1(x.p*k);x.c=r1(x.c*k);x.f=r1(x.f*k);return true}
 function qtyCommit(key){const inp=$("qtyEdIn");if(!inp){qtyEd=null;return}const q=inp.value.trim(),[kind,id]=key.split(":");qtyEd=null;
   if(kind==="log"){const x=NU().log.find(e=>e.id===id);if(x&&q!==x.qty){scaleQty(x,q);x.upd=Date.now();save();toast("Quantité mise à jour")}renderNutri()}
   else if(nuPending){const x=nuPending.items[+id];if(x&&q!==x.qty)scaleQty(x,q);renderNuResult()}}
@@ -291,25 +313,17 @@ function shrink(file,max,q){return new Promise((res,rej)=>{const u=URL.createObj
   im.onload=()=>{try{const k=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement("canvas");c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);
     const g=c.getContext("2d");if(!g)throw new Error("canvas");g.imageSmoothingQuality="high";g.drawImage(im,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",q))}catch(e){rej(e)}finally{URL.revokeObjectURL(u)}};
   im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error("image"))};im.src=u})}
-// v43 (demande de Sid) : photo du plat → « Envoyer à Claude », et c'est tout. La photo est déposée tout de suite dans le
-// dossier privé de la personne (Storage, documents/<uid>/repas-<horodatage>.jpg) ; son Claude la lit par le connecteur
-// (outil photo_repas), estime le repas et le note ; la photo est effacée dès qu'elle a été lue (au plus tard après 24 h).
-const nuDirect=()=>!!(session&&!isTrial()&&data.prefs.aiOk&&(aiCur()||AIS.claude)&&navigator.onLine);
-// v74.5 (relecture de Codex) : dépôt lié à une photo précise, rejouable : un échec (réseau coupé) est oublié, la tentative suivante renvoie
-function nuPhotoUp(ph=nuPhoto){if(!ph||!nuDirect())return Promise.reject(new Error("photo indisponible"));if(ph.done)return Promise.resolve(ph.done);if(ph.up)return ph.up;
-  const path=ph.path||(ph.path=`documents/${session.user.id}/repas-${Date.now()}.jpg`);
-  ph.up=(async()=>{try{const b=await (await fetch(ph.big)).blob();await stor("POST",path,b,"image/jpeg");ph.done=path;
-    if(ph.cancelled){stor("DELETE",path).catch(()=>{});throw new Error("photo retirée")}return path}catch(e){ph.up=null;throw e}})();ph.up.catch(()=>{});return ph.up}
-// photo retirée : marquée, puis effacée du dossier une fois son dépôt terminé (même s'il est encore en cours)
-const nuPhotoDrop=ph=>{if(!ph)return;ph.cancelled=true;if(ph.sent)return;const del=p=>p&&stor("DELETE",p).catch(()=>{});if(ph.done)del(ph.done);else if(ph.up)ph.up.then(del,()=>{})}
+// Photos remain on the device until explicit submission to Sid'Bot.
+const nuDirect=()=>!!(session&&navigator.onLine);
+const nuPhotoDrop=ph=>{if(ph)ph.cancelled=true};
 let nuPhotoSeq=0,nuSending=null;
-function nuAskLbl(){$("nuAskBtn").textContent=L(nuPhoto&&nuDirect()?"Envoyer à Claude":"Analyser")}
+function nuAskLbl(){$("nuAskBtn").textContent=T3(nuPhoto?"Envoyer à Sid'Bot":"Analyser",nuPhoto?"Send to Sid'Bot":"Analyse")}
 // v74.5 : chaque choix de photo a son numéro : une photo lente à préparer ne remplace plus une plus récente, ni ne revient après la croix
 // v74.5 : deux boutons, « Photo » (appareil photo, capture) et « Galerie » (sans capture : iOS ouvre alors la photothèque)
 const nuPhotoPick=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;const seq=++nuPhotoSeq;
   try{const [big,small]=await Promise.all([shrink(f,1280,.8),shrink(f,240,.7)]);if(seq!==nuPhotoSeq)return;
     const ph={big,small};if(nuPhoto&&nuPhoto!==nuSending)nuPhotoDrop(nuPhoto);nuPhoto=ph;nuPhotoPrevSet(ph.small);nuAskLbl();
-    if(nuDirect()&&await nuConsent()&&seq===nuPhotoSeq&&nuPhoto===ph)nuPhotoUp(ph).catch(()=>{});nuAskLbl()}
+    nuAskLbl()}
   catch(ex){if(seq===nuPhotoSeq)toast("Photo illisible")}};
 $("nuPhoto").addEventListener("change",nuPhotoPick);$("nuPhotoLib").addEventListener("change",nuPhotoPick);
 // v68 (#3) : vignette de la photo du plat (React, ancien rendu en secours)
@@ -317,50 +331,13 @@ function nuPhotoPrevSet(src){const el=$("nuPhotoPrev");el.hidden=!src;
   if(shIsl("nuPhotoPrev")){try{window.SCIslands.nuPhotoPrev(el,{src:src||"",i18n:agI18n()});return}catch(e){reportErr("island nuPhotoPrev: "+(e&&e.message));try{window.SCIslands.unmount(el)}catch(_){}}}
   el.innerHTML=src?`<img src="${src}" alt="${L("Photo du plat")}"><button type="button" aria-label="${L("Retirer la photo")}" data-nuphrm="1">${IC("close")}</button>`:""}
 $("nuPhotoPrev").addEventListener("click",e=>{if(e.target.closest("[data-nuphrm]")){++nuPhotoSeq;nuPhotoDrop(nuPhoto);nuPhoto=null;nuPhotoPrevSet(null);nuAskLbl()}});
-// envoi direct : Claude s'ouvre avec le message ; la fenêtre est ouverte pendant le toucher (sinon le navigateur la bloque)
-// Sur iPhone (app installée), un lien vers Claude ouvre une petite fenêtre de navigateur qui passe la main à l'app Claude,
-// puis reste vide derrière : on la garde sous la main et on la ferme dès que la personne revient dans Sid'Compagnon
-let extWin=null;
-function extOpen(u){
-  // app installée sur iPhone : on ouvre directement l'app Claude (adresse claude://…), sans fenêtre de navigateur qui resterait blanche ;
-  // le message est aussi copié (au cas où l'app ne le pré-remplit pas) ; si l'app Claude ne s'ouvre pas, repli sur le lien web
-  if(navigator.standalone&&/^https:\/\/claude\.ai\//.test(u)){
-    try{const q=new URL(u).searchParams.get("q");if(q&&navigator.clipboard)navigator.clipboard.writeText(q).catch(()=>{})}catch(e){}
-    location.href="claude://"+u.slice(8);setTimeout(()=>{if(!document.hidden)location.href=u},1600);return null}
-  const w=window.open(u,"_blank");if(w){try{w.opener=null}catch(e){}extWin=w}return w}
-document.addEventListener("visibilitychange",()=>{if(document.hidden||!extWin)return;const w=extWin;extWin=null;setTimeout(()=>{try{if(!w.closed)w.close()}catch(e){}},250)});
-$("nuAiLink").addEventListener("click",e=>{e.preventDefault();const dn=nuDayNote();aiGo("nutri",dn?T3("Note dans Sid'note ce que j'ai mangé.","Log in Sid'note what I ate.","Noteer in Sid'note wat ik gegeten heb.")+dn+T3(" J'ai mangé : "," I ate: "," Ik heb gegeten: "):T3("J'ai mangé : ","I ate: ","Ik heb gegeten: "))});
-document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest('a[target="_blank"][href^="https://claude.ai/"]');if(!a||e.defaultPrevented)return;e.preventDefault();extOpen(a.href)});
-// « Envoyer à Claude » : la photo déposée (repas-…) est renommée envoi-… ; le connecteur la joint à nutrition_journee, un outil que
-// Claude connaît déjà (sa liste d'outils peut dater d'avant photo_repas), puis l'efface
-// v74.5 (relu par Codex) : attend le dépôt (ou le refait), renvoie le chemin envoi-… ; une photo retirée (croix) pendant le déplacement
-// n'est jamais « ressuscitée » : la copie envoi-… est effacée et l'envoi échoue
-async function nuPhotoMark(ph){if(ph.sent)return ph.sent;const src=await nuPhotoUp(ph),key=x=>x.replace(/^documents\//,"");
-  const drop=p=>{stor("DELETE",p).catch(()=>{});throw new Error("photo retirée")};
-  if(ph.cancelled)drop(src);
-  if(/\/envoi-\d+\.jpg$/.test(src)){ph.sent=src;return src} // déposée directement sous son nom d'envoi
-  const dst=src.replace("/repas-","/envoi-");let moved=false;
-  try{const r=await fetch(SUPABASE_URL+"/storage/v1/object/move",{method:"POST",headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+await token(),"Content-Type":"application/json"},
-    body:JSON.stringify({bucketId:"documents",sourceKey:key(src),destinationKey:key(dst)})});moved=r.ok}catch(e){}
-  if(ph.cancelled){if(moved)drop(dst);throw new Error("photo retirée")}
-  if(!moved){await stor("POST",dst,await (await fetch(ph.big)).blob(),"image/jpeg");if(ph.cancelled)drop(dst);stor("DELETE",src).catch(()=>{})}
-  ph.sent=dst;return dst}
-function nuPhotoSend(q){const ph=nuPhoto;
-  // v74.5 : numéro stable de la photo (nom du fichier envoi-<n>.jpg) donné à Claude ; pas encore déposée → directement sous ce nom
-  if(!ph.path)ph.path=`documents/${session.user.id}/envoi-${Date.now()}.jpg`;const pid=+(/(\d+)\.jpg$/.exec(ph.path)||[0,0])[1];
-  const msg=T3(`Avec Sid'note : lis ma journée nutrition (nutrition_journee, avec photo=${pid}) : la photo de mon assiette que je viens d'envoyer y est jointe. Estime ce que j'ai mangé, puis note-le avec noter_repas.${q?` Précision : ${q}`:""}${nuDayNote()}`,
-    `With Sid'note: read my nutrition day (nutrition_journee, with photo=${pid}): the photo of my plate I just sent is attached to it. Estimate what I ate, then log it with noter_repas.${q?` Note: ${q}`:""}${nuDayNote()}`,
-    `Met Sid'note: lees mijn voedingsdag (nutrition_journee, met photo=${pid}): de foto van mijn bord die ik net stuurde zit erbij. Schat wat ik gegeten heb en noteer het met noter_repas.${q?` Toelichting: ${q}`:""}${nuDayNote()}`);
-  // v74.5 : photo et texte restent affichés tant que l'envoi n'a pas réussi (pour pouvoir réessayer) ; la photo suivante n'est jamais effacée
-  const clear=()=>{if(nuPhoto!==ph)return;nuPhoto=null;nuPhotoPrevSet(null);$("nuAsk").value="";grow($("nuAsk"));nuAskLbl()};
-  // le connecteur sait quelle photo arrive (il l'attend quelques secondes si Claude lit la journée avant la fin du dépôt)
-  NU().photoId=pid;NU().upd=Date.now();save();clearTimeout(pushTimer);push();nuSending=ph;
-  // Claude s'ouvre tout de suite, pendant le toucher (une fenêtre vide remplie plus tard reste blanche dans l'app installée sur iPhone) ;
-  // la photo finit de partir pendant que Claude s'ouvre (elle est en général déjà déposée depuis la prise de vue)
-  // v44 : dans la conversation Nutrition si elle est réglée (le message est copié : il suffit de coller), sinon une nouvelle conversation
-  const conv=aiGo("nutri",msg,true);if(conv==="chat")toast("Prompt copié, colle-le dans la conversation");
-  nuPhotoMark(ph).then(()=>{clear();toast(conv==="chat"?"Photo envoyée. Prompt copié, colle-le dans la conversation":"Photo envoyée : Claude note le repas, il arrivera ici")},
-    ex=>{if(!ph.cancelled)toast("Envoi de la photo impossible : réessaie")}).finally(()=>{if(nuSending===ph)nuSending=null})}
+// Retained for shared legacy callers while their panels migrate.
+function extOpen(u){const w=window.open(u,"_blank","noopener,noreferrer");return w}
+$("nuAiLink").addEventListener("click",e=>{e.preventDefault();aiGo("nutri",T3("Aide-moi à noter ce repas : ","Help me log this meal: ")+$("nuAsk").value.trim()+nuDayNote())});
+function nuPhotoSend(q){const ph=nuPhoto;if(!ph||ph.cancelled)return;
+  if(ph.big.length>Math.ceil(1024*1024*4/3)+40){toast(T3("Photo trop volumineuse : choisis une image plus petite.","Photo too large: choose a smaller image."));return}
+  aiHandoff(T3("Estime les aliments et les quantités de cette assiette, puis propose un repas à confirmer.","Estimate the foods and portions on this plate, then propose a meal for confirmation.")+(q?" "+q:"")+nuDayNote(),"nutri",{img:ph.big});
+}
 // un aliment renvoyé par l'IA apparaît-il dans ce que la personne a écrit ? (racine des mots, sans accents)
 const nz=x=>String(x||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
 function mentioned(q,name){const Q=nz(q),stems=nz(name).split(/[^a-z0-9]+/).filter(w=>w.length>=3&&!/^(les|des|une|avec|sans|aux|the|and|with|cuit|cuite|nature|frais|fraiche|maison)$/.test(w));
@@ -375,7 +352,7 @@ $("nuAskForm").addEventListener("submit",async e=>{
   // texte seul : le serveur (v23) ne compte que ce qui est écrit ; le texte est envoyé tel quel pour garder la mémoire des aliments
   try{const r=await nuRetry(()=>nuCall("aliment",{text:q,image:photo?photo.big.split(",")[1]:undefined}),r=>r&&Array.isArray(r.items)&&r.items.length);
     nuPending={q,mem:r._src==="memory",title:String(r.dish||q||L("Mon plat")),em:String(r.emoji||"🍽️"),note:String(r.note||""),photo:photo&&photo.small,
-      items:(r.items||[]).map(x=>({name:String(x.name||q),qty:String(x.quantity||""),em:String(x.emoji||""),kcal:r0(x.kcal),p:r1(x.protein_g),c:r1(x.carbs_g),f:r1(x.fat_g)}))};
+      items:(r.items||[]).map(x=>({name:String(x.name||q),qty:String(x.quantity||""),em:String(x.emoji||""),g:+x.grams||undefined,unit_g:+x.unit_g||undefined,unit_label:x.unit_label||undefined,kcal:r0(x.kcal),p:r1(x.protein_g),c:r1(x.carbs_g),f:r1(x.fat_g)}))};
     if(!photo&&nuPending.items.length>1)nuPending.items.forEach(x=>x.extra=!mentioned(q,x.name));
     if(!nuPending.items.length){nuPending=null;toast("Aliment non reconnu, précise un peu")}
   }catch(ex){toast(nuErrMsg(ex));if(ex.ai){nuPhoto=null;nuPhotoPrevSet(null);$("nuAsk").value="";grow($("nuAsk"))}} // v43 : demande partie chez Claude → rien ne reste pré-rempli
@@ -409,7 +386,7 @@ $("nuResult").addEventListener("click",async e=>{const b=e.target.closest("butto
     nuPending=null;nuPhoto=null;nuPhotoPrevSet(null);$("nuAsk").value="";grow($("nuAsk"));nuMealClose();renderNutri();toast(nuDay===iso(today())?"Ajouté à ta journée":"Ajouté à ce jour")}
 });
 function nuAddItems(items,time,meta){nuProgressChange="done";const at=nuAt(time),grp=uid();
-  items.forEach(x=>NU().log.push({id:uid(),day:nuDay,at,grp,gname:meta&&meta.name||"",gem:meta&&meta.em||"",name:x.name,qty:x.qty||"",em:x.em||"",kcal:r0(x.kcal),p:r1(x.p),c:r1(x.c),f:r1(x.f),upd:Date.now()}));
+  items.forEach(x=>NU().log.push({id:uid(),day:nuDay,at,grp,gname:meta&&meta.name||"",gem:meta&&meta.em||"",name:x.name,qty:x.qty||"",...nuQtyMeta(x),em:x.em||"",kcal:r0(x.kcal),p:r1(x.p),c:r1(x.c),f:r1(x.f),upd:Date.now()}));
   save();return grp}
 // supprimer un aliment, ou tout un plat
 $("nuLog").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
@@ -425,3 +402,14 @@ $("nuMealAdd").addEventListener("click",()=>{$("nuMealSheet").hidden=false;$("nu
 $("nuMealClose").addEventListener("click",nuMealClose);
 $("nuMealSheet").addEventListener("click",e=>{if(e.target.id==="nuMealSheet")nuMealClose();if(e.target.closest("#nuManual")){$("nuSheet")._back=$("nuMealAdd");nuMealClose(false)}else if(e.target.closest("#nuAiLink"))nuMealClose()});
 $("nuMealSheet").addEventListener("keydown",e=>{const label=e.target.closest('label[role="button"]');if(label&&(e.key==="Enter"||e.key===" ")){e.preventDefault();label.querySelector('input').click()}});
+
+// Only called after the person confirms a Sid'Bot proposal. Never apply model objects directly.
+function nuLogFromBot(p){
+  if(!p||!/^\d{4}-\d{2}-\d{2}$/.test(p.date||"")||isNaN(Date.parse(p.date+"T12:00:00Z"))||new Date(p.date+"T12:00:00Z").toISOString().slice(0,10)!==p.date||
+    p.time&&!/^([01]\d|2[0-3]):[0-5]\d$/.test(p.time)||typeof p.name!=="string"||!p.name.trim()||!Array.isArray(p.items)||!p.items.length||p.items.length>30)return false;
+  if(!p.items.every(x=>x&&typeof x.name==="string"&&x.name.trim()&&typeof x.qty==="string"&&["kcal","p","c","f"].every(k=>typeof x[k]==="number"&&isFinite(x[k])&&x[k]>=0&&x[k]<=20000)&&
+    (x.g===undefined||typeof x.g==="number"&&isFinite(x.g)&&x.g>=0&&x.g<=20000)&&(x.unit_g===undefined||typeof x.unit_g==="number"&&isFinite(x.unit_g)&&x.unit_g>0&&x.unit_g<=20000)))return false;
+  const previous=nuDay;try{nuDay=p.date;nuAddItems(p.items.map(x=>({name:x.name.slice(0,300),qty:x.qty.slice(0,120),kcal:x.kcal,p:x.p,c:x.c,f:x.f,
+    ...(x.g!==undefined?{g:x.g}:{}),...(x.unit_g!==undefined?{unit_g:x.unit_g}:{}),...(typeof x.unit_label==="string"?{unit_label:x.unit_label.slice(0,160)}:{})})),p.time,{name:p.name.slice(0,300)})}
+  finally{nuDay=previous}renderNutri();return true
+}

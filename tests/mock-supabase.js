@@ -58,6 +58,17 @@ http.createServer((req,res)=>{const ch=[];req.on('data',c=>ch.push(c));req.on('e
       const want=(url.searchParams.get('updated_at')||'').replace('eq.','');const r=rows[id];
       if(!r||r.updated_at!==want)return send(res,200,[]);rows[id]={data:body.data,updated_at:body.updated_at};return send(res,200,[{updated_at:body.updated_at}])}
   }
+  // Sid'Bot: deterministic offline provider. Explicit __sidbot mode controls UI error tests.
+  if(url.pathname==='/__sidbot'){global.sidbotMode=body.mode||url.searchParams.get('mode')||'';return send(res,200,{mode:global.sidbotMode})}
+  if(url.pathname==='/functions/v1/sidbot'){
+    if(!Object.values(users).some(u=>u.id===auth))return send(res,401,{error:'auth',message:'Connecte-toi pour utiliser Sid\'Bot.'});
+    const mode=global.sidbotMode||'';const status={quota:429,rate:429,timeout:504,unavailable:503,not_configured:503}[mode];
+    if(status){if(status===429)res.setHeader('Retry-After','5');return send(res,status,{error:mode,message:body.locale==='en'?'Sid\'Bot is unavailable.':'Sid\'Bot est indisponible.'})}
+    if(!['journee','forme','note'].includes(body.app)||!['fr','en'].includes(body.locale)||!Array.isArray(body.messages))return send(res,400,{error:'bad_request',message:'Invalid request'});
+    const en=body.locale==='en',day=body.context&&body.context.today||new Date().toISOString().slice(0,10);
+    const actions=body.app==='journee'?[{type:'add_task',label:en?'Add task':'Ajouter une tâche',payload:{title:en?'Proposed task':'Tâche proposée',date:day}}]:body.app==='note'?[{type:'add_note',label:en?'Add note':'Ajouter une note',payload:{title:en?'Proposed note':'Note proposée',body:en?'Draft to review':'Brouillon à relire'}}]:[{type:'log_meal',label:en?'Add meal':'Ajouter le repas',payload:{date:day,name:en?'Eggs':'Œufs',items:[{name:en?'Eggs':'Œufs',qty:en?'2 pieces':'2 pièces',g:100,unit_g:50,unit_label:en?'medium, estimated':'moyen, estimé',kcal:140,p:12,c:1,f:10}]}}];
+    return send(res,200,{reply:en?'Simulated proposal. Review before adding.':'Proposition simulée. Vérifie avant de l’ajouter.',actions,usage:{used:1,limit:20,reset:new Date(Date.now()+86400000).toISOString()}})
+  }
   // faux Claude pour l'onglet Nutrition (réponses fixes)
   if(url.pathname==='/functions/v1/nutrition'){if(!auth)return send(res,401,{error:'Non connecté'});
     {const e=Object.keys(users).find(k=>users[k].id===auth);if(!appMeta(e).features)return send(res,403,{error:'Bientôt disponible'})}

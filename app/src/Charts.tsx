@@ -6,7 +6,7 @@ import { dLbl, esc, fmtFull, fmtN, niceMax, niceStep, r0 } from "./format";
 
 type Base = { i18n: I18n & { DOW: string[]; lang: string } };
 export interface Serie { label: string; c: string; vals: (number | null)[] }
-export interface LineOpt { zero?: boolean; dots?: boolean; unit?: string; ref?: { v: number; label: string } | null; empty?: string; aria?: string }
+export interface LineOpt { zero?: boolean; dots?: boolean; connectGaps?: boolean; unit?: string; ref?: { v: number; label: string } | null; empty?: string; aria?: string }
 
 export function LineChart(p: Base & { width: number; days: string[]; series: Serie[]; opt: LineOpt; tip: Tip }) {
   const { L, DOW, MO, lang } = p.i18n, { days, series, opt } = p;
@@ -43,7 +43,7 @@ export function LineChart(p: Base & { width: number; days: string[]; series: Ser
     </> : null}
     {series.map((s, si) => {
       let d = "", on = false;
-      s.vals.forEach((v, i) => { if (v == null) { on = false; return; } d += (on ? "L" : "M") + X(i).toFixed(1) + " " + Y(v).toFixed(1); on = true; });
+      s.vals.forEach((v, i) => { if (v == null) { if (!opt.connectGaps) on = false; return; } d += (on ? "L" : "M") + X(i).toFixed(1) + " " + Y(v).toFixed(1); on = true; });
       return [<path key={"p" + si} d={d} fill="none" stroke={`var(${s.c})`} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />,
         ...s.vals.map((v, i) => v != null && (opt.dots || i === s.vals.length - 1 || s.vals[i + 1] == null && (i === 0 || s.vals[i - 1] == null))
           ? <circle key={"c" + si + "-" + i} cx={X(i)} cy={Y(v)} r="4" fill={`var(${s.c})`} stroke="var(--surface)" strokeWidth="2" /> : null)];

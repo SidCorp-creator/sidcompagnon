@@ -4,12 +4,12 @@
 // Jamais : mots de passe, documents, notes secrètes. Une note n'est jointe que si la personne le demande.
 // Sid'Bot ne modifie rien seul : il propose des actions (ajouter une activité, une note, un repas) que la personne valide d'un toucher.
 // Historique : les 20 derniers messages par app, sur cet appareil seulement (localStorage, par compte).
-const SB_NAME="Sid'Bot";
-const SB_APPS={journee:{label:"Sid'Journée",app:"agenda",hint:"Ex. : ajoute « réviser chimie » jeudi à 14 h"},
-  forme:{label:"Sid'Forme",app:"fit",hint:"Ex. : propose-moi un dîner riche en protéines"},
-  note:{label:"Sid'Note",app:"note",hint:"Ex. : résume la note ouverte en 5 points"}};
+const SB_NAME=MARQUES.bot;
+const SB_APPS={journee:{label:MARQUES.journee,app:"agenda",hint:"Ex. : ajoute « réviser chimie » jeudi à 14 h"},
+  forme:{label:MARQUES.forme,app:"fit",hint:"Ex. : propose-moi un dîner riche en protéines"},
+  note:{label:MARQUES.note,app:"note",hint:"Ex. : résume la note ouverte en 5 points"}};
 const SB_TOPIC={agenda:"journee",nutri:"forme",muscu:"forme",note:"note"};
-const SB_MAX=20,SB_TIMEOUT=30000,SB_IMG_MAX=1100000;
+const SB_MAX=20,SB_TIMEOUT=50000,SB_IMG_MAX=1100000,SB_HIST_CHARS=20000; // délai > auth + quota + fournisseur côté serveur ; historique borné sous la limite serveur (24 000)
 const SB_ERR={auth:"Reconnecte-toi pour utiliser Sid'Bot.",quota:"Le quota gratuit de Sid'Bot est épuisé pour aujourd'hui. Il revient demain : rien n'est facturé.",
   rate:"Trop de demandes d'un coup. Réessaie dans un instant.",timeout:"Sid'Bot met trop de temps à répondre. Réessaie.",
   unavailable:"Sid'Bot est indisponible pour l'instant. Réessaie plus tard.",not_configured:"Sid'Bot n'est pas encore activé sur ce serveur.",
@@ -18,11 +18,11 @@ const SB_ERR={auth:"Reconnecte-toi pour utiliser Sid'Bot.",quota:"Le quota gratu
 // compatibilité : plus aucune IA externe à brancher (anciennes préférences ai / aiOk / aiConv laissées telles quelles dans les données)
 const AIS={},aiCur=()=>null;
 let sbApp="journee",sbBusy=false,sbImg=null,sbCtl=null,sbUse={},sbShare={};
-const sbKey=()=>"sidnote-sidbot-"+((session&&session.user&&session.user.id)||"anon");
-function sbHist(){try{const h=JSON.parse(ls.get(sbKey())||"{}");return h&&typeof h==="object"?h:{}}catch(e){return {}}}
-function sbSave(h){try{ls.set(sbKey(),JSON.stringify(h))}catch(e){}}
-function sbMsgs(app){const h=sbHist();return Array.isArray(h[app])?h[app]:[]}
-function sbPush(app,m){const h=sbHist(),a=Array.isArray(h[app])?h[app]:[];a.push(m);h[app]=a.slice(-SB_MAX);sbSave(h)}
+const sbUid=()=>(session&&session.user&&session.user.id)||"anon",sbKey=u=>"sidnote-sidbot-"+(u||sbUid());
+function sbHist(u){try{const h=JSON.parse(ls.get(sbKey(u))||"{}");return h&&typeof h==="object"?h:{}}catch(e){return {}}}
+function sbSave(h,u){try{ls.set(sbKey(u),JSON.stringify(h))}catch(e){}}
+function sbMsgs(app,u){const h=sbHist(u);return Array.isArray(h[app])?h[app]:[]}
+function sbPush(app,m,u){const h=sbHist(u),a=Array.isArray(h[app])?h[app]:[];a.push(m);h[app]=a.slice(-SB_MAX);sbSave(h,u)}
 function sbClear(app){const h=sbHist();delete h[app];sbSave(h)}
 const sbAppOfView=v=>{const a=appOf(v);return a==="agenda"?"journee":a==="note"?"note":a==="fit"?"forme":"journee"};
 // ---- contexte par app : un résumé court, jamais de secrets ----
@@ -43,10 +43,12 @@ function sbCtxParts(app){
       {k:"muscu",label:"Ton programme de musculation",on:true,v:{goal:pr.goal||"",days:pr.days||null,minutes:pr.dur||null,name:pl&&pl.name?String(pl.name).slice(0,80):""}}]}
   if(app==="note"){const n=typeof noteOpenId!=="undefined"&&noteOpenId&&typeof noteFind==="function"?noteFind(noteOpenId):null;
     // une note secrète n'est jamais jointe, même déverrouillée
-    if(n&&!n.secret&&!$("noteEdit").hidden)return [{k:"note",label:"La note ouverte",on:false,v:{title:String(n.title||"").slice(0,200),body:String(n.body||"").slice(0,6000)}}];
+    if(n&&!n.secret&&!$("noteEdit").hidden)return [{k:"note",sk:"note:"+n.id,label:"La note ouverte",on:false,v:{title:String(n.title||"").slice(0,200),body:String(n.body||"").slice(0,6000)}}];
     return []}
   return []}
-function sbContext(app){const out={today:iso(today())};for(const p of sbCtxParts(app))if(sbShare[app+":"+p.k]??p.on)out[p.k]=p.v;return out}
+// choix « partager » : par compte, par app et (pour une note) par note : joindre une note ne joint pas la suivante
+const sbSK=(app,p)=>sbUid()+":"+app+":"+(p.sk||p.k);
+function sbContext(app){const out={today:iso(today())};for(const p of sbCtxParts(app))if(sbShare[sbSK(app,p)]??p.on)out[p.k]=p.v;return out}
 // ---- ouverture ----
 function sbOpen(app,opt){opt=opt||{};sbApp=SB_APPS[app]?app:"journee";sbImg=opt.img||null;
   $("sbSheet").hidden=false;sbRender();
@@ -68,7 +70,7 @@ function sbRender(){const A=SB_APPS[sbApp],msgs=sbMsgs(sbApp);
   $("sbTitle").textContent=SB_NAME;$("sbSub").textContent=`${L("Avec")} ${A.label}`;
   document.querySelectorAll("[data-sbapp]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.sbapp===sbApp)));
   const parts=sbCtxParts(sbApp);
-  $("sbCtx").innerHTML=parts.length?`<span class="small muted">${L("Partagé avec Sid'Bot :")}</span>`+parts.map(p=>{const on=sbShare[sbApp+":"+p.k]??p.on;
+  $("sbCtx").innerHTML=parts.length?`<span class="small muted">${L("Partagé avec Sid'Bot :")}</span>`+parts.map(p=>{const on=sbShare[sbSK(sbApp,p)]??p.on;
     return `<button type="button" class="sb-chip" data-sbctx="${p.k}" aria-pressed="${on}">${on?(IC("tick")||""):""}${L(p.label)}</button>`}).join(""):
     `<span class="small muted">${L(sbApp==="note"?"Ouvre une note pour pouvoir la joindre. Tes mots de passe, documents et notes secrètes ne sont jamais envoyés.":"Rien d'autre que ta question n'est envoyé.")}</span>`;
   const list=$("sbList");
@@ -83,26 +85,29 @@ function sbSuggest(app){return app==="journee"?["Qu'est-ce que j'ai de prévu ce
 const sbActVerb=a=>a.type==="add_task"?"Ajouter à l'agenda":a.type==="add_note"?"Créer la note":a.type==="log_meal"?"Ajouter au repas":"Appliquer";
 const sbActLabel=a=>{const p=a.payload||{};return a.type==="add_task"?`${p.title||""} · ${p.date||""}${p.time?" "+p.time:""}`:a.type==="add_note"?String(p.title||""):a.type==="log_meal"?`${p.name||""} · ${Math.round((p.items||[]).reduce((t,x)=>t+(+x.kcal||0),0))} kcal`:String(p.name||p.title||"")};
 // ---- envoi ----
-async function sbSend(retry){if(sbBusy)return;const i=$("sbIn");let text=i.value.trim();const app=sbApp;
-  if(retry){const last=sbMsgs(app).filter(m=>m.role==="user").pop();if(!last)return;text=last.content}
+async function sbSend(retry){if(sbBusy)return;const i=$("sbIn");let text=i.value.trim();const app=sbApp,uid0=sbUid(),same=()=>sbUid()===uid0;
+  if(retry){const last=sbMsgs(app,uid0).filter(m=>m.role==="user").pop();if(!last)return;text=last.content}
   if(!text)return;
-  const fail=(code,again)=>{sbPush(app,{id:uid(),role:"error",content:SB_ERR[code]||SB_ERR.unavailable,retry:!!again});sbBusy=false;sbRender()};
-  if(!retry){sbPush(app,{id:uid(),role:"user",content:text.slice(0,4000),img:!!sbImg});i.value="";grow(i)}
+  const fail=(code,again)=>{sbBusy=false;if(!same())return;sbPush(app,{id:uid(),role:"error",content:SB_ERR[code]||SB_ERR.unavailable,retry:!!again},uid0);sbRender()};
+  if(!retry){sbPush(app,{id:uid(),role:"user",content:text.slice(0,4000),img:!!sbImg},uid0);i.value="";grow(i)}
   if(!session){fail("auth");return}if(isTrial()){fail("trial");return}if(!navigator.onLine){fail("offline",true);return}
   if(app==="forme"&&!(await nuConsent())){sbBusy=false;sbRender();return}
-  const hist=/** @type {{role:string,content:string,image?:string}[]} */(sbMsgs(app).filter(m=>m.role==="user"||m.role==="assistant").slice(-10).map(m=>({role:m.role,content:String(m.content).slice(0,4000)})));
+  // les derniers échanges, du plus récent au plus ancien, tant que le total reste sous SB_HIST_CHARS
+  const hist=/** @type {{role:string,content:string,image?:string}[]} */([]);let tot=0;
+  for(const m of sbMsgs(app,uid0).filter(m=>m.role==="user"||m.role==="assistant").slice(-10).reverse()){const c=String(m.content).slice(0,4000);if(hist.length&&tot+c.length>SB_HIST_CHARS)break;tot+=c.length;hist.unshift({role:m.role,content:c})}
   if(sbImg&&hist.length){if(sbImg.length>SB_IMG_MAX){fail("bad_request");return}hist[hist.length-1].image=sbImg}
   sbBusy=true;sbRender();sbCtl=new AbortController();const tm=setTimeout(()=>{try{sbCtl.abort()}catch(e){}},SB_TIMEOUT);
   try{const r=await fetch(SUPABASE_URL+"/functions/v1/sidbot",{method:"POST",signal:sbCtl.signal,
       headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",Authorization:"Bearer "+await token()},
       body:JSON.stringify({app,locale:LANG==="en"?"en":"fr",messages:hist,context:sbContext(app)})});
     clearTimeout(tm);let j=null;try{j=await r.json()}catch(e){}
+    if(!same()){sbBusy=false;return} // compte changé pendant la demande : la réponse est ignorée
     if(j&&j.usage)sbUse=j.usage;
     if(!r.ok||!j||j.error){const code=j&&j.error||(r.status===401?"auth":r.status===429?"rate":r.status===504?"timeout":"unavailable");
       fail(code,code==="rate"||code==="timeout"||code==="unavailable");return}
     sbImg=null;
     const actions=(Array.isArray(j.actions)?j.actions:[]).filter(sbActOk).slice(0,5).map(a=>({type:a.type,payload:a.payload,label:String(a.label||"").slice(0,160)}));
-    sbPush(app,{id:uid(),role:"assistant",content:String(j.reply||"").slice(0,8000),actions});sbBusy=false;sbRender()}
+    sbPush(app,{id:uid(),role:"assistant",content:String(j.reply||"").slice(0,8000),actions},uid0);sbBusy=false;sbRender()}
   catch(e){clearTimeout(tm);fail(e&&e.name==="AbortError"&&!$("sbSheet").hidden?"timeout":navigator.onLine?"unavailable":"offline",true)}}
 // ---- actions proposées : validées ici, appliquées seulement après un toucher ----
 const SB_D=/^\d{4}-\d{2}-\d{2}$/,SB_T=/^([01]\d|2[0-3]):[0-5]\d$/;
@@ -127,7 +132,7 @@ $("sbIn").addEventListener("input",e=>grow(e.target));
 $("sbClose").addEventListener("click",sbClose);
 $("sbSheet").addEventListener("click",e=>{if(e.target.id==="sbSheet"){sbClose();return}
   const ap=e.target.closest("[data-sbapp]");if(ap){sbApp=ap.dataset.sbapp;sbImg=null;sbRender();return}
-  const cx=e.target.closest("[data-sbctx]");if(cx){const k=sbApp+":"+cx.dataset.sbctx,p=sbCtxParts(sbApp).find(x=>x.k===cx.dataset.sbctx);sbShare[k]=!(sbShare[k]??(p&&p.on));sbRender();return}
+  const cx=e.target.closest("[data-sbctx]");if(cx){const p=sbCtxParts(sbApp).find(x=>x.k===cx.dataset.sbctx);if(!p)return;const k=sbSK(sbApp,p);sbShare[k]=!(sbShare[k]??p.on);sbRender();return}
   const sg=e.target.closest("[data-sbsugg]");if(sg){$("sbIn").value=sg.textContent;sbSend();return}
   if(e.target.closest("[data-sbretry]")){const h=sbHist();h[sbApp]=sbMsgs(sbApp).filter(m=>m.role!=="error");sbSave(h);sbSend(true);return}
   if(e.target.closest("#sbImgDel")){sbImg=null;sbRender();return}
@@ -146,3 +151,5 @@ $("mcpList").addEventListener("click",async e=>{const b=e.target.closest("[data-
   if(!b.dataset.armed){b.dataset.armed="1";b.textContent=L("Confirmer");return}
   try{await api("/rest/v1/mcp_tokens?hash=eq."+encodeURIComponent(b.dataset.mcpdel),{method:"DELETE",token:await token()});toast("Adresse retirée");mcpLoad()}
   catch(ex){toast("Impossible pour l'instant")}});
+// v76 (revue Codex) : à la déconnexion ou au changement de compte, la demande en cours est annulée et les choix de partage oubliés
+let sbLastUid=null;setInterval(()=>{const u=sbUid();if(sbLastUid!==null&&u!==sbLastUid){if(sbCtl){try{sbCtl.abort()}catch(e){}}sbBusy=false;sbShare={};sbUse={};if(!$("sbSheet").hidden)sbClose()}sbLastUid=u},1000);

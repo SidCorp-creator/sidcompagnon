@@ -473,10 +473,10 @@ function appOutro(app){
 // v25 : les catégories deviennent des « espaces » (page Espaces + barre latérale sur ordinateur)
 // v42 : trois applications dans l'application mère Sid'Compagnon (même compte, mêmes données) ; Réglages et Compte sont dans Sid'Compagnon
 const GROUPS=[
-  {k:"orga",label:"Sid'Journée",app:"agenda",tabs:["plan","todo","pomo"]}, // v41 : Listes retirées ; v42 : Focus (pomodoro) revient
-  {k:"sport",label:"Sid'Forme",app:"fit",tabs:["muscu","nutri","graph"]},
-  {k:"perso",label:"Sid'Note",app:"note",tabs:["notes","docs","pwd"]},
-  {k:"more",label:"Sid'Compagnon",app:"home",tabs:["more","app"]}];
+  {k:"orga",label:MARQUES.journee,app:"agenda",tabs:["plan","todo","pomo"]}, // v41 : Listes retirées ; v42 : Focus (pomodoro) revient
+  {k:"sport",label:MARQUES.forme,app:"fit",tabs:["muscu","nutri","graph"]},
+  {k:"perso",label:MARQUES.note,app:"note",tabs:["notes","docs","pwd"]},
+  {k:"more",label:MARQUES.compagnon,app:"home",tabs:["more","app"]}];
 const APP_GROUPS=GROUPS.slice(0,3);
 const appOf=v=>v==="home"||v==="spaces"?"home":groupOf(v).app;
 const SHORT={plan:"Agenda",todo:"Tâches",lists:"Listes",pomo:"Focus",muscu:"Musculation",nutri:"Nutrition",graph:"Graphiques",notes:"Notes",docs:"Documents",pwd:"Mots de passe",more:"Réglages",app:"Installer l'app"};
@@ -3735,10 +3735,10 @@ $("psForgot").addEventListener("click",async e=>{const b=e.currentTarget;if(!ps)
 // Jamais : mots de passe, documents, notes secrètes. Une note n'est jointe que si la personne le demande.
 // Sid'Bot ne modifie rien seul : il propose des actions (ajouter une activité, une note, un repas) que la personne valide d'un toucher.
 // Historique : les 20 derniers messages par app, sur cet appareil seulement (localStorage, par compte).
-const SB_NAME="Sid'Bot";
-const SB_APPS={journee:{label:"Sid'Journée",app:"agenda",hint:"Ex. : ajoute « réviser chimie » jeudi à 14 h"},
-  forme:{label:"Sid'Forme",app:"fit",hint:"Ex. : propose-moi un dîner riche en protéines"},
-  note:{label:"Sid'Note",app:"note",hint:"Ex. : résume la note ouverte en 5 points"}};
+const SB_NAME=MARQUES.bot;
+const SB_APPS={journee:{label:MARQUES.journee,app:"agenda",hint:"Ex. : ajoute « réviser chimie » jeudi à 14 h"},
+  forme:{label:MARQUES.forme,app:"fit",hint:"Ex. : propose-moi un dîner riche en protéines"},
+  note:{label:MARQUES.note,app:"note",hint:"Ex. : résume la note ouverte en 5 points"}};
 const SB_TOPIC={agenda:"journee",nutri:"forme",muscu:"forme",note:"note"};
 const SB_MAX=20,SB_TIMEOUT=30000,SB_IMG_MAX=1100000;
 const SB_ERR={auth:"Reconnecte-toi pour utiliser Sid'Bot.",quota:"Le quota gratuit de Sid'Bot est épuisé pour aujourd'hui. Il revient demain : rien n'est facturé.",

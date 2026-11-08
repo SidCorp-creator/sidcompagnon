@@ -1,8 +1,8 @@
 # Sid'Compagnon
 
-> Application personnelle (PWA) éditée par SidCorp, en français, anglais et néerlandais. Un seul compte, trois applications : sid'agenda (agenda, tâches du jour, minuteur de concentration), sid'fit (programme de musculation, nutrition, graphiques) et sid'note (notes et dossiers, documents, mots de passe chiffrés).
+> Application personnelle (PWA) éditée par SidCorp, en français et en anglais. Un seul compte, trois applications : Sid'Journée (agenda, tâches du jour, minuteur de concentration), Sid'Forme (programme de musculation, nutrition, graphiques) et Sid'Note (notes et dossiers, documents, mots de passe chiffrés). Sid'Bot, l'assistant intégré, répond dans les trois.
 
-Les données des personnes sont privées (compte Supabase, Europe) et ne sont pas accessibles publiquement. Un connecteur MCP permet au Claude de chaque personne de lire et écrire dans son propre compte, avec une clé personnelle.
+Les données des personnes sont privées (compte Supabase, Europe) et ne sont pas accessibles publiquement. Sid'Bot ne reçoit que la question et ce que la personne choisit de partager ; jamais les mots de passe, documents ni notes secrètes.
 
 ## Pages publiques
 - [Politique de confidentialité](https://sidcompagnon.com/confidentialite.html)

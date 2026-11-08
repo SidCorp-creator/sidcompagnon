@@ -17,3 +17,4 @@ interface Storage { setItem(key: string, value: any): void }
 
 // v76 : défini par 39-nutrition.js (lot nutrition) : ajoute un repas proposé par Sid'Bot, après confirmation ; renvoie true si c'est fait
 declare function nuLogFromBot(p: any): boolean;
+declare const MARQUES: Readonly<{ compagnon: string; journee: string; forme: string; note: string; bot: string }>;

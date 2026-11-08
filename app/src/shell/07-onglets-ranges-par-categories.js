@@ -3,10 +3,10 @@
 // v25 : les catégories deviennent des « espaces » (page Espaces + barre latérale sur ordinateur)
 // v42 : trois applications dans l'application mère Sid'Compagnon (même compte, mêmes données) ; Réglages et Compte sont dans Sid'Compagnon
 const GROUPS=[
-  {k:"orga",label:"Sid'Journée",app:"agenda",tabs:["plan","todo","pomo"]}, // v41 : Listes retirées ; v42 : Focus (pomodoro) revient
-  {k:"sport",label:"Sid'Forme",app:"fit",tabs:["muscu","nutri","graph"]},
-  {k:"perso",label:"Sid'Note",app:"note",tabs:["notes","docs","pwd"]},
-  {k:"more",label:"Sid'Compagnon",app:"home",tabs:["more","app"]}];
+  {k:"orga",label:MARQUES.journee,app:"agenda",tabs:["plan","todo","pomo"]}, // v41 : Listes retirées ; v42 : Focus (pomodoro) revient
+  {k:"sport",label:MARQUES.forme,app:"fit",tabs:["muscu","nutri","graph"]},
+  {k:"perso",label:MARQUES.note,app:"note",tabs:["notes","docs","pwd"]},
+  {k:"more",label:MARQUES.compagnon,app:"home",tabs:["more","app"]}];
 const APP_GROUPS=GROUPS.slice(0,3);
 const appOf=v=>v==="home"||v==="spaces"?"home":groupOf(v).app;
 const SHORT={plan:"Agenda",todo:"Tâches",lists:"Listes",pomo:"Focus",muscu:"Musculation",nutri:"Nutrition",graph:"Graphiques",notes:"Notes",docs:"Documents",pwd:"Mots de passe",more:"Réglages",app:"Installer l'app"};

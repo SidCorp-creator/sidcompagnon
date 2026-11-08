@@ -33,3 +33,5 @@ Format : exercice · image · décision · correction demandée. « VALIDÉ » =
 - Dips lestés · 0 et 1 · VALIDÉ (ceinture, chaîne, disque visibles).
 - Goblet squat · 0 et 1 · VALIDÉ (haltère vertical).
 - Soulevé de terre roumain haltères · 0 · VALIDÉ. · 1 · **REFUSÉ** : tête relevée, nuque en extension. Demandé : même posture (hanches en arrière, dos plat, genoux légèrement fléchis, haltères près des jambes à mi-tibia) avec **nuque neutre**, regard vers le sol environ 1 m devant les pieds.
+
+- Élévations en W au sol · 1-v3 (vue de côté) · VALIDÉ (paire = 0-v2 + 1-v3).

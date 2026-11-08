@@ -2757,7 +2757,7 @@ html .muq-seg button[aria-pressed="true"],html .muq-chips .pill[aria-pressed="tr
 .muq-hit{min-height:44px;text-align:left;padding:8px 12px;border-radius:10px;border:1px solid var(--line,#e1e1e1);background:transparent;color:var(--ink,inherit);font:inherit}
 .muq-warn{display:flex;gap:8px;align-items:flex-start;margin:0;padding:10px 12px;border-radius:12px;border:1px solid var(--warn,#9a5b00);font-size:15px;flex-wrap:wrap}
 .muq-warn svg.i{color:var(--warn,#9a5b00);flex:none;width:20px;height:20px}
-.muq-nav{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:12px;position:sticky;bottom:0;padding-top:8px;background:var(--surface,#fff)}
+.muq-nav{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;position:sticky;bottom:0;padding-top:8px;background:var(--surface,#fff)}
 .muq-nav .btn{min-height:48px}
 .muq-recap{display:grid;gap:0;margin:0}
 .muq-rr{display:grid;grid-template-columns:minmax(0,9em) minmax(0,1fr) auto;gap:8px 12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line,#e1e1e1)}

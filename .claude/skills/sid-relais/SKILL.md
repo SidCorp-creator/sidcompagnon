@@ -11,7 +11,7 @@ Skill de projet (v77, 8 nov. 2026). Commun : `.claude/skills/sid-relais/` (Claud
 - Consulter d'abord la **carte** (§ 5) et le dernier `docs/refonte/relais-codex-NN.md` ; ne pas réexplorer ce qui y est conclu.
 - Chercher avant de lire : `grep -n`/`rg -n` avec un motif précis, puis lire **la plage utile** (`sed -n a,bp`, `Read offset/limit`). Jamais un fichier de plus de 200 lignes en entier sans raison (`site/app.js`, `i18n.js`, `index.html`, `app.css` : toujours par motif).
 - Sorties bornées : `| head`, `| tail`, `cut -c1-200`, `grep -c` pour compter, `--stat` pour un diff.
-- Charger seulement les skills du lot (ex. `sid-charte` pour l'interface). Pas de sous-agent sans bénéfice clair (il repart de zéro).
+- Charger seulement les skills du lot (ex. `sid-charte` pour l'interface). Pas de sous-agent sans bénéfice clair (il repart de zéro). Ce skill n'autorise pas à lancer d'autres agents : le travail en cours est limité à Claude Code et Codex.
 
 ## 2. Pendant le travail
 - Un responsable par fichier (tableau du `README.md` ou du relais). Fichier de l'autre : demander ou envoyer un patch.
@@ -31,9 +31,10 @@ Ouvert : question précise ou prochaine action
 Interdits : recopier l'historique, un gros fichier, une sortie d'outil entière, des confirmations sans contenu (« bien reçu, je continue »), un pourcentage d'économie non mesuré.
 
 ## 4. Canal tmux-bridge (pièges vérifiés)
-- `read` → `message` → `read` → `keys Enter`. Puis **une seule** relecture courte de la ligne de saisie, pour vérifier l'envoi (exigence de Sid : un texte resté dans la saisie n'est pas un échange) : s'il est encore sur la ligne `›`, renvoyer `keys Enter`. Ce n'est jamais une attente de réponse : aucune relecture en boucle (règle `smux`).
-- Codex occupé : Entrée ne soumet pas (« tab to queue message ») → `keys codex Tab`, vérifier « Queued follow-up inputs ».
-- Ne jamais attendre une réponse en relisant en boucle : elle arrive dans le panneau de l'expéditeur.
+- Règle `smux` : `read` → `message` → `read` (vérifier que le texte est bien dans la saisie, **avant** Entrée) → `read` → `keys Enter`. Chaque `keys` est précédé du `read` exigé par le garde.
+- **Exception locale demandée par Sid** (8 nov.), qui s'écarte de `smux` : une seule relecture courte de la ligne de saisie après Entrée, pour constater que le message est parti (un texte resté dans la saisie n'est pas un échange). Jamais pour attendre la réponse, jamais en boucle.
+- Si le TUI de Codex affiche réellement « tab to queue message », envoyer `keys codex Tab` (après un `read`) et vérifier « Queued follow-up inputs ». Pas de Tab systématique : il dépend de la version et de ce qui est visible.
+- La réponse arrive dans le panneau de l'expéditeur.
 
 ## 5. Carte du projet (à tenir courte et à jour)
 - Dépôt réel : `~/sidcompagnon` (main = production Vercel). Worktrees : Claude `~/sidcompagnon-claude`, Codex `~/sidcompagnon-codex`.

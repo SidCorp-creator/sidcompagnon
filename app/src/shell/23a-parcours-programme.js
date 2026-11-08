@@ -5,7 +5,8 @@
 const MUQ_GOALS=[["muscle","Prendre du muscle"],["force","Gagner en force"],["gras","Perdre du gras"],["forme","Être en forme"],["endu","Gagner en endurance"]];
 const MUQ_LEVELS=[["deb","Débutant","moins de 6 mois de pratique"],["inter","Intermédiaire","6 mois à 2 ans"],["conf","Confirmé","plus de 2 ans, technique sûre"]];
 const MUQ_PLACES=[["home","À la maison"],["gym","En salle"],["outdoor","Dehors"]];
-const MUQ_EQUIP=[["none","Rien (poids du corps)"],["bands","Élastiques"],["dumbbells","Haltères"],["kettlebell","Kettlebell"],["bench","Banc"],["pullup","Barre de traction"],["barbell","Barre et disques"]];
+const MUQ_EQUIP=[["none","Rien (poids du corps)"],["bands","Élastiques"],["dumbbells","Haltères"],["kettlebell","Kettlebell"],["bench","Banc"],["pullup","Barre de traction"],["barbell","Barre et disques"],["machines","Machines guidées"],["cables","Poulies"]];
+const MUQ_GYM=["dumbbells","kettlebell","bench","pullup","barbell","machines","cables","bands"];
 const MUQ_ZONES=[["shoulder","Épaules"],["back","Bas du dos"],["knee","Genoux"],["wrist","Poignets"],["hip","Hanches"]];
 const MUQ_PAIN=[["none","Non"],["some","Une gêne légère"],["yes","Oui, une douleur"]];
 const MUQ_OTHER=[["run","Course à pied"],["bike","Vélo"],["swim","Natation"],["team","Sport collectif"],["combat","Sport de combat"],["walk","Beaucoup de marche"]];
@@ -17,10 +18,10 @@ const MUQ_STEPS=[
   {id:"level",t:"Quelle est ton expérience en musculation ?",why:"Elle décide du nombre d'exercices et de la difficulté des mouvements.",req:a=>!!a.level},
   {id:"freq",t:"Combien de séances par semaine, et combien de temps ?",why:"Le programme tient dans ce temps-là, échauffement compris.",req:a=>!!a.days&&!!a.dur},
   {id:"place",t:"Où vas-tu t'entraîner ?",why:"On ne te propose que des exercices faisables là où tu es.",req:a=>!!a.place},
-  {id:"equip",t:"Quel matériel as-tu ?",why:"Coche tout ce qui est disponible ; sans rien, le programme se fait au poids du corps.",req:a=>(a.equip||[]).length>0,show:a=>a.place!=="gym"},
+  {id:"equip",t:"Quel matériel as-tu ?",why:"Coche tout ce qui est disponible ; sans rien, le programme se fait au poids du corps.",req:a=>(a.equip||[]).length>0},
   {id:"prefs",t:"Des exercices à privilégier ou à éviter ?",why:"Facultatif : tes exclusions sont toujours respectées.",opt:true},
   {id:"body",t:"Des zones à ménager ?",why:"Facultatif. Sert seulement à éviter certains mouvements ; ce n'est pas un avis médical.",opt:true},
-  {id:"other",t:"Pratiques-tu d'autres sports ?",why:"Facultatif. La récupération en tient compte (moins de jambes lourdes avant une course, par exemple).",opt:true},
+  {id:"other",t:"Pratiques-tu d'autres sports ?",why:"Facultatif. Avec beaucoup d'autres activités, le volume de musculation reste modéré pour laisser récupérer.",opt:true,req:a=>(a.other||[]).every(o=>Number.isInteger(o.perWeek)&&o.perWeek>=1&&o.perWeek<=14)},
   {id:"notes",t:"Une précision ?",why:"Facultatif. Utilisée seulement par Sid'Bot quand tu crées avec lui.",opt:true},
   {id:"recap",t:"Récapitulatif",why:"Vérifie, corrige une réponse si besoin, puis crée ton programme."}];
 const muqSteps=a=>MUQ_STEPS.filter(s=>!s.show||s.show(a));
@@ -30,12 +31,12 @@ function muqFromProfile(p){p=p||{};const eq=p.equip;
     place:p.place||(eq==="gym"?"gym":eq==="db"||eq==="bw"?"home":""),
     equip:Array.isArray(p.equip)?p.equip.slice():eq==="db"?["dumbbells"]:eq==="bw"?["none"]:[],
     prefer:(p.prefer||p.must||[]).slice(0,12),avoidEx:(p.avoidEx||p.never||[]).slice(0,20),avoidZones:(p.avoidZones||p.avoid||[]).slice(0,8),
-    pain:p.pain||"",other:(p.other||[]).slice(0,6),notes:typeof p.notes==="string"?p.notes.slice(0,600):""}}
+    pain:p.pain||"",other:(p.other||[]).slice(0,6).map(o=>typeof o==="string"?{sport:o}:o),notes:typeof p.notes==="string"?p.notes.slice(0,600):""}}
 let muq=null; // {answers, step, back:"recap"|null, preview:{plan,why,warnings,est,src}, busy, req}
 function muqSave(){data.prefs.muDraft={v:1,answers:muq.answers,step:muq.step,at:new Date().toISOString()};save()}
 function muqOpen(opt){opt=opt||{};const d=data.prefs.muDraft;
   const a=opt.fresh||!d||!d.answers?muqFromProfile(PL()&&PL().profile):d.answers;
-  muq={answers:JSON.parse(JSON.stringify(a)),step:opt.step||(!opt.fresh&&d&&d.step)||"goal",back:null,preview:null,busy:false,req:null,q:""};
+  muq={uid:sbUid(),answers:JSON.parse(JSON.stringify(a)),step:opt.step||(!opt.fresh&&d&&d.step)||"goal",back:null,preview:null,busy:false,req:null,q:""};
   if(opt.step==="recap")muq.step="recap";
   $("coachSheet").hidden=false;muqRender()}
 function muqClose(){if(muq&&!muq.preview)muqSave();$("coachSheet").hidden=true}
@@ -49,8 +50,8 @@ function muqExNames(){return ((window.SIDFIT_EXERCICES&&window.SIDFIT_EXERCICES.
 function muqPicker(k,label){const sel=muq.answers[k]||[],q=muq.q&&muq.qk===k?muq.q:"",n=norm(q);
   const hits=n?muqExNames().filter(x=>norm(x).includes(n)&&!sel.includes(x)).slice(0,8):[];
   return `<div class="muq-pick"><label class="eyebrow" for="muqQ-${k}">${L(label)}</label><input type="search" id="muqQ-${k}" class="search" data-muqq="${k}" value="${esc(q)}" placeholder="${L("Rechercher un exercice")}" autocomplete="off" enterkeyhint="search">
-    ${hits.length?`<div class="muq-hits">${hits.map(h=>`<button type="button" class="muq-hit" data-muqadd="${k}" data-v="${esc(h)}"><span class="notr">${esc(h)}</span></button>`).join("")}</div>`:n?`<div class="small muted">${L("Aucun exercice trouvé")}</div>`:""}
-    <div class="chips">${sel.map(x=>`<span class="pill on"><span class="notr">${esc(x)}</span><button type="button" class="x" data-muqrm="${k}" data-v="${esc(x)}" aria-label="${L("Retirer")} ${esc(x)}"><span class="gi gi-close" aria-hidden="true"></span></button></span>`).join("")}</div></div>`}
+    ${hits.length?`<div class="muq-hits">${hits.map(h=>`<button type="button" class="muq-hit" data-muqadd="${k}" data-v="${esc(h)}">${esc(L(h))}</button>`).join("")}</div>`:n?`<div class="small muted">${L("Aucun exercice trouvé")}</div>`:""}
+    <div class="chips">${sel.map(x=>`<span class="pill on"><span>${esc(L(x))}</span><button type="button" class="x" data-muqrm="${k}" data-v="${esc(x)}" aria-label="${L("Retirer")} ${esc(L(x))}"><span class="gi gi-close" aria-hidden="true"></span></button></span>`).join("")}</div></div>`}
 function muqStepBody(id,a){
   if(id==="goal")return muqChoice("goal",MUQ_GOALS,a.goal,2);
   if(id==="level")return muqChoice("level",MUQ_LEVELS,a.level,1);
@@ -61,12 +62,12 @@ function muqStepBody(id,a){
   if(id==="prefs")return muqPicker("prefer","À privilégier")+muqPicker("avoidEx","À éviter");
   if(id==="body")return `${muqMulti("avoidZones",MUQ_ZONES,a.avoidZones)}<span class="eyebrow">${L("As-tu une douleur en ce moment ?")}</span>${muqChoice("pain",MUQ_PAIN,a.pain,3)}
     ${a.pain==="yes"?`<p class="muq-warn" role="note">${IC("alert")||""}<span>${L("En cas de douleur, demande d'abord l'avis d'un médecin ou d'un kinésithérapeute. Le programme évitera les zones cochées, sans adaptation médicale.")}</span></p>`:""}`;
-  if(id==="other")return muqMulti("other",MUQ_OTHER,(a.other||[]).map(o=>o.sport||o));
+  if(id==="other")return muqMulti("other",MUQ_OTHER,(a.other||[]).map(o=>o.sport||o))+(a.other||[]).map(o=>`<div class="muq-freq"><span class="eyebrow">${esc(muqLbl(MUQ_OTHER,o.sport))} : ${L("combien de fois par semaine ?")}</span>${muqChoice("perWeek:"+o.sport,[1,2,3,4,5,6,7].map(n=>[String(n),String(n)]),o.perWeek,7)}</div>`).join("");
   if(id==="notes")return `<label class="eyebrow" for="muqNotes">${L("Ta précision")}</label><textarea id="muqNotes" rows="4" maxlength="600" placeholder="${L("Ex. je veux des abdos à chaque séance")}">${esc(a.notes||"")}</textarea>`;
   if(id==="recap"){const rows=[["goal","Objectif",muqLbl(MUQ_GOALS,a.goal)],["level","Expérience",muqLbl(MUQ_LEVELS,a.level)],["freq","Rythme",a.days&&a.dur?`${a.days} × ${a.dur} min ${L("par semaine")}`:""],
-      ["place","Lieu",muqLbl(MUQ_PLACES,a.place)],...(a.place!=="gym"?[["equip","Matériel",(a.equip||[]).map(e=>muqLbl(MUQ_EQUIP,e)).join(", ")]]:[]),
+      ["place","Lieu",muqLbl(MUQ_PLACES,a.place)],["equip","Matériel",(a.equip||[]).map(e=>muqLbl(MUQ_EQUIP,e)).join(", ")],
       ["prefs","Préférences",[...(a.prefer||[]).map(x=>"+ "+x),...(a.avoidEx||[]).map(x=>"− "+x)].join(", ")],["body","Zones à ménager",[...(a.avoidZones||[]).map(z=>muqLbl(MUQ_ZONES,z)),a.pain&&a.pain!=="none"?muqLbl(MUQ_PAIN,a.pain):""].filter(Boolean).join(", ")],
-      ["other","Autres sports",(a.other||[]).map(o=>muqLbl(MUQ_OTHER,o.sport||o)).join(", ")],["notes","Précision",a.notes||""]];
+      ["other","Autres sports",(a.other||[]).map(o=>`${muqLbl(MUQ_OTHER,o.sport||o)}${o.perWeek?` (${o.perWeek}×/${L("sem.")})`:""}`).join(", ")],["notes","Précision",a.notes||""]];
     const missing=muqSteps(a).filter(s=>s.req&&!s.req(a));
     return `<dl class="muq-recap">${rows.map(([s,k,v])=>`<div class="muq-rr"><dt>${L(k)}</dt><dd class="notr">${v?esc(v):`<span class="muted">${L("Non renseigné")}</span>`}</dd><button type="button" class="linkbtn" data-muqedit="${s}" aria-label="${L("Modifier")} : ${L(k)}">${L("Modifier")}</button></div>`).join("")}</dl>
       ${missing.length?`<p class="muq-warn" role="alert">${IC("alert")||""}<span>${L("Il manque une réponse")} : ${missing.map(s=>L(s.t)).join(" ; ")}</span></p>`:""}
@@ -117,7 +118,7 @@ function muqRenderPreview(){const pv=muq.preview,box=$("muqBody"),old=PL();$("co
     ${pv.why.length?`<div class="muq-why-box"><b>${L("Pourquoi cette organisation")}</b><ul>${pv.why.map(w=>`<li>${esc(w)}</li>`).join("")}</ul></div>`:""}
     ${pv.warnings.map(w=>`<p class="muq-warn" role="note">${IC("alert")||""}<span>${esc(w)}</span></p>`).join("")}
     <ol class="muq-days">${pv.plan.days.map((d,di)=>`<li class="muq-day"><div class="muq-dh"><b class="notr">${esc(d.name||L("Séance")+" "+(di+1))}</b>${pv.est[di]?`<span class="small muted">≈ ${pv.est[di]} min</span>`:""}</div>
-      <ul class="muq-ex">${(d.ex||[]).map((e,ei)=>`<li><div class="grow"><span class="notr muq-exn">${esc(e.name)}</span><span class="small muted">${esc([e.sets?`${e.sets} × ${e.reps||""}`.trim():"",e.rest?`${L("repos")} ${muqRest(e.rest)}`:"",muqRir(e.rir)].filter(Boolean).join(" · "))}</span>${e.note?`<span class="small muted notr">${esc(e.note)}</span>`:""}</div>
+      <ul class="muq-ex">${(d.ex||[]).map((e,ei)=>`<li><div class="grow"><span class="muq-exn">${esc(L(e.name))}</span><span class="small muted">${esc([e.sets?`${e.sets} × ${e.reps||""}`.trim():"",e.rest?`${L("repos")} ${muqRest(e.rest)}`:"",muqRir(e.rir)].filter(Boolean).join(" · "))}</span>${e.note?`<span class="small muted notr">${esc(e.note)}</span>`:""}</div>
         <button type="button" class="linkbtn" data-muqalt="${di}:${ei}">${L("Remplacer")}</button>${muq.alt===di+":"+ei?muqAltList(e):""}</li>`).join("")}</ul></li>`).join("")}</ol>
     <p class="small muted">${L("Charges : commence léger, avec une charge que tu peux soulever 2 à 3 répétitions de plus que prévu ; augmente quand toutes les séries atteignent le haut de la fourchette.")} ${L("Ce programme n'est pas un avis médical.")}</p>
     ${sbReadyForProgram()?`<div class="muq-change"><label class="eyebrow" for="muqChange">${L("Demander une modification à Sid'Bot")}</label><textarea id="muqChange" rows="2" maxlength="600" placeholder="${L("Ex. remplace la séance jambes du vendredi par du haut du corps")}"></textarea><button type="button" class="btn ghost" data-muqchange="1" ${muq.busy?"disabled":""}>${L("Demander")}</button></div>`:""}
@@ -127,17 +128,18 @@ function muqRenderPreview(){const pv=muq.preview,box=$("muqBody"),old=PL();$("co
       <div class="two"><button type="button" class="btn ghost" data-muqcancel="1">${L("Annuler")}</button><button type="button" class="btn" data-muqactivate="2">${L("Oui, activer")}</button></div></div>`:""}
     <div class="muq-nav"><button type="button" class="btn ghost" data-muqback="1">${L("Modifier mes réponses")}</button><button type="button" class="btn" data-muqactivate="1" ${muq.busy?"disabled":""}>${L("Enregistrer et activer")}</button></div>`}
 function muqAltList(e){const alts=typeof muAlternatives==="function"?muAlternatives(e.name,muq.answers):[];
-  return `<div class="muq-alts" role="group" aria-label="${L("Remplacer par")}">${alts.length?alts.slice(0,6).map(n=>`<button type="button" class="pill" data-muqpick="${esc(n)}"><span class="notr">${esc(n)}</span></button>`).join(""):`<span class="small muted">${L("Aucune alternative compatible avec ton matériel et tes exclusions.")}</span>`}</div>`}
+  return `<div class="muq-alts" role="group" aria-label="${L("Remplacer par")}">${alts.length?alts.slice(0,6).map(n=>`<button type="button" class="pill" data-muqpick="${esc(n)}">${esc(L(n))}</button>`).join(""):`<span class="small muted">${L("Aucune alternative compatible avec ton matériel et tes exclusions.")}</span>`}</div>`}
 // ---- activation : archive l'ancien programme, jamais de remplacement silencieux ----
-function muqActivate(){const pv=muq.preview;if(!pv||muq.activating)return;muq.activating=true;
+function muqActivate(){const pv=muq.preview;if(!pv||muq.activating)return;if(muq.uid&&muq.uid!==sbUid()){muq=null;$("coachSheet").hidden=true;return}muq.activating=true;
   try{const a=muq.answers,pl={...pv.plan,id:pv.plan.id||uid(),v:undefined,profile:{...a},at:new Date().toISOString(),upd:Date.now(),src:pv.src==="ia"?"ia":"app"};delete pl.v;
     planApply(pl);data.prefs.muGoal=a.goal;delete data.prefs.muDraft;save();
     $("coachSheet").hidden=true;muq=null;renderMuscu();toast("Programme activé : tes anciennes séances restent dans « Mes séances »")}
   finally{if(muq)muq.activating=false}}
 // ---- événements ----
 $("muqBody").addEventListener("click",e=>{const t=e.target.closest("button");if(!t||!muq)return;const a=muq.answers,d=t.dataset;
-  if(d.muq){const k=d.muq,v=d.v;a[k]=k==="days"||k==="dur"?+v:v;if(k==="place"&&v==="gym")a.equip=[];muqSave();muqRender();return}
-  if(d.muqm){const k=d.muqm,v=d.v;if(k==="other"){const cur=(a.other||[]).map(o=>o.sport||o);a.other=(cur.includes(v)?cur.filter(x=>x!==v):[...cur,v]).map(s=>({sport:s}))}
+  if(d.muq&&d.muq.startsWith("perWeek:")){const sp=d.muq.slice(8),o=(a.other||[]).find(x=>x.sport===sp);if(o)o.perWeek=+d.v;muqSave();muqRender();return}
+  if(d.muq){const k=d.muq,v=d.v;a[k]=k==="days"||k==="dur"?+v:v;if(k==="place"&&v==="gym"&&(!(a.equip||[]).length||(a.equip.length===1&&a.equip[0]==="none")))a.equip=MUQ_GYM.slice(); /* « rien » d'un lieu précédent ne suit pas en salle */if(k==="place"&&v!=="gym")a.equip=(a.equip||[]).filter(e=>e!=="machines"&&e!=="cables");muqSave();muqRender();return}
+  if(d.muqm){const k=d.muqm,v=d.v;if(k==="other"){const cur=a.other||[];a.other=cur.some(o=>o.sport===v)?cur.filter(o=>o.sport!==v):[...cur,{sport:v}]}
     else{let cur=a[k]||[];if(k==="equip"&&v==="none")cur=cur.includes("none")?[]:["none"];else{cur=cur.filter(x=>x!=="none"||k!=="equip");cur=cur.includes(v)?cur.filter(x=>x!==v):[...cur,v]}a[k]=cur}
     muqSave();muqRender();return}
   if(d.muqadd){const k=d.muqadd;a[k]=[...(a[k]||[]),d.v].slice(0,20);if(k==="prefer")a.avoidEx=(a.avoidEx||[]).filter(x=>x!==d.v);else a.prefer=(a.prefer||[]).filter(x=>x!==d.v);muq.q="";muqSave();muqRender();const i=$("muqQ-"+k);if(i)i.focus();return}
@@ -149,7 +151,9 @@ $("muqBody").addEventListener("click",e=>{const t=e.target.closest("button");if(
   if(d.muqsaveprefs){const pl=PL();if(pl){pl.profile={...(pl.profile||{}),...a};pl.upd=Date.now();M().upd=Date.now()}data.prefs.muGoal=a.goal;delete data.prefs.muDraft;save();$("coachSheet").hidden=true;muq=null;renderMuscu();toast("Préférences enregistrées");return}
   if(d.muqback){muq.preview=null;muq.confirm=false;muq.err="";muqGo("recap");return}
   if(d.muqalt){muq.alt=muq.alt===d.muqalt?null:d.muqalt;muqRender();return}
-  if(d.muqpick){const [di,ei]=String(muq.alt||"").split(":").map(Number),ex=muq.preview.plan.days[di]&&muq.preview.plan.days[di].ex[ei];if(ex){ex.name=d.muqpick;delete ex.note}muq.alt=null;muqRender();return}
+  if(d.muqpick){const [di,ei]=String(muq.alt||"").split(":").map(Number);muq.alt=null;
+    try{const r=muReplace(muq.preview.plan,di,ei,d.muqpick,a,LANG==="en"?"en":"fr");muq.preview={...muq.preview,plan:r.plan,why:r.why||muq.preview.why,warnings:r.warnings||[],est:r.est||muq.preview.est};muq.err=""}
+    catch(err){muq.err=err&&err.message?err.message:"Remplacement impossible."}muqRender();return}
   if(d.muqchange){const c=$("muqChange"),txt=c?c.value.trim():"";if(!txt){toast("Écris d'abord ta demande");return}if(muq.busy)return;const reqId=uid();muq.req=reqId;muq.busy="ia";muq.err="";muqRender();
     muqAskSidbot(a,reqId,txt,muq.preview&&muq.preview.plan).then(r=>{if(muq.req!==reqId)return;if(!r.plan||!Array.isArray(r.plan.days)||!r.plan.days.length)throw new Error("Le programme reçu est incomplet.");muq.preview={plan:r.plan,why:r.why||[],warnings:r.warnings||[],est:r.est||[],src:"ia"};muq.busy=false;muqRender()})
       .catch(err=>{if(muq.req!==reqId)return;muq.busy=false;muq.err=err.message||"Modification impossible pour l'instant.";muqRender()});return}

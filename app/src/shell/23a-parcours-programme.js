@@ -111,7 +111,7 @@ async function muqAskSidbot(a,reqId,change,current){const ctl=new AbortControlle
   catch(e){if(e&&e.name==="AbortError")throw new Error(SB_ERR.timeout);if(e instanceof TypeError)throw new Error(SB_ERR.offline);throw e}
   finally{clearTimeout(tm)}}
 // ---- aperçu ----
-const muqRest=s=>{s=+s||0;return s>=60?(Math.round(s/60*10)/10+"").replace(".",",")+" min":s+" s"};
+const muqRest=s=>{s=+s||0;return s>=60?(Math.round(s/60*10)/10+"").replace(".",LANG==="en"?".":",")+" min":s+" s"};
 const muqRir=r=>{const n=parseInt(r,10);return isFinite(n)?`${L("garde")} ${n} ${L(n>1?"répétitions en réserve":"répétition en réserve")}`:""};
 function muqRenderPreview(){const pv=muq.preview,box=$("muqBody"),old=PL();$("coachTitle").textContent=L("Aperçu du programme");
   box.innerHTML=`<p class="small muted">${L(pv.src==="ia"?"Composé par Sid'Bot à partir de tes réponses, vérifié par l'app.":"Créé par les règles de l'app à partir de tes réponses.")} ${L("Rien n'est activé tant que tu n'as pas confirmé.")}</p>

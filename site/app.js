@@ -129,7 +129,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="76.1";const errSent=new Set();
+const APP_V="77";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -2622,7 +2622,7 @@ async function muqAskSidbot(a,reqId,change,current){const ctl=new AbortControlle
   catch(e){if(e&&e.name==="AbortError")throw new Error(SB_ERR.timeout);if(e instanceof TypeError)throw new Error(SB_ERR.offline);throw e}
   finally{clearTimeout(tm)}}
 // ---- aperçu ----
-const muqRest=s=>{s=+s||0;return s>=60?(Math.round(s/60*10)/10+"").replace(".",",")+" min":s+" s"};
+const muqRest=s=>{s=+s||0;return s>=60?(Math.round(s/60*10)/10+"").replace(".",LANG==="en"?".":",")+" min":s+" s"};
 const muqRir=r=>{const n=parseInt(r,10);return isFinite(n)?`${L("garde")} ${n} ${L(n>1?"répétitions en réserve":"répétition en réserve")}`:""};
 function muqRenderPreview(){const pv=muq.preview,box=$("muqBody"),old=PL();$("coachTitle").textContent=L("Aperçu du programme");
   box.innerHTML=`<p class="small muted">${L(pv.src==="ia"?"Composé par Sid'Bot à partir de tes réponses, vérifié par l'app.":"Créé par les règles de l'app à partir de tes réponses.")} ${L("Rien n'est activé tant que tu n'as pas confirmé.")}</p>
@@ -2649,7 +2649,7 @@ function muqActivate(){const pv=muq.preview;if(!pv||muq.activating)return;if(muq
 // ---- événements ----
 $("muqBody").addEventListener("click",e=>{const t=e.target.closest("button");if(!t||!muq)return;const a=muq.answers,d=t.dataset;
   if(d.muq&&d.muq.startsWith("perWeek:")){const sp=d.muq.slice(8),o=(a.other||[]).find(x=>x.sport===sp);if(o)o.perWeek=+d.v;muqSave();muqRender();return}
-  if(d.muq){const k=d.muq,v=d.v;a[k]=k==="days"||k==="dur"?+v:v;if(k==="place"&&v==="gym"&&(!(a.equip||[]).length||(a.equip.length===1&&a.equip[0]==="none")))a.equip=MUQ_GYM.slice(); // « rien » d'un lieu précédent ne doit pas suivre en salleif(k==="place"&&v!=="gym")a.equip=(a.equip||[]).filter(e=>e!=="machines"&&e!=="cables");muqSave();muqRender();return}
+  if(d.muq){const k=d.muq,v=d.v;a[k]=k==="days"||k==="dur"?+v:v;if(k==="place"&&v==="gym"&&(!(a.equip||[]).length||(a.equip.length===1&&a.equip[0]==="none")))a.equip=MUQ_GYM.slice(); /* « rien » d'un lieu précédent ne suit pas en salle */if(k==="place"&&v!=="gym")a.equip=(a.equip||[]).filter(e=>e!=="machines"&&e!=="cables");muqSave();muqRender();return}
   if(d.muqm){const k=d.muqm,v=d.v;if(k==="other"){const cur=a.other||[];a.other=cur.some(o=>o.sport===v)?cur.filter(o=>o.sport!==v):[...cur,{sport:v}]}
     else{let cur=a[k]||[];if(k==="equip"&&v==="none")cur=cur.includes("none")?[]:["none"];else{cur=cur.filter(x=>x!=="none"||k!=="equip");cur=cur.includes(v)?cur.filter(x=>x!==v):[...cur,v]}a[k]=cur}
     muqSave();muqRender();return}
@@ -2736,9 +2736,12 @@ function createMuscuEngine(catalogue, deps={}) {
     const strength=a.goal==='force'&&a.level!=='deb',endurance=a.goal==='endu',hold=e.nom==='Planche sur les avant-bras';
     const reps=hold?'20–30 s':strength&&compound?'4–6':endurance?'12–18':compound?'8–12':'10–15';
     const rest=hold?60:strength&&compound?150:endurance?45:compound?90:60,rir=a.level==='deb'?'3':'2';
-    const note=tr(locale,`Garde ${rir} répétitions possibles en fin de série. Commence léger ; quand toutes les séries atteignent le haut de la fourchette avec une technique stable, augmente progressivement la résistance.`,`Finish each set with ${rir} repetitions in reserve. Start light; when every set reaches the top of the range with steady technique, gradually increase resistance.`);
-    return {name:e.nom,pat:e.pat,sets,reps,rest,rir,rpe:a.level==='deb'?'6–7':'7–8',note:hold?tr(locale,'Respire régulièrement, arrête avant de perdre la posture. Allonge progressivement la tenue sans douleur.','Breathe steadily and stop before losing posture. Gradually extend a pain-free hold.'):note}
+    const note=hold?tr(locale,'Respire régulièrement et arrête avant de perdre la posture.','Breathe steadily and stop before losing posture.'):
+      e.note?tr(locale,e.note,e.note_en||(e.note==='Seulement si sans douleur'?'Only if pain-free':e.note)):'';
+    return {name:e.nom,pat:e.pat,sets,reps,rest,rir,rpe:a.level==='deb'?'6–7':'7–8',note}
   }
+  const progression=locale=>tr(locale,'Commence léger. Quand toutes les séries atteignent le haut de la fourchette avec une technique stable, augmente progressivement la résistance. Pour les exercices chronométrés, augmente progressivement la durée sans perdre la posture.','Start light. When every set reaches the top of the range with steady technique, gradually increase resistance. For timed exercises, gradually increase the hold without losing posture.');
+
   function repSeconds(x){const nums=String(x.reps).match(/\d+/g)||[];const max=Math.max(1,...nums.map(Number));return /\bs\b/.test(x.reps)?max:max*3}
   function muEstimate(ex){return Math.ceil((300+ex.reduce((s,x)=>s+x.sets*repSeconds(x)+Math.max(0,x.sets-1)*x.rest+30,0))/60)}
   function noExercises(locale){throw Object.assign(new Error(tr(locale,'Aucun programme compatible avec ce matériel et ces exclusions. Modifie tes réponses ou demande conseil.','No program fits this equipment and these exclusions. Review your answers or ask for guidance.')),{code:'no_compatible_exercises'})}
@@ -2771,6 +2774,7 @@ function createMuscuEngine(catalogue, deps={}) {
     const missed=a.prefer.filter(n=>!selected.has(n));if(missed.length)warnings.push(tr(locale,'Préférences non retenues (matériel, exclusions ou temps) : ','Preferences not included (equipment, exclusions or time): ')+missed.join(', '));
     const levelLabel={deb:['débutant','beginner'],inter:['intermédiaire','intermediate'],conf:['confirmé','experienced']}[a.level][locale==='en'?1:0];
     const why=[tr(locale,`Programme local par règles : ${a.days} séance(s), niveau ${levelLabel}, plafond de ${a.dur} min par séance.`,`Local rules program: ${a.days} session(s), ${levelLabel} level, maximum ${a.dur} minutes per session.`),
+      progression(locale),
       tr(locale,'Le matériel et les exclusions sont des limites strictes ; aucune charge de départ n’est inventée.','Equipment and exclusions are strict limits; no starting weight is invented.'),
       tr(locale,'Répartis les séances sur la semaine avec des jours de récupération ; les jours proposés sont des repères, pas des rendez-vous créés.','Spread sessions across the week with recovery days; suggested days are guides, not scheduled events.')];
     if(a.other.length)why.push(tr(locale,'Tes autres activités sont prises en compte dans le volume ; leurs jours précis ne sont pas connus ici.','Your other activities are considered in the volume; their exact days are not known here.'));
@@ -2802,7 +2806,7 @@ function createMuscuEngine(catalogue, deps={}) {
     const chosen=new Set(days.flatMap(d=>d.ex.map(x=>x.name)));for(const preferred of a.prefer)if(base.plan.days.some(d=>d.ex.some(x=>x.name===preferred))&&!chosen.has(preferred))return invalid();
     const texts=(x,max)=>{if(!Array.isArray(x)||x.length>max||!x.every(s=>freeText(s,1200)&&s.trim()))return invalid();return x};
     const why=texts(raw.why,8);if(!why.length)return invalid();const warnings=raw.warnings===undefined?[]:texts(raw.warnings,8);
-    return {...base,plan:{...base.plan,name:raw.plan.name,days,src:'ia'},why,warnings:[...new Set([...base.warnings,...warnings])],est:days.map(d=>muEstimate(d.ex))}
+    return {...base,plan:{...base.plan,name:raw.plan.name,days,src:'ia'},why:[...new Set([...why,progression(locale)])],warnings:[...new Set([...base.warnings,...warnings])],est:days.map(d=>muEstimate(d.ex))}
   }
   // Preview-only replacement: atomic and immutable; keeps equipment, pattern uniqueness and time constraints.
   function muReplace(plan,di,ei,name,answers,locale='fr'){
@@ -5824,7 +5828,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v76-1";
+const BUILD="sidnote-v77";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

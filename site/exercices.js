@@ -13,8 +13,8 @@
 //   zones    s épaules, b bas du dos, k genoux (évité si la personne veut ménager cette zone)
 //   note     consigne affichée avec l'exercice (facultatif)
 // v77 : needs = alternatives de matériel (OU entre listes, ET dans une liste). Une liste vide = sans matériel.
-// v79 : id stable ; aliases explicites ; help=false = fiche incomplète, exclue des suggestions.
-// v79 : id stable ; aliases explicites ; help=false = fiche incomplète, exclue des suggestions.
+// v79 : id stable ; aliases explicites ; help=false = fiche en préparation, exercice toujours disponible.
+// v79 : id stable ; aliases explicites ; help=false = fiche en préparation, exercice toujours disponible.
 window.SIDFIT_EXERCICES = {
   "version": 3,
   "groupes": [
@@ -834,7 +834,7 @@ window.SIDFIT_EXERCICES = {
           "aliases": [
             "Limited-range hack squat"
           ],
-          "help": false,
+          "help": true,
           "en": "Limited-range hack squat"
         },
         {

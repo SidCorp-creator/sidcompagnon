@@ -1,0 +1,699 @@
+{
+  "checked": "2026-11-08",
+  "scope": "Recherche ciblée de 18 manques sur Wikimedia Commons. Les absences signifient aucune paire exacte validée dans cette recherche, pas une preuve d’inexistence sur tout Commons. Photos uniquement ; dessins et variantes différentes rejetés.",
+  "access": "Quelques téléchargements ont reçu HTTP 429 ; les médias non décodés ne sont pas déclarés validés. Recherches via API effectuées séquentiellement ; pas de contournement de limitation.",
+  "items": {
+    "pompes-au-mur": {
+      "queries": [
+        "intitle:wall intitle:push",
+        "intitle:wall intitle:press"
+      ],
+      "searchUrls": [
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Awall+intitle%3Apush&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json",
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Awall+intitle%3Apress&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json"
+      ],
+      "candidateCount": 34,
+      "assessment": "Résultats de poussée contre un mur sans séquence de pompes ; la photo en piscine n’est pas la variante terrestre. Aucune paire exacte validée.",
+      "candidates": []
+    },
+    "pompes-sur-les-genoux": {
+      "queries": [
+        "intitle:knee intitle:push",
+        "intitle:kneeling intitle:push",
+        "intitle:modified intitle:push"
+      ],
+      "searchUrls": [
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Aknee+intitle%3Apush&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json",
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Akneeling+intitle%3Apush&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json",
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Amodified+intitle%3Apush&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json"
+      ],
+      "candidateCount": 3,
+      "assessment": "Aucune paire photographique exacte validée pour des pompes sur les genoux ; résultats sans rapport.",
+      "candidates": []
+    },
+    "elevations-en-w-au-sol": {
+      "queries": [
+        "intitle:prone exercise",
+        "intitle:raise intitle:W"
+      ],
+      "searchUrls": [
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Aprone+exercise&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json",
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Araise+intitle%3AW&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json"
+      ],
+      "candidateCount": 40,
+      "assessment": "Les recherches W/prone renvoient principalement d’autres sujets. Aucune paire de W au sol validée.",
+      "candidates": [
+        {
+          "title": "File:Summit of Steel Fell with view W towards High Raise ^ Ullscarf - geograph.org.uk - 4280321.jpg",
+          "page": "https://commons.wikimedia.org/wiki/File:Summit_of_Steel_Fell_with_view_W_towards_High_Raise_%5E_Ullscarf_-_geograph.org.uk_-_4280321.jpg",
+          "licenceDeclared": "CC BY-SA 2.0"
+        },
+        {
+          "title": "File:The view W from High Raise - geograph.org.uk - 430775.jpg",
+          "page": "https://commons.wikimedia.org/wiki/File:The_view_W_from_High_Raise_-_geograph.org.uk_-_430775.jpg",
+          "licenceDeclared": "CC BY-SA 2.0"
+        },
+        {
+          "title": "File:Raised beach ^ arch W of Ballintoy Harbour, Co Antrim - geograph.org.uk - 5221795.jpg",
+          "page": "https://commons.wikimedia.org/wiki/File:Raised_beach_%5E_arch_W_of_Ballintoy_Harbour,_Co_Antrim_-_geograph.org.uk_-_5221795.jpg",
+          "licenceDeclared": "CC BY-SA 2.0"
+        },
+        {
+          "title": "File:Looking W from the raised bank of the A256 - geograph.org.uk - 1290707.jpg",
+          "page": "https://commons.wikimedia.org/wiki/File:Looking_W_from_the_raised_bank_of_the_A256_-_geograph.org.uk_-_1290707.jpg",
+          "licenceDeclared": "CC BY-SA 2.0"
+        },
+        {
+          "title": "File:Boston Medical Library - special meeting to raise funds for a new building, November 29, 1898 - David W. Cheever, M.D., in the chair (IA 101175876.nlm.nih.gov).pdf",
+          "page": "https://commons.wikimedia.org/wiki/File:Boston_Medical_Library_-_special_meeting_to_raise_funds_for_a_new_building,_November_29,_1898_-_David_W._Cheever,_M.D.,_in_the_chair_(IA_101175876.nlm.nih.gov).pdf",
+          "licenceDeclared": "Public domain"
+        },
+        {
+          "title": "File:A proposal of a plain and ready way to raise a very great sum ... 1697 (IA bim early-english-books-1641-1700 a-proposal-of-a-plain-an p-w 1697).pdf",
+          "page": "https://commons.wikimedia.org/wiki/File:A_proposal_of_a_plain_and_ready_way_to_raise_a_very_great_sum_..._1697_(IA_bim_early-english-books-1641-1700_a-proposal-of-a-plain-an_p-w_1697).pdf",
+          "licenceDeclared": "Public domain"
+        },
+        {
+          "title": "File:Seed annual - raise a garden, do your share! - (the J.W. Ross Company). (IA CAT31302834).pdf",
+          "page": "https://commons.wikimedia.org/wiki/File:Seed_annual_-_raise_a_garden,_do_your_share!_-_(the_J.W._Ross_Company)._(IA_CAT31302834).pdf",
+          "licenceDeclared": "Public domain"
+        },
+        {
+          "title": "File:President George W. Bush and Italian Prime Minister Silvio Berlusconi raise their glasses in a toast.jpg",
+          "page": "https://commons.wikimedia.org/wiki/File:President_George_W._Bush_and_Italian_Prime_Minister_Silvio_Berlusconi_raise_their_glasses_in_a_toast.jpg",
+          "licenceDeclared": "Public domain"
+        },
+        {
+          "title": "File:Seed annual. (1918) - raise a garden, do your share! - the J.W. Ross Company, leading florists, nurserymen and seedmen. (IA CAT31301673).pdf",
+          "page": "https://commons.wikimedia.org/wiki/File:Seed_annual._(1918)_-_raise_a_garden,_do_your_share!_-_the_J.W._Ross_Company,_leading_florists,_nurserymen_and_seedmen._(IA_CAT31301673).pdf",
+          "licenceDeclared": "Public domain"
+        },
+        {
+          "title": "File:Proposals shewing how to raise ... 1695 (IA bim early-english-books-1641-1700 proposals-shewing-how-to g-w 1695).pdf",
+          "page": "https://commons.wikimedia.org/wiki/File:Proposals_shewing_how_to_raise_..._1695_(IA_bim_early-english-books-1641-1700_proposals-shewing-how-to_g-w_1695).pdf",
+          "licenceDeclared": "Public domain"
+        },
+        {
+          "title": "File:1921 catalogue of rare water lilies - raised and for sale by W.B. Shaw. (IA CAT31306533).pdf",
+          "page": "https://commons.wikimedia.org/wiki/File:1921_catalogue_of_rare_water_lilies_-_raised_and_for_sale_by_W.B._Shaw._(IA_CAT31306533).pdf",
+          "licenceDeclared": "Public domain"
+        },
+        {
+          "title": "File:The Reverend W. R. Williams, Llangwyllog, who wrote a book on beekeeping to raise money to repair his church (6684214587).jpg",
+          "page": "https://commons.wikimedia.org/wiki/File:The_Reverend_W._R._Williams,_Llangwyllog,_who_wrote_a_book_on_beekeeping_to_raise_money_to_repair_his_church_(6684214587).jpg",
+          "licenceDeclared": "CC0"
+        },
+        {
+          "title": "File:1930 catalogue of rare water lilies - raised and for sale by W.B. Shaw. (IA CAT31334398).pdf",
+          "page": "https://commons.wikimedia.org/wiki/File:1930_catalogue_of_rare_water_lilies_-_raised_and_for_sale_by_W.B._Shaw._(IA_CAT31334398).pdf",
+          "licenceDeclared": "Public domain"
+        }
+      ]
+    },
+    "rowing-elastique-assis": {
+      "queries": [
+        "intitle:band intitle:row",
+        "intitle:seated intitle:row"
+      ],
+      "searchUrls": [
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Aband+intitle%3Arow&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json",
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Aseated+intitle%3Arow&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json"
+      ],
+      "candidateCount": 40,
+      "assessment": "Aucune paire assise avec élastique validée ; intitulés de rangées de sièges et groupes musicaux rejetés.",
+      "candidates": []
+    },
+    "curl-elastique-debout": {
+      "queries": [
+        "intitle:band intitle:curl"
+      ],
+      "searchUrls": [
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Aband+intitle%3Acurl&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json"
+      ],
+      "candidateCount": 5,
+      "assessment": "Quick alternating bicep curls with band est une illustration SVG, pas une photo.",
+      "candidates": [
+        {
+          "title": "File:Quick alternating bicep curls with band 1.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Quick_alternating_bicep_curls_with_band_1.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Quick alternating bicep curls with band 2.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Quick_alternating_bicep_curls_with_band_2.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        }
+      ]
+    },
+    "extension-triceps-elastique-debout": {
+      "queries": [
+        "intitle:band intitle:triceps",
+        "intitle:elastic intitle:triceps"
+      ],
+      "searchUrls": [
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Aband+intitle%3Atriceps&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json",
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Aelastic+intitle%3Atriceps&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json"
+      ],
+      "candidateCount": 0,
+      "assessment": "Aucune paire photographique de pushdown debout à élastique validée.",
+      "candidates": []
+    },
+    "abduction-de-hanche-sur-le-cote": {
+      "queries": [
+        "intitle:hip intitle:abduction",
+        "intitle:lying intitle:leg"
+      ],
+      "searchUrls": [
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Ahip+intitle%3Aabduction&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json",
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Alying+intitle%3Aleg&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json"
+      ],
+      "candidateCount": 21,
+      "assessment": "Hip abduction CDC est une illustration debout, pas la variante couché sur le côté. Side-lying abduction concerne l’épaule, pas la hanche.",
+      "candidates": [
+        {
+          "title": "File:Hip abduction-CDC strength training for older adults.gif",
+          "page": "https://commons.wikimedia.org/wiki/File:Hip_abduction-CDC_strength_training_for_older_adults.gif",
+          "licenceDeclared": "Public domain"
+        }
+      ]
+    },
+    "charniere-de-hanches-sans-charge": {
+      "queries": [
+        "intitle:hip intitle:hinge"
+      ],
+      "searchUrls": [
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Ahip+intitle%3Ahinge&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json"
+      ],
+      "candidateCount": 5,
+      "assessment": "Les résultats hip hinge montrent une kettlebell ; variante sans charge non validée.",
+      "candidates": []
+    },
+    "souleve-de-terre-roumain-halteres": {
+      "queries": [
+        "intitle:dumbbell intitle:deadlift",
+        "intitle:Romanian intitle:deadlift"
+      ],
+      "searchUrls": [
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Adumbbell+intitle%3Adeadlift&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json",
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3ARomanian+intitle%3Adeadlift&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json"
+      ],
+      "candidateCount": 3,
+      "assessment": "DumbbellDeadlift.JPG examiné : départ très fléchi de deadlift conventionnel, pas une charnière roumaine. Les Romanian-deadlift PNG sont des dessins.",
+      "candidates": [
+        {
+          "title": "File:DumbbellDeadlift.JPG",
+          "page": "https://commons.wikimedia.org/wiki/File:DumbbellDeadlift.JPG",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Romanian-deadlift-1.png",
+          "page": "https://commons.wikimedia.org/wiki/File:Romanian-deadlift-1.png",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Romanian-deadlift-2.png",
+          "page": "https://commons.wikimedia.org/wiki/File:Romanian-deadlift-2.png",
+          "licenceDeclared": "CC BY-SA 3.0"
+        }
+      ]
+    },
+    "mollets-debout-au-poids-du-corps": {
+      "queries": [
+        "intitle:calf intitle:raise",
+        "intitle:heel intitle:raise"
+      ],
+      "searchUrls": [
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Acalf+intitle%3Araise&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json",
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Aheel+intitle%3Araise&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json"
+      ],
+      "candidateCount": 24,
+      "assessment": "Calf-raises PNG examiné : dessin Everkinetic. Unilateral heel raise examiné : photo d’unilatéral, autre variante. Bilateral heel raise examiné : photo des mollets à une seule phase, sans seconde phase bilatérale vérifiée.",
+      "candidates": [
+        {
+          "title": "File:Calf-raises-1.png",
+          "page": "https://commons.wikimedia.org/wiki/File:Calf-raises-1.png",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Calf-raises-2.png",
+          "page": "https://commons.wikimedia.org/wiki/File:Calf-raises-2.png",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Donkey-calf-raises-1.png",
+          "page": "https://commons.wikimedia.org/wiki/File:Donkey-calf-raises-1.png",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Donkey-calf-raises-2.png",
+          "page": "https://commons.wikimedia.org/wiki/File:Donkey-calf-raises-2.png",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Seated-calf-raise-1.gif",
+          "page": "https://commons.wikimedia.org/wiki/File:Seated-calf-raise-1.gif",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Seated-calf-raise-2.gif",
+          "page": "https://commons.wikimedia.org/wiki/File:Seated-calf-raise-2.gif",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Standing-barbell-calf-raise-1.gif",
+          "page": "https://commons.wikimedia.org/wiki/File:Standing-barbell-calf-raise-1.gif",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Rocking-standing-calf-raise-2.gif",
+          "page": "https://commons.wikimedia.org/wiki/File:Rocking-standing-calf-raise-2.gif",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Rocking-standing-calf-raise-1.gif",
+          "page": "https://commons.wikimedia.org/wiki/File:Rocking-standing-calf-raise-1.gif",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Seated calf raise with barbell 2.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Seated_calf_raise_with_barbell_2.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Standing-barbell-calf-raise-2.gif",
+          "page": "https://commons.wikimedia.org/wiki/File:Standing-barbell-calf-raise-2.gif",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Seated-calf-raise-2-2.gif",
+          "page": "https://commons.wikimedia.org/wiki/File:Seated-calf-raise-2-2.gif",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Seated calf raise with barbell 1.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Seated_calf_raise_with_barbell_1.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Seated-calf-raise-2-1.gif",
+          "page": "https://commons.wikimedia.org/wiki/File:Seated-calf-raise-2-1.gif",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Seated-one-leg-calf-raise-2.gif",
+          "page": "https://commons.wikimedia.org/wiki/File:Seated-one-leg-calf-raise-2.gif",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Seated-one-leg-calf-raise-1.gif",
+          "page": "https://commons.wikimedia.org/wiki/File:Seated-one-leg-calf-raise-1.gif",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Seated calf raise using machine 2.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Seated_calf_raise_using_machine_2.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Seated calf raise using machine 1.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Seated_calf_raise_using_machine_1.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Seated one leg calf raise with dumbbell 1.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Seated_one_leg_calf_raise_with_dumbbell_1.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Seated one leg calf raise with dumbbell 2.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Seated_one_leg_calf_raise_with_dumbbell_2.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        }
+      ]
+    },
+    "dips-lestes": {
+      "queries": [
+        "intitle:weighted intitle:dip",
+        "intitle:dips gym"
+      ],
+      "searchUrls": [
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Aweighted+intitle%3Adip&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json",
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Adips+gym&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json"
+      ],
+      "candidateCount": 3,
+      "assessment": "Résultats sur banc lesté ou dips sans lest ; aucune paire de dips aux barres parallèles avec lest validée.",
+      "candidates": [
+        {
+          "title": "File:Sandown outdoor gym dips equipment.JPG",
+          "page": "https://commons.wikimedia.org/wiki/File:Sandown_outdoor_gym_dips_equipment.JPG",
+          "licenceDeclared": "CC BY 3.0"
+        },
+        {
+          "title": "File:Dips.jpg",
+          "page": "https://commons.wikimedia.org/wiki/File:Dips.jpg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:US Navy 090212-N-2475A-005 Machinist's Mate 2nd Class John Brechwald, from San Jose, Calif., performs bench dips with two 45 lb weights.jpg",
+          "page": "https://commons.wikimedia.org/wiki/File:US_Navy_090212-N-2475A-005_Machinist%27s_Mate_2nd_Class_John_Brechwald,_from_San_Jose,_Calif.,_performs_bench_dips_with_two_45_lb_weights.jpg",
+          "licenceDeclared": "Public domain"
+        }
+      ]
+    },
+    "shrugs-halteres-ou-machine": {
+      "queries": [
+        "intitle:machine intitle:shrug"
+      ],
+      "searchUrls": [
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Amachine+intitle%3Ashrug&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json"
+      ],
+      "candidateCount": 4,
+      "assessment": "Les résultats machine sont des illustrations de Smith, pas une paire de photos de la machine annoncée.",
+      "candidates": []
+    },
+    "elevations-laterales-poulie": {
+      "queries": [
+        "intitle:cable intitle:lateral"
+      ],
+      "searchUrls": [
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Acable+intitle%3Alateral&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json"
+      ],
+      "candidateCount": 9,
+      "assessment": "Les résultats câble sont des illustrations d’oiseau buste penché, pas une paire photographique d’élévation latérale debout.",
+      "candidates": [
+        {
+          "title": "File:Seated rear lateral cable raise 1.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Seated_rear_lateral_cable_raise_1.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Bent over lateral cable raises 2.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Bent_over_lateral_cable_raises_2.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Seated rear lateral cable raise 2.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Seated_rear_lateral_cable_raise_2.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Bent over lateral cable raises 1.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Bent_over_lateral_cable_raises_1.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Bent-over-cable-lateral-raises-2.png",
+          "page": "https://commons.wikimedia.org/wiki/File:Bent-over-cable-lateral-raises-2.png",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Bent-over-cable-lateral-raises-1.png",
+          "page": "https://commons.wikimedia.org/wiki/File:Bent-over-cable-lateral-raises-1.png",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Cable-seated-rear-lateral-raise-2.png",
+          "page": "https://commons.wikimedia.org/wiki/File:Cable-seated-rear-lateral-raise-2.png",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Cable-seated-rear-lateral-raise-1.png",
+          "page": "https://commons.wikimedia.org/wiki/File:Cable-seated-rear-lateral-raise-1.png",
+          "licenceDeclared": "CC BY-SA 3.0"
+        }
+      ]
+    },
+    "elevations-laterales-machine": {
+      "queries": [
+        "intitle:machine intitle:lateral"
+      ],
+      "searchUrls": [
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Amachine+intitle%3Alateral&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json"
+      ],
+      "candidateCount": 9,
+      "assessment": "Les résultats sont des machines sans exercice pertinent ou des illustrations historiques ; aucune paire photographique validée.",
+      "candidates": []
+    },
+    "hip-thrust-machine": {
+      "queries": [
+        "intitle:hip intitle:thrust",
+        "intitle:glute intitle:drive"
+      ],
+      "searchUrls": [
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Ahip+intitle%3Athrust&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json",
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Aglute+intitle%3Adrive&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json"
+      ],
+      "candidateCount": 1,
+      "assessment": "Pas de paire photographique de hip thrust à la machine validée.",
+      "candidates": []
+    },
+    "presse-a-cuisses-amplitude-limitee": {
+      "queries": [
+        "intitle:leg intitle:press"
+      ],
+      "searchUrls": [
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Aleg+intitle%3Apress&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json"
+      ],
+      "candidateCount": 20,
+      "assessment": "Leg press (cropped, flipped) examiné : une seule phase et provenance d’une image source devenue indisponible ; pas de paire exacte validée. Dessins Everkinetic rejetés.",
+      "candidates": [
+        {
+          "title": "File:Leg press (cropped, flipped).jpg",
+          "page": "https://commons.wikimedia.org/wiki/File:Leg_press_(cropped,_flipped).jpg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Young man using a leg press machine at the gym.jpg",
+          "page": "https://commons.wikimedia.org/wiki/File:Young_man_using_a_leg_press_machine_at_the_gym.jpg",
+          "licenceDeclared": "CC BY 2.0"
+        },
+        {
+          "title": "File:Gym Leg Press Machine.jpg",
+          "page": "https://commons.wikimedia.org/wiki/File:Gym_Leg_Press_Machine.jpg",
+          "licenceDeclared": "CC BY-SA 4.0"
+        },
+        {
+          "title": "File:Leg press machine.jpg",
+          "page": "https://commons.wikimedia.org/wiki/File:Leg_press_machine.jpg",
+          "licenceDeclared": "CC BY-SA 4.0"
+        },
+        {
+          "title": "File:Leg Press Machine.jpg",
+          "page": "https://commons.wikimedia.org/wiki/File:Leg_Press_Machine.jpg",
+          "licenceDeclared": "CC BY-SA 4.0"
+        },
+        {
+          "title": "File:Leg Press 2.jpg",
+          "page": "https://commons.wikimedia.org/wiki/File:Leg_Press_2.jpg",
+          "licenceDeclared": "CC BY-SA 4.0"
+        },
+        {
+          "title": "File:Leg Press 1.jpg",
+          "page": "https://commons.wikimedia.org/wiki/File:Leg_Press_1.jpg",
+          "licenceDeclared": "CC BY-SA 4.0"
+        },
+        {
+          "title": "File:Leg press machine loaded with plates.jpg",
+          "page": "https://commons.wikimedia.org/wiki/File:Leg_press_machine_loaded_with_plates.jpg",
+          "licenceDeclared": "CC BY-SA 4.0"
+        },
+        {
+          "title": "File:Leg Press.jpg",
+          "page": "https://commons.wikimedia.org/wiki/File:Leg_Press.jpg",
+          "licenceDeclared": "CC BY-SA 4.0"
+        },
+        {
+          "title": "File:Leg press 2.jpg",
+          "page": "https://commons.wikimedia.org/wiki/File:Leg_press_2.jpg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Leg press.jpg",
+          "page": "https://commons.wikimedia.org/wiki/File:Leg_press.jpg",
+          "licenceDeclared": "CC BY 2.0"
+        },
+        {
+          "title": "File:How to properly leg press.webm",
+          "page": "https://commons.wikimedia.org/wiki/File:How_to_properly_leg_press.webm",
+          "licenceDeclared": "CC BY 3.0"
+        },
+        {
+          "title": "File:Muscle Strengthening at the Gym - Seated Leg Press.webm",
+          "page": "https://commons.wikimedia.org/wiki/File:Muscle_Strengthening_at_the_Gym_-_Seated_Leg_Press.webm",
+          "licenceDeclared": "Public domain"
+        }
+      ]
+    },
+    "hack-squat-amplitude-limitee": {
+      "queries": [
+        "intitle:hack intitle:squat"
+      ],
+      "searchUrls": [
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Ahack+intitle%3Asquat&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json"
+      ],
+      "candidateCount": 16,
+      "assessment": "RETENU : HackSquatMachineExercise.JPG : deux photographies distinctes juxtaposées, même machine et modèle, flexion proche de 90°. Recadrages non superposés documentés ; CC BY-SA 3.0.",
+      "candidates": [
+        {
+          "title": "File:Hack squat with barbell 1.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Hack_squat_with_barbell_1.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Hack squat machine 1.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Hack_squat_machine_1.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Hack squat with barbell 2.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Hack_squat_with_barbell_2.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Hack-squat-2-856x1024.png",
+          "page": "https://commons.wikimedia.org/wiki/File:Hack-squat-2-856x1024.png",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Hack-squat-1-856x1024.png",
+          "page": "https://commons.wikimedia.org/wiki/File:Hack-squat-1-856x1024.png",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Smith machine hack squat 2.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Smith_machine_hack_squat_2.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Smith machine hack squat 1.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Smith_machine_hack_squat_1.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Hack-squat-2-2-768x1024.png",
+          "page": "https://commons.wikimedia.org/wiki/File:Hack-squat-2-2-768x1024.png",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Hack-squat-2-1-768x1024.png",
+          "page": "https://commons.wikimedia.org/wiki/File:Hack-squat-2-1-768x1024.png",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:David Jobson & Ziggy Chima; machine hack squat.jpg",
+          "page": "https://commons.wikimedia.org/wiki/File:David_Jobson_%26_Ziggy_Chima;_machine_hack_squat.jpg",
+          "licenceDeclared": "CC BY 2.0"
+        },
+        {
+          "title": "File:Hack-squats-2.gif",
+          "page": "https://commons.wikimedia.org/wiki/File:Hack-squats-2.gif",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Hack-squats-1.gif",
+          "page": "https://commons.wikimedia.org/wiki/File:Hack-squats-1.gif",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Narrow stance hack squats 2.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Narrow_stance_hack_squats_2.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Narrow-stance-hack-squats-2-1024x721.png",
+          "page": "https://commons.wikimedia.org/wiki/File:Narrow-stance-hack-squats-2-1024x721.png",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Narrow-stance-hack-squats-1-1024x721.png",
+          "page": "https://commons.wikimedia.org/wiki/File:Narrow-stance-hack-squats-1-1024x721.png",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:HackSquatMachineExercise.JPG",
+          "page": "https://commons.wikimedia.org/wiki/File:HackSquatMachineExercise.JPG",
+          "licenceDeclared": "CC BY-SA 3.0"
+        }
+      ]
+    },
+    "goblet-squat": {
+      "queries": [
+        "intitle:goblet intitle:squat",
+        "intitle:dumbbell intitle:squat"
+      ],
+      "searchUrls": [
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Agoblet+intitle%3Asquat&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json",
+        "https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=intitle%3Adumbbell+intitle%3Asquat&gsrnamespace=6&gsrlimit=20&prop=imageinfo&iiprop=url%7Cmime%7Cextmetadata&format=json"
+      ],
+      "candidateCount": 13,
+      "assessment": "Kettlebell Goblet Squat est à kettlebell ; les résultats dumbbell squat sont des illustrations ou d’autres variantes. Pas de paire haltère validée.",
+      "candidates": [
+        {
+          "title": "File:Kettlebell Goblet Squat.webm",
+          "page": "https://commons.wikimedia.org/wiki/File:Kettlebell_Goblet_Squat.webm",
+          "licenceDeclared": "CC BY-SA 4.0"
+        },
+        {
+          "title": "File:Jumping split squat with dumbbells 2.png",
+          "page": "https://commons.wikimedia.org/wiki/File:Jumping_split_squat_with_dumbbells_2.png",
+          "licenceDeclared": "CC BY-SA 4.0"
+        },
+        {
+          "title": "File:Jumping split squat with dumbbells 1.png",
+          "page": "https://commons.wikimedia.org/wiki/File:Jumping_split_squat_with_dumbbells_1.png",
+          "licenceDeclared": "CC BY-SA 4.0"
+        },
+        {
+          "title": "File:Jumping split squat with dumbbells 3.png",
+          "page": "https://commons.wikimedia.org/wiki/File:Jumping_split_squat_with_dumbbells_3.png",
+          "licenceDeclared": "CC BY-SA 4.0"
+        },
+        {
+          "title": "File:Pile squat with dumbbell 2.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Pile_squat_with_dumbbell_2.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Pile squat with dumbbell 1.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Pile_squat_with_dumbbell_1.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Biceps curl squat with dumbbell 1.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Biceps_curl_squat_with_dumbbell_1.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Biceps curl squat with dumbbell 2.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Biceps_curl_squat_with_dumbbell_2.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Squat to bench with dumbbells 2.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Squat_to_bench_with_dumbbells_2.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Squat to bench with dumbbells 1.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Squat_to_bench_with_dumbbells_1.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Girl doing stability ball squats and dumbbell curls.jpg",
+          "page": "https://commons.wikimedia.org/wiki/File:Girl_doing_stability_ball_squats_and_dumbbell_curls.jpg",
+          "licenceDeclared": "CC BY 2.0"
+        },
+        {
+          "title": "File:Squats using dumbbells 1.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Squats_using_dumbbells_1.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        },
+        {
+          "title": "File:Squats using dumbbells 2.svg",
+          "page": "https://commons.wikimedia.org/wiki/File:Squats_using_dumbbells_2.svg",
+          "licenceDeclared": "CC BY-SA 3.0"
+        }
+      ]
+    }
+  }
+}

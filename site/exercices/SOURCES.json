@@ -1478,5 +1478,78 @@
         }
       }
     ]
+  },
+  "hack-squat-limited-range": {
+    "provider": "commons",
+    "src": "File:HackSquatMachineExercise.JPG",
+    "url": "https://commons.wikimedia.org/w/index.php?title=File:HackSquatMachineExercise.JPG&oldid=1290596445",
+    "revision": "1290596445",
+    "licence": "CC BY-SA 3.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "author": "GeorgeStepanek (attributed by Wikimedia Commons)",
+    "retrieved": "2026-11-08",
+    "exercises": [
+      "hack-squat-amplitude-limitee"
+    ],
+    "exact": true,
+    "note": "Deux photographies dans un même fichier : à droite le départ, à gauche la flexion avec genou proche de 90°. GeorgeStepanek est le déposant et auteur présumé selon la page Commons ; cette attribution est conservée sans la transformer en certitude indépendante. Les deux recadrages sont distribués sous CC BY-SA 3.0.",
+    "sourceSize": {
+      "width": 768,
+      "height": 449
+    },
+    "images": [
+      {
+        "file": "hack-squat-limited-range-0.jpg",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/d/dd/HackSquatMachineExercise.JPG",
+        "sourceSha256": "7833ac54eb5af19edafc54cac26f9b2ccbe635d5556c91aa8a828d226b4c653f",
+        "sourceRegion": {
+          "left": 384,
+          "top": 0,
+          "width": 384,
+          "height": 449
+        },
+        "sha256": "dd24c54ef75f40f6600520a37e335ae7ff87b0070c69f21d4ff7276ad9efced6",
+        "phase": "start",
+        "alt": {
+          "fr": "Hack squat amplitude limitée — position de départ debout",
+          "en": "Limited-range hack squat — standing starting position"
+        },
+        "title": "File:HackSquatMachineExercise.JPG",
+        "author": "GeorgeStepanek (attributed by Wikimedia Commons)",
+        "licence": "CC BY-SA 3.0",
+        "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+        "sourcePage": "https://commons.wikimedia.org/w/index.php?title=File:HackSquatMachineExercise.JPG&oldid=1290596445",
+        "changes": {
+          "fr": "Deux photos originales juxtaposées séparées, ordre départ puis flexion, réduction et marges blanches ; JPEG progressif.",
+          "en": "Two juxtaposed original photographs separated, ordered start then flexion, resized and white-padded; progressive JPEG."
+        }
+      },
+      {
+        "file": "hack-squat-limited-range-1.jpg",
+        "url": "https://upload.wikimedia.org/wikipedia/commons/d/dd/HackSquatMachineExercise.JPG",
+        "sourceSha256": "7833ac54eb5af19edafc54cac26f9b2ccbe635d5556c91aa8a828d226b4c653f",
+        "sourceRegion": {
+          "left": 0,
+          "top": 0,
+          "width": 384,
+          "height": 449
+        },
+        "sha256": "0b620f1c2837386c9e0ae0971d93c97d5e808e1c8ec7c3ea9bd71b3a4d0e5616",
+        "phase": "key",
+        "alt": {
+          "fr": "Hack squat amplitude limitée — flexion des genoux proche de 90°",
+          "en": "Limited-range hack squat — knees bent close to 90 degrees"
+        },
+        "title": "File:HackSquatMachineExercise.JPG",
+        "author": "GeorgeStepanek (attributed by Wikimedia Commons)",
+        "licence": "CC BY-SA 3.0",
+        "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+        "sourcePage": "https://commons.wikimedia.org/w/index.php?title=File:HackSquatMachineExercise.JPG&oldid=1290596445",
+        "changes": {
+          "fr": "Deux photos originales juxtaposées séparées, ordre départ puis flexion, réduction et marges blanches ; JPEG progressif.",
+          "en": "Two juxtaposed original photographs separated, ordered start then flexion, resized and white-padded; progressive JPEG."
+        }
+      }
+    ]
   }
 }

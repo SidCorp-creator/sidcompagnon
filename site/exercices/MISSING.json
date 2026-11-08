@@ -3,144 +3,284 @@
     "name": "Dips lestés",
     "status": "missing",
     "reason": "La paire Dips_-_Chest_Version ne montre aucun lest ; Weighted_Bench_Dip utilise un banc et une autre variante.",
-    "searched": "Free Exercise DB",
+    "searched": "Free Exercise DB; Wikimedia Commons",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
-    "checked": "2026-11-08"
+    "checked": "2026-11-08",
+    "commons": {
+      "checked": "2026-11-08",
+      "queries": [
+        "intitle:weighted intitle:dip",
+        "intitle:dips gym"
+      ],
+      "assessment": "Résultats sur banc lesté ou dips sans lest ; aucune paire de dips aux barres parallèles avec lest validée.",
+      "audit": "docs/refonte/exercices-commons-recherche-v79.json"
+    }
   },
   "pompes-au-mur": {
     "name": "Pompes au mur",
     "status": "missing",
     "reason": "Aucune paire de pompes au mur ; Incline_Push-Up utilise un banc, pas un mur.",
-    "searched": "Free Exercise DB",
+    "searched": "Free Exercise DB; Wikimedia Commons",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
-    "checked": "2026-11-08"
+    "checked": "2026-11-08",
+    "commons": {
+      "checked": "2026-11-08",
+      "queries": [
+        "intitle:wall intitle:push",
+        "intitle:wall intitle:press"
+      ],
+      "assessment": "Résultats de poussée contre un mur sans séquence de pompes ; la photo en piscine n’est pas la variante terrestre. Aucune paire exacte validée.",
+      "audit": "docs/refonte/exercices-commons-recherche-v79.json"
+    }
   },
   "pompes-sur-les-genoux": {
     "name": "Pompes sur les genoux",
     "status": "missing",
     "reason": "Aucune paire de pompes avec appui sur les genoux ; Pushups est sur les pieds.",
-    "searched": "Free Exercise DB",
+    "searched": "Free Exercise DB; Wikimedia Commons",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
-    "checked": "2026-11-08"
+    "checked": "2026-11-08",
+    "commons": {
+      "checked": "2026-11-08",
+      "queries": [
+        "intitle:knee intitle:push",
+        "intitle:kneeling intitle:push",
+        "intitle:modified intitle:push"
+      ],
+      "assessment": "Aucune paire photographique exacte validée pour des pompes sur les genoux ; résultats sans rapport.",
+      "audit": "docs/refonte/exercices-commons-recherche-v79.json"
+    }
   },
   "elevations-en-w-au-sol": {
     "name": "Élévations en W au sol",
     "status": "missing",
     "reason": "Aucune paire du mouvement en W couché au sol ; Superman et Lying_Rear_Delt_Raise sont différents.",
-    "searched": "Free Exercise DB",
+    "searched": "Free Exercise DB; Wikimedia Commons",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
-    "checked": "2026-11-08"
+    "checked": "2026-11-08",
+    "commons": {
+      "checked": "2026-11-08",
+      "queries": [
+        "intitle:prone exercise",
+        "intitle:raise intitle:W"
+      ],
+      "assessment": "Les recherches W/prone renvoient principalement d’autres sujets. Aucune paire de W au sol validée.",
+      "audit": "docs/refonte/exercices-commons-recherche-v79.json"
+    }
   },
   "rowing-elastique-assis": {
     "name": "Rowing élastique assis",
     "status": "missing",
     "reason": "Aucune paire de rowing assis avec élastique ; Seated_Cable_Rows est à la poulie.",
-    "searched": "Free Exercise DB",
+    "searched": "Free Exercise DB; Wikimedia Commons",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
-    "checked": "2026-11-08"
+    "checked": "2026-11-08",
+    "commons": {
+      "checked": "2026-11-08",
+      "queries": [
+        "intitle:band intitle:row",
+        "intitle:seated intitle:row"
+      ],
+      "assessment": "Aucune paire assise avec élastique validée ; intitulés de rangées de sièges et groupes musicaux rejetés.",
+      "audit": "docs/refonte/exercices-commons-recherche-v79.json"
+    }
   },
   "shrugs-halteres-ou-machine": {
     "name": "Shrugs haltères ou machine",
     "status": "missing",
     "reason": "La paire Dumbbell_Shrug ne couvre pas la variante machine annoncée ; aucune paire propre à cette machine.",
-    "searched": "Free Exercise DB",
+    "searched": "Free Exercise DB; Wikimedia Commons",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
-    "checked": "2026-11-08"
+    "checked": "2026-11-08",
+    "commons": {
+      "checked": "2026-11-08",
+      "queries": [
+        "intitle:machine intitle:shrug"
+      ],
+      "assessment": "Les résultats machine sont des illustrations de Smith, pas une paire de photos de la machine annoncée.",
+      "audit": "docs/refonte/exercices-commons-recherche-v79.json"
+    }
   },
   "elevations-laterales-poulie": {
     "name": "Élévations latérales poulie",
     "status": "missing",
     "reason": "Cable_Seated_Lateral_Raise montre un oiseau assis buste penché, pas une élévation latérale du deltoïde moyen.",
-    "searched": "Free Exercise DB",
+    "searched": "Free Exercise DB; Wikimedia Commons",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
-    "checked": "2026-11-08"
+    "checked": "2026-11-08",
+    "commons": {
+      "checked": "2026-11-08",
+      "queries": [
+        "intitle:cable intitle:lateral"
+      ],
+      "assessment": "Les résultats câble sont des illustrations d’oiseau buste penché, pas une paire photographique d’élévation latérale debout.",
+      "audit": "docs/refonte/exercices-commons-recherche-v79.json"
+    }
   },
   "elevations-laterales-machine": {
     "name": "Élévations latérales machine",
     "status": "missing",
     "reason": "Ancienne correspondance Side_Lateral_Raise avec haltères ; aucune paire de la machine exacte.",
-    "searched": "Free Exercise DB",
+    "searched": "Free Exercise DB; Wikimedia Commons",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
-    "checked": "2026-11-08"
+    "checked": "2026-11-08",
+    "commons": {
+      "checked": "2026-11-08",
+      "queries": [
+        "intitle:machine intitle:lateral"
+      ],
+      "assessment": "Les résultats sont des machines sans exercice pertinent ou des illustrations historiques ; aucune paire photographique validée.",
+      "audit": "docs/refonte/exercices-commons-recherche-v79.json"
+    }
   },
   "curl-elastique-debout": {
     "name": "Curl élastique debout",
     "status": "missing",
     "reason": "Aucune paire de curl debout à élastique ; Standing_Biceps_Cable_Curl est à la poulie.",
-    "searched": "Free Exercise DB",
+    "searched": "Free Exercise DB; Wikimedia Commons",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
-    "checked": "2026-11-08"
+    "checked": "2026-11-08",
+    "commons": {
+      "checked": "2026-11-08",
+      "queries": [
+        "intitle:band intitle:curl"
+      ],
+      "assessment": "Quick alternating bicep curls with band est une illustration SVG, pas une photo.",
+      "audit": "docs/refonte/exercices-commons-recherche-v79.json"
+    }
   },
   "extension-triceps-elastique-debout": {
     "name": "Extension triceps élastique debout",
     "status": "missing",
     "reason": "Speed_Band_Overhead_Triceps est en position de fente autour d’un banc et exécuté en vitesse ; ne documente pas la variante debout contrôlée sans banc.",
-    "searched": "Free Exercise DB",
+    "searched": "Free Exercise DB; Wikimedia Commons",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
-    "checked": "2026-11-08"
+    "checked": "2026-11-08",
+    "commons": {
+      "checked": "2026-11-08",
+      "queries": [
+        "intitle:band intitle:triceps",
+        "intitle:elastic intitle:triceps"
+      ],
+      "assessment": "Aucune paire photographique de pushdown debout à élastique validée.",
+      "audit": "docs/refonte/exercices-commons-recherche-v79.json"
+    }
   },
   "presse-a-cuisses-amplitude-limitee": {
     "name": "Presse à cuisses amplitude limitée",
     "status": "missing",
     "reason": "Leg_Press montre une flexion profonde ; aucune paire documentant la variante à amplitude limitée annoncée.",
-    "searched": "Free Exercise DB",
+    "searched": "Free Exercise DB; Wikimedia Commons",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
-    "checked": "2026-11-08"
-  },
-  "hack-squat-amplitude-limitee": {
-    "name": "Hack squat amplitude limitée",
-    "status": "missing",
-    "reason": "Hack_Squat montre une flexion profonde ; aucune paire documentant la variante à amplitude limitée annoncée.",
-    "searched": "Free Exercise DB",
-    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
-    "checked": "2026-11-08"
+    "checked": "2026-11-08",
+    "commons": {
+      "checked": "2026-11-08",
+      "queries": [
+        "intitle:leg intitle:press"
+      ],
+      "assessment": "Leg press (cropped, flipped) examiné : une seule phase et provenance d’une image source devenue indisponible ; pas de paire exacte validée. Dessins Everkinetic rejetés.",
+      "audit": "docs/refonte/exercices-commons-recherche-v79.json"
+    }
   },
   "hip-thrust-machine": {
     "name": "Hip thrust machine",
     "status": "missing",
     "reason": "Ancienne correspondance Barbell_Hip_Thrust avec barre, pas une machine de hip thrust.",
-    "searched": "Free Exercise DB",
+    "searched": "Free Exercise DB; Wikimedia Commons",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
-    "checked": "2026-11-08"
+    "checked": "2026-11-08",
+    "commons": {
+      "checked": "2026-11-08",
+      "queries": [
+        "intitle:hip intitle:thrust",
+        "intitle:glute intitle:drive"
+      ],
+      "assessment": "Pas de paire photographique de hip thrust à la machine validée.",
+      "audit": "docs/refonte/exercices-commons-recherche-v79.json"
+    }
   },
   "abduction-de-hanche-sur-le-cote": {
     "name": "Abduction de hanche sur le côté",
     "status": "missing",
     "reason": "Side_Leg_Raises montre des balancements debout avec chaise, pas une abduction couché sur le côté.",
-    "searched": "Free Exercise DB",
+    "searched": "Free Exercise DB; Wikimedia Commons",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
-    "checked": "2026-11-08"
+    "checked": "2026-11-08",
+    "commons": {
+      "checked": "2026-11-08",
+      "queries": [
+        "intitle:hip intitle:abduction",
+        "intitle:lying intitle:leg"
+      ],
+      "assessment": "Hip abduction CDC est une illustration debout, pas la variante couché sur le côté. Side-lying abduction concerne l’épaule, pas la hanche.",
+      "audit": "docs/refonte/exercices-commons-recherche-v79.json"
+    }
   },
   "charniere-de-hanches-sans-charge": {
     "name": "Charnière de hanches sans charge",
     "status": "missing",
     "reason": "Aucune paire de charnière de hanches sans charge ; Good_Morning et Band_Good_Morning sont chargés.",
-    "searched": "Free Exercise DB",
+    "searched": "Free Exercise DB; Wikimedia Commons",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
-    "checked": "2026-11-08"
+    "checked": "2026-11-08",
+    "commons": {
+      "checked": "2026-11-08",
+      "queries": [
+        "intitle:hip intitle:hinge"
+      ],
+      "assessment": "Les résultats hip hinge montrent une kettlebell ; variante sans charge non validée.",
+      "audit": "docs/refonte/exercices-commons-recherche-v79.json"
+    }
   },
   "souleve-de-terre-roumain-halteres": {
     "name": "Soulevé de terre roumain haltères",
     "status": "missing",
     "reason": "Romanian_Deadlift utilise une barre ; Stiff-Legged_Dumbbell_Deadlift est une variante jambes tendues distincte.",
-    "searched": "Free Exercise DB",
+    "searched": "Free Exercise DB; Wikimedia Commons",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
-    "checked": "2026-11-08"
+    "checked": "2026-11-08",
+    "commons": {
+      "checked": "2026-11-08",
+      "queries": [
+        "intitle:dumbbell intitle:deadlift",
+        "intitle:Romanian intitle:deadlift"
+      ],
+      "assessment": "DumbbellDeadlift.JPG examiné : départ très fléchi de deadlift conventionnel, pas une charnière roumaine. Les Romanian-deadlift PNG sont des dessins.",
+      "audit": "docs/refonte/exercices-commons-recherche-v79.json"
+    }
   },
   "mollets-debout-au-poids-du-corps": {
     "name": "Mollets debout au poids du corps",
     "status": "missing",
     "reason": "Standing_Calf_Raises utilise une machine ; aucune paire au poids du corps seul.",
-    "searched": "Free Exercise DB",
+    "searched": "Free Exercise DB; Wikimedia Commons",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
-    "checked": "2026-11-08"
+    "checked": "2026-11-08",
+    "commons": {
+      "checked": "2026-11-08",
+      "queries": [
+        "intitle:calf intitle:raise",
+        "intitle:heel intitle:raise"
+      ],
+      "assessment": "Calf-raises PNG examiné : dessin Everkinetic. Unilateral heel raise examiné : photo d’unilatéral, autre variante. Bilateral heel raise examiné : photo des mollets à une seule phase, sans seconde phase bilatérale vérifiée.",
+      "audit": "docs/refonte/exercices-commons-recherche-v79.json"
+    }
   },
   "goblet-squat": {
     "name": "Goblet squat",
     "status": "missing",
     "reason": "Goblet_Squat montre uniquement une kettlebell ; le catalogue et les conseils autorisent aussi un haltère. Aucune paire haltère exacte pour couvrir tout le matériel annoncé.",
-    "searched": "Free Exercise DB",
+    "searched": "Free Exercise DB; Wikimedia Commons",
     "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
-    "checked": "2026-11-08"
+    "checked": "2026-11-08",
+    "commons": {
+      "checked": "2026-11-08",
+      "queries": [
+        "intitle:goblet intitle:squat",
+        "intitle:dumbbell intitle:squat"
+      ],
+      "assessment": "Kettlebell Goblet Squat est à kettlebell ; les résultats dumbbell squat sont des illustrations ou d’autres variantes. Pas de paire haltère validée.",
+      "audit": "docs/refonte/exercices-commons-recherche-v79.json"
+    }
   }
 }

@@ -1,5 +1,7 @@
 # Relais 15 — v79 E1/E2 (Codex → Claude)
 
+**Historique : la politique d’exclusion et les chiffres ci-dessous sont remplacés par le relais 16.**
+
 État : lots E1/E2 prêts à revoir ; couverture **40/58**, **18 fiches incomplètes**. La demande « chaque exercice » reste donc partiellement non satisfaite ; aucune publication. Base b762949, étape 0 f4b88f8 et E3 052f8ef repris ; cherry-pick uniquement le nouveau commit Codex, pas ces deux commits déjà présents chez Claude.
 
 ## Contrat

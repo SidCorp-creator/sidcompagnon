@@ -1,5 +1,4 @@
-// v79 : paires photographiques exactes uniquement ; provenance par image dans exercices/SOURCES.json.
-// Les variantes sans paire vérifiée sont documentées dans exercices/MISSING.json et ne sont pas exposées ici.
+// v79 : paires exactes ; sources et licences par image : exercices/SOURCES.json.
 window.SIDFIT_IMG = {
   "Développé couché haltères": "dumbbell-bench-press",
   "Chest press machine": "leverage-chest-press",
@@ -40,5 +39,20 @@ window.SIDFIT_IMG = {
   "Mollets à la presse": "calf-press-on-the-leg-press-machine",
   "Crunch à la poulie": "cable-crunch",
   "Dead bug": "dead-bug",
-  "Planche sur les avant-bras": "plank"
+  "Planche sur les avant-bras": "plank",
+  "Hack squat amplitude limitée": "hack-squat-limited-range"
+};
+// Crédit spécifique obligatoire pour les sources sous licence avec attribution.
+window.SIDFIT_PHOTO_CREDITS = {
+  "Hack squat amplitude limitée": {
+    "author": "GeorgeStepanek (attributed by Wikimedia Commons)",
+    "title": "File:HackSquatMachineExercise.JPG",
+    "url": "https://commons.wikimedia.org/w/index.php?title=File:HackSquatMachineExercise.JPG&oldid=1290596445",
+    "licence": "CC BY-SA 3.0",
+    "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "changes": {
+      "fr": "Deux photos originales juxtaposées séparées, ordre départ puis flexion, réduction et marges blanches ; JPEG progressif.",
+      "en": "Two juxtaposed original photographs separated, ordered start then flexion, resized and white-padded; progressive JPEG."
+    }
+  }
 };

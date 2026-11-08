@@ -129,7 +129,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="76";const errSent=new Set();
+const APP_V="76.1";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -4781,7 +4781,7 @@ const nuAt=(time)=>{const d=parse(nuDay),now=new Date();
 const grow=t=>{t.style.height="auto";t.style.height=Math.max(56,t.scrollHeight+2)+"px"};
 $("nuAsk").addEventListener("input",e=>grow(e.target));
 $("nuAsk").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();$("nuAskForm").requestSubmit()}});
-// photo du plat : réduite (1280 px) pour l'envoi, et une vignette gardée sur l'appareil
+// photo du plat : réduite (768 px depuis la v76 : moins de quota Sid'Bot par photo) pour l'envoi, et une vignette gardée sur l'appareil
 function shrink(file,max,q){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();
   // v74.5 : une erreur du canevas (image trop grande, mémoire) rejette la promesse au lieu de la laisser en attente
   im.onload=()=>{try{const k=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement("canvas");c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);
@@ -4795,7 +4795,7 @@ function nuAskLbl(){$("nuAskBtn").textContent=T3(nuPhoto?"Envoyer à Sid'Bot":"A
 // v74.5 : chaque choix de photo a son numéro : une photo lente à préparer ne remplace plus une plus récente, ni ne revient après la croix
 // v74.5 : deux boutons, « Photo » (appareil photo, capture) et « Galerie » (sans capture : iOS ouvre alors la photothèque)
 const nuPhotoPick=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;const seq=++nuPhotoSeq;
-  try{const [big,small]=await Promise.all([shrink(f,1280,.8),shrink(f,240,.7)]);if(seq!==nuPhotoSeq)return;
+  try{const [big,small]=await Promise.all([shrink(f,768,.8),shrink(f,240,.7)]);if(seq!==nuPhotoSeq)return;
     const ph={big,small};if(nuPhoto&&nuPhoto!==nuSending)nuPhotoDrop(nuPhoto);nuPhoto=ph;nuPhotoPrevSet(ph.small);nuAskLbl();
     nuAskLbl()}
   catch(ex){if(seq===nuPhotoSeq)toast("Photo illisible")}};
@@ -5584,7 +5584,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v76";
+const BUILD="sidnote-v76-1";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

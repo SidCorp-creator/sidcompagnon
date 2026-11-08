@@ -316,7 +316,7 @@ const nuAt=(time)=>{const d=parse(nuDay),now=new Date();
 const grow=t=>{t.style.height="auto";t.style.height=Math.max(56,t.scrollHeight+2)+"px"};
 $("nuAsk").addEventListener("input",e=>grow(e.target));
 $("nuAsk").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();$("nuAskForm").requestSubmit()}});
-// photo du plat : réduite (1280 px) pour l'envoi, et une vignette gardée sur l'appareil
+// photo du plat : réduite (768 px depuis la v76 : moins de quota Sid'Bot par photo) pour l'envoi, et une vignette gardée sur l'appareil
 function shrink(file,max,q){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();
   // v74.5 : une erreur du canevas (image trop grande, mémoire) rejette la promesse au lieu de la laisser en attente
   im.onload=()=>{try{const k=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement("canvas");c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);
@@ -330,7 +330,7 @@ function nuAskLbl(){$("nuAskBtn").textContent=T3(nuPhoto?"Envoyer à Sid'Bot":"A
 // v74.5 : chaque choix de photo a son numéro : une photo lente à préparer ne remplace plus une plus récente, ni ne revient après la croix
 // v74.5 : deux boutons, « Photo » (appareil photo, capture) et « Galerie » (sans capture : iOS ouvre alors la photothèque)
 const nuPhotoPick=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;const seq=++nuPhotoSeq;
-  try{const [big,small]=await Promise.all([shrink(f,1280,.8),shrink(f,240,.7)]);if(seq!==nuPhotoSeq)return;
+  try{const [big,small]=await Promise.all([shrink(f,768,.8),shrink(f,240,.7)]);if(seq!==nuPhotoSeq)return;
     const ph={big,small};if(nuPhoto&&nuPhoto!==nuSending)nuPhotoDrop(nuPhoto);nuPhoto=ph;nuPhotoPrevSet(ph.small);nuAskLbl();
     nuAskLbl()}
   catch(ex){if(seq===nuPhotoSeq)toast("Photo illisible")}};

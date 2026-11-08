@@ -129,7 +129,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="78";const errSent=new Set();
+const APP_V="79";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -2388,8 +2388,10 @@ function exAide(name,ref){const e=exHelpKey(name,ref);if(!e)return null;const A=
 function exHelpReady(name,ref){const a=exAide(name,ref);return !!(a&&a.e.help!==false&&(window.SIDFIT_IMG||{})[a.name])}
 function exHelpOpen(name,ref){const a=exAide(name,ref);if(!a||!exHelpReady(name,ref))return;const f=a.f,im=(window.SIDFIT_IMG||{})[a.name];
   $("exHelpTitle").textContent=L(a.name);
-  const alt=i=>`${L(a.name)} : ${L(i?"position d'arrivée":"position de départ")}`;
-  $("exHelpBody").innerHTML=`<div class="exh-pics">${[0,1].map(i=>`<figure><img src="exercices/${encodeURIComponent(im)}-${i}.jpg" alt="${esc(alt(i))}" loading="lazy" decoding="async" width="480" height="320"><figcaption>${L(i?"Arrivée":"Départ")}</figcaption></figure>`).join("")}</div>
+  // exercice statique : deux vues de la posture (libellés fournis avec les photos) au lieu de « départ / arrivée »
+  const vl=((window.SIDFIT_PHOTO_LABELS||{})[a.name]||{})[LANG==="en"?"en":"fr"],cap=i=>vl&&vl[i]?vl[i]:L(i?"Arrivée":"Départ");
+  const alt=i=>`${L(a.name)} : ${vl&&vl[i]?vl[i]:L(i?"position d'arrivée":"position de départ")}`;
+  $("exHelpBody").innerHTML=`<div class="exh-pics">${[0,1].map(i=>`<figure><img src="exercices/${encodeURIComponent(im)}-${i}.jpg" alt="${esc(alt(i))}" loading="lazy" decoding="async" width="480" height="320"><figcaption>${esc(cap(i))}</figcaption></figure>`).join("")}</div>
     ${String(a.name)!==String(name||"").trim()?`<p class="small muted">${L("Fiche de")} « <span class="notr">${esc(L(a.name))}</span> »</p>`:""}
     <p class="exh-lbl">${L("Muscles travaillés")}</p><p class="notr">${esc(f.mus)}</p>
     <p class="exh-lbl">${L("Placement")}</p><p class="notr">${esc(f.setup)}</p>
@@ -6032,7 +6034,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v78";
+const BUILD="sidnote-v79";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

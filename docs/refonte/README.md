@@ -148,3 +148,9 @@ Skills retenus : `sid-charte` (M3, M4 : charte), `sid-relais` (tous : relais com
 - À la publication : pousser `v77-muscu` sur `main` **et** redéployer la fonction `sidbot` (elle n'a pas encore la tâche `programme` ni le catalogue partagé).
 
 - **77 en ligne pour tout le monde** (8 nov., accord de Sid « mets en ligne pour tout le monde ») : fonction `sidbot` redéployée (moteur et catalogue partagés), puis `main` = `375485f` ; vérifié : `sw.js` = `sidnote-v77`, « version 77 », nouveau code servi, chat Sid'Bot (401 sans compte), tâche programme (400 sur demande incomplète), relais `/mcp` inchangé.
+
+## v78 (8 nov.) — Sid'Note : Sid'Bot modifie la note, « Exporter en PDF » — **prête, non publiée**
+- Diagnostic : Sid'Bot ne savait ni modifier une note ni l'exporter ; le dernier PDF téléchargé (15 h 53) a été produit par ReportLab, donc hors de l'app, très probablement par Claude via l'ancien connecteur `mcp` (toujours actif côté serveur). La v77 avait déjà corrigé le bouton « Claude » de l'éditeur.
+- Répartition : Codex P1 (générateur PDF pur `29b`) + S1 (actions serveur `edit_note`, `share_note_pdf`, garde « note jointe et complète ») ; Claude C1 (client, aperçu avant/après, garde id+version+compte, annulation, export éditeur/menu/Sid'Bot, messages au-dessus des fenêtres) + intégration ; revues croisées (Codex : 2 remarques corrigées ; Claude : nom dans le PDF).
+- Vérifié : tests ciblés (PDF relu par pdf.js, actions serveur, client FR mobile / EN ordinateur, clavier et focus), Élan 15/15 ; vrais appels Groq (code serveur, connexion/compteur simulés) : correction d'orthographe proposée, export PDF proposé, sans note jointe aucune action.
+- À la publication : pousser sur `main` **et** redéployer `sidbot` (actions note).

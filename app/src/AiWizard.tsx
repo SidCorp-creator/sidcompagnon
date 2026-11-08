@@ -11,7 +11,7 @@ export function AiWizard({ w, i18n }: { w: AiVM; i18n: AI18n }) {
     <div className="ai-acts"><a className="btn" href="https://claude.ai/login" target="_blank" rel="noopener">{tr(L("Créer mon compte Claude"))}</a><button type="button" className="btn ghost" data-aistep="setup">{tr(L("C'est fait, continuer"))}</button></div></>;
   if (w.step === "setup") return <>
     <div className="ai-step"><b>{tr(L("Tout est prêt"))}</b><div className="small muted">{tr(L("Touche le bouton : Claude s'ouvre avec Sid'note déjà rempli. Là-bas, touche simplement « Ajouter », puis reviens ici."))}</div>
-      {w.url ? <a className="btn" href={w.add} target="_blank" rel="noopener" style={{ width: "100%", marginTop: "10px" }} data-aiadd="1">{tr(`${L("Ajouter Sid'compagnon à")} ${w.name}`)}</a>
+      {w.url ? <a className="btn" href={w.add} target="_blank" rel="noopener" style={{ width: "100%", marginTop: "10px" }} data-aiadd="1">{tr(`${L("Ajouter Sid'Compagnon à")} ${w.name}`)}</a>
         : <button type="button" className="btn" disabled style={{ width: "100%", marginTop: "10px" }}>{tr(L("Préparation…"))}</button>}
       <div className="small muted" style={{ marginTop: "8px" }}>{tr(L("Si Claude te demande de te connecter, fais-le : la fenêtre s'ouvrira ensuite toute seule."))}</div></div>
     <details className="ai-more"><summary className="small">{tr(L("Voir mon adresse (si besoin)"))}</summary><div className="mcp-url notr" id="aiUrl">{w.url || tr(L(w.urlErr || "Création…"))}</div>

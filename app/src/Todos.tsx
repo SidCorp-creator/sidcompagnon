@@ -149,7 +149,7 @@ function DoneCal({ p, x }: { p: TodosProps; x: RowCtx }) {
       <div className="dc-top"><button type="button" className="mini" data-dcm={dm - 1} aria-label={tr("Mois précédent")}><TrailIcon name="chev"/></button><b>{tr(`${L(MOL[m])} ${y}`)}</b><button type="button" className="mini" data-dcm={dm + 1} disabled={dm >= cur} aria-label={tr("Mois suivant")}><TrailIcon name="chev"/></button></div>
       <div className="small muted" style={{ textAlign: "center", margin: "-2px 0 8px" }}>{tr(`${monthN} ${L(monthN > 1 ? "tâches réalisées ce mois-ci" : "tâche réalisée ce mois-ci")}`)}</div>
       <div className="dc-g">
-        {[...(({ fr: "LMMJVSD", en: "MTWTFSS", nl: "MDWDVZZ" } as Record<string, string>)[lang] || "LMMJVSD")].map((l, i) => <i key={"l" + i}>{tr(l)}</i>)}
+        {[...(({ fr: "LMMJVSD", en: "MTWTFSS" } as Record<string, string>)[lang] || "LMMJVSD")].map((l, i) => <i key={"l" + i}>{tr(l)}</i>)}
         {monthCells(y, m).map((c, i) => {
           if (!c) return <span key={"o" + i}></span>;
           const n = (byDay[c.k] || []).length, lv = n ? Math.ceil(n / max * 4) : 0;

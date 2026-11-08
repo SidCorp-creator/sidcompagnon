@@ -53,7 +53,7 @@ function renderNotes(){
   if(noteOpenId&&!v)noteOpenId=null; // supprimée ailleurs, ou verrouillée
   $("notesList").hidden=!!noteOpenId;$("noteEdit").hidden=!noteOpenId;document.body.classList.toggle("note-full",data.ui.view==="notes"&&!!noteOpenId);if(data.ui.view==="notes")$("vhead").hidden=!!noteOpenId;
   if(noteOpenId){
-    $("noteAppHead").innerHTML=`<div class="elan-head-row"><button type="button" class="ah-home" data-go="home" aria-label="${L("Toutes les apps")}"><span class="ah-grid">${GRIDIC}</span></button><span class="ah-brand">${LOGO("note","ah-logo")}<span class="ah-names"><b>Sid Coffre</b><small>${L(APP_ROLES.note)}</small></span></span><button type="button" class="ah-claude" data-app-claude="1"><span class="ah-chat">${IC("message")}</span>Claude</button></div><h1 class="elan-title">${L("Notes")}</h1>`;
+    $("noteAppHead").innerHTML=`<div class="elan-head-row"><button type="button" class="ah-home" data-go="home" aria-label="${L("Toutes les apps")}"><span class="ah-grid">${GRIDIC}</span></button><span class="ah-brand">${LOGO("note","ah-logo")}<span class="ah-names"><b>Sid'Note</b><small>${L(APP_ROLES.note)}</small></span></span><button type="button" class="ah-claude" data-app-claude="1"><span class="ah-chat">${IC("message")}</span>Claude</button></div><h1 class="elan-title">${L("Notes")}</h1>`;
     if(document.activeElement!==$("noteTitle"))$("noteTitle").value=v.title||"";
     noteTitleGrow();
     if(document.activeElement!==$("noteBody"))rtSet(v);

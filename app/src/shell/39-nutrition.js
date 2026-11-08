@@ -241,14 +241,14 @@ function qtyCommit(key){const inp=$("qtyEdIn");if(!inp){qtyEd=null;return}const 
 // objectif de poids : chemin conseillé, et alerte si le délai choisi n'est pas réaliste
 // objectif de poids pour React (mêmes textes que nuGoalHtml)
 function nuGoalVM(button){const n=NU(),pl=n.plan,p=n.profile||{},w=pl&&pl.wg;if(!w||!p.target)return null;
-  const unit=p.durU==="m"?(LANG==="en"?(p.dur>1?"months":"month"):LANG==="nl"?(p.dur>1?"maanden":"maand"):"mois"):L(p.dur>1?"semaines":"semaine");
+  const unit=p.durU==="m"?(LANG==="en"?(p.dur>1?"months":"month"):"mois"):L(p.dur>1?"semaines":"semaine");
   const pace=w.wk?`${w.wk>0?"+":""}${String(w.wk).replace(".",LANG==="en"?".":",")} kg ${L("par semaine")}`:"";
   const PACE={fast:"Drastique",real:"Réaliste",easy:"À mon aise"}[p.pace];
   return{ok:!!w.ok,head:`${fmtN(p.weight)} → ${fmtN(p.target)} kg${p.dur?` ${L("en")} ${p.dur} ${unit}`:""}`,pace:PACE?`${L("Rythme")} : ${L(PACE)}`:"",real:p.dur?L(w.ok?"Ton délai est réaliste.":"Ce délai n'est pas réaliste, ni bon pour ta santé."):"",
     advice:w.advice||"",path:pace||w.weeks?` ${pace}${pace&&w.weeks?" · ":""}${w.weeks?`${L("environ")} ${w.weeks} ${L("semaines")}`:""}`:"",button}}
 function nuGoalHtml(){
   const n=NU(),pl=n.plan,p=n.profile||{},w=pl&&pl.wg;if(!w||!p.target)return"";
-  const unit=p.durU==="m"?(LANG==="en"?(p.dur>1?"months":"month"):LANG==="nl"?(p.dur>1?"maanden":"maand"):"mois"):L(p.dur>1?"semaines":"semaine");
+  const unit=p.durU==="m"?(LANG==="en"?(p.dur>1?"months":"month"):"mois"):L(p.dur>1?"semaines":"semaine");
   const pace=w.wk?`${w.wk>0?"+":""}${String(w.wk).replace(".",LANG==="en"?".":",")} kg ${L("par semaine")}`:"";
   const PACE={fast:"Drastique",real:"Réaliste",easy:"À mon aise"}[p.pace];
   return `<b>${w.ok?GI("tick")+" ":IC("alert")+" "}${fmtN(p.weight)} → ${fmtN(p.target)} kg${p.dur?` ${L("en")} ${p.dur} ${unit}`:""}</b>
@@ -319,7 +319,7 @@ function nuPhotoPrevSet(src){const el=$("nuPhotoPrev");el.hidden=!src;
 $("nuPhotoPrev").addEventListener("click",e=>{if(e.target.closest("[data-nuphrm]")){++nuPhotoSeq;nuPhotoDrop(nuPhoto);nuPhoto=null;nuPhotoPrevSet(null);nuAskLbl()}});
 // envoi direct : Claude s'ouvre avec le message ; la fenêtre est ouverte pendant le toucher (sinon le navigateur la bloque)
 // Sur iPhone (app installée), un lien vers Claude ouvre une petite fenêtre de navigateur qui passe la main à l'app Claude,
-// puis reste vide derrière : on la garde sous la main et on la ferme dès que la personne revient dans Sid'compagnon
+// puis reste vide derrière : on la garde sous la main et on la ferme dès que la personne revient dans Sid'Compagnon
 let extWin=null;
 function extOpen(u){
   // app installée sur iPhone : on ouvre directement l'app Claude (adresse claude://…), sans fenêtre de navigateur qui resterait blanche ;
@@ -396,7 +396,7 @@ function renderNuResult(){
   if($("nuResult")._isl){window.SCIslands.unmount($("nuResult"));$("nuResult")._isl=false}
   if(!p){if(!nuBusy)$("nuResult").innerHTML="";return}
   const s=sumOf(p.items);
-  $("nuResult").innerHTML=`<div class="dish"><div class="dish-h"><span class="dish-ic">${p.photo?`<img src="${p.photo}" alt="">`:IC("utensils")}</span><span class="dish-t"><b class="notr" data-user-label="" title="${esc(p.title)}">${esc(p.title)}</b><span class="small muted">${p.items.length} ${L(p.items.length>1?"aliments":"aliment")}</span>${p.mem?`<span class="memtag">${IC("bolt")} ${L("Mémoire Sid Forme")}</span>`:""}</span><span class="dish-kcal">${fmtFull(r0(s.kcal))}<small>\u00a0kcal</small></span></div>
+  $("nuResult").innerHTML=`<div class="dish"><div class="dish-h"><span class="dish-ic">${p.photo?`<img src="${p.photo}" alt="">`:IC("utensils")}</span><span class="dish-t"><b class="notr" data-user-label="" title="${esc(p.title)}">${esc(p.title)}</b><span class="small muted">${p.items.length} ${L(p.items.length>1?"aliments":"aliment")}</span>${p.mem?`<span class="memtag">${IC("bolt")} ${L("Mémoire Sid'Forme")}</span>`:""}</span><span class="dish-kcal">${fmtFull(r0(s.kcal))}<small>\u00a0kcal</small></span></div>
     ${macroHtml(s)}<div class="dish-items">${p.items.map((x,i)=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${x.extra?`<span class="notmention">${L("pas dans ta description")}</span>`:""}${qtyCell("res:"+i,x)}</div><span class="k">${fmtFull(x.kcal)}\u00a0kcal</span><button type="button" class="x" data-nurm="${i}" aria-label="${L("Retirer")}">${IC("close")}</button></div>`).join("")}</div>
     ${p.note?`<div class="dish-note notr" style="padding-top:8px">${esc(p.note)}</div>`:""}
     <div class="dish-act"><button type="button" class="btn ghost" data-nucancel="1">${L("Annuler")}</button><button type="button" class="btn" data-nuadd="1">${L("Ajouter")} · ${fmtFull(r0(s.kcal))}\u00a0kcal</button></div></div>`;

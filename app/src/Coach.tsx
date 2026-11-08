@@ -7,7 +7,7 @@ export interface CoachVM { goal: string; ia: boolean; level: string; n: number; 
 
 export function CoachCard({ c, more, i18n }: { c: CoachVM | null; more: string; i18n: CI18n }) {
   const { tr, L } = i18n;
-  if (!c) return <div className="card coach-card"><div className="grow"><b>{tr(L("Ton programme sur mesure"))}</b><div className="small muted">{tr(L("Quelques questions (niveau, objectif, jours, matériel) et Sid'compagnon crée tes séances."))}</div></div>
+  if (!c) return <div className="card coach-card"><div className="grow"><b>{tr(L("Ton programme sur mesure"))}</b><div className="small muted">{tr(L("Quelques questions (niveau, objectif, jours, matériel) et Sid'Compagnon crée tes séances."))}</div></div>
     <button type="button" className="btn" data-coach="new">{tr(L("Créer mon programme"))}</button></div>;
   const nr = c.remarks.length;
   return <div className="card coach-card coach-on"><div className="coach-top"><div className="grow"><span className="eyebrow">{tr(L("Mon programme"))}</span>

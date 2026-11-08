@@ -1,4 +1,4 @@
-/* ---------- traductions : tables DICT / PATS (anglais) et DICT_NL / PATS_NL (néerlandais) dans i18n.js ---------- */
+/* ---------- traductions : tables DICT / PATS (anglais) dans i18n.js ; v76 : le néerlandais est retiré ---------- */
 let LANG=null; // fixé plus bas, une fois les données chargées
 const L=x=>LANG&&LANG!=="fr"&&DICT[x]!==undefined?DICT[x]:x;
 const defaultUI=()=>({view:"plan",filter:"Toutes",doneOpen:false,pausedOpen:true});
@@ -23,8 +23,8 @@ if(!Array.isArray(data.docs))data.docs=[];
 if(!Array.isArray(data.notes))data.notes=[];
 if(!Array.isArray(data.pwds))data.pwds=[];
 LANG=(data.prefs&&data.prefs.lang)||ls.get("sidnote-lang")||"fr";if(session)ls.set("sidnote-lang",LANG);
-if(LANG==="nl"){for(const k in DICT)delete DICT[k];Object.assign(DICT,DICT_NL);PATS.splice(0,PATS.length,...PATS_NL)}
-if(!["fr","en","nl"].includes(LANG))LANG="fr";
+// v76 : FR et EN seulement. Une préférence néerlandaise (ou inconnue) revient au français, et on l'enregistre pour ne plus la relire.
+if(!["fr","en"].includes(LANG)){LANG="fr";ls.set("sidnote-lang","fr");if(data.prefs&&data.prefs.lang&&data.prefs.lang!=="fr"){data.prefs.lang="fr"}}
 const TABS=[["plan","Agenda"],["todo","Tâches"],["lists","Listes"],["notes","Notes"],["pomo","Focus"],["muscu","Musculation"],["nutri","Nutrition"],["graph","Graphiques"],["docs","Documents"],["pwd","Mots de passe"],["app","Appli"]];
 data.prefs=data.prefs||{};data.prefs.tabs=data.prefs.tabs||{plan:true,todo:true,pomo:true,app:true};
 

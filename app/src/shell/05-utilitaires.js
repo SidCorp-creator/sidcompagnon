@@ -48,7 +48,7 @@ const c2ok=b=>{if(b.dataset.c2){c2Off(b);return true}confirm2(b,()=>{});return f
 const LOGO_APPS={home:1,agenda:1,fit:1,note:1};
 const LOGO=(app,cls)=>`<img class="logo ${cls||""}" src="icons/${LOGO_APPS[app]?app:"home"}.svg" alt="" aria-hidden="true" draggable="false">`;
 
-// v42 : animation d'ouverture (2 s) : le logo Sid'compagnon, puis les trois apps ; elle ne bloque jamais les touchers
+// v42 : animation d'ouverture (2 s) : le logo Sid'Compagnon, puis les trois apps ; elle ne bloque jamais les touchers
 if($("authLogo"))$("authLogo").innerHTML=LOGO("home");
 (()=>{const sp=$("splash");if(!sp)return;if(document.documentElement.dataset.ds==="elan"){sp.remove();return}$("spMark").innerHTML=LOGO("home");$("spApps").innerHTML=["agenda","fit","note"].map(a=>`<span data-app="${a}">${LOGO(a)}</span>`).join("");
   const quick=matchMedia("(prefers-reduced-motion: reduce)").matches;sp.classList.add("go");setTimeout(()=>{sp.remove();bootTop()},quick?400:2100)})();

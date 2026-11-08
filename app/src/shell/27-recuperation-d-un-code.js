@@ -14,7 +14,7 @@ const accEmail=()=>session.email||`${slug(session.name||"")}@${EMAIL_DOMAIN}`;
 // active la récupération pour un coffre (après création du code, ou plus tard)
 async function recEnable(v,code){
   if(v&&v.id)recAsked.add(v.id); // une seule proposition par session, même si on répond « Plus tard »
-  const pw=await askAccountPw("Ne perds jamais ton code","Entre le mot de passe de ton compte Sid'compagnon : si tu oublies ce code un jour, il te suffira de ce mot de passe pour le retrouver.",
+  const pw=await askAccountPw("Ne perds jamais ton code","Entre le mot de passe de ton compte Sid'Compagnon : si tu oublies ce code un jour, il te suffira de ce mot de passe pour le retrouver.",
     async pw=>{try{await api("/auth/v1/token?grant_type=password",{method:"POST",body:{email:accEmail(),password:pw}});return null}
       catch(ex){return ex instanceof TypeError?"Pas de connexion internet. Réessaie quand tu es connecté.":"Mot de passe incorrect."}},"Plus tard");
   if(!pw)return false;
@@ -24,6 +24,6 @@ async function recEnable(v,code){
 function recOffer(v,code){if(v&&!isV2(v)&&!v.rec&&!recAsked.has(v.id)){recAsked.add(v.id);recEnable(v,code)}}
 // retrouve le code oublié (null si annulé)
 async function recRecover(v){let code=null;
-  await askAccountPw("Code oublié","Entre le mot de passe de ton compte Sid'compagnon pour retrouver ton code.",
+  await askAccountPw("Code oublié","Entre le mot de passe de ton compte Sid'Compagnon pour retrouver ton code.",
     async pw=>{try{const key=await pinKey(pw,v.rec.salt,PIN_ITER);code=(await decJ(key,v.rec)).pin;return null}catch(e){return "Mot de passe incorrect."}});
   if(code)toast(`${L("Ton code est")} ${code}`,6000);return code}

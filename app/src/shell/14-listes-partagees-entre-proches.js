@@ -60,8 +60,8 @@ $("slBody").addEventListener("click",async e=>{const b=e.target.closest("button"
   else if(d.slclear){const ids=slItems.filter(x=>x.done);slItems=slItems.filter(x=>!x.done);renderLists();
     try{await slApi(`/rest/v1/shared_items?list_id=eq.${slOpen}&done=eq.true`,{method:"DELETE"});toast(`${ids.length} ${L(ids.length>1?"éléments retirés":"élément retiré")}`)}catch(ex){slErr=slErrMsg(ex);slLoad()}}
   else if(d.slinvite){const l=slLists.find(x=>x.id===slOpen);if(!l)return;
-    const txt=`${L("Rejoins ma liste")} « ${l.name} » ${L("sur Sid'compagnon avec le code")} ${l.code} : ${location.origin}/#rejoindre=${l.code}`;
-    try{if(navigator.share){await navigator.share({title:"Sid'compagnon",text:txt});return}}catch(ex){if(ex.name==="AbortError")return}
+    const txt=`${L("Rejoins ma liste")} « ${l.name} » ${L("sur Sid'Compagnon avec le code")} ${l.code} : ${location.origin}/#rejoindre=${l.code}`;
+    try{if(navigator.share){await navigator.share({title:"Sid'Compagnon",text:txt});return}}catch(ex){if(ex.name==="AbortError")return}
     toast(await copyTxt(txt)?L("Invitation copiée : colle-la dans un message"):`${L("Code")} : ${l.code}`,5000)}
   else if(d.slleave){if(slArmed!=="leave"){slArmed="leave";renderLists();setTimeout(()=>{if(slArmed==="leave"){slArmed="";renderLists()}},4000);return}
     const l=slLists.find(x=>x.id===slOpen);if(!l)return;slArmed="";

@@ -1,4 +1,4 @@
-// Types des données de Sid'compagnon (le JSON de user_data.data), complétés au fil de la migration.
+// Types des données de Sid'Compagnon (le JSON de user_data.data), complétés au fil de la migration.
 
 /** Un aliment noté dans la journée nutrition (data.nutri.log). */
 export interface NuLogItem {

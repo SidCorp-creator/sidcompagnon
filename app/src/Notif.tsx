@@ -35,7 +35,7 @@ export function NotifBox({ kind, msg, leads, custom, cals, ical, i18n }: { kind:
       <button type="button" className="pill add" data-nf="custom"><span className="gi gi-plus" aria-hidden="true" />{" " + tr(L("Autre délai"))}</button></div>
     {custom ? <Custom form={true} i18n={i18n} /> : null}
     {cals ? <label className="nf-ical"><input type="checkbox" data-nf="ical" defaultChecked={ical} />{" "}<span>{tr(L("Cours du calendrier relié : mêmes rappels que tes activités"))}</span></label> : null}
-    <p className="small muted" style={{ margin: "8px 4px 0" }}>{tr(L("Tu peux en choisir plusieurs. Une activité sans heure compte pour 8 h. Sur smartphone, ouvre Sid'compagnon depuis l'écran d'accueil (iOS 16.4 ou plus)."))}</p>
+    <p className="small muted" style={{ margin: "8px 4px 0" }}>{tr(L("Tu peux en choisir plusieurs. Une activité sans heure compte pour 8 h. Sur smartphone, ouvre Sid'Compagnon depuis l'écran d'accueil (iOS 16.4 ou plus)."))}</p>
   </>;
 }
 

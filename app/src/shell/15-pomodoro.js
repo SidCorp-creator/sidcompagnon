@@ -4,7 +4,7 @@ data.pomo=data.pomo||{cfg:{work:25,brk:5,total:120},run:null,log:{}};
 const P=data.pomo;
 const PRESETS=[60,90,120,180];
 const hm=m=>{m=Math.round(m);const h=Math.floor(m/60),r=m%60;return h?`${h} h${r?" "+String(r).padStart(2,"0"):""}`:`${r} min`};
-const pomoDuration=m=>hm(m).replace(" h",LANG==="nl"?"\u00a0u":"\u00a0h");
+const pomoDuration=m=>hm(m).replace(" h","\u00a0h");
 const clockTxt=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")};
 const hhmm=d=>String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
 const dayKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -123,12 +123,12 @@ function tickPomo(){
   $("mEnd").textContent=hhmm(new Date(Date.now()+(totalMs-el)));
   $("pomoPause").textContent=r.pausedAt?"Reprendre":"Pause";
   if(data.ui.view==="pomo"){$("vhead").dataset.progressChange=pomoProgressChange;renderVhead("pomo")}pomoProgressChange="position";
-  document.title=r.pausedAt?"Sid'compagnon":`${clockTxt(L.d-L.into)} · ${isW?"Travail":"Pause"}`;
+  document.title=r.pausedAt?"Sid'Compagnon":`${clockTxt(L.d-L.into)} · ${isW?"Travail":"Pause"}`;
 }
 function renderPomo(){
   const run=!!P.run;
   $("pomoSetup").hidden=run;$("pomoRun").hidden=!run;setBadge("pomo",run?"dot":0);
-  if(run)tickPomo();else{renderSetup();document.title="Sid'compagnon"}
+  if(run)tickPomo();else{renderSetup();document.title="Sid'Compagnon"}
   renderPomoStats();if(data.ui.view==="pomo"){$("vhead").dataset.progressChange=pomoProgressChange;renderVhead("pomo")}pomoProgressChange="position";
 }
 function renderPomoStats(){

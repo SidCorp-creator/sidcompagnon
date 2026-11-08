@@ -1,5 +1,5 @@
 /* ---------- musculation ---------- */
-// v44 : un seul format pour les séances libres, les programmes de Sid'compagnon, ceux de Claude et ceux importés.
+// v44 : un seul format pour les séances libres, les programmes de Sid'Compagnon, ceux de Claude et ceux importés.
 // data.muscu.sessions = [{id, name, upd, grp?:{id, name, src:"app"|"claude"|"import"}, ord?, exercises:[{id, name, sets:[{kg, reps}], reps?, rest?, rir?, note?, pat?}]}]
 //   une séance sans grp est une séance libre ; un programme = les séances d'un même grp (ordre : ord).
 // data.muscu.plan = {id, v:2, profile, at, upd, src, aiWait?} : le programme suivi (ses séances ont grp.id === plan.id) ; supprimé = {deleted, upd}.
@@ -13,7 +13,7 @@ const msFind=id=>M().sessions.find(x=>x.id===id);
 const newSet=()=>({reps:"",kg:""});
 const newEx=(name="",n=3)=>({id:uid(),name,ps:1,sets:Array.from({length:n},newSet)});
 const seTouch=se=>{se.upd=Date.now();M().upd=Date.now()};
-const GSRC={app:"Créé par Sid'compagnon",claude:"Créé par Claude",import:"Importé"};
+const GSRC={app:"Créé par Sid'Compagnon",claude:"Créé par Claude",import:"Importé"};
 // ancien programme (avant la v44 : plan.days, exercices avec un nombre de séries) → séances au format commun, sans rien perdre
 function muMigrate(){const m=M(),p=m.plan;if(!Array.isArray(m.sessions))m.sessions=[];let ch=false;
   if(p&&!p.deleted&&Array.isArray(p.days)){const grp={id:p.id,name:L("Mon programme"),src:p.src==="ia"?"claude":"app"};
@@ -35,12 +35,12 @@ const PLD=()=>{const p=PL();return p?grpSe(p.id):[]}; // séances du programme s
 // texte de partage commun (séance seule, ou programme entier) : c'est aussi le format d'import (et celui que Claude peut donner)
 const exLine=(e,i)=>`${i+1}. ${e.name||L("Exercice")} : ${e.sets.length} ${e.sets.length>1?"séries":"série"}${e.reps?` × ${e.reps}`:""}${e.rest?`, repos ${restLbl(e.rest)}`:""}${e.note?` (${e.note})`:""}`;
 const seTxt=se=>`Séance « ${se.name||"Séance"} »\n${se.exercises.map(exLine).join("\n")}`;
-const shareTxt=(list,prog)=>prog?`Programme « ${prog} » (Sid'compagnon)\n\n${list.map(seTxt).join("\n\n")}`:`${seTxt(list[0]).replace(/\n/," (Sid'compagnon)\n")}`;
-// lecture tolérante : texte de Sid'compagnon (ancien et nouveau), ou programme écrit par Claude (titres « ## Séance … », puces, « 4 × 8–10 »)
+const shareTxt=(list,prog)=>prog?`Programme « ${prog} » (Sid'Compagnon)\n\n${list.map(seTxt).join("\n\n")}`:`${seTxt(list[0]).replace(/\n/," (Sid'Compagnon)\n")}`;
+// lecture tolérante : texte de Sid'Compagnon (ancien et nouveau), ou programme écrit par Claude (titres « ## Séance … », puces, « 4 × 8–10 »)
 function parseShared(txt){
   const lines=String(txt||"").split(/\r?\n/).map(l=>l.replace(/\*\*/g,"").trim()).filter(Boolean);if(!lines.length)return null;
   let prog="",cur=/** @type {any} */(null);const out=/** @type {any[]} */([]);
-  // titre « Séance « Push » » (format de Sid'compagnon : le nom est entre guillemets) ou « ## Séance A — Haut du corps » (on garde tout le titre)
+  // titre « Séance « Push » » (format de Sid'Compagnon : le nom est entre guillemets) ou « ## Séance A — Haut du corps » (on garde tout le titre)
   const head=(l,w)=>{const t=l.replace(/^#{1,4}\s*/,"").replace(/\s*\((?:sid'?(?:note|home|compagnon))\)\s*:?\s*$/i,"").replace(/\s*:\s*$/,"");
     if(!new RegExp(`^(?:${w})\\b`,"i").test(t))return null;const q=t.match(/[«"“]\s*(.+?)\s*[»"”]/);return q?q[1]:t};
   for(const l of lines){
@@ -57,7 +57,7 @@ function parseShared(txt){
     if(!cur){cur={id:uid(),name:L("Séance importée"),exercises:[]};out.push(cur)}cur.exercises.push(ex)}
   const ses=out.filter(s=>s.exercises.length);if(!ses.length)return null;
   return{prog:prog||(ses.length>1?L("Programme importé"):""),ses}}
-// une carte par séance, la même pour toutes (libre, programme de Sid'compagnon, de Claude ou importé)
+// une carte par séance, la même pour toutes (libre, programme de Sid'Compagnon, de Claude ou importé)
 // v44.7 (demande de Sid) : une seule interface, modifiée directement ; pour chaque exercice, une ligne par série :
 // « Série 1 : [kg] – [reps] », « + Ajouter une série », × pour retirer une série. Rien n'est pré-rempli.
 // v73 : résumé d'une séance (exercices, séries, chrono en cours ou « faite aujourd'hui »)
@@ -212,7 +212,7 @@ function grpActions(id){
     undoable("Programme supprimé",ids,()=>{ids.forEach(tomb);M().sessions=M().sessions.filter(s=>!ids.includes(s.id));if(isPlan)M().plan={deleted:true,upd:Date.now()}},
       {after:renderMuscu,revert:isPlan?()=>{M().plan={...oldPlan,upd:Date.now()}}:undefined})}});
   openActions(isPlan?L("Mon programme"):name,it)}
-// importer une séance ou un programme (texte partagé depuis Sid'compagnon, ou programme écrit par Claude) : même chemin pour tout
+// importer une séance ou un programme (texte partagé depuis Sid'Compagnon, ou programme écrit par Claude) : même chemin pour tout
 function importShared(txt){const r=parseShared(txt);if(!r)return null;
   const grp=r.prog?{id:uid(),name:r.prog.slice(0,80),src:"import"}:null;
   r.ses.forEach((s,i)=>{s.upd=Date.now();if(grp){s.grp=grp;s.ord=i}M().sessions.push(s)});M().upd=Date.now();return r}
@@ -220,6 +220,6 @@ $("msImportOpen").addEventListener("click",()=>{$("msImport").hidden=false;$("ms
 $("msImportCancel").addEventListener("click",()=>{$("msImport").hidden=true;$("msImportOpen").hidden=false});
 $("msImportBtn").addEventListener("click",()=>{
   const r=importShared($("msPaste").value);
-  if(!r){toast("Texte non reconnu. Colle une séance ou un programme partagé depuis Sid'compagnon.");return}
+  if(!r){toast("Texte non reconnu. Colle une séance ou un programme partagé depuis Sid'Compagnon.");return}
   msOpenId=r.ses[0].id;save();$("msPaste").value="";$("msImport").hidden=true;$("msImportOpen").hidden=false;renderMuscu();
   toast(r.prog?`${L("Programme importé")} : ${r.ses.length} ${L(r.ses.length>1?"séances":"séance")}`:`${L("Séance importée")} : ${r.ses[0].name}`)});

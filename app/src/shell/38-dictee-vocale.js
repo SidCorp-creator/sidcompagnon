@@ -6,7 +6,7 @@ function dictStop(){if(dict){try{dict.rec.stop()}catch(e){}dict.btn.classList.re
 function dictate(btn,field,onChange){
   if(dict){const same=dict.btn===btn;dictStop();if(same)return}
   if(!SR){toast("Dictée indisponible ici : touche le micro du clavier de ton smartphone.");field.focus();return}
-  const rec=new SR();rec.lang=LANG==="en"?"en-US":LANG==="nl"?"nl-NL":"fr-FR";rec.continuous=true;rec.interimResults=true;
+  const rec=new SR();rec.lang=LANG==="en"?"en-US":"fr-FR";rec.continuous=true;rec.interimResults=true;
   // le texte dicté s'insère à l'endroit du curseur
   const start=field.selectionStart??field.value.length,before=field.value.slice(0,start),after=field.value.slice(field.selectionEnd??start);
   const sep=before&&!/\s$/.test(before)?" ":"";let finals="";
@@ -35,7 +35,7 @@ function rtCmd(k){const el=$("noteBody");el.focus();const ex=(c,v)=>document.exe
   else if(k==="link"){const s=getSelection();if(!s.rangeCount||s.isCollapsed){toast("Sélectionne d'abord du texte");return}
     const r=s.getRangeAt(0).cloneRange(),u=prompt(L("Adresse du lien (https://…)"),"https://");if(!u||!/^https?:\/\/\S+$/i.test(u.trim())){if(u)toast("Adresse non valable");return}
     el.focus();s.removeAllRanges();s.addRange(r);ex("createLink",u.trim())}
-  else if(k==="date")ex("insertText",new Date().toLocaleDateString(LANG==="fr"?"fr-BE":LANG==="nl"?"nl-BE":"en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"}));
+  else if(k==="date")ex("insertText",new Date().toLocaleDateString(LANG==="fr"?"fr-BE":"en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"}));
   else if(k==="quote")ex("formatBlock",b&&b.closest("blockquote")?"div":"blockquote");
   else if(k==="ul"||k==="ol")ex(k==="ul"?"insertUnorderedList":"insertOrderedList");
   else if(k==="chk"){const ul0=b&&b.closest("ul");if(ul0&&ul0.classList.contains("chk")){ul0.classList.remove("chk");ex("insertUnorderedList")}

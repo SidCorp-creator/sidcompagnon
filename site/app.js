@@ -77,7 +77,7 @@ const cacheKey=uid=>"sidnote-u-"+uid;
 const ls={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},
           set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},
           del(k){try{localStorage.removeItem(k)}catch(e){}}};
-/* ---------- traductions : tables DICT / PATS (anglais) et DICT_NL / PATS_NL (néerlandais) dans i18n.js ---------- */
+/* ---------- traductions : tables DICT / PATS (anglais) dans i18n.js ; v76 : le néerlandais est retiré ---------- */
 let LANG=null; // fixé plus bas, une fois les données chargées
 const L=x=>LANG&&LANG!=="fr"&&DICT[x]!==undefined?DICT[x]:x;
 const defaultUI=()=>({view:"plan",filter:"Toutes",doneOpen:false,pausedOpen:true});
@@ -102,8 +102,8 @@ if(!Array.isArray(data.docs))data.docs=[];
 if(!Array.isArray(data.notes))data.notes=[];
 if(!Array.isArray(data.pwds))data.pwds=[];
 LANG=(data.prefs&&data.prefs.lang)||ls.get("sidnote-lang")||"fr";if(session)ls.set("sidnote-lang",LANG);
-if(LANG==="nl"){for(const k in DICT)delete DICT[k];Object.assign(DICT,DICT_NL);PATS.splice(0,PATS.length,...PATS_NL)}
-if(!["fr","en","nl"].includes(LANG))LANG="fr";
+// v76 : FR et EN seulement. Une préférence néerlandaise (ou inconnue) revient au français, et on l'enregistre pour ne plus la relire.
+if(!["fr","en"].includes(LANG)){LANG="fr";ls.set("sidnote-lang","fr");if(data.prefs&&data.prefs.lang&&data.prefs.lang!=="fr"){data.prefs.lang="fr"}}
 const TABS=[["plan","Agenda"],["todo","Tâches"],["lists","Listes"],["notes","Notes"],["pomo","Focus"],["muscu","Musculation"],["nutri","Nutrition"],["graph","Graphiques"],["docs","Documents"],["pwd","Mots de passe"],["app","Appli"]];
 data.prefs=data.prefs||{};data.prefs.tabs=data.prefs.tabs||{plan:true,todo:true,pomo:true,app:true};
 
@@ -414,7 +414,7 @@ const c2ok=b=>{if(b.dataset.c2){c2Off(b);return true}confirm2(b,()=>{});return f
 const LOGO_APPS={home:1,agenda:1,fit:1,note:1};
 const LOGO=(app,cls)=>`<img class="logo ${cls||""}" src="icons/${LOGO_APPS[app]?app:"home"}.svg" alt="" aria-hidden="true" draggable="false">`;
 
-// v42 : animation d'ouverture (2 s) : le logo Sid'compagnon, puis les trois apps ; elle ne bloque jamais les touchers
+// v42 : animation d'ouverture (2 s) : le logo Sid'Compagnon, puis les trois apps ; elle ne bloque jamais les touchers
 if($("authLogo"))$("authLogo").innerHTML=LOGO("home");
 (()=>{const sp=$("splash");if(!sp)return;if(document.documentElement.dataset.ds==="elan"){sp.remove();return}$("spMark").innerHTML=LOGO("home");$("spApps").innerHTML=["agenda","fit","note"].map(a=>`<span data-app="${a}">${LOGO(a)}</span>`).join("");
   const quick=matchMedia("(prefers-reduced-motion: reduce)").matches;sp.classList.add("go");setTimeout(()=>{sp.remove();bootTop()},quick?400:2100)})();
@@ -441,7 +441,7 @@ const INTRO={
     ()=>{const w=[irint(60,90),irint(70,100),irint(40,80),irint(65,95)];return `<div class="it-lines" aria-hidden="true">${w.map((v,i)=>`<i style="--w:${v}%;animation-delay:${(i*irnd(.18,.26)).toFixed(2)}s"></i>`).join("")}</div>`},
     ()=>{const k=irnd(.9,1.2).toFixed(2),y=irint(-8,8);return `<svg class="it-sign" viewBox="0 0 200 90" aria-hidden="true" style="--t:${k}s"><path d="M10 ${60+y} C 40 ${10+y}, 60 ${80-y}, 85 45 S 120 ${15+y}, 140 55 S 175 ${70-y}, 190 ${35+y}"/></svg>`},
     ()=>{const n=irint(3,5);return `<div class="it-stack" aria-hidden="true">${[...Array(n)].map((_,i)=>`<span style="animation-delay:${(i*irnd(.12,.18)).toFixed(2)}s;--x:${irint(-14,14)}px;--r:${irnd(-5,5).toFixed(1)}deg"></span>`).join("")}</div>`}]};
-const INTRO_NAME={agenda:"Sid Journée",fit:"Sid Forme",note:"Sid Coffre"};
+const INTRO_NAME={agenda:"Sid'Journée",fit:"Sid'Forme",note:"Sid'Note"};
 function appIntro(app,vv){
   if(document.documentElement.dataset.ds==="elan"||!INTRO[app]||matchMedia("(prefers-reduced-motion: reduce)").matches||window.__noIntro)return;
   introEnd(true);const el=document.createElement("div");el.className="app-intro";el.id="appIntro";el.dataset.app=app;el.setAttribute("role","presentation");
@@ -451,7 +451,7 @@ function appIntro(app,vv){
   introT=setTimeout(()=>introEnd(),2000)}
 function introEnd(now){clearTimeout(introT);const el=$("appIntro");if(!el)return;if(now){el.remove();return}el.classList.add("out");setTimeout(()=>el.remove(),180)}
 addEventListener("keydown",e=>{if($("appIntro"))introEnd()},true);
-// v44.4 : animation de sortie (retour à Sid'compagnon) : le logo de l'app, au centre, rejoint sa place parmi les 3 logos de l'accueil
+// v44.4 : animation de sortie (retour à Sid'Compagnon) : le logo de l'app, au centre, rejoint sa place parmi les 3 logos de l'accueil
 const OUT_K={agenda:"orga",fit:"sport",note:"perso"};
 function appOutro(app){
   if(document.documentElement.dataset.ds==="elan"||matchMedia("(prefers-reduced-motion: reduce)").matches||window.__noIntro||!document.body.animate)return;
@@ -471,12 +471,12 @@ function appOutro(app){
 /* ---------- onglets, rangés par catégories ---------- */
 // La barre du bas montre des catégories ; dans une catégorie, une barre en haut permet de choisir la fonction.
 // v25 : les catégories deviennent des « espaces » (page Espaces + barre latérale sur ordinateur)
-// v42 : trois applications dans l'application mère Sid'compagnon (même compte, mêmes données) ; Réglages et Compte sont dans Sid'compagnon
+// v42 : trois applications dans l'application mère Sid'Compagnon (même compte, mêmes données) ; Réglages et Compte sont dans Sid'Compagnon
 const GROUPS=[
-  {k:"orga",label:"Sid Journée",app:"agenda",tabs:["plan","todo","pomo"]}, // v41 : Listes retirées ; v42 : Focus (pomodoro) revient
-  {k:"sport",label:"Sid Forme",app:"fit",tabs:["muscu","nutri","graph"]},
-  {k:"perso",label:"Sid Coffre",app:"note",tabs:["notes","docs","pwd"]},
-  {k:"more",label:"Sid'compagnon",app:"home",tabs:["more","app"]}];
+  {k:"orga",label:"Sid'Journée",app:"agenda",tabs:["plan","todo","pomo"]}, // v41 : Listes retirées ; v42 : Focus (pomodoro) revient
+  {k:"sport",label:"Sid'Forme",app:"fit",tabs:["muscu","nutri","graph"]},
+  {k:"perso",label:"Sid'Note",app:"note",tabs:["notes","docs","pwd"]},
+  {k:"more",label:"Sid'Compagnon",app:"home",tabs:["more","app"]}];
 const APP_GROUPS=GROUPS.slice(0,3);
 const appOf=v=>v==="home"||v==="spaces"?"home":groupOf(v).app;
 const SHORT={plan:"Agenda",todo:"Tâches",lists:"Listes",pomo:"Focus",muscu:"Musculation",nutri:"Nutrition",graph:"Graphiques",notes:"Notes",docs:"Documents",pwd:"Mots de passe",more:"Réglages",app:"Installer l'app"};
@@ -496,7 +496,7 @@ const PLUSIC=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 // v28 : la barre du bas montre directement les 3 espaces (demande de Sid) : Aujourd'hui, Organisation, Santé, Coffre, Compte.
 // Toucher un espace rouvre sa dernière fonction ; en haut, des pastilles passent d'une fonction à l'autre. Le « + » est sur la page Aujourd'hui.
 const DOCK=[["home","Aujourd'hui",HOMEIC],["orga","Organisation",null],["sport","Santé",null],["perso","Coffre",null],["more","Compte",USERIC]];
-// v42 : la barre du bas montre les fonctions de l'app ouverte (sid'agenda : Agenda, Tâches, Focus…) ; dans Sid'compagnon, pas de barre
+// v42 : la barre du bas montre les fonctions de l'app ouverte (sid'agenda : Agenda, Tâches, Focus…) ; dans Sid'Compagnon, pas de barre
 // v44.7 : la page garde toujours en bas la place de la barre (sa hauteur réelle, 0 si elle est cachée) : le dernier élément
 // n'est plus coupé derrière (ordinateur avec la barre latérale masquée, téléphone, tablette)
 function navPad(){const n=document.querySelector("nav"),h=n&&!n.hidden&&getComputedStyle(n).display!=="none"?Math.ceil(n.getBoundingClientRect().height):0;
@@ -564,10 +564,10 @@ function applyTabs(){
 }
 // --- en-tête d'un module : nom de l'espace + pastilles de ses fonctions ---
 // v28 : nom de l'espace + pastilles des fonctions de cet espace (Agenda · Tâches · Focus…)
-// v42 : en-tête d'une app : son logo et son nom, et le retour à Sid'compagnon (les fonctions sont dans la barre du bas)
+// v42 : en-tête d'une app : son logo et son nom, et le retour à Sid'Compagnon (les fonctions sont dans la barre du bas)
 const APP_ROLES={agenda:"Agenda, tâches, focus",fit:"Sport et alimentation",note:"Notes, documents, mots de passe",home:"Tes réglages"};
 function renderVhead(v){const el=$("vhead");
- if(v==="home"||v==="spaces"){el.hidden=true;document.title="Sid'compagnon";return}
+ if(v==="home"||v==="spaces"){el.hidden=true;document.title="Sid'Compagnon";return}
  const g=groupOf(v),previous=el.dataset.app===g.app?Number(el.querySelector("[role=progressbar]")?.getAttribute("aria-valuenow")||0):0;el.hidden=false;el.dataset.app=g.app;el.classList.remove("many");
  const list=allT().filter(t=>onDay(t,iso(today()))&&!t.canc),done=list.filter(t=>t.status==="fait"||(t.date===iso(today())&&t.timeEnd&&toMin(t.timeEnd)<=new Date().getHours()*60+new Date().getMinutes())).length;
  let progress=`${done} / ${list.length} ${L("activités réalisées")}`,percent=list.length?Math.round(done/list.length*100):0,hasProgress=g.app==="agenda";
@@ -580,7 +580,7 @@ function renderVhead(v){const el=$("vhead");
  if(g.app==="note"){progress=elanCoffreMetric(v);hasProgress=false}
  if(g.app==="home"){progress="";hasProgress=false}
  const title=SHORT[v]||g.label;
- document.title=`${g.label} · ${L(title)} — Sid'compagnon`;
+ document.title=`${g.label} · ${L(title)} — Sid'Compagnon`;
  const props={app:g.app,label:g.label,role:APP_ROLES[g.app],title,progress,percent,hasProgress,gridIcon:GRIDIC,askIcon:IC("message"),i18n:agI18n()};
  if(shIsl("appHead")){try{window.SCIslands.appHead(el,props);return}catch(e){reportErr("island appHead: "+(e&&e.message))}}
  el.innerHTML=`<div class="elan-head-row"><button type="button" class="ah-home" data-go="home" aria-label="${L("Toutes les apps")}"><span class="ah-grid">${GRIDIC}</span></button><span class="ah-brand">${LOGO(g.app,"ah-logo")}<span class="ah-names"><b>${g.label}</b><small>${L(APP_ROLES[g.app])}</small></span></span><button type="button" class="ah-claude" data-app-claude="1"><span class="ah-chat">${IC("message")}</span>Claude</button></div><h1 class="elan-title">${L(title)}</h1><div class="elan-progress"><span>${progress}</span><span class="elan-progress-track" ${hasProgress?"":"hidden"} role="progressbar" aria-label="${L("Progression du jour")}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><i style="width:${percent}%"></i></span></div>`;
@@ -636,7 +636,7 @@ function renderSide(v){const el=$("side");if(!el)return;v=v||data.ui.view;
   if(shIsl("side")){try{window.SCIslands.side(el,{cur:v,i18n:agI18n(),icons:{side:SIDEIC,home:HOMEIC,plus:PLUSIC,user:USERIC},
       groups:GROUPS.map(g=>({app:g.app,label:g.label,items:groupTabs(g).map(k=>({k,icon:ICON(k)||"",label:SHORT[k],badge:0,meta:spaceMeta(k)}))})).filter(g=>g.items.length)});sideApply();return}
     catch(e){reportErr("island side: "+(e&&e.message))}}
-  el.innerHTML=`<div class="side-brand">${LOGO("home","side-logo")}<span class="grow">Sid'compagnon</span><button type="button" class="side-tog" aria-label="${L("Masquer la barre latérale")}" title="${L("Masquer la barre latérale")}" aria-expanded="true" aria-controls="side">${SIDEIC}</button></div>
+  el.innerHTML=`<div class="side-brand">${LOGO("home","side-logo")}<span class="grow">Sid'Compagnon</span><button type="button" class="side-tog" aria-label="${L("Masquer la barre latérale")}" title="${L("Masquer la barre latérale")}" aria-expanded="true" aria-controls="side">${SIDEIC}</button></div>
     <button type="button" class="side-it" data-go="home" aria-current="${v==="home"}"><span class="sp-ic">${HOMEIC}</span><span class="grow">${L("Aujourd'hui")}</span></button>
     <button type="button" class="side-add" data-sadd="1"><span class="sp-ic">${PLUSIC}</span><span class="grow">${L("Ajouter")}</span></button>`+
     GROUPS.map(g=>{const ts=groupTabs(g);if(!ts.length)return"";
@@ -668,7 +668,7 @@ function renderHome(){if(!$("homeBody"))return;
   const vis=visibleTabs(),T=vis.includes("plan")?allT().filter(t=>t.status!=="fait"&&!t.canc):[];
   const start=/** @type {(t:any)=>any} */(t=>{const d=parse(t.date);const[h,m]=(t.time||"08:00").split(":").map(Number);d.setHours(h,m);return d});
   const next=T.filter(t=>t.time&&start(t)>now).sort((a,b)=>start(a)-start(b))[0]||T.filter(t=>!t.time&&t.date>t0).sort((a,b)=>a.date.localeCompare(b.date))[0];
-  // v44.7 : Sid'compagnon = 3 grandes cartes, une par app (nom, identité, ce qu'elle fait en une ligne, 1 ou 2 repères du jour) ;
+  // v44.7 : Sid'Compagnon = 3 grandes cartes, une par app (nom, identité, ce qu'elle fait en une ligne, 1 ou 2 repères du jour) ;
   // toucher une carte ouvre l'app. Tout le reste a quitté cette page (il est dans chaque app).
   const cards=[];
   {const g=APP_GROUPS.find(x=>x.app==="agenda");if(groupTabs(g).length){const it=[];
@@ -834,7 +834,7 @@ function doneCal(list){const byDay={};list.forEach(t=>{const k=iso(new Date(t.do
   const sel=dcSel&&byDay[dcSel];const sd=dcSel?parse(dcSel):null;
   return `<div class="card dc"><div class="dc-top"><button type="button" class="mini" data-dcm="${dcMonth-1}" aria-label="${L("Mois précédent")}">${IC("chev")}</button><b>${L(MOL[m])} ${y}</b><button type="button" class="mini" data-dcm="${dcMonth+1}" ${dcMonth>=cur?"disabled":""} aria-label="${L("Mois suivant")}">${IC("chev")}</button></div>
     <div class="small muted" style="text-align:center;margin:-2px 0 8px">${monthN} ${L(monthN>1?"tâches réalisées ce mois-ci":"tâche réalisée ce mois-ci")}</div>
-    <div class="dc-g">${[...({fr:"LMMJVSD",en:"MTWTFSS",nl:"MDWDVZZ"}[LANG]||"LMMJVSD")].map(x=>`<i>${x}</i>`).join("")}${g}</div></div>`+
+    <div class="dc-g">${[...({fr:"LMMJVSD",en:"MTWTFSS"}[LANG]||"LMMJVSD")].map(x=>`<i>${x}</i>`).join("")}${g}</div></div>`+
     (sel?`<div class="grp-d" style="margin:10px 4px 6px">${DOWL[sd.getDay()]} ${sd.getDate()} ${mlow(sd.getMonth())} · ${sel.length} ${L(sel.length>1?"tâches":"tâche")}</div><div class="card">${sel.map(todoRow).join("")}</div>`
       :`<p class="small muted" style="text-align:center;margin:10px 0 0">${L("Touche un jour pour voir ce que tu as fait.")}</p>`)}
 const curCat=()=>{const c=TV().cat||"all";return c==="all"||c==="none"||catOf(c)?c:"all"};
@@ -1009,7 +1009,7 @@ function yearGrid(y,cls){const now=today();let h="";
     for(let d=1;d<=n;d++)g+=`<i class="${cls(iso(new Date(y,m,d)))}">${d}</i>`;
     h+=`<button class="ym ${y===now.getFullYear()&&m===now.getMonth()?"cur":""}" data-ym="${m}" aria-label="${MOL[m]} ${y}"><b>${MOL[m]}</b><div class="ym-g">${g}</div></button>`}return h}
 // v53 (#3) : textes des îlots de l'agenda (tr = traduction avec les motifs, comme la traduction automatique du DOM)
-const agI18n=()=>({tr:x=>LANG&&LANG!=="fr"?trStr(x):x,L,MOL,MO,lang:LANG,locale:LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE"});
+const agI18n=()=>({tr:x=>LANG&&LANG!=="fr"?trStr(x):x,L,MOL,MO,lang:LANG,locale:LANG==="en"?"en-GB":"fr-BE"});
 function renderMonth(){
   const T=allT(),tIso=iso(today());
   if(shIsl("calTitle")){try{window.SCIslands.calTitle($("calTitle"),{mo:MOL[calM],y:calY,i18n:agI18n()})}catch(e){reportErr("island calTitle: "+(e&&e.message))}}
@@ -1131,15 +1131,15 @@ $("planSearchBtn").addEventListener("click",()=>{const i=$("planSearch"),open=i.
 $("plMic").addEventListener("click",e=>dictate(e.currentTarget,$("plAsk")));
 $("plAsk").addEventListener("input",e=>grow(e.target));
 $("plAsk").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();$("plAskForm").requestSubmit()}});
-function plPrompt(q){const d=today(),day=`${d.toLocaleDateString(LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE",{weekday:"long"})} ${iso(d)}`;
-  return T3(`Ajoute dans mon agenda Sid'compagnon : ${q}\n(Aujourd'hui : ${day}, heure de Bruxelles. Utilise ajouter_activite avec le titre, la date, l'heure de début et de fin, le type et les rappels si je les donne. S'il y a plusieurs activités, ajoute-les toutes. Si la date ou l'heure n'est pas claire, demande-moi avant.)`,
-    `Add to my Sid'compagnon calendar: ${q}\n(Today: ${day}, Brussels time. Use ajouter_activite with the title, date, start and end time, type and reminders if I give them. If there are several activities, add them all. If the date or time is unclear, ask me first.)`,
-    `Voeg toe aan mijn Sid'compagnon-agenda: ${q}\n(Vandaag: ${day}, Brusselse tijd. Gebruik ajouter_activite met de titel, datum, begin- en einduur, het type en herinneringen als ik die geef. Bij meerdere activiteiten: voeg ze allemaal toe. Als de datum of het uur niet duidelijk is, vraag het me eerst.)`)}
+function plPrompt(q){const d=today(),day=`${d.toLocaleDateString(LANG==="en"?"en-GB":"fr-BE",{weekday:"long"})} ${iso(d)}`;
+  return T3(`Ajoute dans mon agenda Sid'Compagnon : ${q}\n(Aujourd'hui : ${day}, heure de Bruxelles. Utilise ajouter_activite avec le titre, la date, l'heure de début et de fin, le type et les rappels si je les donne. S'il y a plusieurs activités, ajoute-les toutes. Si la date ou l'heure n'est pas claire, demande-moi avant.)`,
+    `Add to my Sid'Compagnon calendar: ${q}\n(Today: ${day}, Brussels time. Use ajouter_activite with the title, date, start and end time, type and reminders if I give them. If there are several activities, add them all. If the date or time is unclear, ask me first.)`,
+    `Voeg toe aan mijn Sid'Compagnon-agenda: ${q}\n(Vandaag: ${day}, Brusselse tijd. Gebruik ajouter_activite met de titel, datum, begin- en einduur, het type en herinneringen als ik die geef. Bij meerdere activiteiten: voeg ze allemaal toe. Als de datum of het uur niet duidelijk is, vraag het me eerst.)`)}
 $("plAskForm").addEventListener("submit",e=>{e.preventDefault();const q=$("plAsk").value.trim();if(!q)return;dictStop();
   aiHandoff(plPrompt(q),"agenda");$("plAsk").value="";grow($("plAsk"))});
 let planOpenMem={}; // mois ouverts dans « Toutes les dates » ; v44.6 : tous repliés par défaut (à l'ouverture de sid'agenda et au rechargement)
 // v74 : éphéméride en haut de l'Agenda (style « Unique ») : mois, semaine, grand chiffre du jour, jour de la semaine, activités du jour
-function ephFill(){const el=$("plEph");if(!el)return;const d=today(),loc=LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE",k=iso(d);
+function ephFill(){const el=$("plEph");if(!el)return;const d=today(),loc=LANG==="en"?"en-GB":"fr-BE",k=iso(d);
   const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())),wd=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-wd);
   const wk=Math.ceil(((+t-Date.UTC(t.getUTCFullYear(),0,1))/864e5+1)/7);
   const n=data.tasks.filter(x=>x.date===k&&x.status!=="annulé").length;
@@ -1148,7 +1148,7 @@ function ephFill(){const el=$("plEph");if(!el)return;const d=today(),loc=LANG===
 // Journée Élan : une liste lisible ; le calendrier complet reste accessible dans les options.
 let elanFresh="";
 function renderElanDay(){const host=$("journeyDay");if(!host)return;
- const day=selDay||iso(today()),d=parse(day),loc=LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE",monday=new Date(d);monday.setDate(d.getDate()-(d.getDay()+6)%7);
+ const day=selDay||iso(today()),d=parse(day),loc=LANG==="en"?"en-GB":"fr-BE",monday=new Date(d);monday.setDate(d.getDate()-(d.getDay()+6)%7);
  const week=Array.from({length:7},(_,i)=>{const x=new Date(monday);x.setDate(x.getDate()+i);return {day:iso(x),label:x.toLocaleDateString(loc,{weekday:"short"}),num:x.getDate()}});
  const shift=n=>{const x=new Date(d);x.setDate(x.getDate()+n);return iso(x)},now=new Date(),minute=now.getHours()*60+now.getMinutes();
  const items=allT().filter(t=>onDay(t,day)).sort((a,b)=>sk(a).localeCompare(sk(b))).map(t=>({id:t.id,title:t.title,time:t.time||"",endTime:t.timeEnd||"",typeColor:t.cat?tc(t.cat):"",meta:[t.canc?L("Annulé"):"",t.cat,t.loc].filter(Boolean).join(" · "),past:!!t.canc||t.status==="fait"||(day<iso(today())),current:day===iso(today())&&!!t.time&&toMin(t.time)<=minute&&(toMin(t.timeEnd)||toMin(t.time)+60)>minute,fresh:t.id===elanFresh,ical:t.src==="ical",done:t.status==="fait"}));
@@ -1190,7 +1190,7 @@ function renderPlan(){
   $("tasks").innerHTML=(ks.length>1&&!q?`<div class="mfold-all"><button type="button" class="mini" data-mfoldall="1">${L(allF?"Tout déplier":"Tout replier")}</button></div>`:"")+ks.map(k=>{const shut=!q&&pf[k];
     return `<button type="button" class="mfold" data-mfold="${k}" aria-expanded="${!shut}"><span class="mf-chev">${CHEV}</span><span class="grow">${L(MOL[+k%100])} ${Math.floor(+k/100)}</span><span class="mf-n">${g[k].length}</span></button>`+(shut?"":`<div class="card">${g[k].map(t=>{
     // v44.4 : ligne aérée : jour à gauche, titre + détails au milieu, statut et « ⋯ » à droite (toucher le titre = modifier)
-    const d=parse(t.date),dd=`<div class="pr-date" aria-hidden="true"><b>${d.getDate()}</b><span class="notr">${d.toLocaleDateString(LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE",{weekday:"short"})}</span></div>`;
+    const d=parse(t.date),dd=`<div class="pr-date" aria-hidden="true"><b>${d.getDate()}</b><span class="notr">${d.toLocaleDateString(LANG==="en"?"en-GB":"fr-BE",{weekday:"short"})}</span></div>`;
     if(t.src==="ical")return `<div class="row task prow ${t.canc?"isfait":""}" style="--c:var(${colorOf(t)})" data-icalinfo="${esc(t.id)}">${dd}
       <div class="grow pr-main"><div class="ttl">${esc(t.title)}</div><div class="pr-meta"><i class="pr-dot"></i><span class="notr">${esc(t.cat||L(ICAL_CAT))}</span>${t.time?` · <span class="pr-time">${hrs(t)}</span>`:""}${t.canc?'<span class="canc-pill">Annulé</span>':""}${t.loc?` · ${esc(t.loc)}`:""}</div></div></div>`;
     const late=t.status!=="fait"&&daysTo(t.end||t.date)<0;
@@ -1249,8 +1249,8 @@ function quickPreview(){const v=$("fTitle").value,h=$("fHint");if(!v.trim()){h.h
   const q=parseQuick(v);if(!q.date&&!q.time){h.hidden=true;return}
   if(!fTouched){if(q.date)$("fDate").value=q.date;$("fTime").value=q.time||""}
   const d=q.date?new Date(q.date+"T12:00"):null;
-  if(shIsl("quickHint")){try{window.SCIslands.quickHint(h,{icon:ICS.calendar||"",title:q.title,when:`${d?d.toLocaleDateString(LANG==="fr"?"fr-BE":LANG==="nl"?"nl-BE":"en-GB",{weekday:"long",day:"numeric",month:"long"}):""}${q.time?` ${d?"· ":""}${q.time}`:""}`,i18n:agI18n()});h.hidden=false;return}catch(e){reportErr("island quickHint: "+(e&&e.message));try{window.SCIslands.unmount(h)}catch(_){}}}
-  h.innerHTML=`${IC("calendar")||""}<span>${L("Compris")} : <b class="notr">${esc(q.title)}</b> · ${d?esc(d.toLocaleDateString(LANG==="fr"?"fr-BE":LANG==="nl"?"nl-BE":"en-GB",{weekday:"long",day:"numeric",month:"long"})):""}${q.time?` ${d?"· ":""}${q.time}`:""}</span>`;h.hidden=false}
+  if(shIsl("quickHint")){try{window.SCIslands.quickHint(h,{icon:ICS.calendar||"",title:q.title,when:`${d?d.toLocaleDateString(LANG==="fr"?"fr-BE":"en-GB",{weekday:"long",day:"numeric",month:"long"}):""}${q.time?` ${d?"· ":""}${q.time}`:""}`,i18n:agI18n()});h.hidden=false;return}catch(e){reportErr("island quickHint: "+(e&&e.message));try{window.SCIslands.unmount(h)}catch(_){}}}
+  h.innerHTML=`${IC("calendar")||""}<span>${L("Compris")} : <b class="notr">${esc(q.title)}</b> · ${d?esc(d.toLocaleDateString(LANG==="fr"?"fr-BE":"en-GB",{weekday:"long",day:"numeric",month:"long"})):""}${q.time?` ${d?"· ":""}${q.time}`:""}</span>`;h.hidden=false}
 $("fTitle").addEventListener("input",quickPreview);
 ["fDate","fTime"].forEach(id=>$(id).addEventListener("input",()=>{fTouched=true}));
 function taskError(message,id){const el=$("fError");el.innerHTML=IC("alert")+" "+esc(L(message));el.hidden=false;$(id).setAttribute("aria-describedby","fError");$(id).focus()}
@@ -1471,13 +1471,13 @@ async function saveJSON(obj,name,title){
   try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title});return}}catch(e){if(e.name==="AbortError")return}
   const a=document.createElement("a");a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
 const bkObj=extra=>({app:"sidnote",v:2,exported:new Date().toISOString(),...(extra||{}),data:forServer(data)});
-$("backupBtn").addEventListener("click",()=>saveJSON(bkObj(),`sidnote-sauvegarde-${new Date().toISOString().slice(0,10)}.json`,L("Sauvegarde Sid'compagnon")));
+$("backupBtn").addEventListener("click",()=>saveJSON(bkObj(),`sidnote-sauvegarde-${new Date().toISOString().slice(0,10)}.json`,L("Sauvegarde Sid'Compagnon")));
 // RGPD : export complet (JSON) et suppression des données du compte
-$("exportAllBtn").addEventListener("click",()=>saveJSON(bkObj({account:{email:session&&session.email,id:session&&session.user.id}}),`sidnote-mes-donnees-${new Date().toISOString().slice(0,10)}.json`,L("Mes données Sid'compagnon")));
+$("exportAllBtn").addEventListener("click",()=>saveJSON(bkObj({account:{email:session&&session.email,id:session&&session.user.id}}),`sidnote-mes-donnees-${new Date().toISOString().slice(0,10)}.json`,L("Mes données Sid'Compagnon")));
 $("wipeBtn").addEventListener("click",async e=>{
   const b=e.currentTarget;
   if(!b.dataset.armed){b.dataset.armed="1";b.textContent=L("Tout effacer ? Toucher encore pour confirmer");setTimeout(()=>{delete b.dataset.armed;b.textContent=L("Supprimer mes données")},4000);return}
-  if(!confirm(L("Tout ce que tu as mis dans Sid'compagnon sera effacé, sur tous tes appareils. C'est définitif. Continuer ?")))return;
+  if(!confirm(L("Tout ce que tu as mis dans Sid'Compagnon sera effacé, sur tous tes appareils. C'est définitif. Continuer ?")))return;
   b.disabled=true;b.textContent="…";
   try{
     const t=await token(),u=session.user.id;
@@ -1511,7 +1511,7 @@ let bkCur=null;
 $("restoreIn").addEventListener("change",async e=>{
   const f=e.target.files[0];e.target.value="";if(!f)return;
   let p=null;try{p=bkParse(JSON.parse(await f.text()))}catch(err){}
-  if(!p){toast("Ce fichier n'est pas une sauvegarde Sid'compagnon");return}
+  if(!p){toast("Ce fichier n'est pas une sauvegarde Sid'Compagnon");return}
   bkCur=bkPrepare(p.d);const d=bkCur.d;bkCur.v1=!!p.v1;
   $("bkWhen").textContent=p.at?`${L("Sauvegarde du")} ${fmtDay(p.at)}`:L("Ancienne sauvegarde (tâches et agenda seulement)");
   if(shIsl("bkList")){try{window.SCIslands.bkList($("bkList"),{rows:BK_LISTS.filter(x=>x[1]).map(([k,lb])=>({lb,n:bkGet(d,k).length,now:bkGet(data,k).length})),i18n:agI18n()})}catch(e){reportErr("island bkList: "+(e&&e.message))}}
@@ -1541,25 +1541,25 @@ $("bkReplace").addEventListener("click",e=>{const b=e.currentTarget;
 /* ---------- v35 : confidentialité, conditions d'utilisation, consentement santé, suppression du compte ---------- */
 // v43 : textes légaux mis à jour (connecteur Claude, Spotify à la demande, polices hébergées ici) ; version complète dans les pages publiques
 const LEGAL={privacy:[
-  ["Qui est responsable","Sid'compagnon est édité par SidCorp, qui est responsable du traitement de tes données. Les coordonnées complètes figurent dans la version complète de cette politique. Pas de publicité : aucune donnée n'est vendue ni utilisée à des fins commerciales."],
+  ["Qui est responsable","Sid'Compagnon est édité par SidCorp, qui est responsable du traitement de tes données. Les coordonnées complètes figurent dans la version complète de cette politique. Pas de publicité : aucune donnée n'est vendue ni utilisée à des fins commerciales."],
   ["Ce qui est enregistré, et pourquoi","Ton e-mail, ton pseudo et ton mot de passe (gardé haché par Supabase), pour ton compte. Ce que tu mets dans l'app (agenda, tâches, notes, documents, séances, nutrition, réglages), pour te rendre le service : c'est la base légale « exécution du contrat ». Des rapports d'erreur techniques (version, message d'erreur, type de navigateur, sans ton contenu), pour corriger les bugs : intérêt légitime. Ton abonnement aux notifications, seulement si tu les actives."],
-  ["Données de santé","Ton poids, tes repas, ton profil (âge, taille, sport), tes séances et les zones à ménager sont des données de santé. Sid'compagnon ne les utilise qu'avec ton accord explicite, que tu peux retirer à tout moment dans Réglages. Sid'compagnon ne les envoie à aucune IA de lui-même : si tu branches Claude, c'est ton propre compte Claude (Anthropic) qui les lit par le connecteur, quand tu le lui demandes, selon les conditions d'Anthropic. La photo d'assiette que tu envoies à Claude est déposée dans ton dossier privé, lue une seule fois par ton Claude, puis effacée (au plus tard après 24 h). Les aliments sont retenus dans une mémoire commune anonyme (jamais ton nom)."],
+  ["Données de santé","Ton poids, tes repas, ton profil (âge, taille, sport), tes séances et les zones à ménager sont des données de santé. Sid'Compagnon ne les utilise qu'avec ton accord explicite, que tu peux retirer à tout moment dans Réglages. Sid'Compagnon ne les envoie à aucune IA de lui-même : si tu branches Claude, c'est ton propre compte Claude (Anthropic) qui les lit par le connecteur, quand tu le lui demandes, selon les conditions d'Anthropic. La photo d'assiette que tu envoies à Claude est déposée dans ton dossier privé, lue une seule fois par ton Claude, puis effacée (au plus tard après 24 h). Les aliments sont retenus dans une mémoire commune anonyme (jamais ton nom)."],
   ["Où, et avec qui","Tes données sont dans ton compte chez Supabase, en Europe (Francfort, Allemagne). Le site est hébergé par Netlify, qui garde des journaux techniques (dont ton adresse IP) pour faire tourner le site. Anthropic n'intervient que si tu branches Claude, Spotify seulement si tu charges son lecteur. Plus aucune police ni bibliothèque n'est chargée chez un tiers. Sur ton appareil, l'app garde une copie de tes données pour marcher sans connexion."],
   ["Ce qui est chiffré","Mots de passe, notes secrètes et documents sont chiffrés sur ton appareil avec une clé protégée par le mot de passe de ton compte (ou ta phrase secrète pour les coffres créés avant) avant d'être envoyés : personne d'autre ne peut les lire, pas même SidCorp. Le reste est protégé par ton compte ; l'administrateur pourrait techniquement y accéder pour l'entretien, mais ne le fait pas."],
   ["Combien de temps","Tant que ton compte existe. Les éléments supprimés quittent la synchronisation après 90 jours ; les sauvegardes automatiques sont gardées 14 jours ; les rapports d'erreur 90 jours. « Supprimer mon compte » efface tout de suite ton compte et tes données (les sauvegardes disparaissent dans les 14 jours)."],
   ["Tes droits","Tu peux voir, télécharger, corriger et supprimer tes données à tout moment (Réglages, « Tes données et ta vie privée »), retirer ton accord pour les données de santé, t'opposer à un traitement et supprimer ton compte. Tu peux aussi porter plainte auprès de l'Autorité de protection des données (Belgique, www.autoriteprotectiondonnees.be)."]],
  terms:[
-  ["Le service","Sid'compagnon est gratuit, sans achat ni abonnement, et fourni tel quel. Il peut évoluer, être interrompu ou s'arrêter ; tu seras prévenu à l'avance si possible."],
+  ["Le service","Sid'Compagnon est gratuit, sans achat ni abonnement, et fourni tel quel. Il peut évoluer, être interrompu ou s'arrêter ; tu seras prévenu à l'avance si possible."],
   ["Ton compte","Ton compte est personnel. Garde ton mot de passe pour toi : il protège aussi tes coffres. Si tu le remets à zéro par e-mail, ouvre d'abord tes coffres sur un appareil où ils sont déjà ouverts pour garder l'accès ; sinon, ils ne peuvent pas être rouverts, même par SidCorp."],
   ["Ce que tu y mets","Tu restes propriétaire de ton contenu. N'y mets rien d'illégal. Fais de temps en temps une sauvegarde (Réglages, « Sauvegarde »)."],
   ["Santé : nutrition et musculation","Les calculs, menus et programmes sont donnés à titre indicatif, parfois par une IA qui peut se tromper. Ce n'est pas un avis médical : demande conseil à un médecin, un diététicien ou un coach, surtout en cas de douleur, de grossesse, de maladie ou de troubles alimentaires."],
   ["Claude (facultatif)","Brancher Claude est facultatif. Claude est un service d'Anthropic, utilisé avec ton propre compte et selon ses conditions ; SidCorp n'en est pas responsable. Tu peux débrancher le connecteur à tout moment (Réglages)."],
   ["Fin et droit applicable","Tu peux supprimer ton compte à tout moment. SidCorp peut fermer un compte utilisé de façon abusive. Ces conditions relèvent du droit belge ; elles ne retirent aucun droit que la loi te donne comme consommateur."]],
  cookies:[
-  ["Pas de cookie","Sid'compagnon ne dépose aucun cookie : ni publicité, ni mesure d'audience, ni pisteur."],
+  ["Pas de cookie","Sid'Compagnon ne dépose aucun cookie : ni publicité, ni mesure d'audience, ni pisteur."],
   ["Ce qui est gardé sur ton appareil","Seulement ce qui est nécessaire pour faire marcher l'app que tu as demandée : ta session (rester connecté), une copie de tes données pour marcher sans connexion, tes fichiers, tes préférences d'affichage (langue, thème, barre latérale), un compteur anti-essais pour la connexion, et le cache de l'app. Ces éléments sont dispensés de consentement (loi belge du 13 juin 2005, art. 129) car strictement nécessaires."],
   ["Contenu tiers : Spotify","Le lecteur Spotify (Focus) n'est chargé que si tu touches « Charger le lecteur Spotify ». Spotify reçoit alors ton adresse IP et peut déposer ses propres cookies, selon sa politique. Tu peux retirer ce choix à tout moment sous le lecteur."],
-  ["Pas de bandeau","Comme rien de non nécessaire n'est chargé sans ton action, Sid'compagnon n'affiche pas de bandeau de cookies."]]};
+  ["Pas de bandeau","Comme rien de non nécessaire n'est chargé sans ton action, Sid'Compagnon n'affiche pas de bandeau de cookies."]]};
 const LEGAL_PAGE={privacy:"confidentialite.html",terms:"conditions.html",cookies:"cookies.html"};
 function openLegal(k){k=LEGAL[k]?k:"privacy";
   document.querySelectorAll("#legalSeg [data-legal]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.legal===k)));
@@ -1595,7 +1595,7 @@ $("delAccBtn").addEventListener("click",async()=>{
   try{const u=session.user.id;await dropSub().catch(()=>{});
     await api("/functions/v1/delete-account",{method:"POST",token:await token(),body:{}});
     await idbClearUser(u);["sidnote-ical-"+u,"sidnote-icalauth-"+u,cacheKey(u),"sidnote-mk-"+u,"sidnote-bio-"+u,LAST_KEY].forEach(k=>ls.del(k));
-    endSession(L("Ton compte a été supprimé. Merci d'avoir utilisé Sid'compagnon."),true);
+    endSession(L("Ton compte a été supprimé. Merci d'avoir utilisé Sid'Compagnon."),true);
   }catch(ex){b.disabled=false;b.textContent=L("Supprimer mon compte");toast(ex instanceof TypeError?L("Pas de connexion internet"):(ex.message||L("Suppression impossible")))}});
 
 /* ---------- v37 : listes partagées entre proches ---------- */
@@ -1660,8 +1660,8 @@ $("slBody").addEventListener("click",async e=>{const b=e.target.closest("button"
   else if(d.slclear){const ids=slItems.filter(x=>x.done);slItems=slItems.filter(x=>!x.done);renderLists();
     try{await slApi(`/rest/v1/shared_items?list_id=eq.${slOpen}&done=eq.true`,{method:"DELETE"});toast(`${ids.length} ${L(ids.length>1?"éléments retirés":"élément retiré")}`)}catch(ex){slErr=slErrMsg(ex);slLoad()}}
   else if(d.slinvite){const l=slLists.find(x=>x.id===slOpen);if(!l)return;
-    const txt=`${L("Rejoins ma liste")} « ${l.name} » ${L("sur Sid'compagnon avec le code")} ${l.code} : ${location.origin}/#rejoindre=${l.code}`;
-    try{if(navigator.share){await navigator.share({title:"Sid'compagnon",text:txt});return}}catch(ex){if(ex.name==="AbortError")return}
+    const txt=`${L("Rejoins ma liste")} « ${l.name} » ${L("sur Sid'Compagnon avec le code")} ${l.code} : ${location.origin}/#rejoindre=${l.code}`;
+    try{if(navigator.share){await navigator.share({title:"Sid'Compagnon",text:txt});return}}catch(ex){if(ex.name==="AbortError")return}
     toast(await copyTxt(txt)?L("Invitation copiée : colle-la dans un message"):`${L("Code")} : ${l.code}`,5000)}
   else if(d.slleave){if(slArmed!=="leave"){slArmed="leave";renderLists();setTimeout(()=>{if(slArmed==="leave"){slArmed="";renderLists()}},4000);return}
     const l=slLists.find(x=>x.id===slOpen);if(!l)return;slArmed="";
@@ -1679,7 +1679,7 @@ data.pomo=data.pomo||{cfg:{work:25,brk:5,total:120},run:null,log:{}};
 const P=data.pomo;
 const PRESETS=[60,90,120,180];
 const hm=m=>{m=Math.round(m);const h=Math.floor(m/60),r=m%60;return h?`${h} h${r?" "+String(r).padStart(2,"0"):""}`:`${r} min`};
-const pomoDuration=m=>hm(m).replace(" h",LANG==="nl"?"\u00a0u":"\u00a0h");
+const pomoDuration=m=>hm(m).replace(" h","\u00a0h");
 const clockTxt=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")};
 const hhmm=d=>String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
 const dayKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -1798,12 +1798,12 @@ function tickPomo(){
   $("mEnd").textContent=hhmm(new Date(Date.now()+(totalMs-el)));
   $("pomoPause").textContent=r.pausedAt?"Reprendre":"Pause";
   if(data.ui.view==="pomo"){$("vhead").dataset.progressChange=pomoProgressChange;renderVhead("pomo")}pomoProgressChange="position";
-  document.title=r.pausedAt?"Sid'compagnon":`${clockTxt(L.d-L.into)} · ${isW?"Travail":"Pause"}`;
+  document.title=r.pausedAt?"Sid'Compagnon":`${clockTxt(L.d-L.into)} · ${isW?"Travail":"Pause"}`;
 }
 function renderPomo(){
   const run=!!P.run;
   $("pomoSetup").hidden=run;$("pomoRun").hidden=!run;setBadge("pomo",run?"dot":0);
-  if(run)tickPomo();else{renderSetup();document.title="Sid'compagnon"}
+  if(run)tickPomo();else{renderSetup();document.title="Sid'Compagnon"}
   renderPomoStats();if(data.ui.view==="pomo"){$("vhead").dataset.progressChange=pomoProgressChange;renderVhead("pomo")}pomoProgressChange="position";
 }
 function renderPomoStats(){
@@ -2050,8 +2050,8 @@ async function currentSub(){if(!pushOK())return null;const r=await navigator.ser
 // le bloc « notifications » existe à deux endroits (Réglages et Planning) : même contenu, mêmes réglages
 let nfState=/** @type {{kind:string,msg?:string}} */({kind:"off",msg:""}),nfCustom=false;
 async function renderNotif(){
-  if(!pushOK())nfState={kind:"na",msg:isIOS&&!standalone()?"Pour activer les notifications, ouvre Sid'compagnon depuis l'icône de ton écran d'accueil.":"Ce navigateur ne gère pas les notifications."};
-  else if(Notification.permission==="denied")nfState={kind:"na",msg:"Notifications bloquées. Autorise-les dans les réglages de ton smartphone (Notifications > Sid'compagnon)."};
+  if(!pushOK())nfState={kind:"na",msg:isIOS&&!standalone()?"Pour activer les notifications, ouvre Sid'Compagnon depuis l'icône de ton écran d'accueil.":"Ce navigateur ne gère pas les notifications."};
+  else if(Notification.permission==="denied")nfState={kind:"na",msg:"Notifications bloquées. Autorise-les dans les réglages de ton smartphone (Notifications > Sid'Compagnon)."};
   else{const sub=await currentSub().catch(()=>null);nfState=sub&&Notification.permission==="granted"?{kind:"on"}:{kind:"off"}}
   renderLeads();
 }
@@ -2069,7 +2069,7 @@ function renderLeads(){
     <div class="chips" style="flex-wrap:wrap;margin:0;padding-inline:0">${all.map(m=>m===1440?`<span class="pill lock" aria-pressed="true" title="${L("Toujours active")}">${leadLbl(m)} · ${L("toujours")}</span>`:`<button type="button" class="pill" data-lead="${m}" aria-pressed="${cur.includes(m)}">${leadLbl(m)}</button>`).join("")}<button type="button" class="pill add" data-nf="custom">${GI("plus")} ${L("Autre délai")}</button></div>
     ${nfCustom?`<form class="notif-lead-custom" data-nf="customf"><input type="text" inputmode="numeric" maxlength="3" name="n" placeholder="15" aria-label="${L("Durée")}" autocomplete="off"><select class="sel" name="u" aria-label="${L("Unité")}"><option value="1">${L("minutes")}</option><option value="60" selected>${L("heures")}</option><option value="1440">${L("jours")}</option></select><span class="small muted">${L("avant")}</span><button class="btn" type="submit" style="padding:8px 14px">OK</button></form>`:""}
     ${CALS().length?`<label class="nf-ical"><input type="checkbox" data-nf="ical" ${ical?"checked":""}> <span>${L("Cours du calendrier relié : mêmes rappels que tes activités")}</span></label>`:""}
-    <p class="small muted" style="margin:8px 4px 0">${L("Tu peux en choisir plusieurs. Une activité sans heure compte pour 8 h. Sur smartphone, ouvre Sid'compagnon depuis l'écran d'accueil (iOS 16.4 ou plus).")}</p>`;
+    <p class="small muted" style="margin:8px 4px 0">${L("Tu peux en choisir plusieurs. Une activité sans heure compte pour 8 h. Sur smartphone, ouvre Sid'Compagnon depuis l'écran d'accueil (iOS 16.4 ou plus).")}</p>`;
   const ae=document.activeElement,typing=ae&&ae.matches&&ae.matches("input[type=text],select");
   document.querySelectorAll(".notif-box").forEach(b=>{if(!(typing&&b.contains(ae)))b.innerHTML=html});
   renderRem("f");if(!$("sheet").hidden&&editing&&editing.kind==="task")renderRem("e");
@@ -2191,7 +2191,7 @@ $("eDelete").addEventListener("click",e=>{
 });
 
 /* ---------- musculation ---------- */
-// v44 : un seul format pour les séances libres, les programmes de Sid'compagnon, ceux de Claude et ceux importés.
+// v44 : un seul format pour les séances libres, les programmes de Sid'Compagnon, ceux de Claude et ceux importés.
 // data.muscu.sessions = [{id, name, upd, grp?:{id, name, src:"app"|"claude"|"import"}, ord?, exercises:[{id, name, sets:[{kg, reps}], reps?, rest?, rir?, note?, pat?}]}]
 //   une séance sans grp est une séance libre ; un programme = les séances d'un même grp (ordre : ord).
 // data.muscu.plan = {id, v:2, profile, at, upd, src, aiWait?} : le programme suivi (ses séances ont grp.id === plan.id) ; supprimé = {deleted, upd}.
@@ -2205,7 +2205,7 @@ const msFind=id=>M().sessions.find(x=>x.id===id);
 const newSet=()=>({reps:"",kg:""});
 const newEx=(name="",n=3)=>({id:uid(),name,ps:1,sets:Array.from({length:n},newSet)});
 const seTouch=se=>{se.upd=Date.now();M().upd=Date.now()};
-const GSRC={app:"Créé par Sid'compagnon",claude:"Créé par Claude",import:"Importé"};
+const GSRC={app:"Créé par Sid'Compagnon",claude:"Créé par Claude",import:"Importé"};
 // ancien programme (avant la v44 : plan.days, exercices avec un nombre de séries) → séances au format commun, sans rien perdre
 function muMigrate(){const m=M(),p=m.plan;if(!Array.isArray(m.sessions))m.sessions=[];let ch=false;
   if(p&&!p.deleted&&Array.isArray(p.days)){const grp={id:p.id,name:L("Mon programme"),src:p.src==="ia"?"claude":"app"};
@@ -2227,12 +2227,12 @@ const PLD=()=>{const p=PL();return p?grpSe(p.id):[]}; // séances du programme s
 // texte de partage commun (séance seule, ou programme entier) : c'est aussi le format d'import (et celui que Claude peut donner)
 const exLine=(e,i)=>`${i+1}. ${e.name||L("Exercice")} : ${e.sets.length} ${e.sets.length>1?"séries":"série"}${e.reps?` × ${e.reps}`:""}${e.rest?`, repos ${restLbl(e.rest)}`:""}${e.note?` (${e.note})`:""}`;
 const seTxt=se=>`Séance « ${se.name||"Séance"} »\n${se.exercises.map(exLine).join("\n")}`;
-const shareTxt=(list,prog)=>prog?`Programme « ${prog} » (Sid'compagnon)\n\n${list.map(seTxt).join("\n\n")}`:`${seTxt(list[0]).replace(/\n/," (Sid'compagnon)\n")}`;
-// lecture tolérante : texte de Sid'compagnon (ancien et nouveau), ou programme écrit par Claude (titres « ## Séance … », puces, « 4 × 8–10 »)
+const shareTxt=(list,prog)=>prog?`Programme « ${prog} » (Sid'Compagnon)\n\n${list.map(seTxt).join("\n\n")}`:`${seTxt(list[0]).replace(/\n/," (Sid'Compagnon)\n")}`;
+// lecture tolérante : texte de Sid'Compagnon (ancien et nouveau), ou programme écrit par Claude (titres « ## Séance … », puces, « 4 × 8–10 »)
 function parseShared(txt){
   const lines=String(txt||"").split(/\r?\n/).map(l=>l.replace(/\*\*/g,"").trim()).filter(Boolean);if(!lines.length)return null;
   let prog="",cur=/** @type {any} */(null);const out=/** @type {any[]} */([]);
-  // titre « Séance « Push » » (format de Sid'compagnon : le nom est entre guillemets) ou « ## Séance A — Haut du corps » (on garde tout le titre)
+  // titre « Séance « Push » » (format de Sid'Compagnon : le nom est entre guillemets) ou « ## Séance A — Haut du corps » (on garde tout le titre)
   const head=(l,w)=>{const t=l.replace(/^#{1,4}\s*/,"").replace(/\s*\((?:sid'?(?:note|home|compagnon))\)\s*:?\s*$/i,"").replace(/\s*:\s*$/,"");
     if(!new RegExp(`^(?:${w})\\b`,"i").test(t))return null;const q=t.match(/[«"“]\s*(.+?)\s*[»"”]/);return q?q[1]:t};
   for(const l of lines){
@@ -2249,7 +2249,7 @@ function parseShared(txt){
     if(!cur){cur={id:uid(),name:L("Séance importée"),exercises:[]};out.push(cur)}cur.exercises.push(ex)}
   const ses=out.filter(s=>s.exercises.length);if(!ses.length)return null;
   return{prog:prog||(ses.length>1?L("Programme importé"):""),ses}}
-// une carte par séance, la même pour toutes (libre, programme de Sid'compagnon, de Claude ou importé)
+// une carte par séance, la même pour toutes (libre, programme de Sid'Compagnon, de Claude ou importé)
 // v44.7 (demande de Sid) : une seule interface, modifiée directement ; pour chaque exercice, une ligne par série :
 // « Série 1 : [kg] – [reps] », « + Ajouter une série », × pour retirer une série. Rien n'est pré-rempli.
 // v73 : résumé d'une séance (exercices, séries, chrono en cours ou « faite aujourd'hui »)
@@ -2404,7 +2404,7 @@ function grpActions(id){
     undoable("Programme supprimé",ids,()=>{ids.forEach(tomb);M().sessions=M().sessions.filter(s=>!ids.includes(s.id));if(isPlan)M().plan={deleted:true,upd:Date.now()}},
       {after:renderMuscu,revert:isPlan?()=>{M().plan={...oldPlan,upd:Date.now()}}:undefined})}});
   openActions(isPlan?L("Mon programme"):name,it)}
-// importer une séance ou un programme (texte partagé depuis Sid'compagnon, ou programme écrit par Claude) : même chemin pour tout
+// importer une séance ou un programme (texte partagé depuis Sid'Compagnon, ou programme écrit par Claude) : même chemin pour tout
 function importShared(txt){const r=parseShared(txt);if(!r)return null;
   const grp=r.prog?{id:uid(),name:r.prog.slice(0,80),src:"import"}:null;
   r.ses.forEach((s,i)=>{s.upd=Date.now();if(grp){s.grp=grp;s.ord=i}M().sessions.push(s)});M().upd=Date.now();return r}
@@ -2412,7 +2412,7 @@ $("msImportOpen").addEventListener("click",()=>{$("msImport").hidden=false;$("ms
 $("msImportCancel").addEventListener("click",()=>{$("msImport").hidden=true;$("msImportOpen").hidden=false});
 $("msImportBtn").addEventListener("click",()=>{
   const r=importShared($("msPaste").value);
-  if(!r){toast("Texte non reconnu. Colle une séance ou un programme partagé depuis Sid'compagnon.");return}
+  if(!r){toast("Texte non reconnu. Colle une séance ou un programme partagé depuis Sid'Compagnon.");return}
   msOpenId=r.ses[0].id;save();$("msPaste").value="";$("msImport").hidden=true;$("msImportOpen").hidden=false;renderMuscu();
   toast(r.prog?`${L("Programme importé")} : ${r.ses.length} ${L(r.ses.length>1?"séances":"séance")}`:`${L("Séance importée")} : ${r.ses[0].name}`)});
 
@@ -2494,7 +2494,7 @@ function renderCoach(){const box=$("coachBox");if(!box)return;const pl=PL(),ds=P
     window.SCIslands.coach(box,{c:pl?{goal:G[p.goal]||"Sur mesure",ia:pl.src==="ia",level:p.level?LV[p.level]||"":"",n:ds.length,wait:!!pl.aiWait,remarks:(p.remarks||[]).slice().reverse().map(r=>({text:r.text,when:fmtWhen(Date.parse(r.at))}))}:null,more:MORE,i18n:agI18n()});
     const ta=$("coRemark"),want=pl&&pl.aiWait?"":rmk;if(ta&&ta.value!==want)ta.value=want;return} // v67 (#3)
     catch(e){reportErr("island coach: "+(e&&e.message));try{window.SCIslands.unmount(box)}catch(_){}}}
-  if(!pl){box.innerHTML=`<div class="card coach-card"><div class="grow"><b>${L("Ton programme sur mesure")}</b><div class="small muted">${L("Quelques questions (niveau, objectif, jours, matériel) et Sid'compagnon crée tes séances.")}</div></div><button type="button" class="btn" data-coach="new">${L("Créer mon programme")}</button></div>`;return}
+  if(!pl){box.innerHTML=`<div class="card coach-card"><div class="grow"><b>${L("Ton programme sur mesure")}</b><div class="small muted">${L("Quelques questions (niveau, objectif, jours, matériel) et Sid'Compagnon crée tes séances.")}</div></div><button type="button" class="btn" data-coach="new">${L("Créer mon programme")}</button></div>`;return}
   const p=pl.profile||{},G={muscle:"Prendre du muscle",force:"Gagner en force",gras:"Perdre du gras",forme:"Être en forme",endu:"Gagner en endurance"},LV={deb:"Débutant",inter:"Intermédiaire",conf:"Confirmé"};
   box.innerHTML=`<div class="card coach-card coach-on"><div class="coach-top"><div class="grow"><span class="eyebrow">${L("Mon programme")}</span><b>${esc(L(G[p.goal]||"Sur mesure"))}${pl.src==="ia"?` · ${L("ajusté par Claude")}`:""}</b><div class="small muted">${p.level?esc(L(LV[p.level]||""))+" · ":""}${ds.length} ${L(ds.length>1?"séances":"séance")}</div></div><button type="button" class="pen" data-coach="more" aria-label="${L("Plus d'actions")}">${MORE}</button></div>
     ${pl.aiWait?`<div class="coach-wait" role="status"><span class="grow">${L("Demande envoyée à Claude : le programme ajusté arrivera ici tout seul.")}</span><button type="button" class="linkbtn" data-coach="resend">${L("Renvoyer")}</button><button type="button" class="x" data-coach="unwait" aria-label="${L("Masquer")}"><span class="gi gi-close" aria-hidden="true"></span></button></div>`:""}
@@ -2964,7 +2964,7 @@ async function dvUnlock(){
   if(dvOpen)return true;
   const hasV=vaultOn(),hasD=!!(data.docVault&&data.docVault.chk);
   // aucun code encore : on choisit le code unique (documents + mots de passe), puis la phrase secrète (v32)
-  if(!hasD&&!hasV){const code=await askPin({mode:"new",head:"Ton code Sid'compagnon",sub:"Choisis ton code à 5 chiffres : il ouvre tes documents et tes mots de passe sur cet appareil."});if(!code)return false;
+  if(!hasD&&!hasV){const code=await askPin({mode:"new",head:"Ton code Sid'Compagnon",sub:"Choisis ton code à 5 chiffres : il ouvre tes documents et tes mots de passe sur cet appareil."});if(!code)return false;
     const mk=await mkNeed();if(!mk)return false;
     const d=await v2Make(mk,"sidnote-docs",{uni:true}),w=await v2Make(mk,"sidnote",{uni:true});
     data.docVault=d.v;data.vault=w.v;dvKey=d.key;dvVid=d.v.id;dvOpen=true;await mkWrap("main",code,mk);save();toast("Code enregistré");return true}
@@ -3204,7 +3204,7 @@ const accEmail=()=>session.email||`${slug(session.name||"")}@${EMAIL_DOMAIN}`;
 // active la récupération pour un coffre (après création du code, ou plus tard)
 async function recEnable(v,code){
   if(v&&v.id)recAsked.add(v.id); // une seule proposition par session, même si on répond « Plus tard »
-  const pw=await askAccountPw("Ne perds jamais ton code","Entre le mot de passe de ton compte Sid'compagnon : si tu oublies ce code un jour, il te suffira de ce mot de passe pour le retrouver.",
+  const pw=await askAccountPw("Ne perds jamais ton code","Entre le mot de passe de ton compte Sid'Compagnon : si tu oublies ce code un jour, il te suffira de ce mot de passe pour le retrouver.",
     async pw=>{try{await api("/auth/v1/token?grant_type=password",{method:"POST",body:{email:accEmail(),password:pw}});return null}
       catch(ex){return ex instanceof TypeError?"Pas de connexion internet. Réessaie quand tu es connecté.":"Mot de passe incorrect."}},"Plus tard");
   if(!pw)return false;
@@ -3214,7 +3214,7 @@ async function recEnable(v,code){
 function recOffer(v,code){if(v&&!isV2(v)&&!v.rec&&!recAsked.has(v.id)){recAsked.add(v.id);recEnable(v,code)}}
 // retrouve le code oublié (null si annulé)
 async function recRecover(v){let code=null;
-  await askAccountPw("Code oublié","Entre le mot de passe de ton compte Sid'compagnon pour retrouver ton code.",
+  await askAccountPw("Code oublié","Entre le mot de passe de ton compte Sid'Compagnon pour retrouver ton code.",
     async pw=>{try{const key=await pinKey(pw,v.rec.salt,PIN_ITER);code=(await decJ(key,v.rec)).pin;return null}catch(e){return "Mot de passe incorrect."}});
   if(code)toast(`${L("Ton code est")} ${code}`,6000);return code}
 
@@ -3281,7 +3281,7 @@ function renderNotes(){
   if(noteOpenId&&!v)noteOpenId=null; // supprimée ailleurs, ou verrouillée
   $("notesList").hidden=!!noteOpenId;$("noteEdit").hidden=!noteOpenId;document.body.classList.toggle("note-full",data.ui.view==="notes"&&!!noteOpenId);if(data.ui.view==="notes")$("vhead").hidden=!!noteOpenId;
   if(noteOpenId){
-    $("noteAppHead").innerHTML=`<div class="elan-head-row"><button type="button" class="ah-home" data-go="home" aria-label="${L("Toutes les apps")}"><span class="ah-grid">${GRIDIC}</span></button><span class="ah-brand">${LOGO("note","ah-logo")}<span class="ah-names"><b>Sid Coffre</b><small>${L(APP_ROLES.note)}</small></span></span><button type="button" class="ah-claude" data-app-claude="1"><span class="ah-chat">${IC("message")}</span>Claude</button></div><h1 class="elan-title">${L("Notes")}</h1>`;
+    $("noteAppHead").innerHTML=`<div class="elan-head-row"><button type="button" class="ah-home" data-go="home" aria-label="${L("Toutes les apps")}"><span class="ah-grid">${GRIDIC}</span></button><span class="ah-brand">${LOGO("note","ah-logo")}<span class="ah-names"><b>Sid'Note</b><small>${L(APP_ROLES.note)}</small></span></span><button type="button" class="ah-claude" data-app-claude="1"><span class="ah-chat">${IC("message")}</span>Claude</button></div><h1 class="elan-title">${L("Notes")}</h1>`;
     if(document.activeElement!==$("noteTitle"))$("noteTitle").value=v.title||"";
     noteTitleGrow();
     if(document.activeElement!==$("noteBody"))rtSet(v);
@@ -3770,7 +3770,7 @@ function aiRender(){const b=$("aiBody"),ai=aiCur()||AIS.claude;aiStop();
       <div class="ai-acts"><a class="btn" href="https://claude.ai/login" target="_blank" rel="noopener">${L("Créer mon compte Claude")}</a><button type="button" class="btn ghost" data-aistep="setup">${L("C'est fait, continuer")}</button></div>`;return}
   if(aiW.step==="setup"){$("aiTitle").textContent=ai.name;
     b.innerHTML=`<div class="ai-step"><b>${L("Tout est prêt")}</b><div class="small muted">${L("Touche le bouton : Claude s'ouvre avec Sid'note déjà rempli. Là-bas, touche simplement « Ajouter », puis reviens ici.")}</div>
-        ${aiW.url?`<a class="btn" href="${esc(ai.add(aiW.url))}" target="_blank" rel="noopener" style="width:100%;margin-top:10px" data-aiadd="1">${L("Ajouter Sid'compagnon à")} ${esc(ai.name)}</a>`:`<button type="button" class="btn" disabled style="width:100%;margin-top:10px">${L("Préparation…")}</button>`}
+        ${aiW.url?`<a class="btn" href="${esc(ai.add(aiW.url))}" target="_blank" rel="noopener" style="width:100%;margin-top:10px" data-aiadd="1">${L("Ajouter Sid'Compagnon à")} ${esc(ai.name)}</a>`:`<button type="button" class="btn" disabled style="width:100%;margin-top:10px">${L("Préparation…")}</button>`}
         <div class="small muted" style="margin-top:8px">${L("Si Claude te demande de te connecter, fais-le : la fenêtre s'ouvrira ensuite toute seule.")}</div></div>
       <details class="ai-more"><summary class="small">${L("Voir mon adresse (si besoin)")}</summary><div class="mcp-url notr" id="aiUrl">${aiW.url?esc(aiW.url):L("Création…")}</div>
         <button type="button" class="btn ghost" data-aicopy="1" style="width:100%;margin-top:8px">${L("Copier l'adresse")}</button></details>
@@ -3810,8 +3810,8 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden&&!$("aiShe
 const CONV_OK=u=>/^https:\/\/claude\.ai\/(?:chat|project)\/[\w-]+/.test(u||"");
 // v46.1 : une conversation par app (agenda, nutri, muscu, note) ; l'ancien dossier Santé ne sert qu'à sid'fit
 const convUrl=t=>{const c=(data.prefs.aiConv||{})[t];return CONV_OK(c)?c:(t==="nutri"||t==="muscu")&&CONV_OK(data.prefs.aiProj)?data.prefs.aiProj:""};
-const CONV_NAME={nutri:"Nutrition",muscu:"Musculation",agenda:"Sid Journée",note:"Sid Coffre"};
-const CONV_TITLE={agenda:"Sid Journée — discussion avec Claude",nutri:"Sid Forme — Nutrition",muscu:"Sid Forme — Musculation",note:"Sid Coffre — discussion avec Claude"};
+const CONV_NAME={nutri:"Nutrition",muscu:"Musculation",agenda:"Sid'Journée",note:"Sid'Note"};
+const CONV_TITLE={agenda:"Sid'Journée — discussion avec Claude",nutri:"Sid'Forme — Nutrition",muscu:"Sid'Forme — Musculation",note:"Sid'Note — discussion avec Claude"};
 const CONV_IN={agenda:"convAgenda",nutri:"convNutri",muscu:"convMuscu",note:"convNote"};
 // nouvelle conversation : le titre de l'app en tête du premier message, pour la retrouver dans Claude et la garder
 const convFirst=(t,p)=>CONV_TITLE[t]&&!convUrl(t)?`${L(CONV_TITLE[t])}\n\n${p}`:p;
@@ -4068,13 +4068,13 @@ $("phForgot").addEventListener("click",async()=>{if(!phRes||!phOn())return;const
     if(!b.dataset.armed){b.dataset.armed="1";phFail("La récupération par le mot de passe du compte n'était pas activée : sans ta phrase, tes coffres ne peuvent pas être rouverts.");
       b.textContent=L("Tout effacer et recommencer ? Touche encore pour confirmer");return}
     phEnd(null);vaultsReset();return}
-  let ph=null;await askAccountPw("Phrase oubliée","Entre le mot de passe de ton compte Sid'compagnon pour retrouver ta phrase secrète.",
+  let ph=null;await askAccountPw("Phrase oubliée","Entre le mot de passe de ton compte Sid'Compagnon pour retrouver ta phrase secrète.",
     async pw=>{try{ph=(await decJ(await pinKey(pw,x.rec.salt,PIN_ITER),x.rec)).ph;return ph?null:"Mot de passe incorrect."}catch(e){return "Mot de passe incorrect."}});
   if(!ph)return;
   try{const mk=await phCheck(ph);phMem=mk;toast(`${L("Ta phrase secrète est")} « ${ph} »`,8000);phEnd({mk,ph})}catch(e){phFail("Phrase incorrecte.")}});
 // récupération de la phrase grâce au mot de passe du compte (proposée quand la phrase est choisie)
 async function phRecOffer(ph){if(!data.phx||data.phx.rec||isTrial())return;
-  const pw=await askAccountPw("Ne perds jamais ta phrase","Entre le mot de passe de ton compte Sid'compagnon : si tu oublies ta phrase secrète un jour, ce mot de passe suffira pour la retrouver.",
+  const pw=await askAccountPw("Ne perds jamais ta phrase","Entre le mot de passe de ton compte Sid'Compagnon : si tu oublies ta phrase secrète un jour, ce mot de passe suffira pour la retrouver.",
     async pw=>{try{await api("/auth/v1/token?grant_type=password",{method:"POST",body:{email:accEmail(),password:pw}});return null}
       catch(ex){return ex instanceof TypeError?"Pas de connexion internet. Réessaie quand tu es connecté.":"Mot de passe incorrect."}},"Plus tard");
   if(!pw||!data.phx)return;const salt=rnd(16);
@@ -4093,13 +4093,13 @@ const pwCheckSrv=async pw=>{try{await api("/auth/v1/token?grant_type=password",{
 // nouvelle clé maître, protégée par le mot de passe du compte
 async function mkCreate(o){try{await pull()}catch(x){}
   if(phOn())return null; // une clé a été créée entre-temps sur un autre appareil
-  const pw=await askAccountPw(o.title||"Protège ton coffre",o.ptext||"Entre le mot de passe de ton compte Sid'compagnon : il protège tes coffres. Sur un nouvel appareil, il suffira pour les rouvrir.",pwCheckSrv,o.later||"Annuler");
+  const pw=await askAccountPw(o.title||"Protège ton coffre",o.ptext||"Entre le mot de passe de ton compte Sid'Compagnon : il protège tes coffres. Sur un nouvel appareil, il suffira pour les rouvrir.",pwCheckSrv,o.later||"Annuler");
   if(!pw||phOn())return null;
   const raw=rnd(32),mk={raw,key:await rawKey(raw)},now=Date.now();
   data.phx={id:uid(),chk:await encJ(mk.key,{ok:"sidnote-phrase"}),pw:await pwWrap(mk,pw),createdAt:new Date(now).toISOString(),at:now};save();phMem=mk;return mk}
 // clé maître retrouvée avec le mot de passe du compte (repli : l'ancienne phrase, si elle existe)
 async function mkFromPw(o){o=o||{};let mk=null;
-  const pw=await askAccountPw(o.title||"Mot de passe du compte",o.ptext||"Entre le mot de passe de ton compte Sid'compagnon pour ouvrir tes coffres sur cet appareil.",
+  const pw=await askAccountPw(o.title||"Mot de passe du compte",o.ptext||"Entre le mot de passe de ton compte Sid'Compagnon pour ouvrir tes coffres sur cet appareil.",
     async pw=>{try{mk=await pwUnwrap(pw);return null}catch(e){return data.phx.pwStale?"Ton mot de passe a été réinitialisé : ouvre d'abord tes coffres sur un appareil où ils sont déjà ouverts (ou annule pour utiliser ta phrase secrète, si tu en avais une).":data.phx.salt?"Mot de passe incorrect. Tu peux aussi annuler et utiliser ta phrase secrète.":"Mot de passe incorrect."}},"Annuler");
   if(pw&&mk){phMem=mk;setTimeout(phPwOffer,1500);return mk}
   if(data.phx&&data.phx.salt){const r=await askPhrase({mode:"enter",title:o.title});return r&&r.mk||null}
@@ -4373,7 +4373,7 @@ function dictStop(){if(dict){try{dict.rec.stop()}catch(e){}dict.btn.classList.re
 function dictate(btn,field,onChange){
   if(dict){const same=dict.btn===btn;dictStop();if(same)return}
   if(!SR){toast("Dictée indisponible ici : touche le micro du clavier de ton smartphone.");field.focus();return}
-  const rec=new SR();rec.lang=LANG==="en"?"en-US":LANG==="nl"?"nl-NL":"fr-FR";rec.continuous=true;rec.interimResults=true;
+  const rec=new SR();rec.lang=LANG==="en"?"en-US":"fr-FR";rec.continuous=true;rec.interimResults=true;
   // le texte dicté s'insère à l'endroit du curseur
   const start=field.selectionStart??field.value.length,before=field.value.slice(0,start),after=field.value.slice(field.selectionEnd??start);
   const sep=before&&!/\s$/.test(before)?" ":"";let finals="";
@@ -4402,7 +4402,7 @@ function rtCmd(k){const el=$("noteBody");el.focus();const ex=(c,v)=>document.exe
   else if(k==="link"){const s=getSelection();if(!s.rangeCount||s.isCollapsed){toast("Sélectionne d'abord du texte");return}
     const r=s.getRangeAt(0).cloneRange(),u=prompt(L("Adresse du lien (https://…)"),"https://");if(!u||!/^https?:\/\/\S+$/i.test(u.trim())){if(u)toast("Adresse non valable");return}
     el.focus();s.removeAllRanges();s.addRange(r);ex("createLink",u.trim())}
-  else if(k==="date")ex("insertText",new Date().toLocaleDateString(LANG==="fr"?"fr-BE":LANG==="nl"?"nl-BE":"en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"}));
+  else if(k==="date")ex("insertText",new Date().toLocaleDateString(LANG==="fr"?"fr-BE":"en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"}));
   else if(k==="quote")ex("formatBlock",b&&b.closest("blockquote")?"div":"blockquote");
   else if(k==="ul"||k==="ol")ex(k==="ul"?"insertUnorderedList":"insertOrderedList");
   else if(k==="chk"){const ul0=b&&b.closest("ul");if(ul0&&ul0.classList.contains("chk")){ul0.classList.remove("chk");ex("insertUnorderedList")}
@@ -4715,14 +4715,14 @@ function qtyCommit(key){const inp=$("qtyEdIn");if(!inp){qtyEd=null;return}const 
 // objectif de poids : chemin conseillé, et alerte si le délai choisi n'est pas réaliste
 // objectif de poids pour React (mêmes textes que nuGoalHtml)
 function nuGoalVM(button){const n=NU(),pl=n.plan,p=n.profile||{},w=pl&&pl.wg;if(!w||!p.target)return null;
-  const unit=p.durU==="m"?(LANG==="en"?(p.dur>1?"months":"month"):LANG==="nl"?(p.dur>1?"maanden":"maand"):"mois"):L(p.dur>1?"semaines":"semaine");
+  const unit=p.durU==="m"?(LANG==="en"?(p.dur>1?"months":"month"):"mois"):L(p.dur>1?"semaines":"semaine");
   const pace=w.wk?`${w.wk>0?"+":""}${String(w.wk).replace(".",LANG==="en"?".":",")} kg ${L("par semaine")}`:"";
   const PACE={fast:"Drastique",real:"Réaliste",easy:"À mon aise"}[p.pace];
   return{ok:!!w.ok,head:`${fmtN(p.weight)} → ${fmtN(p.target)} kg${p.dur?` ${L("en")} ${p.dur} ${unit}`:""}`,pace:PACE?`${L("Rythme")} : ${L(PACE)}`:"",real:p.dur?L(w.ok?"Ton délai est réaliste.":"Ce délai n'est pas réaliste, ni bon pour ta santé."):"",
     advice:w.advice||"",path:pace||w.weeks?` ${pace}${pace&&w.weeks?" · ":""}${w.weeks?`${L("environ")} ${w.weeks} ${L("semaines")}`:""}`:"",button}}
 function nuGoalHtml(){
   const n=NU(),pl=n.plan,p=n.profile||{},w=pl&&pl.wg;if(!w||!p.target)return"";
-  const unit=p.durU==="m"?(LANG==="en"?(p.dur>1?"months":"month"):LANG==="nl"?(p.dur>1?"maanden":"maand"):"mois"):L(p.dur>1?"semaines":"semaine");
+  const unit=p.durU==="m"?(LANG==="en"?(p.dur>1?"months":"month"):"mois"):L(p.dur>1?"semaines":"semaine");
   const pace=w.wk?`${w.wk>0?"+":""}${String(w.wk).replace(".",LANG==="en"?".":",")} kg ${L("par semaine")}`:"";
   const PACE={fast:"Drastique",real:"Réaliste",easy:"À mon aise"}[p.pace];
   return `<b>${w.ok?GI("tick")+" ":IC("alert")+" "}${fmtN(p.weight)} → ${fmtN(p.target)} kg${p.dur?` ${L("en")} ${p.dur} ${unit}`:""}</b>
@@ -4793,7 +4793,7 @@ function nuPhotoPrevSet(src){const el=$("nuPhotoPrev");el.hidden=!src;
 $("nuPhotoPrev").addEventListener("click",e=>{if(e.target.closest("[data-nuphrm]")){++nuPhotoSeq;nuPhotoDrop(nuPhoto);nuPhoto=null;nuPhotoPrevSet(null);nuAskLbl()}});
 // envoi direct : Claude s'ouvre avec le message ; la fenêtre est ouverte pendant le toucher (sinon le navigateur la bloque)
 // Sur iPhone (app installée), un lien vers Claude ouvre une petite fenêtre de navigateur qui passe la main à l'app Claude,
-// puis reste vide derrière : on la garde sous la main et on la ferme dès que la personne revient dans Sid'compagnon
+// puis reste vide derrière : on la garde sous la main et on la ferme dès que la personne revient dans Sid'Compagnon
 let extWin=null;
 function extOpen(u){
   // app installée sur iPhone : on ouvre directement l'app Claude (adresse claude://…), sans fenêtre de navigateur qui resterait blanche ;
@@ -4870,7 +4870,7 @@ function renderNuResult(){
   if($("nuResult")._isl){window.SCIslands.unmount($("nuResult"));$("nuResult")._isl=false}
   if(!p){if(!nuBusy)$("nuResult").innerHTML="";return}
   const s=sumOf(p.items);
-  $("nuResult").innerHTML=`<div class="dish"><div class="dish-h"><span class="dish-ic">${p.photo?`<img src="${p.photo}" alt="">`:IC("utensils")}</span><span class="dish-t"><b class="notr" data-user-label="" title="${esc(p.title)}">${esc(p.title)}</b><span class="small muted">${p.items.length} ${L(p.items.length>1?"aliments":"aliment")}</span>${p.mem?`<span class="memtag">${IC("bolt")} ${L("Mémoire Sid Forme")}</span>`:""}</span><span class="dish-kcal">${fmtFull(r0(s.kcal))}<small>\u00a0kcal</small></span></div>
+  $("nuResult").innerHTML=`<div class="dish"><div class="dish-h"><span class="dish-ic">${p.photo?`<img src="${p.photo}" alt="">`:IC("utensils")}</span><span class="dish-t"><b class="notr" data-user-label="" title="${esc(p.title)}">${esc(p.title)}</b><span class="small muted">${p.items.length} ${L(p.items.length>1?"aliments":"aliment")}</span>${p.mem?`<span class="memtag">${IC("bolt")} ${L("Mémoire Sid'Forme")}</span>`:""}</span><span class="dish-kcal">${fmtFull(r0(s.kcal))}<small>\u00a0kcal</small></span></div>
     ${macroHtml(s)}<div class="dish-items">${p.items.map((x,i)=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${x.extra?`<span class="notmention">${L("pas dans ta description")}</span>`:""}${qtyCell("res:"+i,x)}</div><span class="k">${fmtFull(x.kcal)}\u00a0kcal</span><button type="button" class="x" data-nurm="${i}" aria-label="${L("Retirer")}">${IC("close")}</button></div>`).join("")}</div>
     ${p.note?`<div class="dish-note notr" style="padding-top:8px">${esc(p.note)}</div>`:""}
     <div class="dish-act"><button type="button" class="btn ghost" data-nucancel="1">${L("Annuler")}</button><button type="button" class="btn" data-nuadd="1">${L("Ajouter")} · ${fmtFull(r0(s.kcal))}\u00a0kcal</button></div></div>`;
@@ -5382,28 +5382,20 @@ function trNode(n){
   while((x=w.nextNode()))if(x.nodeType===3)trNode(x);else for(const a of ["placeholder","aria-label","title"]){const v=x.hasAttribute("data-user-label")?null:x.getAttribute(a);if(v){const u=trStr(v);if(u!==v)x.setAttribute(a,u)}}
 }
 function startTranslate(){
-  document.documentElement.lang=LANG;document.title="Sid'compagnon";
-  if(LANG==="nl"){
-    MO.splice(0,12,"jan.","feb.","mrt.","apr.","mei","jun.","jul.","aug.","sep.","okt.","nov.","dec.");
-    MOL.splice(0,12,"Januari","Februari","Maart","April","Mei","Juni","Juli","Augustus","September","Oktober","November","December");
-    DOW.splice(0,7,"zondag","maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag");
-    DOWL.splice(0,7,"zondag","maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag");
-    const dw=document.querySelector(".cal-dow");if(dw)dw.innerHTML="<span>M</span><span>D</span><span>W</span><span>D</span><span>V</span><span>Z</span><span>Z</span>";
-  }else{
+  document.documentElement.lang=LANG;document.title="Sid'Compagnon";
   MO.splice(0,12,"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec");
   MOL.splice(0,12,"January","February","March","April","May","June","July","August","September","October","November","December");
   DOW.splice(0,7,"Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday");
   DOWL.splice(0,7,"Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday");
   const dw=document.querySelector(".cal-dow");if(dw)dw.innerHTML="<span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>";
-  }
   trNode(document.body);
   new MutationObserver(ms=>{for(const m of ms){
     if(m.type==="characterData")trNode(m.target);
     else if(m.type==="attributes")trNode(m.target);
     else m.addedNodes.forEach(trNode)}}).observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:["placeholder","aria-label","title"]});
 }
-// v31 : choix de la langue sur l'écran de connexion (français, anglais, néerlandais)
-{const LN={fr:"Français",en:"English",nl:"Nederlands"},el=$("authLang");el.outerHTML=`<span class="auth-langs">${Object.entries(LN).map(([k,v])=>`<button type="button" class="linkbtn" data-alang="${k}" aria-pressed="${k===(LANG||"fr")}">${v}</button>`).join("")}</span>`;
+// v31 : choix de la langue sur l'écran de connexion (français, anglais ; néerlandais retiré en v76)
+{const LN={fr:"Français",en:"English"},el=$("authLang");el.outerHTML=`<span class="auth-langs">${Object.entries(LN).map(([k,v])=>`<button type="button" class="linkbtn" data-alang="${k}" aria-pressed="${k===(LANG||"fr")}">${v}</button>`).join("")}</span>`;
   document.addEventListener("click",e=>{const b=e.target.closest("[data-alang]");if(b&&b.dataset.alang!==LANG)setLang(b.dataset.alang)})}
 $("langSel").value=LANG;
 $("langSel").addEventListener("change",e=>setLang(e.target.value));
@@ -5427,7 +5419,7 @@ const ONB_DESC={
   nutri:"Tes calories et tes macros du jour, et des menus faits pour toi.",
   muscu:"Tes séances et tes programmes, tes charges et tes répétitions, avec la progression d'une fois à l'autre.",
   docs:"Range tes PDF, scanne des feuilles avec l'appareil photo et retrouve-les en un instant.",
-  app:"Les étapes pour installer Sid'compagnon sur ton écran d'accueil."};
+  app:"Les étapes pour installer Sid'Compagnon sur ton écran d'accueil."};
 let onbSel={};
 const ONB_GROUP={orga:["agenda","Organise tes journées","Ton agenda, tes tâches du jour et un minuteur de concentration."],
   sport:["fit","Bouge et mange bien","Ton programme de musculation, ta nutrition et tes progrès en graphiques."],
@@ -5495,8 +5487,8 @@ function maybeAskNotif(){if(!session||isTrial()||data.ui.notifAsked||!$("onb").h
   const can=pushOK();if(can&&(Notification.permission!=="default"))return;
   if(!can&&!(isIOS&&!standalone()))return; // navigateur sans notifications : rien à proposer
   $("naTitle").textContent=L("Ne rate plus rien");
-  $("naText").textContent=L(can?"Active les notifications : Sid'compagnon te prévient avant tes rendez-vous, tes cours et tes échéances. Tu choisis quand, dans Agenda ou Réglages."
-    :"Pour recevoir des rappels avant tes rendez-vous et tes cours, installe d'abord Sid'compagnon sur ton écran d'accueil, puis ouvre-le depuis son icône.");
+  $("naText").textContent=L(can?"Active les notifications : Sid'Compagnon te prévient avant tes rendez-vous, tes cours et tes échéances. Tu choisis quand, dans Agenda ou Réglages."
+    :"Pour recevoir des rappels avant tes rendez-vous et tes cours, installe d'abord Sid'Compagnon sur ton écran d'accueil, puis ouvre-le depuis son icône.");
   $("naYes").textContent=L(can?"Activer les notifications":"Voir comment l'installer");$("notifAsk").hidden=false}
 const naDone=()=>{data.ui.notifAsked=Date.now();saveUI();$("notifAsk").hidden=true};
 $("naYes").addEventListener("click",async e=>{if(pushOK()){await notifToggle(e.currentTarget);naDone()}else{naDone();show("app")}});
@@ -5547,7 +5539,7 @@ if(window.visualViewport){const vv=visualViewport,de=document.documentElement,st
 hydrateIcons();document.querySelectorAll(".onb-floats [data-fn]").forEach(e=>e.innerHTML=ICON(e.dataset.fn));
 document.addEventListener("focusin",e=>{if(e.target.matches&&e.target.matches('input[list="typeList"]'))typeChipsFor(e.target)});
 typeChipsFor($("fCat"));typeChipsFor($("eCat"));
-if(LANG==="en"||LANG==="nl")startTranslate();
+if(LANG==="en")startTranslate();
 recoveryFromHash();
 if(ephExpired){
   // l'app a été fermée sans « Rester connecté » : on envoie les dernières modifs puis on déconnecte

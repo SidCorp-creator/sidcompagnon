@@ -15,7 +15,7 @@ function yearGrid(y,cls){const now=today();let h="";
     for(let d=1;d<=n;d++)g+=`<i class="${cls(iso(new Date(y,m,d)))}">${d}</i>`;
     h+=`<button class="ym ${y===now.getFullYear()&&m===now.getMonth()?"cur":""}" data-ym="${m}" aria-label="${MOL[m]} ${y}"><b>${MOL[m]}</b><div class="ym-g">${g}</div></button>`}return h}
 // v53 (#3) : textes des îlots de l'agenda (tr = traduction avec les motifs, comme la traduction automatique du DOM)
-const agI18n=()=>({tr:x=>LANG&&LANG!=="fr"?trStr(x):x,L,MOL,MO,lang:LANG,locale:LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE"});
+const agI18n=()=>({tr:x=>LANG&&LANG!=="fr"?trStr(x):x,L,MOL,MO,lang:LANG,locale:LANG==="en"?"en-GB":"fr-BE"});
 function renderMonth(){
   const T=allT(),tIso=iso(today());
   if(shIsl("calTitle")){try{window.SCIslands.calTitle($("calTitle"),{mo:MOL[calM],y:calY,i18n:agI18n()})}catch(e){reportErr("island calTitle: "+(e&&e.message))}}
@@ -137,15 +137,15 @@ $("planSearchBtn").addEventListener("click",()=>{const i=$("planSearch"),open=i.
 $("plMic").addEventListener("click",e=>dictate(e.currentTarget,$("plAsk")));
 $("plAsk").addEventListener("input",e=>grow(e.target));
 $("plAsk").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();$("plAskForm").requestSubmit()}});
-function plPrompt(q){const d=today(),day=`${d.toLocaleDateString(LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE",{weekday:"long"})} ${iso(d)}`;
-  return T3(`Ajoute dans mon agenda Sid'compagnon : ${q}\n(Aujourd'hui : ${day}, heure de Bruxelles. Utilise ajouter_activite avec le titre, la date, l'heure de début et de fin, le type et les rappels si je les donne. S'il y a plusieurs activités, ajoute-les toutes. Si la date ou l'heure n'est pas claire, demande-moi avant.)`,
-    `Add to my Sid'compagnon calendar: ${q}\n(Today: ${day}, Brussels time. Use ajouter_activite with the title, date, start and end time, type and reminders if I give them. If there are several activities, add them all. If the date or time is unclear, ask me first.)`,
-    `Voeg toe aan mijn Sid'compagnon-agenda: ${q}\n(Vandaag: ${day}, Brusselse tijd. Gebruik ajouter_activite met de titel, datum, begin- en einduur, het type en herinneringen als ik die geef. Bij meerdere activiteiten: voeg ze allemaal toe. Als de datum of het uur niet duidelijk is, vraag het me eerst.)`)}
+function plPrompt(q){const d=today(),day=`${d.toLocaleDateString(LANG==="en"?"en-GB":"fr-BE",{weekday:"long"})} ${iso(d)}`;
+  return T3(`Ajoute dans mon agenda Sid'Compagnon : ${q}\n(Aujourd'hui : ${day}, heure de Bruxelles. Utilise ajouter_activite avec le titre, la date, l'heure de début et de fin, le type et les rappels si je les donne. S'il y a plusieurs activités, ajoute-les toutes. Si la date ou l'heure n'est pas claire, demande-moi avant.)`,
+    `Add to my Sid'Compagnon calendar: ${q}\n(Today: ${day}, Brussels time. Use ajouter_activite with the title, date, start and end time, type and reminders if I give them. If there are several activities, add them all. If the date or time is unclear, ask me first.)`,
+    `Voeg toe aan mijn Sid'Compagnon-agenda: ${q}\n(Vandaag: ${day}, Brusselse tijd. Gebruik ajouter_activite met de titel, datum, begin- en einduur, het type en herinneringen als ik die geef. Bij meerdere activiteiten: voeg ze allemaal toe. Als de datum of het uur niet duidelijk is, vraag het me eerst.)`)}
 $("plAskForm").addEventListener("submit",e=>{e.preventDefault();const q=$("plAsk").value.trim();if(!q)return;dictStop();
   aiHandoff(plPrompt(q),"agenda");$("plAsk").value="";grow($("plAsk"))});
 let planOpenMem={}; // mois ouverts dans « Toutes les dates » ; v44.6 : tous repliés par défaut (à l'ouverture de sid'agenda et au rechargement)
 // v74 : éphéméride en haut de l'Agenda (style « Unique ») : mois, semaine, grand chiffre du jour, jour de la semaine, activités du jour
-function ephFill(){const el=$("plEph");if(!el)return;const d=today(),loc=LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE",k=iso(d);
+function ephFill(){const el=$("plEph");if(!el)return;const d=today(),loc=LANG==="en"?"en-GB":"fr-BE",k=iso(d);
   const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())),wd=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-wd);
   const wk=Math.ceil(((+t-Date.UTC(t.getUTCFullYear(),0,1))/864e5+1)/7);
   const n=data.tasks.filter(x=>x.date===k&&x.status!=="annulé").length;
@@ -154,7 +154,7 @@ function ephFill(){const el=$("plEph");if(!el)return;const d=today(),loc=LANG===
 // Journée Élan : une liste lisible ; le calendrier complet reste accessible dans les options.
 let elanFresh="";
 function renderElanDay(){const host=$("journeyDay");if(!host)return;
- const day=selDay||iso(today()),d=parse(day),loc=LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE",monday=new Date(d);monday.setDate(d.getDate()-(d.getDay()+6)%7);
+ const day=selDay||iso(today()),d=parse(day),loc=LANG==="en"?"en-GB":"fr-BE",monday=new Date(d);monday.setDate(d.getDate()-(d.getDay()+6)%7);
  const week=Array.from({length:7},(_,i)=>{const x=new Date(monday);x.setDate(x.getDate()+i);return {day:iso(x),label:x.toLocaleDateString(loc,{weekday:"short"}),num:x.getDate()}});
  const shift=n=>{const x=new Date(d);x.setDate(x.getDate()+n);return iso(x)},now=new Date(),minute=now.getHours()*60+now.getMinutes();
  const items=allT().filter(t=>onDay(t,day)).sort((a,b)=>sk(a).localeCompare(sk(b))).map(t=>({id:t.id,title:t.title,time:t.time||"",endTime:t.timeEnd||"",typeColor:t.cat?tc(t.cat):"",meta:[t.canc?L("Annulé"):"",t.cat,t.loc].filter(Boolean).join(" · "),past:!!t.canc||t.status==="fait"||(day<iso(today())),current:day===iso(today())&&!!t.time&&toMin(t.time)<=minute&&(toMin(t.timeEnd)||toMin(t.time)+60)>minute,fresh:t.id===elanFresh,ical:t.src==="ical",done:t.status==="fait"}));
@@ -196,7 +196,7 @@ function renderPlan(){
   $("tasks").innerHTML=(ks.length>1&&!q?`<div class="mfold-all"><button type="button" class="mini" data-mfoldall="1">${L(allF?"Tout déplier":"Tout replier")}</button></div>`:"")+ks.map(k=>{const shut=!q&&pf[k];
     return `<button type="button" class="mfold" data-mfold="${k}" aria-expanded="${!shut}"><span class="mf-chev">${CHEV}</span><span class="grow">${L(MOL[+k%100])} ${Math.floor(+k/100)}</span><span class="mf-n">${g[k].length}</span></button>`+(shut?"":`<div class="card">${g[k].map(t=>{
     // v44.4 : ligne aérée : jour à gauche, titre + détails au milieu, statut et « ⋯ » à droite (toucher le titre = modifier)
-    const d=parse(t.date),dd=`<div class="pr-date" aria-hidden="true"><b>${d.getDate()}</b><span class="notr">${d.toLocaleDateString(LANG==="en"?"en-GB":LANG==="nl"?"nl-BE":"fr-BE",{weekday:"short"})}</span></div>`;
+    const d=parse(t.date),dd=`<div class="pr-date" aria-hidden="true"><b>${d.getDate()}</b><span class="notr">${d.toLocaleDateString(LANG==="en"?"en-GB":"fr-BE",{weekday:"short"})}</span></div>`;
     if(t.src==="ical")return `<div class="row task prow ${t.canc?"isfait":""}" style="--c:var(${colorOf(t)})" data-icalinfo="${esc(t.id)}">${dd}
       <div class="grow pr-main"><div class="ttl">${esc(t.title)}</div><div class="pr-meta"><i class="pr-dot"></i><span class="notr">${esc(t.cat||L(ICAL_CAT))}</span>${t.time?` · <span class="pr-time">${hrs(t)}</span>`:""}${t.canc?'<span class="canc-pill">Annulé</span>':""}${t.loc?` · ${esc(t.loc)}`:""}</div></div></div>`;
     const late=t.status!=="fait"&&daysTo(t.end||t.date)<0;
@@ -255,8 +255,8 @@ function quickPreview(){const v=$("fTitle").value,h=$("fHint");if(!v.trim()){h.h
   const q=parseQuick(v);if(!q.date&&!q.time){h.hidden=true;return}
   if(!fTouched){if(q.date)$("fDate").value=q.date;$("fTime").value=q.time||""}
   const d=q.date?new Date(q.date+"T12:00"):null;
-  if(shIsl("quickHint")){try{window.SCIslands.quickHint(h,{icon:ICS.calendar||"",title:q.title,when:`${d?d.toLocaleDateString(LANG==="fr"?"fr-BE":LANG==="nl"?"nl-BE":"en-GB",{weekday:"long",day:"numeric",month:"long"}):""}${q.time?` ${d?"· ":""}${q.time}`:""}`,i18n:agI18n()});h.hidden=false;return}catch(e){reportErr("island quickHint: "+(e&&e.message));try{window.SCIslands.unmount(h)}catch(_){}}}
-  h.innerHTML=`${IC("calendar")||""}<span>${L("Compris")} : <b class="notr">${esc(q.title)}</b> · ${d?esc(d.toLocaleDateString(LANG==="fr"?"fr-BE":LANG==="nl"?"nl-BE":"en-GB",{weekday:"long",day:"numeric",month:"long"})):""}${q.time?` ${d?"· ":""}${q.time}`:""}</span>`;h.hidden=false}
+  if(shIsl("quickHint")){try{window.SCIslands.quickHint(h,{icon:ICS.calendar||"",title:q.title,when:`${d?d.toLocaleDateString(LANG==="fr"?"fr-BE":"en-GB",{weekday:"long",day:"numeric",month:"long"}):""}${q.time?` ${d?"· ":""}${q.time}`:""}`,i18n:agI18n()});h.hidden=false;return}catch(e){reportErr("island quickHint: "+(e&&e.message));try{window.SCIslands.unmount(h)}catch(_){}}}
+  h.innerHTML=`${IC("calendar")||""}<span>${L("Compris")} : <b class="notr">${esc(q.title)}</b> · ${d?esc(d.toLocaleDateString(LANG==="fr"?"fr-BE":"en-GB",{weekday:"long",day:"numeric",month:"long"})):""}${q.time?` ${d?"· ":""}${q.time}`:""}</span>`;h.hidden=false}
 $("fTitle").addEventListener("input",quickPreview);
 ["fDate","fTime"].forEach(id=>$(id).addEventListener("input",()=>{fTouched=true}));
 function taskError(message,id){const el=$("fError");el.innerHTML=IC("alert")+" "+esc(L(message));el.hidden=false;$(id).setAttribute("aria-describedby","fError");$(id).focus()}

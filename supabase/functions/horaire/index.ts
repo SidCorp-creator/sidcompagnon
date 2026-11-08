@@ -2,7 +2,7 @@
 // Relais qui lit le lien iCal de l'horaire (ex. UMons) pour l'app.
 // Le navigateur ne peut pas lire ce lien directement : le site de l'université le bloque.
 // Seuls les utilisateurs connectés à Sid'note peuvent s'en servir.
-// v4 (Sid'compagnon v45) : calendrier privé protégé par identifiant + mot de passe (authentification HTTP Basic, https seulement) ;
+// v4 (Sid'Compagnon v45) : calendrier privé protégé par identifiant + mot de passe (authentification HTTP Basic, https seulement) ;
 // l'identifiant n'est ni gardé ni journalisé ici, il n'est utilisé que pour cette lecture.
 import { createClient } from "npm:@supabase/supabase-js@2";
 

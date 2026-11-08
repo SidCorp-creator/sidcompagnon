@@ -18,7 +18,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const err=m=>errs.push(scheme+": "+m);
     // navigation v28 : espace dans la barre du bas, puis fonction dans les pastilles du haut
     const closePin=async()=>{if(await pg.isVisible("#pinSheet"))await pg.click("#psClose").catch(()=>{})};
-    // v42 : Sid'compagnon → logo de l'app → barre du bas de l'app ; Réglages par le bouton du compte sur Sid'compagnon
+    // v42 : Sid'Compagnon → logo de l'app → barre du bas de l'app ; Réglages par le bouton du compte sur Sid'Compagnon
     const home=async()=>{await closePin();if(await pg.isVisible('#vhead [data-go="home"]'))await pg.click('#vhead [data-go="home"]');else await pg.evaluate(()=>show("home"));await pg.waitForTimeout(150)};
     const go=async v=>{await closePin();const c=await cur();
       if(v==="more"||v==="app"){if(c===v)return;if(c!=="home")await home();await pg.click("#homeAvatar");await pg.waitForTimeout(150);if(v==="app")await pg.evaluate(()=>show("app"));await closePin();return}
@@ -52,20 +52,20 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     await pg.evaluate(()=>{["plan","todo","pomo","notes","muscu","nutri","graph","docs","pwd","app"].forEach(k=>data.prefs.tabs[k]=true);save();applyTabs()});
 
-    // --- v42 : Sid'compagnon : les 3 apps en logos, pas de barre du bas ; chaque app a sa barre et un retour à Sid'compagnon
-    if(await pg.isVisible("nav"))err("barre du bas affichée sur Sid'compagnon");
+    // --- v42 : Sid'Compagnon : les 3 apps en logos, pas de barre du bas ; chaque app a sa barre et un retour à Sid'Compagnon
+    if(await pg.isVisible("nav"))err("barre du bas affichée sur Sid'Compagnon");
     const apps=await pg.$$eval("#homeBody .hc-list [data-gapp]",x=>x.map(e=>e.dataset.gapp).join(","));
-    if(apps!=="orga,sport,perso")err("cartes des 3 apps absentes de Sid'compagnon : "+apps);
+    if(apps!=="orga,sport,perso")err("cartes des 3 apps absentes de Sid'Compagnon : "+apps);
     await shot(pg,scheme+"-03-aujourdhui");
     await pg.click("#homeAdd");if(!(await pg.isVisible("#qaSheet")))err("le + de la page Aujourd'hui n'ouvre pas l'ajout rapide");await pg.click("#qaClose");
     await pg.click('#homeBody [data-gapp="perso"]');await pg.waitForTimeout(200);await closePin();
     if(G[await cur()]!=="perso")err("le logo sid'note n'ouvre pas sid'note");
     if((await pg.$$("#navIn [data-go]")).length!==3)err("barre de sid'note : 3 fonctions attendues");
     if(await pg.evaluate(()=>document.documentElement.dataset.app)!=="note")err("accent de l'app non appliqué");
-    if(await pg.isVisible('#homeBody'))err("Sid'compagnon encore visible dans une app");
+    if(await pg.isVisible('#homeBody'))err("Sid'Compagnon encore visible dans une app");
     await go("notes");await go("muscu");await home();await pg.click('#homeBody [data-gapp="perso"]');await pg.waitForTimeout(200);await closePin();
     if(await cur()!=="notes")err("l'app ne rouvre pas la dernière fonction ouverte");
-    await home();if(await pg.isVisible("#vhead"))err("en-tête d'app affiché sur Sid'compagnon");
+    await home();if(await pg.isVisible("#vhead"))err("en-tête d'app affiché sur Sid'Compagnon");
     await go("plan");if((await pg.$$eval("#navIn [data-go]",x=>x.map(e=>e.dataset.go).join(",")))!=="plan,todo,pomo")err("barre de sid'agenda : Agenda, Tâches, Focus attendus");
 
     // --- Tâches : catégorie tapée mais pas validée → créée et utilisée
@@ -799,7 +799,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const ob2=await (await pg.request.get("http://localhost:8790/__objs")).json();
     if(!Object.keys(ob2).some(k=>/\/envoi-\d+\.jpg$/.test(k))||Object.keys(ob2).some(k=>/\/repas-\d+\.jpg$/.test(k)))err("la photo envoyée n'est pas marquée « envoi » : "+JSON.stringify(Object.keys(ob2)));
     if(await pg.isVisible("#aiAskSheet"))err("une fenêtre intermédiaire s'ouvre encore pour la photo");
-    // la petite fenêtre ouverte pour Claude est refermée au retour dans Sid'compagnon (sur iPhone, elle restait blanche)
+    // la petite fenêtre ouverte pour Claude est refermée au retour dans Sid'Compagnon (sur iPhone, elle restait blanche)
     const closed=await pg.evaluate(async()=>{const fw={closed:false,close(){this.closed=true}};window.open=()=>fw;extOpen("https://claude.ai/new?q=x");
       document.dispatchEvent(new Event("visibilitychange"));await new Promise(r=>setTimeout(r,400));return fw.closed});
     if(!closed)err("la fenêtre de Claude n'est pas refermée au retour");
@@ -930,7 +930,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     {const r=await pg.evaluate(()=>{const n=document.querySelector("nav").getBoundingClientRect();return [n.bottom,innerHeight,n.height]});if(Math.abs(r[0]-r[1])>1||r[2]<40)err("barre du bas pas collée en bas : "+r)}
     await shot(pg,"v444-agenda-liste");
     await pg.evaluate(()=>window.scrollTo(0,0));await pg.locator("#tasks").scrollIntoViewIfNeeded();await shot(pg,"v444-agenda-liste-haut");
-    // sortie animée vers Sid'compagnon
+    // sortie animée vers Sid'Compagnon
     await pg.evaluate(()=>{window.__noIntro=false;show("home")});await pg.waitForTimeout(150);if(!(await pg.isVisible("#appOutro")))err("pas d'animation de sortie");
     await pg.waitForTimeout(450);await shot(pg,"v444-sortie");await pg.waitForTimeout(1300);if(await pg.$("#appOutro"))err("l'animation de sortie ne disparaît pas");
     await pg.evaluate(()=>{window.__noIntro=true});
@@ -1048,18 +1048,18 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     const nv=await pg.evaluate(()=>{const n=noteFind("nd2");return [n.title,n.body]});
     if(nv[0]!=="À garder"||!nv[1].includes("bonjour le cours et la suite"))err("dictée : "+JSON.stringify(nv));
     await ctx.close()}
-  // --- v45 : Sid'compagnon, sombre par défaut, calendriers superposés (dont un privé), photos des exercices, série 1 sur toutes, annotation des PDF
+  // --- v45 : Sid'Compagnon, sombre par défaut, calendriers superposés (dont un privé), photos des exercices, série 1 sur toutes, annotation des PDF
   for(const [nm,dev] of [["mobile",{...devices["iPhone 13"]}],["pc",{viewport:{width:1280,height:800}}]]){
     const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v45 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
     await pg.goto(U);await pg.waitForTimeout(800);
-    if(!(await pg.title()).includes("Sid'compagnon"))err("titre de la page pas renommé");
+    if(!(await pg.title()).includes("Sid'Compagnon"))err("titre de la page pas renommé");
     if((await pg.content()).includes("Sid'home"))err("« Sid'home » encore présent dans la page");
     await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v45"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     if(await pg.evaluate(()=>document.documentElement.dataset.theme)!=="dark")err("pas en sombre par défaut");
     if(nm==="pc"){await pg.evaluate(()=>{data.ui.sideOff=false;sideApply()});await pg.waitForTimeout(200);
       const sb=await pg.evaluate(()=>{const s=document.querySelector(".side-brand span"),r=s.getBoundingClientRect(),t=document.querySelector(".side-tog").getBoundingClientRect();return [Math.round(r.height),s.scrollWidth>s.clientWidth+1,r.right>t.left+1]});
-      if(sb[0]>30||sb[1]||sb[2])err("« Sid'compagnon » coupé ou trop large dans la barre latérale : "+sb)}
+      if(sb[0]>30||sb[1]||sb[2])err("« Sid'Compagnon » coupé ou trop large dans la barre latérale : "+sb)}
     // calendriers : 3 calendriers, dont un privé (identifiant), superposés ; masquer / afficher
     await pg.evaluate(()=>{show("plan");$("moreOpts").open=true});await pg.waitForTimeout(200);
     const addCal=async(name,url,u,pw)=>{await pg.fill("#icalName",name);await pg.fill("#icalUrl",url);if(u){await pg.evaluate(()=>$("icalPriv").open=true);await pg.fill("#icalUser",u);await pg.fill("#icalPass",pw)}await pg.click("#icalSave");await pg.waitForTimeout(700)};
@@ -1136,7 +1136,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.goto(U);await pg.waitForTimeout(800);
     for(const lg of ["fr","en"]){const t=await pg.evaluate(()=>document.documentElement.innerHTML);if(/iphone/i.test(t.replace(/<!--[\s\S]*?-->/g,"").replace(/<script[\s\S]*?<\/script>/g,"")))err("« iPhone » encore dans la page ("+lg+")")}
     const ld=await pg.evaluate(()=>{const x=document.querySelector('script[type="application/ld+json"]');return x?JSON.parse(x.textContent):null});
-    if(!ld||ld["@type"]!=="WebSite"||ld.name!=="Sid'compagnon")err("données structurées WebSite absentes ou mauvais nom");
+    if(!ld||ld["@type"]!=="WebSite"||ld.name!=="Sid'Compagnon")err("données structurées WebSite absentes ou mauvais nom");
     if(await pg.evaluate(()=>document.body.innerHTML.includes("Sid'note</div>")))err("en-têtes « Sid'note » encore dans la page");
     await pg.click("#mSignup");await pg.fill("#aName","Sid");await pg.fill("#aEmail","v46"+nm+"@test.be");await pg.fill("#aPw","secret11");await pg.fill("#aPw2","secret11");await pg.check("#aAgree");await pg.click("#aBtn");await pg.waitForTimeout(1500);
     if(await pg.isVisible("#onb"))await pg.click("#onbSkip");if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
@@ -1659,7 +1659,7 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.evaluate(()=>{$("toast").style.display="none";show("notes");noteDir="fA";renderNotes();window.scrollTo(0,0)});
     await shot(pg,"v57-"+nm+"-notes");
     await ctx.close()}
-  // --- v58 (ticket #3) : Nutrition (menu) et page d'accueil Sid'compagnon (3 cartes) : même rendu, FR et EN
+  // --- v58 (ticket #3) : Nutrition (menu) et page d'accueil Sid'Compagnon (3 cartes) : même rendu, FR et EN
   for(const [nm,dev,lg] of [["mobile",{...devices["iPhone 13"]},"fr"],["pc",{viewport:{width:1280,height:800}},"en"]]){
     const ctx=await b.newContext(dev),pg=await ctx.newPage(),err=m=>errs.push("v58 "+nm+" : "+m);pg.on("pageerror",e=>err(e.message));
     await pg.goto(U);await pg.waitForTimeout(800);

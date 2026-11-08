@@ -72,13 +72,13 @@ $("phForgot").addEventListener("click",async()=>{if(!phRes||!phOn())return;const
     if(!b.dataset.armed){b.dataset.armed="1";phFail("La récupération par le mot de passe du compte n'était pas activée : sans ta phrase, tes coffres ne peuvent pas être rouverts.");
       b.textContent=L("Tout effacer et recommencer ? Touche encore pour confirmer");return}
     phEnd(null);vaultsReset();return}
-  let ph=null;await askAccountPw("Phrase oubliée","Entre le mot de passe de ton compte Sid'compagnon pour retrouver ta phrase secrète.",
+  let ph=null;await askAccountPw("Phrase oubliée","Entre le mot de passe de ton compte Sid'Compagnon pour retrouver ta phrase secrète.",
     async pw=>{try{ph=(await decJ(await pinKey(pw,x.rec.salt,PIN_ITER),x.rec)).ph;return ph?null:"Mot de passe incorrect."}catch(e){return "Mot de passe incorrect."}});
   if(!ph)return;
   try{const mk=await phCheck(ph);phMem=mk;toast(`${L("Ta phrase secrète est")} « ${ph} »`,8000);phEnd({mk,ph})}catch(e){phFail("Phrase incorrecte.")}});
 // récupération de la phrase grâce au mot de passe du compte (proposée quand la phrase est choisie)
 async function phRecOffer(ph){if(!data.phx||data.phx.rec||isTrial())return;
-  const pw=await askAccountPw("Ne perds jamais ta phrase","Entre le mot de passe de ton compte Sid'compagnon : si tu oublies ta phrase secrète un jour, ce mot de passe suffira pour la retrouver.",
+  const pw=await askAccountPw("Ne perds jamais ta phrase","Entre le mot de passe de ton compte Sid'Compagnon : si tu oublies ta phrase secrète un jour, ce mot de passe suffira pour la retrouver.",
     async pw=>{try{await api("/auth/v1/token?grant_type=password",{method:"POST",body:{email:accEmail(),password:pw}});return null}
       catch(ex){return ex instanceof TypeError?"Pas de connexion internet. Réessaie quand tu es connecté.":"Mot de passe incorrect."}},"Plus tard");
   if(!pw||!data.phx)return;const salt=rnd(16);
@@ -97,13 +97,13 @@ const pwCheckSrv=async pw=>{try{await api("/auth/v1/token?grant_type=password",{
 // nouvelle clé maître, protégée par le mot de passe du compte
 async function mkCreate(o){try{await pull()}catch(x){}
   if(phOn())return null; // une clé a été créée entre-temps sur un autre appareil
-  const pw=await askAccountPw(o.title||"Protège ton coffre",o.ptext||"Entre le mot de passe de ton compte Sid'compagnon : il protège tes coffres. Sur un nouvel appareil, il suffira pour les rouvrir.",pwCheckSrv,o.later||"Annuler");
+  const pw=await askAccountPw(o.title||"Protège ton coffre",o.ptext||"Entre le mot de passe de ton compte Sid'Compagnon : il protège tes coffres. Sur un nouvel appareil, il suffira pour les rouvrir.",pwCheckSrv,o.later||"Annuler");
   if(!pw||phOn())return null;
   const raw=rnd(32),mk={raw,key:await rawKey(raw)},now=Date.now();
   data.phx={id:uid(),chk:await encJ(mk.key,{ok:"sidnote-phrase"}),pw:await pwWrap(mk,pw),createdAt:new Date(now).toISOString(),at:now};save();phMem=mk;return mk}
 // clé maître retrouvée avec le mot de passe du compte (repli : l'ancienne phrase, si elle existe)
 async function mkFromPw(o){o=o||{};let mk=null;
-  const pw=await askAccountPw(o.title||"Mot de passe du compte",o.ptext||"Entre le mot de passe de ton compte Sid'compagnon pour ouvrir tes coffres sur cet appareil.",
+  const pw=await askAccountPw(o.title||"Mot de passe du compte",o.ptext||"Entre le mot de passe de ton compte Sid'Compagnon pour ouvrir tes coffres sur cet appareil.",
     async pw=>{try{mk=await pwUnwrap(pw);return null}catch(e){return data.phx.pwStale?"Ton mot de passe a été réinitialisé : ouvre d'abord tes coffres sur un appareil où ils sont déjà ouverts (ou annule pour utiliser ta phrase secrète, si tu en avais une).":data.phx.salt?"Mot de passe incorrect. Tu peux aussi annuler et utiliser ta phrase secrète.":"Mot de passe incorrect."}},"Annuler");
   if(pw&&mk){phMem=mk;setTimeout(phPwOffer,1500);return mk}
   if(data.phx&&data.phx.salt){const r=await askPhrase({mode:"enter",title:o.title});return r&&r.mk||null}

@@ -1281,7 +1281,7 @@ html.kb-open nav{visibility:hidden}
 .note-row .note-more{align-self:center;flex:none;margin-left:4px}
 
 /* ===== Ancien design.css, regroupé ici en T16 E (règles des anciennes identités retirées) ===== */
-/* Sid'compagnon v42 · direction « Éditorial de précision » (validée par Sid le 22 oct. 2026)
+/* Sid'Compagnon v42 · direction « Éditorial de précision » (validée par Sid le 22 oct. 2026)
    Une seule famille pour sid'agenda, sid'fit et sid'note : seul l'accent change (attribut data-app sur <html>).
    Ivoire en clair, graphite en sombre. Polices : Barlow et Barlow Condensed (charte Élan).
    Règles : un accent par écran, pas d'ombre ni de dégradé, coins de 4 à 8 px, filets fins, graisses 300 à 500.
@@ -1305,7 +1305,7 @@ html.kb-open nav{visibility:hidden}
 
 /* ---------- barre du bas : les fonctions de l'app ouverte ---------- */
 
-/* ---------- en-tête d'une app : logo + nom, retour à Sid'compagnon ---------- */
+/* ---------- en-tête d'une app : logo + nom, retour à Sid'Compagnon ---------- */
 
 /* ---------- logos ---------- */
 .logo{display:block;width:100%;height:100%}
@@ -1314,7 +1314,7 @@ html.kb-open nav{visibility:hidden}
 [data-gapp="perso"],.sp-apps [data-app="note"],.onb-logo[data-app="note"],.side-h[data-app="note"] .logo{color:var(--c-note)}
 .home-app span{color:var(--ink)}
 
-/* ---------- Sid'compagnon : les 3 applications ---------- */
+/* ---------- Sid'Compagnon : les 3 applications ---------- */
 .home-apps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:22px 0 8px;padding:18px 0;border-top:var(--rule) solid var(--line);border-bottom:var(--rule) solid var(--line)}
 .home-app{display:flex;flex-direction:column;align-items:center;gap:10px;border:0;background:none;padding:6px 0;cursor:pointer;font:400 14px var(--font);transition:opacity .15s var(--ease)}
 .home-app:active{opacity:.7}
@@ -1431,7 +1431,7 @@ body.locked .side-show{display:none!important}
 .it-stack span{position:absolute;inset:0;border:1.5px solid var(--app);border-radius:4px;background:var(--bg);opacity:0;transform:translate(var(--x),-30px) rotate(var(--r));animation:aiSheet .4s ease-out forwards}
 .it-stack span:last-child{background:var(--app)}
 @keyframes aiSheet{to{opacity:1;transform:translate(calc(var(--x) / 3),0) rotate(var(--r))}}
-/* v44.4 : sortie d'une app (retour à Sid'compagnon) */
+/* v44.4 : sortie d'une app (retour à Sid'Compagnon) */
 .app-outro{position:fixed;inset:0;z-index:190;display:grid;place-content:center;background:var(--bg);pointer-events:none}
 .ao-brand{display:flex;flex-direction:column;align-items:center;gap:14px}
 .ao-logo{width:72px;height:72px;display:block;transform-origin:center}
@@ -1560,7 +1560,7 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area
 
 /* ---- v44.7 : la dernière ligne de chaque page n'est plus cachée par la barre du bas (--navh = sa hauteur réelle, posée par navPad) ---- */
 
-/* ---- v44.7 : Sid'compagnon, 3 grandes cartes (une par app) ---- */
+/* ---- v44.7 : Sid'Compagnon, 3 grandes cartes (une par app) ---- */
 .hc-list{display:grid;gap:14px;margin-top:18px}
 @media (min-width:900px){.hc-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}}
 .hc{--app:var(--c-agenda);display:flex;flex-direction:column;align-items:stretch;gap:10px;text-align:left;width:100%;padding:20px 20px 18px;border:var(--rule,1px) solid var(--line);border-top:3px solid var(--app);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit;cursor:pointer;touch-action:manipulation;transition:border-color .15s var(--ease,ease),transform .15s var(--ease,ease)}
@@ -1683,7 +1683,7 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area
 .pv-txt.pv-on textarea{border-style:solid!important;border-color:#2F4A3A!important}
 @media (pointer:coarse){html:not([data-ds="elan"]) .pv-txt-x,html:not([data-ds="elan"]) .pv-txt-mv{width:30px!important;height:30px!important;top:-15px!important}html:not([data-ds="elan"]) .pv-txt-x{right:-15px!important;line-height:30px!important}html:not([data-ds="elan"]) .pv-txt-mv{left:-15px!important}html:not([data-ds="elan"]) .pv-txt-rs{width:28px;height:28px;right:-14px;bottom:-14px}html:not([data-ds="elan"]) .pv-txt-rs::after{inset:8px}}
 .cal-help li span{display:block}
-/* v45 : « Sid'compagnon » tient toujours sur une ligne dans la barre latérale (jamais coupé) */
+/* v45 : « Sid'Compagnon » tient toujours sur une ligne dans la barre latérale (jamais coupé) */
 .pl-ask{margin-bottom:10px}
 /* v46 (#7) : « Modifier l'activité » et toutes les fenêtres : rien ne dépasse à droite, les puces passent à la ligne */
 .sheet{box-sizing:border-box;overflow-x:hidden;min-width:0}
@@ -2363,7 +2363,7 @@ html[data-ds="elan"] #v-nutri .dish-kcal small{margin-inline-start:.18em}
  html[data-ds="elan"] #v-muscu .set-field:nth-of-type(3){grid-column:2;grid-row:2}
 }
 
-/* T16 C · Sid Coffre : surfaces, listes et commandes ; moteurs inchangés. */
+/* T16 C · Sid'Note : surfaces, listes et commandes ; moteurs inchangés. */
 html[data-ds="elan"] :is(#v-notes,#v-docs,#v-pwd)>:is(.brand,h1,.sub),html[data-ds="elan"] #notesList>h1,html[data-ds="elan"] #notesList>.sub{display:none}
 html[data-ds="elan"] .coffre-search-label{display:block;margin:0 0 8px;font:600 16px/20px var(--font);color:var(--ink)}
 html[data-ds="elan"] :is(#v-notes,#v-docs,#v-pwd,.pdfv,.viewer,#pwSheet,#scan) :is(.mini,.pen,.x,.back,.qbtn){min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:8px;border:0;border-radius:10px;background:var(--surface-2);color:var(--ink);font:600 14px/20px var(--font)}

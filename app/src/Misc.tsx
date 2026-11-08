@@ -36,6 +36,6 @@ export function SpotEmbed({ ok, src, i18n }: { ok: boolean; src: string; i18n: M
 
 export function AppStatus({ ok, i18n }: { ok: boolean; i18n: MI18n }) {
   const { tr } = i18n;
-  return ok ? <><span className="syncdot"></span><span>{tr("Tu utilises déjà Sid'compagnon comme application.")}</span></>
+  return ok ? <><span className="syncdot"></span><span>{tr("Tu utilises déjà Sid'Compagnon comme application.")}</span></>
     : <><span className="syncdot wait"></span><span>{tr("Tu es dans le navigateur. Suis les étapes ci-dessous pour installer l'app.")}</span></>;
 }

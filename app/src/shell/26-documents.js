@@ -183,7 +183,7 @@ async function dvUnlock(){
   if(dvOpen)return true;
   const hasV=vaultOn(),hasD=!!(data.docVault&&data.docVault.chk);
   // aucun code encore : on choisit le code unique (documents + mots de passe), puis la phrase secrète (v32)
-  if(!hasD&&!hasV){const code=await askPin({mode:"new",head:"Ton code Sid'compagnon",sub:"Choisis ton code à 5 chiffres : il ouvre tes documents et tes mots de passe sur cet appareil."});if(!code)return false;
+  if(!hasD&&!hasV){const code=await askPin({mode:"new",head:"Ton code Sid'Compagnon",sub:"Choisis ton code à 5 chiffres : il ouvre tes documents et tes mots de passe sur cet appareil."});if(!code)return false;
     const mk=await mkNeed();if(!mk)return false;
     const d=await v2Make(mk,"sidnote-docs",{uni:true}),w=await v2Make(mk,"sidnote",{uni:true});
     data.docVault=d.v;data.vault=w.v;dvKey=d.key;dvVid=d.v.id;dvOpen=true;await mkWrap("main",code,mk);save();toast("Code enregistré");return true}

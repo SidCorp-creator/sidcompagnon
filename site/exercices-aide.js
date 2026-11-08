@@ -1,6 +1,6 @@
 // sid'fit : fiche d'aide de chaque exercice proposé (v44.7) : muscles travaillés, 3 étapes, erreur à éviter ; en français, anglais et néerlandais.
 // Clé = nom exact de l'exercice dans exercices.js. Pour corriger une fiche, modifier seulement ce fichier (JSON valide entre les accolades).
-// Format : "Nom": {"fr": ["muscles", ["étape 1", "étape 2", "étape 3"], "erreur à éviter"], "en": [...], "nl": [...]}
+// Format : "Nom": {"fr": ["muscles", ["étape 1", "étape 2", "étape 3"], "erreur à éviter"], "en": [...]}
 window.SIDFIT_AIDE = {
  "Développé couché haltères": {
   "fr": [
@@ -20,15 +20,6 @@ window.SIDFIT_AIDE = {
     "Press up, bringing the dumbbells slightly together without clashing them."
    ],
    "Elbows flared out to 90°: it strains the shoulders."
-  ],
-  "nl": [
-   "Borst, voorkant schouders, triceps",
-   [
-    "Lig op de bank, voeten op de grond, schouderbladen naar achter en omlaag.",
-    "Laat de dumbbells zakken naast je borst, ellebogen ongeveer 45° van je lichaam.",
-    "Duw omhoog en breng de dumbbells iets naar elkaar toe zonder ze te laten botsen."
-   ],
-   "Ellebogen te wijd (90°): dat belast de schouders."
   ]
  },
  "Chest press machine": {
@@ -49,15 +40,6 @@ window.SIDFIT_AIDE = {
     "Return slowly until you feel a stretch in your chest."
    ],
    "Lifting your back off the pad to push more weight."
-  ],
-  "nl": [
-   "Borst, voorkant schouders, triceps",
-   [
-    "Stel de zitting zo in dat de handgrepen ter hoogte van het midden van je borst zijn.",
-    "Rug en schouderbladen tegen de rugleuning, duw uitademend zonder je ellebogen op slot te zetten.",
-    "Kom langzaam terug tot je de rek in je borst voelt."
-   ],
-   "Je rug loskomen van de leuning om zwaarder te duwen."
   ]
  },
  "Développé incliné à la Smith": {
@@ -78,15 +60,6 @@ window.SIDFIT_AIDE = {
     "Lower with control, press straight up without lifting your hips."
    ],
    "Bench too steep (over 45°): mostly your shoulders do the work."
-  ],
-  "nl": [
-   "Bovenkant borst, voorkant schouders, triceps",
-   [
-    "Bank op 30°, de stang zakt naar de bovenkant van je borst.",
-    "Schouderbladen samen, handen iets breder dan je schouders.",
-    "Laat gecontroleerd zakken, duw recht omhoog zonder je billen op te tillen."
-   ],
-   "Bank te schuin (meer dan 45°): vooral je schouders werken."
   ]
  },
  "Pec deck": {
@@ -107,15 +80,6 @@ window.SIDFIT_AIDE = {
     "Return slowly without letting your arms go too far back."
    ],
    "Pushing with your hands and shoulders instead of squeezing your chest."
-  ],
-  "nl": [
-   "Borst",
-   [
-    "Stel de zitting zo in dat de handgrepen op schouderhoogte zijn, ellebogen licht gebogen.",
-    "Breng je armen voor je samen door je borst aan te spannen, korte pauze.",
-    "Kom langzaam terug zonder je armen te ver naar achter te laten gaan."
-   ],
-   "Duwen met je handen en schouders in plaats van je borst aan te spannen."
   ]
  },
  "Dips lestés": {
@@ -136,15 +100,6 @@ window.SIDFIT_AIDE = {
     "Push back up hard, without slamming your elbows into lockout."
    ],
    "Going too deep: it strains the front of the shoulders."
-  ],
-  "nl": [
-   "Onderkant borst, triceps, voorkant schouders",
-   [
-    "Armen gestrekt op de leggers, bovenlichaam iets naar voren.",
-    "Zak tot je bovenarmen ongeveer evenwijdig aan de grond zijn.",
-    "Duw krachtig omhoog zonder je ellebogen hard op slot te zetten."
-   ],
-   "Te diep zakken: dat belast de voorkant van de schouders."
   ]
  },
  "Tractions pronation lestées": {
@@ -165,15 +120,6 @@ window.SIDFIT_AIDE = {
     "Lower slowly until your arms are almost straight."
    ],
    "Swinging to get up: keep your body tight and still."
-  ],
-  "nl": [
-   "Brede rugspier, biceps, bovenrug",
-   [
-    "Bovenhandse greep (handpalmen naar voren), iets breder dan je schouders, armen gestrekt.",
-    "Trek je borst naar de stang en je ellebogen naar je heupen.",
-    "Zak langzaam tot je armen bijna gestrekt zijn."
-   ],
-   "Zwaaien om omhoog te komen: houd je lichaam strak en stil."
   ]
  },
  "Tractions prise neutre": {
@@ -194,15 +140,6 @@ window.SIDFIT_AIDE = {
     "Lower with control, shoulders down."
    ],
    "Reaching up with your chin instead of pulling with your back."
-  ],
-  "nl": [
-   "Brede rugspier, biceps, onderarmen",
-   [
-    "Handpalmen naar elkaar op de parallelle handgrepen, armen gestrekt.",
-    "Trek met je ellebogen dicht bij je lichaam, borst naar de handgrepen.",
-    "Zak gecontroleerd, schouders laag."
-   ],
-   "Je kin naar voren steken in plaats van met je rug te trekken."
   ]
  },
  "Tractions prise large": {
@@ -223,15 +160,6 @@ window.SIDFIT_AIDE = {
     "Lower slowly without fully relaxing your shoulders."
    ],
    "Range of motion too short: go down until your arms are almost straight."
-  ],
-  "nl": [
-   "Brede rugspier (rugbreedte), bovenrug",
-   [
-    "Bovenhandse greep, duidelijk breder dan je schouders.",
-    "Trek je ellebogen omlaag en naar buiten, borst naar de stang.",
-    "Zak langzaam zonder je schouders helemaal te ontspannen."
-   ],
-   "Te korte beweging: zak tot je armen bijna gestrekt zijn."
   ]
  },
  "Pull-over à la poulie": {
@@ -252,15 +180,6 @@ window.SIDFIT_AIDE = {
     "Return slowly until you feel the stretch under your arms."
    ],
    "Bending your elbows: it turns into a triceps exercise."
-  ],
-  "nl": [
-   "Brede rugspier",
-   [
-    "Met je gezicht naar de hoge katrol, touw of stang in de hand, armen bijna gestrekt, bovenlichaam voorover.",
-    "Breng je handen in een boog naar je dijen zonder je ellebogen te buigen.",
-    "Kom langzaam terug tot je de rek onder je armen voelt."
-   ],
-   "Ellebogen buigen: dan wordt het een tricepsoefening."
   ]
  },
  "Rowing avec appui": {
@@ -281,15 +200,6 @@ window.SIDFIT_AIDE = {
     "Lower slowly to straight arms without losing tension."
    ],
    "Pulling with your biceps: think of driving your elbows, not your hands."
-  ],
-  "nl": [
-   "Midden van de rug, brede rugspier, achterkant schouders",
-   [
-    "Borst op de schuine bank, een dumbbell in elke hand.",
-    "Trek je ellebogen naar achter en knijp je schouderbladen samen.",
-    "Laat langzaam zakken tot gestrekte armen zonder de spanning te verliezen."
-   ],
-   "Trekken met je biceps: denk aan je ellebogen, niet aan je handen."
   ]
  },
  "Tirage poulie basse assis": {
@@ -310,15 +220,6 @@ window.SIDFIT_AIDE = {
     "Return slowly, letting your shoulders come forward a little."
    ],
    "Rocking your torso back and forth to pull."
-  ],
-  "nl": [
-   "Midden van de rug, brede rugspier, biceps",
-   [
-    "Zittend, voeten vast, rug recht, handgreep vast, armen gestrekt.",
-    "Trek de handgreep naar je navel en knijp je schouderbladen samen, bovenlichaam stil.",
-    "Kom langzaam terug en laat je schouders iets naar voren komen."
-   ],
-   "Met je bovenlichaam heen en weer schommelen om te trekken."
   ]
  },
  "Rowing machine convergente": {
@@ -339,15 +240,6 @@ window.SIDFIT_AIDE = {
     "Return slowly to a full stretch."
    ],
    "Lifting your chest off the pad to pull more weight."
-  ],
-  "nl": [
-   "Midden van de rug, brede rugspier",
-   [
-    "Borst tegen het kussen, stel de zitting zo in dat je de handgrepen met gestrekte armen vastneemt.",
-    "Trek met je ellebogen dicht bij je lichaam, knijp je schouderbladen een seconde samen.",
-    "Kom langzaam terug tot volledige rek."
-   ],
-   "Je borst loskomen van het kussen om zwaarder te trekken."
   ]
  },
  "T-bar avec appui poitrine": {
@@ -368,15 +260,6 @@ window.SIDFIT_AIDE = {
     "Lower with control, without dropping the weight."
    ],
    "Rounding your back or throwing your head back."
-  ],
-  "nl": [
-   "Midden en bovenkant rug, brede rugspier",
-   [
-    "Borst op het kussen, neem de handgrepen vast, armen gestrekt.",
-    "Trek naar de bovenkant van je buik en houd je nek in lijn met je rug.",
-    "Laat gecontroleerd zakken zonder het gewicht te laten vallen."
-   ],
-   "Je rug bol maken of je hoofd naar achter gooien."
   ]
  },
  "Shrugs haltères ou machine": {
@@ -397,15 +280,6 @@ window.SIDFIT_AIDE = {
     "Lower slowly, without rolling your shoulders."
    ],
    "Bending your elbows or rolling your shoulders."
-  ],
-  "nl": [
-   "Trapezius",
-   [
-    "Staand, armen gestrekt langs je lichaam, gewicht in de hand.",
-    "Trek je schouders recht omhoog naar je oren en houd een seconde vast.",
-    "Laat langzaam zakken zonder je schouders te rollen."
-   ],
-   "Je ellebogen buigen of je schouders laten rollen."
   ]
  },
  "Shoulder press à la Smith": {
@@ -426,15 +300,6 @@ window.SIDFIT_AIDE = {
     "Lower to chin level with control."
    ],
    "Arching your lower back hard: keep your hips and back on the pad."
-  ],
-  "nl": [
-   "Schouders (voorkant en zijkant), triceps",
-   [
-    "Zittend op een bank met bijna rechte leuning, de stang gaat voor je gezicht langs.",
-    "Handen iets breder dan je schouders, duw boven je hoofd.",
-    "Laat gecontroleerd zakken tot kinhoogte."
-   ],
-   "Je onderrug sterk hol trekken: houd billen en rug tegen de leuning."
   ]
  },
  "Élévations latérales poulie": {
@@ -455,15 +320,6 @@ window.SIDFIT_AIDE = {
     "Lower slowly without letting the weight drop."
    ],
    "Using body momentum or shrugging: go lighter."
-  ],
-  "nl": [
-   "Zijkant schouders (laterale deltaspier)",
-   [
-    "Lage katrol naast je, handgreep in de andere hand.",
-    "Hef je arm zijwaarts tot schouderhoogte, elleboog licht gebogen.",
-    "Laat langzaam zakken zonder het gewicht te laten vallen."
-   ],
-   "Met zwaai van je lichaam of je schouders optrekken: neem lichter."
   ]
  },
  "Élévations latérales haltères": {
@@ -484,15 +340,6 @@ window.SIDFIT_AIDE = {
     "Lower slowly without letting the weight drop."
    ],
    "Using body momentum or shrugging: go lighter."
-  ],
-  "nl": [
-   "Zijkant schouders (laterale deltaspier)",
-   [
-    "Staand, een dumbbell in elke hand langs je lichaam.",
-    "Hef je arm zijwaarts tot schouderhoogte, elleboog licht gebogen.",
-    "Laat langzaam zakken zonder het gewicht te laten vallen."
-   ],
-   "Met zwaai van je lichaam of je schouders optrekken: neem lichter."
   ]
  },
  "Élévations latérales machine": {
@@ -513,15 +360,6 @@ window.SIDFIT_AIDE = {
     "Lower slowly without letting the weight drop."
    ],
    "Using body momentum or shrugging: go lighter."
-  ],
-  "nl": [
-   "Zijkant schouders (laterale deltaspier)",
-   [
-    "Zittend, armen tegen de kussens, stel de zitting zo in dat je schouders in lijn zijn met het draaipunt.",
-    "Hef je arm zijwaarts tot schouderhoogte, elleboog licht gebogen.",
-    "Laat langzaam zakken zonder het gewicht te laten vallen."
-   ],
-   "Met zwaai van je lichaam of je schouders optrekken: neem lichter."
   ]
  },
  "Face pull": {
@@ -542,15 +380,6 @@ window.SIDFIT_AIDE = {
     "Hold for a second, then return slowly."
    ],
    "Going too heavy and leaning back to pull."
-  ],
-  "nl": [
-   "Achterkant schouders, bovenrug, rotatoren",
-   [
-    "Katrol op gezichtshoogte, touw in de hand, armen gestrekt.",
-    "Trek het touw naar je voorhoofd en spreid je handen, ellebogen hoog.",
-    "Houd een seconde vast en kom langzaam terug."
-   ],
-   "Te zwaar nemen en achterover leunen om te trekken."
   ]
  },
  "Reverse pec deck": {
@@ -571,15 +400,6 @@ window.SIDFIT_AIDE = {
     "Return slowly without letting the weights touch."
    ],
    "Squeezing your shoulder blades and pulling with your back: let the rear shoulders work."
-  ],
-  "nl": [
-   "Achterkant schouders, bovenrug",
-   [
-    "Zittend met je gezicht naar de machine, borst tegen het kussen, handgrepen op schouderhoogte.",
-    "Open je armen naar achter, ellebogen licht gebogen.",
-    "Kom langzaam terug zonder de gewichten te laten raken."
-   ],
-   "Je schouderbladen samenknijpen en met je rug trekken: laat de achterkant van je schouders werken."
   ]
  },
  "Oiseau à la poulie": {
@@ -600,15 +420,6 @@ window.SIDFIT_AIDE = {
     "Return slowly while keeping tension."
    ],
    "Shrugging your shoulders towards your ears during the movement."
-  ],
-  "nl": [
-   "Achterkant schouders",
-   [
-    "Tussen twee katrollen op schouderhoogte, kabels gekruist voor je.",
-    "Spreid je armen zijwaarts en naar achter, ellebogen licht gebogen.",
-    "Kom langzaam terug en houd de spanning."
-   ],
-   "Je schouders naar je oren trekken tijdens de beweging."
   ]
  },
  "Curl barre EZ": {
@@ -629,15 +440,6 @@ window.SIDFIT_AIDE = {
     "Lower slowly until your arms are almost straight."
    ],
    "Swinging your back to lift the bar."
-  ],
-  "nl": [
-   "Biceps",
-   [
-    "Staand, EZ-stang in de hand, armen gestrekt, ellebogen dicht bij je lichaam.",
-    "Krul de stang omhoog door je ellebogen te buigen, zonder ze naar voren te brengen.",
-    "Laat langzaam zakken tot je armen bijna gestrekt zijn."
-   ],
-   "Met je rug zwaaien om de stang op te tillen."
   ]
  },
  "Curl incliné haltères": {
@@ -658,15 +460,6 @@ window.SIDFIT_AIDE = {
     "Lower slowly to a full stretch."
    ],
    "Bringing your elbows forward as you lift: you lose the stretch."
-  ],
-  "nl": [
-   "Biceps (lange kop)",
-   [
-    "Zittend op een bank van 45-60°, armen hangend achter je bovenlichaam.",
-    "Krul de dumbbells omhoog met stille ellebogen, handpalmen naar boven.",
-    "Laat langzaam zakken tot volledige rek."
-   ],
-   "Je ellebogen naar voren brengen bij het optillen: je verliest de rek."
   ]
  },
  "Curl marteau": {
@@ -687,15 +480,6 @@ window.SIDFIT_AIDE = {
     "Lower slowly."
    ],
    "Using momentum from your shoulders or back."
-  ],
-  "nl": [
-   "Biceps, brachialis, onderarmen",
-   [
-    "Staand, dumbbells in de hand, handpalmen naar elkaar.",
-    "Krul de dumbbells omhoog zonder je polsen te draaien, ellebogen dicht bij je lichaam.",
-    "Laat langzaam zakken."
-   ],
-   "Zwaai gebruiken vanuit je schouders of rug."
   ]
  },
  "Curl poulie": {
@@ -716,15 +500,6 @@ window.SIDFIT_AIDE = {
     "Lower slowly: the pulley keeps tension all the way."
    ],
    "Leaning your torso back to help lift."
-  ],
-  "nl": [
-   "Biceps",
-   [
-    "Met je gezicht naar de lage katrol, stang of handgreep vast, armen gestrekt.",
-    "Krul omhoog door je ellebogen te buigen, die stil langs je lichaam blijven.",
-    "Laat langzaam zakken: de katrol houdt de spanning de hele beweging."
-   ],
-   "Je bovenlichaam naar achter leunen om te helpen."
   ]
  },
  "Extension au-dessus de la tête à la poulie": {
@@ -745,15 +520,6 @@ window.SIDFIT_AIDE = {
     "Return slowly to the stretch behind your head."
    ],
    "Letting your elbows flare out to the sides."
-  ],
-  "nl": [
-   "Triceps (lange kop)",
-   [
-    "Rug naar de katrol, touw boven je hoofd, ellebogen gebogen en naar voren gericht.",
-    "Strek je armen naar voren en omhoog, ellebogen stil.",
-    "Kom langzaam terug tot de rek achter je hoofd."
-   ],
-   "Je ellebogen opzij laten uitwijken."
   ]
  },
  "Extension poulie haute à la corde": {
@@ -774,15 +540,6 @@ window.SIDFIT_AIDE = {
     "Return slowly to a right angle without moving your elbows."
    ],
    "Letting your elbows drift forward: your shoulders take over."
-  ],
-  "nl": [
-   "Triceps",
-   [
-    "Met je gezicht naar de hoge katrol, touw vast, ellebogen tegen je lichaam.",
-    "Duw omlaag tot gestrekte armen en spreid het touw onderaan.",
-    "Kom langzaam terug tot een rechte hoek zonder je ellebogen te bewegen."
-   ],
-   "Je ellebogen naar voren laten gaan: je schouders nemen het over."
   ]
  },
  "Presse à cuisses amplitude limitée": {
@@ -803,15 +560,6 @@ window.SIDFIT_AIDE = {
     "Push through your whole foot without locking your knees at the top."
    ],
    "Letting your lower back lift off the seat at the bottom."
-  ],
-  "nl": [
-   "Quadriceps, bilspieren",
-   [
-    "Rug en billen tegen de zitting, voeten op heupbreedte in het midden van het platform.",
-    "Zak tot je knieën ongeveer een rechte hoek maken, zonder pijn.",
-    "Duw met je hele voet zonder je knieën bovenaan op slot te zetten."
-   ],
-   "Je onderrug laten loskomen van de zitting onderaan."
   ]
  },
  "Leg extension charge modérée": {
@@ -832,15 +580,6 @@ window.SIDFIT_AIDE = {
     "Lower slowly without dropping the weight."
    ],
    "Too heavy with jerky reps: hard on the knees."
-  ],
-  "nl": [
-   "Quadriceps",
-   [
-    "Rug tegen de leuning, draaipunt in lijn met je knie, rol op je onderste scheenbeen.",
-    "Strek je benen en span je quadriceps bovenaan een seconde aan.",
-    "Laat langzaam zakken zonder het gewicht te laten vallen."
-   ],
-   "Te zwaar met schokken: belastend voor de knieën."
   ]
  },
  "Hack squat amplitude limitée": {
@@ -861,15 +600,6 @@ window.SIDFIT_AIDE = {
     "Push back up through your whole foot, knees in line with your toes."
    ],
    "Letting your knees cave in on the way up."
-  ],
-  "nl": [
-   "Quadriceps, bilspieren",
-   [
-    "Rug en schouders tegen de kussens, voeten op schouderbreedte op het platform.",
-    "Zak gecontroleerd tot een comfortabele diepte, zonder kniepijn.",
-    "Duw omhoog met je hele voet, knieën in lijn met je tenen."
-   ],
-   "Je knieën naar binnen laten vallen bij het omhoogkomen."
   ]
  },
  "Hip thrust machine": {
@@ -890,15 +620,6 @@ window.SIDFIT_AIDE = {
     "Hold for a second at the top, then lower slowly."
    ],
    "Arching your lower back at the top instead of squeezing your glutes."
-  ],
-  "nl": [
-   "Bilspieren",
-   [
-    "Bovenrug tegen het kussen, riem of rol op je heupen, voeten plat.",
-    "Duw je heupen omhoog en span je bilspieren aan, kin ingetrokken.",
-    "Houd bovenaan een seconde vast en laat langzaam zakken."
-   ],
-   "Je onderrug bovenaan hol trekken in plaats van je bilspieren aan te spannen."
   ]
  },
  "Abduction hanche machine": {
@@ -919,15 +640,6 @@ window.SIDFIT_AIDE = {
     "Return slowly without letting the weights touch."
    ],
    "Doing fast, jerky reps."
-  ],
-  "nl": [
-   "Bilspieren (middelste bilspier)",
-   [
-    "Zittend, rug tegen de leuning, kussens tegen de buitenkant van je knieën.",
-    "Duw je benen gecontroleerd uit elkaar, houd een seconde vast.",
-    "Kom langzaam terug zonder de gewichten te laten raken."
-   ],
-   "Snelle, schokkerige herhalingen doen."
   ]
  },
  "Leg curl assis": {
@@ -948,15 +660,6 @@ window.SIDFIT_AIDE = {
     "Return slowly until your legs are almost straight."
    ],
    "Lifting your hips off the seat to finish the rep."
-  ],
-  "nl": [
-   "Hamstrings",
-   [
-    "Zittend, knieën in lijn met het draaipunt, dijen vast onder het kussen.",
-    "Buig je benen naar beneden en naar achter, houd een seconde vast.",
-    "Kom langzaam terug tot je benen bijna gestrekt zijn."
-   ],
-   "Je billen van de zitting tillen om de herhaling af te maken."
   ]
  },
  "Leg curl allongé": {
@@ -977,15 +680,6 @@ window.SIDFIT_AIDE = {
     "Lower slowly."
    ],
    "Lifting your hips off the bench to help."
-  ],
-  "nl": [
-   "Hamstrings",
-   [
-    "Op je buik, knieën net voorbij de rand van de bank, rol boven je hielen.",
-    "Breng je hielen naar je billen, heupen tegen de bank.",
-    "Laat langzaam zakken."
-   ],
-   "Je heupen van de bank tillen om te helpen."
   ]
  },
  "Adduction machine": {
@@ -1006,15 +700,6 @@ window.SIDFIT_AIDE = {
     "Return slowly to a comfortable width."
    ],
    "Starting too wide with a heavy weight."
-  ],
-  "nl": [
-   "Adductoren (binnenkant dijen)",
-   [
-    "Zittend, rug tegen de leuning, kussens tegen de binnenkant van je knieën.",
-    "Breng je benen gecontroleerd samen, houd een seconde vast.",
-    "Kom langzaam terug tot een comfortabele spreiding."
-   ],
-   "Meteen te wijd beginnen met een zwaar gewicht."
   ]
  },
  "Mollets assis": {
@@ -1035,15 +720,6 @@ window.SIDFIT_AIDE = {
     "Rise onto your toes as high as possible and hold for a second."
    ],
    "Bouncing at the bottom: pause properly so your calves do the work."
-  ],
-  "nl": [
-   "Kuiten (soleus)",
-   [
-    "Zittend, knieën onder het kussen, voorvoeten op de trede.",
-    "Laat je hielen zo ver mogelijk zakken en pauzeer in de rek.",
-    "Kom zo hoog mogelijk op je tenen en houd een seconde vast."
-   ],
-   "Veren onderaan: pauzeer echt zodat je kuiten het werk doen."
   ]
  },
  "Mollets debout machine": {
@@ -1064,15 +740,6 @@ window.SIDFIT_AIDE = {
     "Rise onto your toes as high as possible and hold for a second."
    ],
    "Bouncing at the bottom: pause properly so your calves do the work."
-  ],
-  "nl": [
-   "Kuiten (gastrocnemius)",
-   [
-    "Staand, schouders onder de kussens, voorvoeten op de trede, benen gestrekt.",
-    "Laat je hielen zo ver mogelijk zakken en pauzeer in de rek.",
-    "Kom zo hoog mogelijk op je tenen en houd een seconde vast."
-   ],
-   "Veren onderaan: pauzeer echt zodat je kuiten het werk doen."
   ]
  },
  "Mollets à la presse": {
@@ -1093,15 +760,6 @@ window.SIDFIT_AIDE = {
     "Rise onto your toes as high as possible and hold for a second."
    ],
    "Bouncing at the bottom: pause properly so your calves do the work."
-  ],
-  "nl": [
-   "Kuiten",
-   [
-    "Op de beenpers, alleen je voorvoeten onderaan op het platform, benen bijna gestrekt.",
-    "Laat je hielen zo ver mogelijk zakken en pauzeer in de rek.",
-    "Kom zo hoog mogelijk op je tenen en houd een seconde vast."
-   ],
-   "Veren onderaan: pauzeer echt zodat je kuiten het werk doen."
   ]
  },
  "Crunch à la poulie": {
@@ -1122,15 +780,6 @@ window.SIDFIT_AIDE = {
     "Come back up slowly, keeping tension in your abs."
    ],
    "Pulling with your arms or sitting back on your heels instead of curling your spine."
-  ],
-  "nl": [
-   "Buikspieren (rechte buikspier)",
-   [
-    "Geknield met je gezicht naar de hoge katrol, touw naast je hoofd.",
-    "Rol je rug naar beneden en breng je ribben naar je bekken, heupen stil.",
-    "Kom langzaam omhoog en houd de spanning in je buik."
-   ],
-   "Met je armen trekken of op je hielen gaan zitten in plaats van je rug te rollen."
   ]
  }
 };

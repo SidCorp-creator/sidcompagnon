@@ -98,7 +98,7 @@ function doneCal(list){const byDay={};list.forEach(t=>{const k=iso(new Date(t.do
   const sel=dcSel&&byDay[dcSel];const sd=dcSel?parse(dcSel):null;
   return `<div class="card dc"><div class="dc-top"><button type="button" class="mini" data-dcm="${dcMonth-1}" aria-label="${L("Mois précédent")}">${IC("chev")}</button><b>${L(MOL[m])} ${y}</b><button type="button" class="mini" data-dcm="${dcMonth+1}" ${dcMonth>=cur?"disabled":""} aria-label="${L("Mois suivant")}">${IC("chev")}</button></div>
     <div class="small muted" style="text-align:center;margin:-2px 0 8px">${monthN} ${L(monthN>1?"tâches réalisées ce mois-ci":"tâche réalisée ce mois-ci")}</div>
-    <div class="dc-g">${[...({fr:"LMMJVSD",en:"MTWTFSS",nl:"MDWDVZZ"}[LANG]||"LMMJVSD")].map(x=>`<i>${x}</i>`).join("")}${g}</div></div>`+
+    <div class="dc-g">${[...({fr:"LMMJVSD",en:"MTWTFSS"}[LANG]||"LMMJVSD")].map(x=>`<i>${x}</i>`).join("")}${g}</div></div>`+
     (sel?`<div class="grp-d" style="margin:10px 4px 6px">${DOWL[sd.getDay()]} ${sd.getDate()} ${mlow(sd.getMonth())} · ${sel.length} ${L(sel.length>1?"tâches":"tâche")}</div><div class="card">${sel.map(todoRow).join("")}</div>`
       :`<p class="small muted" style="text-align:center;margin:10px 0 0">${L("Touche un jour pour voir ce que tu as fait.")}</p>`)}
 const curCat=()=>{const c=TV().cat||"all";return c==="all"||c==="none"||catOf(c)?c:"all"};

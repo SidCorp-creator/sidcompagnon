@@ -16,13 +16,13 @@ async function saveJSON(obj,name,title){
   try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title});return}}catch(e){if(e.name==="AbortError")return}
   const a=document.createElement("a");a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
 const bkObj=extra=>({app:"sidnote",v:2,exported:new Date().toISOString(),...(extra||{}),data:forServer(data)});
-$("backupBtn").addEventListener("click",()=>saveJSON(bkObj(),`sidnote-sauvegarde-${new Date().toISOString().slice(0,10)}.json`,L("Sauvegarde Sid'compagnon")));
+$("backupBtn").addEventListener("click",()=>saveJSON(bkObj(),`sidnote-sauvegarde-${new Date().toISOString().slice(0,10)}.json`,L("Sauvegarde Sid'Compagnon")));
 // RGPD : export complet (JSON) et suppression des données du compte
-$("exportAllBtn").addEventListener("click",()=>saveJSON(bkObj({account:{email:session&&session.email,id:session&&session.user.id}}),`sidnote-mes-donnees-${new Date().toISOString().slice(0,10)}.json`,L("Mes données Sid'compagnon")));
+$("exportAllBtn").addEventListener("click",()=>saveJSON(bkObj({account:{email:session&&session.email,id:session&&session.user.id}}),`sidnote-mes-donnees-${new Date().toISOString().slice(0,10)}.json`,L("Mes données Sid'Compagnon")));
 $("wipeBtn").addEventListener("click",async e=>{
   const b=e.currentTarget;
   if(!b.dataset.armed){b.dataset.armed="1";b.textContent=L("Tout effacer ? Toucher encore pour confirmer");setTimeout(()=>{delete b.dataset.armed;b.textContent=L("Supprimer mes données")},4000);return}
-  if(!confirm(L("Tout ce que tu as mis dans Sid'compagnon sera effacé, sur tous tes appareils. C'est définitif. Continuer ?")))return;
+  if(!confirm(L("Tout ce que tu as mis dans Sid'Compagnon sera effacé, sur tous tes appareils. C'est définitif. Continuer ?")))return;
   b.disabled=true;b.textContent="…";
   try{
     const t=await token(),u=session.user.id;
@@ -56,7 +56,7 @@ let bkCur=null;
 $("restoreIn").addEventListener("change",async e=>{
   const f=e.target.files[0];e.target.value="";if(!f)return;
   let p=null;try{p=bkParse(JSON.parse(await f.text()))}catch(err){}
-  if(!p){toast("Ce fichier n'est pas une sauvegarde Sid'compagnon");return}
+  if(!p){toast("Ce fichier n'est pas une sauvegarde Sid'Compagnon");return}
   bkCur=bkPrepare(p.d);const d=bkCur.d;bkCur.v1=!!p.v1;
   $("bkWhen").textContent=p.at?`${L("Sauvegarde du")} ${fmtDay(p.at)}`:L("Ancienne sauvegarde (tâches et agenda seulement)");
   if(shIsl("bkList")){try{window.SCIslands.bkList($("bkList"),{rows:BK_LISTS.filter(x=>x[1]).map(([k,lb])=>({lb,n:bkGet(d,k).length,now:bkGet(data,k).length})),i18n:agI18n()})}catch(e){reportErr("island bkList: "+(e&&e.message))}}

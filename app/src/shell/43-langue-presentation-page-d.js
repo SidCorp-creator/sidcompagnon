@@ -26,28 +26,20 @@ function trNode(n){
   while((x=w.nextNode()))if(x.nodeType===3)trNode(x);else for(const a of ["placeholder","aria-label","title"]){const v=x.hasAttribute("data-user-label")?null:x.getAttribute(a);if(v){const u=trStr(v);if(u!==v)x.setAttribute(a,u)}}
 }
 function startTranslate(){
-  document.documentElement.lang=LANG;document.title="Sid'compagnon";
-  if(LANG==="nl"){
-    MO.splice(0,12,"jan.","feb.","mrt.","apr.","mei","jun.","jul.","aug.","sep.","okt.","nov.","dec.");
-    MOL.splice(0,12,"Januari","Februari","Maart","April","Mei","Juni","Juli","Augustus","September","Oktober","November","December");
-    DOW.splice(0,7,"zondag","maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag");
-    DOWL.splice(0,7,"zondag","maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag");
-    const dw=document.querySelector(".cal-dow");if(dw)dw.innerHTML="<span>M</span><span>D</span><span>W</span><span>D</span><span>V</span><span>Z</span><span>Z</span>";
-  }else{
+  document.documentElement.lang=LANG;document.title="Sid'Compagnon";
   MO.splice(0,12,"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec");
   MOL.splice(0,12,"January","February","March","April","May","June","July","August","September","October","November","December");
   DOW.splice(0,7,"Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday");
   DOWL.splice(0,7,"Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday");
   const dw=document.querySelector(".cal-dow");if(dw)dw.innerHTML="<span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>";
-  }
   trNode(document.body);
   new MutationObserver(ms=>{for(const m of ms){
     if(m.type==="characterData")trNode(m.target);
     else if(m.type==="attributes")trNode(m.target);
     else m.addedNodes.forEach(trNode)}}).observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:["placeholder","aria-label","title"]});
 }
-// v31 : choix de la langue sur l'écran de connexion (français, anglais, néerlandais)
-{const LN={fr:"Français",en:"English",nl:"Nederlands"},el=$("authLang");el.outerHTML=`<span class="auth-langs">${Object.entries(LN).map(([k,v])=>`<button type="button" class="linkbtn" data-alang="${k}" aria-pressed="${k===(LANG||"fr")}">${v}</button>`).join("")}</span>`;
+// v31 : choix de la langue sur l'écran de connexion (français, anglais ; néerlandais retiré en v76)
+{const LN={fr:"Français",en:"English"},el=$("authLang");el.outerHTML=`<span class="auth-langs">${Object.entries(LN).map(([k,v])=>`<button type="button" class="linkbtn" data-alang="${k}" aria-pressed="${k===(LANG||"fr")}">${v}</button>`).join("")}</span>`;
   document.addEventListener("click",e=>{const b=e.target.closest("[data-alang]");if(b&&b.dataset.alang!==LANG)setLang(b.dataset.alang)})}
 $("langSel").value=LANG;
 $("langSel").addEventListener("change",e=>setLang(e.target.value));
@@ -71,7 +63,7 @@ const ONB_DESC={
   nutri:"Tes calories et tes macros du jour, et des menus faits pour toi.",
   muscu:"Tes séances et tes programmes, tes charges et tes répétitions, avec la progression d'une fois à l'autre.",
   docs:"Range tes PDF, scanne des feuilles avec l'appareil photo et retrouve-les en un instant.",
-  app:"Les étapes pour installer Sid'compagnon sur ton écran d'accueil."};
+  app:"Les étapes pour installer Sid'Compagnon sur ton écran d'accueil."};
 let onbSel={};
 const ONB_GROUP={orga:["agenda","Organise tes journées","Ton agenda, tes tâches du jour et un minuteur de concentration."],
   sport:["fit","Bouge et mange bien","Ton programme de musculation, ta nutrition et tes progrès en graphiques."],

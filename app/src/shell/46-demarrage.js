@@ -2,7 +2,7 @@
 hydrateIcons();document.querySelectorAll(".onb-floats [data-fn]").forEach(e=>e.innerHTML=ICON(e.dataset.fn));
 document.addEventListener("focusin",e=>{if(e.target.matches&&e.target.matches('input[list="typeList"]'))typeChipsFor(e.target)});
 typeChipsFor($("fCat"));typeChipsFor($("eCat"));
-if(LANG==="en"||LANG==="nl")startTranslate();
+if(LANG==="en")startTranslate();
 recoveryFromHash();
 if(ephExpired){
   // l'app a été fermée sans « Rester connecté » : on envoie les dernières modifs puis on déconnecte

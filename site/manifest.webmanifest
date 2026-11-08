@@ -1,7 +1,7 @@
 {
-  "name": "Sid'compagnon",
-  "short_name": "Sid'compagnon",
-  "description": "Ta vie, en ordre. Sid Journée, Sid Forme et Sid Coffre réunis — par SidCorp",
+  "name": "Sid'Compagnon",
+  "short_name": "Sid'Compagnon",
+  "description": "Ta vie, en ordre. Sid'Journée, Sid'Forme et Sid'Note réunis — par SidCorp",
   "lang": "fr",
   "start_url": "./",
   "scope": "./",

@@ -33,7 +33,7 @@ export interface SideIcons { side: string; home: string; plus: string; user: str
 export function SideBar({ groups, cur, icons, i18n }: { groups: SideGroup[]; cur: string; icons: SideIcons; i18n: NavI18n }) {
   const { tr, L } = i18n;
   return <>
-    <div className="side-brand"><Logo app="home" cls="side-logo" /><span className="grow">Sid'compagnon</span>
+    <div className="side-brand"><Logo app="home" cls="side-logo" /><span className="grow">Sid'Compagnon</span>
       <button type="button" className="side-tog" aria-label={tr(L("Masquer la barre latérale"))} title={tr(L("Masquer la barre latérale"))} aria-expanded="true" aria-controls="side" dangerouslySetInnerHTML={{ __html: icons.side }}></button></div>
     <button type="button" className="side-it" data-go="home" aria-current={cur === "home" ? "true" : "false"}><Ic cls="sp-ic" html={icons.home} /><span className="grow">{tr(L("Aujourd'hui"))}</span></button>
     <button type="button" className="side-add" data-sadd="1"><Ic cls="sp-ic" html={icons.plus} /><span className="grow">{tr(L("Ajouter"))}</span></button>

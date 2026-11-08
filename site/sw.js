@@ -38,7 +38,7 @@ self.addEventListener("fetch", e => {
 self.addEventListener("push", e => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch (err) { d = { body: e.data && e.data.text() }; }
-  e.waitUntil(self.registration.showNotification(d.title || "Sid'compagnon", {
+  e.waitUntil(self.registration.showNotification(d.title || "Sid'Compagnon", {
     body: d.body || "",
     icon: "logo-192.png",
     badge: "logo-192.png",

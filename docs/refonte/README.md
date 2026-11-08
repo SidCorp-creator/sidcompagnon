@@ -161,3 +161,9 @@ Skills retenus : `sid-charte` (M3, M4 : charte), `sid-relais` (tous : relais com
 - Répartition : Codex E1 (photos Free Exercise DB + Wikimedia Commons, `SOURCES.json`, crédits) + E2 (identifiants, alias, `help`, moteur/Edge, test de couverture) ; Claude E3 (conseils des 58 : placement, exécution, respiration, points d'attention, erreurs) + E4 (interface : « ? » en séance, aperçu, remplacement ; association explicite des exercices non reconnus ; crédits ; états d'erreur) + intégration.
 - Revues : Codex a corrigé 3 conseils pour coller aux photos ; Claude a fait la revue visuelle des 41 paires (planches `apres/v79-planches/`) : 5 doutes, 4 levés par Codex sur les originaux, 1 remplacé (planche).
 - Vérifié : 18 suites de tests ; Élan 14/15 au premier passage (cas 1280-sombre-secours instable, en cours d'analyse) ; `exercices-aide.test.cjs --require-complete` échoue volontairement (17 manques).
+
+## v80 (8 nov.) — illustrations des 17 fiches manquantes — **prête, non publiée**
+- Décision de Sid : option B (forfait ChatGPT Plus sans crédits supplémentaires : génération par l'outil `image_gen` de Codex, arrêt au quota, aucune API payante). 42 générations, aucun signal de quota.
+- Codex G1 : 34 images retenues (8 essais refusés archivés, prompts et empreintes dans `docs/refonte/revue-v80/`, `SOURCES.json` `kind:"illustration"`). Claude V1 : vérification visuelle image par image, 5 images refusées puis refaites (W ×2, pompes genoux, hip thrust, roumain) — `revue-v80-retours.md`. Claude U1 : étiquette « Illustration » sur chaque image, alt et crédit explicites (« ce ne sont pas des photos »).
+- Couverture : **58/58** (41 photos + 17 illustrations) ; variantes non illustrées dites dans la fiche (shrugs à la machine, goblet à la kettlebell).
+- Vérifié : 17 suites de tests (dont `exercices-aide --require-complete`), Élan 15/15.

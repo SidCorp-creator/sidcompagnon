@@ -3,7 +3,7 @@
   "tool": "OpenAI image_gen",
   "model": "gpt-image-2 (selon doc Codex)",
   "kind": "illustration",
-  "status": "review pending",
+  "status": "Toutes les images sélectionnées validées par Claude V1 ; intégrées comme illustrations.",
   "billingConstraint": "Built-in image_gen only; included quota; no extra credits or paid API",
   "commonStyle": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration.",
   "images": [
@@ -20,7 +20,7 @@
       "originalSha256": "515fbfe5dd3e91c5d23cef8c7af51ffbefb524efe7ba4d4f03685568b926a389",
       "sha256": "51788f5ebcad753e08c3f03f43e6cefc8d54c8586eeefe62e2d1ad7615b60316",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-48d8d01e-87a8-4b91-a235-935f263504e7.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "dips-lestes-1",
@@ -35,7 +35,7 @@
       "originalSha256": "b39d768f54de2efb62d962ae6f951b428c0152d7136c97adae70ba1857e09daa",
       "sha256": "e89ff57bd1c0be8b84922bb643281a6e15490eb7046f0280456cbd71444ec831",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-dd4fe412-5754-45fb-8cdc-64548051a85a.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "souleve-de-terre-roumain-halteres-0",
@@ -50,7 +50,7 @@
       "originalSha256": "e82c9a057d04dc5559b81f01e162fb21662d7e17b8fccb42b4b9e699b8679d3a",
       "sha256": "097d7392dc9e0b558088427ed7fa9d167f70a7a3a7dc44ba62a1f363ac8cc2d5",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-48d8d01e-87a8-4b91-a235-935f263504e7.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "goblet-squat-0",
@@ -65,7 +65,7 @@
       "originalSha256": "ec610f16e0cd24237dd83fa10c4574ef0d0a028f5767ed43189db1dd08b15fab",
       "sha256": "1faef4eaeeb784a216b4409433bc3e37a10cf6d2a13ce3922d4f6da4a692c3cb",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-48d8d01e-87a8-4b91-a235-935f263504e7.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "goblet-squat-1",
@@ -80,7 +80,7 @@
       "originalSha256": "d53ec83740482782e40c05a5f6d0a860d2dbdc6d13738be79f36764b40c3a52f",
       "sha256": "86f64f68cd3d7e8d74267fdec48b4e1615742b03c5f65c9284d5a9eda6700220",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-af196692-a649-4ccd-a57a-168e47de7c2c.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "charniere-de-hanches-sans-charge-0",
@@ -95,7 +95,7 @@
       "originalSha256": "ebf6e889d7a85252f059e2baf26348a9374499a664e907f4d82e63edd5148cff",
       "sha256": "db8fa454360488b4078638be4eacbd5016911dec0974a6cc1dfa1b5780499259",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-48d8d01e-87a8-4b91-a235-935f263504e7.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "charniere-de-hanches-sans-charge-1",
@@ -110,7 +110,7 @@
       "originalSha256": "87198068ce0066191a4e140b2f3af3f07b83c0c21222feba7c6b552f64e86789",
       "sha256": "e64dcd9a6433ddf7653a50dd63788571f35196c7a40c7f7b84144c3ca9f8473e",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-6e64f579-aa5a-4e5c-8fb7-427bf3fa9310.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "souleve-de-terre-roumain-halteres-1",
@@ -125,7 +125,7 @@
       "originalSha256": "923e5506c619d47b23580eb6263d2af2672adaefbc20a3f0843ac5815c1fe878",
       "sha256": "7068c7a5a268c18d17ce649b50e04ac1290975c090bb96ab0453db4114b794f7",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-4b646f90-0d47-408f-ad60-3871053acd89.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     }
   ],
   "calls": 9,

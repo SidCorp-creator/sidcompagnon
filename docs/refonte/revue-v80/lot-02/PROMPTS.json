@@ -3,7 +3,7 @@
   "tool": "OpenAI image_gen",
   "model": "gpt-image-2 (selon doc Codex)",
   "kind": "illustration",
-  "status": "review pending",
+  "status": "Toutes les images sélectionnées validées par Claude V1 ; intégrées comme illustrations.",
   "billingConstraint": "Built-in image_gen only; included quota; no extra credits or paid API",
   "commonStyle": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration.",
   "images": [

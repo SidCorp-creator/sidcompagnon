@@ -3,7 +3,7 @@
   "tool": "OpenAI image_gen",
   "model": "gpt-image-2 (selon doc Codex)",
   "kind": "illustration",
-  "status": "review pending",
+  "status": "Toutes les images sélectionnées validées par Claude V1 ; intégrées comme illustrations.",
   "billingConstraint": "Built-in image_gen only; included quota; no extra credits or paid API",
   "commonStyle": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration.",
   "images": [
@@ -20,7 +20,7 @@
       "originalSha256": "3e885b115f92644b0b7d0071408439053afb2d77a8d06bf1c323ff5e90aa2c40",
       "sha256": "3a4d5d5f94e55ee3c1220350a1b19ced8cd9e89323f33a552167cd0e249b50e7",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-48d8d01e-87a8-4b91-a235-935f263504e7.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "abduction-de-hanche-sur-le-cote-1",
@@ -35,7 +35,7 @@
       "originalSha256": "27a7660248e35fb883359db49ea1203d9d00a23dd285170c6e6af7cc86312c2f",
       "sha256": "9d4d13dff273e750065eee4d3faf2033e4bd79b135610f1e136704c821763b6b",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-43a57c54-63bf-4621-8bea-29bb94bfba67.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "mollets-debout-au-poids-du-corps-0",
@@ -50,7 +50,7 @@
       "originalSha256": "aeaef22e20a75739ee16481a0c87662923af5c612919bdbbe566b55993dbfbf3",
       "sha256": "47bc5a7671a2d719acc2e1c68c817ed99c06d19806dfd61b639bac051ed95a95",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-48d8d01e-87a8-4b91-a235-935f263504e7.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "mollets-debout-au-poids-du-corps-1",
@@ -65,7 +65,7 @@
       "originalSha256": "ea07c8630c05cfea46ca7e247621f69fa1e36ebb9216e8df02126e236e814d78",
       "sha256": "3679704ec368ea4292f46bf1338fde589f4434e9d859d43877a0689359671198",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-186d0555-5ae3-40ee-97d2-b07ed945734d.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "shrugs-halteres-ou-machine-0",
@@ -80,7 +80,7 @@
       "originalSha256": "7d5679c5e72825f6b66acff2510871c87e86dfa14c799281418f5edbcde90b94",
       "sha256": "7137cb97e9d6dec28b7e6e1bf5b0429cd307ea73ca0c033956a364592532ff91",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-48d8d01e-87a8-4b91-a235-935f263504e7.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     },
     {
       "id": "shrugs-halteres-ou-machine-1",
@@ -95,7 +95,7 @@
       "originalSha256": "1b0d3f51367468c1b576de1b2b1878f86bda65e866928b93eaca96f7e70d0642",
       "sha256": "f81df6475893933c735cadcf0b87758fb69823f517c11ba93e832e45fdb56c34",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-d04d9ba3-5369-44e4-a65d-ee8c2c012b09.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     }
   ],
   "calls": 6

@@ -3,7 +3,7 @@
   "tool": "OpenAI image_gen",
   "model": "gpt-image-2 (selon doc Codex)",
   "kind": "illustration",
-  "status": "review pending",
+  "status": "Toutes les images sélectionnées validées par Claude V1 ; intégrées comme illustrations.",
   "billingConstraint": "Built-in image_gen only; included quota; no extra credits or paid API",
   "commonStyle": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration.",
   "images": [
@@ -129,7 +129,7 @@
       "originalSha256": "2cb9c09b631bcc3c5b38290f25776364c5c3d443fd4266221796ca52ca8f1a67",
       "sha256": "1d4be50e531f2b2000c258f9f85f24ad65b9706d9bf35bdcaf1c1b90a853cbdb",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-14b2b249-6ccc-40f4-bc0f-71c2d55aa269.png",
-      "review": "pending Claude V1"
+      "review": "validated Claude V1 2026-11-08"
     }
   ],
   "rejected": [

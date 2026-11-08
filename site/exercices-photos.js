@@ -40,7 +40,24 @@ window.SIDFIT_IMG = {
   "Crunch à la poulie": "cable-crunch",
   "Dead bug": "dead-bug",
   "Hack squat amplitude limitée": "hack-squat-limited-range",
-  "Planche sur les avant-bras": "plank"
+  "Planche sur les avant-bras": "plank",
+  "Pompes au mur": "illustration-pompes-au-mur",
+  "Curl élastique debout": "illustration-curl-elastique-debout",
+  "Pompes sur les genoux": "illustration-pompes-sur-les-genoux",
+  "Rowing élastique assis": "illustration-rowing-elastique-assis",
+  "Extension triceps élastique debout": "illustration-extension-triceps-elastique-debout",
+  "Élévations en W au sol": "illustration-elevations-en-w-au-sol",
+  "Élévations latérales poulie": "illustration-elevations-laterales-poulie",
+  "Élévations latérales machine": "illustration-elevations-laterales-machine",
+  "Hip thrust machine": "illustration-hip-thrust-machine",
+  "Presse à cuisses amplitude limitée": "illustration-presse-a-cuisses-amplitude-limitee",
+  "Dips lestés": "illustration-dips-lestes",
+  "Soulevé de terre roumain haltères": "illustration-souleve-de-terre-roumain-halteres",
+  "Goblet squat": "illustration-goblet-squat",
+  "Charnière de hanches sans charge": "illustration-charniere-de-hanches-sans-charge",
+  "Abduction de hanche sur le côté": "illustration-abduction-de-hanche-sur-le-cote",
+  "Mollets debout au poids du corps": "illustration-mollets-debout-au-poids-du-corps",
+  "Shrugs haltères ou machine": "illustration-shrugs-halteres-ou-machine"
 };
 window.SIDFIT_PHOTO_CREDITS = {
   "Hack squat amplitude limitée": {
@@ -77,5 +94,104 @@ window.SIDFIT_PHOTO_LABELS = {
       "Oblique rear view",
       "Side view"
     ]
+  },
+  "Élévations en W au sol": {
+    "fr": [
+      "Vue de dessus : bras posés",
+      "Vue de côté : bras décollés"
+    ],
+    "en": [
+      "Top view: arms down",
+      "Side view: arms lifted"
+    ]
+  }
+};
+
+// Illustrations originales : affichage distinct des photographies, provenance dans SOURCES.json.
+window.SIDFIT_ILLUS = {
+  "Pompes au mur": {
+    "tool": "OpenAI image_gen",
+    "model": "gpt-image-2 (selon la documentation Codex)",
+    "date": "2026-11-08"
+  },
+  "Curl élastique debout": {
+    "tool": "OpenAI image_gen",
+    "model": "gpt-image-2 (selon la documentation Codex)",
+    "date": "2026-11-08"
+  },
+  "Pompes sur les genoux": {
+    "tool": "OpenAI image_gen",
+    "model": "gpt-image-2 (selon la documentation Codex)",
+    "date": "2026-11-08"
+  },
+  "Rowing élastique assis": {
+    "tool": "OpenAI image_gen",
+    "model": "gpt-image-2 (selon la documentation Codex)",
+    "date": "2026-11-08"
+  },
+  "Extension triceps élastique debout": {
+    "tool": "OpenAI image_gen",
+    "model": "gpt-image-2 (selon la documentation Codex)",
+    "date": "2026-11-08"
+  },
+  "Élévations en W au sol": {
+    "tool": "OpenAI image_gen",
+    "model": "gpt-image-2 (selon la documentation Codex)",
+    "date": "2026-11-08"
+  },
+  "Élévations latérales poulie": {
+    "tool": "OpenAI image_gen",
+    "model": "gpt-image-2 (selon la documentation Codex)",
+    "date": "2026-11-08"
+  },
+  "Élévations latérales machine": {
+    "tool": "OpenAI image_gen",
+    "model": "gpt-image-2 (selon la documentation Codex)",
+    "date": "2026-11-08"
+  },
+  "Hip thrust machine": {
+    "tool": "OpenAI image_gen",
+    "model": "gpt-image-2 (selon la documentation Codex)",
+    "date": "2026-11-08"
+  },
+  "Presse à cuisses amplitude limitée": {
+    "tool": "OpenAI image_gen",
+    "model": "gpt-image-2 (selon la documentation Codex)",
+    "date": "2026-11-08"
+  },
+  "Dips lestés": {
+    "tool": "OpenAI image_gen",
+    "model": "gpt-image-2 (selon la documentation Codex)",
+    "date": "2026-11-08"
+  },
+  "Soulevé de terre roumain haltères": {
+    "tool": "OpenAI image_gen",
+    "model": "gpt-image-2 (selon la documentation Codex)",
+    "date": "2026-11-08"
+  },
+  "Goblet squat": {
+    "tool": "OpenAI image_gen",
+    "model": "gpt-image-2 (selon la documentation Codex)",
+    "date": "2026-11-08"
+  },
+  "Charnière de hanches sans charge": {
+    "tool": "OpenAI image_gen",
+    "model": "gpt-image-2 (selon la documentation Codex)",
+    "date": "2026-11-08"
+  },
+  "Abduction de hanche sur le côté": {
+    "tool": "OpenAI image_gen",
+    "model": "gpt-image-2 (selon la documentation Codex)",
+    "date": "2026-11-08"
+  },
+  "Mollets debout au poids du corps": {
+    "tool": "OpenAI image_gen",
+    "model": "gpt-image-2 (selon la documentation Codex)",
+    "date": "2026-11-08"
+  },
+  "Shrugs haltères ou machine": {
+    "tool": "OpenAI image_gen",
+    "model": "gpt-image-2 (selon la documentation Codex)",
+    "date": "2026-11-08"
   }
 };

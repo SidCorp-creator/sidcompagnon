@@ -99,7 +99,7 @@
           "aliases": [
             "Weighted chest dips"
           ],
-          "help": false,
+          "help": true,
           "en": "Weighted chest dips"
         },
         {
@@ -118,7 +118,7 @@
           "aliases": [
             "Wall push-ups"
           ],
-          "help": false
+          "help": true
         },
         {
           "nom": "Pompes sur les genoux",
@@ -136,7 +136,7 @@
           "aliases": [
             "Knee push-ups"
           ],
-          "help": false
+          "help": true
         },
         {
           "nom": "Pompes au sol",
@@ -336,7 +336,7 @@
           "aliases": [
             "Prone W raises"
           ],
-          "help": false
+          "help": true
         },
         {
           "nom": "Rowing haltères buste penché",
@@ -374,7 +374,7 @@
           "aliases": [
             "Seated resistance-band row"
           ],
-          "help": false
+          "help": true
         }
       ]
     },
@@ -401,7 +401,7 @@
           "aliases": [
             "Dumbbell or machine shrugs"
           ],
-          "help": false,
+          "help": true,
           "en": "Dumbbell or machine shrugs"
         }
       ]
@@ -447,7 +447,7 @@
           "aliases": [
             "Cable lateral raise"
           ],
-          "help": false,
+          "help": true,
           "en": "Cable lateral raise"
         },
         {
@@ -486,7 +486,7 @@
           "aliases": [
             "Machine lateral raise"
           ],
-          "help": false,
+          "help": true,
           "en": "Machine lateral raise"
         },
         {
@@ -687,7 +687,7 @@
           "aliases": [
             "Standing band curl"
           ],
-          "help": false
+          "help": true
         }
       ]
     },
@@ -752,7 +752,7 @@
           "aliases": [
             "Standing band triceps extension"
           ],
-          "help": false
+          "help": true
         }
       ]
     },
@@ -777,7 +777,7 @@
           "aliases": [
             "Limited-range leg press"
           ],
-          "help": false,
+          "help": true,
           "en": "Limited-range leg press"
         },
         {
@@ -855,7 +855,7 @@
           "loadable": true,
           "id": "goblet-squat",
           "aliases": [],
-          "help": false
+          "help": true
         }
       ]
     },
@@ -879,7 +879,7 @@
           "aliases": [
             "Machine hip thrust"
           ],
-          "help": false,
+          "help": true,
           "en": "Machine hip thrust"
         },
         {
@@ -933,7 +933,7 @@
           "aliases": [
             "Side-lying hip abduction"
           ],
-          "help": false
+          "help": true
         }
       ]
     },
@@ -995,7 +995,7 @@
           "aliases": [
             "Unloaded hip hinge"
           ],
-          "help": false
+          "help": true
         },
         {
           "nom": "Soulevé de terre roumain haltères",
@@ -1017,7 +1017,7 @@
           "aliases": [
             "Dumbbell Romanian deadlift"
           ],
-          "help": false
+          "help": true
         }
       ]
     },
@@ -1123,7 +1123,7 @@
           "aliases": [
             "Standing bodyweight calf raise"
           ],
-          "help": false
+          "help": true
         }
       ]
     },

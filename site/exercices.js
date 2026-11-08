@@ -116,7 +116,7 @@ window.SIDFIT_EXERCICES = {
           "aliases": [
             "Weighted chest dips"
           ],
-          "help": false,
+          "help": true,
           "en": "Weighted chest dips"
         },
         {
@@ -135,7 +135,7 @@ window.SIDFIT_EXERCICES = {
           "aliases": [
             "Wall push-ups"
           ],
-          "help": false
+          "help": true
         },
         {
           "nom": "Pompes sur les genoux",
@@ -153,7 +153,7 @@ window.SIDFIT_EXERCICES = {
           "aliases": [
             "Knee push-ups"
           ],
-          "help": false
+          "help": true
         },
         {
           "nom": "Pompes au sol",
@@ -353,7 +353,7 @@ window.SIDFIT_EXERCICES = {
           "aliases": [
             "Prone W raises"
           ],
-          "help": false
+          "help": true
         },
         {
           "nom": "Rowing haltères buste penché",
@@ -391,7 +391,7 @@ window.SIDFIT_EXERCICES = {
           "aliases": [
             "Seated resistance-band row"
           ],
-          "help": false
+          "help": true
         }
       ]
     },
@@ -418,7 +418,7 @@ window.SIDFIT_EXERCICES = {
           "aliases": [
             "Dumbbell or machine shrugs"
           ],
-          "help": false,
+          "help": true,
           "en": "Dumbbell or machine shrugs"
         }
       ]
@@ -464,7 +464,7 @@ window.SIDFIT_EXERCICES = {
           "aliases": [
             "Cable lateral raise"
           ],
-          "help": false,
+          "help": true,
           "en": "Cable lateral raise"
         },
         {
@@ -503,7 +503,7 @@ window.SIDFIT_EXERCICES = {
           "aliases": [
             "Machine lateral raise"
           ],
-          "help": false,
+          "help": true,
           "en": "Machine lateral raise"
         },
         {
@@ -704,7 +704,7 @@ window.SIDFIT_EXERCICES = {
           "aliases": [
             "Standing band curl"
           ],
-          "help": false
+          "help": true
         }
       ]
     },
@@ -769,7 +769,7 @@ window.SIDFIT_EXERCICES = {
           "aliases": [
             "Standing band triceps extension"
           ],
-          "help": false
+          "help": true
         }
       ]
     },
@@ -794,7 +794,7 @@ window.SIDFIT_EXERCICES = {
           "aliases": [
             "Limited-range leg press"
           ],
-          "help": false,
+          "help": true,
           "en": "Limited-range leg press"
         },
         {
@@ -872,7 +872,7 @@ window.SIDFIT_EXERCICES = {
           "loadable": true,
           "id": "goblet-squat",
           "aliases": [],
-          "help": false
+          "help": true
         }
       ]
     },
@@ -896,7 +896,7 @@ window.SIDFIT_EXERCICES = {
           "aliases": [
             "Machine hip thrust"
           ],
-          "help": false,
+          "help": true,
           "en": "Machine hip thrust"
         },
         {
@@ -950,7 +950,7 @@ window.SIDFIT_EXERCICES = {
           "aliases": [
             "Side-lying hip abduction"
           ],
-          "help": false
+          "help": true
         }
       ]
     },
@@ -1012,7 +1012,7 @@ window.SIDFIT_EXERCICES = {
           "aliases": [
             "Unloaded hip hinge"
           ],
-          "help": false
+          "help": true
         },
         {
           "nom": "Soulevé de terre roumain haltères",
@@ -1034,7 +1034,7 @@ window.SIDFIT_EXERCICES = {
           "aliases": [
             "Dumbbell Romanian deadlift"
           ],
-          "help": false
+          "help": true
         }
       ]
     },
@@ -1140,7 +1140,7 @@ window.SIDFIT_EXERCICES = {
           "aliases": [
             "Standing bodyweight calf raise"
           ],
-          "help": false
+          "help": true
         }
       ]
     },

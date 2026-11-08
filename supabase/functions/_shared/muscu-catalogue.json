@@ -1,0 +1,861 @@
+{
+  "version": 2,
+  "groupes": [
+    {
+      "muscle": "chest",
+      "nom": "Pectoraux",
+      "exercices": [
+        {
+          "nom": "Développé couché haltères",
+          "schema": "hpress",
+          "type": "C",
+          "materiel": "gd",
+          "zones": "s",
+          "needs": [
+            [
+              "dumbbells",
+              "bench"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Chest press machine",
+          "schema": "hpress",
+          "type": "C",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "machines"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Développé incliné à la Smith",
+          "schema": "ipress",
+          "type": "C",
+          "materiel": "g",
+          "zones": "s",
+          "needs": [
+            [
+              "machines",
+              "bench"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Pec deck",
+          "schema": "fly",
+          "type": "I",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "machines"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Dips lestés",
+          "schema": "low",
+          "type": "C",
+          "materiel": "gb",
+          "zones": "s",
+          "needs": [
+            [
+              "dipstation"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Pompes au mur",
+          "en": "Wall push-ups",
+          "schema": "hpress",
+          "type": "L",
+          "materiel": "b",
+          "zones": "s",
+          "needs": [
+            []
+          ],
+          "loadable": false
+        },
+        {
+          "nom": "Pompes sur les genoux",
+          "en": "Knee push-ups",
+          "schema": "hpress",
+          "type": "L",
+          "materiel": "b",
+          "zones": "s",
+          "needs": [
+            []
+          ],
+          "loadable": false
+        },
+        {
+          "nom": "Pompes au sol",
+          "en": "Push-ups",
+          "schema": "hpress",
+          "type": "L",
+          "materiel": "b",
+          "zones": "s",
+          "needs": [
+            []
+          ],
+          "loadable": false
+        }
+      ]
+    },
+    {
+      "muscle": "back",
+      "nom": "Dos (tirage vertical)",
+      "exercices": [
+        {
+          "nom": "Tractions pronation lestées",
+          "schema": "vpull",
+          "type": "C",
+          "materiel": "gb",
+          "zones": "s",
+          "needs": [
+            [
+              "pullup"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Tractions prise neutre",
+          "schema": "vpull",
+          "type": "C",
+          "materiel": "gb",
+          "zones": "",
+          "needs": [
+            [
+              "pullup"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Tractions prise large",
+          "schema": "vpull",
+          "type": "C",
+          "materiel": "gb",
+          "zones": "s",
+          "needs": [
+            [
+              "pullup"
+            ]
+          ],
+          "loadable": true
+        }
+      ]
+    },
+    {
+      "muscle": "back",
+      "nom": "Dos (autres)",
+      "exercices": [
+        {
+          "nom": "Pull-over à la poulie",
+          "schema": "pullover",
+          "type": "I",
+          "materiel": "g",
+          "zones": "s",
+          "needs": [
+            [
+              "cables"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Rowing avec appui",
+          "schema": "hrow",
+          "type": "C",
+          "materiel": "gd",
+          "zones": "",
+          "needs": [
+            [
+              "dumbbells",
+              "bench"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Tirage poulie basse assis",
+          "schema": "hrow",
+          "type": "C",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "cables"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Rowing machine convergente",
+          "schema": "hrow",
+          "type": "C",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "machines"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "T-bar avec appui poitrine",
+          "schema": "hrow",
+          "type": "C",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "machines"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Élévations en W au sol",
+          "en": "Prone W raises",
+          "schema": "hrow",
+          "type": "L",
+          "materiel": "b",
+          "zones": "bs",
+          "needs": [
+            []
+          ],
+          "loadable": false
+        },
+        {
+          "nom": "Rowing haltères buste penché",
+          "en": "Bent-over dumbbell row",
+          "schema": "hrow",
+          "type": "C",
+          "materiel": "gd",
+          "zones": "bs",
+          "needs": [
+            [
+              "dumbbells"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Rowing élastique assis",
+          "en": "Seated resistance-band row",
+          "schema": "hrow",
+          "type": "L",
+          "materiel": "gd",
+          "zones": "b",
+          "needs": [
+            [
+              "bands"
+            ]
+          ],
+          "loadable": true
+        }
+      ]
+    },
+    {
+      "muscle": "traps",
+      "nom": "Trapèzes",
+      "exercices": [
+        {
+          "nom": "Shrugs haltères ou machine",
+          "schema": "shrug",
+          "type": "I",
+          "materiel": "gd",
+          "zones": "",
+          "needs": [
+            [
+              "dumbbells"
+            ],
+            [
+              "machines"
+            ]
+          ],
+          "loadable": true
+        }
+      ]
+    },
+    {
+      "muscle": "shoulders",
+      "nom": "Épaules",
+      "exercices": [
+        {
+          "nom": "Shoulder press à la Smith",
+          "schema": "ohp",
+          "type": "C",
+          "materiel": "g",
+          "zones": "s",
+          "needs": [
+            [
+              "machines",
+              "bench"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Élévations latérales poulie",
+          "p": true,
+          "schema": "lat",
+          "type": "I",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "cables"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Élévations latérales haltères",
+          "p": true,
+          "schema": "lat",
+          "type": "I",
+          "materiel": "gd",
+          "zones": "",
+          "needs": [
+            [
+              "dumbbells"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Élévations latérales machine",
+          "schema": "lat",
+          "type": "I",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "machines"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Face pull",
+          "p": true,
+          "schema": "rear",
+          "type": "I",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "cables"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Reverse pec deck",
+          "schema": "rear",
+          "type": "I",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "machines"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Oiseau à la poulie",
+          "schema": "rear",
+          "type": "I",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "cables"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Écartés élastique devant soi",
+          "en": "Band pull-aparts",
+          "schema": "rear",
+          "type": "L",
+          "materiel": "gd",
+          "zones": "s",
+          "needs": [
+            [
+              "bands"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Développé épaules haltères debout",
+          "en": "Standing dumbbell shoulder press",
+          "schema": "ohp",
+          "type": "C",
+          "materiel": "gd",
+          "zones": "bs",
+          "needs": [
+            [
+              "dumbbells"
+            ]
+          ],
+          "loadable": true
+        }
+      ]
+    },
+    {
+      "muscle": "biceps",
+      "nom": "Biceps",
+      "exercices": [
+        {
+          "nom": "Curl barre EZ",
+          "p": true,
+          "schema": "curl",
+          "type": "I",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "barbell"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Curl incliné haltères",
+          "p": true,
+          "schema": "stretch",
+          "type": "I",
+          "materiel": "gd",
+          "zones": "s",
+          "needs": [
+            [
+              "dumbbells",
+              "bench"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Curl marteau",
+          "schema": "hammer",
+          "type": "I",
+          "materiel": "gd",
+          "zones": "",
+          "needs": [
+            [
+              "dumbbells"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Curl poulie",
+          "schema": "curl",
+          "type": "I",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "cables"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Curl élastique debout",
+          "en": "Standing band curl",
+          "schema": "curl",
+          "type": "I",
+          "materiel": "gd",
+          "zones": "",
+          "needs": [
+            [
+              "bands"
+            ]
+          ],
+          "loadable": true
+        }
+      ]
+    },
+    {
+      "muscle": "triceps",
+      "nom": "Triceps",
+      "exercices": [
+        {
+          "nom": "Extension au-dessus de la tête à la poulie",
+          "p": true,
+          "schema": "oh",
+          "type": "I",
+          "materiel": "g",
+          "zones": "s",
+          "needs": [
+            [
+              "cables"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Extension poulie haute à la corde",
+          "p": true,
+          "schema": "push",
+          "type": "I",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "cables"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Extension triceps élastique debout",
+          "en": "Standing band triceps extension",
+          "schema": "push",
+          "type": "I",
+          "materiel": "gd",
+          "zones": "s",
+          "needs": [
+            [
+              "bands"
+            ]
+          ],
+          "loadable": true
+        }
+      ]
+    },
+    {
+      "muscle": "quads",
+      "nom": "Quadriceps",
+      "exercices": [
+        {
+          "nom": "Presse à cuisses amplitude limitée",
+          "p": true,
+          "schema": "squat",
+          "type": "C",
+          "materiel": "g",
+          "zones": "k",
+          "needs": [
+            [
+              "machines"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Leg extension charge modérée",
+          "p": true,
+          "schema": "iso",
+          "type": "I",
+          "materiel": "g",
+          "zones": "k",
+          "needs": [
+            [
+              "machines"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Hack squat amplitude limitée",
+          "schema": "squat",
+          "type": "C",
+          "materiel": "g",
+          "zones": "k",
+          "note": "Seulement si sans douleur",
+          "needs": [
+            [
+              "machines"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Squat au poids du corps",
+          "en": "Bodyweight squat",
+          "schema": "squat",
+          "type": "L",
+          "materiel": "b",
+          "zones": "k",
+          "needs": [
+            []
+          ],
+          "loadable": false
+        },
+        {
+          "nom": "Goblet squat",
+          "en": "Goblet squat",
+          "schema": "squat",
+          "type": "C",
+          "materiel": "gd",
+          "zones": "bk",
+          "needs": [
+            [
+              "dumbbells"
+            ],
+            [
+              "kettlebell"
+            ]
+          ],
+          "loadable": true
+        }
+      ]
+    },
+    {
+      "muscle": "glutes",
+      "nom": "Fessiers",
+      "exercices": [
+        {
+          "nom": "Hip thrust machine",
+          "schema": "thrust",
+          "type": "C",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "machines"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Abduction hanche machine",
+          "schema": "abd",
+          "type": "I",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "machines"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Pont fessier au sol",
+          "en": "Glute bridge",
+          "schema": "thrust",
+          "type": "L",
+          "materiel": "b",
+          "zones": "k",
+          "needs": [
+            []
+          ],
+          "loadable": false
+        },
+        {
+          "nom": "Abduction de hanche sur le côté",
+          "en": "Side-lying hip abduction",
+          "schema": "abd",
+          "type": "I",
+          "materiel": "b",
+          "zones": "",
+          "needs": [
+            []
+          ],
+          "loadable": false
+        }
+      ]
+    },
+    {
+      "muscle": "hams",
+      "nom": "Ischios",
+      "exercices": [
+        {
+          "nom": "Leg curl assis",
+          "p": true,
+          "schema": "curl",
+          "type": "I",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "machines"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Leg curl allongé",
+          "schema": "curl",
+          "type": "I",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "machines"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Charnière de hanches sans charge",
+          "en": "Unloaded hip hinge",
+          "schema": "hinge",
+          "type": "L",
+          "materiel": "b",
+          "zones": "b",
+          "needs": [
+            []
+          ],
+          "loadable": false
+        },
+        {
+          "nom": "Soulevé de terre roumain haltères",
+          "en": "Dumbbell Romanian deadlift",
+          "schema": "hinge",
+          "type": "C",
+          "materiel": "gd",
+          "zones": "b",
+          "needs": [
+            [
+              "dumbbells"
+            ],
+            [
+              "kettlebell"
+            ]
+          ],
+          "loadable": true
+        }
+      ]
+    },
+    {
+      "muscle": "adductors",
+      "nom": "Adducteurs",
+      "exercices": [
+        {
+          "nom": "Adduction machine",
+          "schema": "add",
+          "type": "I",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "machines"
+            ]
+          ],
+          "loadable": true
+        }
+      ]
+    },
+    {
+      "muscle": "calves",
+      "nom": "Mollets",
+      "exercices": [
+        {
+          "nom": "Mollets assis",
+          "p": true,
+          "schema": "seated",
+          "type": "I",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "machines"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Mollets debout machine",
+          "schema": "calf",
+          "type": "I",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "machines"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Mollets à la presse",
+          "schema": "calf",
+          "type": "I",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "machines"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Mollets debout au poids du corps",
+          "en": "Standing bodyweight calf raise",
+          "schema": "calf",
+          "type": "I",
+          "materiel": "b",
+          "zones": "",
+          "needs": [
+            []
+          ],
+          "loadable": false
+        }
+      ]
+    },
+    {
+      "muscle": "abs",
+      "nom": "Abdos",
+      "exercices": [
+        {
+          "nom": "Crunch à la poulie",
+          "p": true,
+          "schema": "flex",
+          "type": "I",
+          "materiel": "g",
+          "zones": "",
+          "needs": [
+            [
+              "cables"
+            ]
+          ],
+          "loadable": true
+        },
+        {
+          "nom": "Dead bug",
+          "en": "Dead bug",
+          "schema": "brace",
+          "type": "L",
+          "materiel": "b",
+          "zones": "",
+          "needs": [
+            []
+          ],
+          "loadable": false
+        },
+        {
+          "nom": "Planche sur les avant-bras",
+          "en": "Forearm plank",
+          "schema": "brace",
+          "type": "L",
+          "materiel": "b",
+          "zones": "s",
+          "needs": [
+            []
+          ],
+          "loadable": false
+        }
+      ]
+    }
+  ]
+}

@@ -154,3 +154,4 @@ Skills retenus : `sid-charte` (M3, M4 : charte), `sid-relais` (tous : relais com
 - Répartition : Codex P1 (générateur PDF pur `29b`) + S1 (actions serveur `edit_note`, `share_note_pdf`, garde « note jointe et complète ») ; Claude C1 (client, aperçu avant/après, garde id+version+compte, annulation, export éditeur/menu/Sid'Bot, messages au-dessus des fenêtres) + intégration ; revues croisées (Codex : 2 remarques corrigées ; Claude : nom dans le PDF).
 - Vérifié : tests ciblés (PDF relu par pdf.js, actions serveur, client FR mobile / EN ordinateur, clavier et focus), Élan 15/15 ; vrais appels Groq (code serveur, connexion/compteur simulés) : correction d'orthographe proposée, export PDF proposé, sans note jointe aucune action.
 - À la publication : pousser sur `main` **et** redéployer `sidbot` (actions note).
+- 8 nov. : Sid décide de **garder** l'ancien connecteur Claude (fonction `mcp`) actif.

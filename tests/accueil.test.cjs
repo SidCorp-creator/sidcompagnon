@@ -41,6 +41,10 @@ const OUT=path.resolve(__dirname,'out');fs.mkdirSync(OUT,{recursive:true});
   assert.ok(await p.locator('.hc').count()>=1,'préférence détaillée gardée');
   assert.match(await p.locator('.hc-name').first().innerText(),/^Sid'/);
   await p.locator('#homeViewSw').focus();await p.keyboard.press('Enter');await p.waitForTimeout(150);assert.equal(await p.locator('.hs-app').count(),3);
+  // aller-retour sans rechargement (revue Codex) : détail → simple → détail → simple
+  for(const want of ['detail','simple','detail','simple']){await p.evaluate(v=>setHomeView(v),want);
+    if(want==='detail'){assert.ok(await p.locator('.hc').count()>=1,'détail après bascule');assert.equal(await p.locator('.hs-app').count(),0)}
+    else{assert.equal(await p.locator('.hs-app').count(),3);assert.equal(await p.locator('.hc').count(),0)}}
   // ancien compte sans préférence : vue simple
   await p.evaluate(()=>{delete data.prefs.homeView;renderHome()});assert.equal(await p.locator('.hs-app').count(),3);
   await c.close();console.log('OK accueil',tag)}

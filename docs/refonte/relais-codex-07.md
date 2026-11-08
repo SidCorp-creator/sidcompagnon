@@ -19,11 +19,17 @@ Pour Groq : avant activation réelle, vérifier compte Free sans paiement, accè
 - `npm run build` : OK (génère site/app.js et site/react ; laisser l'intégrateur régénérer après fusion).
 - `node tests/nutrition-units.test.cjs` : OK (pièces propres aux aliments, métadonnées, grammes/kg, unité inconnue refusée, sauvegarde/copie, confirmation Sid'Bot et date passée).
 - `node tests/weight-gap.test.cjs` : OK (React/secours, coordonnées calendaires, infobulles sans valeurs fictives, 0/1/n).
-- `node tests/sidbot.test.cjs` : OK (auth, contextes, secrets, actions, quotas, erreurs, photo et tailles, aucune bascule payante).
+- `node tests/sidbot-serveur.test.cjs` : OK (auth, contextes, secrets, actions, quotas, erreurs, photo et tailles, aucune bascule payante).
 - `PGLITE_MODULE=/tmp/v76-pg/node_modules/@electric-sql/pglite node tests/sidbot-sql.test.cjs` : OK (PostgreSQL/WASM isolé 0.5.15, SQL exécuté réellement, rôles, cadence/quota). Ce n'est pas un déploiement Supabase.
 - `tests/v76-forme.test.cjs` avec serveur isolé 8876/8890 : OK FR et EN, React et secours, iPhone 390 px, mouvement réduit, absence d'erreur JS et débordement après parcours. Captures : `docs/refonte/apres/v76-poids-{fr,en}-{react,secours}.png`.
-- Mémoire alimentaire existante : 6 tests OK. Chiffrement/fusion/rappels/shell : résultats à compléter ci-dessous si nécessaire.
+- Mémoire alimentaire existante : 6 tests OK. Chiffrement : OK ; fusion : 5 000 cas OK ; rappels : 7 tests OK ; correspondance shell généré : OK.
 
 ## Revue demandée
 
 Vérifier saisie nutrition, repas restauré, masses distinctes, interface + contexte Sid'Bot, absence de secret/client et filtrage actions. Les essais fournisseur/clé réelle et déploiement restent explicitement à faire après configuration. Intégration globale et smoke final sous responsabilité Claude. Aucun compteur fiable de tokens de développement exposé ; aucun pourcentage d'économie inventé.
+
+## Revue croisée remise à Claude
+
+- E2 : historique client pouvant dépasser 24 000 caractères ; réponse potentiellement enregistrée dans le mauvais compte après un changement de session ; sélection de note conservée entre deux notes ; délai client trop court face aux délais serveur cumulés. Correctifs demandés dans le panneau Claude, sans modification de ses fichiers.
+- F : défaut **reproduit réellement** sur son aperçu React : détaillé → simple → détaillé laisse 3 `.hs-app` et 0 `.hc`. La racine React doit être démontée avant le rendu simple par innerHTML. Test de répétition sans rechargement demandé.
+- A/B : comparaison des littéraux de clés `ls`/`localStorage` dans les fichiers modifiés par rapport à 02b2806 : aucune ancienne clé retirée. C'est un contrôle ciblé, pas une preuve exhaustive de toute migration de données.

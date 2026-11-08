@@ -185,13 +185,11 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
     for(const v of ["plan","todo","notes","pwd","more"]){await go(v);await pg.waitForTimeout(250);await shot(pg,`${scheme}-en-${v}`)}
     await home();await shot(pg,scheme+"-en-home");
-    // v31 : néerlandais
-    await go("more");if(!(await pg.isVisible("#langSel")))await pg.click('[data-sec="look"] summary');await pg.selectOption("#langSel","nl");await pg.waitForTimeout(1500);
+    // v76 : le néerlandais est retiré ; une ancienne préférence « nl » revient au français
+    if(await pg.locator('#langSel option[value="nl"]').count())err("le néerlandais est encore proposé");
+    await pg.evaluate(()=>{data.prefs.lang="nl";localStorage.setItem("sidnote-lang",JSON.stringify("nl"));save()});await pg.waitForTimeout(1200);await pg.reload();await pg.waitForTimeout(1500);
     if(await pg.isVisible("#notifAsk"))await pg.click("#naNo");
-    if(await pg.evaluate(()=>document.documentElement.lang)!=="nl")err("le néerlandais ne s'active pas");
-    for(const v of ["plan","todo","notes","pwd","more"]){await go(v);await pg.waitForTimeout(250);await shot(pg,`${scheme}-nl-${v}`)}
-    const nlLeft=await pg.evaluate(()=>{show("todo");return document.querySelector("#v-todo h1").textContent});if(nlLeft.trim()==="Tâches")err("titres non traduits en néerlandais");
-    await home();await shot(pg,scheme+"-nl-home");
+    if(await pg.evaluate(()=>document.documentElement.lang||LANG)!=="fr"&&await pg.evaluate(()=>LANG)!=="fr")err("une préférence nl ne revient pas au français");
     await ctx.close();
   }
   // --- ordinateur (écran large) : barre latérale et rendu épuré

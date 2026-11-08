@@ -52,6 +52,6 @@ POST authentifié : `{app:"journee"|"forme"|"note",locale:"fr"|"en",messages:[{r
 
 Actions : `add_task`, `add_note`, `log_meal` selon l'app. Repas : `{date,time?,name,items:[{name,qty,kcal,p,c,f,g?,unit_g?,unit_label?}]}` ; nutriments = totaux pour qty, g = masse comestible totale, unit_g = masse par pièce, unit_label = calibre/référence estimative. Date passée préservée. Aucun appel d'écriture dans Edge.
 
-Tests réels exécutés : `tests/sidbot.test.cjs` (transport simulé), `tests/sidbot-sql.test.cjs` avec PostgreSQL/WASM PGlite 0.5.15 installé séparément en /tmp (installation SQL, limite, cadence, accès refusé aux rôles public). Vérification syntaxique TypeScript du cœur. Ces essais ne valident ni déploiement Supabase distant, ni acceptation d'une clé réelle, ni qualité d'un modèle.
+Tests réels exécutés : `tests/sidbot-serveur.test.cjs` (transport simulé), `tests/sidbot-sql.test.cjs` avec PostgreSQL/WASM PGlite 0.5.15 installé séparément en /tmp (installation SQL, limite, cadence, accès refusé aux rôles public). Vérification syntaxique TypeScript du cœur. Ces essais ne valident ni déploiement Supabase distant, ni acceptation d'une clé réelle, ni qualité d'un modèle.
 
 Développement : skills smux, Supabase et bonnes pratiques Postgres lus ; exploration ciblée, tests indépendants, aucun sous-agent. Pas de compteur fiable de tokens de développement exposé, donc aucune économie chiffrée revendiquée. Tokens Sid'Bot distincts : contexte/historique bornés et réponse plafonnée à 1 800 tokens.

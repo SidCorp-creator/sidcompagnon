@@ -255,7 +255,7 @@ function scaleQty(x,q){const k=nuQtyRatio(x,q);if(!(k>0)){if(q)toast(T3("Unité 
   x.qty=q;Object.assign(x,nuQtyMeta(x));
   x.kcal=r0(x.kcal*k);x.p=r1(x.p*k);x.c=r1(x.c*k);x.f=r1(x.f*k);return true}
 function qtyCommit(key){const inp=$("qtyEdIn");if(!inp){qtyEd=null;return}const q=inp.value.trim(),[kind,id]=key.split(":");qtyEd=null;
-  if(kind==="log"){const x=NU().log.find(e=>e.id===id);if(x&&q!==x.qty){scaleQty(x,q);x.upd=Date.now();save();toast("Quantité mise à jour")}renderNutri()}
+  if(kind==="log"){const x=NU().log.find(e=>e.id===id);if(x&&q!==x.qty&&scaleQty(x,q)){x.upd=Date.now();save();toast("Quantité mise à jour")}renderNutri()}
   else if(nuPending){const x=nuPending.items[+id];if(x&&q!==x.qty)scaleQty(x,q);renderNuResult()}}
 ["nuLog","nuResult"].forEach(id=>{$(id).addEventListener("click",e=>{const b=e.target.closest("[data-qed],[data-qok]");if(!b)return;e.preventDefault();e.stopPropagation();
     if(b.dataset.qok){qtyCommit(b.dataset.qok);return}if(qtyEd)qtyCommit(qtyEd);qtyEd=b.dataset.qed;if(id==="nuLog")renderNutri();else{renderNuResult();const i=$("qtyEdIn");if(i){i.focus();i.select()}}},true);

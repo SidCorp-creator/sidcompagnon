@@ -33,6 +33,13 @@ const OUT=path.resolve(__dirname,'out');fs.mkdirSync(OUT,{recursive:true});const
   await p.keyboard.press('Escape');assert.equal(await p.isVisible('#exHelpSheet'),false);
   assert.equal(await p.evaluate(()=>document.activeElement&&document.activeElement.hasAttribute('data-exhelp')),true,'focus revenu sur « ? »');
   assert.equal(await p.evaluate(()=>JSON.stringify([M().sessions.find(s=>s.id==='s1').exercises[0].sets,typeof msRunGet==='function'?msRunGet('s1'):null])),before,'séries et minuteur intacts');
+  // v80 : une fiche illustrée est étiquetée « Illustration » (jamais présentée comme une photo)
+  const ill=await p.evaluate(()=>Object.keys(window.SIDFIT_ILLUS||{})[0]);
+  if(ill){await p.evaluate(k=>exHelpOpen(k,null),ill);await p.waitForTimeout(600);
+    assert.equal(await p.locator('#exHelpBody .exh-badge').count(),2,'étiquette sur les 2 images');
+    assert.ok((await p.locator('#exHelpBody img').first().getAttribute('alt')).startsWith('Illustration'),'alt « Illustration »');
+    const cr=await p.locator('#exhSrc').textContent();assert.match(cr,lang==='fr'?/ce ne sont pas des photos/:/not photos/);assert.doesNotMatch(cr,/Free Exercise DB/);
+    await p.screenshot({path:path.join(OUT,`exh-${lang}-illustration.png`)});await p.keyboard.press('Escape')}
   // association explicite d'un exercice non reconnu
   await e2.locator('[data-exlink]').click();await p.waitForSelector('#actSheet:not([hidden])');await p.locator('#actList [data-act]').first().click();await p.waitForTimeout(200);
   assert.ok(await p.evaluate(()=>!!M().sessions.find(s=>s.id==='s1').exercises[1].ref),'association enregistrée');

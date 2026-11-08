@@ -22,3 +22,8 @@ Format : exercice · image · décision · correction demandée. « VALIDÉ » =
 - Élévations latérales poulie · 0 et 1 · VALIDÉ.
 - Presse à cuisses amplitude limitée · 0 et 1 (= `-1-v3`) · VALIDÉ.
 - Hip thrust machine · 0 · VALIDÉ. · 1 · **REFUSÉ** : extension de hanche incomplète. Demandé : hanches montées jusqu'à une ligne épaules–hanches–genoux horizontale, tibias verticaux, boudin/ceinture visible sur les hanches, menton rentré.
+
+## Corrections (736c7e4)
+- Hip thrust machine · 1-v2 · VALIDÉ.
+- Pompes sur les genoux · 0-v2 · VALIDÉ (paire = 0-v2 + 1).
+- Élévations en W au sol · 0-v2 · VALIDÉ (vue de dessus, W correct). · 1-v2 · **REFUSÉ** : quasi identique à 0, la levée ne se voit pas de dessus. Demandé : **vue de côté**, même personnage, front sur la serviette, bras pliés en W décollés de quelques cm du sol, omoplates serrées, nuque longue. Libellés de vue à prévoir dans `SIDFIT_PHOTO_LABELS` : FR « Vue de dessus : bras posés » / « Vue de côté : bras décollés », EN « Top view: arms down » / « Side view: arms lifted ».

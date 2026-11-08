@@ -27,3 +27,9 @@ Format : exercice · image · décision · correction demandée. « VALIDÉ » =
 - Hip thrust machine · 1-v2 · VALIDÉ.
 - Pompes sur les genoux · 0-v2 · VALIDÉ (paire = 0-v2 + 1).
 - Élévations en W au sol · 0-v2 · VALIDÉ (vue de dessus, W correct). · 1-v2 · **REFUSÉ** : quasi identique à 0, la levée ne se voit pas de dessus. Demandé : **vue de côté**, même personnage, front sur la serviette, bras pliés en W décollés de quelques cm du sol, omoplates serrées, nuque longue. Libellés de vue à prévoir dans `SIDFIT_PHOTO_LABELS` : FR « Vue de dessus : bras posés » / « Vue de côté : bras décollés », EN « Top view: arms down » / « Side view: arms lifted ».
+
+## Lot 3 (17f4a14)
+- Charnière de hanches sans charge · 0 et 1 · VALIDÉ.
+- Dips lestés · 0 et 1 · VALIDÉ (ceinture, chaîne, disque visibles).
+- Goblet squat · 0 et 1 · VALIDÉ (haltère vertical).
+- Soulevé de terre roumain haltères · 0 · VALIDÉ. · 1 · **REFUSÉ** : tête relevée, nuque en extension. Demandé : même posture (hanches en arrière, dos plat, genoux légèrement fléchis, haltères près des jambes à mi-tibia) avec **nuque neutre**, regard vers le sol environ 1 m devant les pieds.

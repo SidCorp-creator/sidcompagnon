@@ -2306,7 +2306,7 @@ function seCard(se,letter){const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0
     <div class="ms-body">
       <label class="small muted" style="display:grid;gap:4px">${L("Nom de la séance")}<input data-f="msname" value="${esc(se.name)}" autocomplete="off"></label>
       ${se.exercises.map((ex,i)=>`<div class="ex ex3" data-ex="${ex.id}">
-        <div class="ex-head"><span class="num">${i+1}</span><span class="ex-nm"><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><span class="ex-n notr" aria-hidden="true">${esc(ex.name)}</span></span><button type="button" class="mini ex-help" data-exhelp="1" aria-label="${L("Voir comment effectuer cet exercice")}" title="${L("Voir comment effectuer cet exercice")}"${exHelpReady(ex.name,ex.ref)?"":" hidden"}>${IC("help")}</button><button type="button" class="linkbtn ex-link small" data-exlink="1"${ex.name&&String(ex.name).trim()&&!exHelpReady(ex.name,ex.ref)?"":" hidden"}>${L("Pas de fiche · associer")}</button><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">${IC("close")}</button></div>
+        <div class="ex-head"><span class="num">${i+1}</span><span class="ex-nm"><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><span class="ex-n notr" aria-hidden="true">${esc(ex.name)}</span></span><button type="button" class="mini ex-help" data-exhelp="1" aria-label="${L("Voir comment effectuer cet exercice")}" title="${L("Voir comment effectuer cet exercice")}"${exHelpReady(ex.name,ex.ref)?"":" hidden"}>${IC("help")}</button><button type="button" class="linkbtn ex-link small" data-exlink="1"${ex.name&&String(ex.name).trim()&&!exHelpKey(ex.name,ex.ref)?"":" hidden"}>${L("Pas de fiche · associer")}</button><span class="small muted ex-prep"${exHelpKey(ex.name,ex.ref)&&!exHelpReady(ex.name,ex.ref)?"":" hidden"}>${L("Fiche en préparation")}</span><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">${IC("close")}</button></div>
         ${exAdvHtml(ex)}${exPrmHtml(ex)}${(p=>p?`<div class="ex-pro small">${IC("arrowup")} ${esc(p)}</div>`:"")(exProg(ex))}
         <div class="set-rows">${ex.sets.map((st,j)=>`<div class="set-row" data-si="${j}" data-set-state="${muSetState(ex,j,se)}"><span class="set-l"><span class="set-mark" ${muSetComplete(st)?"":"hidden"}>${IC("tick")}</span>${L("Série")} ${j+1}</span>
           <span class="set-field"><input class="set-in" data-f="setkg" value="${esc(exKg(st&&st.kg))}" placeholder="" aria-label="${L("Série")} ${j+1} : kg" autocomplete="off" inputmode="decimal"><span class="set-unit">kg</span></span>
@@ -2342,7 +2342,7 @@ function msIsland(groups,free){msLast=[groups,free];
   const seVM=(se,letter)=>{const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0),ty=seType(se),T=ty&&SE_T[ty];
     return{id:se.id,name:se.name||"",shown:String(se.name||"").replace(/^(?:Séance|Session|Training)\s+[A-F]\s*·\s*/i,"")||L("Séance"),letter:letter||"",ty:ty||"",tag:T?T[0]:"",open:se.id===msOpenId,
       sub:seSub(se,nS),done:msDoneToday(se),
-      ex:se.exercises.map(ex=>{const a=exAdv(ex.name);return{id:ex.id,name:ex.name||"",help:exHelpReady(ex.name,ex.ref),link:!!(ex.name&&String(ex.name).trim())&&!exHelpReady(ex.name,ex.ref),
+      ex:se.exercises.map(ex=>{const a=exAdv(ex.name);return{id:ex.id,name:ex.name||"",help:exHelpReady(ex.name,ex.ref),link:!!(ex.name&&String(ex.name).trim())&&!exHelpKey(ex.name,ex.ref),prep:!!exHelpKey(ex.name,ex.ref)&&!exHelpReady(ex.name,ex.ref),
         adv:a?{txt:`${L("Conseillé")} (${L(MU_GOALS[muGoal()])}) : `,val:exAdvVal(a),same:exAdvSame(ex,a)}:null,
         prm:{reps:ex.reps||"",rest:+ex.rest?String(+ex.rest):"",int:ex.int||"",rpe:ex.rpe||"",tempo:ex.tempo||"",sum:exPrmSum(ex),open:msPrmOpen.has(ex.id)},pro:exProg(ex),
         sets:ex.sets.map((st,j)=>({kg:exKg(st&&st.kg),reps:String((st&&st.reps)||""),state:muSetState(ex,j,se)}))}})}};
@@ -2365,7 +2365,7 @@ $("msList").addEventListener("input",e=>{
   if(f==="msname"){se.name=inp.value;if(!msRedraw()){const n=inp.closest("[data-ms]").querySelector(".ms-name");if(n)n.textContent=inp.value||L("Séance")}}
   else{const ex=se.exercises.find(x=>x.id===inp.closest("[data-ex]").dataset.ex);if(!ex)return;
     if(f==="exname"){ex.name=inp.value;const sp=inp.parentElement.querySelector(".ex-n");if(sp)sp.textContent=inp.value; // v74.5 : nom complet affiché sur plusieurs lignes
-      if(msRedraw()){msSaveSoon(se);return}const hd=inp.closest(".ex-head"),h=hd.querySelector("[data-exhelp]"),lk=hd.querySelector("[data-exlink]"),ok=exHelpReady(ex.name,ex.ref);if(h)h.hidden=!ok;if(lk)lk.hidden=ok||!String(ex.name||"").trim();
+      if(msRedraw()){msSaveSoon(se);return}const hd=inp.closest(".ex-head"),h=hd.querySelector("[data-exhelp]"),lk=hd.querySelector("[data-exlink]"),pr=hd.querySelector(".ex-prep"),ok=exHelpReady(ex.name,ex.ref),kn=!!exHelpKey(ex.name,ex.ref);if(h)h.hidden=!ok;if(lk)lk.hidden=kn||!String(ex.name||"").trim();if(pr)pr.hidden=!(kn&&!ok);
       const av=inp.closest("[data-ex]").querySelector(".ex-adv");if(av)av.outerHTML=exAdvHtml(ex)}
     else if(/^x(reps|rest|int|rpe|tempo)$/.test(f)){const k=f.slice(1); // v73 : réglages propres à l'exercice
       if(k==="rest"){const v=parseInt(inp.value.replace(/[^0-9]/g,""));if(v)ex.rest=Math.min(900,v);else delete ex.rest}else{const v=inp.value.slice(0,16).trim();if(v)ex[k]=v;else delete ex[k]}
@@ -2386,7 +2386,6 @@ function exAide(name,ref){const e=exHelpKey(name,ref);if(!e)return null;const A=
   return {name:e.nom,e,f:exAideNorm(a[LANG]||a.fr)}}
 // fiche complète = conseils + deux photos déclarées ; sinon pas de bouton « ? » (jamais une fiche vide)
 function exHelpReady(name,ref){const a=exAide(name,ref);return !!(a&&a.e.help!==false&&(window.SIDFIT_IMG||{})[a.name])}
-let exSrc=null;function exSources(){if(!exSrc)exSrc=fetch("exercices/SOURCES.json").then(r=>r.ok?r.json():{}).catch(()=>({}));return exSrc}
 function exHelpOpen(name,ref){const a=exAide(name,ref);if(!a||!exHelpReady(name,ref))return;const f=a.f,im=(window.SIDFIT_IMG||{})[a.name];
   $("exHelpTitle").textContent=L(a.name);
   const alt=i=>`${L(a.name)} : ${L(i?"position d'arrivée":"position de départ")}`;
@@ -2401,7 +2400,9 @@ function exHelpOpen(name,ref){const a=exAide(name,ref);if(!a||!exHelpReady(name,
     <p class="small muted">${L("Ces conseils ne remplacent pas l'avis d'un professionnel ; arrête en cas de douleur.")}</p>
     <p class="small muted exh-src" id="exhSrc"></p>`;
   $("exHelpBody").querySelectorAll(".exh-pics img").forEach(img=>img.addEventListener("error",()=>{const fg=img.closest("figure");if(fg)fg.outerHTML=`<figure class="exh-miss" role="img" aria-label="${esc(img.alt)}"><span>${L("Photo indisponible pour l'instant")}</span></figure>`},{once:true}));
-  exSources().then(S=>{const el=$("exhSrc");if(!el)return;const s=S&&S[im];el.textContent=s?`${L("Photos")} : ${s.src||""}${s.author?" · "+s.author:""}${s.licence?" · "+s.licence:""}`:L("Photos : Free Exercise DB (domaine public)")});
+  // crédit propre à la paire (licence avec attribution, ex. CC BY-SA) ; sinon Free Exercise DB (Unlicense, domaine public)
+  {const cr=(window.SIDFIT_PHOTO_CREDITS||{})[a.name],el=$("exhSrc"),lk=(u,t)=>/^https:\/\//.test(u||"")?`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a>`:esc(t);
+    if(el)el.innerHTML=cr?`${L("Photos")} : ${lk(cr.url,cr.title||"")} · ${esc(cr.author||"")} · ${lk(cr.licenceUrl,cr.licence||"")}${cr.changes?` · ${L("Modifications")} : ${esc(cr.changes[LANG]||cr.changes.fr||"")}`:""}`:esc(L("Photos : Free Exercise DB (domaine public)"))}
   $("exHelpSheet").hidden=false}
 // exercice non reconnu : association explicite à un exercice du catalogue (choisie par la personne, gardée sur l'exercice), sans renommer
 function exLinkOpen(se,ex){const X=window.SIDFIT_EXERCICES;if(!X)return;const w=fold(ex.name||"").split(/[^a-z0-9]+/).filter(x=>x.length>=4);
@@ -2657,7 +2658,7 @@ function muqRenderPreview(){const pv=muq.preview,box=$("muqBody"),old=PL();$("co
     ${pv.why.length?`<div class="muq-why-box"><b>${L("Pourquoi cette organisation")}</b><ul>${pv.why.map(w=>`<li>${esc(w)}</li>`).join("")}</ul></div>`:""}
     ${pv.warnings.map(w=>`<p class="muq-warn" role="note">${IC("alert")||""}<span>${esc(w)}</span></p>`).join("")}
     <ol class="muq-days">${pv.plan.days.map((d,di)=>`<li class="muq-day"><div class="muq-dh"><b class="notr">${esc(d.name||L("Séance")+" "+(di+1))}</b>${pv.est[di]?`<span class="small muted">≈ ${pv.est[di]} min</span>`:""}</div>
-      <ul class="muq-ex">${(d.ex||[]).map((e,ei)=>`<li><div class="grow"><span class="muq-exn">${esc(L(e.name))}${exHelpReady(e.name)?` <button type="button" class="mini ex-help" data-muqhelp="${esc(e.name)}" aria-label="${L("Voir comment effectuer cet exercice")} : ${esc(L(e.name))}">${IC("help")}</button>`:""}</span><span class="small muted">${esc([e.sets?`${e.sets} × ${e.reps||""}`.trim():"",e.rest?`${L("repos")} ${muqRest(e.rest)}`:"",muqRir(e.rir)].filter(Boolean).join(" · "))}</span>${e.note?`<span class="small muted notr">${esc(e.note)}</span>`:""}</div>
+      <ul class="muq-ex">${(d.ex||[]).map((e,ei)=>`<li><div class="grow"><span class="muq-exn">${esc(L(e.name))}${exHelpReady(e.name)?` <button type="button" class="mini ex-help" data-muqhelp="${esc(e.name)}" aria-label="${L("Voir comment effectuer cet exercice")} : ${esc(L(e.name))}">${IC("help")}</button>`:` <span class="small muted ex-prep">${L("Fiche en préparation")}</span>`}</span><span class="small muted">${esc([e.sets?`${e.sets} × ${e.reps||""}`.trim():"",e.rest?`${L("repos")} ${muqRest(e.rest)}`:"",muqRir(e.rir)].filter(Boolean).join(" · "))}</span>${e.note?`<span class="small muted notr">${esc(e.note)}</span>`:""}</div>
         <button type="button" class="linkbtn" data-muqalt="${di}:${ei}">${L("Remplacer")}</button>${muq.alt===di+":"+ei?muqAltList(e):""}</li>`).join("")}</ul></li>`).join("")}</ol>
     <p class="small muted">${L("Charges : commence léger, avec une charge que tu peux soulever 2 à 3 répétitions de plus que prévu ; augmente quand toutes les séries atteignent le haut de la fourchette.")} ${L("Ce programme n'est pas un avis médical.")}</p>
     ${sbReadyForProgram()?`<div class="muq-change"><label class="eyebrow" for="muqChange">${L("Demander une modification à Sid'Bot")}</label><textarea id="muqChange" rows="2" maxlength="600" placeholder="${L("Ex. remplace la séance jambes du vendredi par du haut du corps")}"></textarea><button type="button" class="btn ghost" data-muqchange="1" ${muq.busy?"disabled":""}>${L("Demander")}</button></div>`:""}
@@ -2758,13 +2759,13 @@ function createMuscuEngine(catalogue, deps={}) {
     const other=(a.other||[]).map(o=>{if(!obj(o)||!string(o.sport,80)||!o.sport.trim()||!Number.isInteger(o.perWeek)||!finite(o.perWeek,0,14))return fail();return {sport:o.sport.trim(),perWeek:o.perWeek}});
     return {v:1,goal:a.goal,level:a.level,days:a.days,dur:a.dur,place:a.place,equip,avoidZones,avoidEx,prefer,...(a.pain?{pain:a.pain}:{}),other,notes:(a.notes||'').trim()}
   }
-  function compatible(e,a){return !!e&&e.help===true&&!a.avoidEx.includes(e.nom)&&!a.avoidZones.some(z=>(e.zones||'').includes(zones[z]))&&Array.isArray(e.needs)&&e.needs.some(req=>req.every(k=>a.equip.includes(k)))}
+  function compatible(e,a){return !!e&&!a.avoidEx.includes(e.nom)&&!a.avoidZones.some(z=>(e.zones||'').includes(zones[z]))&&Array.isArray(e.needs)&&e.needs.some(req=>req.every(k=>a.equip.includes(k)))}
   const easy=e=>e.difficulty==='easy';
   const levelRank=(e,a)=>a.level==='deb'?Number(!easy(e)):Number(easy(e));
   function trainingPool(a){const available=db.filter(e=>compatible(e,a));
     return available.filter(e=>a.level==='deb'||!easy(e)||a.prefer.includes(e.nom)||!available.some(x=>!easy(x)&&x.m===e.m&&x.schema===e.schema))
   }
-  function muAllowed(raw){return trainingPool(muAnswers(raw)).map(e=>({name:e.nom,pat:e.pat}))}
+  function muAllowed(raw){return trainingPool(muAnswers(raw)).map(e=>({name:e.nom,pat:e.pat,help:e.help===true}))}
   function muAlternatives(name,raw){const a=muAnswers(raw),e=byName.get(name);if(!e)return [];
     return trainingPool(a).filter(x=>x.nom!==name&&x.m===e.m).sort((x,y)=>Number(y.schema===e.schema)-Number(x.schema===e.schema)||Number(a.prefer.includes(y.nom))-Number(a.prefer.includes(x.nom))||levelRank(x,a)-levelRank(y,a)||x.nom.localeCompare(y.nom)).map(x=>x.nom)}
   function parameters(e,a,locale){const compound=e.type!=='I',other=a.other.reduce((s,x)=>s+x.perWeek,0),sets=a.level==='deb'||other>=4?2:a.level==='conf'&&a.goal==='muscle'?4:3;
@@ -2773,19 +2774,20 @@ function createMuscuEngine(catalogue, deps={}) {
     const rest=hold?60:strength&&compound?150:endurance?45:compound?90:60,rir=a.level==='deb'?'3':'2';
     const note=hold?tr(locale,'Respire régulièrement et arrête avant de perdre la posture.','Breathe steadily and stop before losing posture.'):
       e.note?tr(locale,e.note,e.note_en||(e.note==='Seulement si sans douleur'?'Only if pain-free':e.note)):'';
-    return {name:e.nom,pat:e.pat,sets,reps,rest,rir,rpe:a.level==='deb'?'6–7':'7–8',note}
+    return {name:e.nom,pat:e.pat,help:e.help===true,sets,reps,rest,rir,rpe:a.level==='deb'?'6–7':'7–8',note}
   }
   const progression=locale=>tr(locale,'Commence léger. Quand toutes les séries atteignent le haut de la fourchette avec une technique stable, augmente progressivement la résistance. Pour les exercices chronométrés, augmente progressivement la durée sans perdre la posture.','Start light. When every set reaches the top of the range with steady technique, gradually increase resistance. For timed exercises, gradually increase the hold without losing posture.');
 
   function repSeconds(x){const nums=String(x.reps).match(/\d+/g)||[];const max=Math.max(1,...nums.map(Number));return /\bs\b/.test(x.reps)?max:max*3}
   function muEstimate(ex){return Math.ceil((300+ex.reduce((s,x)=>s+x.sets*repSeconds(x)+Math.max(0,x.sets-1)*x.rest+30,0))/60)}
   function noExercises(locale){throw Object.assign(new Error(tr(locale,'Aucun programme compatible avec ce matériel et ces exclusions. Modifie tes réponses ou demande conseil.','No program fits this equipment and these exclusions. Review your answers or ask for guidance.')),{code:'no_compatible_exercises'})}
+  const helpWarnings=(days,locale)=>{const names=[...new Set(days.flatMap(d=>d.ex).filter(e=>e.help!==true).map(e=>locale==='en'?(byName.get(e.name)?.en||e.name):e.name))];return names.length?[tr(locale,'Fiche en préparation : ','Help in preparation: ')+names.join(', ')]:[]};
   function commonWarnings(a,locale){const w=[];
     if(a.avoidZones.length)w.push(tr(locale,'Les zones sont filtrées selon le catalogue ; ce filtre ne garantit pas une adaptation à une blessure.','Zones are filtered using catalogue tags; this does not guarantee suitability for an injury.'));
     if(a.pain==='some'||a.pain==='yes')w.push(tr(locale,'Une douleur signalée ne peut pas être évaluée ici. Ne fais pas un mouvement douloureux et demande un avis professionnel avant de suivre ce programme.','Pain cannot be assessed here. Do not perform a painful movement and seek professional advice before following this program.'));
     if(a.days===1)w.push(tr(locale,'Une séance est un point de départ ; elle ne couvre pas la recommandation générale de renforcement sur au moins deux jours par semaine.','One session is a starting point; it does not meet the general recommendation of strength activity on at least two days per week.'));
     if(a.equip.every(x=>x==='none'||x==='bench'))w.push(tr(locale,'Sans résistance de tirage, le travail du dos reste limité : les mouvements au sol ne remplacent pas un véritable tirage chargé.','Without pulling resistance, back training is limited: floor movements do not replace a loaded pulling exercise.'));
-    if(db.some(e=>e.help!==true))w.push(tr(locale,'Les exercices dont la fiche est incomplète sont exclus des propositions. Certains choix et groupes peuvent être limités.','Exercises with incomplete help are excluded from suggestions. Some choices and muscle groups may be limited.'));
+    if(db.some(e=>e.help!==true))w.push(tr(locale,'Certaines fiches sont en préparation ; les exercices concernés sont signalés dans le programme.','Some exercise help is still in preparation; the affected exercises are marked in the program.'));
     return w
   }
   function muBuild(raw,locale='fr') {
@@ -2815,7 +2817,7 @@ function createMuscuEngine(catalogue, deps={}) {
       tr(locale,'Répartis les séances sur la semaine avec des jours de récupération ; les jours proposés sont des repères, pas des rendez-vous créés.','Spread sessions across the week with recovery days; suggested days are guides, not scheduled events.')];
     if(a.other.length)why.push(tr(locale,'Tes autres activités sont prises en compte dans le volume ; leurs jours précis ne sont pas connus ici.','Your other activities are considered in the volume; their exact days are not known here.'));
     if(a.other.reduce((s,x)=>s+x.perWeek,0)>=4)why.push(tr(locale,'Volume réduit à deux séries pour tenir compte de tes autres activités.','Volume reduced to two sets to account for your other activities.'));
-    const at=now();return {plan:{id:id(),name:tr(locale,'Mon programme sur mesure','My tailored program'),profile:a,days,at:new Date(at).toISOString(),upd:at,src:'app',schedule:daysOfWeek[a.days].slice()},why,warnings:[...new Set(warnings)],est:days.map(d=>muEstimate(d.ex))}
+    const at=now();return {plan:{id:id(),name:tr(locale,'Mon programme sur mesure','My tailored program'),profile:a,days,at:new Date(at).toISOString(),upd:at,src:'app',schedule:daysOfWeek[a.days].slice()},why,warnings:[...new Set([...warnings,...helpWarnings(days,locale)])],est:days.map(d=>muEstimate(d.ex))}
   }
   // Validate model output against the same catalogue, answers, time budget and coverage as the local baseline.
   function muValidate(raw,answers,locale='fr') {
@@ -2834,7 +2836,7 @@ function createMuscuEngine(catalogue, deps={}) {
         if(!string(x.reps,24)||!/^\d{1,2}(?:[–-]\d{1,2})?(?: s)?$/.test(x.reps))return invalid();const reps=x.reps.match(/\d+/g).map(Number);if(reps.some(n=>n<3||n>60)||reps[0]>reps.at(-1))return invalid();
         if(!string(x.rir,8)||!/^\d(?:[–-]\d)?$/.test(x.rir))return invalid();const rir=x.rir.match(/\d/g).map(Number);if(rir.some(n=>n<(a.level==='deb'?2:1)||n>4)||rir[0]>rir.at(-1))return invalid();
         if(['kg','weight','load','charges'].some(k=>x[k]!==undefined)||!freeText(x.note||'',1000)||x.int!==undefined&&!freeText(x.int,100)||x.rpe!==undefined&&(!string(x.rpe,8)||!(/^[6-8](?:[–-][6-8])?$/.test(x.rpe))))return invalid();
-        return {name:e.nom,pat:e.pat,sets:x.sets,reps:x.reps,rest:x.rest,rir:x.rir,...(x.rpe?{rpe:x.rpe}:{}),note:x.note||parameters(e,a,locale).note}
+        return {name:e.nom,pat:e.pat,help:e.help===true,sets:x.sets,reps:x.reps,rest:x.rest,rir:x.rir,...(x.rpe?{rpe:x.rpe}:{}),note:x.note||parameters(e,a,locale).note}
       });
       if(muEstimate(ex)>a.dur||otherBase&&ex.reduce((s,x)=>s+x.sets,0)>otherBase.plan.days[i].ex.reduce((s,x)=>s+x.sets,0))return invalid();
       for(const muscle of new Set(base.plan.days[i].ex.map(x=>byName.get(x.name).m)))if(!ex.some(x=>byName.get(x.name).m===muscle))return invalid();
@@ -2843,7 +2845,7 @@ function createMuscuEngine(catalogue, deps={}) {
     const chosen=new Set(days.flatMap(d=>d.ex.map(x=>x.name)));for(const preferred of a.prefer)if(base.plan.days.some(d=>d.ex.some(x=>x.name===preferred))&&!chosen.has(preferred))return invalid();
     const texts=(x,max)=>{if(!Array.isArray(x)||x.length>max||!x.every(s=>freeText(s,1200)&&s.trim()))return invalid();return x};
     const why=texts(raw.why,8);if(!why.length)return invalid();const warnings=raw.warnings===undefined?[]:texts(raw.warnings,8);
-    return {...base,plan:{...base.plan,name:raw.plan.name,days,src:'ia'},why:[...new Set([...why,progression(locale)])],warnings:[...new Set([...base.warnings,...warnings])],est:days.map(d=>muEstimate(d.ex))}
+    return {...base,plan:{...base.plan,name:raw.plan.name,days,src:'ia'},why:[...new Set([...why,progression(locale)])],warnings:[...new Set([...base.warnings.filter(w=>!w.startsWith('Fiche en préparation : ')&&!w.startsWith('Help in preparation: ')),...warnings,...helpWarnings(days,locale)])],est:days.map(d=>muEstimate(d.ex))}
   }
   // Preview-only replacement: atomic and immutable; keeps equipment, pattern uniqueness and time constraints.
   function muReplace(plan,di,ei,name,answers,locale='fr'){

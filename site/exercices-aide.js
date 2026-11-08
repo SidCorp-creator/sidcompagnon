@@ -359,7 +359,7 @@ window.SIDFIT_AIDE = {
  "Pull-over à la poulie": {
   "fr": {
    "mus": "Grand dorsal",
-   "setup": "Face à la poulie haute, corde ou barre en main, bras presque tendus, buste penché.",
+   "setup": "Debout face à la poulie haute, barre ou corde en main, bras presque tendus devant toi, buste droit.",
    "steps": [
     "Ramène les mains vers les cuisses en arc de cercle, sans plier les coudes.",
     "Remonte lentement jusqu'à sentir l'étirement sous les bras."
@@ -374,7 +374,7 @@ window.SIDFIT_AIDE = {
   },
   "en": {
    "mus": "Lats",
-   "setup": "Facing the high pulley, rope or bar in hand, arms almost straight, torso leaning forward.",
+   "setup": "Stand facing the high pulley, bar or rope in hand, arms almost straight in front of you, torso upright.",
    "steps": [
     "Bring your hands down to your thighs in an arc, without bending your elbows.",
     "Return slowly until you feel the stretch under your arms."
@@ -1289,7 +1289,7 @@ window.SIDFIT_AIDE = {
  "Squat au poids du corps": {
   "fr": {
    "mus": "Quadriceps, fessiers",
-   "setup": "Debout, pieds à largeur d'épaules ou un peu plus, pointes légèrement vers l'extérieur, bras devant toi.",
+   "setup": "Debout, pieds à largeur d'épaules ou un peu plus, pointes légèrement vers l'extérieur, mains derrière la tête (ou bras tendus devant toi pour l'équilibre).",
    "steps": [
     "Descends en poussant les hanches en arrière et en pliant les genoux, poids sur tout le pied.",
     "Remonte en poussant dans le sol jusqu'à être debout."
@@ -1305,7 +1305,7 @@ window.SIDFIT_AIDE = {
   },
   "en": {
    "mus": "Quads, glutes",
-   "setup": "Stand with feet shoulder-width apart or a little wider, toes slightly out, arms in front of you.",
+   "setup": "Stand with feet shoulder-width apart or a little wider, toes slightly out, hands behind your head (or arms in front of you for balance).",
    "steps": [
     "Lower by pushing your hips back and bending your knees, weight over the whole foot.",
     "Stand back up by pushing through the floor."

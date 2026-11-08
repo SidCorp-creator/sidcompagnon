@@ -530,3 +530,4 @@ Object.assign(DICT,{"Voir comment effectuer cet exercice":"See how to do this ex
 "Fiche de":"Guide for","Placement":"Setup","Exécution":"Movement","Respiration":"Breathing","Points d'attention":"Key points","Erreurs fréquentes":"Common mistakes","Muscles travaillés":"Muscles worked",
 "Ces conseils ne remplacent pas l'avis d'un professionnel ; arrête en cas de douleur.":"These tips don't replace professional advice; stop if you feel pain.","Photo indisponible pour l'instant":"Photo unavailable right now","Photos":"Photos",
 "Associer à un exercice proche":"Link to a similar exercise","Associer à un exercice du catalogue":"Link to a catalogue exercise","Fiche associée : tes séries ne changent pas":"Guide linked: your sets don't change","Retirer l'association":"Remove the link"});
+Object.assign(DICT,{"Fiche en préparation":"Guide coming soon","Modifications":"Changes"});

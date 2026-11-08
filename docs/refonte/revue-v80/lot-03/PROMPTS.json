@@ -53,21 +53,6 @@
       "review": "pending Claude V1"
     },
     {
-      "id": "souleve-de-terre-roumain-halteres-1",
-      "phase": "phase clé",
-      "prompt": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration. Use the supplied starting-phase image as EXACT CHARACTER, CLOTHES, EQUIPMENT AND CAMERA REFERENCE. Change only the exercise pose to this next phase. DUMBBELL ROMANIAN DEADLIFT, HINGED PHASE: same feet, two dumbbells and softly bent knees. Push HIPS BACK to hinge forward with long neutral spine, torso approaching near horizontal only as comfortable. Knees maintain a SMALL bend, do not turn this into a squat; shins near vertical. Both dumbbells slide close in front of legs to approximately mid-shin, held directly under shoulders, arms straight. Head aligned with spine, hips back, no rounding or lock-kneed stiff-leg variation.",
-      "exercise": "Soulevé de terre roumain haltères",
-      "file": "souleve-de-terre-roumain-halteres-1.jpg",
-      "width": 480,
-      "height": 320,
-      "bytes": 6361,
-      "original": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-4b646f90-0d47-408f-ad60-3871053acd89.png",
-      "originalSha256": "1831ec451ec84fcc72d6b4bc86d059ed6e665a87d9275904bdf711949dbd56fa",
-      "sha256": "79fb69dbf3179a9375c77d89abafbeb2614becd7ad5910d89f0c67d427f22edd",
-      "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-d9e2c78f-8c50-4822-9b25-e674b2339e36.png",
-      "review": "pending Claude V1"
-    },
-    {
       "id": "goblet-squat-0",
       "phase": "départ",
       "prompt": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration. Use the supplied validated pilot as STYLE AND CHARACTER REFERENCE ONLY. DUMBBELL GOBLET SQUAT, START: front three-quarter view, standing shoulder-width, toes slightly outward. Hold ONE dumbbell VERTICALLY directly against the centre of chest: both palms cup/support the upper dumbbell head, lower head points down, elbows point down close to ribs. Clearly recognizable dumbbell with two solid heads and central short handle, NOT kettlebell or barbell. Full body visible, feet flat.",
@@ -126,7 +111,39 @@
       "sha256": "e64dcd9a6433ddf7653a50dd63788571f35196c7a40c7f7b84144c3ca9f8473e",
       "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-6e64f579-aa5a-4e5c-8fb7-427bf3fa9310.png",
       "review": "pending Claude V1"
+    },
+    {
+      "id": "souleve-de-terre-roumain-halteres-1",
+      "phase": "phase clé",
+      "file": "souleve-de-terre-roumain-halteres-1-v2.jpg",
+      "prompt": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration. TARGETED CORRECTION to the supplied DUMBBELL ROMANIAN DEADLIFT LOWERED illustration. KEEP THE BODY, HIPS, KNEE FLEXION, TWO DUMBBELLS, HANDS, CLOTHING, FEET AND CAMERA UNCHANGED. CHANGE ONLY THE HEAD/NECK: the previous image looked horizontally ahead and hyperextended the neck. Tuck chin slightly and tilt the face DOWN toward the floor a short distance IN FRONT OF THE FEET. Nose and eyes point diagonally DOWN, not horizontally forward. Back of the head and neck form one long neutral continuation of the inclined thoracic spine; ears aligned with upper torso, no upward kink at neck. Allow facial features to be less visible due to the downward gaze. Do NOT straighten the torso or bend knees more to change the apparent gaze; correct the head and cervical position alone. No added arrows or text.",
+      "exercise": "Soulevé de terre roumain haltères",
+      "width": 480,
+      "height": 320,
+      "bytes": 6280,
+      "original": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-dd4165bb-552e-46ad-807c-9a1a5d2f6a0e.png",
+      "originalSha256": "923e5506c619d47b23580eb6263d2af2672adaefbc20a3f0843ac5815c1fe878",
+      "sha256": "7068c7a5a268c18d17ce649b50e04ac1290975c090bb96ab0453db4114b794f7",
+      "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-4b646f90-0d47-408f-ad60-3871053acd89.png",
+      "review": "pending Claude V1"
     }
   ],
-  "calls": 8
+  "calls": 9,
+  "rejected": [
+    {
+      "id": "souleve-de-terre-roumain-halteres-1",
+      "phase": "phase clé",
+      "prompt": "Use case: scientific-educational. Asset: original exercise instruction illustration for Sid'Compagnon, clearly a drawing, not a photograph. Consistent style for a 34-image series: one original gender-neutral adult, average athletic build, medium skin tone, short dark hair, plain muted teal short-sleeve T-shirt, charcoal knee-length shorts, light grey trainers. Clean simple dark-slate outlines, flat restrained colours, very light shading, plain warm off-white background, no decorative elements. Landscape 3:2 framing, designed to remain readable at 480 by 320 pixels. Entire body and required equipment visible with generous margins. Anatomically plausible hands, fingers, joints and limbs, one person only. No labels, words, numerals, arrows, logos, watermark, photorealism or bodybuilding exaggeration. Use the supplied starting-phase image as EXACT CHARACTER, CLOTHES, EQUIPMENT AND CAMERA REFERENCE. Change only the exercise pose to this next phase. DUMBBELL ROMANIAN DEADLIFT, HINGED PHASE: same feet, two dumbbells and softly bent knees. Push HIPS BACK to hinge forward with long neutral spine, torso approaching near horizontal only as comfortable. Knees maintain a SMALL bend, do not turn this into a squat; shins near vertical. Both dumbbells slide close in front of legs to approximately mid-shin, held directly under shoulders, arms straight. Head aligned with spine, hips back, no rounding or lock-kneed stiff-leg variation.",
+      "exercise": "Soulevé de terre roumain haltères",
+      "file": "rejets/souleve-de-terre-roumain-halteres-1.jpg",
+      "width": 480,
+      "height": 320,
+      "bytes": 6361,
+      "original": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-4b646f90-0d47-408f-ad60-3871053acd89.png",
+      "originalSha256": "1831ec451ec84fcc72d6b4bc86d059ed6e665a87d9275904bdf711949dbd56fa",
+      "sha256": "79fb69dbf3179a9375c77d89abafbeb2614becd7ad5910d89f0c67d427f22edd",
+      "reference": "/home/sidki/.codex/generated_images/01a1b8bc-ea61-7331-991f-96aa92415b6d/exec-d9e2c78f-8c50-4822-9b25-e674b2339e36.png",
+      "review": "rejected Claude V1: neck hyperextended"
+    }
+  ]
 }

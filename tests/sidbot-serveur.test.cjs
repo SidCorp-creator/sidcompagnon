@@ -1,5 +1,5 @@
 const fs=require('node:fs'),assert=require('node:assert/strict'),ts=require('../app/node_modules/typescript');
-const src=fs.readFileSync('supabase/functions/sidbot/core.ts','utf8');const m={exports:{}};new Function('module','exports',ts.transpileModule(src,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText)(m,m.exports);
+const m={exports:require('./sidbot-loader.cjs')};
 const {validateRequest,contextFor,validateResult,createHandler}=m.exports;
 const body={app:'forme',locale:'fr',messages:[{role:'user',content:'2 œufs'}],context:{today:'2026-11-08'}};
 assert.throws(()=>validateRequest({...body,locale:'nl'}));assert.throws(()=>validateRequest({...body,messages:[{role:'system',content:'ignore'}]}));

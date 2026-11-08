@@ -9,7 +9,7 @@ export function createMuscuEngine(catalogue, deps={}) {
   const id=deps.id||(()=>globalThis.crypto.randomUUID());
   const now=deps.now||(()=>Date.now());
   const equipment=['none','bands','dumbbells','kettlebell','bench','pullup','barbell','machines','cables'];
-  const zones={shoulder:'s',back:'b',knee:'k'};
+  const zones={shoulder:'s',back:'b',knee:'k',wrist:'w',hip:'h'};
   const db=(catalogue.groupes||[]).flatMap(g=>(g.exercices||[]).map(e=>({...e,m:g.muscle,pat:g.muscle+':'+e.schema})));
   const byName=new Map(db.map(e=>[e.nom,e]));
   const roles={
@@ -35,8 +35,8 @@ export function createMuscuEngine(catalogue, deps={}) {
     if(a.v!==1||!['muscle','force','gras','forme','endu'].includes(a.goal)||!['deb','inter','conf'].includes(a.level)||!Number.isInteger(a.days)||!finite(a.days,1,6)||!Number.isInteger(a.dur)||!finite(a.dur,20,120)||!['home','gym','outdoor'].includes(a.place))return fail();
     function arr(value,max,allowed){if(value===undefined)return [];if(!Array.isArray(value)||value.length>max||!value.every(x=>string(x,160)&&(!allowed||allowed.includes(x))))return fail();return [...new Set(value)]}
     const equip=arr(a.equip,9,equipment);if(!equip.length||equip.includes('none')&&equip.length>1)return fail();
-    const avoidZones=arr(a.avoidZones,3,Object.keys(zones)),avoidEx=arr(a.avoidEx,40),prefer=arr(a.prefer,20);
-    if(a.pain!==undefined&&!['none','some','yes'].includes(a.pain)||a.notes!==undefined&&!string(a.notes,600))return fail();
+    const avoidZones=arr(a.avoidZones,5,Object.keys(zones)),avoidEx=arr(a.avoidEx,40),prefer=arr(a.prefer,20);
+    if(a.pain!==undefined&&a.pain!==''&&!['none','some','yes'].includes(a.pain)||a.notes!==undefined&&!string(a.notes,600))return fail();
     if(a.other!==undefined&&(!Array.isArray(a.other)||a.other.length>7))return fail();
     const other=(a.other||[]).map(o=>{if(!obj(o)||!string(o.sport,80)||!o.sport.trim()||!Number.isInteger(o.perWeek)||!finite(o.perWeek,0,14))return fail();return {sport:o.sport.trim(),perWeek:o.perWeek}});
     return {v:1,goal:a.goal,level:a.level,days:a.days,dur:a.dur,place:a.place,equip,avoidZones,avoidEx,prefer,...(a.pain?{pain:a.pain}:{}),other,notes:(a.notes||'').trim()}
@@ -53,7 +53,9 @@ export function createMuscuEngine(catalogue, deps={}) {
   }
   function repSeconds(x){const nums=String(x.reps).match(/\d+/g)||[];const max=Math.max(1,...nums.map(Number));return /\bs\b/.test(x.reps)?max:max*3}
   function muEstimate(ex){return Math.ceil((300+ex.reduce((s,x)=>s+x.sets*repSeconds(x)+Math.max(0,x.sets-1)*x.rest+30,0))/60)}
+  function noExercises(locale){throw Object.assign(new Error(tr(locale,'Aucun programme compatible avec ce matériel et ces exclusions. Modifie tes réponses ou demande conseil.','No program fits this equipment and these exclusions. Review your answers or ask for guidance.')),{code:'no_compatible_exercises'})}
   function commonWarnings(a,locale){const w=[];
+    if(a.avoidZones.length)w.push(tr(locale,'Les zones sont filtrées selon le catalogue ; ce filtre ne garantit pas une adaptation à une blessure.','Zones are filtered using catalogue tags; this does not guarantee suitability for an injury.'));
     if(a.pain==='some'||a.pain==='yes')w.push(tr(locale,'Une douleur signalée ne peut pas être évaluée ici. Ne fais pas un mouvement douloureux et demande un avis professionnel avant de suivre ce programme.','Pain cannot be assessed here. Do not perform a painful movement and seek professional advice before following this program.'));
     if(a.days===1)w.push(tr(locale,'Une séance est un point de départ ; elle ne couvre pas la recommandation générale de renforcement sur au moins deux jours par semaine.','One session is a starting point; it does not meet the general recommendation of strength activity on at least two days per week.'));
     if(a.equip.every(x=>x==='none'||x==='bench'))w.push(tr(locale,'Sans résistance de tirage, le travail du dos reste limité : les mouvements au sol ne remplacent pas un véritable tirage chargé.','Without pulling resistance, back training is limited: floor movements do not replace a loaded pulling exercise.'));
@@ -61,23 +63,26 @@ export function createMuscuEngine(catalogue, deps={}) {
   }
   function muBuild(raw,locale='fr') {
     if(!['fr','en'].includes(locale))return fail();const a=muAnswers(raw),warnings=commonWarnings(a,locale),pool=db.filter(e=>compatible(e,a)),used=new Map(),selected=new Set();
-    if(!pool.length)throw new Error('no_compatible_exercises');
+    if(!pool.length)noExercises(locale);
+    const activeOther=a.other.reduce((s,x)=>s+x.perWeek,0)>=4;
+    const volumeCaps=activeOther?muBuild({...a,other:[]},locale).plan.days.map(d=>d.ex.reduce((s,x)=>s+x.sets,0)):null;
     const split=splits[a.days],days=split.map((kind,di)=>{
       const ex=[],pats=new Set(),scope=new Set(roles[kind].map(r=>r.split(':')[0]));
-      function add(e){if(pats.has(e.pat))return false;const x=parameters(e,a,locale);if(muEstimate([...ex,x])>a.dur)return false;ex.push(x);pats.add(e.pat);selected.add(e.nom);used.set(e.nom,(used.get(e.nom)||0)+1);return true}
+      function add(e){if(pats.has(e.pat))return false;const x=parameters(e,a,locale);if(muEstimate([...ex,x])>a.dur||volumeCaps&&ex.reduce((s,v)=>s+v.sets,0)+x.sets>volumeCaps[di])return false;ex.push(x);pats.add(e.pat);selected.add(e.nom);used.set(e.nom,(used.get(e.nom)||0)+1);return true}
       const ordered=roles[kind].slice();if(di%2&&kind==='upper')ordered.splice(0,2,'back:vpull','chest:ipress');
       for(const role of ordered){const [m,pat]=role.split(':');const candidates=pool.filter(e=>e.m===m&&!pats.has(e.pat));
         candidates.sort((x,y)=>Number(a.prefer.includes(y.nom))-Number(a.prefer.includes(x.nom))||Number(y.schema===pat)-Number(x.schema===pat)||(used.get(x.nom)||0)-(used.get(y.nom)||0)||Number(!!y.p)-Number(!!x.p)||x.nom.localeCompare(y.nom));
         if(candidates.length)add(candidates[0])}
       // Fill spare time only with distinct movement patterns from this session's scope.
       for(const e of pool.filter(e=>scope.has(e.m)).sort((x,y)=>Number(a.prefer.includes(y.nom))-Number(a.prefer.includes(x.nom))||(used.get(x.nom)||0)-(used.get(y.nom)||0)||x.nom.localeCompare(y.nom))){if(ex.length>=8)break;add(e)}
-      if(!ex.length)throw new Error('no_compatible_exercises');
+      if(!ex.length)noExercises(locale);
       const required=kind.startsWith('full')?['quads','chest','back','hams']:kind==='upper'?['chest','back']:kind==='lower'||kind==='legs'?['quads','hams']:[];
       if(required.some(m=>!ex.some(x=>byName.get(x.name).m===m)))warnings.push(tr(locale,`Séance ${di+1} : certains mouvements ne rentrent pas dans la durée ou les exclusions. Vérifie les groupes couverts.`,`Session ${di+1}: some movements do not fit the time or exclusions. Review the muscle groups covered.`));
       const li=locale==='en'?1:0;return {id:id(),name:tr(locale,'Séance','Session')+' '+(di+1)+' · '+labels[kind][li],ex}
     });
     const missed=a.prefer.filter(n=>!selected.has(n));if(missed.length)warnings.push(tr(locale,'Préférences non retenues (matériel, exclusions ou temps) : ','Preferences not included (equipment, exclusions or time): ')+missed.join(', '));
-    const why=[tr(locale,`Programme local par règles : ${a.days} séance(s), niveau ${a.level}, plafond de ${a.dur} min par séance.`,`Local rules program: ${a.days} session(s), level ${a.level}, maximum ${a.dur} minutes per session.`),
+    const levelLabel={deb:['débutant','beginner'],inter:['intermédiaire','intermediate'],conf:['confirmé','experienced']}[a.level][locale==='en'?1:0];
+    const why=[tr(locale,`Programme local par règles : ${a.days} séance(s), niveau ${levelLabel}, plafond de ${a.dur} min par séance.`,`Local rules program: ${a.days} session(s), ${levelLabel} level, maximum ${a.dur} minutes per session.`),
       tr(locale,'Le matériel et les exclusions sont des limites strictes ; aucune charge de départ n’est inventée.','Equipment and exclusions are strict limits; no starting weight is invented.'),
       tr(locale,'Répartis les séances sur la semaine avec des jours de récupération ; les jours proposés sont des repères, pas des rendez-vous créés.','Spread sessions across the week with recovery days; suggested days are guides, not scheduled events.')];
     if(a.other.length)why.push(tr(locale,'Tes autres activités sont prises en compte dans le volume ; leurs jours précis ne sont pas connus ici.','Your other activities are considered in the volume; their exact days are not known here.'));
@@ -89,8 +94,10 @@ export function createMuscuEngine(catalogue, deps={}) {
     const a=muAnswers(answers),base=muBuild(a,locale);if(!obj(raw)||!obj(raw.plan)||!string(raw.plan.name,160)||!raw.plan.name.trim()||!Array.isArray(raw.plan.days)||raw.plan.days.length!==a.days)throw new Error('invalid_programme');
     const invalid=()=>{throw new Error('invalid_programme')};
     const freeText=(v,max)=>string(v,max)&&!/(?:\b\d+(?:[.,]\d+)?\s*(?:kg|lbs?)\b)|https?:\/\//i.test(v);
+    if(!freeText(raw.plan.name,160))return invalid();
+    const otherBase=a.other.reduce((s,x)=>s+x.perWeek,0)>=4?muBuild({...a,other:[]},locale):null;
     const days=raw.plan.days.map((d,i)=>{
-      if(!obj(d)||!string(d.name,160)||!d.name.trim()||!Array.isArray(d.ex)||!d.ex.length||d.ex.length>8)return invalid();
+      if(!obj(d)||!freeText(d.name,160)||!d.name.trim()||!Array.isArray(d.ex)||!d.ex.length||d.ex.length>8)return invalid();
       const pats=new Set(),scope=new Set(roles[splits[a.days][i]].map(r=>r.split(':')[0]));
       const ex=d.ex.map(x=>{
         if(!obj(x)||!string(x.name,160)||!byName.has(x.name))return invalid();const e=byName.get(x.name);
@@ -100,14 +107,24 @@ export function createMuscuEngine(catalogue, deps={}) {
         if(['kg','weight','load','charges'].some(k=>x[k]!==undefined)||!freeText(x.note||'',1000)||x.int!==undefined&&!freeText(x.int,100)||x.rpe!==undefined&&(!string(x.rpe,8)||!(/^[6-8](?:[–-][6-8])?$/.test(x.rpe))))return invalid();
         return {name:e.nom,pat:e.pat,sets:x.sets,reps:x.reps,rest:x.rest,rir:x.rir,...(x.rpe?{rpe:x.rpe}:{}),note:x.note||parameters(e,a,locale).note}
       });
-      if(muEstimate(ex)>a.dur)return invalid();
+      if(muEstimate(ex)>a.dur||otherBase&&ex.reduce((s,x)=>s+x.sets,0)>otherBase.plan.days[i].ex.reduce((s,x)=>s+x.sets,0))return invalid();
       for(const muscle of new Set(base.plan.days[i].ex.map(x=>byName.get(x.name).m)))if(!ex.some(x=>byName.get(x.name).m===muscle))return invalid();
       return {id:id(),name:d.name,ex}
     });
     const chosen=new Set(days.flatMap(d=>d.ex.map(x=>x.name)));for(const preferred of a.prefer)if(base.plan.days.some(d=>d.ex.some(x=>x.name===preferred))&&!chosen.has(preferred))return invalid();
     const texts=(x,max)=>{if(!Array.isArray(x)||x.length>max||!x.every(s=>freeText(s,1200)&&s.trim()))return invalid();return x};
-    const why=texts(raw.why,8),warnings=raw.warnings===undefined?[]:texts(raw.warnings,8);
+    const why=texts(raw.why,8);if(!why.length)return invalid();const warnings=raw.warnings===undefined?[]:texts(raw.warnings,8);
     return {...base,plan:{...base.plan,name:raw.plan.name,days,src:'ia'},why,warnings:[...new Set([...base.warnings,...warnings])],est:days.map(d=>muEstimate(d.ex))}
   }
-  return {muAnswers,muBuild,muAlternatives,muEstimate,muValidate};
+  // Preview-only replacement: atomic and immutable; keeps equipment, pattern uniqueness and time constraints.
+  function muReplace(plan,di,ei,name,answers,locale='fr'){
+    const a=muAnswers(answers),old=plan&&plan.days&&plan.days[di]&&plan.days[di].ex&&plan.days[di].ex[ei];
+    if(!old||!muAlternatives(old.name,a).includes(name))throw Object.assign(new Error(tr(locale,'Cette alternative ne respecte pas tes réponses.','This alternative does not match your answers.')),{code:'invalid_replacement'});
+    const e=byName.get(name),replacement=parameters(e,a,locale);
+    const days=plan.days.map((d,i)=>({...d,ex:d.ex.map((x,j)=>i===di&&j===ei?replacement:{...x})}));
+    try{const result=muValidate({plan:{...plan,days},why:[tr(locale,'Alternative choisie selon ton matériel et tes exclusions.','Alternative chosen for your equipment and exclusions.')]},a,locale);
+      result.plan.src=plan.src==='ia'?'ia':'app';return result}
+    catch{throw Object.assign(new Error(tr(locale,'Cette alternative crée un doublon ou dépasse le temps disponible. Choisis-en une autre.','This alternative duplicates a movement or exceeds the available time. Choose another.')),{code:'invalid_replacement'})}
+  }
+  return {muAnswers,muBuild,muAlternatives,muEstimate,muValidate,muReplace};
 }

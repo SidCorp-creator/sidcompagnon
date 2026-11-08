@@ -25,7 +25,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "hpress",
           "type": "C",
           "materiel": "gd",
-          "zones": "s",
+          "zones": "sw",
           "needs": [
             [
               "dumbbells",
@@ -39,7 +39,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "hpress",
           "type": "C",
           "materiel": "g",
-          "zones": "",
+          "zones": "w",
           "needs": [
             [
               "machines"
@@ -52,7 +52,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "ipress",
           "type": "C",
           "materiel": "g",
-          "zones": "s",
+          "zones": "sw",
           "needs": [
             [
               "machines",
@@ -66,7 +66,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "fly",
           "type": "I",
           "materiel": "g",
-          "zones": "",
+          "zones": "w",
           "needs": [
             [
               "machines"
@@ -93,7 +93,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "hpress",
           "type": "L",
           "materiel": "b",
-          "zones": "s",
+          "zones": "sw",
           "needs": [
             []
           ],
@@ -105,7 +105,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "hpress",
           "type": "L",
           "materiel": "b",
-          "zones": "s",
+          "zones": "sw",
           "needs": [
             []
           ],
@@ -117,7 +117,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "hpress",
           "type": "L",
           "materiel": "b",
-          "zones": "s",
+          "zones": "sw",
           "needs": [
             []
           ],
@@ -134,7 +134,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "vpull",
           "type": "C",
           "materiel": "gb",
-          "zones": "s",
+          "zones": "sw",
           "needs": [
             [
               "pullup"
@@ -147,7 +147,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "vpull",
           "type": "C",
           "materiel": "gb",
-          "zones": "",
+          "zones": "w",
           "needs": [
             [
               "pullup"
@@ -160,7 +160,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "vpull",
           "type": "C",
           "materiel": "gb",
-          "zones": "s",
+          "zones": "sw",
           "needs": [
             [
               "pullup"
@@ -179,7 +179,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "pullover",
           "type": "I",
           "materiel": "g",
-          "zones": "s",
+          "zones": "sw",
           "needs": [
             [
               "cables"
@@ -192,7 +192,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "hrow",
           "type": "C",
           "materiel": "gd",
-          "zones": "",
+          "zones": "w",
           "needs": [
             [
               "dumbbells",
@@ -206,7 +206,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "hrow",
           "type": "C",
           "materiel": "g",
-          "zones": "",
+          "zones": "w",
           "needs": [
             [
               "cables"
@@ -219,7 +219,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "hrow",
           "type": "C",
           "materiel": "g",
-          "zones": "",
+          "zones": "w",
           "needs": [
             [
               "machines"
@@ -232,7 +232,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "hrow",
           "type": "C",
           "materiel": "g",
-          "zones": "",
+          "zones": "w",
           "needs": [
             [
               "machines"
@@ -258,7 +258,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "hrow",
           "type": "C",
           "materiel": "gd",
-          "zones": "bs",
+          "zones": "bswh",
           "needs": [
             [
               "dumbbells"
@@ -272,7 +272,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "hrow",
           "type": "L",
           "materiel": "gd",
-          "zones": "b",
+          "zones": "bw",
           "needs": [
             [
               "bands"
@@ -291,7 +291,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "shrug",
           "type": "I",
           "materiel": "gd",
-          "zones": "",
+          "zones": "w",
           "needs": [
             [
               "dumbbells"
@@ -313,7 +313,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "ohp",
           "type": "C",
           "materiel": "g",
-          "zones": "s",
+          "zones": "sw",
           "needs": [
             [
               "machines",
@@ -328,7 +328,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "lat",
           "type": "I",
           "materiel": "g",
-          "zones": "",
+          "zones": "w",
           "needs": [
             [
               "cables"
@@ -342,7 +342,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "lat",
           "type": "I",
           "materiel": "gd",
-          "zones": "",
+          "zones": "w",
           "needs": [
             [
               "dumbbells"
@@ -355,7 +355,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "lat",
           "type": "I",
           "materiel": "g",
-          "zones": "",
+          "zones": "w",
           "needs": [
             [
               "machines"
@@ -369,7 +369,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "rear",
           "type": "I",
           "materiel": "g",
-          "zones": "",
+          "zones": "w",
           "needs": [
             [
               "cables"
@@ -382,7 +382,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "rear",
           "type": "I",
           "materiel": "g",
-          "zones": "",
+          "zones": "w",
           "needs": [
             [
               "machines"
@@ -395,7 +395,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "rear",
           "type": "I",
           "materiel": "g",
-          "zones": "",
+          "zones": "w",
           "needs": [
             [
               "cables"
@@ -409,7 +409,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "rear",
           "type": "L",
           "materiel": "gd",
-          "zones": "s",
+          "zones": "sw",
           "needs": [
             [
               "bands"
@@ -423,7 +423,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "ohp",
           "type": "C",
           "materiel": "gd",
-          "zones": "bs",
+          "zones": "bsw",
           "needs": [
             [
               "dumbbells"
@@ -443,7 +443,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "curl",
           "type": "I",
           "materiel": "g",
-          "zones": "",
+          "zones": "w",
           "needs": [
             [
               "barbell"
@@ -457,7 +457,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "stretch",
           "type": "I",
           "materiel": "gd",
-          "zones": "s",
+          "zones": "sw",
           "needs": [
             [
               "dumbbells",
@@ -471,7 +471,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "hammer",
           "type": "I",
           "materiel": "gd",
-          "zones": "",
+          "zones": "w",
           "needs": [
             [
               "dumbbells"
@@ -484,7 +484,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "curl",
           "type": "I",
           "materiel": "g",
-          "zones": "",
+          "zones": "w",
           "needs": [
             [
               "cables"
@@ -498,7 +498,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "curl",
           "type": "I",
           "materiel": "gd",
-          "zones": "",
+          "zones": "w",
           "needs": [
             [
               "bands"
@@ -518,7 +518,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "oh",
           "type": "I",
           "materiel": "g",
-          "zones": "s",
+          "zones": "sw",
           "needs": [
             [
               "cables"
@@ -532,7 +532,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "push",
           "type": "I",
           "materiel": "g",
-          "zones": "",
+          "zones": "w",
           "needs": [
             [
               "cables"
@@ -546,7 +546,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "push",
           "type": "I",
           "materiel": "gd",
-          "zones": "s",
+          "zones": "sw",
           "needs": [
             [
               "bands"
@@ -566,7 +566,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "squat",
           "type": "C",
           "materiel": "g",
-          "zones": "k",
+          "zones": "kh",
           "needs": [
             [
               "machines"
@@ -580,7 +580,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "iso",
           "type": "I",
           "materiel": "g",
-          "zones": "k",
+          "zones": "kh",
           "needs": [
             [
               "machines"
@@ -593,7 +593,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "squat",
           "type": "C",
           "materiel": "g",
-          "zones": "k",
+          "zones": "kh",
           "note": "Seulement si sans douleur",
           "needs": [
             [
@@ -608,7 +608,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "squat",
           "type": "L",
           "materiel": "b",
-          "zones": "k",
+          "zones": "kh",
           "needs": [
             []
           ],
@@ -620,7 +620,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "squat",
           "type": "C",
           "materiel": "gd",
-          "zones": "bk",
+          "zones": "bkh",
           "needs": [
             [
               "dumbbells"
@@ -642,7 +642,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "thrust",
           "type": "C",
           "materiel": "g",
-          "zones": "",
+          "zones": "h",
           "needs": [
             [
               "machines"
@@ -655,7 +655,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "abd",
           "type": "I",
           "materiel": "g",
-          "zones": "",
+          "zones": "h",
           "needs": [
             [
               "machines"
@@ -669,7 +669,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "thrust",
           "type": "L",
           "materiel": "b",
-          "zones": "k",
+          "zones": "kh",
           "needs": [
             []
           ],
@@ -681,7 +681,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "abd",
           "type": "I",
           "materiel": "b",
-          "zones": "",
+          "zones": "h",
           "needs": [
             []
           ],
@@ -699,7 +699,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "curl",
           "type": "I",
           "materiel": "g",
-          "zones": "",
+          "zones": "h",
           "needs": [
             [
               "machines"
@@ -712,7 +712,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "curl",
           "type": "I",
           "materiel": "g",
-          "zones": "",
+          "zones": "h",
           "needs": [
             [
               "machines"
@@ -726,7 +726,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "hinge",
           "type": "L",
           "materiel": "b",
-          "zones": "b",
+          "zones": "bh",
           "needs": [
             []
           ],
@@ -738,7 +738,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "hinge",
           "type": "C",
           "materiel": "gd",
-          "zones": "b",
+          "zones": "bh",
           "needs": [
             [
               "dumbbells"
@@ -760,7 +760,7 @@ window.SIDFIT_EXERCICES = {
           "schema": "add",
           "type": "I",
           "materiel": "g",
-          "zones": "",
+          "zones": "h",
           "needs": [
             [
               "machines"

@@ -1,0 +1,4 @@
+// Local loader for the Edge TS + shared ESM/JSON graph, without Deno or a network import.
+const fs=require('node:fs'),path=require('node:path'),ts=require('../app/node_modules/typescript');
+const cache=new Map();function load(file){file=path.resolve(file);if(cache.has(file))return cache.get(file).exports;if(file.endsWith('.json'))return JSON.parse(fs.readFileSync(file,'utf8'));const m={exports:{}};cache.set(file,m);const js=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText;new Function('require','module','exports',js)(name=>load(path.resolve(path.dirname(file),name)),m,m.exports);return m.exports}
+module.exports=load(path.resolve(__dirname,'../supabase/functions/sidbot/core.ts'));

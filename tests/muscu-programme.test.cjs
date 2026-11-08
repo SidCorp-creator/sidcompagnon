@@ -17,9 +17,14 @@ assert.ok(engine.muBuild({...home,pain:'yes'},'en').warnings.some(x=>/profession
 for(const name of engine.muAlternatives('Rowing élastique assis',limited)){const e=find(name);assert.equal(e.m,'back');assert.ok(!limited.avoidEx.includes(name));assert.ok(e.needs.some(req=>req.every(k=>limited.equip.includes(k))))}
 assert.ok(!engine.muAlternatives('Pompes au sol',{...home,avoidZones:['shoulder']}).some(x=>find(x).zones.includes('s')));
 assert.throws(()=>engine.muBuild({...home,equip:['teleporter']}),/bad_request/);assert.throws(()=>engine.muBuild({...home,days:0}),/bad_request/);assert.throws(()=>engine.muBuild({...home,days:7}),/bad_request/);assert.throws(()=>engine.muBuild({...home,dur:19}),/bad_request/);assert.throws(()=>engine.muBuild({...home,other:[{sport:'run',perWeek:Infinity}]}),/bad_request/);
-const blocked={...home,avoidEx:catalog.filter(e=>e.needs.some(req=>req.length===0)).map(e=>e.nom)};assert.throws(()=>engine.muBuild(blocked),/no_compatible_exercises/);
+const blocked={...home,avoidEx:catalog.filter(e=>e.needs.some(req=>req.length===0)).map(e=>e.nom)};assert.throws(()=>engine.muBuild(blocked),e=>e.code==='no_compatible_exercises');
+for(const zone of ['wrist','hip']){const r=engine.muBuild({...home,avoidZones:[zone]});for(const d of r.plan.days)for(const x of d.ex)assert.ok(!find(x.name).zones.includes(zone==='wrist'?'w':'h'))}
+const plan=engine.muBuild(gym,'en').plan,snapshot=JSON.stringify(plan);let replaced=false;
+for(let di=0;di<plan.days.length&&!replaced;di++)for(let ei=0;ei<plan.days[di].ex.length&&!replaced;ei++)for(const name of engine.muAlternatives(plan.days[di].ex[ei].name,gym)){try{const next=engine.muReplace(plan,di,ei,name,gym,'en');assert.equal(next.plan.days[di].ex[ei].name,name);assert.equal(next.est[di],engine.muEstimate(next.plan.days[di].ex));assert.equal(next.plan.src,'app');replaced=true;break}catch(e){if(e.code!=='invalid_replacement')throw e}}
+assert.ok(replaced);assert.equal(JSON.stringify(plan),snapshot);assert.throws(()=>engine.muReplace(plan,0,0,'Unknown',gym,'en'),e=>e.code==='invalid_replacement');
 // All supported frequencies and time caps fit, without silently relaxing equipment.
 for(const days of [1,2,3,4,5,6])for(const dur of [20,45,120]){const a={...home,days,dur};check(a,engine.muBuild(a))}
+for(const dur of [20,35,60]){const base={...gym,level:'inter',goal:'muscle',dur};const normal=engine.muBuild(base),busy=engine.muBuild({...base,other:[{sport:'run',perWeek:5}]});busy.plan.days.forEach((d,i)=>assert.ok(d.ex.reduce((s,x)=>s+x.sets,0)<=normal.plan.days[i].ex.reduce((s,x)=>s+x.sets,0),'other sports must not increase total sets by filling time'))}
 // Model output must preserve user constraints, coverage, time and safe load selection.
 const valid={plan:results[0].plan,why:['Explicit preview'],warnings:[]};assert.equal(engine.muValidate(valid,home).plan.src,'ia');
 const clone=x=>JSON.parse(JSON.stringify(x));let bad=clone(valid);bad.plan.days[0].ex[0].name='Chest press machine';assert.throws(()=>engine.muValidate(bad,home),/invalid_programme/);

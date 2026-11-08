@@ -1,0 +1,146 @@
+{
+  "dips-lestes": {
+    "name": "Dips lestés",
+    "status": "missing",
+    "reason": "La paire Dips_-_Chest_Version ne montre aucun lest ; Weighted_Bench_Dip utilise un banc et une autre variante.",
+    "searched": "Free Exercise DB",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "checked": "2026-11-08"
+  },
+  "pompes-au-mur": {
+    "name": "Pompes au mur",
+    "status": "missing",
+    "reason": "Aucune paire de pompes au mur ; Incline_Push-Up utilise un banc, pas un mur.",
+    "searched": "Free Exercise DB",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "checked": "2026-11-08"
+  },
+  "pompes-sur-les-genoux": {
+    "name": "Pompes sur les genoux",
+    "status": "missing",
+    "reason": "Aucune paire de pompes avec appui sur les genoux ; Pushups est sur les pieds.",
+    "searched": "Free Exercise DB",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "checked": "2026-11-08"
+  },
+  "elevations-en-w-au-sol": {
+    "name": "Élévations en W au sol",
+    "status": "missing",
+    "reason": "Aucune paire du mouvement en W couché au sol ; Superman et Lying_Rear_Delt_Raise sont différents.",
+    "searched": "Free Exercise DB",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "checked": "2026-11-08"
+  },
+  "rowing-elastique-assis": {
+    "name": "Rowing élastique assis",
+    "status": "missing",
+    "reason": "Aucune paire de rowing assis avec élastique ; Seated_Cable_Rows est à la poulie.",
+    "searched": "Free Exercise DB",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "checked": "2026-11-08"
+  },
+  "shrugs-halteres-ou-machine": {
+    "name": "Shrugs haltères ou machine",
+    "status": "missing",
+    "reason": "La paire Dumbbell_Shrug ne couvre pas la variante machine annoncée ; aucune paire propre à cette machine.",
+    "searched": "Free Exercise DB",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "checked": "2026-11-08"
+  },
+  "elevations-laterales-poulie": {
+    "name": "Élévations latérales poulie",
+    "status": "missing",
+    "reason": "Cable_Seated_Lateral_Raise montre un oiseau assis buste penché, pas une élévation latérale du deltoïde moyen.",
+    "searched": "Free Exercise DB",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "checked": "2026-11-08"
+  },
+  "elevations-laterales-machine": {
+    "name": "Élévations latérales machine",
+    "status": "missing",
+    "reason": "Ancienne correspondance Side_Lateral_Raise avec haltères ; aucune paire de la machine exacte.",
+    "searched": "Free Exercise DB",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "checked": "2026-11-08"
+  },
+  "curl-elastique-debout": {
+    "name": "Curl élastique debout",
+    "status": "missing",
+    "reason": "Aucune paire de curl debout à élastique ; Standing_Biceps_Cable_Curl est à la poulie.",
+    "searched": "Free Exercise DB",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "checked": "2026-11-08"
+  },
+  "extension-triceps-elastique-debout": {
+    "name": "Extension triceps élastique debout",
+    "status": "missing",
+    "reason": "Speed_Band_Overhead_Triceps est en position de fente autour d’un banc et exécuté en vitesse ; ne documente pas la variante debout contrôlée sans banc.",
+    "searched": "Free Exercise DB",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "checked": "2026-11-08"
+  },
+  "presse-a-cuisses-amplitude-limitee": {
+    "name": "Presse à cuisses amplitude limitée",
+    "status": "missing",
+    "reason": "Leg_Press montre une flexion profonde ; aucune paire documentant la variante à amplitude limitée annoncée.",
+    "searched": "Free Exercise DB",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "checked": "2026-11-08"
+  },
+  "hack-squat-amplitude-limitee": {
+    "name": "Hack squat amplitude limitée",
+    "status": "missing",
+    "reason": "Hack_Squat montre une flexion profonde ; aucune paire documentant la variante à amplitude limitée annoncée.",
+    "searched": "Free Exercise DB",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "checked": "2026-11-08"
+  },
+  "hip-thrust-machine": {
+    "name": "Hip thrust machine",
+    "status": "missing",
+    "reason": "Ancienne correspondance Barbell_Hip_Thrust avec barre, pas une machine de hip thrust.",
+    "searched": "Free Exercise DB",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "checked": "2026-11-08"
+  },
+  "abduction-de-hanche-sur-le-cote": {
+    "name": "Abduction de hanche sur le côté",
+    "status": "missing",
+    "reason": "Side_Leg_Raises montre des balancements debout avec chaise, pas une abduction couché sur le côté.",
+    "searched": "Free Exercise DB",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "checked": "2026-11-08"
+  },
+  "charniere-de-hanches-sans-charge": {
+    "name": "Charnière de hanches sans charge",
+    "status": "missing",
+    "reason": "Aucune paire de charnière de hanches sans charge ; Good_Morning et Band_Good_Morning sont chargés.",
+    "searched": "Free Exercise DB",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "checked": "2026-11-08"
+  },
+  "souleve-de-terre-roumain-halteres": {
+    "name": "Soulevé de terre roumain haltères",
+    "status": "missing",
+    "reason": "Romanian_Deadlift utilise une barre ; Stiff-Legged_Dumbbell_Deadlift est une variante jambes tendues distincte.",
+    "searched": "Free Exercise DB",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "checked": "2026-11-08"
+  },
+  "mollets-debout-au-poids-du-corps": {
+    "name": "Mollets debout au poids du corps",
+    "status": "missing",
+    "reason": "Standing_Calf_Raises utilise une machine ; aucune paire au poids du corps seul.",
+    "searched": "Free Exercise DB",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "checked": "2026-11-08"
+  },
+  "goblet-squat": {
+    "name": "Goblet squat",
+    "status": "missing",
+    "reason": "Goblet_Squat montre uniquement une kettlebell ; le catalogue et les conseils autorisent aussi un haltère. Aucune paire haltère exacte pour couvrir tout le matériel annoncé.",
+    "searched": "Free Exercise DB",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "checked": "2026-11-08"
+  }
+}

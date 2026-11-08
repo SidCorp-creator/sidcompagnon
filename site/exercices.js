@@ -13,8 +13,10 @@
 //   zones    s épaules, b bas du dos, k genoux (évité si la personne veut ménager cette zone)
 //   note     consigne affichée avec l'exercice (facultatif)
 // v77 : needs = alternatives de matériel (OU entre listes, ET dans une liste). Une liste vide = sans matériel.
+// v79 : id stable ; aliases explicites ; help=false = fiche incomplète, exclue des suggestions.
+// v79 : id stable ; aliases explicites ; help=false = fiche incomplète, exclue des suggestions.
 window.SIDFIT_EXERCICES = {
-  "version": 2,
+  "version": 3,
   "groupes": [
     {
       "muscle": "chest",
@@ -32,7 +34,13 @@ window.SIDFIT_EXERCICES = {
               "bench"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "developpe-couche-halteres",
+          "aliases": [
+            "Dumbbell bench press"
+          ],
+          "help": true,
+          "en": "Dumbbell bench press"
         },
         {
           "nom": "Chest press machine",
@@ -45,7 +53,13 @@ window.SIDFIT_EXERCICES = {
               "machines"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "chest-press-machine",
+          "aliases": [
+            "Machine chest press"
+          ],
+          "help": true,
+          "en": "Machine chest press"
         },
         {
           "nom": "Développé incliné à la Smith",
@@ -59,7 +73,13 @@ window.SIDFIT_EXERCICES = {
               "bench"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "developpe-incline-a-la-smith",
+          "aliases": [
+            "Smith machine incline bench press"
+          ],
+          "help": true,
+          "en": "Smith machine incline bench press"
         },
         {
           "nom": "Pec deck",
@@ -72,7 +92,13 @@ window.SIDFIT_EXERCICES = {
               "machines"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "pec-deck",
+          "aliases": [
+            "Pec deck fly"
+          ],
+          "help": true,
+          "en": "Pec deck fly"
         },
         {
           "nom": "Dips lestés",
@@ -85,7 +111,13 @@ window.SIDFIT_EXERCICES = {
               "dipstation"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "dips-lestes",
+          "aliases": [
+            "Weighted chest dips"
+          ],
+          "help": false,
+          "en": "Weighted chest dips"
         },
         {
           "nom": "Pompes au mur",
@@ -98,7 +130,12 @@ window.SIDFIT_EXERCICES = {
             []
           ],
           "loadable": false,
-          "difficulty": "easy"
+          "difficulty": "easy",
+          "id": "pompes-au-mur",
+          "aliases": [
+            "Wall push-ups"
+          ],
+          "help": false
         },
         {
           "nom": "Pompes sur les genoux",
@@ -111,7 +148,12 @@ window.SIDFIT_EXERCICES = {
             []
           ],
           "loadable": false,
-          "difficulty": "easy"
+          "difficulty": "easy",
+          "id": "pompes-sur-les-genoux",
+          "aliases": [
+            "Knee push-ups"
+          ],
+          "help": false
         },
         {
           "nom": "Pompes au sol",
@@ -124,7 +166,12 @@ window.SIDFIT_EXERCICES = {
             []
           ],
           "loadable": false,
-          "difficulty": "standard"
+          "difficulty": "standard",
+          "id": "pompes-au-sol",
+          "aliases": [
+            "Push-ups"
+          ],
+          "help": true
         }
       ]
     },
@@ -143,7 +190,13 @@ window.SIDFIT_EXERCICES = {
               "pullup"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "tractions-pronation-lestees",
+          "aliases": [
+            "Weighted overhand pull-ups"
+          ],
+          "help": true,
+          "en": "Weighted overhand pull-ups"
         },
         {
           "nom": "Tractions prise neutre",
@@ -156,7 +209,13 @@ window.SIDFIT_EXERCICES = {
               "pullup"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "tractions-prise-neutre",
+          "aliases": [
+            "Neutral-grip pull-ups"
+          ],
+          "help": true,
+          "en": "Neutral-grip pull-ups"
         },
         {
           "nom": "Tractions prise large",
@@ -169,7 +228,13 @@ window.SIDFIT_EXERCICES = {
               "pullup"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "tractions-prise-large",
+          "aliases": [
+            "Wide-grip pull-ups"
+          ],
+          "help": true,
+          "en": "Wide-grip pull-ups"
         }
       ]
     },
@@ -188,7 +253,13 @@ window.SIDFIT_EXERCICES = {
               "cables"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "pull-over-a-la-poulie",
+          "aliases": [
+            "Straight-arm cable pulldown"
+          ],
+          "help": true,
+          "en": "Straight-arm cable pulldown"
         },
         {
           "nom": "Rowing avec appui",
@@ -202,7 +273,13 @@ window.SIDFIT_EXERCICES = {
               "bench"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "rowing-avec-appui",
+          "aliases": [
+            "Chest-supported dumbbell row"
+          ],
+          "help": true,
+          "en": "Chest-supported dumbbell row"
         },
         {
           "nom": "Tirage poulie basse assis",
@@ -215,7 +292,13 @@ window.SIDFIT_EXERCICES = {
               "cables"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "tirage-poulie-basse-assis",
+          "aliases": [
+            "Seated cable row"
+          ],
+          "help": true,
+          "en": "Seated cable row"
         },
         {
           "nom": "Rowing machine convergente",
@@ -228,7 +311,13 @@ window.SIDFIT_EXERCICES = {
               "machines"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "rowing-machine-convergente",
+          "aliases": [
+            "Converging machine row"
+          ],
+          "help": true,
+          "en": "Converging machine row"
         },
         {
           "nom": "T-bar avec appui poitrine",
@@ -241,7 +330,13 @@ window.SIDFIT_EXERCICES = {
               "machines"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "t-bar-avec-appui-poitrine",
+          "aliases": [
+            "Chest-supported T-bar row"
+          ],
+          "help": true,
+          "en": "Chest-supported T-bar row"
         },
         {
           "nom": "Élévations en W au sol",
@@ -253,7 +348,12 @@ window.SIDFIT_EXERCICES = {
           "needs": [
             []
           ],
-          "loadable": false
+          "loadable": false,
+          "id": "elevations-en-w-au-sol",
+          "aliases": [
+            "Prone W raises"
+          ],
+          "help": false
         },
         {
           "nom": "Rowing haltères buste penché",
@@ -267,7 +367,12 @@ window.SIDFIT_EXERCICES = {
               "dumbbells"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "rowing-halteres-buste-penche",
+          "aliases": [
+            "Bent-over dumbbell row"
+          ],
+          "help": true
         },
         {
           "nom": "Rowing élastique assis",
@@ -281,7 +386,12 @@ window.SIDFIT_EXERCICES = {
               "bands"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "rowing-elastique-assis",
+          "aliases": [
+            "Seated resistance-band row"
+          ],
+          "help": false
         }
       ]
     },
@@ -303,7 +413,13 @@ window.SIDFIT_EXERCICES = {
               "machines"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "shrugs-halteres-ou-machine",
+          "aliases": [
+            "Dumbbell or machine shrugs"
+          ],
+          "help": false,
+          "en": "Dumbbell or machine shrugs"
         }
       ]
     },
@@ -323,7 +439,13 @@ window.SIDFIT_EXERCICES = {
               "bench"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "shoulder-press-a-la-smith",
+          "aliases": [
+            "Smith machine shoulder press"
+          ],
+          "help": true,
+          "en": "Smith machine shoulder press"
         },
         {
           "nom": "Élévations latérales poulie",
@@ -337,7 +459,13 @@ window.SIDFIT_EXERCICES = {
               "cables"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "elevations-laterales-poulie",
+          "aliases": [
+            "Cable lateral raise"
+          ],
+          "help": false,
+          "en": "Cable lateral raise"
         },
         {
           "nom": "Élévations latérales haltères",
@@ -351,7 +479,13 @@ window.SIDFIT_EXERCICES = {
               "dumbbells"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "elevations-laterales-halteres",
+          "aliases": [
+            "Dumbbell lateral raise"
+          ],
+          "help": true,
+          "en": "Dumbbell lateral raise"
         },
         {
           "nom": "Élévations latérales machine",
@@ -364,7 +498,13 @@ window.SIDFIT_EXERCICES = {
               "machines"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "elevations-laterales-machine",
+          "aliases": [
+            "Machine lateral raise"
+          ],
+          "help": false,
+          "en": "Machine lateral raise"
         },
         {
           "nom": "Face pull",
@@ -378,7 +518,13 @@ window.SIDFIT_EXERCICES = {
               "cables"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "face-pull",
+          "aliases": [
+            "Cable face pull"
+          ],
+          "help": true,
+          "en": "Cable face pull"
         },
         {
           "nom": "Reverse pec deck",
@@ -391,7 +537,13 @@ window.SIDFIT_EXERCICES = {
               "machines"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "reverse-pec-deck",
+          "aliases": [
+            "Reverse pec deck fly"
+          ],
+          "help": true,
+          "en": "Reverse pec deck fly"
         },
         {
           "nom": "Oiseau à la poulie",
@@ -404,7 +556,13 @@ window.SIDFIT_EXERCICES = {
               "cables"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "oiseau-a-la-poulie",
+          "aliases": [
+            "Cable rear delt fly"
+          ],
+          "help": true,
+          "en": "Cable rear delt fly"
         },
         {
           "nom": "Écartés élastique devant soi",
@@ -418,7 +576,12 @@ window.SIDFIT_EXERCICES = {
               "bands"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "ecartes-elastique-devant-soi",
+          "aliases": [
+            "Band pull-aparts"
+          ],
+          "help": true
         },
         {
           "nom": "Développé épaules haltères debout",
@@ -432,7 +595,12 @@ window.SIDFIT_EXERCICES = {
               "dumbbells"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "developpe-epaules-halteres-debout",
+          "aliases": [
+            "Standing dumbbell shoulder press"
+          ],
+          "help": true
         }
       ]
     },
@@ -452,7 +620,13 @@ window.SIDFIT_EXERCICES = {
               "barbell"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "curl-barre-ez",
+          "aliases": [
+            "EZ-bar curl"
+          ],
+          "help": true,
+          "en": "EZ-bar curl"
         },
         {
           "nom": "Curl incliné haltères",
@@ -467,7 +641,13 @@ window.SIDFIT_EXERCICES = {
               "bench"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "curl-incline-halteres",
+          "aliases": [
+            "Incline dumbbell curl"
+          ],
+          "help": true,
+          "en": "Incline dumbbell curl"
         },
         {
           "nom": "Curl marteau",
@@ -480,7 +660,13 @@ window.SIDFIT_EXERCICES = {
               "dumbbells"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "curl-marteau",
+          "aliases": [
+            "Dumbbell hammer curl"
+          ],
+          "help": true,
+          "en": "Dumbbell hammer curl"
         },
         {
           "nom": "Curl poulie",
@@ -493,7 +679,13 @@ window.SIDFIT_EXERCICES = {
               "cables"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "curl-poulie",
+          "aliases": [
+            "Cable biceps curl"
+          ],
+          "help": true,
+          "en": "Cable biceps curl"
         },
         {
           "nom": "Curl élastique debout",
@@ -507,7 +699,12 @@ window.SIDFIT_EXERCICES = {
               "bands"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "curl-elastique-debout",
+          "aliases": [
+            "Standing band curl"
+          ],
+          "help": false
         }
       ]
     },
@@ -527,7 +724,13 @@ window.SIDFIT_EXERCICES = {
               "cables"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "extension-au-dessus-de-la-tete-a-la-poulie",
+          "aliases": [
+            "Cable overhead triceps extension"
+          ],
+          "help": true,
+          "en": "Cable overhead triceps extension"
         },
         {
           "nom": "Extension poulie haute à la corde",
@@ -541,7 +744,13 @@ window.SIDFIT_EXERCICES = {
               "cables"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "extension-poulie-haute-a-la-corde",
+          "aliases": [
+            "Rope triceps pushdown"
+          ],
+          "help": true,
+          "en": "Rope triceps pushdown"
         },
         {
           "nom": "Extension triceps élastique debout",
@@ -555,7 +764,12 @@ window.SIDFIT_EXERCICES = {
               "bands"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "extension-triceps-elastique-debout",
+          "aliases": [
+            "Standing band triceps extension"
+          ],
+          "help": false
         }
       ]
     },
@@ -575,7 +789,13 @@ window.SIDFIT_EXERCICES = {
               "machines"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "presse-a-cuisses-amplitude-limitee",
+          "aliases": [
+            "Limited-range leg press"
+          ],
+          "help": false,
+          "en": "Limited-range leg press"
         },
         {
           "nom": "Leg extension charge modérée",
@@ -589,7 +809,13 @@ window.SIDFIT_EXERCICES = {
               "machines"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "leg-extension-charge-moderee",
+          "aliases": [
+            "Moderate-load leg extension"
+          ],
+          "help": true,
+          "en": "Moderate-load leg extension"
         },
         {
           "nom": "Hack squat amplitude limitée",
@@ -603,7 +829,13 @@ window.SIDFIT_EXERCICES = {
               "machines"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "hack-squat-amplitude-limitee",
+          "aliases": [
+            "Limited-range hack squat"
+          ],
+          "help": false,
+          "en": "Limited-range hack squat"
         },
         {
           "nom": "Squat au poids du corps",
@@ -615,7 +847,12 @@ window.SIDFIT_EXERCICES = {
           "needs": [
             []
           ],
-          "loadable": false
+          "loadable": false,
+          "id": "squat-au-poids-du-corps",
+          "aliases": [
+            "Bodyweight squat"
+          ],
+          "help": true
         },
         {
           "nom": "Goblet squat",
@@ -632,7 +869,10 @@ window.SIDFIT_EXERCICES = {
               "kettlebell"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "goblet-squat",
+          "aliases": [],
+          "help": false
         }
       ]
     },
@@ -651,7 +891,13 @@ window.SIDFIT_EXERCICES = {
               "machines"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "hip-thrust-machine",
+          "aliases": [
+            "Machine hip thrust"
+          ],
+          "help": false,
+          "en": "Machine hip thrust"
         },
         {
           "nom": "Abduction hanche machine",
@@ -664,7 +910,13 @@ window.SIDFIT_EXERCICES = {
               "machines"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "abduction-hanche-machine",
+          "aliases": [
+            "Machine hip abduction"
+          ],
+          "help": true,
+          "en": "Machine hip abduction"
         },
         {
           "nom": "Pont fessier au sol",
@@ -676,7 +928,12 @@ window.SIDFIT_EXERCICES = {
           "needs": [
             []
           ],
-          "loadable": false
+          "loadable": false,
+          "id": "pont-fessier-au-sol",
+          "aliases": [
+            "Glute bridge"
+          ],
+          "help": true
         },
         {
           "nom": "Abduction de hanche sur le côté",
@@ -688,7 +945,12 @@ window.SIDFIT_EXERCICES = {
           "needs": [
             []
           ],
-          "loadable": false
+          "loadable": false,
+          "id": "abduction-de-hanche-sur-le-cote",
+          "aliases": [
+            "Side-lying hip abduction"
+          ],
+          "help": false
         }
       ]
     },
@@ -708,7 +970,13 @@ window.SIDFIT_EXERCICES = {
               "machines"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "leg-curl-assis",
+          "aliases": [
+            "Seated leg curl"
+          ],
+          "help": true,
+          "en": "Seated leg curl"
         },
         {
           "nom": "Leg curl allongé",
@@ -721,7 +989,13 @@ window.SIDFIT_EXERCICES = {
               "machines"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "leg-curl-allonge",
+          "aliases": [
+            "Lying leg curl"
+          ],
+          "help": true,
+          "en": "Lying leg curl"
         },
         {
           "nom": "Charnière de hanches sans charge",
@@ -733,7 +1007,12 @@ window.SIDFIT_EXERCICES = {
           "needs": [
             []
           ],
-          "loadable": false
+          "loadable": false,
+          "id": "charniere-de-hanches-sans-charge",
+          "aliases": [
+            "Unloaded hip hinge"
+          ],
+          "help": false
         },
         {
           "nom": "Soulevé de terre roumain haltères",
@@ -750,7 +1029,12 @@ window.SIDFIT_EXERCICES = {
               "kettlebell"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "souleve-de-terre-roumain-halteres",
+          "aliases": [
+            "Dumbbell Romanian deadlift"
+          ],
+          "help": false
         }
       ]
     },
@@ -769,7 +1053,13 @@ window.SIDFIT_EXERCICES = {
               "machines"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "adduction-machine",
+          "aliases": [
+            "Machine hip adduction"
+          ],
+          "help": true,
+          "en": "Machine hip adduction"
         }
       ]
     },
@@ -789,7 +1079,13 @@ window.SIDFIT_EXERCICES = {
               "machines"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "mollets-assis",
+          "aliases": [
+            "Seated machine calf raise"
+          ],
+          "help": true,
+          "en": "Seated machine calf raise"
         },
         {
           "nom": "Mollets debout machine",
@@ -802,7 +1098,13 @@ window.SIDFIT_EXERCICES = {
               "machines"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "mollets-debout-machine",
+          "aliases": [
+            "Standing machine calf raise"
+          ],
+          "help": true,
+          "en": "Standing machine calf raise"
         },
         {
           "nom": "Mollets à la presse",
@@ -815,7 +1117,13 @@ window.SIDFIT_EXERCICES = {
               "machines"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "mollets-a-la-presse",
+          "aliases": [
+            "Leg press calf raise"
+          ],
+          "help": true,
+          "en": "Leg press calf raise"
         },
         {
           "nom": "Mollets debout au poids du corps",
@@ -827,7 +1135,12 @@ window.SIDFIT_EXERCICES = {
           "needs": [
             []
           ],
-          "loadable": false
+          "loadable": false,
+          "id": "mollets-debout-au-poids-du-corps",
+          "aliases": [
+            "Standing bodyweight calf raise"
+          ],
+          "help": false
         }
       ]
     },
@@ -847,7 +1160,13 @@ window.SIDFIT_EXERCICES = {
               "cables"
             ]
           ],
-          "loadable": true
+          "loadable": true,
+          "id": "crunch-a-la-poulie",
+          "aliases": [
+            "Cable crunch"
+          ],
+          "help": true,
+          "en": "Cable crunch"
         },
         {
           "nom": "Dead bug",
@@ -859,7 +1178,10 @@ window.SIDFIT_EXERCICES = {
           "needs": [
             []
           ],
-          "loadable": false
+          "loadable": false,
+          "id": "dead-bug",
+          "aliases": [],
+          "help": true
         },
         {
           "nom": "Planche sur les avant-bras",
@@ -871,7 +1193,12 @@ window.SIDFIT_EXERCICES = {
           "needs": [
             []
           ],
-          "loadable": false
+          "loadable": false,
+          "id": "planche-sur-les-avant-bras",
+          "aliases": [
+            "Forearm plank"
+          ],
+          "help": true
         }
       ]
     }

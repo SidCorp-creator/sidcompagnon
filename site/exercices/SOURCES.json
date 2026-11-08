@@ -1,0 +1,1482 @@
+{
+  "dumbbell-bench-press": {
+    "src": "Dumbbell_Bench_Press",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Dumbbell_Bench_Press.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "developpe-couche-halteres"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "dumbbell-bench-press-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Dumbbell_Bench_Press/1.jpg",
+        "sourceSha256": "29ce1d1335b10ae5e92b208c512f4f562493379a9c49bafb249f945c5b702299",
+        "sha256": "fa9898035a68e2dc184b6eb2bfade0be99708ca591e3906c99d1f14fa27d0319",
+        "phase": "start",
+        "alt": {
+          "fr": "Développé couché haltères — position de départ",
+          "en": "Dumbbell bench press — starting position"
+        }
+      },
+      {
+        "file": "dumbbell-bench-press-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Dumbbell_Bench_Press/0.jpg",
+        "sourceSha256": "06494fc5d679283ad7de10fd60149e543396bbd9ba65b0821937de317ce9e001",
+        "sha256": "1e0afed2608556ff5e1102c4645618e68a411535de5bd121ec3cf3fbb9a08717",
+        "phase": "key",
+        "alt": {
+          "fr": "Développé couché haltères — phase clé",
+          "en": "Dumbbell bench press — key phase"
+        }
+      }
+    ]
+  },
+  "leverage-chest-press": {
+    "src": "Leverage_Chest_Press",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Leverage_Chest_Press.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "chest-press-machine"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "leverage-chest-press-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Leverage_Chest_Press/0.jpg",
+        "sourceSha256": "25764ce3cd65e6007b7b8603d658fe7c15f605353b6850aa40e26f078f2d1912",
+        "sha256": "4357181ee9a0bf79c68b6358c78f2be8bd1a356518571753ed13cc1d051e3f75",
+        "phase": "start",
+        "alt": {
+          "fr": "Chest press machine — position de départ",
+          "en": "Machine chest press — starting position"
+        }
+      },
+      {
+        "file": "leverage-chest-press-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Leverage_Chest_Press/1.jpg",
+        "sourceSha256": "d28a7c93978b7010859e7e058a3d382cac9570c68fd1140c7c90a24e67df3502",
+        "sha256": "70d6cdcce55bc3ff6445a1c1478d204abaec4082668db22684b3be27ac65e92f",
+        "phase": "key",
+        "alt": {
+          "fr": "Chest press machine — phase clé",
+          "en": "Machine chest press — key phase"
+        }
+      }
+    ]
+  },
+  "smith-machine-incline-bench-press": {
+    "src": "Smith_Machine_Incline_Bench_Press",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Smith_Machine_Incline_Bench_Press.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "developpe-incline-a-la-smith"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "smith-machine-incline-bench-press-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Smith_Machine_Incline_Bench_Press/0.jpg",
+        "sourceSha256": "f395110a0b7c2f8319591805f14d6d04d89c90ab45923524249026ff5441db6c",
+        "sha256": "30976e7b5e7b9b762a2b23664181e30cb1d1e5b931f1414f117e489bb7155911",
+        "phase": "start",
+        "alt": {
+          "fr": "Développé incliné à la Smith — position de départ",
+          "en": "Smith machine incline bench press — starting position"
+        }
+      },
+      {
+        "file": "smith-machine-incline-bench-press-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Smith_Machine_Incline_Bench_Press/1.jpg",
+        "sourceSha256": "fbf2193e918bd4ab4615756b2e03e0dd733bcf21f262f81b1e80ccfbb75e8aa2",
+        "sha256": "df4301557c3f4a3eee50fec47163696b4a4389ecb2ec2c7d880671277c58956c",
+        "phase": "key",
+        "alt": {
+          "fr": "Développé incliné à la Smith — phase clé",
+          "en": "Smith machine incline bench press — key phase"
+        }
+      }
+    ]
+  },
+  "butterfly": {
+    "src": "Butterfly",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Butterfly.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "pec-deck"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "butterfly-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Butterfly/1.jpg",
+        "sourceSha256": "7f471857324312b07e14f3fe73dd783d2ecd3a3ff15f9f52e9813390cda314db",
+        "sha256": "8f02b58912e23db4e84081e5d586ea72e33b9d25b7c511d9b98461c6dd8e5fed",
+        "phase": "start",
+        "alt": {
+          "fr": "Pec deck — position de départ",
+          "en": "Pec deck fly — starting position"
+        }
+      },
+      {
+        "file": "butterfly-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Butterfly/0.jpg",
+        "sourceSha256": "8819cc3e699ff1d0b5d18c21a411a0e380fc0f316e83d9dcaa1207617f78ea23",
+        "sha256": "fb5510150472b34b0cd8aca76a0c5d61e8e7e87a896188946897507dca58c784",
+        "phase": "key",
+        "alt": {
+          "fr": "Pec deck — phase clé",
+          "en": "Pec deck fly — key phase"
+        }
+      }
+    ]
+  },
+  "pushups": {
+    "src": "Pushups",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Pushups.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "pompes-au-sol"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "pushups-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Pushups/0.jpg",
+        "sourceSha256": "8e6757ae0dc1d50a30f0ea67cdb330994947716a106451860cf7362bcd15f9f4",
+        "sha256": "2ad0e555e45600f26ee202cd1299b91618df4f7d00f712c1b9a17cc4437660e0",
+        "phase": "start",
+        "alt": {
+          "fr": "Pompes au sol — position de départ",
+          "en": "Push-ups — starting position"
+        }
+      },
+      {
+        "file": "pushups-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Pushups/1.jpg",
+        "sourceSha256": "e835d50facea325828d7a3700185a0d8ba9f908db3f033334f81a6f85f774f27",
+        "sha256": "b6ed47aecfeb72ed9d0b2880d429b6c6c127a2f0e8462c2da9f0db657328ed8f",
+        "phase": "key",
+        "alt": {
+          "fr": "Pompes au sol — phase clé",
+          "en": "Push-ups — key phase"
+        }
+      }
+    ]
+  },
+  "weighted-pull-ups": {
+    "src": "Weighted_Pull_Ups",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Weighted_Pull_Ups.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "tractions-pronation-lestees"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "weighted-pull-ups-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Weighted_Pull_Ups/0.jpg",
+        "sourceSha256": "066e6552683526c9fefa1ca8a5dd73f7428a3e32a8f65a4ee4ccdca2bf6dd7ce",
+        "sha256": "aaff74c04e0d6ac63d5c1e367b08bfa25a804b0e294e06324dc8038c1a081c28",
+        "phase": "start",
+        "alt": {
+          "fr": "Tractions pronation lestées — position de départ",
+          "en": "Weighted overhand pull-ups — starting position"
+        }
+      },
+      {
+        "file": "weighted-pull-ups-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Weighted_Pull_Ups/1.jpg",
+        "sourceSha256": "1c9ca5cf666a656d690f2e9793f5e4a6b87b913fe31bb48a8d8ccf6bbcf7bd83",
+        "sha256": "cf64f1c6f2ddb32dabeb4650581400019345e41cf322d762a6f452318084cd8b",
+        "phase": "key",
+        "alt": {
+          "fr": "Tractions pronation lestées — phase clé",
+          "en": "Weighted overhand pull-ups — key phase"
+        }
+      }
+    ]
+  },
+  "v-bar-pullup": {
+    "src": "V-Bar_Pullup",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/V-Bar_Pullup.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "tractions-prise-neutre"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "v-bar-pullup-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/V-Bar_Pullup/1.jpg",
+        "sourceSha256": "696e94197a846b7abdf84d09e79ce69b667736f85d70e5782b3e1b3b5a3f03d3",
+        "sha256": "0d5dac0a38de581ce3bad36a3fcc1df4c7e951f236018c636cf9077eed98f822",
+        "phase": "start",
+        "alt": {
+          "fr": "Tractions prise neutre — position de départ",
+          "en": "Neutral-grip pull-ups — starting position"
+        }
+      },
+      {
+        "file": "v-bar-pullup-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/V-Bar_Pullup/0.jpg",
+        "sourceSha256": "3e604f3c73066057027b42c4d2656ba30aa07b9be978cb5a5513d79a55653fc3",
+        "sha256": "d10a45b3be2db48c1be416ec0ebe82f70e8bf0e3ae309336ab048bc315268562",
+        "phase": "key",
+        "alt": {
+          "fr": "Tractions prise neutre — phase clé",
+          "en": "Neutral-grip pull-ups — key phase"
+        }
+      }
+    ]
+  },
+  "pullups": {
+    "src": "Pullups",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Pullups.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "tractions-prise-large"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "pullups-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Pullups/0.jpg",
+        "sourceSha256": "e56c8c43a41cfe2489dcfffc2c8195fd9e8897ba25165dbc34a4154ed6df5c7a",
+        "sha256": "1f7a2fc31dc096d7b32a35f9a104fc7c05314682a3783a54923abff021a691e9",
+        "phase": "start",
+        "alt": {
+          "fr": "Tractions prise large — position de départ",
+          "en": "Wide-grip pull-ups — starting position"
+        }
+      },
+      {
+        "file": "pullups-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Pullups/1.jpg",
+        "sourceSha256": "40549a52b064e5084a85e2c36afb51438df6ac1097169379a05f21565f8b4f3f",
+        "sha256": "c2c78b7a693072e92d69778c620e7df55e59973c8d198b391caec4e6784708a0",
+        "phase": "key",
+        "alt": {
+          "fr": "Tractions prise large — phase clé",
+          "en": "Wide-grip pull-ups — key phase"
+        }
+      }
+    ]
+  },
+  "straight-arm-pulldown": {
+    "src": "Straight-Arm_Pulldown",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Straight-Arm_Pulldown.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "pull-over-a-la-poulie"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "straight-arm-pulldown-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Straight-Arm_Pulldown/0.jpg",
+        "sourceSha256": "be0021aa99d1a00fa4536b027f9ade42f08acd3b59b384acab270bfbe6e9c294",
+        "sha256": "ea49439d59c1251fffa5fd27e5bdf84fb79f476d778aba3c9642a3e8fa7e54fb",
+        "phase": "start",
+        "alt": {
+          "fr": "Pull-over à la poulie — position de départ",
+          "en": "Straight-arm cable pulldown — starting position"
+        }
+      },
+      {
+        "file": "straight-arm-pulldown-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Straight-Arm_Pulldown/1.jpg",
+        "sourceSha256": "4ef6a19848a25f91f2089d168057e4c84b285d48d14758d16b3d8e131fbbc88c",
+        "sha256": "1df7628fd13e216e97012b9bd689d27b9fccd7f21e562336334ee5d44cc3f85b",
+        "phase": "key",
+        "alt": {
+          "fr": "Pull-over à la poulie — phase clé",
+          "en": "Straight-arm cable pulldown — key phase"
+        }
+      }
+    ]
+  },
+  "dumbbell-incline-row": {
+    "src": "Dumbbell_Incline_Row",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Dumbbell_Incline_Row.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "rowing-avec-appui"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "dumbbell-incline-row-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Dumbbell_Incline_Row/0.jpg",
+        "sourceSha256": "6bdf4dd4c46fd9d50abe73802d49c87f3714dfd05774595e902a5b1765b45d46",
+        "sha256": "d988ff16c9f9907d68a8f14e2b156d5e5553ad115864d14c94bb412f9b9104ef",
+        "phase": "start",
+        "alt": {
+          "fr": "Rowing avec appui — position de départ",
+          "en": "Chest-supported dumbbell row — starting position"
+        }
+      },
+      {
+        "file": "dumbbell-incline-row-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Dumbbell_Incline_Row/1.jpg",
+        "sourceSha256": "8c0cc8f09e194825429a0e7b6c96d9a2a85a5ac6005cf25d31ab65b04adfe739",
+        "sha256": "150eef87a6bf4fa3d9dc27daa69bdff68e19b0b02cfb3889127e4f7e844a3336",
+        "phase": "key",
+        "alt": {
+          "fr": "Rowing avec appui — phase clé",
+          "en": "Chest-supported dumbbell row — key phase"
+        }
+      }
+    ]
+  },
+  "seated-cable-rows": {
+    "src": "Seated_Cable_Rows",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Seated_Cable_Rows.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "tirage-poulie-basse-assis"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "seated-cable-rows-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Seated_Cable_Rows/0.jpg",
+        "sourceSha256": "f5a4adf972f93a6c7b09e003f23005a1163653a7e36b71f1e374acab0243ddf7",
+        "sha256": "0ba7bd92893b7ef16bbd24676690532e093120910de85155b7e83fe8bd215673",
+        "phase": "start",
+        "alt": {
+          "fr": "Tirage poulie basse assis — position de départ",
+          "en": "Seated cable row — starting position"
+        }
+      },
+      {
+        "file": "seated-cable-rows-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Seated_Cable_Rows/1.jpg",
+        "sourceSha256": "0b8e1a0b0fff86cafff45d851ea631a20d469713e9fd735031d3fffb0299fde6",
+        "sha256": "c7d877ebe00e846fa41226aacaaf7cfd3d26b0715c4e38d626f6dbea4114ee40",
+        "phase": "key",
+        "alt": {
+          "fr": "Tirage poulie basse assis — phase clé",
+          "en": "Seated cable row — key phase"
+        }
+      }
+    ]
+  },
+  "leverage-iso-row": {
+    "src": "Leverage_Iso_Row",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Leverage_Iso_Row.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "rowing-machine-convergente"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "leverage-iso-row-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Leverage_Iso_Row/0.jpg",
+        "sourceSha256": "f68e7169d4d0ffcceb8f2a6f1197411806b1e4de8ba731eac43f04b816f80b6f",
+        "sha256": "68545a17cf364ffc7d0305dedb26c5818a5983bec6ab480d85d3468bc84bddc0",
+        "phase": "start",
+        "alt": {
+          "fr": "Rowing machine convergente — position de départ",
+          "en": "Converging machine row — starting position"
+        }
+      },
+      {
+        "file": "leverage-iso-row-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Leverage_Iso_Row/1.jpg",
+        "sourceSha256": "60b3b1ec65afade81734113ead86c887948f15ad20ed9bf38aaf61071e4b1a78",
+        "sha256": "bbe48440f752eb6d68232f5f97b9b9976911636f4a68e952d47f9885de6ef2ea",
+        "phase": "key",
+        "alt": {
+          "fr": "Rowing machine convergente — phase clé",
+          "en": "Converging machine row — key phase"
+        }
+      }
+    ]
+  },
+  "lying-t-bar-row": {
+    "src": "Lying_T-Bar_Row",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Lying_T-Bar_Row.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "t-bar-avec-appui-poitrine"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "lying-t-bar-row-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Lying_T-Bar_Row/0.jpg",
+        "sourceSha256": "e2df3ebe53e7087771174cd47ca27256f9d66455aee6f2cdbff91302ec31a5d3",
+        "sha256": "27a0a68c4810bd598d032163d686f40bc3424328937413ea1c2581435dc05a84",
+        "phase": "start",
+        "alt": {
+          "fr": "T-bar avec appui poitrine — position de départ",
+          "en": "Chest-supported T-bar row — starting position"
+        }
+      },
+      {
+        "file": "lying-t-bar-row-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Lying_T-Bar_Row/1.jpg",
+        "sourceSha256": "edb81609353d3d8e0b9fb8806b8754778ede84eff14fd5c1704882c225dd17c0",
+        "sha256": "a1acfaec7959bb57fdbc075ed331cdc8dc441f1c2220e4032bea72242050499f",
+        "phase": "key",
+        "alt": {
+          "fr": "T-bar avec appui poitrine — phase clé",
+          "en": "Chest-supported T-bar row — key phase"
+        }
+      }
+    ]
+  },
+  "bent-over-two-dumbbell-row": {
+    "src": "Bent_Over_Two-Dumbbell_Row",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Bent_Over_Two-Dumbbell_Row.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "rowing-halteres-buste-penche"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "bent-over-two-dumbbell-row-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Bent_Over_Two-Dumbbell_Row/0.jpg",
+        "sourceSha256": "d691ee3c8d84dd4a7211081dd5c7d4f7c8f016ab764a3b80fd6712c0f523c9da",
+        "sha256": "8fc4292e07b2b7cea95a1bdbab11cc1aeefb62304417ee48045c8e769394219a",
+        "phase": "start",
+        "alt": {
+          "fr": "Rowing haltères buste penché — position de départ",
+          "en": "Bent-over dumbbell row — starting position"
+        }
+      },
+      {
+        "file": "bent-over-two-dumbbell-row-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Bent_Over_Two-Dumbbell_Row/1.jpg",
+        "sourceSha256": "f38f85fc5b9fc401fd4963bb760464c45d8087bebb6afe69eaed57bfa6c51693",
+        "sha256": "d1d6b1a72dc33c1455f76c0308f582eee8321685ef8b7175cfe1d1e8eafd825d",
+        "phase": "key",
+        "alt": {
+          "fr": "Rowing haltères buste penché — phase clé",
+          "en": "Bent-over dumbbell row — key phase"
+        }
+      }
+    ]
+  },
+  "smith-machine-overhead-shoulder-press": {
+    "src": "Smith_Machine_Overhead_Shoulder_Press",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Smith_Machine_Overhead_Shoulder_Press.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "shoulder-press-a-la-smith"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "smith-machine-overhead-shoulder-press-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Smith_Machine_Overhead_Shoulder_Press/0.jpg",
+        "sourceSha256": "6fcb94e9d86a3fb4c79d53741f7041406a474a73b0918597435bfb1246eeb5fa",
+        "sha256": "beb56a3e2b4da4a671d52bd0736740c7df18438da0ec5505fbba8b0f5520af5e",
+        "phase": "start",
+        "alt": {
+          "fr": "Shoulder press à la Smith — position de départ",
+          "en": "Smith machine shoulder press — starting position"
+        }
+      },
+      {
+        "file": "smith-machine-overhead-shoulder-press-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Smith_Machine_Overhead_Shoulder_Press/1.jpg",
+        "sourceSha256": "8526aaa9be980fb387523ee5a44ce2c0488a7d850a1d7d58163a7e1f870e49e4",
+        "sha256": "774ed64823fd1a2d61bb8e112a00654b1bdb690b58eb2cf86671039e2a8b7518",
+        "phase": "key",
+        "alt": {
+          "fr": "Shoulder press à la Smith — phase clé",
+          "en": "Smith machine shoulder press — key phase"
+        }
+      }
+    ]
+  },
+  "side-lateral-raise": {
+    "src": "Side_Lateral_Raise",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Side_Lateral_Raise.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "elevations-laterales-halteres"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "side-lateral-raise-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Side_Lateral_Raise/0.jpg",
+        "sourceSha256": "aa1982c367ea9151ee7769ac1f9f8795209db94a6eb85f7d51a7033886fb7ebc",
+        "sha256": "732a19c2ef9e82065f41eab93604014012264457dba1a8571bbc04314d5530cf",
+        "phase": "start",
+        "alt": {
+          "fr": "Élévations latérales haltères — position de départ",
+          "en": "Dumbbell lateral raise — starting position"
+        }
+      },
+      {
+        "file": "side-lateral-raise-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Side_Lateral_Raise/1.jpg",
+        "sourceSha256": "9210e0fb0202c306026d45a55703aaec89b3bef7aafeb7791aa1d06adcf58ab3",
+        "sha256": "e63af7fe1c6f3cda64087b6f218184f639ec50d165bd41aefaa6bd0abfa3cd91",
+        "phase": "key",
+        "alt": {
+          "fr": "Élévations latérales haltères — phase clé",
+          "en": "Dumbbell lateral raise — key phase"
+        }
+      }
+    ]
+  },
+  "face-pull": {
+    "src": "Face_Pull",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Face_Pull.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "face-pull"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "face-pull-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Face_Pull/0.jpg",
+        "sourceSha256": "a184e981e8cc261a5cc1856b92d897894691d83e27929aae7e89bc9d8aa1d444",
+        "sha256": "e02f776f63654c8c983612fb7c15420e5fe61ea6f1d86373412d67c91d4a02af",
+        "phase": "start",
+        "alt": {
+          "fr": "Face pull — position de départ",
+          "en": "Cable face pull — starting position"
+        }
+      },
+      {
+        "file": "face-pull-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Face_Pull/1.jpg",
+        "sourceSha256": "1aeee744a027983d58328e68a258ee17ba2db85c1d16ba1bad00b4f2511dde2b",
+        "sha256": "54aa0e1738da0ad9415aa236d172990e8c0c9fb6e7fff11b149de01b1939d198",
+        "phase": "key",
+        "alt": {
+          "fr": "Face pull — phase clé",
+          "en": "Cable face pull — key phase"
+        }
+      }
+    ]
+  },
+  "reverse-machine-flyes": {
+    "src": "Reverse_Machine_Flyes",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Reverse_Machine_Flyes.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "reverse-pec-deck"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "reverse-machine-flyes-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Reverse_Machine_Flyes/0.jpg",
+        "sourceSha256": "732cac68ea0780bab823ac3593f4d5f5fda1eb7c14c01620b6a2a12c2f838161",
+        "sha256": "a5cc2dcf9cdffb73bfa2258e50bb73d14a9701101cf466399ab74b6df8e4548c",
+        "phase": "start",
+        "alt": {
+          "fr": "Reverse pec deck — position de départ",
+          "en": "Reverse pec deck fly — starting position"
+        }
+      },
+      {
+        "file": "reverse-machine-flyes-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Reverse_Machine_Flyes/1.jpg",
+        "sourceSha256": "c12b21e34fb7c46c14c0b61e29920637cd8c678474fd97a0c4ef61e86d4cf023",
+        "sha256": "17a58bb4186dbb2b2e27758271f828337321c73e543169f3e1aa49df957e063e",
+        "phase": "key",
+        "alt": {
+          "fr": "Reverse pec deck — phase clé",
+          "en": "Reverse pec deck fly — key phase"
+        }
+      }
+    ]
+  },
+  "cable-rear-delt-fly": {
+    "src": "Cable_Rear_Delt_Fly",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Cable_Rear_Delt_Fly.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "oiseau-a-la-poulie"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "cable-rear-delt-fly-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Cable_Rear_Delt_Fly/0.jpg",
+        "sourceSha256": "2769f255555468289f0ca34b942e44f02b035d2cf9e93ce6e58c0b9bc5aeb800",
+        "sha256": "bfad6ab3e1fcfbf9931cc441517b69eb3a5fafc2aca502f4414d411fb06a0b0a",
+        "phase": "start",
+        "alt": {
+          "fr": "Oiseau à la poulie — position de départ",
+          "en": "Cable rear delt fly — starting position"
+        }
+      },
+      {
+        "file": "cable-rear-delt-fly-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Cable_Rear_Delt_Fly/1.jpg",
+        "sourceSha256": "f7c935718b4335ae422847b8cd6e11d6d7ff748cac8978c4b26faf4a261e8f84",
+        "sha256": "446ce6d8adcb772da2db29c22c0ee83ef259e5732c999e2754360a8a71734858",
+        "phase": "key",
+        "alt": {
+          "fr": "Oiseau à la poulie — phase clé",
+          "en": "Cable rear delt fly — key phase"
+        }
+      }
+    ]
+  },
+  "band-pull-apart": {
+    "src": "Band_Pull_Apart",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Band_Pull_Apart.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "ecartes-elastique-devant-soi"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "band-pull-apart-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Band_Pull_Apart/0.jpg",
+        "sourceSha256": "6cacd32e6ea091ad8627ec8416dd129d16219ca23f39513b89eca3b720d9331f",
+        "sha256": "86b06e68973283e2b351fce5b109c711b91365d116c2283b6ef37989b251ddac",
+        "phase": "start",
+        "alt": {
+          "fr": "Écartés élastique devant soi — position de départ",
+          "en": "Band pull-aparts — starting position"
+        }
+      },
+      {
+        "file": "band-pull-apart-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Band_Pull_Apart/1.jpg",
+        "sourceSha256": "7c15e495d007835da36e17a671a048a31a56d0cfd9da2beab85a234e1493133b",
+        "sha256": "82bd57a3eebbb5a7494371b9ecfcd4767e6cfaa833562de64a5c1ac79c996a92",
+        "phase": "key",
+        "alt": {
+          "fr": "Écartés élastique devant soi — phase clé",
+          "en": "Band pull-aparts — key phase"
+        }
+      }
+    ]
+  },
+  "standing-dumbbell-press": {
+    "src": "Standing_Dumbbell_Press",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Standing_Dumbbell_Press.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "developpe-epaules-halteres-debout"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "standing-dumbbell-press-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Standing_Dumbbell_Press/0.jpg",
+        "sourceSha256": "db1ff8c6dc877a840884f8a3202eba2be7a3f14ab95065f5f18dff50c4208423",
+        "sha256": "ac273c2802384fe29ed4765f0bbf4ec970dbc3bfefc768576087a995167cdc1a",
+        "phase": "start",
+        "alt": {
+          "fr": "Développé épaules haltères debout — position de départ",
+          "en": "Standing dumbbell shoulder press — starting position"
+        }
+      },
+      {
+        "file": "standing-dumbbell-press-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Standing_Dumbbell_Press/1.jpg",
+        "sourceSha256": "fe28bcdd4d76ece161141a80f79c8a18e480c262d2dec80b4beafc4720027ea8",
+        "sha256": "5142e0e0698f577679e80e1018cbd74ce9caeaa07965d64b2504fea1c5c95e1a",
+        "phase": "key",
+        "alt": {
+          "fr": "Développé épaules haltères debout — phase clé",
+          "en": "Standing dumbbell shoulder press — key phase"
+        }
+      }
+    ]
+  },
+  "ez-bar-curl": {
+    "src": "EZ-Bar_Curl",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/EZ-Bar_Curl.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "curl-barre-ez"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "ez-bar-curl-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/EZ-Bar_Curl/0.jpg",
+        "sourceSha256": "b4c9b00a033014b6095bb37047d0c735ad95a8753a2d8df6729bb51a106d57e4",
+        "sha256": "cc49732875e2d23bc6b57ce6a8005cc57dbebcf85f200d2e44c961bab4e18f99",
+        "phase": "start",
+        "alt": {
+          "fr": "Curl barre EZ — position de départ",
+          "en": "EZ-bar curl — starting position"
+        }
+      },
+      {
+        "file": "ez-bar-curl-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/EZ-Bar_Curl/1.jpg",
+        "sourceSha256": "68010ec67ee0f9f6d2ec6c8ff6ae85790390988629691dd82217c3f42693c1e5",
+        "sha256": "30b9140c7de04ac971dabd4ae51a9bc4b82440338b7aae790249435639812599",
+        "phase": "key",
+        "alt": {
+          "fr": "Curl barre EZ — phase clé",
+          "en": "EZ-bar curl — key phase"
+        }
+      }
+    ]
+  },
+  "incline-dumbbell-curl": {
+    "src": "Incline_Dumbbell_Curl",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Incline_Dumbbell_Curl.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "curl-incline-halteres"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "incline-dumbbell-curl-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Incline_Dumbbell_Curl/0.jpg",
+        "sourceSha256": "49f16679de110156cda5caf7b68f277374102100bb9f09341bb8a802cbd6d8f7",
+        "sha256": "ea2837369353975d1f3f3a2028d6cd05cdbf71a9273cea4b582629f61610e735",
+        "phase": "start",
+        "alt": {
+          "fr": "Curl incliné haltères — position de départ",
+          "en": "Incline dumbbell curl — starting position"
+        }
+      },
+      {
+        "file": "incline-dumbbell-curl-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Incline_Dumbbell_Curl/1.jpg",
+        "sourceSha256": "b4580e1c4716ccf44d20ea183656ce7372d7a07e8aee24666ed63b7f733a9fc2",
+        "sha256": "bc6830fbfa3c601277a005ded1fb419ed606ce98f76ecbf36febf15ab0649277",
+        "phase": "key",
+        "alt": {
+          "fr": "Curl incliné haltères — phase clé",
+          "en": "Incline dumbbell curl — key phase"
+        }
+      }
+    ]
+  },
+  "hammer-curls": {
+    "src": "Hammer_Curls",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Hammer_Curls.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "curl-marteau"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "hammer-curls-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Hammer_Curls/0.jpg",
+        "sourceSha256": "f3c330d75545bed1cc325a4abf84940109db64fa5ab967b1963ecccccd3b2fe8",
+        "sha256": "e139eac466d82812d17d7c5f973f169123da8df9cd801217ba5b67ab0ab7f2c0",
+        "phase": "start",
+        "alt": {
+          "fr": "Curl marteau — position de départ",
+          "en": "Dumbbell hammer curl — starting position"
+        }
+      },
+      {
+        "file": "hammer-curls-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Hammer_Curls/1.jpg",
+        "sourceSha256": "42adf0d1577528fdfab45b360918320394a5017b082d2502ab3a00600622907e",
+        "sha256": "33c5f4251209b81b853b0c8b0a67dc25819824aaf0ab2df70e29f28434f237f9",
+        "phase": "key",
+        "alt": {
+          "fr": "Curl marteau — phase clé",
+          "en": "Dumbbell hammer curl — key phase"
+        }
+      }
+    ]
+  },
+  "standing-biceps-cable-curl": {
+    "src": "Standing_Biceps_Cable_Curl",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Standing_Biceps_Cable_Curl.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "curl-poulie"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "standing-biceps-cable-curl-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Standing_Biceps_Cable_Curl/0.jpg",
+        "sourceSha256": "ccfe9ea6c72996c905bc82c032facf110246442ef6ccf28babee775277f0bc29",
+        "sha256": "950aee02ce2ee59f643f952f91931a3eaa15eef9b49c6c282207fb0b739ae474",
+        "phase": "start",
+        "alt": {
+          "fr": "Curl poulie — position de départ",
+          "en": "Cable biceps curl — starting position"
+        }
+      },
+      {
+        "file": "standing-biceps-cable-curl-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Standing_Biceps_Cable_Curl/1.jpg",
+        "sourceSha256": "5aa3493077fbf138f40bd71a476880395275599ff72ca30f04ce0a15313c201b",
+        "sha256": "b8224706c49217c96ccafcc036c761265ef30782de8a75a8ee271764c6143567",
+        "phase": "key",
+        "alt": {
+          "fr": "Curl poulie — phase clé",
+          "en": "Cable biceps curl — key phase"
+        }
+      }
+    ]
+  },
+  "cable-rope-overhead-triceps-extension": {
+    "src": "Cable_Rope_Overhead_Triceps_Extension",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Cable_Rope_Overhead_Triceps_Extension.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "extension-au-dessus-de-la-tete-a-la-poulie"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "cable-rope-overhead-triceps-extension-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Cable_Rope_Overhead_Triceps_Extension/0.jpg",
+        "sourceSha256": "206683ce757bedf841689cb8382e0576c81934ca736d3866a034155b518f3e9b",
+        "sha256": "42b0d5fe30aeb2bda2ad0a9012f1de77bd24e81519bc14ff361db659fefef060",
+        "phase": "start",
+        "alt": {
+          "fr": "Extension au-dessus de la tête à la poulie — position de départ",
+          "en": "Cable overhead triceps extension — starting position"
+        }
+      },
+      {
+        "file": "cable-rope-overhead-triceps-extension-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Cable_Rope_Overhead_Triceps_Extension/1.jpg",
+        "sourceSha256": "7f2b439eff6d30be27e06e87b14733ee345bf1ec33ebf8c316e1552f341a06a1",
+        "sha256": "7fcb91985c67fe4c3c71c9220063ed49ce8a3e4ae10f9b80297ad1e141c32dd0",
+        "phase": "key",
+        "alt": {
+          "fr": "Extension au-dessus de la tête à la poulie — phase clé",
+          "en": "Cable overhead triceps extension — key phase"
+        }
+      }
+    ]
+  },
+  "triceps-pushdown-rope-attachment": {
+    "src": "Triceps_Pushdown_-_Rope_Attachment",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Triceps_Pushdown_-_Rope_Attachment.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "extension-poulie-haute-a-la-corde"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "triceps-pushdown-rope-attachment-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Triceps_Pushdown_-_Rope_Attachment/1.jpg",
+        "sourceSha256": "5f40623d6913781d34216ee9d0625a6808a21c0de8cbe25de0928c84a2699ece",
+        "sha256": "345aa5c42f235a7cf2b9c330e9012f565c597f452e4e8fc39ddcf40a66006bf6",
+        "phase": "start",
+        "alt": {
+          "fr": "Extension poulie haute à la corde — position de départ",
+          "en": "Rope triceps pushdown — starting position"
+        }
+      },
+      {
+        "file": "triceps-pushdown-rope-attachment-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Triceps_Pushdown_-_Rope_Attachment/0.jpg",
+        "sourceSha256": "5761442a548a2dba5fbfa1290cab7e9c58f31439b883c94627cf66d309ed2b4b",
+        "sha256": "2890e32af1909c2d34eed6e5bf5359bf4c50ce61921bbf3ed73858574292bfa5",
+        "phase": "key",
+        "alt": {
+          "fr": "Extension poulie haute à la corde — phase clé",
+          "en": "Rope triceps pushdown — key phase"
+        }
+      }
+    ]
+  },
+  "leg-extensions": {
+    "src": "Leg_Extensions",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Leg_Extensions.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "leg-extension-charge-moderee"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "leg-extensions-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Leg_Extensions/0.jpg",
+        "sourceSha256": "54fd46441d63459e3cdd26f26b826ad049e835fb7f1984b42398fdfbdefb5bfa",
+        "sha256": "3b2d0a9824d747ddf554439d816ee037f5da64e6c6be3a09f5c25eaf34574cc3",
+        "phase": "start",
+        "alt": {
+          "fr": "Leg extension charge modérée — position de départ",
+          "en": "Moderate-load leg extension — starting position"
+        }
+      },
+      {
+        "file": "leg-extensions-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Leg_Extensions/1.jpg",
+        "sourceSha256": "9e04d0e306d8fee608305766b14a56df1d1312956d374152f58dcbf267d591a9",
+        "sha256": "bc29f54cccbf1a718f26be8d1b26c0487d7fcae4558246bdb437f3304ac060a7",
+        "phase": "key",
+        "alt": {
+          "fr": "Leg extension charge modérée — phase clé",
+          "en": "Moderate-load leg extension — key phase"
+        }
+      }
+    ]
+  },
+  "bodyweight-squat": {
+    "src": "Bodyweight_Squat",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Bodyweight_Squat.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "squat-au-poids-du-corps"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "bodyweight-squat-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Bodyweight_Squat/0.jpg",
+        "sourceSha256": "85715b9b75afe568ef7cb1863005be532a2457bf7e340802da0cd5cc06914b62",
+        "sha256": "63336d23200c1add64d79b566375c3ed17891ab7e2ff8fe530f8afb76157c68e",
+        "phase": "start",
+        "alt": {
+          "fr": "Squat au poids du corps — position de départ",
+          "en": "Bodyweight squat — starting position"
+        }
+      },
+      {
+        "file": "bodyweight-squat-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Bodyweight_Squat/1.jpg",
+        "sourceSha256": "3fa6886632674f02308cdee53ce32649fd648774701fbd20ee280d63be40e5a4",
+        "sha256": "3eb8facbf1bb623384eb3a612e62e3b9463c3b704219464925f521b47806f415",
+        "phase": "key",
+        "alt": {
+          "fr": "Squat au poids du corps — phase clé",
+          "en": "Bodyweight squat — key phase"
+        }
+      }
+    ]
+  },
+  "thigh-abductor": {
+    "src": "Thigh_Abductor",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Thigh_Abductor.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "abduction-hanche-machine"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "thigh-abductor-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Thigh_Abductor/0.jpg",
+        "sourceSha256": "572cef392f2a10c377153c5fe0acd5e0b4d0e881024ff6a7fdd4a6320dc7ed51",
+        "sha256": "5482f33344340916e8e03e210dee0a8e55f0b5b04af59efd6bc48faf87b340fe",
+        "phase": "start",
+        "alt": {
+          "fr": "Abduction hanche machine — position de départ",
+          "en": "Machine hip abduction — starting position"
+        }
+      },
+      {
+        "file": "thigh-abductor-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Thigh_Abductor/1.jpg",
+        "sourceSha256": "c438500671ec2dc6fa726086ec4a56903635ee65e37b3449174f18aaed1409c9",
+        "sha256": "e96fb2d5c9a271237e37fd1fb0c41785bfdb54b28cc8b8abe12d3c6f8b72851e",
+        "phase": "key",
+        "alt": {
+          "fr": "Abduction hanche machine — phase clé",
+          "en": "Machine hip abduction — key phase"
+        }
+      }
+    ]
+  },
+  "butt-lift-bridge": {
+    "src": "Butt_Lift_Bridge",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Butt_Lift_Bridge.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "pont-fessier-au-sol"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "butt-lift-bridge-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Butt_Lift_Bridge/0.jpg",
+        "sourceSha256": "f74f6813fc43cd5f60e6779ec182049a2ddb3ed9dc5777389dd4ab1880392d5c",
+        "sha256": "957410cc835c49e45d7a8aafb8b60bedad069a8410937760302fcc5ad29745a2",
+        "phase": "start",
+        "alt": {
+          "fr": "Pont fessier au sol — position de départ",
+          "en": "Glute bridge — starting position"
+        }
+      },
+      {
+        "file": "butt-lift-bridge-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Butt_Lift_Bridge/1.jpg",
+        "sourceSha256": "3eacd0851b56e3e1ea29a0a73c596b0d10e4bc746dd64afaed50d7255eae0819",
+        "sha256": "84951abe3d7ede35334b67ebce5bbdac7b49172a7188e1e5b632dc708f81b4f1",
+        "phase": "key",
+        "alt": {
+          "fr": "Pont fessier au sol — phase clé",
+          "en": "Glute bridge — key phase"
+        }
+      }
+    ]
+  },
+  "seated-leg-curl": {
+    "src": "Seated_Leg_Curl",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Seated_Leg_Curl.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "leg-curl-assis"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "seated-leg-curl-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Seated_Leg_Curl/0.jpg",
+        "sourceSha256": "c84ece2e8b52314c8605e9fc3ef1930a59fec475ff1b5a7f98687a4b8fc580a7",
+        "sha256": "aca8476668ed3c9ccbed5a4528470f39e43edb8d9bf3edee1b5cf4fd39660784",
+        "phase": "start",
+        "alt": {
+          "fr": "Leg curl assis — position de départ",
+          "en": "Seated leg curl — starting position"
+        }
+      },
+      {
+        "file": "seated-leg-curl-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Seated_Leg_Curl/1.jpg",
+        "sourceSha256": "2cbd4aa6c22162a209a7ced5d1a68274d44e88780c8c3936c7fab57d6e9918fd",
+        "sha256": "85ec0ac63d917c9374cd2136b41961661a4e4c7ddaad5a68329ef251dc64ed6e",
+        "phase": "key",
+        "alt": {
+          "fr": "Leg curl assis — phase clé",
+          "en": "Seated leg curl — key phase"
+        }
+      }
+    ]
+  },
+  "lying-leg-curls": {
+    "src": "Lying_Leg_Curls",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Lying_Leg_Curls.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "leg-curl-allonge"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "lying-leg-curls-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Lying_Leg_Curls/0.jpg",
+        "sourceSha256": "0875bf50a6615d4dc33df63110d3c6ee55b41606ed79a9fe705e17fcb4626095",
+        "sha256": "f526c435a9f07f3eb6e0774c0231781d597e5bdb9787eee3cb26ca8462ad7acf",
+        "phase": "start",
+        "alt": {
+          "fr": "Leg curl allongé — position de départ",
+          "en": "Lying leg curl — starting position"
+        }
+      },
+      {
+        "file": "lying-leg-curls-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Lying_Leg_Curls/1.jpg",
+        "sourceSha256": "4ccf6f4a26dc97dcf8241cc55e08e22579b5a02bdebafe56d74f951ceab2bd06",
+        "sha256": "b7b31b614045f7054b634591238b7e4a038ed2ba924935b0d64b5bab1a1314bb",
+        "phase": "key",
+        "alt": {
+          "fr": "Leg curl allongé — phase clé",
+          "en": "Lying leg curl — key phase"
+        }
+      }
+    ]
+  },
+  "thigh-adductor": {
+    "src": "Thigh_Adductor",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Thigh_Adductor.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "adduction-machine"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "thigh-adductor-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Thigh_Adductor/0.jpg",
+        "sourceSha256": "3b363f261901744a6e833a19fcd835db95495d0beda0eb6695e583ea2dfcf3ab",
+        "sha256": "3a2decb5113ee80c21bad864f76dd1b8386ad15a84d0cc3247fad88f7c854fda",
+        "phase": "start",
+        "alt": {
+          "fr": "Adduction machine — position de départ",
+          "en": "Machine hip adduction — starting position"
+        }
+      },
+      {
+        "file": "thigh-adductor-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Thigh_Adductor/1.jpg",
+        "sourceSha256": "40be513dd0d6fad0fbd734431e4e83f924b7385b90b53d9ec7eab8809d96df7a",
+        "sha256": "b75231e8eb87467827b3fc51039ce51bae9309f844e8959729c445efba9b2086",
+        "phase": "key",
+        "alt": {
+          "fr": "Adduction machine — phase clé",
+          "en": "Machine hip adduction — key phase"
+        }
+      }
+    ]
+  },
+  "seated-calf-raise": {
+    "src": "Seated_Calf_Raise",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Seated_Calf_Raise.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "mollets-assis"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "seated-calf-raise-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Seated_Calf_Raise/0.jpg",
+        "sourceSha256": "6f1e5d06681b9d7050531622e065391fd3adb8d18e41a23fb80c62cf99c88d63",
+        "sha256": "7a8e723eecf4747f5bf26219ee12104b9d353bab8aa2b4d5ec4b05734e7ffa7a",
+        "phase": "start",
+        "alt": {
+          "fr": "Mollets assis — position de départ",
+          "en": "Seated machine calf raise — starting position"
+        }
+      },
+      {
+        "file": "seated-calf-raise-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Seated_Calf_Raise/1.jpg",
+        "sourceSha256": "c397665d9d93377db1a579a6c7a3ab4b2b92428706df545fffcc7cb35e7ec738",
+        "sha256": "500da8acebeafe668245a7d26bf81181fea8eaabac6edbfb97a60309075c0714",
+        "phase": "key",
+        "alt": {
+          "fr": "Mollets assis — phase clé",
+          "en": "Seated machine calf raise — key phase"
+        }
+      }
+    ]
+  },
+  "standing-calf-raises": {
+    "src": "Standing_Calf_Raises",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Standing_Calf_Raises.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "mollets-debout-machine"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "standing-calf-raises-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Standing_Calf_Raises/0.jpg",
+        "sourceSha256": "44922f411d204bb00dc86015981413e0ca503f0b9ba2346af25f345a91cf4848",
+        "sha256": "abac1d66d61bfa8a925bad0be1d7571f0aee2860ec42ec719e18286446c51c28",
+        "phase": "start",
+        "alt": {
+          "fr": "Mollets debout machine — position de départ",
+          "en": "Standing machine calf raise — starting position"
+        }
+      },
+      {
+        "file": "standing-calf-raises-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Standing_Calf_Raises/1.jpg",
+        "sourceSha256": "f0990fed5d984fdf31c7b6a8420adb59ed6a3f286af6f228d53b68445caa1c51",
+        "sha256": "27eafd0f2fe59b2d1e6667367f892baed72f7c55729de6977baf38e8311ae65d",
+        "phase": "key",
+        "alt": {
+          "fr": "Mollets debout machine — phase clé",
+          "en": "Standing machine calf raise — key phase"
+        }
+      }
+    ]
+  },
+  "calf-press-on-the-leg-press-machine": {
+    "src": "Calf_Press_On_The_Leg_Press_Machine",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Calf_Press_On_The_Leg_Press_Machine.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "mollets-a-la-presse"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "calf-press-on-the-leg-press-machine-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Calf_Press_On_The_Leg_Press_Machine/0.jpg",
+        "sourceSha256": "c4cdfd6876c2346b8185c0781a91efa7e22bf9427358244bf894de0b32f47249",
+        "sha256": "42773cb366c955fbd36ab95d5c82368cb3880bb66171358ecb58e5651a2a5d1e",
+        "phase": "start",
+        "alt": {
+          "fr": "Mollets à la presse — position de départ",
+          "en": "Leg press calf raise — starting position"
+        }
+      },
+      {
+        "file": "calf-press-on-the-leg-press-machine-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Calf_Press_On_The_Leg_Press_Machine/1.jpg",
+        "sourceSha256": "31f5eae2d3af103967a15fa5aa619fdfe52a892f5efd66c805e0493e1643794a",
+        "sha256": "6d94539adcdb23c3aea75cef566235e94b8f79e93d9c9953c073fcd0c0e85c41",
+        "phase": "key",
+        "alt": {
+          "fr": "Mollets à la presse — phase clé",
+          "en": "Leg press calf raise — key phase"
+        }
+      }
+    ]
+  },
+  "cable-crunch": {
+    "src": "Cable_Crunch",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Cable_Crunch.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "crunch-a-la-poulie"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "cable-crunch-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Cable_Crunch/0.jpg",
+        "sourceSha256": "196cc4cb510ecafec24c1648c851aa160d4652917d7c0137b4cf7fb1eeb9c668",
+        "sha256": "ecc694c8deba8a2608a7a139a78904b62873ad605d20fd0776cbc066d5cd2ea6",
+        "phase": "start",
+        "alt": {
+          "fr": "Crunch à la poulie — position de départ",
+          "en": "Cable crunch — starting position"
+        }
+      },
+      {
+        "file": "cable-crunch-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Cable_Crunch/1.jpg",
+        "sourceSha256": "e65fc1effc632eb78d8cda09ef95bf89c4bb235b15757e9a33306ca61a78f606",
+        "sha256": "9aeb9d6910ff81eedfbcb2a606a00725c36688a9b8ea89c46f55ec06f90b3b36",
+        "phase": "key",
+        "alt": {
+          "fr": "Crunch à la poulie — phase clé",
+          "en": "Cable crunch — key phase"
+        }
+      }
+    ]
+  },
+  "dead-bug": {
+    "src": "Dead_Bug",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Dead_Bug.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "dead-bug"
+    ],
+    "exact": true,
+    "note": "Paire de la même entrée et du même modèle, ordre départ puis phase clé ; redimensionnement intégral sans couper le corps.",
+    "images": [
+      {
+        "file": "dead-bug-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Dead_Bug/0.jpg",
+        "sourceSha256": "8b4e3e357c201d3752ce4fe97a0f1d00b00e7479cd702f8846791fdf5df66220",
+        "sha256": "c2ea359e1bcd0488408c07157dd002670e173bfdefa9336352d0277d5d42d302",
+        "phase": "start",
+        "alt": {
+          "fr": "Dead bug — position de départ",
+          "en": "Dead bug — starting position"
+        }
+      },
+      {
+        "file": "dead-bug-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Dead_Bug/1.jpg",
+        "sourceSha256": "8de0d54e4c41433b809b045a82832c6632c35102bee945cd3caf522f054d6730",
+        "sha256": "b4665c0d03df2b129dae515512ce7085551cfdff56b436bdb5cffecc25d62f25",
+        "phase": "key",
+        "alt": {
+          "fr": "Dead bug — phase clé",
+          "en": "Dead bug — key phase"
+        }
+      }
+    ]
+  },
+  "plank": {
+    "src": "Plank",
+    "url": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Plank.json",
+    "licence": "Unlicense",
+    "licenceUrl": "https://github.com/yuhonas/free-exercise-db/blob/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/LICENSE.md",
+    "retrieved": "2026-11-08",
+    "revision": "f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5",
+    "exercises": [
+      "planche-sur-les-avant-bras"
+    ],
+    "exact": true,
+    "note": "Statique : photo 0 = installation à genoux, photo 1 = tenue sur les avant-bras ; pas deux répétitions.",
+    "images": [
+      {
+        "file": "plank-0.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Plank/0.jpg",
+        "sourceSha256": "7a6545152b4c918a84b7e0fd2c3c7d10d571f8fbda8e4459354eb24059ff245d",
+        "sha256": "5bc9c49b4c5265e0207f6c27634009d6a778492602a87fb4cf6a43961936b018",
+        "phase": "setup",
+        "alt": {
+          "fr": "Planche sur les avant-bras — installation à genoux",
+          "en": "Forearm plank — kneeling setup"
+        }
+      },
+      {
+        "file": "plank-1.jpg",
+        "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/Plank/1.jpg",
+        "sourceSha256": "7f6b690f7594dfab002fb27d36f8247957171b08d19020f24208afd4d5186043",
+        "sha256": "e978eaa8de27c3dbcfd371a82175d1b770d1e56dc22031b5ea15b4f89e07b33a",
+        "phase": "hold",
+        "alt": {
+          "fr": "Planche sur les avant-bras — tenue sur les avant-bras",
+          "en": "Forearm plank — forearm hold"
+        }
+      }
+    ]
+  }
+}

@@ -6,12 +6,12 @@ const catalogue=JSON.parse(fs.readFileSync('supabase/functions/_shared/muscu-cat
 let seq=0;const engine=create(catalogue,{id:()=>`test-${++seq}`,now:()=>1794132000000});
 const home={v:1,goal:'forme',level:'deb',days:2,dur:20,place:'home',equip:['none'],avoidZones:[],avoidEx:[],prefer:[],pain:'none',other:[],notes:''};
 const gym={...home,goal:'force',level:'conf',days:4,dur:60,place:'gym',equip:['dumbbells','bench','barbell','machines','cables','pullup']};
-const limited={...home,goal:'muscle',level:'inter',days:3,dur:35,equip:['bands'],avoidZones:['knee'],avoidEx:['Rowing élastique assis'],prefer:['Curl élastique debout'],other:[{sport:'Vélo',perWeek:4}]};
+const limited={...home,goal:'muscle',level:'inter',days:3,dur:35,equip:['bands'],avoidZones:['knee'],avoidEx:['Rowing élastique assis'],prefer:['Écartés élastique devant soi'],other:[{sport:'Vélo',perWeek:4}]};
 const catalog=catalogue.groupes.flatMap(g=>g.exercices.map(e=>({...e,m:g.muscle}))),find=n=>catalog.find(e=>e.nom===n);
-function check(a,r){assert.equal(r.plan.days.length,a.days);assert.deepEqual(r.plan.profile,a);assert.equal(r.est.length,a.days);r.plan.days.forEach((d,i)=>{assert.ok(d.ex.length);assert.ok(r.est[i]<=a.dur);const pats=new Set();for(const x of d.ex){const e=find(x.name);assert.ok(e);assert.ok(e.needs.some(req=>req.every(k=>a.equip.includes(k))),x.name);assert.ok(!a.avoidEx.includes(x.name));for(const z of a.avoidZones)assert.ok(!e.zones.includes({knee:'k',back:'b',shoulder:'s'}[z]));assert.ok(!pats.has(x.pat));pats.add(x.pat);assert.ok(!('kg' in x));assert.ok(x.sets>=1);assert.ok(x.rir!=='0');assert.equal(r.est[i],engine.muEstimate(d.ex))}})}
+function check(a,r){assert.equal(r.plan.days.length,a.days);assert.deepEqual(r.plan.profile,a);assert.equal(r.est.length,a.days);r.plan.days.forEach((d,i)=>{assert.ok(d.ex.length);assert.ok(r.est[i]<=a.dur);const pats=new Set();for(const x of d.ex){const e=find(x.name);assert.ok(e);assert.equal(e.help,true);assert.ok(e.needs.some(req=>req.every(k=>a.equip.includes(k))),x.name);assert.ok(!a.avoidEx.includes(x.name));for(const z of a.avoidZones)assert.ok(!e.zones.includes({knee:'k',back:'b',shoulder:'s'}[z]));assert.ok(!pats.has(x.pat));pats.add(x.pat);assert.ok(!('kg' in x));assert.ok(x.sets>=1);assert.ok(x.rir!=='0');assert.equal(r.est[i],engine.muEstimate(d.ex))}})}
 const results=[home,gym,limited].map(a=>{const snapshot=JSON.stringify(a);const r=engine.muBuild(a);check(a,r);assert.equal(JSON.stringify(a),snapshot);return r});
 assert.notDeepEqual(results[0].plan.days.map(d=>d.ex.map(x=>x.name)),results[1].plan.days.map(d=>d.ex.map(x=>x.name)));
-assert.ok(results[2].warnings.length);assert.ok(results[2].plan.days.some(d=>d.ex.some(x=>x.name==='Curl élastique debout')));
+assert.ok(results[2].warnings.length);assert.ok(results[2].plan.days.some(d=>d.ex.some(x=>x.name==='Écartés élastique devant soi')));
 assert.ok(results[2].plan.days.every(d=>d.ex.every(x=>x.sets===2))); // other sports genuinely change volume
 assert.ok(engine.muBuild({...home,pain:'yes'},'en').warnings.some(x=>/professional advice/.test(x)));assert.ok(!engine.muBuild(home,'en').why.some(x=>/Programme local/.test(x)));
 for(const name of engine.muAlternatives('Rowing élastique assis',limited)){const e=find(name);assert.equal(e.m,'back');assert.ok(!limited.avoidEx.includes(name));assert.ok(e.needs.some(req=>req.every(k=>limited.equip.includes(k))))}
@@ -25,13 +25,19 @@ assert.ok(replaced);assert.equal(JSON.stringify(plan),snapshot);assert.throws(()
 // Regression: an experienced profile must not get an easier push-up while a standard variant fits.
 const forceLimited={...home,goal:'force',level:'inter',days:3,dur:45,equip:['dumbbells','bands'],avoidZones:['knee'],avoidEx:['Squat au poids du corps','Goblet squat']};
 for(const level of ['inter','conf']){const a={...forceLimited,level},r=engine.muBuild(a,'en'),all=r.plan.days.flatMap(d=>d.ex);assert.ok(all.some(x=>x.name==='Pompes au sol'));assert.ok(!all.some(x=>['Pompes au mur','Pompes sur les genoux'].includes(x.name)));assert.ok(!engine.muAllowed(a).some(x=>x.name==='Pompes au mur'));assert.ok(!engine.muAlternatives('Développé couché haltères',a).includes('Pompes au mur'))}
-assert.ok(engine.muBuild(home).plan.days[0].ex.some(x=>x.name==='Pompes au mur'),'beginner gets an accessible variant first');
-const fallback={...forceLimited,avoidEx:[...forceLimited.avoidEx,'Pompes au sol']};assert.ok(engine.muBuild(fallback).plan.days.some(d=>d.ex.some(x=>x.name==='Pompes au mur')),'easy fallback remains when no standard variant is possible');
-assert.ok(engine.muBuild({...forceLimited,prefer:['Pompes au mur']}).plan.days.some(d=>d.ex.some(x=>x.name==='Pompes au mur')),'explicit preference remains respected');
-assert.ok(!engine.muBuild({...forceLimited,prefer:['Pompes sur les genoux']}).plan.days.some(d=>d.ex.some(x=>x.name==='Pompes sur les genoux')),'knee exclusion wins over preference');
+// Level-choice unit fixture: easy variants deliberately unavailable in the production catalogue until their photos exist.
+const levelCatalogue=JSON.parse(JSON.stringify(catalogue));for(const g of levelCatalogue.groupes)for(const e of g.exercices)if(['Pompes au mur','Pompes sur les genoux'].includes(e.nom))e.help=true;
+const levelEngine=create(levelCatalogue,{id:()=>`level-${++seq}`,now:()=>1794132000000});
+assert.ok(levelEngine.muBuild(home).plan.days[0].ex.some(x=>x.name==='Pompes au mur'),'fixture: beginner gets accessible variant');
+const fallback={...forceLimited,avoidEx:[...forceLimited.avoidEx,'Pompes au sol']};assert.ok(levelEngine.muBuild(fallback).plan.days.some(d=>d.ex.some(x=>x.name==='Pompes au mur')),'fixture: easy fallback remains');
+assert.ok(levelEngine.muBuild({...forceLimited,prefer:['Pompes au mur']}).plan.days.some(d=>d.ex.some(x=>x.name==='Pompes au mur')),'fixture: preference respected');
+assert.ok(!levelEngine.muBuild({...forceLimited,prefer:['Pompes sur les genoux']}).plan.days.some(d=>d.ex.some(x=>x.name==='Pompes sur les genoux')),'fixture: knee exclusion wins');
+assert.ok(!engine.muAllowed({...home,prefer:['Pompes au mur']}).some(x=>x.name==='Pompes au mur'),'production: incomplete help beats explicit preference');
 const regressed=engine.muBuild(forceLimited);const chest=regressed.plan.days.flatMap(d=>d.ex).find(x=>x.pat==='chest:hpress');chest.name='Pompes au mur';assert.throws(()=>engine.muValidate(regressed,forceLimited),/invalid_programme/);
 // All supported frequencies and time caps fit, without silently relaxing equipment.
-for(const days of [1,2,3,4,5,6])for(const dur of [20,45,120]){const a={...home,days,dur};check(a,engine.muBuild(a))}
+for(const days of [1,2,3,4,5,6])for(const dur of [20,45,120]){const a={...gym,days,dur};check(a,engine.muBuild(a))}
+for(const days of [1,2,3,4])check({...home,days},engine.muBuild({...home,days}));
+for(const days of [5,6])assert.throws(()=>engine.muBuild({...home,days}),e=>e.code==='no_compatible_exercises','no complete pull exercise: refuse instead of inserting incomplete W raises');
 for(const dur of [20,35,60]){const base={...gym,level:'inter',goal:'muscle',dur};const normal=engine.muBuild(base),busy=engine.muBuild({...base,other:[{sport:'run',perWeek:5}]});busy.plan.days.forEach((d,i)=>assert.ok(d.ex.reduce((s,x)=>s+x.sets,0)<=normal.plan.days[i].ex.reduce((s,x)=>s+x.sets,0),'other sports must not increase total sets by filling time'))}
 // Model output must preserve user constraints, coverage, time and safe load selection.
 const valid={plan:results[0].plan,why:['Explicit preview'],warnings:[]};assert.equal(engine.muValidate(valid,home).plan.src,'ia');

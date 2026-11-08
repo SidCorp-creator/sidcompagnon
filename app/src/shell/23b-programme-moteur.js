@@ -42,7 +42,7 @@ function createMuscuEngine(catalogue, deps={}) {
     const other=(a.other||[]).map(o=>{if(!obj(o)||!string(o.sport,80)||!o.sport.trim()||!Number.isInteger(o.perWeek)||!finite(o.perWeek,0,14))return fail();return {sport:o.sport.trim(),perWeek:o.perWeek}});
     return {v:1,goal:a.goal,level:a.level,days:a.days,dur:a.dur,place:a.place,equip,avoidZones,avoidEx,prefer,...(a.pain?{pain:a.pain}:{}),other,notes:(a.notes||'').trim()}
   }
-  function compatible(e,a){return !!e&&!a.avoidEx.includes(e.nom)&&!a.avoidZones.some(z=>(e.zones||'').includes(zones[z]))&&Array.isArray(e.needs)&&e.needs.some(req=>req.every(k=>a.equip.includes(k)))}
+  function compatible(e,a){return !!e&&e.help===true&&!a.avoidEx.includes(e.nom)&&!a.avoidZones.some(z=>(e.zones||'').includes(zones[z]))&&Array.isArray(e.needs)&&e.needs.some(req=>req.every(k=>a.equip.includes(k)))}
   const easy=e=>e.difficulty==='easy';
   const levelRank=(e,a)=>a.level==='deb'?Number(!easy(e)):Number(easy(e));
   function trainingPool(a){const available=db.filter(e=>compatible(e,a));
@@ -69,6 +69,7 @@ function createMuscuEngine(catalogue, deps={}) {
     if(a.pain==='some'||a.pain==='yes')w.push(tr(locale,'Une douleur signalée ne peut pas être évaluée ici. Ne fais pas un mouvement douloureux et demande un avis professionnel avant de suivre ce programme.','Pain cannot be assessed here. Do not perform a painful movement and seek professional advice before following this program.'));
     if(a.days===1)w.push(tr(locale,'Une séance est un point de départ ; elle ne couvre pas la recommandation générale de renforcement sur au moins deux jours par semaine.','One session is a starting point; it does not meet the general recommendation of strength activity on at least two days per week.'));
     if(a.equip.every(x=>x==='none'||x==='bench'))w.push(tr(locale,'Sans résistance de tirage, le travail du dos reste limité : les mouvements au sol ne remplacent pas un véritable tirage chargé.','Without pulling resistance, back training is limited: floor movements do not replace a loaded pulling exercise.'));
+    if(db.some(e=>e.help!==true))w.push(tr(locale,'Les exercices dont la fiche est incomplète sont exclus des propositions. Certains choix et groupes peuvent être limités.','Exercises with incomplete help are excluded from suggestions. Some choices and muscle groups may be limited.'));
     return w
   }
   function muBuild(raw,locale='fr') {

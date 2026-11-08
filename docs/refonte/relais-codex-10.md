@@ -76,3 +76,9 @@ Object.assign(DICT, {
   "Planche sur les avant-bras": "Forearm plank"
 });
 ```
+
+## Revue qualité : niveau des variantes (complément M1)
+
+`difficulty:"easy"` identifie les régressions pompes au mur/sur les genoux ; les autres mouvements sont standard par défaut. Débutant : variantes faciles classées d'abord. Intermédiaire/confirmé : régression écartée si une variante standard compatible du même schéma existe, sauf préférence explicite. Les exclusions gardent la priorité ; les pompes sur les genoux portent aussi la zone genoux. Le même pool `muAllowed` sert au moteur, aux alternatives, à l'invite et à la validation serveur.
+
+Test du cas force/intermédiaire, haltères + élastiques, genoux exclus : pompes au sol retenues ; variantes faciles conservées en secours ou sur préférence explicite ; préférence pour pompes sur les genoux refusée si genoux exclus ; sortie IA régressive refusée. M1, M2, chat, parité/génération, TypeScript et Deno : OK.

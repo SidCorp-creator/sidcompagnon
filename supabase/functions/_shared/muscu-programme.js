@@ -42,8 +42,14 @@ export function createMuscuEngine(catalogue, deps={}) {
     return {v:1,goal:a.goal,level:a.level,days:a.days,dur:a.dur,place:a.place,equip,avoidZones,avoidEx,prefer,...(a.pain?{pain:a.pain}:{}),other,notes:(a.notes||'').trim()}
   }
   function compatible(e,a){return !!e&&!a.avoidEx.includes(e.nom)&&!a.avoidZones.some(z=>(e.zones||'').includes(zones[z]))&&Array.isArray(e.needs)&&e.needs.some(req=>req.every(k=>a.equip.includes(k)))}
+  const easy=e=>e.difficulty==='easy';
+  const levelRank=(e,a)=>a.level==='deb'?Number(!easy(e)):Number(easy(e));
+  function trainingPool(a){const available=db.filter(e=>compatible(e,a));
+    return available.filter(e=>a.level==='deb'||!easy(e)||a.prefer.includes(e.nom)||!available.some(x=>!easy(x)&&x.m===e.m&&x.schema===e.schema))
+  }
+  function muAllowed(raw){return trainingPool(muAnswers(raw)).map(e=>({name:e.nom,pat:e.pat}))}
   function muAlternatives(name,raw){const a=muAnswers(raw),e=byName.get(name);if(!e)return [];
-    return db.filter(x=>x.nom!==name&&x.m===e.m&&compatible(x,a)).sort((x,y)=>Number(y.schema===e.schema)-Number(x.schema===e.schema)||Number(a.prefer.includes(y.nom))-Number(a.prefer.includes(x.nom))||x.nom.localeCompare(y.nom)).map(x=>x.nom)}
+    return trainingPool(a).filter(x=>x.nom!==name&&x.m===e.m).sort((x,y)=>Number(y.schema===e.schema)-Number(x.schema===e.schema)||Number(a.prefer.includes(y.nom))-Number(a.prefer.includes(x.nom))||levelRank(x,a)-levelRank(y,a)||x.nom.localeCompare(y.nom)).map(x=>x.nom)}
   function parameters(e,a,locale){const compound=e.type!=='I',other=a.other.reduce((s,x)=>s+x.perWeek,0),sets=a.level==='deb'||other>=4?2:a.level==='conf'&&a.goal==='muscle'?4:3;
     const strength=a.goal==='force'&&a.level!=='deb',endurance=a.goal==='endu',hold=e.nom==='Planche sur les avant-bras';
     const reps=hold?'20–30 s':strength&&compound?'4–6':endurance?'12–18':compound?'8–12':'10–15';
@@ -65,7 +71,7 @@ export function createMuscuEngine(catalogue, deps={}) {
     return w
   }
   function muBuild(raw,locale='fr') {
-    if(!['fr','en'].includes(locale))return fail();const a=muAnswers(raw),warnings=commonWarnings(a,locale),pool=db.filter(e=>compatible(e,a)),used=new Map(),selected=new Set();
+    if(!['fr','en'].includes(locale))return fail();const a=muAnswers(raw),warnings=commonWarnings(a,locale),pool=trainingPool(a),used=new Map(),selected=new Set();
     if(!pool.length)noExercises(locale);
     const activeOther=a.other.reduce((s,x)=>s+x.perWeek,0)>=4;
     const volumeCaps=activeOther?muBuild({...a,other:[]},locale).plan.days.map(d=>d.ex.reduce((s,x)=>s+x.sets,0)):null;
@@ -74,10 +80,10 @@ export function createMuscuEngine(catalogue, deps={}) {
       function add(e){if(pats.has(e.pat))return false;const x=parameters(e,a,locale);if(muEstimate([...ex,x])>a.dur||volumeCaps&&ex.reduce((s,v)=>s+v.sets,0)+x.sets>volumeCaps[di])return false;ex.push(x);pats.add(e.pat);selected.add(e.nom);used.set(e.nom,(used.get(e.nom)||0)+1);return true}
       const ordered=roles[kind].slice();if(di%2&&kind==='upper')ordered.splice(0,2,'back:vpull','chest:ipress');
       for(const role of ordered){const [m,pat]=role.split(':');const candidates=pool.filter(e=>e.m===m&&!pats.has(e.pat));
-        candidates.sort((x,y)=>Number(a.prefer.includes(y.nom))-Number(a.prefer.includes(x.nom))||Number(y.schema===pat)-Number(x.schema===pat)||(used.get(x.nom)||0)-(used.get(y.nom)||0)||Number(!!y.p)-Number(!!x.p)||x.nom.localeCompare(y.nom));
+        candidates.sort((x,y)=>Number(a.prefer.includes(y.nom))-Number(a.prefer.includes(x.nom))||Number(y.schema===pat)-Number(x.schema===pat)||levelRank(x,a)-levelRank(y,a)||(used.get(x.nom)||0)-(used.get(y.nom)||0)||Number(!!y.p)-Number(!!x.p)||x.nom.localeCompare(y.nom));
         if(candidates.length)add(candidates[0])}
       // Fill spare time only with distinct movement patterns from this session's scope.
-      for(const e of pool.filter(e=>scope.has(e.m)).sort((x,y)=>Number(a.prefer.includes(y.nom))-Number(a.prefer.includes(x.nom))||(used.get(x.nom)||0)-(used.get(y.nom)||0)||x.nom.localeCompare(y.nom))){if(ex.length>=8)break;add(e)}
+      for(const e of pool.filter(e=>scope.has(e.m)).sort((x,y)=>Number(a.prefer.includes(y.nom))-Number(a.prefer.includes(x.nom))||levelRank(x,a)-levelRank(y,a)||(used.get(x.nom)||0)-(used.get(y.nom)||0)||x.nom.localeCompare(y.nom))){if(ex.length>=8)break;add(e)}
       if(!ex.length)noExercises(locale);
       const required=kind.startsWith('full')?['quads','chest','back','hams']:kind==='upper'?['chest','back']:kind==='lower'||kind==='legs'?['quads','hams']:[];
       if(required.some(m=>!ex.some(x=>byName.get(x.name).m===m)))warnings.push(tr(locale,`Séance ${di+1} : certains mouvements ne rentrent pas dans la durée ou les exclusions. Vérifie les groupes couverts.`,`Session ${di+1}: some movements do not fit the time or exclusions. Review the muscle groups covered.`));
@@ -99,13 +105,14 @@ export function createMuscuEngine(catalogue, deps={}) {
     const invalid=()=>{throw new Error('invalid_programme')};
     const freeText=(v,max)=>string(v,max)&&!/(?:\b\d+(?:[.,]\d+)?\s*(?:kg|lbs?)\b)|https?:\/\//i.test(v);
     if(!freeText(raw.plan.name,160))return invalid();
+    const allowed=new Set(trainingPool(a).map(e=>e.nom));
     const otherBase=a.other.reduce((s,x)=>s+x.perWeek,0)>=4?muBuild({...a,other:[]},locale):null;
     const days=raw.plan.days.map((d,i)=>{
       if(!obj(d)||!freeText(d.name,160)||!d.name.trim()||!Array.isArray(d.ex)||!d.ex.length||d.ex.length>8)return invalid();
       const pats=new Set(),scope=new Set(roles[splits[a.days][i]].map(r=>r.split(':')[0]));
       const ex=d.ex.map(x=>{
         if(!obj(x)||!string(x.name,160)||!byName.has(x.name))return invalid();const e=byName.get(x.name);
-        if(!compatible(e,a)||!scope.has(e.m)||pats.has(e.pat)||x.pat!==e.pat||!Number.isInteger(x.sets)||!finite(x.sets,1,a.level==='deb'?3:4)||!Number.isInteger(x.rest)||!finite(x.rest,45,240))return invalid();pats.add(e.pat);
+        if(!allowed.has(e.nom)||!scope.has(e.m)||pats.has(e.pat)||x.pat!==e.pat||!Number.isInteger(x.sets)||!finite(x.sets,1,a.level==='deb'?3:4)||!Number.isInteger(x.rest)||!finite(x.rest,45,240))return invalid();pats.add(e.pat);
         if(!string(x.reps,24)||!/^\d{1,2}(?:[–-]\d{1,2})?(?: s)?$/.test(x.reps))return invalid();const reps=x.reps.match(/\d+/g).map(Number);if(reps.some(n=>n<3||n>60)||reps[0]>reps.at(-1))return invalid();
         if(!string(x.rir,8)||!/^\d(?:[–-]\d)?$/.test(x.rir))return invalid();const rir=x.rir.match(/\d/g).map(Number);if(rir.some(n=>n<(a.level==='deb'?2:1)||n>4)||rir[0]>rir.at(-1))return invalid();
         if(['kg','weight','load','charges'].some(k=>x[k]!==undefined)||!freeText(x.note||'',1000)||x.int!==undefined&&!freeText(x.int,100)||x.rpe!==undefined&&(!string(x.rpe,8)||!(/^[6-8](?:[–-][6-8])?$/.test(x.rpe))))return invalid();
@@ -130,5 +137,5 @@ export function createMuscuEngine(catalogue, deps={}) {
       result.plan.src=plan.src==='ia'?'ia':'app';return result}
     catch{throw Object.assign(new Error(tr(locale,'Cette alternative crée un doublon ou dépasse le temps disponible. Choisis-en une autre.','This alternative duplicates a movement or exceeds the available time. Choose another.')),{code:'invalid_replacement'})}
   }
-  return {muAnswers,muBuild,muAlternatives,muEstimate,muValidate,muReplace};
+  return {muAnswers,muBuild,muAlternatives,muEstimate,muValidate,muReplace,muAllowed};
 }

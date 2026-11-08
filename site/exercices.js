@@ -97,7 +97,8 @@ window.SIDFIT_EXERCICES = {
           "needs": [
             []
           ],
-          "loadable": false
+          "loadable": false,
+          "difficulty": "easy"
         },
         {
           "nom": "Pompes sur les genoux",
@@ -105,11 +106,12 @@ window.SIDFIT_EXERCICES = {
           "schema": "hpress",
           "type": "L",
           "materiel": "b",
-          "zones": "sw",
+          "zones": "swk",
           "needs": [
             []
           ],
-          "loadable": false
+          "loadable": false,
+          "difficulty": "easy"
         },
         {
           "nom": "Pompes au sol",
@@ -121,7 +123,8 @@ window.SIDFIT_EXERCICES = {
           "needs": [
             []
           ],
-          "loadable": false
+          "loadable": false,
+          "difficulty": "standard"
         }
       ]
     },

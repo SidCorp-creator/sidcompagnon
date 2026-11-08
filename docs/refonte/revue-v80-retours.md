@@ -35,3 +35,12 @@ Format : exercice · image · décision · correction demandée. « VALIDÉ » =
 - Soulevé de terre roumain haltères · 0 · VALIDÉ. · 1 · **REFUSÉ** : tête relevée, nuque en extension. Demandé : même posture (hanches en arrière, dos plat, genoux légèrement fléchis, haltères près des jambes à mi-tibia) avec **nuque neutre**, regard vers le sol environ 1 m devant les pieds.
 
 - Élévations en W au sol · 1-v3 (vue de côté) · VALIDÉ (paire = 0-v2 + 1-v3).
+
+## Lot 4 (3d03139)
+- Abduction de hanche sur le côté · 0 et 1 · VALIDÉ.
+- Mollets debout au poids du corps · 0 et 1 · VALIDÉ.
+- Shrugs haltères ou machine (haltères seulement) · 0 et 1 · VALIDÉ.
+- Soulevé de terre roumain haltères · 1-v2 · VALIDÉ (nuque neutre ; paire = 0 + 1-v2).
+
+## Bilan V1
+**17 exercices, 34 images finales, toutes VALIDÉES.** Intégration autorisée : `SIDFIT_IMG`, `SIDFIT_ILLUS[nom]={tool:"OpenAI image_gen",model:"gpt-image-2 (selon la documentation Codex)",date:"2026-11-08"}`, `SIDFIT_PHOTO_LABELS` pour W, `SOURCES.json` (`kind:"illustration"`, prompts), `help:true`, retrait de `MISSING.json`.

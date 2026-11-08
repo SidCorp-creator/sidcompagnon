@@ -74,6 +74,7 @@ function muqStepBody(id,a){
       <div class="muq-gen">${sbReadyForProgram()?`<button type="button" class="btn" data-muqgen="ia" ${missing.length||muq.busy?"disabled":""}>${L("Créer avec Sid'Bot")}</button>`:""}
         <button type="button" class="btn ${sbReadyForProgram()?"ghost":""}" data-muqgen="app" ${missing.length||muq.busy?"disabled":""}>${L(sbReadyForProgram()?"Créer avec les règles de l'app":"Créer mon programme")}</button></div>
       <p class="small muted">${L("Sid'Bot compose à partir de tes réponses ; les règles de l'app fonctionnent sans connexion. Dans les deux cas, tu vois l'aperçu avant d'activer.")}</p>
+      ${(()=>{const X=window.SIDFIT_EXERCICES,n=X?X.groupes.flatMap(g=>g.exercices).filter(e=>!exHelpReady(e.nom)).length:0;return n?`<p class="small muted" role="note">${n} ${L(n>1?"exercices du catalogue n'ont pas encore de fiche « ? » complète (photos et conseils) : s'ils sont choisis, ils apparaissent avec la mention « Fiche en préparation ».":"exercice du catalogue n'a pas encore de fiche « ? » complète (photos et conseils) : s'il est choisi, il apparaît avec la mention « Fiche en préparation ».")}</p>`:""})()}
       ${PL()?`<button type="button" class="linkbtn" data-muqsaveprefs="1">${L("Enregistrer mes réponses sans changer de programme")}</button>`:""}`}
   return ""}
 function muqRender(){const box=$("muqBody");if(!box)return;

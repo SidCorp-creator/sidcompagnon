@@ -121,3 +121,20 @@ Décisions v76 : un seul fournisseur pour Sid'Bot (recommandé : Groq Free, à a
 Vérification finale v76 (8 nov.) : 14 tests ciblés verts (dont SQL PGlite) ; parcours Élan complet 15/15 (320/390/900/1280, clair/sombre, FR/EN, React/secours) ; `smoke.js` s'arrête au même clic sur 75.1 (02b2806) et sur v76 : test obsolète depuis Élan, pas une régression v76.
 
 | 8 nov. | **76 en ligne pour tout le monde** à la demande de Sid (« mets en ligne pour tout le monde ») : `main` = `e96c6ed` (avance rapide depuis `8c06ffe`), déployée par Vercel ; vérifié : `sw.js` = `sidnote-v76`, « version 76 », manifeste, CSP, relais `/mcp`. Sid'Bot serveur pas encore déployé (affiche « indisponible » jusqu'à la configuration) | — |
+
+## v77 (8 nov. 2026) — Musculation : cadrages, « Créer mon programme », parcours
+
+Brief : `relais-codex-09.md`. Répartition décidée ensemble (accord de Codex, avec ses amendements de contrat) :
+
+| Lot | Resp. | État | Revue |
+|---|---|---|---|
+| M1 Moteur local `muBuild`/`muAlternatives` (`23b`) | Codex | en cours | Claude |
+| M2 Sid'Bot `task:"programme"` (sortie structurée validée serveur) | Codex | en cours | Claude |
+| M3 Parcours, récapitulatif, aperçu, activation avec archivage, carte « Mon programme », retrait de « Mon objectif » (`23a`, 23, 24, index.html, app.css, i18n) | Claude | fait, en attente de M1 pour la génération | Codex |
+| M4 Cadrages (focus partagé des champs, ligne repliable, import) | Claude | fait | Codex |
+| M5 Skill `sid-relais` | Claude | fait | Codex (compatibilité) |
+| Intégration, version 77, tests navigateur | Claude | — | — |
+
+Causes : **génération disparue** = `cf4774c` (74.1) avait mis `hidden` sur `#coachBox` (moteur et formulaire encore là, plus rien ne les affichait) ; **cadrages** = la règle Élan `:focus-visible` (décalage 2 px) battait la règle « champs : décalage 0 », d'où bordure + anneau sur **tous** les champs ; le contenu « Mes statistiques » était une `.card` sans marge intérieure (0 px) et à rayon 16 dans un cadre à 6 ; la zone d'import faisait 68 px (2 lignes par défaut).
+
+Skills retenus : `sid-charte` (M3, M4 : charte), `sid-relais` (tous : relais compacts, créé faute de skill externe audité), `smux` (canal), `supabase` côté Codex (M2), `skill-creator` lu par Codex pour la revue de M5. Écartés : pas de skill design/sport/accessibilité externe vérifié et pertinent ; vérification par tests Playwright locaux.

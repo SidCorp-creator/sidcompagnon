@@ -43,7 +43,7 @@ function sbCtxParts(app){
       {k:"muscu",label:"Ton programme de musculation",on:true,v:{goal:pr.goal||"",days:pr.days||null,minutes:pr.dur||null,name:pl&&pl.name?String(pl.name).slice(0,80):""}}]}
   if(app==="note"){const n=typeof noteOpenId!=="undefined"&&noteOpenId&&typeof noteFind==="function"?noteFind(noteOpenId):null;
     // une note secrète n'est jamais jointe, même déverrouillée
-    if(n&&!n.secret&&!$("noteEdit").hidden)return [{k:"note",sk:"note:"+n.id,label:"La note ouverte",on:false,v:{title:String(n.title||"").slice(0,200),body:String(n.body||"").slice(0,6000)}}];
+    if(n&&!n.secret&&!$("noteEdit").hidden)return [{k:"note",sk:"note:"+n.id,label:"La note ouverte",on:false,v:(()=>{const ti=String(n.title||""),bo=String(n.body||""),complete=ti.length<=200&&bo.length<=8000;return {title:ti.slice(0,200),body:bo.slice(0,complete?8000:6000),complete}})()}]; // v78 : complete=true seulement si la note entière part (sinon pas de modification possible)
     return []}
   return []}
 // choix « partager » : par compte, par app et (pour une note) par note : joindre une note ne joint pas la suivante
@@ -64,7 +64,7 @@ function renderAiCards(){const c=$("nuAiCard");if(c)c.hidden=true;const st=$("sb
 // ---- affichage ----
 function sbBubble(m){if(m.role==="user")return `<div class="sb-msg me notr">${esc(m.content)}${m.img?`<span class="sb-att">${IC("image")||""} ${L("Photo jointe")}</span>`:""}</div>`;
   if(m.role==="error")return `<div class="sb-msg err" role="alert">${IC("alert")||""}<span>${esc(L(m.content))}</span>${m.retry?`<button type="button" class="linkbtn" data-sbretry="1">${L("Réessayer")}</button>`:""}</div>`;
-  const acts=(m.actions||[]).map((a,i)=>`<div class="sb-act" data-done="${a.done?1:0}"><span class="grow notr">${esc(a.label||sbActLabel(a))}</span>${a.done?`<span class="sb-ok">${IC("tick")||""}${L("Ajouté")}</span>`:`<button type="button" class="btn ghost sm" data-sbact="${m.id}:${i}">${L(sbActVerb(a))}</button>`}</div>`).join("");
+  const acts=(m.actions||[]).map((a,i)=>`<div class="sb-act" data-done="${a.done?1:0}"><span class="grow notr">${esc(a.label||sbActLabel(a))}</span>${a.done?`<span class="sb-ok">${IC("tick")||""}${L(a.type==="edit_note"?"Note modifiée":a.type==="share_note_pdf"?"Exporté":"Ajouté")}</span>`:`<button type="button" class="btn ghost sm" data-sbact="${m.id}:${i}">${L(sbActVerb(a))}</button>`}</div>${sbOpenDiff===m.id+":"+i&&!a.done?sbDiff(m,a,i):""}`).join("");
   return `<div class="sb-msg bot"><div class="notr">${esc(m.content).replace(/\n/g,"<br>")}</div>${acts?`<div class="sb-acts">${acts}</div>`:""}</div>`}
 function sbRender(){const A=SB_APPS[sbApp],msgs=sbMsgs(sbApp);
   $("sbTitle").textContent=SB_NAME;$("sbSub").textContent=`${L("Avec")} ${A.label}`;
@@ -81,9 +81,9 @@ function sbRender(){const A=SB_APPS[sbApp],msgs=sbMsgs(sbApp);
   $("sbImg").hidden=!sbImg;if(sbImg)$("sbImg").innerHTML=`<img src="${sbImg}" alt="${L("Photo de ton plat")}"><button type="button" class="linkbtn" id="sbImgDel">${L("Retirer la photo")}</button>`;
   $("sbSend").disabled=sbBusy;$("sbClear").hidden=!msgs.length;renderAiCards()}
 function sbSuggest(app){return app==="journee"?["Qu'est-ce que j'ai de prévu cette semaine ?","Aide-moi à organiser ma journée"]:
-  app==="forme"?["Que manger ce soir pour compléter ma journée ?","Explique-moi mon programme"]:["Aide-moi à structurer une note","Résume la note ouverte"]}
-const sbActVerb=a=>a.type==="add_task"?"Ajouter à l'agenda":a.type==="add_note"?"Créer la note":a.type==="log_meal"?"Ajouter au repas":"Appliquer";
-const sbActLabel=a=>{const p=a.payload||{};return a.type==="add_task"?`${p.title||""} · ${p.date||""}${p.time?" "+p.time:""}`:a.type==="add_note"?String(p.title||""):a.type==="log_meal"?`${p.name||""} · ${Math.round((p.items||[]).reduce((t,x)=>t+(+x.kcal||0),0))} kcal`:String(p.name||p.title||"")};
+  app==="forme"?["Que manger ce soir pour compléter ma journée ?","Explique-moi mon programme"]:["Corrige les fautes de la note ouverte","Résume la note ouverte","Exporte la note ouverte en PDF"]}
+const sbActVerb=a=>a.type==="add_task"?"Ajouter à l'agenda":a.type==="add_note"?"Créer la note":a.type==="log_meal"?"Ajouter au repas":a.type==="edit_note"?"Voir la modification":a.type==="share_note_pdf"?"Exporter en PDF":"Appliquer";
+const sbActLabel=a=>{const p=a.payload||{};return a.type==="add_task"?`${p.title||""} · ${p.date||""}${p.time?" "+p.time:""}`:a.type==="add_note"?String(p.title||""):a.type==="edit_note"?L("Modifier la note ouverte"):a.type==="share_note_pdf"?L("La note ouverte, en PDF"):a.type==="log_meal"?`${p.name||""} · ${Math.round((p.items||[]).reduce((t,x)=>t+(+x.kcal||0),0))} kcal`:String(p.name||p.title||"")};
 // ---- envoi ----
 async function sbSend(retry){if(sbBusy)return;const i=$("sbIn");let text=i.value.trim();const app=sbApp,uid0=sbUid(),same=()=>sbUid()===uid0;
   if(retry){const last=sbMsgs(app,uid0).filter(m=>m.role==="user").pop();if(!last)return;text=last.content}
@@ -100,6 +100,7 @@ async function sbSend(retry){if(sbBusy)return;const i=$("sbIn");let text=i.value
   sbBusy=true;sbRender();const ctl=sbCtl=new AbortController();const tm=setTimeout(()=>{try{ctl.abort()}catch(e){}},SB_TIMEOUT);
   try{// revue Codex : jeton et contexte figés pour le même compte que l'historique, vérifiés avant l'envoi
     const jwt=await token();if(!same()){clearTimeout(tm);sbBusy=false;return}const ctx=sbContext(app);
+    const noteRef=ctx.note&&typeof noteOpenId!=="undefined"&&noteOpenId?noteOpenId:null,noteN=noteRef?noteFind(noteRef):null,noteVer=noteN?noteN.upd||0:0; // v78 : seule la note jointe, dans sa version envoyée
     const r=await fetch(SUPABASE_URL+"/functions/v1/sidbot",{method:"POST",signal:ctl.signal,
       headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",Authorization:"Bearer "+jwt},
       body:JSON.stringify({app,locale:LANG==="en"?"en":"fr",messages:hist,context:ctx})});
@@ -110,13 +111,15 @@ async function sbSend(retry){if(sbBusy)return;const i=$("sbIn");let text=i.value
       fail(code,code==="rate"||code==="timeout"||code==="unavailable");return}
     sbImg=null;
     const actions=(Array.isArray(j.actions)?j.actions:[]).filter(sbActOk).slice(0,5).map(a=>({type:a.type,payload:a.payload,label:String(a.label||"").slice(0,160)}));
-    sbPush(app,{id:uid(),role:"assistant",content:String(j.reply||"").slice(0,8000),actions},uid0);sbBusy=false;sbRender()}
+    sbPush(app,{id:uid(),role:"assistant",content:String(j.reply||"").slice(0,8000),actions,...(noteRef?{noteRef,noteVer,noteFull:!!(ctx.note&&ctx.note.complete)}:{})},uid0);sbBusy=false;sbRender()}
   catch(e){clearTimeout(tm);fail(e&&e.name==="AbortError"&&!$("sbSheet").hidden?"timeout":navigator.onLine?"unavailable":"offline",true)}}
 // ---- actions proposées : validées ici, appliquées seulement après un toucher ----
 const SB_D=/^\d{4}-\d{2}-\d{2}$/,SB_T=/^([01]\d|2[0-3]):[0-5]\d$/;
 function sbActOk(a){if(!a||typeof a!=="object"||!a.payload||typeof a.payload!=="object")return false;const p=a.payload;
   if(a.type==="add_task")return typeof p.title==="string"&&p.title.trim()&&SB_D.test(p.date||"")&&(!p.time||SB_T.test(p.time));
   if(a.type==="add_note")return typeof p.title==="string"&&typeof (p.body??"")==="string";
+  if(a.type==="edit_note")return typeof p.body==="string"&&p.body.length<=8000&&(p.title===undefined||(typeof p.title==="string"&&p.title.length<=300));
+  if(a.type==="share_note_pdf")return true;
   // contrat figé avec Codex (v76) : {date,time?,name,items:[{name,qty,kcal,p,c,f,g?,unit_g?,unit_label?}]} ; kcal/p/c/f = totaux de la quantité
   if(a.type==="log_meal")return typeof nuLogFromBot==="function"&&SB_D.test(p.date||"")&&(!p.time||SB_T.test(p.time))&&typeof p.name==="string"&&p.name.trim()!==""&&
     Array.isArray(p.items)&&p.items.length>0&&p.items.length<=30&&p.items.every(x=>x&&typeof x.name==="string"&&x.name.trim()&&["kcal","p","c","f"].every(k=>Number.isFinite(+x[k])&&+x[k]>=0&&+x[k]<1e4));
@@ -128,6 +131,36 @@ function sbApply(a){const p=a.payload;
     if(p.folder&&typeof p.folder==="string")n.folder=p.folder.slice(0,80);NT().push(n);save();renderNotes();toast(`${L("Note créée")} : ${n.title}`);return true}
   if(a.type==="log_meal"){const ok=nuLogFromBot(p);if(ok)toast(`${L("Ajouté au repas")} : ${p.name}`);return !!ok}
   return false}
+// v78 : modification de la note jointe — aperçu avant / après, puis « Remplacer » (annulable) ; jamais une note secrète, jamais une autre note
+let sbOpenDiff=null;
+function sbNoteOf(m){const n=m&&m.noteRef&&typeof noteFind==="function"?noteFind(m.noteRef):null;return n&&!n.secret?n:null}
+const sbFmtRich=h=>/<(b|strong|i|em|u|s|mark|span|h2|h3|ul|ol|blockquote|a)\b/i.test(String(h||""));
+// Markdown léger proposé par Sid'Bot → HTML de note (nettoyé ensuite par rtClean)
+function sbMdToHtml(md){const inl=t=>esc(t).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/(^|[^*])\*(?!\s)(.+?)\*(?!\*)/g,"$1<i>$2</i>");
+  const out=[];let list=null;const close=()=>{if(list){out.push(`</${list}>`);list=null}};
+  for(const raw of String(md||"").split("\n")){const l=raw.replace(/\s+$/,"");let mm;
+    if((mm=l.match(/^\s*[-*•]\s+(.*)$/))){if(list!=="ul"){close();out.push("<ul>");list="ul"}out.push(`<li>${inl(mm[1])}</li>`);continue}
+    if((mm=l.match(/^\s*\d+[.)]\s+(.*)$/))){if(list!=="ol"){close();out.push("<ol>");list="ol"}out.push(`<li>${inl(mm[1])}</li>`);continue}
+    close();if((mm=l.match(/^#{1,3}\s+(.*)$/))){out.push(`<h3>${inl(mm[1])}</h3>`);continue}
+    out.push(l?`<div>${inl(l)}</div>`:"<div><br></div>")}
+  close();return rtClean(out.join(""))}
+// texte brut d'une note (recherche, aperçu) sans dépendre de l'affichage : innerText d'un élément hors page ne donne pas les retours à la ligne
+function sbPlain(h){const d=document.createElement("div");d.innerHTML=h;d.querySelectorAll("br").forEach(b=>b.replaceWith("\n"));
+  d.querySelectorAll("ol").forEach(o=>[...o.children].forEach((li,i)=>li.prepend(`${i+1}. `)));d.querySelectorAll("ul>li").forEach(li=>li.prepend("- "));
+  d.querySelectorAll("div,p,li,h2,h3,blockquote").forEach(e=>e.append("\n"));return d.textContent.replace(/[ \t]+\n/g,"\n").replace(/\n{3,}/g,"\n\n").trim()}
+function sbDiff(m,a,i){const n=sbNoteOf(m);if(!n)return `<p class="small muted">${L("La note jointe n'est plus disponible.")}</p>`;
+  const nt=a.payload.title!==undefined?String(a.payload.title):n.title||"",nh=sbMdToHtml(a.payload.body);
+  return `<div class="sb-diff" role="group" aria-label="${L("Modification proposée")}"><div class="sb-dcol"><span class="eyebrow">${L("Avant")}</span><b class="notr">${esc(n.title||"")}</b><div class="sb-dtxt note-rt notr">${n.html?rtClean(n.html):rtFromText(n.body)}</div></div>
+    <div class="sb-dcol"><span class="eyebrow">${L("Après")}</span><b class="notr">${esc(nt)}</b><div class="sb-dtxt note-rt notr">${nh}</div></div>
+    ${sbFmtRich(n.html)?`<p class="small muted">${L("La mise en forme actuelle (couleurs, surlignages) sera remplacée par celle proposée.")}</p>`:""}
+    <div class="two"><button type="button" class="btn ghost" data-sbdiffno="1">${L("Garder ma note")}</button><button type="button" class="btn" data-sbdiffok="${m.id}:${i}">${L("Remplacer la note")}</button></div></div>`}
+function sbEditApply(m,a){const n=sbNoteOf(m);if(!n){toast("La note jointe n'est plus disponible.");return false}
+  if(!m.noteFull){toast("La note était trop longue pour être envoyée en entier : Sid'Bot ne peut pas la remplacer.");return false}
+  if((n.upd||0)!==m.noteVer){toast("La note a changé depuis ta demande : redemande à Sid'Bot.");return false}
+  const old={title:n.title||"",body:n.body||"",html:n.html},nh=sbMdToHtml(a.payload.body),nt=a.payload.title!==undefined?String(a.payload.title).slice(0,300):old.title;
+  undoable("Note modifiée",[n.id],()=>{n.title=nt;n.html=nh;n.body=sbPlain(nh);n.upd=Date.now()},
+    {after:()=>{if(noteOpenId===n.id&&typeof rtSet==="function"){$("noteTitle").value=n.title;rtSet(n)}renderNotes()},revert:()=>{n.title=old.title;n.body=old.body;if(old.html===undefined)delete n.html;else n.html=old.html;n.upd=Date.now()}});
+  return true}
 // ---- évènements ----
 $("sbForm").addEventListener("submit",e=>{e.preventDefault();sbSend()});
 $("sbIn").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!matchMedia("(pointer:coarse)").matches){e.preventDefault();sbSend()}});
@@ -141,7 +174,13 @@ $("sbSheet").addEventListener("click",e=>{if(e.target.id==="sbSheet"){sbClose();
   if(e.target.closest("#sbImgDel")){sbImg=null;sbRender();return}
   if(e.target.closest("#sbClear")){sbClear(sbApp);sbRender();toast("Conversation effacée de cet appareil");return}
   const ac=e.target.closest("[data-sbact]");if(ac){const [mid,ix]=ac.dataset.sbact.split(":"),h=sbHist(),m=(h[sbApp]||[]).find(x=>x.id===mid),a=m&&m.actions&&m.actions[+ix];
-    if(!a||a.done||!sbActOk(a))return;if(sbApply(a)){a.done=true;sbSave(h);sbRender()}}});
+    if(!a||a.done||!sbActOk(a))return;
+    if(a.type==="edit_note"){sbOpenDiff=sbOpenDiff===mid+":"+ix?null:mid+":"+ix;sbRender();return}
+    if(a.type==="share_note_pdf"){const n=sbNoteOf(m);if(!n){toast("La note jointe n'est plus disponible.");return}noteExportPdf(n).then(()=>{a.done=true;sbSave(h);sbRender()});return}
+    if(sbApply(a)){a.done=true;sbSave(h);sbRender()}return}
+  if(e.target.closest("[data-sbdiffno]")){sbOpenDiff=null;sbRender();return}
+  const dk=e.target.closest("[data-sbdiffok]");if(dk){const [mid,ix]=dk.dataset.sbdiffok.split(":"),h=sbHist(),m=(h[sbApp]||[]).find(x=>x.id===mid),a=m&&m.actions&&m.actions[+ix];
+    if(!a||a.done||!sbActOk(a))return;if(sbEditApply(m,a)){a.done=true;sbOpenDiff=null;sbSave(h);sbRender()}}});
 // le bouton Sid'Bot du bandeau (même place dans les trois apps)
 document.addEventListener("click",e=>{const b=e.target.closest("[data-sidbot]");if(b){e.preventDefault();sbOpen(b.dataset.sidbot||sbAppOfView(data.ui.view))}});
 // v76 : anciennes adresses du connecteur (créées avant Sid'Bot) : on peut encore les voir et les retirer, plus en créer

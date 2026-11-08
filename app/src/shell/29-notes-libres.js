@@ -178,6 +178,7 @@ function noteActions(id){const n=noteFind(id);if(!n)return;const w=noteView(n);
   const t=w?(w.title&&w.title.trim()?w.title:String(w.body||"").trim().split("\n")[0]||(n.pdf&&n.pdf.name)||L("Nouvelle note")):L("Note secrète");
   const items=[];
   if(NF().length)items.push({l:"Ranger dans un dossier",fn:()=>openActions(L("Ranger dans"),nfChoices(noteDirOf(n),null,fid=>{if(fid)n.folder=fid;else delete n.folder;n.upd=Date.now();save();renderNotes();toast(fid?`${L("Rangée dans")} « ${nfOf(fid).name} »`:"Rangée dans Notes")}))});
+  if(w&&!n.pdf)items.push({l:"Exporter en PDF",fn:()=>noteExportPdf(n)});
   items.push({l:"Supprimer",danger:true,fn:()=>noteRemove(n)});
   openActions(t,items)}
 // cadenas : rend la note secrète (ou la verrouille si elle l'est déjà), puis la ferme
@@ -432,3 +433,38 @@ for(const id of ["pdfNew","notePhotoBtn"]){$(id).addEventListener("keydown",e=>{
 // Hauteur visuelle du titre ; Entrée garde son action historique vers le corps.
 function noteTitleGrow(){const e=$("noteTitle");e.style.height="auto";e.style.height=Math.min(97,Math.max(48,e.scrollHeight+3))+"px"}
 $("noteTitle").addEventListener("input",()=>{$("noteTitle").value=$("noteTitle").value.replace(/[\r\n]/g,"");noteTitleGrow()},true);
+
+/* ---------- v78 : « Exporter en PDF » une note (texte mis en forme ; générateur pur notePdf de 29b, lot P1 Codex) ---------- */
+// La note est convertie en blocs simples (titres, paragraphes, listes, gras/italique) ; les photos ne sont pas incluses (le pied le dit).
+// Note secrète : seulement déverrouillée, et après confirmation (le PDF n'est pas protégé). Rien n'est envoyé à un serveur.
+function noteBlocks(v){const t=document.createElement("template");t.innerHTML=v.html?rtClean(v.html):rtFromText(v.body);const out=[];
+  const runs=(node,st)=>{const r=[];const go=(n,s)=>{for(const c of n.childNodes){if(c.nodeType===3){const x=c.nodeValue.replace(/\s+/g," ");if(x)r.push({text:x,...(s.b?{b:true}:{}),...(s.i?{i:true}:{})})}
+      else if(c.nodeType===1){const tg=c.tagName;if(tg==="BR"){r.push({text:"\n"});continue}go(c,{b:s.b||tg==="B"||tg==="STRONG",i:s.i||tg==="I"||tg==="EM"})}}};go(node,st||{});
+    // fusion des morceaux voisins de même style, espaces de bord nettoyés
+    const m=[];for(const x of r){const l=m[m.length-1];if(l&&!!l.b===!!x.b&&!!l.i===!!x.i&&x.text!=="\n"&&l.text!=="\n")l.text+=x.text;else m.push({...x})}
+    if(m.length){m[0].text=m[0].text.replace(/^ +/,"");m[m.length-1].text=m[m.length-1].text.replace(/ +$/,"")}return m.filter(x=>x.text!=="")};
+  const block=el=>{const tg=el.tagName;
+    if(tg==="H2"||tg==="H3"){out.push({t:"h",runs:runs(el)});return}
+    if(tg==="UL"||tg==="OL"){let k=0;const chk=el.classList.contains("chk");for(const li of el.children){if(li.tagName!=="LI")continue;k++;const rr=runs(li);
+        if(chk)rr.unshift({text:li.getAttribute("data-c")==="1"?"[x] ":"[ ] "});out.push({t:tg==="OL"?"oli":"li",n:k,runs:rr})}return}
+    if(tg==="HR"){out.push({t:"hr",runs:[]});return}
+    if(tg==="BLOCKQUOTE"||tg==="DIV"||tg==="P"){if([...el.children].some(c=>/^(UL|OL|H2|H3|DIV|P|BLOCKQUOTE|HR)$/.test(c.tagName))){for(const c of el.childNodes){if(c.nodeType===1)block(c);else if(c.nodeType===3&&c.nodeValue.trim())out.push({t:"p",runs:[{text:c.nodeValue.trim()}]})}return}
+      out.push({t:"p",runs:runs(el)});return}
+    out.push({t:"p",runs:runs({childNodes:[el]})})};
+  for(const c of t.content.childNodes){if(c.nodeType===1)block(c);else if(c.nodeType===3&&c.nodeValue.trim())out.push({t:"p",runs:[{text:c.nodeValue.trim()}]})}
+  return out}
+const notePdfName=s=>(String(s||"").replace(/[\\/:*?"<>|\u0000-\u001f]+/g," ").replace(/\s+/g," ").trim().slice(0,60)||L("Note"))+".pdf";
+let npdfOk=false;
+async function noteExportPdf(n){n=n||noteFind(noteOpenId);if(!n)return;if(!n)return;if(n.id===noteOpenId&&typeof noteFlush==="function")await noteFlush();
+  const v=noteView(n);if(!v){toast("Déverrouille d'abord la note");return}
+  if(n.secret&&!npdfOk){openActions(L("Cette note est secrète : le PDF ne sera pas protégé par ton code."),[{l:"Exporter quand même",fn:()=>{npdfOk=true;noteExportPdf(n).finally(()=>{npdfOk=false})}}]);return}
+  if(typeof notePdf!=="function"){toast("L'export PDF n'est pas disponible dans cette version.");return}
+  const title=String(v.title||"").trim()||String(v.body||"").trim().split("\n")[0]||L("Note");
+  let bytes;try{bytes=notePdf({title,date:new Date(n.upd||Date.now()).toLocaleDateString(LANG==="en"?"en-GB":"fr-BE",{day:"numeric",month:"long",year:"numeric"}),
+      blocks:noteBlocks(v),locale:LANG==="en"?"en":"fr",photosOmitted:!!((n.photos||[]).length)})}
+  catch(e){reportErr("notePdf: "+(e&&e.message));toast("Création du PDF impossible");return}
+  const file=new File([bytes],notePdfName(title),{type:"application/pdf"});
+  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title});return}}
+  catch(e){if(e&&e.name==="AbortError")return}
+  const u=URL.createObjectURL(file),a=document.createElement("a");a.href=u;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast("PDF enregistré")}
+$("notePdf").addEventListener("click",()=>noteExportPdf());

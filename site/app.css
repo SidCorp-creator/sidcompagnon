@@ -2784,3 +2784,12 @@ html .muq-seg button[aria-pressed="true"],html .muq-chips .pill[aria-pressed="tr
 .muq-next{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--line,#e1e1e1)}
 .muq-next>span{grid-column:1}.muq-next>b{grid-column:1}.muq-next>.btn{grid-column:2;grid-row:1/3}
 @media (prefers-reduced-motion:reduce){.muq-bar i{transition-duration:1ms}}
+/* v78 : Sid'Bot — aperçu avant / après d'une modification de note */
+.sb-diff{display:grid;gap:10px;margin-top:8px;padding:12px;border-radius:12px;background:var(--surface,#fff)}
+.sb-dcol{display:grid;gap:4px;min-width:0}
+.sb-dtxt{max-height:28vh;overflow:auto;overflow-wrap:anywhere;font-size:15px;line-height:1.45;padding:8px 10px;border-radius:10px;border:1px solid var(--line,#e1e1e1)}
+@media (min-width:700px){.sb-diff{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.sb-diff>p,.sb-diff>.two{grid-column:1/-1}}
+/* v78 : les messages brefs (avec « Annuler ») passent au-dessus des fenêtres ; avant, z-index 20 < fenêtres 30 : « Annuler » était caché derrière Sid'Bot */
+.toast{z-index:45}
+.sb-dtxt ul,.sb-dtxt ol{margin:4px 0;padding-left:22px}.sb-dtxt h3{font-size:16px;margin:6px 0 2px}
+.sb-diff{align-items:start}.sb-dcol .sb-dtxt{min-height:0}

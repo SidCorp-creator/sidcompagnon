@@ -49,9 +49,12 @@ function createMuscuEngine(catalogue, deps={}) {
     const strength=a.goal==='force'&&a.level!=='deb',endurance=a.goal==='endu',hold=e.nom==='Planche sur les avant-bras';
     const reps=hold?'20–30 s':strength&&compound?'4–6':endurance?'12–18':compound?'8–12':'10–15';
     const rest=hold?60:strength&&compound?150:endurance?45:compound?90:60,rir=a.level==='deb'?'3':'2';
-    const note=tr(locale,`Garde ${rir} répétitions possibles en fin de série. Commence léger ; quand toutes les séries atteignent le haut de la fourchette avec une technique stable, augmente progressivement la résistance.`,`Finish each set with ${rir} repetitions in reserve. Start light; when every set reaches the top of the range with steady technique, gradually increase resistance.`);
-    return {name:e.nom,pat:e.pat,sets,reps,rest,rir,rpe:a.level==='deb'?'6–7':'7–8',note:hold?tr(locale,'Respire régulièrement, arrête avant de perdre la posture. Allonge progressivement la tenue sans douleur.','Breathe steadily and stop before losing posture. Gradually extend a pain-free hold.'):note}
+    const note=hold?tr(locale,'Respire régulièrement et arrête avant de perdre la posture.','Breathe steadily and stop before losing posture.'):
+      e.note?tr(locale,e.note,e.note_en||(e.note==='Seulement si sans douleur'?'Only if pain-free':e.note)):'';
+    return {name:e.nom,pat:e.pat,sets,reps,rest,rir,rpe:a.level==='deb'?'6–7':'7–8',note}
   }
+  const progression=locale=>tr(locale,'Commence léger. Quand toutes les séries atteignent le haut de la fourchette avec une technique stable, augmente progressivement la résistance. Pour les exercices chronométrés, augmente progressivement la durée sans perdre la posture.','Start light. When every set reaches the top of the range with steady technique, gradually increase resistance. For timed exercises, gradually increase the hold without losing posture.');
+
   function repSeconds(x){const nums=String(x.reps).match(/\d+/g)||[];const max=Math.max(1,...nums.map(Number));return /\bs\b/.test(x.reps)?max:max*3}
   function muEstimate(ex){return Math.ceil((300+ex.reduce((s,x)=>s+x.sets*repSeconds(x)+Math.max(0,x.sets-1)*x.rest+30,0))/60)}
   function noExercises(locale){throw Object.assign(new Error(tr(locale,'Aucun programme compatible avec ce matériel et ces exclusions. Modifie tes réponses ou demande conseil.','No program fits this equipment and these exclusions. Review your answers or ask for guidance.')),{code:'no_compatible_exercises'})}
@@ -84,6 +87,7 @@ function createMuscuEngine(catalogue, deps={}) {
     const missed=a.prefer.filter(n=>!selected.has(n));if(missed.length)warnings.push(tr(locale,'Préférences non retenues (matériel, exclusions ou temps) : ','Preferences not included (equipment, exclusions or time): ')+missed.join(', '));
     const levelLabel={deb:['débutant','beginner'],inter:['intermédiaire','intermediate'],conf:['confirmé','experienced']}[a.level][locale==='en'?1:0];
     const why=[tr(locale,`Programme local par règles : ${a.days} séance(s), niveau ${levelLabel}, plafond de ${a.dur} min par séance.`,`Local rules program: ${a.days} session(s), ${levelLabel} level, maximum ${a.dur} minutes per session.`),
+      progression(locale),
       tr(locale,'Le matériel et les exclusions sont des limites strictes ; aucune charge de départ n’est inventée.','Equipment and exclusions are strict limits; no starting weight is invented.'),
       tr(locale,'Répartis les séances sur la semaine avec des jours de récupération ; les jours proposés sont des repères, pas des rendez-vous créés.','Spread sessions across the week with recovery days; suggested days are guides, not scheduled events.')];
     if(a.other.length)why.push(tr(locale,'Tes autres activités sont prises en compte dans le volume ; leurs jours précis ne sont pas connus ici.','Your other activities are considered in the volume; their exact days are not known here.'));
@@ -115,7 +119,7 @@ function createMuscuEngine(catalogue, deps={}) {
     const chosen=new Set(days.flatMap(d=>d.ex.map(x=>x.name)));for(const preferred of a.prefer)if(base.plan.days.some(d=>d.ex.some(x=>x.name===preferred))&&!chosen.has(preferred))return invalid();
     const texts=(x,max)=>{if(!Array.isArray(x)||x.length>max||!x.every(s=>freeText(s,1200)&&s.trim()))return invalid();return x};
     const why=texts(raw.why,8);if(!why.length)return invalid();const warnings=raw.warnings===undefined?[]:texts(raw.warnings,8);
-    return {...base,plan:{...base.plan,name:raw.plan.name,days,src:'ia'},why,warnings:[...new Set([...base.warnings,...warnings])],est:days.map(d=>muEstimate(d.ex))}
+    return {...base,plan:{...base.plan,name:raw.plan.name,days,src:'ia'},why:[...new Set([...why,progression(locale)])],warnings:[...new Set([...base.warnings,...warnings])],est:days.map(d=>muEstimate(d.ex))}
   }
   // Preview-only replacement: atomic and immutable; keeps equipment, pattern uniqueness and time constraints.
   function muReplace(plan,di,ei,name,answers,locale='fr'){

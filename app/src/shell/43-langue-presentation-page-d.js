@@ -1,7 +1,7 @@
 /* ---------- langue, présentation, page d'accueil ---------- */
 // v64 (#3) : atouts de l'écran de connexion (React quand le module est là ; repris à son arrivée)
 const AUTH_FEATS=[["plan","Organise tes journées","Agenda et tâches du jour, avec des rappels."],
-  ["pwd","Garde tout à l'abri","Notes, documents scannés et mots de passe, chiffrés sur ton appareil."],
+  ["notes","Écris et concentre-toi","Notes, PDF et séances Focus."],
   ["muscu","Ta santé","Programme de musculation sur mesure, nutrition et graphiques."],
   ["app","Partout avec toi","Sur smartphone et sur ordinateur, même sans connexion."]];
 function renderAuthFeats(){const el=$("authFeats");if(!el)return;
@@ -61,17 +61,16 @@ const ONB_DESC={
   plan:"Ton calendrier : examens, rendez-vous, événements. Tu peux aussi y relier ton horaire de cours.",
   todo:"Tes tâches, rangées par catégories pour regrouper tout ce qu'il faut faire pour un projet.",
   notes:"Tes notes libres : idées, listes, brouillons, à écrire comme tu veux.",
-  pwd:"Tes mots de passe et les sites qui vont avec, protégés par un code à 5 chiffres.",
+  projects:"Regroupe tes notes et tes séances Focus.",
   pomo:"Travaille concentré : sessions et pauses s'enchaînent toutes seules, avec ta musique.",
   graph:"Tes macros, ton poids et tes calories en graphiques, avec un bilan du jour et de la semaine.",
   nutri:"Tes calories et tes macros du jour, et des menus faits pour toi.",
   muscu:"Tes séances et tes programmes, tes charges et tes répétitions, avec la progression d'une fois à l'autre.",
-  docs:"Range tes PDF, scanne des feuilles avec l'appareil photo et retrouve-les en un instant.",
   app:"Les étapes pour installer Sid'Compagnon sur ton écran d'accueil."};
 let onbSel={};
 const ONB_GROUP={orga:["agenda","Organise tes journées","Ton agenda et tes tâches du jour."],
   sport:["fit","Bouge et mange bien","Ton programme de musculation, ta nutrition et tes progrès en graphiques."],
-  perso:["note","Garde tout à l'abri","Tes notes, tes sessions Focus et ton coffre."]};
+  perso:["note","Écris et concentre-toi","Tes notes et tes séances Focus."]};
 function openOnb(){
   onbSel={};TABS.forEach(([k])=>{if(!OFF_TABS.includes(k))onbSel[k]=data.prefs.tabs[k]!==false});
   document.querySelectorAll("#onbLang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG));

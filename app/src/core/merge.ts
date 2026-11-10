@@ -92,6 +92,7 @@ export function mergeData(loc: Obj, rem: Obj, opt: MergeOpt | undefined, env: Me
   const out: Obj = { ...rem, ...loc, del, res };
   out.todos = arr(loc.todos, rem.todos); out.tasks = arr(loc.tasks, rem.tasks);
   out.todoCats = arr(loc.todoCats, rem.todoCats); out.docs = arr(loc.docs, rem.docs); out.docFolders = arr(loc.docFolders, rem.docFolders); out.noteFolders = arr(loc.noteFolders, rem.noteFolders);
+  out.noteProjects = arrU(loc.noteProjects, rem.noteProjects); out.focusSessions = arrU(loc.focusSessions, rem.focusSessions);
   out.notes = arrU(loc.notes, rem.notes); out.pwds = arrU(loc.pwds, rem.pwds); out.pdfAnns = arrU(loc.pdfAnns, rem.pdfAnns);
   // une note modifiée sur les deux appareils depuis la dernière synchro : on garde aussi l'autre version, en copie
   if (since) {

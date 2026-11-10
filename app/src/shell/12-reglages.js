@@ -1,6 +1,7 @@
 /* ---------- Réglages ---------- */
 function renderStats(){
   const td=data.todos,tk=data.tasks;
+  renderVaultExport();
   // v62 (#3) : Réglages et petites fenêtres dessinés par React (app/src/Settings.tsx) ; ancien rendu en secours
   if(shIsl("stats")){try{window.SCIslands.stats($("stats"),{i18n:agI18n(),rows:[["Tâches réalisées",`${td.filter(t=>t.done).length} / ${td.length}`],["Dates du planning terminées",`${tk.filter(t=>t.status==="fait").length} / ${tk.length}`],["Dates encore à confirmer",tk.filter(t=>t.tbc).length]]});return}catch(e){reportErr("island stats: "+(e&&e.message))}}
   $("stats").innerHTML=[
@@ -14,7 +15,11 @@ function renderStats(){
 async function saveJSON(obj,name,title){
   const file=new File([JSON.stringify(obj,null,1)],name,{type:"application/json"});
   try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title});return}}catch(e){if(e.name==="AbortError")return}
-  const a=document.createElement("a");a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+  downloadFile(file,name)
+}
+function downloadFile(file,name){
+  const a=document.createElement("a");a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)
+}
 const bkObj=extra=>({app:"sidnote",v:2,exported:new Date().toISOString(),...(extra||{}),data:forServer(data)});
 $("backupBtn").addEventListener("click",()=>saveJSON(bkObj(),`sidnote-sauvegarde-${new Date().toISOString().slice(0,10)}.json`,L("Sauvegarde Sid'Compagnon")));
 // RGPD : export complet (JSON) et suppression des données du compte
@@ -37,7 +42,7 @@ $("wipeBtn").addEventListener("click",async e=>{
   }catch(ex){b.disabled=false;delete b.dataset.armed;b.textContent=L("Supprimer mes données");toast(ex instanceof TypeError?L("Pas de connexion internet"):L("Suppression impossible : ")+(ex.message||""))}
 });
 // restauration : aperçu, puis Fusionner (rien n'est perdu) ou Remplacer (confirmation), sans jamais casser les coffres
-const BK_LISTS=[["pdfAnns","Annotations de PDF"],["todos","Tâches"],["tasks","Activités de l'agenda"],["notes","Notes"],["muscu.sessions","Séances de musculation"],["muscu.log","Séances faites (programme)"],["nutri.log","Repas notés"],["pwds","Mots de passe"],["docs","Documents (la liste)"],["todoCats",null],["docFolders",null],["noteFolders",null],["nutri.weights",null],["nutri.weeks",null]];
+const BK_LISTS=[["pdfAnns","Annotations de PDF"],["todos","Tâches"],["tasks","Activités de l'agenda"],["notes","Notes"],["noteProjects","Projets"],["focusSessions","Séances Focus"],["muscu.sessions","Séances de musculation"],["muscu.log","Séances faites (programme)"],["nutri.log","Repas notés"],["pwds","Mots de passe"],["docs","Documents (la liste)"],["todoCats",null],["docFolders",null],["noteFolders",null],["nutri.weights",null],["nutri.weeks",null]];
 const bkGet=(d,k)=>{const v=k.split(".").reduce((o,x)=>o&&o[x],d);return Array.isArray(v)?v.filter(x=>x&&x.id):[]};
 function bkParse(j){
   if(j&&typeof j==="object"&&j.data&&typeof j.data==="object"&&/^(sidnote|Sid'note)$/.test(j.app||""))return {d:j.data,at:j.exported};

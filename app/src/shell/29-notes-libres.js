@@ -28,8 +28,39 @@ function rtClean(html){const t=document.createElement("template");t.innerHTML=St
   walk(t.content);return t.innerHTML.trim()}
 const rtFromText=b=>String(b||"").split("\n").map(l=>`<div>${l?esc(l):"<br>"}</div>`).join("");
 const rtText=el=>String(el.innerText||"").replace(/\u00a0/g," ").replace(/\n{3,}/g,"\n\n").trim();
-const rtSet=v=>{$("noteBody").innerHTML=v.html?rtClean(v.html):rtFromText(v.body);rtEmpty()};
-const rtEmpty=()=>$("noteBody").classList.toggle("is-empty",!rtText($("noteBody"))&&!$("noteBody").querySelector("li,hr"))
+const rtSet=v=>{$("noteBody").innerHTML=v.html?rtClean(v.html):rtFromText(v.body);$("notePages").scrollLeft=0;rtEmpty()};
+const rtEmpty=()=>{
+  const body=$("noteBody");
+  body.classList.toggle("is-empty",!rtText(body)&&!body.querySelector("li,hr"));
+  notePagesSchedule();
+};
+let notePagesFrame=0,notePageCount=1,notePageStep=1;
+function notePagePosition(){
+  const current=Math.min(notePageCount,Math.round($("notePages").scrollLeft/notePageStep)+1);
+  $("notePagePosition").textContent=`${current} / ${notePageCount}`;
+  $("notePagePrevious").disabled=current===1;
+  $("notePageNext").disabled=current===notePageCount;
+}
+function notePagesSchedule(){
+  if(notePagesFrame)return;
+  notePagesFrame=requestAnimationFrame(()=>{
+    notePagesFrame=0;
+    const body=$("noteBody"),pages=$("notePages");
+    if(!pages.clientWidth)return;
+    const width=body.getBoundingClientRect().width,gap=parseFloat(getComputedStyle(body).columnGap);
+    notePageStep=width+gap;
+    notePageCount=1+Math.max(0,Math.round((body.scrollWidth-width)/notePageStep));
+    $("notePageSheets").style.setProperty("--note-page-width",`${pages.clientWidth}px`);
+    $("notePageSheets").style.width=`${pages.clientWidth+(notePageCount-1)*notePageStep}px`;
+    $("notePageControls").hidden=notePageCount===1;
+    notePagePosition();
+  });
+}
+if(window.ResizeObserver)new ResizeObserver(notePagesSchedule).observe($("notePages"));
+document.fonts?.ready.then(notePagesSchedule);
+$("notePages").addEventListener("scroll",notePagePosition,{passive:true});
+$("notePagePrevious").addEventListener("click",()=>$("notePages").scrollBy(-notePageStep,0));
+$("notePageNext").addEventListener("click",()=>$("notePages").scrollBy(notePageStep,0));
 let noteOpenId=null,noteQ="",noteSaveT=null,notePend=null;
 const noteFind=id=>NT().find(n=>n.id===id);
 const fmtWhen=t=>{const d=new Date(t),n=new Date();
@@ -178,6 +209,7 @@ function noteActions(id){const n=noteFind(id);if(!n)return;const w=noteView(n);
   const t=w?(w.title&&w.title.trim()?w.title:String(w.body||"").trim().split("\n")[0]||(n.pdf&&n.pdf.name)||L("Nouvelle note")):L("Note secrète");
   const items=[];
   if(NF().length)items.push({l:"Ranger dans un dossier",fn:()=>openActions(L("Ranger dans"),nfChoices(noteDirOf(n),null,fid=>{if(fid)n.folder=fid;else delete n.folder;n.upd=Date.now();save();renderNotes();toast(fid?`${L("Rangée dans")} « ${nfOf(fid).name} »`:"Rangée dans Notes")}))});
+  if(noteProjects().length)items.push({l:"Changer de projet",fn:()=>moveNoteToProject(n)});
   if(w&&!n.pdf)items.push({l:"Exporter en PDF",fn:()=>noteExportPdf(n)});
   items.push({l:"Supprimer",danger:true,fn:()=>noteRemove(n)});
   openActions(t,items)}
@@ -414,7 +446,7 @@ async function nsUnlock(){
   if(isV2(v)&&!mkHas("notes")){const code=await devSetup("notes","Notes secrètes");return !!code&&await nsTry(code)}
   let code=await askPin({mode:"unlock",ctx:"notes",head:"Notes secrètes",sub:"Entre le code de tes notes secrètes.",verify:nsTry,forgot:nsReset,rec:isV2(v)?null:v.rec,phrase:isV2(v)});
   if(code==="forgot"){code=await devSetup("notes","Notes secrètes",true);if(code&&!(await nsTry(code)))code=null}
-  if(code&&nsKey&&!isV2(v)){const nk=await v2Upgrade("notes",code,nsKey);if(nk){nsKey=nk;nsVid=data.noteVault.id;await nsLoad()}}
+  if(code&&nsKey&&!isV2(v)){const nk=await v2Upgrade(code,nsKey);if(nk){nsKey=nk;nsVid=data.noteVault.id;await nsLoad()}}
   return !!code&&!!nsKey;
 }
 function nsLock(){

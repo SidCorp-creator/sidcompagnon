@@ -5,7 +5,7 @@
 const {chromium,devices}=require("playwright"),fs=require("fs"),path=require("path");
 require("./serve.js");
 const OUT=path.join(__dirname,"out");fs.mkdirSync(OUT,{recursive:true});
-const G={plan:"orga",todo:"orga",pomo:"orga",muscu:"sport",nutri:"sport",graph:"sport",notes:"perso",docs:"perso",pwd:"perso",more:"more",app:"more"};
+const G={plan:"orga",todo:"orga",pomo:"perso",muscu:"sport",nutri:"sport",graph:"sport",notes:"perso",projects:"perso",more:"more",app:"more"};
 const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,n+".png")});
 (async()=>{
   const b=await chromium.launch(),errs=[];

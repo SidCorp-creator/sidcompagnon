@@ -21,16 +21,6 @@ export function NsBar({ unlock, lock, i18n }: { unlock: string; lock: string; i1
     <button type="button" className="mini" data-nslock="1" dangerouslySetInnerHTML={{ __html: `${lock} ${esc(tr(L("Verrouiller")))}` }}></button></>;
 }
 
-export function FolderBar({ name, count, editing, q, icon, searchIcon, i18n }: { name: string; count: number; editing: boolean; q: string; icon: string; searchIcon: string; i18n: FI18n }) {
-  const { tr, L } = i18n;
-  if (editing) return <form id="folderRename" style={{ display: "flex", gap: "8px", width: "100%" }}><input id="folderRenIn" defaultValue={name} aria-label={tr(L("Nouveau nom"))} autoComplete="off" /><button className="btn" type="submit">{tr("OK")}</button></form>;
-  return <>
-    <div className="grow"><b className="notr" dangerouslySetInnerHTML={{ __html: `${icon} ${esc(name)}` }}></b><div className="small muted">{tr(`${count} ${L(count > 1 ? "documents" : "document")}`)}</div></div>
-    <button className="mini" data-dfren="1">{tr(L("Renommer"))}</button><button className="x" data-dfdel="1" aria-label={tr(L("Supprimer le classeur"))}><FormeIcon name="close"/></button>
-    <label className="coffre-search-label" htmlFor="folderSearch">{tr(L("Rechercher dans ce classeur"))}</label><span className="coffre-search"><i className="ic" dangerouslySetInnerHTML={{__html:searchIcon}}></i><input type="search" className="search" id="folderSearch" placeholder={tr(L("Nom du document"))} aria-label={tr(L("Rechercher dans ce classeur"))} defaultValue={q} autoComplete="off" /></span>
-  </>;
-}
-
 export function NuSports({ sports, i18n }: { sports: { name: string; freq: string; dur: string }[]; i18n: FI18n }) {
   const { tr, L } = i18n;
   return <>{sports.map((x, i) => <div key={i} className="nu-sport">

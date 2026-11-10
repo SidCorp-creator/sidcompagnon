@@ -3,7 +3,6 @@
 // Le serveur ne reçoit que du texte chiffré. Sans le code, impossible de relire les mots de passe.
 const PIN_LEN=5,PIN_ITER=600000;
 const PW=()=>data.pwds||(data.pwds=[]);
-let vaultVid=null,vaultKey=null,vaultItems=new Map(),pinStep="",pinBuf="",pinFirst="",pinBusy=false,pwQ="",pwShown=new Set(),pwEditId=null,pinFails=0,pinWait=0;
 const b64e=u=>{let s="";const a=new Uint8Array(u);for(let i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s)};
 const b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 async function pinKey(pin,salt,iter){if(CC())return CC().pinKey(pin,salt,iter);

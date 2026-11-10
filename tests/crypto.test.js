@@ -6,9 +6,9 @@ const fs=require("fs"),vm=require("vm");
 const src=fs.readFileSync(__dirname+"/../site/app.js","utf8").split("\n");
 // une déclaration de haut niveau : de la ligne qui commence par `start` jusqu'à la prochaine ligne non indentée
 const take=start=>{const i=src.findIndex(l=>l.startsWith(start));if(i<0)throw new Error("introuvable : "+start);let j=i+1;while(j<src.length&&(/^\s/.test(src[j])||/^[})\]];?\s*$/.test(src[j])))j++;return src.slice(i,j).join("\n")};
-const oldSrc=["const ENC_MAGIC","const isEnc","const CC=","async function docEncrypt","async function docDecrypt","const PIN_LEN","const b64e","const b64d","async function pinKey","async function encJ","async function decJ","const rawKey","async function phDerive","async function bioKey"].map(take).join("\n")+
-  ";this.O={b64e,b64d,pinKey,encJ,decJ,rawKey,phDerive,bioKey,docEncrypt,docDecrypt,isEnc}";
-const ctxOld={window:{},crypto:globalThis.crypto,TextEncoder,TextDecoder,btoa,atob,Blob,Uint8Array,L:x=>x,dvKey:null,console};
+const oldSrc=["const ENC_MAGIC","const isEnc","const CC=","async function docDecrypt","const PIN_LEN","const b64e","const b64d","async function pinKey","async function encJ","async function decJ","const rawKey","async function phDerive","async function bioKey"].map(take).join("\n")+
+  ";this.O={b64e,b64d,pinKey,encJ,decJ,rawKey,phDerive,bioKey,docDecrypt,isEnc}";
+const ctxOld={window:{},crypto:globalThis.crypto,TextEncoder,TextDecoder,btoa,atob,Blob,Uint8Array,L:x=>x,console};
 vm.createContext(ctxOld);vm.runInContext(oldSrc,ctxOld);const O=ctxOld.O;
 const ctxNew={window:{},crypto:globalThis.crypto,TextEncoder,TextDecoder,btoa,atob,Uint8Array,console};vm.createContext(ctxNew);
 vm.runInContext(fs.readFileSync(__dirname+"/../site/react/core.js","utf8"),ctxNew);const N=ctxNew.window.SCCore&&ctxNew.window.SCCore.crypto;
@@ -27,9 +27,8 @@ let fail=0;const ok=(c,m)=>{if(!c){fail++;console.log("ÉCHEC :",m)}};
   for(const ph of ["ma phrase secrète","Ma phrase secrète","motdepasse123"]){const a=await O.phDerive(ph,salt,IT),b=await N.phDerive(ph,salt,IT);ok(a.raw===b.raw,"clé maître différente pour « "+ph+" »")}
   // clé brute + documents « SNE1 »
   const raw=O.b64e(crypto.getRandomValues(new Uint8Array(32))),ko=await O.rawKey(raw),kn=await N.rawKey(raw),pdf=new TextEncoder().encode("%PDF-1.4 bonjour "+"x".repeat(5000));
-  const encOld=new Uint8Array(await (await O.docEncrypt(new Blob([pdf]),ko)).arrayBuffer()),encNew=await N.docEncryptBytes(pdf.buffer,kn);
-  ok(O.isEnc(encNew)&&N.isEnc(encOld),"format SNE1 non reconnu");ok(encOld.length===encNew.length,"taille du document chiffré différente");
-  ok(Buffer.from(await N.docDecryptBytes(encOld,kn)).equals(Buffer.from(pdf)),"document chiffré par l'ancien code illisible");
+  const encNew=await N.docEncryptBytes(pdf.buffer,kn);
+  ok(O.isEnc(encNew),"format SNE1 non reconnu");
   ok(Buffer.from(await (await O.docDecrypt(encNew,ko)).arrayBuffer()).equals(Buffer.from(pdf)),"document chiffré par le nouveau code illisible");
   // Face ID : même clé tirée du même secret
   const prf=crypto.getRandomValues(new Uint8Array(32)),bo=await O.bioKey(prf),bn=await N.bioKey(prf),msg={code:"12345"};

@@ -460,40 +460,6 @@
 
 </div></div>
 
-  <!-- DOCUMENTS -->
-  <section class="view" id="v-docs" hidden>
-    <div class="brand"><img src="logo-192.png" alt="">Sid'Compagnon</div>
-    <h1>Documents</h1>
-    <p class="sub">Range tes PDF et scanne tes documents. Ils te suivent sur tous tes appareils.</p>
-    <div class="pin-host" id="docPinHost" hidden></div>
-    <div class="card doc-locked" id="docLocked" hidden><div class="pin-ic2"><i class="ic" data-i="lock"></i></div><b>Documents verrouillés</b><span class="small muted">Entre ton code pour voir tes documents.</span><button type="button" class="btn" id="docUnlockBtn">Déverrouiller</button></div>
-    <label class="coffre-search-label" for="docSearch">Rechercher dans les documents</label><span class="coffre-search"><i class="ic" data-i="search"></i><input type="search" class="search" id="docSearch" placeholder="Nom du document" aria-label="Rechercher dans tous les documents" autocomplete="off"></span>
-    <div class="chips" id="docFolders" data-elan-scroll="1" style="margin-bottom:10px"></div>
-    <form class="addbar" id="folderForm" hidden>
-      <input id="folderIn" placeholder="Nom du classeur, ex. Administratif" aria-label="Nom du classeur" autocomplete="off" enterkeyhint="done">
-      <button class="btn ghost" type="submit">Ajouter</button>
-    </form>
-    <div class="catbar" id="folderBar" hidden></div>
-    <div class="doc-actions">
-      <label class="btn" tabindex="0" role="button"><input type="file" id="docImport" accept="application/pdf,.pdf,image/*" multiple hidden><i class="ic" data-i="upload"></i> Importer</label>
-      <button type="button" class="btn ghost" id="docScanBtn"><i class="ic" data-i="camera"></i> Scanner</button>
-    </div>
-
-    <div class="docbar"><div class="small muted grow" id="docInfo" style="margin:0 4px"></div>
-      <div class="seg" id="docSort" role="group" aria-label="Classer les documents"><button type="button" data-dsort="date" aria-pressed="true">Récents</button><button type="button" data-dsort="alpha" aria-pressed="false">A → Z</button></div></div>
-    <div class="card" id="docList"></div>
-    <details class="howto" id="iosScan">
-      <summary>Scanner avec le scanner de ton smartphone (plus précis)</summary>
-      <ol class="steps card">
-        <li><span><b>Smartphone Apple</b> : ouvre l'app <b>Fichiers</b>, appuie sur les <b>3 petits points</b> en haut à droite, puis sur <b>Scanner des documents</b>.</span></li>
-        <li><span><b>Android</b> : ouvre l'app <b>Google Drive</b>, touche <b>+</b>, puis <b>Scanner</b>.</span></li>
-        <li><span>Scanne tes pages, puis enregistre le PDF.</span></li>
-        <li><span>Reviens ici, appuie sur <b>Importer</b>, puis sur <b>Choisir un fichier</b> et sélectionne ton scan.</span></li>
-      </ol>
-      <p class="small muted" style="margin:8px 4px 0">Le PDF garde toute la qualité du scanner de ton smartphone (bords détectés, page redressée).</p>
-    </details>
-  </section>
-
   <!-- NOTES -->
   <section class="view" id="v-notes" hidden>
     <div class="brand"><img src="logo-192.png" alt="">Sid'Compagnon</div>
@@ -532,33 +498,28 @@
       <div class="rt-pop" id="rtPop" role="menu" hidden></div>
       <div class="note-ed">
         <label for="noteTitle" class="coffre-search-label">Titre de la note</label><textarea id="noteTitle" rows="1" placeholder="Titre" aria-label="Titre de la note" autocomplete="off"></textarea>
-        <div id="noteBody" class="note-rt" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Texte de la note" data-ph="Écris ta note…"></div>
+        <div id="notePages" class="note-pages">
+          <div id="notePageSheets" class="note-page-sheets" aria-hidden="true"></div>
+            <div id="noteBody" class="note-rt" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Texte de la note" data-ph="Écris ta note…"></div>
+        </div>
+        <div class="note-page-controls" id="notePageControls" hidden>
+          <button type="button" class="mini" id="notePagePrevious">Page précédente</button>
+          <output id="notePagePosition"></output>
+          <button type="button" class="mini" id="notePageNext">Page suivante</button>
+        </div>
       </div>
       <div class="note-photos" id="notePhotos"></div>
     </div>
   </section>
 
-  <!-- MOTS DE PASSE -->
-  <section class="view" id="v-pwd" hidden>
-    <div class="brand"><img src="logo-192.png" alt="">Sid'Compagnon</div>
-    <h1>Mots de passe</h1>
-    <p class="sub">Tes mots de passe, chiffrés sur ton appareil. Le serveur ne garde que du texte illisible.</p>
-    <div id="pinBox" class="pin">
-      <p class="pin-t" id="pinTitle"></p>
-      <p class="small muted" id="pinSub" style="margin:-8px 0 0;max-width:320px"></p>
-      <div class="pin-dots" id="pinDots" aria-live="polite"><i></i><i></i><i></i><i></i><i></i></div>
-      <p class="pin-err" id="pinErr" role="alert"></p>
-      <div class="pad" id="pinPad"></div>
-      <button type="button" class="btn" id="pinDev" hidden>Entrer ma phrase secrète</button>
-      <button type="button" class="btn ghost bio-btn" id="pinBio" hidden>Face ID</button>
-      <button type="button" class="linkbtn" id="pinForgot" style="background:none;border:0;cursor:pointer;font-size:14px" hidden>Code oublié ?</button>
-    </div>
-    <div id="vault" hidden>
-      <label class="coffre-search-label" for="pwSearch">Rechercher un site</label><div class="pw-top coffre-pwd-actions"><span class="coffre-search"><i class="ic" data-i="search"></i><input type="search" class="search" id="pwSearch" placeholder="Site ou identifiant" aria-label="Rechercher un site" autocomplete="off"></span><button type="button" class="btn" id="pwNew"><i class="ic" data-i="plus"></i> Ajouter</button></div>
-      <div class="seg" id="pwSort" role="group" aria-label="Classer les mots de passe" style="margin:0 0 10px"><button type="button" data-pwsort="date" aria-pressed="false">Récents</button><button type="button" data-pwsort="alpha" aria-pressed="true">A → Z</button></div>
-      <div class="card" id="pwList"></div>
-      <button type="button" class="qbtn" id="pwLock" style="margin-top:12px"><i class="ic" data-i="lock"></i> Verrouiller</button>
-    </div>
+  <section class="view" id="v-projects" hidden>
+    <h1>Projets</h1>
+    <button type="button" class="back" id="projectBack" hidden>Tous les projets</button>
+    <form class="row" id="projectForm">
+      <input id="projectName" class="grow" aria-label="Nom du projet" placeholder="Nom du projet" maxlength="100" required>
+      <button type="submit" class="btn">Créer un projet</button>
+    </form>
+    <div id="projectList" class="card"></div>
   </section>
 
   <!-- APPLI -->
@@ -669,6 +630,12 @@
       <div class="row"><button type="button" class="btn ghost" data-openlegal="privacy" style="flex:1">Confidentialité</button><button type="button" class="btn ghost" data-openlegal="terms" style="flex:1">Conditions</button><button type="button" class="btn ghost" data-openlegal="cookies" style="flex:1">Cookies</button></div>
       <div class="row" id="nuConsentRow" hidden><div class="grow small">Données de santé (Nutrition) : <b id="nuConsentState"></b></div><button type="button" class="mini" id="nuConsentBtn"></button></div>
       <div class="row"><button class="btn" id="exportAllBtn" style="width:100%">Télécharger toutes mes données</button></div>
+      <div class="row" id="vaultExport" hidden>
+        <div class="grow"><b>Exporter l’ancien coffre</b><div class="small muted">Les fichiers téléchargés sont lisibles sans code. Conserve-les en lieu sûr.</div>
+        <button type="button" class="btn ghost" id="exportVaultDocs">Télécharger les documents (ZIP)</button>
+        <button type="button" class="btn ghost" id="exportVaultPasswords">Télécharger les mots de passe (CSV)</button>
+        <p class="small" id="vaultExportStatus" role="status" hidden></p></div>
+      </div>
       <div class="row"><button class="btn stop" id="wipeBtn" style="width:100%">Supprimer mes données</button></div>
       <div class="row" id="delAccRow"><button class="btn stop" id="delAccBtn" style="width:100%">Supprimer mon compte</button></div>
       <div class="row" id="delAccNote"><div class="grow small muted">« Supprimer mes données » vide ton compte mais le garde. « Supprimer mon compte » efface aussi ton compte lui-même : tu ne pourras plus te connecter.</div></div>
@@ -691,13 +658,12 @@
 </main>
 
 <nav aria-label="Navigation principale"><div class="in" id="navIn"></div></nav>
-<div id="fnIcons" hidden><span data-ic="lists"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6h10M10 12h10M10 18h10"/><path d="M4 6l1.2 1.2L7.5 5M4 12l1.2 1.2L7.5 11"/><circle cx="5.5" cy="18" r="1.4"/></svg></span><span data-ic="graph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16h16"/><path d="M8 15l3.5-4 3 2.5L19 8"/></svg></span><span data-ic="plan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span><span data-ic="todo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/></svg></span><span data-ic="notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5"/><path d="M8.5 9h7M8.5 12.5h7M8.5 16h4"/></svg></span><span data-ic="pomo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5V9.5M9.5 2.5h5M18.5 6.5l1.5-1.5"/></svg></span><span data-ic="muscu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg></span><span data-ic="docs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2.5H7a2.5 2.5 0 0 0-2.5 2.5v14A2.5 2.5 0 0 0 7 21.5h10a2.5 2.5 0 0 0 2.5-2.5V8z"/><path d="M14 2.5V8h5.5M8.5 13h7M8.5 17h5"/></svg></span><span data-ic="pwd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg></span><span data-ic="app"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></span><span data-ic="more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></span><span data-ic="nutri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7.5c-1.6-1.5-5.6-1.6-6.6 2.2-1 3.8 1.6 9.4 4.1 10.4 1 .4 1.6-.3 2.5-.3s1.5.7 2.5.3c2.5-1 5.1-6.6 4.1-10.4-1-3.8-5-3.7-6.6-2.2z"/><path d="M12 7.5c0-2 1-3.6 3.2-4.3"/></svg></span><span data-ic="g-orga"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M8.5 13.5l2.3 2.3 4.7-4.6"/></svg></span><span data-ic="g-sport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg></span><span data-ic="g-perso"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2.5h7a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><path d="M3.5 11h17"/></svg></span><span data-ic="g-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></span></div>
+<div id="fnIcons" hidden><span data-ic="projects"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 7h7l2 2h9v11H3zM3 7V4h7l2 2h9v3"/></svg></span><span data-ic="lists"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6h10M10 12h10M10 18h10"/><path d="M4 6l1.2 1.2L7.5 5M4 12l1.2 1.2L7.5 11"/><circle cx="5.5" cy="18" r="1.4"/></svg></span><span data-ic="graph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16h16"/><path d="M8 15l3.5-4 3 2.5L19 8"/></svg></span><span data-ic="plan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span><span data-ic="todo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/></svg></span><span data-ic="notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5"/><path d="M8.5 9h7M8.5 12.5h7M8.5 16h4"/></svg></span><span data-ic="pomo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5V9.5M9.5 2.5h5M18.5 6.5l1.5-1.5"/></svg></span><span data-ic="muscu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg></span><span data-ic="docs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2.5H7a2.5 2.5 0 0 0-2.5 2.5v14A2.5 2.5 0 0 0 7 21.5h10a2.5 2.5 0 0 0 2.5-2.5V8z"/><path d="M14 2.5V8h5.5M8.5 13h7M8.5 17h5"/></svg></span><span data-ic="pwd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg></span><span data-ic="app"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></span><span data-ic="more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></span><span data-ic="nutri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7.5c-1.6-1.5-5.6-1.6-6.6 2.2-1 3.8 1.6 9.4 4.1 10.4 1 .4 1.6-.3 2.5-.3s1.5.7 2.5.3c2.5-1 5.1-6.6 4.1-10.4-1-3.8-5-3.7-6.6-2.2z"/><path d="M12 7.5c0-2 1-3.6 3.2-4.3"/></svg></span><span data-ic="g-orga"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M8.5 13.5l2.3 2.3 4.7-4.6"/></svg></span><span data-ic="g-sport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg></span><span data-ic="g-perso"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2.5h7a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><path d="M3.5 11h17"/></svg></span><span data-ic="g-more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></span></div>
 <div class="sheet-bg" id="sheet" hidden>
   <form class="sheet card" id="editForm">
     <div class="sheet-head"><b id="sheetTitle">Modifier</b><button type="button" class="x" id="sheetClose" aria-label="Fermer"><span class="gi gi-close" aria-hidden="true"></span></button></div>
     <label>Titre<input id="eTitle" required autocomplete="off"></label>
     <label id="eTodoWrap">Catégorie<select id="eTodoCat" class="sel"></select></label>
-    <label id="eDocWrap" hidden>Classeur<select id="eDocFolder" class="sel"></select></label>
     <div id="eTask" style="display:grid;gap:10px">
       <div class="two"><label>Date<input id="eDate" type="date"></label><label>Fin (optionnel)<input id="eEnd" type="date"></label></div>
       <div class="small muted" style="margin:2px 0 -6px">Heures (optionnel)</div><div class="two"><label>Heure de début<input id="eTime" type="time"></label><label>Heure de fin<input id="eTimeEnd" type="time"></label></div>
@@ -860,16 +826,6 @@
     <div class="two"><button type="button" class="btn ghost" id="recLater">Plus tard</button><button class="btn" type="submit" id="recOk">Valider</button></div>
   </form>
 </div>
-<div class="sheet-bg" id="pwSheet" hidden>
-  <form class="sheet card" id="pwForm" novalidate>
-    <div class="sheet-head"><b id="pwSheetTitle">Nouveau mot de passe</b><button type="button" class="x" id="pwClose" aria-label="Fermer"><i class="ic" data-i="close"></i></button></div>
-    <label>Site ou application<input id="pwSite" placeholder="Ex. Netflix, netflix.com" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
-    <label>Identifiant ou e-mail<input id="pwUser" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
-    <label>Mot de passe<span class="pw-field"><input id="pwPass" type="password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"><button type="button" class="mini" id="pwEye" aria-label="Voir"><i class="ic" data-i="eye"></i></button></span><button type="button" class="mini" id="pwGen">Générer</button></label>
-    <label>Note (optionnel)<input id="pwNote" autocomplete="off"></label>
-    <div class="two"><button type="button" class="btn stop" id="pwDel">Supprimer</button><button class="btn" type="submit">Enregistrer</button></div>
-  </form>
-</div>
 <div class="onb" id="onb" hidden>
   <button type="button" class="onb-skip" id="onbSkip">Passer</button>
   <div class="onb-track" id="onbTrack">
@@ -877,7 +833,7 @@
       <div class="onb-box">
         <img src="logo-192.png" alt="" class="auth-logo onb-pop" style="width:84px;height:84px">
         <h1 id="onbTitle">Bienvenue sur Sid'Compagnon</h1>
-        <p class="onb-tag">Trois applications, un seul compte : Sid'Journée pour tes journées, Sid'Forme pour ton corps, Sid'Note pour tes notes, documents et mots de passe.</p>
+        <p class="onb-tag">Trois applications, un seul compte : Sid'Journée pour tes journées, Sid'Forme pour ton corps, Sid'Note pour tes notes et séances Focus.</p>
         <p class="sub">Tu n'as pas besoin de tout : on règle l'app ensemble en 3 étapes.</p>
         <ol class="onb-steps">
           <li><span>1</span>Choisis les onglets qui te servent</li>
@@ -923,21 +879,6 @@
   <div class="pv-main"><div class="pv-body" id="pvBody"></div>
     <aside class="pv-notes" id="pvNotes" hidden aria-label="Mes notes sur ce PDF"><div class="pv-notes-h"><b>Mes notes sur ce PDF</b><button type="button" class="x" id="pvNotesClose" aria-label="Fermer"><i class="ic" data-i="close"></i></button></div>
       <textarea id="pvNoteTxt" placeholder="Écris tes notes sur ce cours…" aria-label="Mes notes sur ce PDF"></textarea></aside></div>
-</div>
-<div class="viewer" id="viewer" hidden>
-  <div class="viewer-head"><button type="button" class="back" id="vwBack"><i class="ic" data-i="chevleft"></i> Documents</button><b class="grow" id="vwTitle"></b><button type="button" class="mini" id="vwShare">Partager</button></div>
-  <div class="viewer-body" id="vwBody"></div>
-</div>
-<div class="sheet-bg" id="scan" hidden>
-  <div class="sheet card">
-    <div class="sheet-head"><b>Scanner un document</b><button type="button" class="x" id="scanClose" aria-label="Fermer"><i class="ic" data-i="close"></i></button></div>
-    <div class="scan-pages" id="scanPages"></div>
-    <div class="seg" id="scanFilter" role="group" aria-label="Rendu"><button type="button" data-flt="doc" aria-pressed="true">Document</button><button type="button" data-flt="color" aria-pressed="false">Couleur</button></div>
-    <div class="two"><label class="btn ghost" style="text-align:center;cursor:pointer"><input type="file" id="scanCam" accept="image/*" capture="environment" hidden><span id="scanAddTxt"><i class="ic" data-i="camera"></i> Prendre une photo</span></label><label class="btn ghost" style="text-align:center;cursor:pointer"><input type="file" id="scanLib" accept="image/*" multiple hidden>Choisir des photos</label></div>
-    <label>Nom du document<input id="scanName" autocomplete="off"></label>
-    <button type="button" class="btn" id="scanSave" disabled>Enregistrer le PDF</button>
-    <div class="small muted">Astuce : pose la feuille à plat, bien éclairée, et cadre-la au plus près.</div>
-  </div>
 </div>
 <div class="lightbox" id="lightbox" hidden><img id="lbImg" alt=""><div class="lb-bar"><button type="button" class="btn ghost" id="lbDel">Supprimer la photo</button><button type="button" class="btn" id="lbClose">Fermer</button></div></div>
 <div class="sheet-bg" id="qaSheet" hidden>

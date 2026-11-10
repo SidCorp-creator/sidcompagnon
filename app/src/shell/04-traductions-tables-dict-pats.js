@@ -25,7 +25,7 @@ if(!Array.isArray(data.pwds))data.pwds=[];
 LANG=(data.prefs&&data.prefs.lang)||ls.get("sidnote-lang")||"fr";if(session)ls.set("sidnote-lang",LANG);
 // v76 : FR et EN seulement. Une préférence néerlandaise (ou inconnue) revient au français, et on l'enregistre pour ne plus la relire.
 if(!["fr","en"].includes(LANG)){LANG="fr";ls.set("sidnote-lang","fr");if(data.prefs&&data.prefs.lang&&data.prefs.lang!=="fr"){data.prefs.lang="fr"}}
-const TABS=[["plan","Agenda"],["todo","Tâches"],["lists","Listes"],["notes","Notes"],["pomo","Focus"],["muscu","Musculation"],["nutri","Nutrition"],["graph","Graphiques"],["docs","Documents"],["pwd","Mots de passe"],["app","Appli"]];
+const TABS=[["plan","Agenda"],["todo","Tâches"],["lists","Listes"],["notes","Notes"],["projects","Projets"],["pomo","Focus"],["muscu","Musculation"],["nutri","Nutrition"],["graph","Graphiques"],["app","Appli"]];
 data.prefs=data.prefs||{};data.prefs.tabs=data.prefs.tabs||{plan:true,todo:true,pomo:true,app:true};
 
 function save(){
@@ -150,6 +150,7 @@ function mergeDataOld(loc,rem,opt){
   const out={...rem,...loc,del,res};
   out.todos=arr(loc.todos,rem.todos);out.tasks=arr(loc.tasks,rem.tasks);
   out.todoCats=arr(loc.todoCats,rem.todoCats);out.docs=arr(loc.docs,rem.docs);out.docFolders=arr(loc.docFolders,rem.docFolders);out.noteFolders=arr(loc.noteFolders,rem.noteFolders);
+  out.noteProjects=arrU(loc.noteProjects,rem.noteProjects);out.focusSessions=arrU(loc.focusSessions,rem.focusSessions);
   out.notes=arrU(loc.notes,rem.notes);out.pwds=arrU(loc.pwds,rem.pwds);out.pdfAnns=arrU(loc.pdfAnns,rem.pdfAnns); // v44.7 : annotations des PDF de cours
   // v33 : une note modifiée sur les deux appareils depuis la dernière synchro : on garde aussi l'autre version, en copie
   if(since){const ln=new Map((Array.isArray(loc.notes)?loc.notes:[]).map(x=>[x&&x.id,x]));

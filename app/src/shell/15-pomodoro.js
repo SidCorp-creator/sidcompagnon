@@ -83,6 +83,7 @@ function finishPomo(completed){
   const r=P.run;if(!r)return;
   const w=workDone(r,elapsed(r)),k=dayKey(new Date(r.startAt));
   pomoLastPosition=completed?{total:r.segs.reduce((a,x)=>a+x.d*MIN,0),cycles:r.segs.filter(x=>x.t==="w").length}:null;pomoProgressChange=completed?(pomoProgressChange==="skip"?"skip":"cycle"):"position";
+  recordFocusSession("focus-"+r.startAt,r.startAt,w);
   P.log[k]=(P.log[k]||0)+w;P.run=null;lastIdx=null;save();keepAwake(false);
   const pre=pomoSched;if(!completed)chimeCancel("pomo");pomoSched=false;
   if(completed){if(!pre)chime("end");toast(`Bravo ! ${hm(w/MIN)} de travail terminées`)}
@@ -143,4 +144,4 @@ function renderPomoStats(){
 setInterval(()=>{if(P.run){tickPomo();if(!$("v-pomo").hidden)renderPomoStats()}},500);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&P.run){unlockAudio();if(!P.run.pausedAt)keepAwake(true);tickPomo();pomoPlan()}});
 
-function renderAll(){renderTodos();renderPlan();renderStats();renderPomo();renderTypes();renderMuscu();renderDocs();renderNotes();renderPwd();renderNutri();if(data.ui.view==="graph")renderGraph();if(data.ui.view==="home")renderHome();if(data.ui.view==="spaces")renderSpaces();renderSide();convTabs()}
+function renderAll(){renderTodos();renderPlan();renderStats();renderPomo();renderTypes();renderMuscu();renderNotes();renderNutri();if(data.ui.view==="projects")renderNoteProjects();if(data.ui.view==="graph")renderGraph();if(data.ui.view==="home")renderHome();if(data.ui.view==="spaces")renderSpaces();renderSide();convTabs()}

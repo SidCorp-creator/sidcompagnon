@@ -534,4 +534,24 @@ Object.assign(DICT,{"Fiche en préparation":"Guide coming soon","Modifications":
 Object.assign(DICT,{"exercices du catalogue n'ont pas encore de fiche « ? » complète (photos et conseils) : s'ils sont choisis, ils apparaissent avec la mention « Fiche en préparation ».":"catalogue exercises don't have a complete “?” guide yet (photos and tips): if chosen, they show “Guide coming soon”.","exercice du catalogue n'a pas encore de fiche « ? » complète (photos et conseils) : s'il est choisi, il apparaît avec la mention « Fiche en préparation ».":"catalogue exercise doesn't have a complete “?” guide yet (photos and tips): if chosen, it shows “Guide coming soon”."});
 Object.assign(DICT,{"Illustration":"Illustration","Illustrations générées":"Generated illustrations","et vérifiées une à une ; ce ne sont pas des photos.":"and checked one by one; these are not photos."});
 
-Object.assign(DICT,{"Agenda et tâches":"Calendar and tasks","Notes, Focus et coffre":"Notes, Focus and vault","Notes, sessions Focus et coffre.":"Notes, Focus sessions and vault.","Ton agenda et tes tâches du jour.":"Your calendar and tasks for today.","Tes notes, tes sessions Focus et ton coffre.":"Your notes, Focus sessions and vault."});
+Object.assign(DICT,{
+  "Agenda et tâches":"Calendar and tasks",
+  "Notes, Focus et projets":"Notes, Focus and projects",
+  "Notes, séances Focus et projets.":"Notes, Focus sessions and projects.",
+  "Ton agenda et tes tâches du jour.":"Your calendar and tasks for today.",
+  "Tes notes et tes séances Focus.":"Your notes and Focus sessions.",
+  "Écris et concentre-toi":"Write and focus",
+  "Notes, PDF et séances Focus.":"Notes, PDFs and Focus sessions.",
+  "Page précédente":"Previous page","Page suivante":"Next page",
+  "Projets":"Projects","Nom du projet":"Project name","Créer un projet":"Create project",
+  "Tous les projets":"All projects","Aucun projet":"No projects","Sans projet":"No project",
+  "Supprimer le projet":"Delete project","Changer de projet":"Change project",
+  "Séances Focus":"Focus sessions","Séances Focus sans projet":"Focus sessions without a project",
+  "Regroupe tes notes et tes séances Focus.":"Group your notes and Focus sessions.",
+  "Exporter l’ancien coffre":"Export the former vault",
+  "Les fichiers téléchargés sont lisibles sans code. Conserve-les en lieu sûr.":"Downloaded files can be read without a code. Keep them somewhere safe.",
+  "Télécharger les documents (ZIP)":"Download documents (ZIP)",
+  "Télécharger les mots de passe (CSV)":"Download passwords (CSV)",
+  "Vérifie le fichier téléchargé.":"Check the downloaded file.",
+  "L’export a échoué. Vérifie le code et la disponibilité des données.":"Export failed. Check the code and whether the data is available."
+});

@@ -14,14 +14,13 @@ import { DayView, type DayViewProps } from "./DayView";
 import { MuList, MuStats, type MuGrp, type MuI18n, type MuStatsVM } from "./Muscu";
 import { NuLog, NuResult, NuWeek, type Dish, type Mac, type NuI18n, type NuResultVM, type WeekSport } from "./Nutrition";
 import { NoteList, NotesPath, type Icons, type NfVM, type NoteVM, type NotesI18n } from "./Notes";
-import { DocFolders, DocList, PwList, type DocFolderVM, type DocVM, type PwVM, type VI18n } from "./Vault";
 import { NuMenu, type MenuVM } from "./NuMenu";
 import { HomeCards, type HcCard } from "./Home";
 import { GoalBody, NuCopy, NuPlan, type GoalVM, type NuCopyVM, type PlanVM } from "./NuExtra";
 import { AppHead, NavBar, SideBar, type NavItem, type NavI18n, type SideGroup, type SideIcons, type AppHeadProps } from "./Shell";
 import { ExHelp, QuickAdd, Stats, TabsCard, TypesCard, type ExHelpVM, type SI18n, type TabGroup } from "./Settings";
 import { Keypad, OnbDots, OnbGroups, OnbPal, type OI18n, type OnbGroup, type PalVM } from "./Onboarding";
-import { AuthFeats, FolderBar, NsBar, NuKcalOf, NuMealKcal, NuMkTot, NuSlots, NuSports, type FI18n } from "./Forms";
+import { AuthFeats, NsBar, NuKcalOf, NuMealKcal, NuMkTot, NuSlots, NuSports, type FI18n } from "./Forms";
 import { NotePhotos, PvOpts, PvOverlay, RtMenu, type PI18n, type PvAnn } from "./PdfView";
 import { ActList, BkList, TypeChips, CalLegend, CalList, HomeSync, LegalBody, SyncState, type CalVM, type WI18n } from "./Sheets";
 import { CfRes, CfSel, CoachCard, type CI18n, type CoachVM } from "./Coach";
@@ -95,7 +94,6 @@ declare global {
       unmount: (el: Element) => void;
       authFeats: (el: Element, p: { items: { icon: string; t: string; d: string }[]; i18n: FI18n }) => void;
       nsBar: (el: Element, p: { unlock: string; lock: string; i18n: FI18n }) => void;
-      folderBar: (el: Element, p: { name: string; count: number; editing: boolean; q: string; icon: string; searchIcon: string; i18n: FI18n }) => void;
       nuSports: (el: Element, p: { sports: { name: string; freq: string; dur: string }[]; i18n: FI18n }) => void;
       nuSlots: (el: Element, p: { slots: { k: string; on: boolean; icon: string; name: string }[]; i18n: FI18n }) => void;
       nuMealKcal: (el: Element, p: { rows: { icon: string; name: string; kcal: number }[]; i18n: FI18n }) => void;
@@ -145,8 +143,6 @@ declare global {
       nuPlan: (el: Element, p: { pl: PlanVM; alert: string; i18n: NuI18n }) => void;
       nuMenu: (el: Element, p: { m: MenuVM | null; mac: Mac[]; icons: { book: string }; i18n: NuI18n }) => void;
       home: (el: Element, p: { cards: HcCard[]; i18n: NuI18n }) => void;
-      docs: (els: { folders: Element; list: Element }, p: { folders: DocFolderVM[]; cur: string; icon: string; grip: boolean; empty: string; docs: DocVM[]; i18n: VI18n }) => void;
-      pwList: (el: Element, p: { items: PwVM[]; empty: string; i18n: VI18n }) => void;
       notes: (els: { path: Element; list: Element }, p: { path: NfVM[]; dirs: NfVM[]; inDir: boolean; search: boolean; empty: string; notes: NoteVM[]; icons: Icons; i18n: NotesI18n }) => void;
       nuLog: (el: Element, p: { dishes: Dish[]; mac: Mac[]; today: boolean; i18n: NuI18n }) => void;
       nuResult: (el: Element, p: { p: NuResultVM | null; mac: Mac[]; boltIcon: string; i18n: NuI18n }) => void;
@@ -185,11 +181,6 @@ window.SCIslands = {
     mount(els.path, <NotesPath path={p.path} i18n={p.i18n} />);
     mount(els.list, <NoteList dirs={p.dirs} inDir={p.inDir} notes={p.notes} search={p.search} empty={p.empty} icons={p.icons} i18n={p.i18n} />);
   },
-  docs: (els, p) => {
-    mount(els.folders, <DocFolders folders={p.folders} cur={p.cur} icon={p.icon} i18n={p.i18n} />);
-    mount(els.list, <DocList docs={p.docs} grip={p.grip} empty={p.empty} icon={p.icon} i18n={p.i18n} />);
-  },
-  pwList: (el, p) => mount(el, <PwList {...p} />),
   nuMenu: (el, p) => mount(el, <NuMenu {...p} />),
   home: (el, p) => mount(el, <HomeCards {...p} />),
   nuCopy: (el, p) => mount(el, <NuCopy {...p} />),
@@ -210,7 +201,6 @@ window.SCIslands = {
   onbPal: (el, p) => mount(el, <OnbPal {...p} />),
   authFeats: (el, p) => mount(el, <AuthFeats {...p} />),
   nsBar: (el, p) => mount(el, <NsBar {...p} />),
-  folderBar: (el, p) => mount(el, <FolderBar {...p} />),
   nuSports: (el, p) => mount(el, <NuSports {...p} />),
   nuSlots: (el, p) => mount(el, <NuSlots {...p} />),
   nuMealKcal: (el, p) => mount(el, <NuMealKcal {...p} />),

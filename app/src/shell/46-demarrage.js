@@ -36,8 +36,8 @@ if(ephExpired){
   // e-mail et fonctions réservées relus au lancement (un accès ouvert ou retiré s'applique sans se reconnecter)
   if(!isTrial())token().then(t=>api("/auth/v1/user",{token:t})).then(u=>{if(!u||!session)return;if(u.email)session.email=u.email;const f=userFeat(u)||[],ch=String(f)!==String(session.feat||[]);
     session.feat=f;ls.set(SESSION_KEY,session);renderAccount();if(ch){applySoon();applyTabs();renderAll()}}).catch(()=>{});
-  setSync();pull();if(!isTrial()){renderNotif();refreshSub();docsSyncPending();notesPhotosPending()}
-  window.addEventListener("online",()=>{setSync();push();pull();docsSyncPending()});
+  setSync();pull();if(!isTrial()){renderNotif();refreshSub();notesPhotosPending()}
+  window.addEventListener("online",()=>{setSync();push();pull()});
   window.addEventListener("offline",setSync);
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)pull();else if(session&&session.eph&&cache&&cache.dirty){clearTimeout(pushTimer);push()}});
 }

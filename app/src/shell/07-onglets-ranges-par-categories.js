@@ -5,11 +5,11 @@
 const GROUPS=[
   {k:"orga",label:MARQUES.journee,app:"agenda",tabs:["plan","todo"]},
   {k:"sport",label:MARQUES.forme,app:"fit",tabs:["muscu","nutri","graph"]},
-  {k:"perso",label:MARQUES.note,app:"note",tabs:["notes","pomo","docs","pwd"]},
+  {k:"perso",label:MARQUES.note,app:"note",tabs:["notes","pomo","projects"]},
   {k:"more",label:MARQUES.compagnon,app:"home",tabs:["more","app"]}];
 const APP_GROUPS=GROUPS.slice(0,3);
 const appOf=v=>v==="home"||v==="spaces"?"home":groupOf(v).app;
-const SHORT={plan:"Agenda",todo:"Tâches",lists:"Listes",pomo:"Focus",muscu:"Musculation",nutri:"Nutrition",graph:"Graphiques",notes:"Notes",docs:"Documents",pwd:"Mots de passe",more:"Réglages",app:"Installer l'app"};
+const SHORT={plan:"Agenda",todo:"Tâches",lists:"Listes",pomo:"Focus",projects:"Projets",muscu:"Musculation",nutri:"Nutrition",graph:"Graphiques",notes:"Notes",more:"Réglages",app:"Installer l'app"};
 const ICON=k=>{const e=$("fnIcons").querySelector(`[data-ic="${k}"]`);return e?e.innerHTML:""};
 const groupOf=v=>GROUPS.find(g=>g.tabs.includes(v))||GROUPS[0];
 // v32 : Nutrition et Graphiques n'apparaissent que pour les comptes qui y ont accès (décidé par le serveur)
@@ -73,9 +73,6 @@ if(v!=="notes")document.body.classList.remove("note-full");if(v==="more"){try{re
   if(v==="more"){renderStats();renderTabsCard();renderHomeSel();renderLook();if(session)renderNotif()}
   // v37 : le coffre se reverrouille en le quittant, tout de suite ou après le délai choisi (Réglages)
   secCheck();for(const k of SEC_K){if(k===v)delete secAway[k];else secLeave(k)}
-  if(v==="docs")docsEnter();
-  if(v!=="docs"&&ps&&ps.host)psEnd(null);
-  if(v==="pwd"){renderPwd();if(!vaultKey&&pinStep==="unlock")bioAuto("main",()=>$("pinBio").click())}
   if(v==="lists")slEnter();
   if(v==="notes"&&!noteOpenId)renderNotes();
   if(v!=="notes"&&v!=="nutri")dictStop();
@@ -84,6 +81,7 @@ if(v!=="notes")document.body.classList.remove("note-full");if(v==="more"){try{re
   if(v==="graph")renderGraph();
   if(v!=="graph")grTipHide();
   if(v==="pomo")renderSpotify();
+  if(v==="projects")renderNoteProjects();
   window.scrollTo(0,0);elanCompact();
   if(v==="home"&&introReady&&INTRO[wasApp])appOutro(wasApp);
 }
@@ -95,7 +93,7 @@ function applyTabs(){
 // --- en-tête d'un module : nom de l'espace + pastilles de ses fonctions ---
 // v28 : nom de l'espace + pastilles des fonctions de cet espace (Agenda · Tâches · Focus…)
 // v42 : en-tête d'une app : son logo et son nom, et le retour à Sid'Compagnon (les fonctions sont dans la barre du bas)
-const APP_ROLES={agenda:"Agenda et tâches",fit:"Sport et alimentation",note:"Notes, Focus et coffre",home:"Tes réglages"};
+const APP_ROLES={agenda:"Agenda et tâches",fit:"Sport et alimentation",note:"Notes, Focus et projets",home:"Tes réglages"};
 function renderVhead(v){const el=$("vhead");
  if(v==="home"||v==="spaces"){el.hidden=true;document.title="Sid'Compagnon";return}
  const g=groupOf(v),previous=el.dataset.app===g.app?Number(el.querySelector("[role=progressbar]")?.getAttribute("aria-valuenow")||0):0;el.hidden=false;el.dataset.app=g.app;el.classList.remove("many");
@@ -110,7 +108,7 @@ function renderVhead(v){const el=$("vhead");
   if(v==="muscu"){const p=muSessionProgress();progress=`${p.done} / ${p.total} ${L("séries complètes")}`;percent=p.total?Math.round(p.done/p.total*100):0;hasProgress=true}
   else if(nutriAllowed()&&n.plan?.kcal){const eaten=Math.round(sumOf(dayLog(iso(today()))).kcal),target=dayTarget(iso(today())).kcal;progress=`${fmtFull(eaten)} / ${fmtFull(Math.round(target))}\u00a0kcal`;percent=Math.min(100,Math.round(eaten/target*100));hasProgress=true}
   else{progress=L("Définis ton objectif alimentaire");hasProgress=false}}
- if(g.app==="note"){progress=elanCoffreMetric(v);hasProgress=false}
+ if(g.app==="note"&&v!=="pomo"){progress=elanCoffreMetric(v);hasProgress=false}
  if(g.app==="home"){progress="";hasProgress=false}
  const title=SHORT[v]||g.label;
  document.title=`${g.label} · ${L(title)} — Sid'Compagnon`;
@@ -148,7 +146,6 @@ function spaceMeta(k){try{
   if(k==="pomo"){const m=Math.round(((data.pomo&&data.pomo.log||{})[dayKey(new Date())]||0)/60000);return m?`${m} min ${L("aujourd'hui")}`:""}
   if(k==="nutri"){const n=NU();if(!nutriAllowed()||!n.plan||!n.plan.kcal)return"";const left=Math.round(dayTarget(iso(today())).kcal-sumOf(dayLog(iso(today()))).kcal);return `${fmtFull(Math.max(0,left))} kcal`}
   if(k==="notes"){const n=NT().length;return n?String(n):""}
-  if(k==="docs"){const n=docsArr().length;return n?String(n):""}
   if(k==="muscu"){const n=(data.muscu&&data.muscu.sessions||[]).length;return n?`${n} ${L(n>1?"séances":"séance")}`:""}
   return""}catch(e){return""}}
 const CHEVR=`<svg class="chev-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>`;
@@ -239,7 +236,7 @@ function renderHome(){if(!$("homeBody"))return;
       return t.length>90?t.slice(0,90).replace(/\s+\S*$/,"")+"…":t};
     if(last&&nTxt(last))it.push([L("Dernière note"),{u:nTxt(last)},""]);
     const nN=NT().length;it.push([L("Classeur"),`${nN} ${L(nN>1?"notes":"note")} · ${NF().length} ${L(NF().length>1?"dossiers":"dossier")}`,""]);
-    cards.push({g,desc:"Notes, sessions Focus et coffre.",it:it.slice(0,2)})}}
+    cards.push({g,desc:"Notes, séances Focus et projets.",it:it.slice(0,2)})}}
   const phrases={agenda:"Organise tes journées",fit:"Entraîne-toi, mange bien",note:"Écris, classe et protège"};
   const models=cards.map(({g,it})=>{let count="0",metric="notes";
     if(g.app==="agenda"){count=String(allT().filter(t=>onDay(t,t0)&&!t.canc&&t.status!=="fait").length);metric="activités restantes aujourd'hui"}
@@ -289,7 +286,6 @@ $("tabsCard").addEventListener("change",e=>{const c=e.target.closest("[data-tabp
 // Compteurs de présentation uniquement ; aucun nombre déchiffré avant ouverture.
 function elanCoffreMetric(v){
  if(v==="notes"){const n=NT().length;return `${fmtFull(n)} ${L(n===1?"note":"notes")}`}
- if(v==="docs"){if(!dvOpen)return L("Verrouillé");const a=docsArr(),size=a.reduce((n,d)=>n+(d.size||0),0);return `${fmtFull(a.length)} ${L(a.length===1?"document":"documents")} · ${size?fmtSize(size):"0 "+(LANG==="fr"?"Ko":"KB")}`}
- if(v==="pwd")return vaultKey?`${fmtFull(vaultItems.size)} ${L(vaultItems.size===1?"mot de passe":"mots de passe")}`:L("Verrouillé");return "";
+ return "";
 }
-function elanRefreshCoffreMetric(){const v=data.ui.view;if(!["notes","docs","pwd"].includes(v))return;const e=$("vhead").querySelector(".elan-progress>span:first-child");if(e)e.textContent=elanCoffreMetric(v)}
+function elanRefreshCoffreMetric(){const v=data.ui.view;if(v!=="notes")return;const e=$("vhead").querySelector(".elan-progress>span:first-child");if(e)e.textContent=elanCoffreMetric(v)}

@@ -1,6 +1,6 @@
 // v76 : Sid'Bot côté app, avec un faux serveur (route Playwright). Ce n'est PAS un test du fournisseur d'IA.
-// Vérifie : ouverture depuis le bandeau des 3 apps, contexte partagé visible et retirable, aucune donnée secrète envoyée,
-// action proposée appliquée seulement après un toucher, erreurs quota / limitation / délai / hors ligne, aucun lien claude.ai.
+// Vérifie : ouverture depuis les trois apps, contexte visible et retirable, absence d’envoi de données secrètes,
+// action proposée appliquée seulement après un toucher, erreurs quota / limitation / délai / hors ligne et relais Claude depuis Sid’Note.
 const {chromium,devices}=require('../app/node_modules/playwright'),assert=require('node:assert/strict'),path=require('node:path'),fs=require('node:fs');
 const OUT=path.resolve(__dirname,'out');fs.mkdirSync(OUT,{recursive:true});
 (async()=>{const b=await chromium.launch();const errors=[];
@@ -17,7 +17,7 @@ const OUT=path.resolve(__dirname,'out');fs.mkdirSync(OUT,{recursive:true});
    if(mode==='bad')return rt.fulfill({status:200,contentType:'application/json',body:JSON.stringify({reply:'ok',actions:[{type:'delete_all',payload:{}},{type:'add_task',payload:{title:'x',date:'demain'}}]})});
    return rt.fulfill({status:200,contentType:'application/json',body:JSON.stringify({reply:'Je te propose ceci :',usage:{used:1,limit:50,reset:'2026-11-09T00:00:00Z'},
      actions:[{type:'add_task',label:'Réviser chimie · jeudi 14:00',payload:{title:'Réviser chimie',date:'2026-11-12',time:'14:00'}}]})})});
- await p.goto('http://localhost:8766');await p.fill('#aName','Camille');await p.fill('#aEmail',`sb-${Date.now()}-${lang}@test.be`);await p.fill('#aPw','secret11');await p.fill('#aPw2','secret11');await p.check('#aAgree');await p.click('#aBtn');
+ await p.goto(process.env.SID_BASE_URL||'http://localhost:8766');await p.fill('#aName','Camille');await p.fill('#aEmail',`sb-${Date.now()}-${lang}@test.be`);await p.fill('#aPw','secret11');await p.fill('#aPw2','secret11');await p.check('#aAgree');await p.click('#aBtn');
  await p.waitForSelector('#onb:not([hidden])');await p.click('#onbSkip');if(await p.isVisible('#notifAsk'))await p.click('#naNo');
  // Sid'Journée : bouton du bandeau
  await p.evaluate(()=>show('plan'));await p.click('#vhead [data-app-claude]');await p.waitForSelector('#sbSheet:not([hidden])');
@@ -50,26 +50,34 @@ const OUT=path.resolve(__dirname,'out');fs.mkdirSync(OUT,{recursive:true});
  await c.setOffline(true);mode='ok';await p.fill('#sbIn','x');await p.click('#sbSend');await until(()=>document.querySelectorAll('.sb-msg.err').length>=4);await c.setOffline(false);
  // clavier : Échap ferme
  await p.keyboard.press('Escape');assert.equal(await p.isVisible('#sbSheet'),false);
- // Sid'Note : une note ouverte n'est jamais jointe par défaut, une note secrète jamais
+ // Sid’Note transmet la référence de la note à Claude, via le connecteur.
  await p.evaluate(()=>{NT().push({id:'n1',title:'Courses',body:'pain',createdAt:new Date().toISOString(),upd:Date.now()},{id:'n2',title:'Secret',body:'',secret:true,iv:'x',vid:'v',createdAt:new Date().toISOString(),upd:Date.now()});save();show('notes');openNote('n1')});
- // v77 (capture Sid'Note) : le bandeau de l'éditeur de notes a son propre rendu : même bouton Sid'Bot, jamais « Claude »
- const nbt=p.locator('#noteAppHead [data-app-claude]');assert.equal((await nbt.innerText()).trim(),"Sid'Bot");assert.match(await nbt.getAttribute('aria-label'),/Sid'Bot/);
- assert.ok(!/Claude/.test(await p.locator('#noteAppHead').innerText()),'aucun « Claude » dans le bandeau de la note');
- await p.click('#noteAppHead [data-app-claude]');await p.waitForSelector('#sbSheet:not([hidden])');
- assert.match(await p.locator('#sbSub').innerText(),/Sid'Note/);
- assert.equal(await p.locator('[data-sbctx="note"]').getAttribute('aria-pressed'),'false');
- await p.fill('#sbIn','x');await p.click('#sbSend');await until(n=>document.querySelectorAll('.sb-msg.bot').length>=1,1);
- const nb=sent.at(-1).body;assert.equal(nb.app,'note');assert.equal(nb.context.note,undefined);
+ const nbt=p.locator('#noteAppHead [data-app-claude]');assert.equal((await nbt.innerText()).trim(),"Sid'Bot");
+ const before=sent.length;
+ await nbt.click();
+ await p.waitForSelector('#ncSheet:not([hidden])');
+ const ask=new URL(await p.locator('#ncGo').getAttribute('href'));
+ assert.equal(ask.origin,'https://claude.ai');
+ assert.match(ask.searchParams.get('q'),/Courses.*n1.*lire_note/);
+ assert.ok(!ask.searchParams.get('q').includes('pain'));
+ const setup=p.locator('[data-ncadd]');
+ await setup.waitFor();
+ const connector=new URL(await setup.getAttribute('href'));
+ assert.equal(connector.origin,'https://claude.ai');
+ assert.match(connector.searchParams.get('connectorUrl'),/^https:\/\/sidcompagnon\.com\/mcp\/[A-Za-z0-9_-]+$/);
+ assert.equal(sent.length,before);
+ await p.click('#ncClose');
+ await p.evaluate(()=>{noteOpenId='n2';ncOpen()});
+ assert.equal(new URL(await p.locator('#ncGo').getAttribute('href')).searchParams.get('q'),null);
+ await p.click('#ncClose');
  const all=JSON.stringify(sent);assert.ok(!/"secret"|pwd|vault|password/i.test(all),'aucune donnée secrète envoyée');
- await p.keyboard.press('Escape');
  // Sid'Forme
  await p.evaluate(()=>show('nutri'));await p.click('#vhead [data-app-claude]');assert.match(await p.locator('#sbSub').innerText(),/Sid'Forme/);await p.keyboard.press('Escape');
- // plus aucun lien claude.ai dans la page
- assert.equal(await p.evaluate(()=>document.querySelectorAll('a[href*="claude.ai"]').length),0);
- assert.ok(!/claude\.ai/.test(await p.content()),'aucune adresse claude.ai dans la page');
- await p.setViewportSize({width:1280,height:900});await p.evaluate(()=>{show('notes');openNote('n1')});await p.waitForTimeout(200);
- assert.equal((await p.locator('#noteAppHead [data-app-claude]').innerText()).trim(),"Sid'Bot",'ordinateur : bouton Sid\'Bot');await p.click('#noteAppHead [data-app-claude]');assert.equal(await p.isVisible('#sbSheet'),true);await p.keyboard.press('Escape');
- for(const v of ['plan','todo','pomo','muscu','nutri','graph','notes','docs','pwd'])assert.ok(!/Claude/.test(await p.evaluate(x=>{show(x);return (document.querySelector('#vhead')||{}).innerText||''},v)),'bandeau '+v+' sans « Claude »');
+ await p.setViewportSize({width:1280,height:900});
+ await p.evaluate(()=>{show('notes');openNote('n1')});
+ await p.click('#noteAppHead [data-app-claude]');
+ assert.equal(await p.isVisible('#ncSheet'),true);
+ await p.click('#ncClose');
  await c.close();console.log('OK Sid\'Bot',lang)}
  await b.close();if(errors.length){console.error(errors.join('\n'));process.exitCode=1}
 })().catch(e=>{console.error(e);process.exitCode=1});

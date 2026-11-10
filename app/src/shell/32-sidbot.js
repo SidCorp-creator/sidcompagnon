@@ -208,15 +208,18 @@ const NC={ask:q=>"https://claude.ai/new"+(q?"?q="+encodeURIComponent(q):""),
   add:u=>"https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName="+encodeURIComponent(MARQUES.note)+"&connectorUrl="+encodeURIComponent(u)};
 let ncW={uid:"",url:"",hash:"",busy:false,err:"",poll:null,prompt:"",linked:null};
 // relecture Codex : tout l'état du raccourci appartient à un compte ; il est oublié au changement de compte ou à la déconnexion
-function ncReset(){if(ncW.poll)clearInterval(ncW.poll);ncW={uid:sbUid(),url:"",hash:"",busy:false,err:"",poll:null,prompt:"",linked:null}}
+function ncReset(){if(ncW.poll)clearInterval(ncW.poll);$("ncBody")?.replaceChildren();ncW={uid:sbUid(),url:"",hash:"",busy:false,err:"",poll:null,prompt:"",linked:null}}
 const ncHex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
 const ncKey=()=>{const a=crypto.getRandomValues(new Uint8Array(32));let s="";for(const x of a)s+=String.fromCharCode(x);return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")};
-async function ncCreate(){const key=ncKey(),hash=ncHex(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(key)));
-  await api("/rest/v1/mcp_tokens",{method:"POST",token:await token(),headers:{Prefer:"return=minimal"},body:{hash,user_id:session.user.id,label:"Claude"}});
+async function ncCreate(){
+  const owner=sbUid(),key=ncKey(),hash=ncHex(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(key)));
+  const access=await token();
+  if(sbUid()!==owner)throw new Error("Compte changé");
+  await api("/rest/v1/mcp_tokens",{method:"POST",token:access,headers:{Prefer:"return=minimal"},body:{hash,user_id:owner,label:"Claude"}});
   return {url:NC_MCP+key,hash}}
 // note ouverte (jamais secrète) : Claude la lira par le connecteur, avec ses pièces jointes
 function ncNotePrompt(){const n=typeof noteOpenId!=="undefined"&&noteOpenId&&typeof noteFind==="function"?noteFind(noteOpenId):null;
-  if(!n||n.secret)return "";const t=String(n.title||"").trim()||String(n.body||"").trim().split("\n")[0].slice(0,60)||L("Note sans titre");
+  if(!n||n.secret)return "";const t=String(n.title||"").trim().slice(0,120)||L("Note sans titre");
   return T3(`Ouvre ma note « ${t} » (id ${n.id}) dans ${MARQUES.note} avec lire_note (pièces jointes comprises). `,`Open my note “${t}” (id ${n.id}) in ${MARQUES.note} with lire_note (attachments included). `)}
 function ncSheet(){let el=$("ncSheet");if(el)return el;el=document.createElement("div");el.className="sheet-bg";el.id="ncSheet";el.hidden=true;
   el.innerHTML=`<div class="sheet card nc-sheet" role="dialog" aria-modal="true" aria-labelledby="ncTitle"><div class="sheet-head"><b id="ncTitle" class="notr"></b><button type="button" class="x" id="ncClose" aria-label="${esc(L("Fermer"))}"><span class="gi gi-close" aria-hidden="true"></span></button></div><div id="ncBody"></div></div>`;

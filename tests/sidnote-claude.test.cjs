@@ -36,7 +36,7 @@ const {chromium}=require('../app/node_modules/playwright'),assert=require('node:
  // 6. changement de compte : raccourci et adresse du compte précédent oubliés, feuille fermée
  await p.evaluate(()=>{ncW.url='https://sidcompagnon.com/mcp/ancien';ncW.hash='h'});const realId=await p.evaluate(()=>session.user.id);
  await p.evaluate(()=>{session.user.id='autre-compte'});await p.waitForTimeout(1300);
- assert.ok(await p.evaluate(()=>!ncW.url&&!ncW.hash&&ncW.uid==='autre-compte'&&document.getElementById('ncSheet').hidden),'état oublié au changement de compte');
+ assert.ok(await p.evaluate(()=>!ncW.url&&!ncW.hash&&ncW.uid==='autre-compte'&&document.getElementById('ncSheet').hidden&&!document.querySelector('#ncBody a')),'état oublié au changement de compte');
  await p.evaluate(i=>{session.user.id=i},realId);
  assert.equal(bot.length,0,'aucun appel à la fonction sidbot depuis Sid\'Note');
  if(lang==='en')assert.match(await p.textContent('#ncGo'),/Open Claude/);

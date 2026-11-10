@@ -69,9 +69,9 @@ const ONB_DESC={
   docs:"Range tes PDF, scanne des feuilles avec l'appareil photo et retrouve-les en un instant.",
   app:"Les étapes pour installer Sid'Compagnon sur ton écran d'accueil."};
 let onbSel={};
-const ONB_GROUP={orga:["agenda","Organise tes journées","Ton agenda, tes tâches du jour et un minuteur de concentration."],
+const ONB_GROUP={orga:["agenda","Organise tes journées","Ton agenda et tes tâches du jour."],
   sport:["fit","Bouge et mange bien","Ton programme de musculation, ta nutrition et tes progrès en graphiques."],
-  perso:["note","Garde tout à l'abri","Tes notes, tes documents et tes mots de passe, protégés par ton code et le mot de passe de ton compte."]};
+  perso:["note","Garde tout à l'abri","Tes notes, tes sessions Focus et ton coffre."]};
 function openOnb(){
   onbSel={};TABS.forEach(([k])=>{if(!OFF_TABS.includes(k))onbSel[k]=data.prefs.tabs[k]!==false});
   document.querySelectorAll("#onbLang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG));

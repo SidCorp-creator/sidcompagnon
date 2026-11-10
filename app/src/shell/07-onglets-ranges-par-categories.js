@@ -3,9 +3,9 @@
 // v25 : les catégories deviennent des « espaces » (page Espaces + barre latérale sur ordinateur)
 // v42 : trois applications dans l'application mère Sid'Compagnon (même compte, mêmes données) ; Réglages et Compte sont dans Sid'Compagnon
 const GROUPS=[
-  {k:"orga",label:MARQUES.journee,app:"agenda",tabs:["plan","todo","pomo"]}, // v41 : Listes retirées ; v42 : Focus (pomodoro) revient
+  {k:"orga",label:MARQUES.journee,app:"agenda",tabs:["plan","todo"]},
   {k:"sport",label:MARQUES.forme,app:"fit",tabs:["muscu","nutri","graph"]},
-  {k:"perso",label:MARQUES.note,app:"note",tabs:["notes","docs","pwd"]},
+  {k:"perso",label:MARQUES.note,app:"note",tabs:["notes","pomo","docs","pwd"]},
   {k:"more",label:MARQUES.compagnon,app:"home",tabs:["more","app"]}];
 const APP_GROUPS=GROUPS.slice(0,3);
 const appOf=v=>v==="home"||v==="spaces"?"home":groupOf(v).app;
@@ -26,7 +26,7 @@ const PLUSIC=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 // v28 : la barre du bas montre directement les 3 espaces (demande de Sid) : Aujourd'hui, Organisation, Santé, Coffre, Compte.
 // Toucher un espace rouvre sa dernière fonction ; en haut, des pastilles passent d'une fonction à l'autre. Le « + » est sur la page Aujourd'hui.
 const DOCK=[["home","Aujourd'hui",HOMEIC],["orga","Organisation",null],["sport","Santé",null],["perso","Coffre",null],["more","Compte",USERIC]];
-// v42 : la barre du bas montre les fonctions de l'app ouverte (sid'agenda : Agenda, Tâches, Focus…) ; dans Sid'Compagnon, pas de barre
+// v42 : la barre du bas montre les fonctions de l'app ouverte (Sid’Journée : Agenda, Tâches) ; dans Sid'Compagnon, pas de barre
 // v44.7 : la page garde toujours en bas la place de la barre (sa hauteur réelle, 0 si elle est cachée) : le dernier élément
 // n'est plus coupé derrière (ordinateur avec la barre latérale masquée, téléphone, tablette)
 function navPad(){const n=document.querySelector("nav"),h=n&&!n.hidden&&getComputedStyle(n).display!=="none"?Math.ceil(n.getBoundingClientRect().height):0;
@@ -95,7 +95,7 @@ function applyTabs(){
 // --- en-tête d'un module : nom de l'espace + pastilles de ses fonctions ---
 // v28 : nom de l'espace + pastilles des fonctions de cet espace (Agenda · Tâches · Focus…)
 // v42 : en-tête d'une app : son logo et son nom, et le retour à Sid'Compagnon (les fonctions sont dans la barre du bas)
-const APP_ROLES={agenda:"Agenda, tâches, focus",fit:"Sport et alimentation",note:"Notes, documents, mots de passe",home:"Tes réglages"};
+const APP_ROLES={agenda:"Agenda et tâches",fit:"Sport et alimentation",note:"Notes, Focus et coffre",home:"Tes réglages"};
 function renderVhead(v){const el=$("vhead");
  if(v==="home"||v==="spaces"){el.hidden=true;document.title="Sid'Compagnon";return}
  const g=groupOf(v),previous=el.dataset.app===g.app?Number(el.querySelector("[role=progressbar]")?.getAttribute("aria-valuenow")||0):0;el.hidden=false;el.dataset.app=g.app;el.classList.remove("many");
@@ -239,7 +239,7 @@ function renderHome(){if(!$("homeBody"))return;
       return t.length>90?t.slice(0,90).replace(/\s+\S*$/,"")+"…":t};
     if(last&&nTxt(last))it.push([L("Dernière note"),{u:nTxt(last)},""]);
     const nN=NT().length;it.push([L("Classeur"),`${nN} ${L(nN>1?"notes":"note")} · ${NF().length} ${L(NF().length>1?"dossiers":"dossier")}`,""]);
-    cards.push({g,desc:"Notes, documents et mots de passe, à l'abri.",it:it.slice(0,2)})}}
+    cards.push({g,desc:"Notes, sessions Focus et coffre.",it:it.slice(0,2)})}}
   const phrases={agenda:"Organise tes journées",fit:"Entraîne-toi, mange bien",note:"Écris, classe et protège"};
   const models=cards.map(({g,it})=>{let count="0",metric="notes";
     if(g.app==="agenda"){count=String(allT().filter(t=>onDay(t,t0)&&!t.canc&&t.status!=="fait").length);metric="activités restantes aujourd'hui"}

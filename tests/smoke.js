@@ -60,13 +60,13 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
     await pg.click("#homeAdd");if(!(await pg.isVisible("#qaSheet")))err("le + de la page Aujourd'hui n'ouvre pas l'ajout rapide");await pg.click("#qaClose");
     await pg.click('#homeBody [data-gapp="perso"]');await pg.waitForTimeout(200);await closePin();
     if(G[await cur()]!=="perso")err("le logo sid'note n'ouvre pas sid'note");
-    if((await pg.$$("#navIn [data-go]")).length!==3)err("barre de sid'note : 3 fonctions attendues");
+    if(!(await pg.$('#navIn [data-go="pomo"]')))err("Focus absent de la barre de Sid’Note");
     if(await pg.evaluate(()=>document.documentElement.dataset.app)!=="note")err("accent de l'app non appliqué");
     if(await pg.isVisible('#homeBody'))err("Sid'Compagnon encore visible dans une app");
     await go("notes");await go("muscu");await home();await pg.click('#homeBody [data-gapp="perso"]');await pg.waitForTimeout(200);await closePin();
     if(await cur()!=="notes")err("l'app ne rouvre pas la dernière fonction ouverte");
     await home();if(await pg.isVisible("#vhead"))err("en-tête d'app affiché sur Sid'Compagnon");
-    await go("plan");if((await pg.$$eval("#navIn [data-go]",x=>x.map(e=>e.dataset.go).join(",")))!=="plan,todo,pomo")err("barre de sid'agenda : Agenda, Tâches, Focus attendus");
+    await go("plan");if((await pg.$$eval("#navIn [data-go]",x=>x.map(e=>e.dataset.go).join(",")))!=="plan,todo")err("barre de Sid’Journée : Agenda et Tâches attendus");
 
     // --- Tâches : catégorie tapée mais pas validée → créée et utilisée
     await go("todo");await pg.click("[data-tcatnew]");await pg.fill("#catIn","Projet");await pg.fill("#todoIn","Préparer le dossier");await pg.press("#todoIn","Enter");
@@ -484,9 +484,9 @@ const U="http://localhost:8766/",shot=(pg,n)=>pg.screenshot({path:path.join(OUT,
       if(await pg.isVisible("#onb"))await pg.click("#onbSkip");await pg.waitForTimeout(300);return {ctx,pg}};
     const A=await mk("Sid","sid37@test.be"),B=await mk("Léa","lea37@test.be");
     if(await A.pg.isVisible("#notifAsk"))err("notifications encore proposées dès l'ouverture");
-    // v41 : Listes retirées ; v42 : Focus revient dans sid'agenda
+    // Les listes sont masquées et Focus appartient à Sid’Note.
     if(await A.pg.evaluate(()=>visibleTabs().includes("lists")))err("Listes encore visibles");
-    if(!(await A.pg.evaluate(()=>GROUPS[0].tabs.includes("pomo")&&!OFF_TABS.includes("pomo"))))err("Focus absent de sid'agenda");
+    if(!(await A.pg.evaluate(()=>appOf("pomo")==="note"&&visibleTabs().includes("pomo"))))err("Focus absent de Sid’Note");
     // ajout rapide en langage courant
     const P=A.pg;await P.evaluate(()=>show("plan"));await P.click("#taskAdd");await P.waitForTimeout(200);
     await P.fill("#fTitle","Dentiste jeudi 14h");await P.waitForTimeout(150);

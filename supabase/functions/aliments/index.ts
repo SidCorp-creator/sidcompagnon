@@ -24,7 +24,7 @@ type Any = any;
 const num = (x: unknown) => {
   if (typeof x !== "number" && (typeof x !== "string" || !x.trim())) return null;
   const n = typeof x === "number" ? x : Number(x.replace(",", "."));
-  return Number.isFinite(n) && n >= 0 ? n : null;
+  return Number.isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : null; // 9.30000019 → 9.3
 };
 export const cleanCode = (c: unknown) => { const s = String(c ?? "").replace(/\D/g, ""); return s.length >= 8 && s.length <= 14 ? s : ""; };
 export const cleanQuery = (q: unknown) => String(q ?? "").replace(/\s+/g, " ").trim().slice(0, 80);
@@ -36,7 +36,7 @@ export function toProduct(p: Any, code: string) {
   if (!N) return null;
   const val = (k: string, unit: string) => { const x = N[k]; if (!x || String(x.unit || "").toLowerCase() !== unit.toLowerCase()) return null; const v = num(x.value); return v === null ? null : { v, per: String(x.source_per || "") }; };
   let e = val("energy-kcal", "kcal");
-  if (!e) { const kj = val("energy-kj", "kJ") || val("energy", "kJ"); if (kj) e = { v: kj.v / 4.184, per: kj.per }; }
+  if (!e) { const kj = val("energy-kj", "kJ") || val("energy", "kJ"); if (kj) e = { v: Math.round((kj.v / 4.184) * 10) / 10, per: kj.per }; }
   const pr = val("proteins", "g"), ca = val("carbohydrates", "g"), fa = val("fat", "g");
   if (!e || !pr || !ca || !fa) return null;
   const basis = e.per;

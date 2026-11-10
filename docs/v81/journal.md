@@ -30,3 +30,9 @@ Décision : fusion du chrono Focus et de son identifiant de séance. Pièces joi
 Preuves : `node tests/chrono-persistant.test.cjs` OK (fermeture complète, deux onglets, arrêt, déduplication). `node tests/nutrition-catalog.test.cjs` OK (Ciqual réel, relais simulé, React et secours). Échantillon réel et liens dans nutrition-codex.md.
 Fichiers : app/src/shell/15 et 39a, supabase/functions/{mcp,aliments}, site/ciqual-2025.json.
 Prochaine étape : recevoir Sid’Bot → Claude, notifications et chrono de musculation. Régénérer les bundles et lancer les tests de la branche réunie.
+### 2026-11-11 — Claude — aliments, Sid'Bot→Claude, notifications (FAIT)
+- aliments (Edge, en ligne) : OFF v3.6 aggregated_set, 4 valeurs + même base exigées, sinon « incomplet » ; JWT session ; cache 24 h ; 30 req/min/personne. Preuve : 6 EAN échantillon (deno run), 401 sans session.
+- Sid'Note → Claude : 32-sidbot.js (ncOpen/ncRender/ncCheck/ncReset), 9 chaînes EN. Preuve : `node tests/sidnote-claude.test.cjs` OK FR+EN.
+- Notifications : 09-planning.js (renderDayNotif, MutationObserver sur #vhead, minute, visibilitychange), CSS fin de site/app.css, 7 chaînes EN. Preuve : `node tests/notif-planning.test.cjs` OK (vide, tâche seule, multi, ajout formulaire, modif, suppression, autre app, minuit Bruxelles, EN) ; captures clair/sombre vérifiées.
+- Muscu : RUN_MAX 4 h gardé (pas de commande d'arrêt depuis v74.1) → à confirmer par Sid.
+Prochaine étape : Codex intègre (build + version) ; Claude relit le lot Sid'Note de Codex ; redéployer aliments avec num durci de Codex.

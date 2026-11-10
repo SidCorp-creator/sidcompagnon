@@ -588,13 +588,16 @@ async function lireNote(user: string, which: unknown): Promise<Data[]> {
   const del = data.del || {};
   const n = findOne((Array.isArray(data.notes) ? data.notes : []).filter((x: Data) => x && !x.secret && !del[x.id]), which as string, "la note");
   const parts: Data[] = [{ type: "text", text: `# ${n.title || "(sans titre)"}\n\n${n.body || ""}` }];
-  if (n.pdf && n.id) { const t = await notePdfText(user, n); parts.push({ type: "text", text: t.startsWith("\n") ? t : `\n\n📎 ${t}` }); }
-  const pics = (Array.isArray(n.photos) ? n.photos : []).filter((p: Data) => p && typeof p.id === "string" && /^[\w-]+$/.test(p.id));
-  for (const p of pics.slice(0, NOTE_PICS_MAX)) {
+  const safeId = (x: unknown) => typeof x === "string" && /^[A-Za-z0-9_-]{1,64}$/.test(x); // relecture Codex : jamais de « / » ni « .. » dans un chemin lu avec la clé service
+  if (n.pdf && safeId(n.id)) { const t = await notePdfText(user, n); parts.push({ type: "text", text: t.startsWith("\n") ? t : `\n\n📎 ${t}` }); }
+  const pics = (Array.isArray(n.photos) ? n.photos : []).filter((p: Data) => p && safeId(p.id));
+  let shown = 0;
+  for (const p of pics) {
+    if (shown >= NOTE_PICS_MAX) break;
     const { data: blob } = await db.storage.from("documents").download(`${user}/notes/${p.id}.jpg`);
-    if (blob && blob.size < 5 * 1024 * 1024) parts.push({ type: "image", data: b64(new Uint8Array(await blob.arrayBuffer())), mimeType: "image/jpeg" });
+    if (blob && blob.size < 5 * 1024 * 1024) { parts.push({ type: "image", data: b64(new Uint8Array(await blob.arrayBuffer())), mimeType: "image/jpeg" }); shown++; }
   }
-  if (pics.length) parts.push({ type: "text", text: `${Math.min(pics.length, NOTE_PICS_MAX)} photo(s) de la note jointe(s) ci-dessus${pics.length > NOTE_PICS_MAX ? ` (sur ${pics.length})` : ""}.` });
+  if (pics.length) parts.push({ type: "text", text: shown ? `${shown} photo${shown > 1 ? "s" : ""} de la note jointe${shown > 1 ? "s" : ""} ci-dessus${pics.length > shown ? ` (sur ${pics.length} : les autres sont absentes en ligne ou trop lourdes)` : ""}.` : `La note a ${pics.length} photo${pics.length > 1 ? "s" : ""}, pas encore disponible${pics.length > 1 ? "s" : ""} en ligne.` });
   return parts;
 }
 

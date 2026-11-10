@@ -2839,6 +2839,7 @@ html[data-ds="elan"] .note-pages #noteBody, .note-pages #noteBody {
 }
 .note-pages .note-rt :is(h2, h3) { break-after: avoid; }
 .note-page-controls { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+.note-page-controls .mini { flex: 1; min-width: 0; white-space: normal; }
 .note-page-controls[hidden] { display: none; }
 #v-projects .project-open { width: 100%; text-align: left; }
 #v-projects #projectForm[hidden] { display: none; }

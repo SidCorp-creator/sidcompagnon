@@ -50,7 +50,8 @@ function sbCtxParts(app){
 const sbSK=(app,p)=>sbUid()+":"+app+":"+(p.sk||p.k);
 function sbContext(app){const out={today:iso(today())};for(const p of sbCtxParts(app))if(sbShare[sbSK(app,p)]??p.on)out[p.k]=p.v;return out}
 // ---- ouverture ----
-function sbOpen(app,opt){opt=opt||{};sbApp=SB_APPS[app]?app:"journee";sbImg=opt.img||null;
+function sbOpen(app,opt){opt=opt||{};if(app==="note"){ncOpen(opt.prompt);return} // v81 : Sid'Note → Claude (connecteur), sans la clé de Sid'Bot
+  sbApp=SB_APPS[app]?app:"journee";sbImg=opt.img||null;
   $("sbSheet").hidden=false;sbRender();
   const i=$("sbIn");if(opt.prompt){i.value=opt.prompt;grow(i);if(opt.send){sbSend();return}}
   setTimeout(()=>{if(!matchMedia("(pointer:coarse)").matches)i.focus({preventScroll:true})},80)}
@@ -167,7 +168,7 @@ $("sbIn").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!match
 $("sbIn").addEventListener("input",e=>grow(e.target));
 $("sbClose").addEventListener("click",sbClose);
 $("sbSheet").addEventListener("click",e=>{if(e.target.id==="sbSheet"){sbClose();return}
-  const ap=e.target.closest("[data-sbapp]");if(ap){sbApp=ap.dataset.sbapp;sbImg=null;sbRender();return}
+  const ap=e.target.closest("[data-sbapp]");if(ap){if(ap.dataset.sbapp==="note"){sbClose();ncOpen();return}sbApp=ap.dataset.sbapp;sbImg=null;sbRender();return}
   const cx=e.target.closest("[data-sbctx]");if(cx){const p=sbCtxParts(sbApp).find(x=>x.k===cx.dataset.sbctx);if(!p)return;const k=sbSK(sbApp,p);sbShare[k]=!(sbShare[k]??p.on);sbRender();return}
   const sg=e.target.closest("[data-sbsugg]");if(sg){$("sbIn").value=sg.textContent;sbSend();return}
   if(e.target.closest("[data-sbretry]")){const h=sbHist();h[sbApp]=sbMsgs(sbApp).filter(m=>m.role!=="error");sbSave(h);sbSend(true);return}
@@ -195,4 +196,57 @@ $("mcpList").addEventListener("click",async e=>{const b=e.target.closest("[data-
   try{await api("/rest/v1/mcp_tokens?hash=eq."+encodeURIComponent(b.dataset.mcpdel),{method:"DELETE",token:await token()});toast("Adresse retirée");mcpLoad()}
   catch(ex){toast("Impossible pour l'instant")}});
 // v76 (revue Codex) : à la déconnexion ou au changement de compte, la demande en cours est annulée et les choix de partage oubliés
-let sbLastUid=null;setInterval(()=>{const u=sbUid();if(sbLastUid!==null&&u!==sbLastUid){if(sbCtl){try{sbCtl.abort()}catch(e){}}sbBusy=false;sbShare={};sbUse={};if(!$("sbSheet").hidden)sbClose()}sbLastUid=u},1000);
+let sbLastUid=null;setInterval(()=>{const u=sbUid();if(sbLastUid!==null&&u!==sbLastUid){if(sbCtl){try{sbCtl.abort()}catch(e){}}sbBusy=false;sbShare={};sbUse={};if(!$("sbSheet").hidden)sbClose();ncClose();ncReset()}sbLastUid=u},1000);
+
+/* ---------- v81 (demande de Sid) : depuis Sid'Note, Sid'Bot redirige vers Claude, comme avant la v76 ----------
+   Plus aucun appel à la fonction « sidbot » (ni à sa clé API) depuis Sid'Note. Claude lit et modifie les notes par le connecteur
+   Sid'Note (fonction « mcp », adresse personnelle sidcompagnon.com/mcp/<clé>, empreinte dans mcp_tokens) ; les PDF et photos joints sont lus
+   par lire_note. Raccourci d'origine (v40) : la fenêtre « Ajouter un connecteur personnalisé » de Claude s'ouvre déjà remplie.
+   Branchement confirmé quand Claude a utilisé l'adresse (mcp_tokens.last_used → data.prefs.aiOk). Jamais de note secrète dans le lien. */
+const NC_MCP="https://sidcompagnon.com/mcp/";
+const NC={ask:q=>"https://claude.ai/new"+(q?"?q="+encodeURIComponent(q):""),
+  add:u=>"https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName="+encodeURIComponent(MARQUES.note)+"&connectorUrl="+encodeURIComponent(u)};
+let ncW={uid:"",url:"",hash:"",busy:false,err:"",poll:null,prompt:"",linked:null};
+// relecture Codex : tout l'état du raccourci appartient à un compte ; il est oublié au changement de compte ou à la déconnexion
+function ncReset(){if(ncW.poll)clearInterval(ncW.poll);ncW={uid:sbUid(),url:"",hash:"",busy:false,err:"",poll:null,prompt:"",linked:null}}
+const ncHex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
+const ncKey=()=>{const a=crypto.getRandomValues(new Uint8Array(32));let s="";for(const x of a)s+=String.fromCharCode(x);return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")};
+async function ncCreate(){const key=ncKey(),hash=ncHex(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(key)));
+  await api("/rest/v1/mcp_tokens",{method:"POST",token:await token(),headers:{Prefer:"return=minimal"},body:{hash,user_id:session.user.id,label:"Claude"}});
+  return {url:NC_MCP+key,hash}}
+// note ouverte (jamais secrète) : Claude la lira par le connecteur, avec ses pièces jointes
+function ncNotePrompt(){const n=typeof noteOpenId!=="undefined"&&noteOpenId&&typeof noteFind==="function"?noteFind(noteOpenId):null;
+  if(!n||n.secret)return "";const t=String(n.title||"").trim()||String(n.body||"").trim().split("\n")[0].slice(0,60)||L("Note sans titre");
+  return T3(`Ouvre ma note « ${t} » (id ${n.id}) dans ${MARQUES.note} avec lire_note (pièces jointes comprises). `,`Open my note “${t}” (id ${n.id}) in ${MARQUES.note} with lire_note (attachments included). `)}
+function ncSheet(){let el=$("ncSheet");if(el)return el;el=document.createElement("div");el.className="sheet-bg";el.id="ncSheet";el.hidden=true;
+  el.innerHTML=`<div class="sheet card nc-sheet" role="dialog" aria-modal="true" aria-labelledby="ncTitle"><div class="sheet-head"><b id="ncTitle" class="notr"></b><button type="button" class="x" id="ncClose" aria-label="${esc(L("Fermer"))}"><span class="gi gi-close" aria-hidden="true"></span></button></div><div id="ncBody"></div></div>`;
+  document.body.appendChild(el);
+  el.addEventListener("click",e=>{if(e.target===el||e.target.closest("#ncClose")){ncClose();return}
+    if(e.target.closest("[data-ncadd]")){setTimeout(()=>{if(!ncW.poll)ncW.poll=setInterval(ncCheck,3000)},800);return}
+    if(e.target.closest("[data-ncnew]")){ncW.url="";ncW.hash="";ncW.linked=false;ncNew();return}
+    if(e.target.closest("[data-nccopy]")){navigator.clipboard.writeText(ncW.url).then(()=>toast("Adresse copiée"),()=>toast("Copie impossible : sélectionne-la et copie-la"));return}});
+  return el}
+function ncClose(){const el=$("ncSheet");if(el)el.hidden=true;if(ncW.poll){clearInterval(ncW.poll);ncW.poll=null}}
+function ncNew(){if(ncW.busy||!session||isTrial())return;const w=ncW,u=sbUid();w.busy=true;w.err="";ncRender();
+  ncCreate().then(r=>{if(ncW===w&&sbUid()===u){w.url=r.url;w.hash=r.hash;w.linked=false;if(!w.poll)w.poll=setInterval(ncCheck,3000)}})
+    .catch(ex=>{if(ncW===w)w.err=ex instanceof TypeError?"Pas de connexion internet":"Création impossible pour l'instant"}).finally(()=>{w.busy=false;if(ncW===w)ncRender()})}
+function ncRender(){const b=$("ncBody");if(!b)return;const ok=ncW.linked===true,q=ncW.prompt;
+  $("ncTitle").textContent=`${MARQUES.bot} · Claude`;
+  const conn=ok?`<div class="ai-wait"><b class="ok">${GI("tick")} ${esc(L("Connecteur Sid'Note branché sur Claude"))}</b></div><button type="button" class="btn ghost" data-ncnew="1" style="width:100%;margin-top:8px">${esc(L("Rebrancher le connecteur"))}</button>`
+    :ncW.linked===null?`<button type="button" class="btn ghost" disabled style="width:100%;margin-top:8px">${esc(L("Vérification…"))}</button>`
+    :ncW.url?`<a class="btn ghost" href="${esc(NC.add(ncW.url))}" target="_blank" rel="noopener" data-ncadd="1" style="width:100%;margin-top:8px">${esc(L("Ajouter le connecteur Sid'Note à Claude"))}</a>
+      <div class="small muted" style="margin-top:6px">${esc(L("Claude s'ouvre avec Sid'Note déjà rempli : touche simplement « Ajouter », puis reviens ici."))}</div>
+      <details class="ai-more"><summary class="small">${esc(L("Voir mon adresse (si besoin)"))}</summary><div class="mcp-url notr">${esc(ncW.url)}</div><button type="button" class="btn ghost" data-nccopy="1" style="width:100%;margin-top:8px">${esc(L("Copier l'adresse"))}</button></details>`
+    :`<button type="button" class="btn ghost" disabled style="width:100%;margin-top:8px">${esc(L(ncW.err||"Préparation du raccourci…"))}</button>${ncW.err?`<button type="button" class="btn ghost" data-ncnew="1" style="width:100%;margin-top:8px">${esc(L("Réessayer"))}</button>`:""}`;
+  b.innerHTML=`<p class="small muted">${esc(L("Pour tes notes, Sid'Bot passe la main à Claude. Claude lit tes notes et leurs PDF par le connecteur Sid'Note ; les notes secrètes ne sont jamais accessibles."))}</p>
+    ${q?`<div class="ai-prompt notr">${esc(q)}</div>`:""}
+    <a class="btn" href="${esc(NC.ask(q))}" target="_blank" rel="noopener" id="ncGo" style="width:100%;margin-top:8px">${esc(L("Ouvrir Claude"))}</a>
+    <div class="ai-step" style="margin-top:14px"><b>${esc(L("Raccourci du connecteur Sid'Note"))}</b>${conn}</div>`}
+// branché = une adresse de ce compte a déjà été utilisée par Claude (mcp_tokens.last_used), vérifié à chaque ouverture
+async function ncCheck(){const w=ncW,u=sbUid();if(!$("ncSheet")||$("ncSheet").hidden){if(w.poll){clearInterval(w.poll);w.poll=null}return}
+  try{const r=await api(`/rest/v1/mcp_tokens?select=last_used${w.hash?`&hash=eq.${w.hash}`:""}&last_used=not.is.null&limit=1`,{token:await token()});
+    if(ncW!==w||sbUid()!==u)return;const on=Array.isArray(r)&&r.length>0;
+    if(on){if(w.poll){clearInterval(w.poll);w.poll=null}if(w.hash){data.prefs.aiOk=new Date().toISOString();data.prefs.ai="claude";save()}w.hash="";w.url=""}
+    const first=w.linked===null;w.linked=on;ncRender();if(first&&!on&&!w.url)ncNew()}catch(e){if(ncW===w&&w.linked===null){w.linked=false;ncRender();if(!w.url)ncNew()}}}
+function ncOpen(prompt){if(ncW.uid!==sbUid())ncReset();const el=ncSheet();ncW.prompt=String(prompt||"")||ncNotePrompt();el.hidden=false;ncRender();
+  if(ncW.url){if(!ncW.poll)ncW.poll=setInterval(ncCheck,3000)}else{ncW.linked=null;ncRender();ncCheck()}}

@@ -35,7 +35,8 @@ Risques vus :
 | Notifications planning du jour | Claude | Codex |
 | Chrono persistant (séance muscu `data.ui.msRun` + Focus `data.pomo.run`) | Claude | Codex |
 | API nutrition : recherche | les deux, échantillon commun | croisée |
-| API nutrition : intégration | Claude si Edge/secrets, Codex si client seul | l'autre |
+| API nutrition : relais Open Food Facts | Claude | Codex |
+| API nutrition : index Ciqual et interface | Codex | Claude |
 | Skill « Gestion du contexte et des tokens » (extension de `sid-relais`) | Claude | Codex |
 | Intégration finale (version, `npm run build`, fichiers communs) | Codex | Claude |
 

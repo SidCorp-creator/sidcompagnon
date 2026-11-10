@@ -21,7 +21,11 @@ const TTL = 24 * 3600e3, PER_MIN = 30;
 // --- fonctions pures (testées par tests/aliments.test.mjs) : début
 // deno-lint-ignore no-explicit-any
 type Any = any;
-const num = (x: unknown) => { const n = typeof x === "string" ? parseFloat(x.replace(",", ".")) : Number(x); return Number.isFinite(n) ? Math.round(n * 10) / 10 : null; };
+const num = (x: unknown) => {
+  if (typeof x !== "number" && (typeof x !== "string" || !x.trim())) return null;
+  const n = typeof x === "number" ? x : Number(x.replace(",", "."));
+  return Number.isFinite(n) && n >= 0 ? n : null;
+};
 export const cleanCode = (c: unknown) => { const s = String(c ?? "").replace(/\D/g, ""); return s.length >= 8 && s.length <= 14 ? s : ""; };
 export const cleanQuery = (q: unknown) => String(q ?? "").replace(/\s+/g, " ").trim().slice(0, 80);
 // fiche v3.6 (relecture Codex) : nutrition.aggregated_set.nutrients, chaque valeur avec sa base explicite (source_per) et son unité.
@@ -32,7 +36,7 @@ export function toProduct(p: Any, code: string) {
   if (!N) return null;
   const val = (k: string, unit: string) => { const x = N[k]; if (!x || String(x.unit || "").toLowerCase() !== unit.toLowerCase()) return null; const v = num(x.value); return v === null ? null : { v, per: String(x.source_per || "") }; };
   let e = val("energy-kcal", "kcal");
-  if (!e) { const kj = val("energy-kj", "kJ") || val("energy", "kJ"); if (kj) e = { v: Math.round((kj.v / 4.184) * 10) / 10, per: kj.per }; }
+  if (!e) { const kj = val("energy-kj", "kJ") || val("energy", "kJ"); if (kj) e = { v: kj.v / 4.184, per: kj.per }; }
   const pr = val("proteins", "g"), ca = val("carbohydrates", "g"), fa = val("fat", "g");
   if (!e || !pr || !ca || !fa) return null;
   const basis = e.per;

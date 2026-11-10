@@ -418,7 +418,7 @@ $("nuLog").addEventListener("click",e=>{const b=e.target.closest("button");if(!b
     undoable("Plat supprimé",ids,()=>{ids.forEach(tomb);NU().log=NU().log.filter(x=>(x.grp||x.id)!==g)},{after:renderNutri,later:()=>{if(!NU().log.some(x=>(x.grp||x.id)===g))idb.del(thumbKey(g))}})}
 });
 // T16 B : les cinq entrées réutilisent leurs traitements, dans une même feuille.
-function nuMealClose(restore=true){if($("nuMealSheet").hidden)return;catalogReset();$("foodCatalog").open=false;$("nuMealSheet").hidden=true;if(restore)$("nuMealAdd").focus({preventScroll:true})}
+function nuMealClose(restore=true){if($("nuMealSheet").hidden)return;catalogReset();$("foodCatalogQuery").value="";$("foodCatalog").open=false;$("nuMealSheet").hidden=true;if(restore)$("nuMealAdd").focus({preventScroll:true})}
 $("nuMealAdd").addEventListener("click",()=>{$("nuMealSheet").hidden=false;$("nuMealSheet").querySelector('[role="dialog"]').focus({preventScroll:true})});
 $("nuMealClose").addEventListener("click",nuMealClose);
 $("nuMealSheet").addEventListener("click",e=>{if(e.target.id==="nuMealSheet")nuMealClose();if(e.target.closest("#nuManual")){$("nuSheet")._back=$("nuMealAdd");nuMealClose(false)}else if(e.target.closest("#nuAiLink"))nuMealClose()});

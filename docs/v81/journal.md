@@ -18,3 +18,15 @@ Preuve : déployé par `npx supabase@2.48.3 functions deploy mcp --no-verify-jwt
 Fichiers : supabase/functions/mcp/index.ts (l. 9-10, 300-310, 559-600, dispatch tools/call)
 Données de test : note « Test v81 — PDF joint (à supprimer) » (id mwbc4usw3y7zp) + documents/<uid Sid>/notes/mwbc4usw3y7zp.pdf → à supprimer après la livraison (ou par Sid).
 Prochaine étape : relais Edge `aliments` (OFF), Sid'Bot → Claude, notifications.
+
+### 2026-11-11 — Codex — Sid’Note
+Décision : Focus et Projets sous Sid’Note. Pagination horizontale dans le champ riche existant. Export ZIP des PDF du coffre avec manifeste, CSV des mots de passe, puis retrait des écrans. Les données du coffre restent accessibles à l’export dans Réglages.
+Preuves : commits e3f892f et fb7bd99. Chromium 390 px, parcours Focus React et secours, création et rattachement dans Projets, édition et annulation sur une note longue. Export chiffré de test déverrouillé via l’interface, CRC ZIP et octets PDF vérifiés, CSV relu.
+Fichiers : app/src/shell/07, 26, 29, 29c, 35a, site/index.html et site/app.css.
+Prochaine étape : valider le parcours avec le nouveau bouton Claude et conserver les données du coffre jusqu’à vérification des exports réels.
+
+### 2026-11-11 — Codex — Focus, MCP et nutrition
+Décision : fusion du chrono Focus et de son identifiant de séance. Pièces jointes avec identifiants filtrés avant lecture. Ciqual local pour les génériques et relais `aliments` pour les produits emballés.
+Preuves : `node tests/chrono-persistant.test.cjs` OK (fermeture complète, deux onglets, arrêt, déduplication). `node tests/nutrition-catalog.test.cjs` OK (Ciqual réel, relais simulé, React et secours). Échantillon réel et liens dans nutrition-codex.md.
+Fichiers : app/src/shell/15 et 39a, supabase/functions/{mcp,aliments}, site/ciqual-2025.json.
+Prochaine étape : recevoir Sid’Bot → Claude, notifications et chrono de musculation. Régénérer les bundles et lancer les tests de la branche réunie.

@@ -5,7 +5,7 @@
 // Données Open Food Facts : licence ODbL (base) / DbCL (contenu) — mention « Open Food Facts » obligatoire dans l'app.
 // Réservé aux personnes connectées (JWT de session vérifié comme dans « horaire »). Verify JWT : OFF. Aucun secret.
 // POST {query} → {items:[{code,name,brand}]} ; POST {code} → {product:{code,name,brand,kcal,p,c,f,basis,servingGrams?,servingMl?,url}}
-// Erreurs (HTTP 200) : {error:"introuvable"|"indisponible"|"quota"|"demande"}.
+// Erreurs (HTTP 200) : {error:"introuvable"|"incomplet"|"indisponible"|"quota"|"demande"} (incomplet = une des 4 valeurs manque ou bases mêlées).
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
@@ -24,22 +24,25 @@ type Any = any;
 const num = (x: unknown) => { const n = typeof x === "string" ? parseFloat(x.replace(",", ".")) : Number(x); return Number.isFinite(n) ? Math.round(n * 10) / 10 : null; };
 export const cleanCode = (c: unknown) => { const s = String(c ?? "").replace(/\D/g, ""); return s.length >= 8 && s.length <= 14 ? s : ""; };
 export const cleanQuery = (q: unknown) => String(q ?? "").replace(/\s+/g, " ").trim().slice(0, 80);
-// fiche v2 (champ nutriments, le plus stable) → format commun ; null si les valeurs principales manquent
+// fiche v3.6 (relecture Codex) : nutrition.aggregated_set.nutrients, chaque valeur avec sa base explicite (source_per) et son unité.
+// Les 4 valeurs (énergie, protéines, glucides, lipides) doivent être présentes, sur la même base 100g ou 100ml : sinon null
+// (« incomplet ») plutôt qu'une quantité ou des macros devinées.
 export function toProduct(p: Any, code: string) {
-  if (!p) return null;
-  const n = p.nutriments || {};
-  let kcal = num(n["energy-kcal_100g"]);
-  if (kcal === null && num(n["energy-kj_100g"]) !== null) kcal = Math.round((num(n["energy-kj_100g"])! / 4.184) * 10) / 10;
-  if (kcal === null) return null;
-  const liquid = /ml|cl|l\b/i.test(String(p.quantity || "") + " " + String(p.serving_size || "")) && /boisson|beverage|drink|soda|jus|juice|lait|milk|water|eau/i.test(String(p.categories || "") + " " + String((p.categories_tags || []).join(" ")));
-  const sq = num(p.serving_quantity), su = String(p.serving_quantity_unit || "").toLowerCase();
+  const N = p && p.nutrition && p.nutrition.aggregated_set && p.nutrition.aggregated_set.nutrients;
+  if (!N) return null;
+  const val = (k: string, unit: string) => { const x = N[k]; if (!x || String(x.unit || "").toLowerCase() !== unit.toLowerCase()) return null; const v = num(x.value); return v === null ? null : { v, per: String(x.source_per || "") }; };
+  let e = val("energy-kcal", "kcal");
+  if (!e) { const kj = val("energy-kj", "kJ") || val("energy", "kJ"); if (kj) e = { v: Math.round((kj.v / 4.184) * 10) / 10, per: kj.per }; }
+  const pr = val("proteins", "g"), ca = val("carbohydrates", "g"), fa = val("fat", "g");
+  if (!e || !pr || !ca || !fa) return null;
+  const basis = e.per;
+  if (!(basis === "100g" || basis === "100ml") || [pr, ca, fa].some((x) => x.per !== basis)) return null;
   const out: Any = {
-    code, name: String(p.product_name_fr || p.product_name || p.generic_name_fr || "").trim() || code, brand: String(p.brands || "").split(",")[0].trim(),
-    kcal, p: num(n.proteins_100g) ?? 0, c: num(n.carbohydrates_100g) ?? 0, f: num(n.fat_100g) ?? 0,
-    basis: liquid || n.nutrition_data_per === "100ml" ? "100ml" : "100g",
-    url: `https://world.openfoodfacts.org/product/${code}`,
+    code, name: String(p.product_name_fr || p.product_name || "").trim() || code, brand: String(p.brands || "").split(",")[0].trim(),
+    kcal: e.v, p: pr.v, c: ca.v, f: fa.v, basis, url: `https://world.openfoodfacts.org/product/${code}`,
   };
-  if (sq && sq > 0) { if (su === "ml" || (out.basis === "100ml" && su !== "g")) out.servingMl = sq; else out.servingGrams = sq; }
+  const sq = num(p.serving_quantity), su = String(p.serving_quantity_unit || "").toLowerCase();
+  if (sq && sq > 0 && (su === "g" || su === "ml")) { if (su === "ml") out.servingMl = sq; else out.servingGrams = sq; } // unité déclarée seulement
   if (p.serving_size) out.servingLabel = String(p.serving_size).slice(0, 40);
   return out;
 }
@@ -76,10 +79,10 @@ if (import.meta.main) Deno.serve(async (req) => {
   try {
     let out: unknown;
     if (code) {
-      const fields = "product_name,product_name_fr,generic_name_fr,brands,quantity,serving_size,serving_quantity,serving_quantity_unit,nutriments,nutrition_data_per,categories,categories_tags";
-      const j = await get(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=${fields}`);
-      const p = j && j.status === 1 ? toProduct(j.product, code) : null;
-      out = p ? { product: p } : { error: "introuvable" };
+      const j = await get(`https://world.openfoodfacts.org/api/v3.6/product/${code}.json?fields=product_name,product_name_fr,brands,serving_size,serving_quantity,serving_quantity_unit,nutrition`);
+      const found = j && j.product && (j.status === "success" || j.status === "success_with_warnings");
+      const p = found ? toProduct(j.product, code) : null;
+      out = p ? { product: p } : { error: found ? "incomplet" : "introuvable" };
     } else {
       const j = await get(`https://search.openfoodfacts.org/search?q=${encodeURIComponent(query)}&langs=fr,en&page_size=10&fields=code,product_name,brands`);
       const items = toItems(j && j.hits);

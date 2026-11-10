@@ -621,7 +621,7 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
       }
       const list = (Array.isArray(data.tasks) ? data.tasks : [])
         .filter((t: Data) => t && !del[t.id] && t.src !== "ical" && t.date && (t.end || t.date) >= from && t.date <= to)
-        .concat(cal.filter((c: Data) => !c.canc))
+        .concat((cal || []).filter((c: Data) => !c.canc))
         .sort((x: Data, y: Data) => (x.date + (x.time || "")).localeCompare(y.date + (y.time || "")));
       const head = `Aujourd'hui : ${dayName(today())} ${today()}.`;
       const todos = (Array.isArray(data.todos) ? data.todos : []).filter((t: Data) => t && !del[t.id] && !t.paused && !t.done && t.day && tDay(t)! >= from && tDay(t)! <= to)

@@ -23,11 +23,15 @@ async function ciqualSearch(query){
 async function offCatalog(body){
   if(isTrial())return {};
   const result=await api("/functions/v1/aliments",{method:"POST",token:await token(),body:{...body,lang:LANG}});
-  if(result?.error)throw new Error(result.error);
+  if(result?.error&&!["introuvable","incomplet"].includes(result.error))throw new Error(result.error);
   return result||{};
 }
 
 function catalogStatus(text){$("foodCatalogStatus").textContent=L(text)}
+function catalogShowOff(result){
+  if(result.product){catalogShowPortion({...result.product,source:"Open Food Facts"});return}
+  catalogStatus(result.error==="incomplet"?"Les valeurs nutritionnelles de cet aliment sont incomplètes.":"Aucun aliment trouvé.");
+}
 function catalogReset(){
   ++catalogSearch;catalogItems=[];catalogFood=null;
   $("foodCatalogList").replaceChildren();$("foodCatalogPortion").hidden=true;
@@ -63,8 +67,7 @@ $("foodCatalogSearch").addEventListener("submit",async e=>{
     if(barcode){
       const result=await offCatalog({code:query});
       if(seq!==catalogSearch)return;
-      if(!result.product){catalogStatus("Aucun aliment trouvé.");return}
-      catalogShowPortion({...result.product,source:"Open Food Facts"});return;
+      catalogShowOff(result);return;
     }
     const [local,online]=await Promise.allSettled([ciqualSearch(query),offCatalog({query})]);
     if(seq!==catalogSearch)return;
@@ -95,8 +98,7 @@ $("foodCatalogList").addEventListener("click",async e=>{
   try{
     const result=await offCatalog({code:item.code});
     if(seq!==catalogSearch)return;
-    if(!result.product){catalogStatus("Aucun aliment trouvé.");return}
-    catalogShowPortion({...result.product,source:item.source});
+    catalogShowOff(result);
   }catch(e){if(seq===catalogSearch)catalogStatus("La recherche est momentanément indisponible.")}
 });
 $("foodCatalogServing").addEventListener("click",()=>$("foodCatalogAmount").value=$("foodCatalogServing").dataset.amount);

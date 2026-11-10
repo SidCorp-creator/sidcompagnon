@@ -9,7 +9,7 @@ const assert=require('node:assert/strict');
   await p.route('**/functions/v1/aliments',async route=>{
    const {code,query}=route.request().postDataJSON();
    const product={code:'5449000000996',name:'Coca-Cola Original',kcal:42.4,p:0,c:10.6,f:0,basis:'100ml',servingMl:330};
-   await route.fulfill({json:code?{product}:query==='Coca'?{items:[{code:product.code,name:product.name}]}:{items:[]}});
+   await route.fulfill({json:code?{product}:query==='Coca'?{items:[{code:product.code,name:product.name}]}:{items:[],error:"introuvable"}});
   });
   await p.goto('http://localhost:'+(process.env.SID_SITE_PORT||8766));
   await p.fill('#aName','Nutrition');await p.fill('#aEmail',`catalogue-${Date.now()}@test.be`);await p.fill('#aPw','secret11');await p.fill('#aPw2','secret11');await p.check('#aAgree');await p.click('#aBtn');await p.click('#onbSkip');

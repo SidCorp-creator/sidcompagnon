@@ -13,7 +13,11 @@ const assert=require('node:assert/strict');
   });
   await p.goto('http://localhost:'+(process.env.SID_SITE_PORT||8766));
   await p.fill('#aName','Nutrition');await p.fill('#aEmail',`catalogue-${Date.now()}@test.be`);await p.fill('#aPw','secret11');await p.fill('#aPw2','secret11');await p.check('#aAgree');await p.click('#aBtn');await p.click('#onbSkip');
-  await p.evaluate(()=>show('nutri'));
+  await p.evaluate(()=>{
+   data.nutri={consent:new Date().toISOString(),profile:{sex:'h',age:28,height:178,weight:75,goal:'maintain',sports:[]},
+    plan:{kcal:2400,p:140,c:280,f:80,bmr:1750,tdee:2400,text:'',warn:[]},log:[]};
+   data.ui.nuTab='day';show('nutri');
+  });
   await p.click('#nuMealAdd');
   await p.click('#foodCatalog summary');
   await p.fill('#foodCatalogQuery','riz basmati cuit');

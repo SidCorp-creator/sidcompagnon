@@ -28,7 +28,7 @@ function rtClean(html){const t=document.createElement("template");t.innerHTML=St
   walk(t.content);return t.innerHTML.trim()}
 const rtFromText=b=>String(b||"").split("\n").map(l=>`<div>${l?esc(l):"<br>"}</div>`).join("");
 const rtText=el=>String(el.innerText||"").replace(/\u00a0/g," ").replace(/\n{3,}/g,"\n\n").trim();
-const rtSet=v=>{$("noteBody").innerHTML=v.html?rtClean(v.html):rtFromText(v.body);$("notePages").scrollLeft=0;rtEmpty()};
+const rtSet=v=>{$("noteBody").innerHTML=v.html?rtClean(v.html):rtFromText(v.body);rtEmpty()};
 const rtEmpty=()=>{
   const body=$("noteBody");
   body.classList.toggle("is-empty",!rtText(body)&&!body.querySelector("li,hr"));
@@ -133,7 +133,7 @@ function renderNotes(){
     :dirs?"":`<div class="empty">${L(q?"Aucune note ne correspond.":noteDir?"Ce dossier est vide. Touche « + Note » pour y écrire.":"Aucune note pour l'instant. Touche « + Note » pour écrire.")}</div>`);
 }
 /** @type {any} */ renderNotes.phk=undefined; // déclaré pour TypeScript (même valeur de départ)
-function openNote(id){noteOpenId=id;renderNotes();window.scrollTo(0,0)}
+function openNote(id){noteOpenId=id;renderNotes();$("notePages").scrollLeft=0;window.scrollTo(0,0)}
 async function closeNote(){
   await noteFlush();const n=noteOpenId&&noteFind(noteOpenId),v=noteView(n);
   // une note laissée vide n'est pas gardée

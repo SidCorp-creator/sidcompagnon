@@ -69,6 +69,7 @@ $("projectList").addEventListener("click",async e=>{
   if(n){
     if(button.dataset.projectNoteMove){moveNoteToProject(n);return}
     if(n.secret&&!noteView(n)){if(!await nsUnlock())return;await nsLoad();if(!noteView(n))return}
+    if(noteOpenId&&noteOpenId!==n.id)await closeNote();
     show("notes");if(n.pdf)pdfOpen(n.id);else openNote(n.id);
     return;
   }

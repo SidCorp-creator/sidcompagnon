@@ -105,4 +105,4 @@ http.createServer((req,res)=>{const ch=[];req.on('data',c=>ch.push(c));req.on('e
   if(url.pathname==='/__heads')return send(res,200,Object.fromEntries(Object.entries(objs).map(([k,v])=>[k,v.slice(0,4).toString('latin1')])));
   if(url.pathname==='/__objs')return send(res,200,Object.fromEntries(Object.entries(objs).map(([k,v])=>[k,v.length])));
   if(url.pathname==='/__dump')return send(res,200,{users:Object.keys(users),rows});
-  send(res,404,{msg:'nf'})})}).listen(8790);
+  send(res,404,{msg:'nf'})})}).listen(+process.env.SID_MOCK_PORT||8790);

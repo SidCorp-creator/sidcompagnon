@@ -76,19 +76,39 @@ function pomoPlan(){const r=P.run;if(!r||r.pausedAt){chimeCancel("pomo");pomoSch
 function startPomo(){
   pomoLastPosition=null;pomoProgressChange="position";unlockAudio();
   const segs=buildSegs(P.cfg);
-  P.run={segs,startAt:Date.now(),pausedAt:null,pausedTotal:0};lastIdx=0;
+  P.run={id:uid(),segs,startAt:Date.now(),pausedAt:null,pausedTotal:0};lastIdx=0;
   save();chime("w");keepAwake(true);pomoPlan();renderPomo();if(data.ui.view==="pomo"){window.scrollTo(0,0);elanCompact()}
 }
+// v81 : une séance Focus a un identifiant stable (P.run.id) ; sa fin n'est comptée qu'une fois, même si plusieurs onglets ou
+// appareils la voient finir (P.done = {id: ms}, gardé 30 jours). Le détail de la séance est enregistré dans Sid’Note.
+function pomoAdopt(np){if(!np||JSON.stringify(np)===JSON.stringify(P))return false;
+  for(const k of Object.keys(P))delete P[k];Object.assign(P,JSON.parse(JSON.stringify(np)));if(!P.log)P.log={};lastIdx=null;return true}
+// relit la version de l'appareil (localStorage, partagé entre onglets) juste avant de compter une fin
+function pomoFromDisk(){try{const c=session&&ls.get(cacheKey(session.user.id));return !!(c&&c.data&&c.data.pomo&&pomoAdopt(c.data.pomo))}catch(e){return false}}
 function finishPomo(completed){
+  if(pomoFromDisk()&&!P.run){renderPomo();pomoPlan();keepAwake(false);return} // un autre onglet l'a déjà terminée
   const r=P.run;if(!r)return;
+  if(!r.id)r.id="focus-"+r.startAt; // séance lancée avant la v81
+  const D=P.done||(P.done={}),now=Date.now();
+  for(const k of Object.keys(D))if(now-D[k]>30*864e5)delete D[k];
+  if(D[r.id]){P.run=null;lastIdx=null;save();keepAwake(false);chimeCancel("pomo");pomoSched=false;renderPomo();return}
+  D[r.id]=now;
   const w=workDone(r,elapsed(r)),k=dayKey(new Date(r.startAt));
+  const totalMs=r.segs.reduce((a,x)=>a+x.d*MIN,0),endAt=completed?Math.min(now,r.startAt+(r.pausedTotal||0)+totalMs):now;
+  const info={id:r.id,startAt:r.startAt,endAt,workMs:w,completed:!!completed};
   pomoLastPosition=completed?{total:r.segs.reduce((a,x)=>a+x.d*MIN,0),cycles:r.segs.filter(x=>x.t==="w").length}:null;pomoProgressChange=completed?(pomoProgressChange==="skip"?"skip":"cycle"):"position";
-  recordFocusSession("focus-"+r.startAt,r.startAt,w);
+  recordFocusSession(r.id,r.startAt,w);
   P.log[k]=(P.log[k]||0)+w;P.run=null;lastIdx=null;save();keepAwake(false);
   const pre=pomoSched;if(!completed)chimeCancel("pomo");pomoSched=false;
   if(completed){if(!pre)chime("end");toast(`Bravo ! ${hm(w/MIN)} de travail terminées`)}
+  try{if(typeof window.pomoFinished==="function")window.pomoFinished(info)}catch(e){reportErr("pomoFinished: "+(e&&e.message))}
   renderPomo();
 }
+// v81 : plusieurs onglets ouverts affichent le même Focus (et le même chrono de séance) sans attendre la synchro du serveur
+window.addEventListener("storage",e=>{if(!session||e.key!==cacheKey(session.user.id)||!e.newValue)return;
+  let c=null;try{c=JSON.parse(e.newValue)}catch(x){return}const d=c&&c.data;if(!d)return;
+  if(d.ui&&JSON.stringify(d.ui.msRun||null)!==JSON.stringify(data.ui.msRun||null)){if(d.ui.msRun)data.ui.msRun=d.ui.msRun;else delete data.ui.msRun}
+  if(d.pomo&&pomoAdopt(d.pomo)){if(!P.run){keepAwake(false);chimeCancel("pomo");pomoSched=false}renderPomo();pomoPlan()}});
 $("pomoStart").addEventListener("click",startPomo);
 $("pomoPause").addEventListener("click",()=>{const r=P.run;if(!r)return;unlockAudio();
   if(r.pausedAt){r.pausedTotal+=Date.now()-r.pausedAt;r.pausedAt=null;keepAwake(true)}else{r.pausedAt=Date.now();keepAwake(false)}

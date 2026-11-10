@@ -33,13 +33,13 @@ const {chromium}=require('../app/node_modules/playwright'),assert=require('node:
  // 5. onglet Sid'Note dans la feuille Sid'Bot → Claude ; Sid'Journée garde Sid'Bot
  await p.click('#ncClose');await p.evaluate(()=>sbOpen('journee'));await p.waitForSelector('#sbSheet:not([hidden])');
  await p.click('#sbSheet [data-sbapp="note"]');await p.waitForSelector('#ncSheet:not([hidden])');assert.ok(await p.isHidden('#sbSheet'));
+ if(lang==='en')assert.match(await p.textContent('#ncGo'),/Open Claude/);
  // 6. changement de compte : raccourci et adresse du compte précédent oubliés, feuille fermée
  await p.evaluate(()=>{ncW.url='https://sidcompagnon.com/mcp/ancien';ncW.hash='h'});const realId=await p.evaluate(()=>session.user.id);
  await p.evaluate(()=>{session.user.id='autre-compte'});await p.waitForTimeout(1300);
  assert.ok(await p.evaluate(()=>!ncW.url&&!ncW.hash&&ncW.uid==='autre-compte'&&document.getElementById('ncSheet').hidden&&!document.querySelector('#ncBody a')),'état oublié au changement de compte');
  await p.evaluate(i=>{session.user.id=i},realId);
  assert.equal(bot.length,0,'aucun appel à la fonction sidbot depuis Sid\'Note');
- if(lang==='en')assert.match(await p.textContent('#ncGo'),/Open Claude/);
  console.log('ok ',lang,': Sid\'Note → Claude, raccourci du connecteur, note secrète exclue');
  await c.close()}
  assert.deepEqual(errors,[],errors.join(' | '));await b.close();console.log('sidnote-claude : OK');

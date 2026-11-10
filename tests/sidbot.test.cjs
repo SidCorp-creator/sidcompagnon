@@ -53,7 +53,7 @@ const OUT=path.resolve(__dirname,'out');fs.mkdirSync(OUT,{recursive:true});
  // Sid’Note transmet la référence de la note à Claude, via le connecteur.
  await p.evaluate(()=>{NT().push({id:'n1',title:'Courses',body:'pain',createdAt:new Date().toISOString(),upd:Date.now()},{id:'n2',title:'Secret',body:'',secret:true,iv:'x',vid:'v',createdAt:new Date().toISOString(),upd:Date.now()});save();show('notes');openNote('n1')});
  const nbt=p.locator('#noteAppHead [data-app-claude]');assert.equal((await nbt.innerText()).trim(),"Sid'Bot");
- const before=sent.length;
+ const beforeClaude=sent.length;
  await nbt.click();
  await p.waitForSelector('#ncSheet:not([hidden])');
  const ask=new URL(await p.locator('#ncGo').getAttribute('href'));
@@ -65,7 +65,7 @@ const OUT=path.resolve(__dirname,'out');fs.mkdirSync(OUT,{recursive:true});
  const connector=new URL(await setup.getAttribute('href'));
  assert.equal(connector.origin,'https://claude.ai');
  assert.match(connector.searchParams.get('connectorUrl'),/^https:\/\/sidcompagnon\.com\/mcp\/[A-Za-z0-9_-]+$/);
- assert.equal(sent.length,before);
+ assert.equal(sent.length,beforeClaude);
  await p.click('#ncClose');
  await p.evaluate(()=>{noteOpenId='n2';ncOpen()});
  assert.equal(new URL(await p.locator('#ncGo').getAttribute('href')).searchParams.get('q'),null);

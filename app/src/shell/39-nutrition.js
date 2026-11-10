@@ -205,7 +205,7 @@ function renderNutri(){try{renderAiCards()}catch(e){}
     return `<details class="dish" open><summary class="dish-h"><span class="dish-clock">${two(d.getHours())}:${two(d.getMinutes())}</span><span class="dish-ic" data-thumb="${G.g}">${mono(G.name)}</span>
       <span class="dish-t"><b class="notr" data-user-label="" title="${esc(G.name)}">${esc(G.name)}</b>${G.items.length>1?` <span class="small muted">· ${G.items.length} ${L("aliments")}</span>`:""}</span>
       <span class="dish-kcal">${fmtFull(r0(t.kcal))}<small>\u00a0kcal</small></span><button type="button" class="pen nu-cp" data-nucopy="${G.g}" aria-label="${L("Copier ce repas sur d'autres jours")}" title="${L("Copier sur d'autres jours")}">${IC("copy")}</button>${G.items.length===1?`<button class="pen" data-nuedit="${G.items[0].id}" aria-label="${L("Modifier")}">${PEN}</button>`:""}<button type="button" class="x" data-nudelg="${G.g}" aria-label="${L("Supprimer ce plat")}">${IC("close")}</button></summary>
-      ${macroHtml(t)}${G.items.length===1?`<div class="dish-note">${qtyCell("log:"+G.items[0].id,G.items[0])}</div>`:`<div class="dish-items">${G.items.map(x=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${qtyCell("log:"+x.id,x)}</div><span class="k">${fmtFull(r0(x.kcal))}\u00a0kcal</span><button class="pen" data-nuedit="${x.id}" aria-label="${L("Modifier")}">${PEN}</button><button class="x" data-nudel="${x.id}" aria-label="${L("Supprimer")}">${IC("close")}</button></div>`).join("")}</div>`}</details>`}).join("")
+      ${macroHtml(t)}${G.items.length===1?`<div class="dish-note">${qtyCell("log:"+G.items[0].id,G.items[0])}${G.items[0].source?` <span class="small muted notr">${esc(G.items[0].source)}</span>`:""}</div>`:`<div class="dish-items">${G.items.map(x=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${qtyCell("log:"+x.id,x)}${x.source?` <span class="small muted notr">${esc(x.source)}</span>`:""}</div><span class="k">${fmtFull(r0(x.kcal))}\u00a0kcal</span><button class="pen" data-nuedit="${x.id}" aria-label="${L("Modifier")}">${PEN}</button><button class="x" data-nudel="${x.id}" aria-label="${L("Supprimer")}">${IC("close")}</button></div>`).join("")}</div>`}</details>`}).join("")
     :`<div class="card"><div class="empty">${L(nuDay===iso(today())?"Rien pour l'instant. Ajoute ton premier repas.":"Rien d'enregistré ce jour-là. Tu peux encore le compléter.")}</div></div>`;
   groups.forEach(G=>loadThumb(G.g));
   renderNuResult();renderNuPlan();renderNuMenu();renderMenuForm();renderNuWeek();renderMenuLeft();nuShowTab();
@@ -230,6 +230,7 @@ function toGrams(name,t){t=String(t||"").toLowerCase().replace(",",".");
 // Piece masses are edible estimates, overridden by food-memory or saved metadata.
 // Never rewrite historical totals merely to select a display unit.
 function nuUnitRef(x){
+  if(x.basis==="100ml")return null;
   if(+x.unit_g>0)return {g:+x.unit_g,label:x.unit_label||T3("pièce estimée","estimated piece")};
   const n=nz(x.name).replace(/œ/g,"oe");
   const refs=/** @type {[RegExp,number,string,string][]} */([[/^(?:oeuf|oeufs|egg|eggs)\b/,50,"œuf moyen sans coquille","medium egg without shell"],
@@ -238,6 +239,7 @@ function nuUnitRef(x){
   return ref?{g:ref[1],label:T3(ref[2],ref[3])}:null
 }
 function nuQtyGrams(x,q){
+  if(x.basis==="100ml")return 0;
   const t=String(q||"").trim(),g=t.match(/^(\d+(?:[.,]\d+)?)\s*(kg|g|grammes?|grams?)\b/i);
   if(g)return +g[1].replace(",",".")*(g[2].toLowerCase()==="kg"?1000:1);
   const spoon=toGrams(x.name,t);if(spoon)return spoon;
@@ -260,7 +262,17 @@ function nuQtyHelp(x){const ref=nuUnitRef(x);if(!ref)return "";
   if(!label)label=String(x.name||T3("Pièce","Piece"));label=label.charAt(0).toUpperCase()+label.slice(1);
   return T3(`${label} ≈ ${fmtN(ref.g)} g (estimation). Tu peux aussi saisir des grammes (ex. 100 g).`,`${label} ≈ ${fmtN(ref.g)} g (estimate). You can also enter grams (e.g. 100 g).`)}
 
-function scaleQty(x,q){const k=nuQtyRatio(x,q);if(!(k>0)){if(q)toast(T3("Unité inconnue : garde la même unité ou précise les grammes.","Unknown unit: keep the same unit or specify grams."));return false}
+function scaleQty(x,q){
+  if(x.per100){
+    const match=String(q||"").trim().match(/^(\d+(?:[.,]\d+)?)\s*(g|kg|ml|cl|l)$/i);
+    const unit=match?.[2].toLowerCase(),amount=match?Number(match[1].replace(",",".")):0;
+    const factor=x.basis==="100ml"?({ml:1,cl:10,l:1000})[unit]:({g:1,kg:1000})[unit];
+    if(!(Number.isFinite(amount)&&amount>0&&factor&&amount*factor<=100000)){if(q)toast(x.basis==="100ml"?"Indique la quantité en millilitres.":"Indique la quantité en grammes.");return false}
+    const ratio=amount*factor/100,ref=x.per100;
+    x.qty=q;Object.assign(x,nuQtyMeta(x),{kcal:r0(ref.kcal*ratio),p:r1(ref.p*ratio),c:r1(ref.c*ratio),f:r1(ref.f*ratio)});
+    return true;
+  }
+  const k=nuQtyRatio(x,q);if(!(k>0)){if(q)toast(T3("Unité inconnue : garde la même unité ou précise les grammes.","Unknown unit: keep the same unit or specify grams."));return false}
   x.qty=q;Object.assign(x,nuQtyMeta(x));
   x.kcal=r0(x.kcal*k);x.p=r1(x.p*k);x.c=r1(x.c*k);x.f=r1(x.f*k);return true}
 function qtyCommit(key){const inp=$("qtyEdIn");if(!inp){qtyEd=null;return}const q=inp.value.trim(),[kind,id]=key.split(":");qtyEd=null;
@@ -370,7 +382,7 @@ $("nuAskForm").addEventListener("submit",async e=>{
 // plats du jour pour React (même regroupement que renderNutri)
 function nuLogDraw(groups){if(!groups){const list=dayLog(nuDay);groups=[];list.forEach(x=>{const g=x.grp||x.id;let G=groups.find(y=>y.g===g);if(!G){G={g,items:[],name:x.gname||x.name,at:x.at};groups.push(G)}G.items.push(x)})}
   window.SCIslands.nuLog($("nuLog"),{dishes:groups.map(G=>({g:G.g,name:G.name,mono:mono(G.name),thumb:thumbs.get(G.g)||null,time:hhmm2(G.at),sum:sumOf(G.items),
-    items:G.items.map(x=>({id:x.id,name:x.name,kcal:x.kcal,qty:qtyVM("log:"+x.id,x)}))})),mac:NU_MAC(),today:nuDay===iso(today()),i18n:agI18n()});$("nuLog")._isl=true}
+    items:G.items.map(x=>({id:x.id,name:x.name,kcal:x.kcal,source:x.source,qty:qtyVM("log:"+x.id,x)}))})),mac:NU_MAC(),today:nuDay===iso(today()),i18n:agI18n()});$("nuLog")._isl=true}
 const hhmm2=a=>{const d=new Date(a);return `${two(d.getHours())}:${two(d.getMinutes())}`};
 function renderNuResult(){
   $("nuAskBtn").hidden=!!nuPending;
@@ -395,7 +407,7 @@ $("nuResult").addEventListener("click",async e=>{const b=e.target.closest("butto
     nuPending=null;nuPhoto=null;nuPhotoPrevSet(null);$("nuAsk").value="";grow($("nuAsk"));nuMealClose();renderNutri();toast(nuDay===iso(today())?"Ajouté à ta journée":"Ajouté à ce jour")}
 });
 function nuAddItems(items,time,meta){nuProgressChange="done";const at=nuAt(time),grp=uid();
-  items.forEach(x=>NU().log.push({id:uid(),day:nuDay,at,grp,gname:meta&&meta.name||"",gem:meta&&meta.em||"",name:x.name,qty:x.qty||"",...nuQtyMeta(x),em:x.em||"",kcal:r0(x.kcal),p:r1(x.p),c:r1(x.c),f:r1(x.f),upd:Date.now()}));
+  items.forEach(x=>NU().log.push({id:uid(),day:nuDay,at,grp,gname:meta&&meta.name||"",gem:meta&&meta.em||"",name:x.name,qty:x.qty||"",...nuQtyMeta(x),...(x.source?{source:x.source,basis:x.basis,per100:x.per100}:{}),em:x.em||"",kcal:r0(x.kcal),p:r1(x.p),c:r1(x.c),f:r1(x.f),upd:Date.now()}));
   save();return grp}
 // supprimer un aliment, ou tout un plat
 $("nuLog").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
@@ -406,7 +418,7 @@ $("nuLog").addEventListener("click",e=>{const b=e.target.closest("button");if(!b
     undoable("Plat supprimé",ids,()=>{ids.forEach(tomb);NU().log=NU().log.filter(x=>(x.grp||x.id)!==g)},{after:renderNutri,later:()=>{if(!NU().log.some(x=>(x.grp||x.id)===g))idb.del(thumbKey(g))}})}
 });
 // T16 B : les cinq entrées réutilisent leurs traitements, dans une même feuille.
-function nuMealClose(restore=true){if($("nuMealSheet").hidden)return;$("nuMealSheet").hidden=true;if(restore)$("nuMealAdd").focus({preventScroll:true})}
+function nuMealClose(restore=true){if($("nuMealSheet").hidden)return;catalogReset();$("foodCatalog").open=false;$("nuMealSheet").hidden=true;if(restore)$("nuMealAdd").focus({preventScroll:true})}
 $("nuMealAdd").addEventListener("click",()=>{$("nuMealSheet").hidden=false;$("nuMealSheet").querySelector('[role="dialog"]').focus({preventScroll:true})});
 $("nuMealClose").addEventListener("click",nuMealClose);
 $("nuMealSheet").addEventListener("click",e=>{if(e.target.id==="nuMealSheet")nuMealClose();if(e.target.closest("#nuManual")){$("nuSheet")._back=$("nuMealAdd");nuMealClose(false)}else if(e.target.closest("#nuAiLink"))nuMealClose()});

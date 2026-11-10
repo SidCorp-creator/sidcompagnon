@@ -555,3 +555,15 @@ Object.assign(DICT,{
   "Vérifie le fichier téléchargé.":"Check the downloaded file.",
   "L’export a échoué. Vérifie le code et la disponibilité des données.":"Export failed. Check the code and whether the data is available."
 });
+Object.assign(DICT,{
+  "Rechercher un aliment":"Find a food","Nom ou code-barres":"Name or barcode",
+  "Vérifier les valeurs":"Review nutrition values","Portion indiquée":"Listed serving",
+  "Recherche en cours…":"Searching…","Aucun aliment trouvé.":"No food found.",
+  "Une source est momentanément indisponible.":"One source is temporarily unavailable.",
+  "La recherche est momentanément indisponible.":"Search is temporarily unavailable.",
+  "Les valeurs nutritionnelles de cet aliment sont incomplètes.":"Nutrition data for this food is incomplete."
+});
+Object.assign(DICT,{
+  "Indique la quantité en millilitres.":"Enter the quantity in millilitres.",
+  "Indique la quantité en grammes.":"Enter the quantity in grams."
+});

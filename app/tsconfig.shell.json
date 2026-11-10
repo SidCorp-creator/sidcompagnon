@@ -59,6 +59,7 @@
     "src/shell/37-tout-se-referme-quand.js",
     "src/shell/38-dictee-vocale.js",
     "src/shell/39-nutrition.js",
+    "src/shell/39a-catalogue-nutrition.js",
     "src/shell/40-vues-semaine-mois-annee.js",
     "src/shell/41-graphiques-bilans.js",
     "src/shell/42-onglet-appli.js",

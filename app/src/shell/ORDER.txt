@@ -42,6 +42,7 @@
 37-tout-se-referme-quand.js
 38-dictee-vocale.js
 39-nutrition.js
+39a-catalogue-nutrition.js
 40-vues-semaine-mois-annee.js
 41-graphiques-bilans.js
 42-onglet-appli.js

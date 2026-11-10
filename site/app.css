@@ -2844,3 +2844,12 @@ html[data-ds="elan"] .note-pages #noteBody, .note-pages #noteBody {
 #v-projects #projectForm[hidden] { display: none; }
 #v-projects #projectForm { flex-wrap: wrap; }
 #v-projects #projectForm input { min-width: 0; }
+.food-catalog { padding: 12px; margin-bottom: 10px; }
+.food-catalog summary { cursor: pointer; font-weight: 600; }
+.food-catalog .row { flex-wrap: wrap; margin-top: 8px; }
+.food-catalog input { min-width: 0; }
+.food-catalog-results { display: grid; gap: 6px; }
+.food-catalog-results button { text-align: left; white-space: normal; }
+#foodCatalogStatus:empty { display: none; }
+#foodCatalogPortion { margin-top: 12px; }
+#foodCatalogPortion[hidden] { display: none; }

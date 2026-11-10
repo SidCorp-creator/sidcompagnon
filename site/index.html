@@ -442,6 +442,22 @@
 <div class="sheet-bg" id="nuMealSheet" hidden><div class="sheet nu-meal-sheet" role="dialog" aria-modal="true" aria-labelledby="nuMealTitle" tabindex="-1">
       <div id="nuAddBox">
       <div class="sheet-head"><h2 id="nuMealTitle">Ajouter un repas</h2><button type="button" class="x" id="nuMealClose" aria-label="Fermer"><i class="ic" data-i="close"></i></button></div>
+      <details class="card food-catalog" id="foodCatalog">
+        <summary>Rechercher un aliment</summary>
+        <form id="foodCatalogSearch" class="row">
+          <input id="foodCatalogQuery" class="grow" type="search" aria-label="Nom ou code-barres" placeholder="Nom ou code-barres" maxlength="100" required>
+          <button class="btn ghost" type="submit">Rechercher</button>
+        </form>
+        <p id="foodCatalogStatus" class="small muted" role="status"></p>
+        <div id="foodCatalogList" class="food-catalog-results"></div>
+        <form id="foodCatalogPortion" class="form" hidden>
+          <b id="foodCatalogName" class="notr"></b>
+          <a id="foodCatalogSource" class="small notr" target="_blank" rel="noopener noreferrer"></a>
+          <label>Quantité <input id="foodCatalogAmount" type="number" min="0.1" max="100000" step="any" required> <span id="foodCatalogUnit"></span></label>
+          <button class="mini" type="button" id="foodCatalogServing" hidden></button>
+          <button class="btn" type="submit">Vérifier les valeurs</button>
+        </form>
+      </details>
       <form class="card form nu-ask" id="nuAskForm">
         <label for="nuAsk">Ce que tu manges</label><textarea id="nuAsk" rows="2" placeholder="Ce que tu manges, avec la quantité" aria-label="Ce que tu manges" enterkeyhint="send"></textarea>
         <div class="nu-for" id="nuFor"><span class="nu-for-l">Pour</span><button type="button" class="nu-for-nav" data-nufor="-1" aria-label="Jour précédent"><i class="ic" data-i="chevleft"></i></button><label class="nu-for-day"><span id="nuForTxt"></span><input type="date" id="nuForDate" aria-label="Jour du repas"></label><button type="button" class="nu-for-nav" data-nufor="1" id="nuForNext" aria-label="Jour suivant"><i class="ic" data-i="chev"></i></button></div>

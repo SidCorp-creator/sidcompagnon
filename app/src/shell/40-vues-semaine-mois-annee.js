@@ -106,7 +106,11 @@ $("nuEntryForm").addEventListener("submit",e=>{
   const v={name,qty:$("nuEQty").value.trim(),kcal:num("nuEKcal"),p:num("nuEP"),c:num("nuEC"),f:num("nuEF")};
   if(nuEBase&&v.name===nuEBase.name&&v.qty!==nuEBase.qty&&!nuQtyRatio(nuEBase,v.qty)&&["kcal","p","c","f"].every(k=>v[k]===nuEBase[k])){toast(T3("Unité inconnue : garde la même unité ou corrige aussi les nutriments.","Unknown unit: keep the same unit or update the nutrients too."));return}
   Object.assign(v,nuQtyMeta({...nuEBase,...v}));
-  if(nuEditId){const x=NU().log.find(e=>e.id===nuEditId);if(x){Object.assign(x,{...v,kcal:r0(v.kcal),p:r1(v.p),c:r1(v.c),f:r1(v.f),upd:Date.now()});
+  if(nuEditId){const x=NU().log.find(e=>e.id===nuEditId);if(x){
+      if(x.source&&["name","qty","kcal","p","c","f"].some(k=>x[k]!==v[k])){
+        delete x.source;delete x.basis;delete x.per100;
+      }
+      Object.assign(x,{...v,kcal:r0(v.kcal),p:r1(v.p),c:r1(v.c),f:r1(v.f),upd:Date.now()});
       if($("nuETime").value){const d=parse(x.day),[h,m]=$("nuETime").value.split(":").map(Number);d.setHours(h,m);NU().log.filter(y=>(y.grp||y.id)===(x.grp||x.id)).forEach(y=>y.at=d.toISOString())}save()}}
   else nuAddItems([v],$("nuETime").value,{name:v.name,em:"✍️"});
   $("nuSheet").hidden=true;renderNutri();toast("Enregistré");

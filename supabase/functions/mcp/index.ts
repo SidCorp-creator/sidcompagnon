@@ -7,6 +7,7 @@
 // Accès : agenda (v41 : avec les rappels), tâches, notes (pas les notes secrètes), nutrition (v39 : c'est l'IA de la personne qui calcule), musculation (v41), photo d'assiette (v43, outil photo_repas : lue puis effacée). Plus de listes partagées (retirées en v41). Jamais les coffres (mots de passe, documents).
 // Écriture « à condition » sur user_data (comme push() dans l'app) : si l'app a écrit entre-temps, on relit et on recommence.
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { extractText, getDocumentProxy } from "npm:unpdf@1.8.1";
 
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
   auth: { persistSession: false },
@@ -303,7 +304,7 @@ const TOOLS = [
   },
   {
     name: "lire_note",
-    description: "Lit le texte complet d'une note (id ou morceau du titre). Pour la corriger ou la remettre au propre ensuite, utilise modifier_note.",
+    description: "Lit le texte complet d'une note (id ou morceau du titre) ET le contenu de ses pièces jointes : texte du PDF joint (page par page) et photos de la note. Pour la corriger ou la remettre au propre ensuite, utilise modifier_note.",
     inputSchema: { type: "object", required: ["note"], properties: { note: { type: "string" } } },
     annotations: { readOnlyHint: true },
   },
@@ -555,6 +556,48 @@ async function photoRepas(user: string, asked?: unknown): Promise<unknown[]> {
   return out;
 }
 
+// v81 (Sid'compagnon v81) : lire_note renvoie aussi le contenu des pièces jointes de la note. Mêmes contrôles qu'avant : la note
+// appartient à la personne de la clé (user_id de mcp_tokens), n'est ni secrète ni supprimée ; les fichiers sont lus seulement aux
+// chemins de cette note dans le bucket privé (documents/<uid>/notes/<id de la note>.pdf, documents/<uid>/notes/<id de photo>.jpg).
+// Les documents du coffre (chiffrés) ne sont jamais lus.
+const PDF_MAX = 20 * 1024 * 1024, PDF_TXT_MAX = 120_000, NOTE_PICS_MAX = 4;
+const attLabel = (n: Data) => { const p = n.pdf ? 1 : 0, f = Array.isArray(n.photos) ? n.photos.length : 0; return p || f ? ` [pièces jointes : ${[p ? "PDF" : "", f ? `${f} photo${f > 1 ? "s" : ""}` : ""].filter(Boolean).join(", ")}]` : ""; };
+async function notePdfText(user: string, n: Data): Promise<string> {
+  const name = String(n.pdf.name || "document.pdf");
+  const { data: blob, error } = await db.storage.from("documents").download(`${user}/notes/${n.id}.pdf`);
+  if (!blob) {
+    console.error("pdf de note illisible", n.id, error && error.message);
+    return `PDF joint « ${name} » : pas encore disponible en ligne (il n'a peut-être pas fini de s'envoyer depuis l'appareil). Demande à la personne d'ouvrir la note dans Sid'note avec internet, puis réessaie.`;
+  }
+  if (blob.size > PDF_MAX) return `PDF joint « ${name} » : trop lourd pour être lu ici (${Math.round(blob.size / 1048576)} Mo, 20 Mo au plus).`;
+  try {
+    const pdf = await getDocumentProxy(new Uint8Array(await blob.arrayBuffer()));
+    const { totalPages, text } = await extractText(pdf, { mergePages: false });
+    const pages = (Array.isArray(text) ? text : [String(text)]).map((t, i) => `--- Page ${i + 1} ---\n${String(t || "").trim()}`);
+    let out = pages.join("\n\n");
+    if (!pages.some((t) => t.replace(/^--- Page \d+ ---\n/, "").trim())) return `PDF joint « ${name} » (${totalPages} page${totalPages > 1 ? "s" : ""}) : aucun texte lisible (PDF scanné en image). Demande à la personne une photo ou une capture des pages utiles.`;
+    if (out.length > PDF_TXT_MAX) out = out.slice(0, PDF_TXT_MAX) + "\n[… texte coupé : PDF trop long]";
+    return `\n\n📎 PDF joint « ${name} » (${totalPages} page${totalPages > 1 ? "s" : ""}), texte extrait :\n\n${out}`;
+  } catch (e) {
+    console.error("pdf de note : extraction impossible", n.id, (e as Error).message);
+    return `PDF joint « ${name} » : lecture impossible (fichier abîmé ou protégé par un mot de passe).`;
+  }
+}
+async function lireNote(user: string, which: unknown): Promise<Data[]> {
+  const { data } = await readData(user);
+  const del = data.del || {};
+  const n = findOne((Array.isArray(data.notes) ? data.notes : []).filter((x: Data) => x && !x.secret && !del[x.id]), which as string, "la note");
+  const parts: Data[] = [{ type: "text", text: `# ${n.title || "(sans titre)"}\n\n${n.body || ""}` }];
+  if (n.pdf && n.id) { const t = await notePdfText(user, n); parts.push({ type: "text", text: t.startsWith("\n") ? t : `\n\n📎 ${t}` }); }
+  const pics = (Array.isArray(n.photos) ? n.photos : []).filter((p: Data) => p && typeof p.id === "string" && /^[\w-]+$/.test(p.id));
+  for (const p of pics.slice(0, NOTE_PICS_MAX)) {
+    const { data: blob } = await db.storage.from("documents").download(`${user}/notes/${p.id}.jpg`);
+    if (blob && blob.size < 5 * 1024 * 1024) parts.push({ type: "image", data: b64(new Uint8Array(await blob.arrayBuffer())), mimeType: "image/jpeg" });
+  }
+  if (pics.length) parts.push({ type: "text", text: `${Math.min(pics.length, NOTE_PICS_MAX)} photo(s) de la note jointe(s) ci-dessus${pics.length > NOTE_PICS_MAX ? ` (sur ${pics.length})` : ""}.` });
+  return parts;
+}
+
 // deno-lint-ignore no-explicit-any
 async function callTool(user: string, name: string, a: any, nameOf: string): Promise<string> {
   a = a || {};
@@ -685,14 +728,10 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
       }
       list.sort((x: Data, y: Data) => (y.upd || 0) - (x.upd || 0));
       if (!list.length) return a.search ? `Aucune note ne parle de « ${a.search} ».` : "Aucune note.";
-      return list.slice(0, 40).map((n: Data) => `- ${n.title || "(sans titre)"}${n.folder ? ` [dossier ${folderName(data, n.folder)}]` : ""} — ${String(n.body || "").replace(/\s+/g, " ").slice(0, 120)} (id ${n.id})`).join("\n");
+      return list.slice(0, 40).map((n: Data) => `- ${n.title || "(sans titre)"}${n.folder ? ` [dossier ${folderName(data, n.folder)}]` : ""}${attLabel(n)} — ${String(n.body || "").replace(/\s+/g, " ").slice(0, 120)} (id ${n.id})`).join("\n");
     }
-    case "lire_note": {
-      const { data } = await readData(user);
-      const del = data.del || {};
-      const n = findOne((Array.isArray(data.notes) ? data.notes : []).filter((x: Data) => x && !x.secret && !del[x.id]), a.note, "la note");
-      return `# ${n.title || "(sans titre)"}\n\n${n.body || ""}`;
-    }
+    case "lire_note":
+      return (await lireNote(user, a.note)).map((p: Data) => p.type === "text" ? p.text : "").join("\n\n");
     case "ajouter_note": {
       const n: Data = await writeData(user, (d) => {
         d.notes = Array.isArray(d.notes) ? d.notes : [];
@@ -908,8 +947,8 @@ Deno.serve(async (req) => {
       return rpcOk(id, {
         protocolVersion: params?.protocolVersion || "2025-06-18",
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "sidnote", title: "Sid'note", version: "1.8.0", icons: ICON("home"), websiteUrl: "https://sidcompagnon.com" },
-        instructions: "Sid'note est l'application d'organisation de la personne (agenda, cours, tâches, notes, nutrition, musculation). Dates en AAAA-MM-JJ, heure de Bruxelles. Quand la personne demande un rappel pour une activité (ex. 1 h avant), passe-le dans reminders (en minutes) avec ajouter_activite ou modifier_activite : c'est une notification sur son téléphone. Quand la personne dit ce qu'elle a mangé ou envoie la photo de son assiette (si elle parle d'une photo envoyée depuis Sid'note, elle est jointe à nutrition_journee, ou lis-la avec photo_repas), estime toi-même calories et macros puis note-le avec noter_repas (sans redemander, sauf doute sur la quantité). Pour un menu, lis d'abord nutrition_journee puis enregistre-le avec enregistrer_menu. Après un bilan ou un commentaire nutrition (jour ou semaine), enregistre-le avec enregistrer_commentaire pour qu'il s'affiche dans l'app. Quand la personne parle d'une chose à faire un jour précis, ajoute la tâche avec sa date (ajouter_tache) : elle apparaîtra ce jour-là dans son agenda et passera au lendemain si elle n'est pas faite. Pour une note, propose un dossier (folder) si c'est utile ; pour corriger, compléter ou remettre au propre une note qui existe déjà, utilise modifier_note (ne crée pas de doublon). Pour la musculation, lis muscu_programme avant d'ajuster, puis enregistre avec enregistrer_programme ; une séance racontée se note avec noter_seance. Les mots de passe, documents et notes secrètes sont chiffrés et jamais accessibles.",
+        serverInfo: { name: "sidnote", title: "Sid'note", version: "1.9.0", icons: ICON("home"), websiteUrl: "https://sidcompagnon.com" },
+        instructions: "Sid'note est l'application d'organisation de la personne (agenda, cours, tâches, notes, nutrition, musculation). Dates en AAAA-MM-JJ, heure de Bruxelles. Quand la personne demande un rappel pour une activité (ex. 1 h avant), passe-le dans reminders (en minutes) avec ajouter_activite ou modifier_activite : c'est une notification sur son téléphone. Quand la personne dit ce qu'elle a mangé ou envoie la photo de son assiette (si elle parle d'une photo envoyée depuis Sid'note, elle est jointe à nutrition_journee, ou lis-la avec photo_repas), estime toi-même calories et macros puis note-le avec noter_repas (sans redemander, sauf doute sur la quantité). Pour un menu, lis d'abord nutrition_journee puis enregistre-le avec enregistrer_menu. Après un bilan ou un commentaire nutrition (jour ou semaine), enregistre-le avec enregistrer_commentaire pour qu'il s'affiche dans l'app. Quand la personne parle d'une chose à faire un jour précis, ajoute la tâche avec sa date (ajouter_tache) : elle apparaîtra ce jour-là dans son agenda et passera au lendemain si elle n'est pas faite. Pour une note, propose un dossier (folder) si c'est utile ; pour corriger, compléter ou remettre au propre une note qui existe déjà, utilise modifier_note (ne crée pas de doublon). Pour la musculation, lis muscu_programme avant d'ajuster, puis enregistre avec enregistrer_programme ; une séance racontée se note avec noter_seance. Pour une note avec un PDF ou des photos joints, lire_note renvoie aussi leur contenu. Les mots de passe, documents du coffre et notes secrètes sont chiffrés et jamais accessibles.",
       });
     case "ping":
       return rpcOk(id, {});
@@ -918,6 +957,7 @@ Deno.serve(async (req) => {
     case "tools/call": {
       try {
         if (params?.name === "photo_repas") return rpcOk(id, { content: await photoRepas(tok.user_id, params?.arguments?.photo) });
+        if (params?.name === "lire_note") return rpcOk(id, { content: await lireNote(tok.user_id, params?.arguments?.note) });
         const text = await callTool(tok.user_id, params?.name, params?.arguments, tok.label || "Claude");
         const pics = params?.name === "nutrition_journee" ? await mealPhotosWait(tok.user_id, false, params?.arguments?.photo).catch(() => []) : [];
         return rpcOk(id, { content: [{ type: "text", text }, ...pics] });

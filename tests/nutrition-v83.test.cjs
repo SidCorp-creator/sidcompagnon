@@ -1,6 +1,11 @@
 // Offline model transport; real UI, shared Edge validation, catalogue and persistence.
 const {chromium}=require('../app/node_modules/playwright'),assert=require('node:assert/strict');
 const core=require('./sidbot-loader.cjs');
+// Host-side polling uses Runtime.callFunctionOn through evaluate, avoiding waitForFunction's
+// string evaluation under the site's strict CSP. Keep the CSP intact and report the actual app state on timeout.
+async function until(page,check,label){const end=Date.now()+15000;while(Date.now()<end){if(await page.evaluate(check))return;await new Promise(r=>setTimeout(r,100))}
+ const state=await page.evaluate(()=>({view:data.ui.view,busy:sbBusy,nutritionBusy:nuBusy,assistant:sbMsgs('forme').filter(x=>x.role==='assistant').length,lastRole:sbMsgs('forme').at(-1)?.role,lastError:sbMsgs('forme').at(-1)?.role==='error'?sbMsgs('forme').at(-1).content:null,pending:!!nuPending}));
+ throw Error('Timed out waiting for '+label+': '+JSON.stringify(state));}
 (async()=>{const browser=await chromium.launch();try{for(const [width,fallback,lang] of [[390,false,"fr"],[1280,true,"fr"],[390,false,"en"]]){
  const page=await browser.newPage({viewport:{width,height:900}}),errors=[];page.on('pageerror',e=>(errors.push(e.message),console.error(e.stack)));
  await page.addInitScript(({fallback,lang})=>{window.__noIntro=true;window.__noIslands=fallback;localStorage.setItem('sidnote-lang',JSON.stringify(lang))},{fallback,lang});
@@ -33,7 +38,7 @@ const core=require('./sidbot-loader.cjs');
  const preview=await page.evaluate(()=>sbMsgs('forme').filter(x=>x.role==='assistant').at(-1).actions[0].payload.meals.map(m=>m.items.map(x=>[x.g,x.kcal,x.weight_state])));
  assert.equal(await page.evaluate(()=>NU().menu?.meals?.length||0),0);
  // Closing/reopening the bot does not save; snapshot and weighing preference remain durable.
- await page.evaluate(()=>{sbClose();save()});await page.reload();await page.waitForFunction(()=>typeof NU==='function'&&NU().menuRequest);
+ await page.evaluate(()=>{sbClose();save()});await page.reload();await until(page,()=>typeof NU==='function'&&NU().menuRequest,'persisted menu request');
  assert.equal(await page.evaluate(()=>NU().menuRequest.weighing_mode),'cooked');
  await page.evaluate(()=>sbOpen('forme'));await page.locator('[data-sbact]').last().click();
  assert.equal(await page.evaluate(()=>NU().menu.meals.length),1);assert.equal(await page.evaluate(()=>NU().log.length),0);
@@ -43,20 +48,20 @@ const core=require('./sidbot-loader.cjs');
  assert.equal(await page.evaluate(()=>NU().menuRequest||null),null);
  // Two meals share the remaining allowance, never the whole daily target each.
  await page.evaluate(async()=>{sbClose();NU().log=[{id:uid(),day:iso(today()),kcal:1000}];const mp=nuMP();mp.type='day';mp.pick={breakfast:false,lunch:true,dinner:true};mp.snacks=0;mp.kcals=null;mp.budget_kind='remaining';mpSet(mp,'day','weighing_mode','cooked');data.ui.nuTab='menu';NU().upd=Date.now();show('nutri');renderNutri();save();await push()});
- await page.click('#nuMenuBtn');await page.waitForSelector('#sbSheet:not([hidden])');await page.click('#sbSend');await page.waitForFunction(()=>sbMsgs('forme').filter(x=>x.role==='assistant').length===2);
+ await page.click('#nuMenuBtn');await page.waitForSelector('#sbSheet:not([hidden])');await page.click('#sbSend');await until(page,()=>sbMsgs('forme').filter(x=>x.role==='assistant').length===2,'second menu proposal');
  assert.equal(sent.context.menu_request.budget_kind,'remaining');assert.equal(sent.context.menu_request.meals.length,2);assert.equal(sent.context.menu_request.meals.reduce((s,m)=>s+m.kcal,0),1400);
  const twoPreview=await page.evaluate(()=>sbMsgs('forme').filter(x=>x.role==='assistant').at(-1).actions[0].payload.meals.map(m=>m.items.reduce((t,x)=>t+x.kcal,0)));
  await page.locator('[data-sbact]').last().click();assert.deepEqual(await page.evaluate(()=>NU().menu.meals.map(m=>m.items.reduce((t,x)=>t+x.kcal,0))),twoPreview);assert.equal(await page.evaluate(()=>NU().menu.meals.length),2);assert.equal(await page.evaluate(()=>NU().log.length),1);
  // Single food natural text uses actual cooked Ciqual composition, no yield guess.
  await page.evaluate(async()=>{sbClose();NU().log=[];data.ui.nuTab='day';renderNutri()});await page.click('#nuMealAdd');
- await page.fill('#nuAsk',"j'ai pesé 180 g de riz basmati cuit");await page.click('#nuAskBtn');await page.waitForFunction(()=>nuPending?.items?.length);
+ await page.fill('#nuAsk',"j'ai pesé 180 g de riz basmati cuit");await page.click('#nuAskBtn');await until(page,()=>nuPending?.items?.length,'cooked food preview');
  assert.equal(await page.evaluate(()=>nuPending.items[0].kcal),266);assert.equal(await page.evaluate(()=>nuPending.items[0].weight_state),'cooked');await page.click('#nuResult [data-nuadd]');
- await page.click('#nuMealAdd');await page.fill('#nuAsk','180 g de poulet filet sans peau grillé');await page.click('#nuAskBtn');await page.waitForFunction(()=>nuPending?.items?.length);
+ await page.click('#nuMealAdd');await page.fill('#nuAsk','180 g de poulet filet sans peau grillé');await page.click('#nuAskBtn');await until(page,()=>nuPending?.items?.length,'cooked food preview');
  assert.equal(await page.evaluate(()=>nuPending.items[0].kcal),254);await page.click('#nuResult [data-nuadd]');
  assert.ok(await page.evaluate(()=>NU().log.every(x=>x.weight_state==='cooked'&&x.source.includes('Anses'))));
  // Force the missing-local-food path: the cooked wording survives memory miss, Sid'Bot and the consumed log.
  await page.evaluate(()=>{ciqualSearch=async()=>[]});await page.click('#nuMealAdd');await page.fill('#nuAsk','180 g de blanc de poulet cuit');await page.click('#nuAskBtn');await page.waitForSelector('#sbSheet:not([hidden])');
- assert.match(await page.inputValue('#sbIn'),/cuit/);await page.click('#sbSend');await page.waitForFunction(()=>sbMsgs('forme').filter(x=>x.role==='assistant').length===3);
+ assert.match(await page.inputValue('#sbIn'),/cuit/);await page.click('#sbSend');await until(page,()=>sbMsgs('forme').filter(x=>x.role==='assistant').length===3,'cooked meal proposal after memory miss');
  assert.match(sent.messages.at(-1).content,/180 g de blanc de poulet cuit/);await page.locator('[data-sbact]').last().click();
  assert.equal(await page.evaluate(()=>NU().log.at(-1).weight_state),'cooked');assert.equal(await page.evaluate(()=>NU().log.at(-1).g),180);
  assert.deepEqual(errors,[]);await page.close();console.log(`nutrition v83 ${width}/${fallback?'fallback':'React'}/${lang}: cooked rice + meat, 983 kcal preview/confirmation/reload, 2-meal remaining budget OK`);

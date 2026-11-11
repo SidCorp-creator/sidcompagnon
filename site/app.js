@@ -104,7 +104,7 @@ if(!Array.isArray(data.pwds))data.pwds=[];
 LANG=(data.prefs&&data.prefs.lang)||ls.get("sidnote-lang")||"fr";if(session)ls.set("sidnote-lang",LANG);
 // v76 : FR et EN seulement. Une préférence néerlandaise (ou inconnue) revient au français, et on l'enregistre pour ne plus la relire.
 if(!["fr","en"].includes(LANG)){LANG="fr";ls.set("sidnote-lang","fr");if(data.prefs&&data.prefs.lang&&data.prefs.lang!=="fr"){data.prefs.lang="fr"}}
-const TABS=[["plan","Agenda"],["todo","Tâches"],["lists","Listes"],["notes","Notes"],["pomo","Focus"],["muscu","Musculation"],["nutri","Nutrition"],["graph","Graphiques"],["docs","Documents"],["pwd","Mots de passe"],["app","Appli"]];
+const TABS=[["plan","Agenda"],["todo","Tâches"],["lists","Listes"],["notes","Notes"],["projects","Projets"],["pomo","Focus"],["muscu","Musculation"],["nutri","Nutrition"],["graph","Graphiques"],["app","Appli"]];
 data.prefs=data.prefs||{};data.prefs.tabs=data.prefs.tabs||{plan:true,todo:true,pomo:true,app:true};
 
 function save(){
@@ -129,7 +129,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="80";const errSent=new Set();
+const APP_V="81";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -177,7 +177,7 @@ function baseSet(uidv,at,d){if(!at||!d)return;if(!ls.set(baseKey(uidv),{at,data:
 const jeq=(a,b)=>a===b||JSON.stringify(a)===JSON.stringify(b);
 const isObj=x=>!!x&&typeof x==="object"&&!Array.isArray(x);
 const idList=x=>Array.isArray(x)&&x.length>0&&x.every(e=>isObj(e)&&e.id!==undefined&&e.id!==null);
-const M3_ATOM=new Set(["plan","profile","menu","vault","docVault","noteVault","phx","grp","consent"]); // gardés d'un bloc (jamais mélangés champ par champ)
+const M3_ATOM=new Set(["plan","profile","menu","vault","docVault","noteVault","muscuClock","phx","grp","consent"]); // gardés d'un bloc (jamais mélangés champ par champ)
 const m3pick=(l,r)=>{const t=x=>isObj(x)?(+x.upd||+x.at||Date.parse(x.createdAt)||0):0;return t(r)>t(l)?r:l}; // changé des deux côtés : le plus récent, sinon cet appareil
 function merge3(b,l,r,key){
   if(jeq(l,r))return l;if(jeq(l,b))return r;if(jeq(r,b))return l;
@@ -227,8 +227,11 @@ function mergeDataOld(loc,rem,opt){
   const arrU=(a,b)=>{const rb=new Map((Array.isArray(b)?b:[]).map(x=>[x&&x.id,x]));
     return arr(a,b).map(x=>{const r=rb.get(x.id);return r&&(r.upd||0)>(x.upd||0)?r:x})};
   const out={...rem,...loc,del,res};
+  const localClock=loc.muscuClock,remoteClock=rem.muscuClock;
+  if(remoteClock&&(remoteClock.upd>(localClock?.upd||0)||(remoteClock.upd===localClock?.upd&&!remoteClock.run)))out.muscuClock=remoteClock;
   out.todos=arr(loc.todos,rem.todos);out.tasks=arr(loc.tasks,rem.tasks);
   out.todoCats=arr(loc.todoCats,rem.todoCats);out.docs=arr(loc.docs,rem.docs);out.docFolders=arr(loc.docFolders,rem.docFolders);out.noteFolders=arr(loc.noteFolders,rem.noteFolders);
+  out.noteProjects=arrU(loc.noteProjects,rem.noteProjects);out.focusSessions=arrU(loc.focusSessions,rem.focusSessions);
   out.notes=arrU(loc.notes,rem.notes);out.pwds=arrU(loc.pwds,rem.pwds);out.pdfAnns=arrU(loc.pdfAnns,rem.pdfAnns); // v44.7 : annotations des PDF de cours
   // v33 : une note modifiée sur les deux appareils depuis la dernière synchro : on garde aussi l'autre version, en copie
   if(since){const ln=new Map((Array.isArray(loc.notes)?loc.notes:[]).map(x=>[x&&x.id,x]));
@@ -249,7 +252,7 @@ function mergeDataOld(loc,rem,opt){
   // v32 : coffres et phrase secrète : si les deux appareils en ont un différent, le plus récent gagne
   // (sinon un appareil resté sur l'ancien coffre écraserait le coffre renforcé, et les éléments rechiffrés deviendraient illisibles)
   const vAt=v=>v?(v.at||Date.parse(v.createdAt)||0):0;
-  for(const k of ["vault","docVault","noteVault","phx"]){const a=loc[k],b=rem[k];if(a&&b&&a.id!==b.id&&vAt(b)>vAt(a))out[k]=b}
+  for(const k of ["vault","docVault","noteVault","muscuClock","phx"]){const a=loc[k],b=rem[k];if(a&&b&&a.id!==b.id&&vAt(b)>vAt(a))out[k]=b}
   return out;
 }
 function schedulePush(){clearTimeout(pushTimer);pushTimer=setTimeout(push,1200);setSync()}
@@ -473,13 +476,13 @@ function appOutro(app){
 // v25 : les catégories deviennent des « espaces » (page Espaces + barre latérale sur ordinateur)
 // v42 : trois applications dans l'application mère Sid'Compagnon (même compte, mêmes données) ; Réglages et Compte sont dans Sid'Compagnon
 const GROUPS=[
-  {k:"orga",label:MARQUES.journee,app:"agenda",tabs:["plan","todo","pomo"]}, // v41 : Listes retirées ; v42 : Focus (pomodoro) revient
+  {k:"orga",label:MARQUES.journee,app:"agenda",tabs:["plan","todo"]},
   {k:"sport",label:MARQUES.forme,app:"fit",tabs:["muscu","nutri","graph"]},
-  {k:"perso",label:MARQUES.note,app:"note",tabs:["notes","docs","pwd"]},
+  {k:"perso",label:MARQUES.note,app:"note",tabs:["notes","pomo","projects"]},
   {k:"more",label:MARQUES.compagnon,app:"home",tabs:["more","app"]}];
 const APP_GROUPS=GROUPS.slice(0,3);
 const appOf=v=>v==="home"||v==="spaces"?"home":groupOf(v).app;
-const SHORT={plan:"Agenda",todo:"Tâches",lists:"Listes",pomo:"Focus",muscu:"Musculation",nutri:"Nutrition",graph:"Graphiques",notes:"Notes",docs:"Documents",pwd:"Mots de passe",more:"Réglages",app:"Installer l'app"};
+const SHORT={plan:"Agenda",todo:"Tâches",lists:"Listes",pomo:"Focus",projects:"Projets",muscu:"Musculation",nutri:"Nutrition",graph:"Graphiques",notes:"Notes",more:"Réglages",app:"Installer l'app"};
 const ICON=k=>{const e=$("fnIcons").querySelector(`[data-ic="${k}"]`);return e?e.innerHTML:""};
 const groupOf=v=>GROUPS.find(g=>g.tabs.includes(v))||GROUPS[0];
 // v32 : Nutrition et Graphiques n'apparaissent que pour les comptes qui y ont accès (décidé par le serveur)
@@ -496,7 +499,7 @@ const PLUSIC=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 // v28 : la barre du bas montre directement les 3 espaces (demande de Sid) : Aujourd'hui, Organisation, Santé, Coffre, Compte.
 // Toucher un espace rouvre sa dernière fonction ; en haut, des pastilles passent d'une fonction à l'autre. Le « + » est sur la page Aujourd'hui.
 const DOCK=[["home","Aujourd'hui",HOMEIC],["orga","Organisation",null],["sport","Santé",null],["perso","Coffre",null],["more","Compte",USERIC]];
-// v42 : la barre du bas montre les fonctions de l'app ouverte (sid'agenda : Agenda, Tâches, Focus…) ; dans Sid'Compagnon, pas de barre
+// v42 : la barre du bas montre les fonctions de l'app ouverte (Sid’Journée : Agenda, Tâches) ; dans Sid'Compagnon, pas de barre
 // v44.7 : la page garde toujours en bas la place de la barre (sa hauteur réelle, 0 si elle est cachée) : le dernier élément
 // n'est plus coupé derrière (ordinateur avec la barre latérale masquée, téléphone, tablette)
 function navPad(){const n=document.querySelector("nav"),h=n&&!n.hidden&&getComputedStyle(n).display!=="none"?Math.ceil(n.getBoundingClientRect().height):0;
@@ -543,9 +546,6 @@ if(v!=="notes")document.body.classList.remove("note-full");if(v==="more"){try{re
   if(v==="more"){renderStats();renderTabsCard();renderHomeSel();renderLook();if(session)renderNotif()}
   // v37 : le coffre se reverrouille en le quittant, tout de suite ou après le délai choisi (Réglages)
   secCheck();for(const k of SEC_K){if(k===v)delete secAway[k];else secLeave(k)}
-  if(v==="docs")docsEnter();
-  if(v!=="docs"&&ps&&ps.host)psEnd(null);
-  if(v==="pwd"){renderPwd();if(!vaultKey&&pinStep==="unlock")bioAuto("main",()=>$("pinBio").click())}
   if(v==="lists")slEnter();
   if(v==="notes"&&!noteOpenId)renderNotes();
   if(v!=="notes"&&v!=="nutri")dictStop();
@@ -554,6 +554,7 @@ if(v!=="notes")document.body.classList.remove("note-full");if(v==="more"){try{re
   if(v==="graph")renderGraph();
   if(v!=="graph")grTipHide();
   if(v==="pomo")renderSpotify();
+  if(v==="projects")renderNoteProjects();
   window.scrollTo(0,0);elanCompact();
   if(v==="home"&&introReady&&INTRO[wasApp])appOutro(wasApp);
 }
@@ -565,7 +566,7 @@ function applyTabs(){
 // --- en-tête d'un module : nom de l'espace + pastilles de ses fonctions ---
 // v28 : nom de l'espace + pastilles des fonctions de cet espace (Agenda · Tâches · Focus…)
 // v42 : en-tête d'une app : son logo et son nom, et le retour à Sid'Compagnon (les fonctions sont dans la barre du bas)
-const APP_ROLES={agenda:"Agenda, tâches, focus",fit:"Sport et alimentation",note:"Notes, documents, mots de passe",home:"Tes réglages"};
+const APP_ROLES={agenda:"Agenda et tâches",fit:"Sport et alimentation",note:"Notes, Focus et projets",home:"Tes réglages"};
 function renderVhead(v){const el=$("vhead");
  if(v==="home"||v==="spaces"){el.hidden=true;document.title="Sid'Compagnon";return}
  const g=groupOf(v),previous=el.dataset.app===g.app?Number(el.querySelector("[role=progressbar]")?.getAttribute("aria-valuenow")||0):0;el.hidden=false;el.dataset.app=g.app;el.classList.remove("many");
@@ -580,7 +581,7 @@ function renderVhead(v){const el=$("vhead");
   if(v==="muscu"){const p=muSessionProgress();progress=`${p.done} / ${p.total} ${L("séries complètes")}`;percent=p.total?Math.round(p.done/p.total*100):0;hasProgress=true}
   else if(nutriAllowed()&&n.plan?.kcal){const eaten=Math.round(sumOf(dayLog(iso(today()))).kcal),target=dayTarget(iso(today())).kcal;progress=`${fmtFull(eaten)} / ${fmtFull(Math.round(target))}\u00a0kcal`;percent=Math.min(100,Math.round(eaten/target*100));hasProgress=true}
   else{progress=L("Définis ton objectif alimentaire");hasProgress=false}}
- if(g.app==="note"){progress=elanCoffreMetric(v);hasProgress=false}
+ if(g.app==="note"&&v!=="pomo"){progress=elanCoffreMetric(v);hasProgress=false}
  if(g.app==="home"){progress="";hasProgress=false}
  const title=SHORT[v]||g.label;
  document.title=`${g.label} · ${L(title)} — Sid'Compagnon`;
@@ -618,7 +619,6 @@ function spaceMeta(k){try{
   if(k==="pomo"){const m=Math.round(((data.pomo&&data.pomo.log||{})[dayKey(new Date())]||0)/60000);return m?`${m} min ${L("aujourd'hui")}`:""}
   if(k==="nutri"){const n=NU();if(!nutriAllowed()||!n.plan||!n.plan.kcal)return"";const left=Math.round(dayTarget(iso(today())).kcal-sumOf(dayLog(iso(today()))).kcal);return `${fmtFull(Math.max(0,left))} kcal`}
   if(k==="notes"){const n=NT().length;return n?String(n):""}
-  if(k==="docs"){const n=docsArr().length;return n?String(n):""}
   if(k==="muscu"){const n=(data.muscu&&data.muscu.sessions||[]).length;return n?`${n} ${L(n>1?"séances":"séance")}`:""}
   return""}catch(e){return""}}
 const CHEVR=`<svg class="chev-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>`;
@@ -709,7 +709,7 @@ function renderHome(){if(!$("homeBody"))return;
       return t.length>90?t.slice(0,90).replace(/\s+\S*$/,"")+"…":t};
     if(last&&nTxt(last))it.push([L("Dernière note"),{u:nTxt(last)},""]);
     const nN=NT().length;it.push([L("Classeur"),`${nN} ${L(nN>1?"notes":"note")} · ${NF().length} ${L(NF().length>1?"dossiers":"dossier")}`,""]);
-    cards.push({g,desc:"Notes, documents et mots de passe, à l'abri.",it:it.slice(0,2)})}}
+    cards.push({g,desc:"Notes, séances Focus et projets.",it:it.slice(0,2)})}}
   const phrases={agenda:"Organise tes journées",fit:"Entraîne-toi, mange bien",note:"Écris, classe et protège"};
   const models=cards.map(({g,it})=>{let count="0",metric="notes";
     if(g.app==="agenda"){count=String(allT().filter(t=>onDay(t,t0)&&!t.canc&&t.status!=="fait").length);metric="activités restantes aujourd'hui"}
@@ -759,10 +759,9 @@ $("tabsCard").addEventListener("change",e=>{const c=e.target.closest("[data-tabp
 // Compteurs de présentation uniquement ; aucun nombre déchiffré avant ouverture.
 function elanCoffreMetric(v){
  if(v==="notes"){const n=NT().length;return `${fmtFull(n)} ${L(n===1?"note":"notes")}`}
- if(v==="docs"){if(!dvOpen)return L("Verrouillé");const a=docsArr(),size=a.reduce((n,d)=>n+(d.size||0),0);return `${fmtFull(a.length)} ${L(a.length===1?"document":"documents")} · ${size?fmtSize(size):"0 "+(LANG==="fr"?"Ko":"KB")}`}
- if(v==="pwd")return vaultKey?`${fmtFull(vaultItems.size)} ${L(vaultItems.size===1?"mot de passe":"mots de passe")}`:L("Verrouillé");return "";
+ return "";
 }
-function elanRefreshCoffreMetric(){const v=data.ui.view;if(!["notes","docs","pwd"].includes(v))return;const e=$("vhead").querySelector(".elan-progress>span:first-child");if(e)e.textContent=elanCoffreMetric(v)}
+function elanRefreshCoffreMetric(){const v=data.ui.view;if(v!=="notes")return;const e=$("vhead").querySelector(".elan-progress>span:first-child");if(e)e.textContent=elanCoffreMetric(v)}
 
 /* ---------- À faire ---------- */
 // v39 : tâches planifiées (todo.day = AAAA-MM-JJ). Une tâche pas faite à temps passe toute seule au jour suivant :
@@ -1193,7 +1192,7 @@ function renderElanDay(){const host=$("journeyDay");if(!host)return;
 }
 $("v-plan").addEventListener("click",e=>{const b=e.target.closest("[data-elan-day]");if(!b)return;selDay=b.dataset.elanDay;renderPlan()});
 function renderPlan(){
-  planDayRoll();renderElanDay();if(data.ui.view&&data.ui.view!=="home")renderVhead(data.ui.view);
+  planDayRoll();renderElanDay();if(data.ui.view&&data.ui.view!=="home")renderVhead(data.ui.view);renderDayNotif();
   ephFill();
   const T=data.tasks,q=norm(planQ);
   $("planTop").hidden=!!q;
@@ -1314,6 +1313,33 @@ $("taskForm").addEventListener("submit",e=>{
   remApply(t,"f");$("vhead").dataset.progressChange="add";data.tasks.push(t);elanFresh=t.id;selDay=t.date;save();renderPlan();renderTypes();e.target.reset();remSel.f=null;renderRem("f");closeTaskSheet();
   const original=JSON.stringify(t);toastAct("Activité ajoutée","Annuler",()=>{const current=data.tasks.find(x=>x.id===t.id);if(!current)return;if(JSON.stringify(current)!==original){toast("L'activité a changé : elle est conservée");return}tomb(t.id);data.tasks=data.tasks.filter(x=>x.id!==t.id);elanFresh="";save();renderPlan();renderHome()},4000);if(t.time)setTimeout(maybeAskNotif,900); // v37 : la proposition arrive quand elle a du sens
 });
+/* ---------- v81 (demande de Sid) : zone de notifications en haut des apps = événements du planning du jour ----------
+   Seulement les activités de l'agenda et les cours des calendriers reliés (allT), jamais les tâches (data.todos) ni un événement annulé.
+   Jour = date locale de l'appareil (fuseau de la personne). Recalculée à chaque rendu de l'agenda (ajout, modification, suppression,
+   synchro), à chaque changement d'en-tête d'app, au retour au premier plan et à chaque minute (changement de jour, événement passé). */
+let dnKey="";
+function dayNotifItems(day){return allT().filter(t=>t&&onDay(t,day)&&!t.canc).sort((a,b)=>sk(a).localeCompare(sk(b)))}
+function renderDayNotif(){const head=$("vhead");if(!head)return;let el=$("dayNotif");
+  if(!el){el=document.createElement("section");el.id="dayNotif";el.className="day-notif";el.setAttribute("aria-live","polite");head.after(el)}
+  const app=head.dataset.app||"",on=!head.hidden&&!!app&&app!=="home";
+  const day=iso(today()),now=new Date(),min=now.getHours()*60+now.getMinutes(),items=on?dayNotifItems(day):[];
+  const key=JSON.stringify([on,app,day,LANG,min,items.map(t=>[t.id||t.uid||"",t.title,t.time,t.timeEnd,t.cat,t.status,t.date,t.end])]);
+  if(key===dnKey&&el.hidden===!on)return;dnKey=key;el.hidden=!on;if(!on){el.innerHTML="";return}
+  el.setAttribute("aria-label",L("Notifications du jour"));el.dataset.app=app;
+  const full=app==="agenda",past=t=>t.date===day&&!!t.time&&(toMin(t.timeEnd)||toMin(t.time)+60)<=min,cur=t=>t.date===day&&!!t.time&&toMin(t.time)<=min&&!past(t);
+  const shown=full?items:items.filter(t=>!past(t)).slice(0,2),more=items.length-shown.length;
+  const row=t=>{
+    const color=String(tc(t.cat)||"");
+    return `<li class="dn-it${past(t)?" dn-past":""}${cur(t)?" dn-cur":""}"><span class="dn-dot" style="background:var(${/^--[a-z0-9-]+$/i.test(color)?color:"--accent"})"></span><span class="dn-time notr">${esc(t.time?hrs(t):L("Journée"))}</span><span class="dn-title notr">${esc(t.title||L("Activité"))}</span>${cur(t)?`<span class="dn-now">${esc(L("En cours"))}</span>`:""}</li>`;
+  };
+  const n=items.length,head2=n?`${n} ${L(n>1?"événements aujourd'hui":"événement aujourd'hui")}`:L("Aucun événement aujourd'hui");
+  el.innerHTML=`<button type="button" class="dn-head" data-dngo="1"><span class="dn-bell">${IC("bell")||GI("bell")}</span><b>${esc(head2)}</b>${!full&&n?`<span class="dn-see small">${esc(L("Voir l'agenda"))}</span>`:""}</button>`+
+    (shown.length?`<ul class="dn-list">${shown.map(row).join("")}</ul>`:"")+(more>0&&!full?`<div class="small muted dn-more">+${more} ${esc(L(more>1?"autres":"autre"))}</div>`:"")}
+document.addEventListener("click",e=>{if(e.target.closest("[data-dngo]")){selDay=iso(today());if(data.ui.view!=="plan")show("plan");else renderPlan()}});
+// l'en-tête d'app change (vue, app, masqué) → la zone suit, sans toucher à renderVhead
+try{new MutationObserver(()=>renderDayNotif()).observe($("vhead"),{attributes:true,attributeFilter:["hidden","data-app"],childList:true})}catch(e){}
+setInterval(renderDayNotif,30000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)renderDayNotif()});
 
 /* ---------- calendriers reliés (iCal) ---------- */
 // v45 : plusieurs calendriers superposés dans la même vue. data.prefs.icals = [{id, name, url, c (couleur), on (affiché)}] ;
@@ -1491,6 +1517,7 @@ $("typesCard").addEventListener("submit",e=>{e.preventDefault();const v=$("typeI
 /* ---------- Réglages ---------- */
 function renderStats(){
   const td=data.todos,tk=data.tasks;
+  renderVaultExport();
   // v62 (#3) : Réglages et petites fenêtres dessinés par React (app/src/Settings.tsx) ; ancien rendu en secours
   if(shIsl("stats")){try{window.SCIslands.stats($("stats"),{i18n:agI18n(),rows:[["Tâches réalisées",`${td.filter(t=>t.done).length} / ${td.length}`],["Dates du planning terminées",`${tk.filter(t=>t.status==="fait").length} / ${tk.length}`],["Dates encore à confirmer",tk.filter(t=>t.tbc).length]]});return}catch(e){reportErr("island stats: "+(e&&e.message))}}
   $("stats").innerHTML=[
@@ -1504,7 +1531,11 @@ function renderStats(){
 async function saveJSON(obj,name,title){
   const file=new File([JSON.stringify(obj,null,1)],name,{type:"application/json"});
   try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title});return}}catch(e){if(e.name==="AbortError")return}
-  const a=document.createElement("a");a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+  downloadFile(file,name)
+}
+function downloadFile(file,name){
+  const a=document.createElement("a");a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)
+}
 const bkObj=extra=>({app:"sidnote",v:2,exported:new Date().toISOString(),...(extra||{}),data:forServer(data)});
 $("backupBtn").addEventListener("click",()=>saveJSON(bkObj(),`sidnote-sauvegarde-${new Date().toISOString().slice(0,10)}.json`,L("Sauvegarde Sid'Compagnon")));
 // RGPD : export complet (JSON) et suppression des données du compte
@@ -1527,7 +1558,7 @@ $("wipeBtn").addEventListener("click",async e=>{
   }catch(ex){b.disabled=false;delete b.dataset.armed;b.textContent=L("Supprimer mes données");toast(ex instanceof TypeError?L("Pas de connexion internet"):L("Suppression impossible : ")+(ex.message||""))}
 });
 // restauration : aperçu, puis Fusionner (rien n'est perdu) ou Remplacer (confirmation), sans jamais casser les coffres
-const BK_LISTS=[["pdfAnns","Annotations de PDF"],["todos","Tâches"],["tasks","Activités de l'agenda"],["notes","Notes"],["muscu.sessions","Séances de musculation"],["muscu.log","Séances faites (programme)"],["nutri.log","Repas notés"],["pwds","Mots de passe"],["docs","Documents (la liste)"],["todoCats",null],["docFolders",null],["noteFolders",null],["nutri.weights",null],["nutri.weeks",null]];
+const BK_LISTS=[["pdfAnns","Annotations de PDF"],["todos","Tâches"],["tasks","Activités de l'agenda"],["notes","Notes"],["noteProjects","Projets"],["focusSessions","Séances Focus"],["muscu.sessions","Séances de musculation"],["muscu.log","Séances faites (programme)"],["nutri.log","Repas notés"],["pwds","Mots de passe"],["docs","Documents (la liste)"],["todoCats",null],["docFolders",null],["noteFolders",null],["nutri.weights",null],["nutri.weeks",null]];
 const bkGet=(d,k)=>{const v=k.split(".").reduce((o,x)=>o&&o[x],d);return Array.isArray(v)?v.filter(x=>x&&x.id):[]};
 function bkParse(j){
   if(j&&typeof j==="object"&&j.data&&typeof j.data==="object"&&/^(sidnote|Sid'note)$/.test(j.app||""))return {d:j.data,at:j.exported};
@@ -1786,18 +1817,39 @@ function pomoPlan(){const r=P.run;if(!r||r.pausedAt){chimeCancel("pomo");pomoSch
 function startPomo(){
   pomoLastPosition=null;pomoProgressChange="position";unlockAudio();
   const segs=buildSegs(P.cfg);
-  P.run={segs,startAt:Date.now(),pausedAt:null,pausedTotal:0};lastIdx=0;
+  P.run={id:uid(),segs,startAt:Date.now(),pausedAt:null,pausedTotal:0};lastIdx=0;
   save();chime("w");keepAwake(true);pomoPlan();renderPomo();if(data.ui.view==="pomo"){window.scrollTo(0,0);elanCompact()}
 }
+// v81 : une séance Focus a un identifiant stable (P.run.id) ; sa fin n'est comptée qu'une fois, même si plusieurs onglets ou
+// appareils la voient finir (P.done = {id: ms}, gardé 30 jours). Le détail de la séance est enregistré dans Sid’Note.
+function pomoAdopt(np){if(!np||JSON.stringify(np)===JSON.stringify(P))return false;
+  for(const k of Object.keys(P))delete P[k];Object.assign(P,JSON.parse(JSON.stringify(np)));if(!P.log)P.log={};lastIdx=null;return true}
+// relit la version de l'appareil (localStorage, partagé entre onglets) juste avant de compter une fin
+function pomoFromDisk(){try{const c=session&&ls.get(cacheKey(session.user.id));return !!(c&&c.data&&c.data.pomo&&pomoAdopt(c.data.pomo))}catch(e){return false}}
 function finishPomo(completed){
+  if(pomoFromDisk()&&!P.run){renderPomo();pomoPlan();keepAwake(false);return} // un autre onglet l'a déjà terminée
   const r=P.run;if(!r)return;
+  if(!r.id)r.id="focus-"+r.startAt; // séance lancée avant la v81
+  const D=P.done||(P.done={}),now=Date.now();
+  for(const k of Object.keys(D))if(now-D[k]>30*864e5)delete D[k];
+  if(D[r.id]){P.run=null;lastIdx=null;save();keepAwake(false);chimeCancel("pomo");pomoSched=false;renderPomo();return}
+  D[r.id]=now;
   const w=workDone(r,elapsed(r)),k=dayKey(new Date(r.startAt));
+  const totalMs=r.segs.reduce((a,x)=>a+x.d*MIN,0),endAt=completed?Math.min(now,r.startAt+(r.pausedTotal||0)+totalMs):now;
+  const info={id:r.id,startAt:r.startAt,endAt,workMs:w,completed:!!completed};
   pomoLastPosition=completed?{total:r.segs.reduce((a,x)=>a+x.d*MIN,0),cycles:r.segs.filter(x=>x.t==="w").length}:null;pomoProgressChange=completed?(pomoProgressChange==="skip"?"skip":"cycle"):"position";
+  recordFocusSession(r.id,r.startAt,w);
   P.log[k]=(P.log[k]||0)+w;P.run=null;lastIdx=null;save();keepAwake(false);
   const pre=pomoSched;if(!completed)chimeCancel("pomo");pomoSched=false;
   if(completed){if(!pre)chime("end");toast(`Bravo ! ${hm(w/MIN)} de travail terminées`)}
+  try{if(typeof window.pomoFinished==="function")window.pomoFinished(info)}catch(e){reportErr("pomoFinished: "+(e&&e.message))}
   renderPomo();
 }
+// v81 : plusieurs onglets ouverts affichent le même Focus (et le même chrono de séance) sans attendre la synchro du serveur
+window.addEventListener("storage",e=>{if(!session||e.key!==cacheKey(session.user.id)||!e.newValue)return;
+  let c=null;try{c=JSON.parse(e.newValue)}catch(x){return}const d=c&&c.data;if(!d)return;
+  if(msClockRead()&&data.ui.view==="muscu"&&!isTyping())renderMuscu();
+  if(d.pomo&&pomoAdopt(d.pomo)){if(!P.run){keepAwake(false);chimeCancel("pomo");pomoSched=false}renderPomo();pomoPlan()}});
 $("pomoStart").addEventListener("click",startPomo);
 $("pomoPause").addEventListener("click",()=>{const r=P.run;if(!r)return;unlockAudio();
   if(r.pausedAt){r.pausedTotal+=Date.now()-r.pausedAt;r.pausedAt=null;keepAwake(true)}else{r.pausedAt=Date.now();keepAwake(false)}
@@ -1853,7 +1905,7 @@ function renderPomoStats(){
 setInterval(()=>{if(P.run){tickPomo();if(!$("v-pomo").hidden)renderPomoStats()}},500);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&P.run){unlockAudio();if(!P.run.pausedAt)keepAwake(true);tickPomo();pomoPlan()}});
 
-function renderAll(){renderTodos();renderPlan();renderStats();renderPomo();renderTypes();renderMuscu();renderDocs();renderNotes();renderPwd();renderNutri();if(data.ui.view==="graph")renderGraph();if(data.ui.view==="home")renderHome();if(data.ui.view==="spaces")renderSpaces();renderSide();convTabs()}
+function renderAll(){renderTodos();renderPlan();renderStats();renderPomo();renderTypes();renderMuscu();renderNotes();renderNutri();if(data.ui.view==="projects")renderNoteProjects();if(data.ui.view==="graph")renderGraph();if(data.ui.view==="home")renderHome();if(data.ui.view==="spaces")renderSpaces();renderSide();convTabs()}
 
 /* ---------- écran de connexion ---------- */
 let authMode="login";
@@ -2186,12 +2238,10 @@ async function refreshSub(){try{const s=await currentSub();if(s&&Notification.pe
 let editing=null;
 function openEdit(ref){
   const [kind,id]=ref.split(":");
-  const item=(kind==="todo"?data.todos:kind==="doc"?docsArr():data.tasks).find(x=>x.id===id);if(!item)return;
+  const item=(kind==="todo"?data.todos:data.tasks).find(x=>x.id===id);if(!item)return;
   editing={kind,item};
-  $("sheetTitle").textContent=L(kind==="todo"?"Modifier la tâche":kind==="doc"?"Renommer le document":"Modifier l'activité");
+  $("sheetTitle").textContent=L(kind==="todo"?"Modifier la tâche":"Modifier l'activité");
   $("eTitle").value=item.title;$("eTask").hidden=kind!=="task";$("eTodoWrap").hidden=kind!=="todo";
-  $("eDocWrap").hidden=kind!=="doc";
-  if(kind==="doc")$("eDocFolder").innerHTML=`<option value="">${L("Aucun classeur")}</option>`+DF().map(f=>`<option value="${f.id}" ${item.folder===f.id?"selected":""}>${f.locked?L("Verrouillé")+" · ":""}${esc(f.name)}</option>`).join("");
   if(kind==="todo")$("eTodoCat").innerHTML=`<option value="">${L("Sans catégorie")}</option>`+TC().map(c=>`<option value="${c.id}" ${item.cat===c.id?"selected":""}>${esc(c.name)}</option>`).join("");
   if(kind==="task"){$("eDate").value=item.date;$("eEnd").value=item.end||"";$("eTime").value=item.time||"";$("eTimeEnd").value=item.timeEnd||"";$("eCat").value=item.cat||"";remSel.e=remOf(item);remCustom.e=false;renderRem("e")}
   const d=$("eDelete");d.classList.remove("armed");d.textContent="Supprimer";
@@ -2206,7 +2256,6 @@ $("editForm").addEventListener("submit",e=>{
   const title=$("eTitle").value.trim();if(!title){toast("Le titre ne peut pas être vide");return}
   const it=editing.item;it.title=title;
   if(editing.kind==="todo"){const c=$("eTodoCat").value;if(c&&catOf(c)){if(it.cat!==c)delete it.ord;it.cat=c}else delete it.cat}
-  if(editing.kind==="doc"){it.mod=Date.now();const f=$("eDocFolder").value;if(f&&DF().some(x=>x.id===f))it.folder=f;else delete it.folder}
   if(editing.kind==="task"){
     if(!$("eDate").value){toast("Choisis une date");return}
     it.date=$("eDate").value;
@@ -2215,13 +2264,12 @@ $("editForm").addEventListener("submit",e=>{
     if(it.time&&$("eTimeEnd").value){if($("eTimeEnd").value<=it.time){toast("L'heure de fin doit être après l'heure de début");return}it.timeEnd=$("eTimeEnd").value}else delete it.timeEnd;
     it.cat=ensureType($("eCat").value);remApply(it,"e");
   }
-  save();closeEdit();renderTodos();renderPlan();renderTypes();renderDocs();toast("Modifié");
+  save();closeEdit();renderTodos();renderPlan();renderTypes();toast("Modifié");
 });
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("sheet").hidden)closeEdit()});
 $("eDelete").addEventListener("click",e=>{
   const b=e.currentTarget;if(!editing)return;
   const {kind,item}=editing;
-  if(kind==="doc"){closeEdit();docDelete(item);return}
   closeEdit();if(kind==="todo")todoDel(item.id);else taskDel(item.id);
 });
 
@@ -2236,7 +2284,7 @@ data.muscu=data.muscu||{sessions:[]};
 if(data.ui&&["tmCfg","tmDur","restSlide"].some(k=>k in data.ui)){["tmCfg","tmDur","restSlide"].forEach(k=>delete data.ui[k]);saveUI()}
 let msOpenId=null,msTimer=null;
 const M=()=>data.muscu||(data.muscu={sessions:[]});
-const msFind=id=>M().sessions.find(x=>x.id===id);
+const msFind=id=>M().sessions.find(x=>x&&x.id===id);
 const newSet=()=>({reps:"",kg:""});
 const newEx=(name="",n=3)=>({id:uid(),name,ps:1,sets:Array.from({length:n},newSet)});
 const seTouch=se=>{se.upd=Date.now();M().upd=Date.now()};
@@ -2297,13 +2345,15 @@ function muSetState(ex,j,se){if(muSetComplete(ex.sets[j]))return "done";const fi
 function muSessionProgress(){const se=msFind(msOpenId)||msFind(msRunGet()?.se)||M().sessions.find(Boolean),sets=se?(se.exercises||[]).flatMap(x=>x.sets||[]):[];return {done:sets.filter(muSetComplete).length,total:sets.length}}
 function muRefreshSetUI(se){if(!se)return;const d=$("msList").querySelector(`[data-ms="${se.id}"]`);if(d)for(const ex of se.exercises)for(let j=0;j<ex.sets.length;j++){const row=d.querySelector(`[data-ex="${ex.id}"] [data-si="${j}"]`);if(!row)continue;const state=muSetState(ex,j,se);row.dataset.setState=state;const mark=row.querySelector(".set-mark");if(mark)mark.hidden=state!=="done"}
  if(data.ui.view==="muscu"){const {done,total}=muSessionProgress(),prev=Number($("vhead").querySelector('[role="progressbar"]')?.getAttribute("aria-valuenow")||0);$("vhead").dataset.progressChange=total&&Math.round(done/total*100)>prev?"done":"adjust";renderVhead("muscu")}}
-function seCard(se,letter){const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0),ty=seType(se),T=ty&&SE_T[ty];
+function seCard(se,letter){const run=msRunGet(se.id),nS=se.exercises.reduce((a,e)=>a+e.sets.length,0),ty=seType(se),T=ty&&SE_T[ty];
   // v47 (#14) : lettre de la séance dans son programme + type (poussée, tirage, jambes…) en couleur ; séance libre en pointillés
   const tag=letter||T?`<span class="se-tag">${letter?`<b>${letter}</b>`:""}${T?`<span>${L(T[0])}</span>`:""}</span>`:`<span class="se-tag se-free">${L("Libre")}</span>`;
   const shown=String(se.name||"").replace(/^(?:Séance|Session|Training)\s+[A-F]\s*·\s*/i,"")||L("Séance");
   return `<details class="ms${letter?"":" ms-free"}" data-ms="${se.id}" ${ty?`data-se="${ty}"`:""} ${se.id===msOpenId?"open":""}>
     <summary><span class="chev">${IC("chev")}</span><span class="grow"><span class="ms-name notr" data-user-label="" title="${esc(shown)}">${esc(shown)}</span><span class="ms-meta">${tag}<span class="small muted">${esc(seSub(se,nS))}</span></span></span><button type="button" class="x ms-del" data-msdel="1" aria-label="${L("Supprimer la séance")}">${IC("trash")}</button></summary>
     <div class="ms-body">
+      ${run?`<div class="ms-clock"><span class="notr" data-mselapsed>${msClockLabel(run)}</span><button type="button" class="mini" data-msclock="stop">${L("Arrêter le chrono")}</button></div>`:
+        !msRunGet()?`<button type="button" class="mini" data-msclock="start">${L("Démarrer le chrono")}</button>`:""}
       <label class="small muted" style="display:grid;gap:4px">${L("Nom de la séance")}<input data-f="msname" value="${esc(se.name)}" autocomplete="off"></label>
       ${se.exercises.map((ex,i)=>`<div class="ex ex3" data-ex="${ex.id}">
         <div class="ex-head"><span class="num">${i+1}</span><span class="ex-nm"><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><span class="ex-n notr" aria-hidden="true">${esc(ex.name)}</span></span><button type="button" class="mini ex-help" data-exhelp="1" aria-label="${L("Voir comment effectuer cet exercice")}" title="${L("Voir comment effectuer cet exercice")}"${exHelpReady(ex.name,ex.ref)?"":" hidden"}>${IC("help")}</button><button type="button" class="linkbtn ex-link small" data-exlink="1"${ex.name&&String(ex.name).trim()&&!exHelpKey(ex.name,ex.ref)?"":" hidden"}>${L("Pas de fiche · associer")}</button><span class="small muted ex-prep"${exHelpKey(ex.name,ex.ref)&&!exHelpReady(ex.name,ex.ref)?"":" hidden"}>${L("Fiche en préparation")}</span><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">${IC("close")}</button></div>
@@ -2339,9 +2389,9 @@ function renderMuscu(){muMigrate();try{renderCoach()}catch(e){}
 // modèle de la liste pour React : mêmes textes et mêmes calculs que seCard / exAdvHtml
 let msLast=null;
 function msIsland(groups,free){msLast=[groups,free];
-  const seVM=(se,letter)=>{const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0),ty=seType(se),T=ty&&SE_T[ty];
+  const seVM=(se,letter)=>{const run=msRunGet(se.id),nS=se.exercises.reduce((a,e)=>a+e.sets.length,0),ty=seType(se),T=ty&&SE_T[ty];
     return{id:se.id,name:se.name||"",shown:String(se.name||"").replace(/^(?:Séance|Session|Training)\s+[A-F]\s*·\s*/i,"")||L("Séance"),letter:letter||"",ty:ty||"",tag:T?T[0]:"",open:se.id===msOpenId,
-      sub:seSub(se,nS),done:msDoneToday(se),
+      sub:seSub(se,nS),done:msDoneToday(se),clock:run?"stop":msRunGet()?"":"start",elapsed:run?msClockLabel(run):"",
       ex:se.exercises.map(ex=>{const a=exAdv(ex.name);return{id:ex.id,name:ex.name||"",help:exHelpReady(ex.name,ex.ref),link:!!(ex.name&&String(ex.name).trim())&&!exHelpKey(ex.name,ex.ref),prep:!!exHelpKey(ex.name,ex.ref)&&!exHelpReady(ex.name,ex.ref),
         adv:a?{txt:`${L("Conseillé")} (${L(MU_GOALS[muGoal()])}) : `,val:exAdvVal(a),same:exAdvSame(ex,a)}:null,
         prm:{reps:ex.reps||"",rest:+ex.rest?String(+ex.rest):"",int:ex.int||"",rpe:ex.rpe||"",tempo:ex.tempo||"",sum:exPrmSum(ex),open:msPrmOpen.has(ex.id)},pro:exProg(ex),
@@ -2428,7 +2478,9 @@ $("msList").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;if(b.closest("summary"))e.preventDefault(); // bouton dans l'en-tête : n'ouvre/ferme pas la séance
   const box=b.closest("[data-ms]");if(!box)return;const se=msFind(box.dataset.ms);if(!se)return;if(!b.closest("summary"))msOpenId=se.id;
   const exOf=()=>se.exercises.find(x=>x.id===b.closest("[data-ex]").dataset.ex);
-  if(b.dataset.msaddex){se.exercises.push(newEx());seTouch(se);save();renderMuscu();const ins=$("msList").querySelectorAll(`[data-ms="${se.id}"] [data-f=exname]`);ins[ins.length-1]?.focus()}
+  if(b.dataset.msclock==="start"){msClockStart(se);renderMuscu()}
+  else if(b.dataset.msclock==="stop")msClockStop(se);
+  else if(b.dataset.msaddex){se.exercises.push(newEx());seTouch(se);save();renderMuscu();const ins=$("msList").querySelectorAll(`[data-ms="${se.id}"] [data-f=exname]`);ins[ins.length-1]?.focus()}
   else if(b.dataset.msdelex){armDelete(b,()=>{se.exercises=se.exercises.filter(x=>x.id!==b.dataset.msdelex);seTouch(se);save();renderMuscu();if(msTT(se.id))msAutoLog(se)})}
   else if(b.dataset.exhelp){const ex=exOf();if(ex)exHelpOpen(ex.name,ex.ref)} // n'ouvre qu'une fenêtre : séance, séries et minuteur intacts
   else if(b.dataset.exlink){const ex=exOf();if(ex)exLinkOpen(se,ex)}
@@ -2449,7 +2501,7 @@ $("msList").addEventListener("click",e=>{
       ex2.sets=before;seTouch(se2);save();clearTimeout(msAutoT[sid]);delete msAutoT[sid];
       if(iso(today())!==d0){msDone(se2,true,{d:d0,t:t0});renderMuscu();return} // passé minuit : on corrige la séance du jour de la copie
       const put=(o,b)=>{if(!o)return;for(const k of Object.keys(o))if(k.startsWith(eid+":"))delete o[k];Object.assign(o,b)};
-      put(msTT(sid,true).t,tb);put((msRunGet(sid)||{}).marks,mb);saveUI();msDone(se2,true);renderMuscu()})}
+      put(msTT(sid,true).t,tb);msClockRead();const run=msRunGet(sid);if(run){put(run.marks,mb);msClockSave(run)}else saveUI();msDone(se2,true);renderMuscu()})}
   else if(b.dataset.msaddset){const ex=exOf();if(!ex||ex.sets.length>=20)return;ex.sets.push(newSet());seTouch(se);save();renderMuscu();
     const ins=document.querySelectorAll(`#msList [data-ex="${ex.id}"] [data-f="setkg"]`);ins[ins.length-1]?.focus()}
   else if(b.dataset.msdelset!==undefined){const ex=exOf();if(!ex||ex.sets.length<=1)return;const j=+b.dataset.msdelset;ex.sets.splice(j,1);msRunShift(se.id,ex.id,j);seTouch(se);save();renderMuscu();if(msTT(se.id))msAutoLog(se)}
@@ -2949,13 +3001,56 @@ $("muGoal").addEventListener("click",e=>{const b=e.target.closest("[data-mugoal]
   data.prefs.muGoal=g;const pl=PL();if(pl){pl.profile=pl.profile||{};pl.profile.goal=g;pl.upd=Date.now();M().upd=Date.now()}save();renderMuscu();
   toast(`${L("Objectif")} : ${L(MU_GOALS[g])}`)});
 /* ---- v73 : séance faite (« Séance terminée »), chrono automatique, statistiques par objectif ---- */
-// chrono propre à l'appareil : data.ui.msRun = {se, t0, last, marks:{"exId:série": ms}} ; il démarre au premier poids ou répétition saisi
-// et s'efface après 4 h sans activité. Repos moyen = écart moyen entre deux séries remplies (de 10 s à 15 min ; au-delà, c'est une pause).
-const RUN_MAX=4*3600e3;
-function msRunGet(id){const r=data.ui&&data.ui.msRun;if(!r)return null;if(Date.now()-(r.last||r.t0)>RUN_MAX){delete data.ui.msRun;saveUI();return null}return id&&r.se!==id?null:r}
-function msRunTouch(se,ex,j,done){msTT(se.id);let r=msRunGet();const now=Date.now(); // msTT d'abord : reprend les repères d'un ancien chrono avant qu'il soit remplacé
-  if(!r||r.se!==se.id)r=data.ui.msRun={se:se.id,t0:now,last:now,marks:{}};
-  r.last=now;const k=ex.id+":"+j;if(done&&!r.marks[k])r.marks[k]=now;msTT(se.id,true).t[k]=1;saveUI()}
+// L’horloge utilise l’heure de départ absolue. Un état arrêté est conservé pour la fusion entre appareils.
+function msRunGet(id){
+  const r=data.muscuClock?.run;
+  return r&&msFind(r.se)&&(!id||r.se===id)?r:null;
+}
+function msClockSave(run){
+  data.muscuClock={run,upd:Math.max(Date.now(),(data.muscuClock?.upd||0)+1)};
+  save();
+}
+function msClockMigrate(){
+  const old=data.ui?.msRun;
+  if(!old)return;
+  msTT(old.se);
+  delete data.ui.msRun;
+  if(!data.muscuClock&&msFind(old.se)&&Number.isFinite(old.t0)){
+    data.muscuClock={run:{se:old.se,t0:old.t0,marks:old.marks||{}},upd:old.last||old.t0};
+    save();
+  }else saveUI();
+}
+function msClockRead(){
+  const disk=session&&ls.get(cacheKey(session.user.id))?.data?.muscuClock;
+  const current=data.muscuClock;
+  if(!disk||(current&&(disk.upd<current.upd||(disk.upd===current.upd&&(disk.run||!current.run)))))return false;
+  data.muscuClock=disk;
+  return true;
+}
+function msClockStart(se){
+  msClockRead();
+  if(msRunGet())return;
+  msClockSave({se:se.id,t0:Date.now(),marks:{}});
+}
+function msRunTouch(se,ex,j,done){
+  msClockRead();
+  msTT(se.id,true).t[ex.id+":"+j]=1;
+  if(!msRunGet())msClockStart(se);
+  const r=msRunGet(se.id),k=ex.id+":"+j;
+  if(r&&done&&!r.marks[k])msClockSave({...r,marks:{...r.marks,[k]:Date.now()}});
+  else saveUI();
+}
+function msClockStop(se){
+  msClockRead();
+  const run=msRunGet(se.id);
+  if(!run)return;
+  clearTimeout(msAutoT[se.id]);delete msAutoT[se.id];
+  msDone(se,true);
+  const log=ML().filter(l=>l?.day===se.id&&l.upd>=run.t0&&!(data.del&&data.del[l.id]))
+    .sort((a,b)=>b.upd-a.upd)[0];
+  if(log){log.min=msRunMin(run);M().upd=log.upd=Date.now()}
+  msClockSave(null);renderMuscu();
+}
 // v74.4 : séries touchées aujourd'hui, par séance (data.ui.msT = {séance: {d: date, t: {"exId:série": 1}}}), indépendantes du chrono :
 // passer à une autre séance puis revenir ne fait plus oublier les séries déjà faites ; « Annuler » peut les remettre comme avant
 function msTT(id,make){const u=data.ui.msT||(data.ui.msT={}),d=iso(today()),r=data.ui.msRun;
@@ -2964,12 +3059,22 @@ function msTT(id,make){const u=data.ui.msT||(data.ui.msT={}),d=iso(today()),r=da
   for(const k of Object.keys(u))if(!u[k]||u[k].d!==d)delete u[k];
   if(!u[id]&&make)u[id]={d,t:{}};return u[id]||null}
 // une série retirée : les repères des séries suivantes de l'exercice reculent d'un rang
-function msRunShift(seId,exId,j){const r=msRunGet(seId),x=msTT(seId);for(const o of [r&&r.marks,x&&x.t]){if(!o)continue;const nw={};
+function msRunShift(seId,exId,j){msClockRead();const r=msRunGet(seId),x=msTT(seId);for(const o of [r&&r.marks,x&&x.t]){if(!o)continue;const nw={};
   for(const[k,v]of Object.entries(o)){const[e,s]=k.split(":");const n=+s;if(e!==exId||n<j)nw[k]=v;else if(n>j)nw[e+":"+(n-1)]=v}
-  Object.keys(o).forEach(k=>delete o[k]);Object.assign(o,nw)}saveUI()}
+  Object.keys(o).forEach(k=>delete o[k]);Object.assign(o,nw)}if(r)msClockSave(r);else saveUI()}
 function msRunRest(r){const t=Object.values(r.marks||{}).map(Number).sort((a,b)=>a-b),g=[];
   for(let i=1;i<t.length;i++){const d=(t[i]-t[i-1])/1000;if(d>=10&&d<=900)g.push(d)}return g.length?Math.round(g.reduce((a,b)=>a+b,0)/g.length):0}
 const msRunMin=r=>Math.max(1,Math.round((Date.now()-r.t0)/60000));
+function msClockLabel(run){
+  const seconds=Math.max(0,Math.floor((Date.now()-run.t0)/1000)),hours=Math.floor(seconds/3600);
+  const rest=`${two(Math.floor(seconds/60)%60)}:${two(seconds%60)}`;
+  return hours?`${hours}:${rest}`:rest;
+}
+setInterval(()=>{
+  if(data.ui.view!=="muscu"||document.hidden)return;
+  const elapsed=document.querySelector("[data-mselapsed]"),run=msRunGet();
+  if(elapsed&&run)elapsed.textContent=msClockLabel(run);
+},1000);
 const msDoneToday=se=>ML().some(l=>l&&l.day===se.id&&l.date===iso(today())&&!(data.del&&data.del[l.id]));
 // les séries remplies partent dans l'historique (data.muscu.log), avec la durée et le repos moyen mesurés.
 // v74.1 (demande de Sid) : plus de bouton « Séance terminée » : l'enregistrement se fait tout seul (quiet), 1,5 s après la dernière série saisie
@@ -2979,11 +3084,11 @@ function msDone(se,quiet,at){const r=at?null:msRunGet(se.id),tx=at||msTT(se.id);
   const now=Date.now(),date=at?at.d:iso(today()),L0=ML(),old=L0.find(l=>l&&l.day===se.id&&l.date===date&&!(data.del&&data.del[l.id]));
   if(!ex.length){if(quiet&&old){tomb(old.id);M().log=L0.filter(l=>l!==old);M().upd=now;save();renderMuStats();return}if(!quiet)toast("Remplis au moins une série avant de terminer");return}
   const ent={id:old?old.id:uid(),date,day:se.id,name:se.name||"",ex,goal:muGoal(),upd:now};
-  if(r){ent.min=Math.min(240,msRunMin(r));const rest=msRunRest(r);if(rest)ent.rest=rest}else if(old&&old.min){ent.min=old.min;if(old.rest)ent.rest=old.rest}
+  if(r){ent.min=msRunMin(r);const rest=msRunRest(r);if(rest)ent.rest=rest}else if(old&&old.min){ent.min=old.min;if(old.rest)ent.rest=old.rest}
   const before=old?JSON.parse(JSON.stringify(old)):null;
   if(old){Object.keys(old).forEach(k=>delete old[k]);Object.assign(old,ent)}else L0.push(ent);
   if(quiet){M().upd=now;save();renderMuStats();return}
-  if(r){delete data.ui.msRun;saveUI()}M().upd=now;save();renderMuscu();
+  if(r)msClockSave(null);M().upd=now;save();renderMuscu();
   toastAct(old?"Séance mise à jour":"Séance enregistrée","Annuler",()=>{const i=ML().findIndex(l=>l&&l.id===ent.id);
     if(before&&i>=0){ML()[i]=before}else{tomb(ent.id);M().log=ML().filter(l=>l&&l.id!==ent.id)}M().upd=Date.now();save();renderMuscu()})}
 // un minuteur par séance (avant : un seul pour toutes, remplir une autre séance dans la seconde et demie annulait l'enregistrement de la première)
@@ -3089,9 +3194,7 @@ $("spotForm").addEventListener("submit",e=>{
 
 /* ---------- documents (PDF) ---------- */
 const PDFJS="lib/pdfjs/"; // v43 : pdf.js 3.11.174 hébergé sur le site (vérifié avec les empreintes officielles de cdnjs), plus d'appel à un tiers
-const DOC_MAX=50*1024*1024;
 const docsArr=()=>data.docs||(data.docs=[]);
-let docQ="",docStoreMsg="",docBusy=new Set();
 // petit coffre local (IndexedDB) : les PDF restent lisibles hors connexion
 const idb={db:null,
   open(){return this.db||(this.db=new Promise((res,rej)=>{const r=indexedDB.open("sidnote-docs",1);r.onupgradeneeded=()=>r.result.createObjectStore("files");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}))},
@@ -3109,81 +3212,30 @@ async function stor(method,path,body,type){
   if(!r.ok){let m="";try{const j=await r.json();m=j.message||j.error||""}catch(e){}const er=new Error(m||"Erreur "+r.status);er.status=r.status;throw er}
   return r;
 }
-function storErr(ex){
-  if(ex&&ex.trial)return "Mode essai : tes documents restent sur cet appareil.";
-  if(ex instanceof TypeError)return "Pas de connexion : le document sera envoyé plus tard.";
-  if(/bucket/i.test(ex.message)||ex.status===404)return "Le stockage en ligne n'est pas encore activé : tes documents restent sur cet appareil.";
-  if(ex.status===413||/size|large/i.test(ex.message))return "Document trop lourd pour le stockage en ligne.";
-  if(ex.status===401||ex.status===403)return "Accès au stockage refusé : vérifie la configuration Supabase.";
-  return "Envoi impossible : "+ex.message;
-}
 // v22 : les documents sont chiffrés sur l'appareil avec la clé du code des documents avant l'envoi.
 // En ligne, il n'y a que du contenu illisible (« SNE1 » + iv + chiffré) : ni l'administrateur ni Supabase ne peuvent les ouvrir.
 const ENC_MAGIC=[83,78,69,49]; // "SNE1"
 const isEnc=u=>u.length>16&&ENC_MAGIC.every((c,i)=>u[i]===c);
+const blobIsEnc=async b=>b.size>16&&isEnc(new Uint8Array(await b.slice(0,17).arrayBuffer()));
 // v60 (#3, coquille étape 2) : briques de chiffrement en TypeScript (app/src/core/crypto.ts, window.SCCore.crypto) ; mêmes formats,
 // l'ancien code ci-dessous sert si core.js manque (test croisé : tests/crypto.test.js)
 const CC=()=>window.SCCore&&window.SCCore.crypto&&!window.__noCore?window.SCCore.crypto:null;
-async function docEncrypt(blob,key){if(CC())return new Blob([await CC().docEncryptBytes(await blob.arrayBuffer(),key||dvKey)],{type:"application/pdf"});
-  const iv=crypto.getRandomValues(new Uint8Array(12));
-  const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},key||dvKey,await blob.arrayBuffer());
-  return new Blob([new Uint8Array(ENC_MAGIC),iv,new Uint8Array(ct)],{type:"application/pdf"})}
-async function docDecrypt(u,key){key=key||dvKey;if(!key)throw new Error(L("Déverrouille tes documents pour ouvrir ce fichier."));
+async function docDecrypt(u,key){if(!key)throw new Error(L("Déverrouille tes documents pour ouvrir ce fichier."));
   try{return new Blob([CC()?await CC().docDecryptBytes(u,key):await crypto.subtle.decrypt({name:"AES-GCM",iv:u.slice(4,16)},key,u.slice(16))],{type:"application/pdf"})}
   catch(e){throw new Error(L("Ce document a été protégé avec un ancien code : ouvre-le sur l'appareil où tu l'as ajouté."))}}
-// v32 : avec le coffre renforcé, la copie gardée sur l'appareil (IndexedDB) est chiffrée elle aussi
-const sealOn=()=>isV2(data.docVault)&&!!dvKey;
-const blobIsEnc=async b=>!!b&&b.size>16&&isEnc(new Uint8Array(await b.slice(0,17).arrayBuffer()));
-async function docUpload(d){
-  if(d.up||docBusy.has(d.id)||!dvKey)return; // sans la clé (documents verrouillés), l'envoi attend le prochain déverrouillage
-  if(!(await idb.get(docKey(d))))return;
-  docBusy.add(d.id);renderDocs();
-  try{const b=await docBlob(d);await stor("POST","documents/"+docPath(d),await docEncrypt(b));d.up=true;d.enc=data.docVault&&data.docVault.id;d.path=docPath(d);docStoreMsg="";save()}
-  catch(ex){docStoreMsg=storErr(ex)}
-  docBusy.delete(d.id);renderDocs();
-}
-function docsSyncPending(){if(!session)return;docsArr().filter(d=>!d.up).forEach(d=>docUpload(d))}
-// documents envoyés avant le chiffrement (ou avec un ancien code) : rechiffrés au déverrouillage
-let docsSecuring=false;
-async function docsSecure(){if(!session||!dvKey||docsSecuring)return;docsSecuring=true;const vid=data.docVault&&data.docVault.id;
-  try{for(const d of docsArr().filter(x=>x.up&&x.enc!==vid)){if(!dvKey)break;
-    try{const b=await docBlob(d);await stor("POST","documents/"+(d.path||docPath(d)),await docEncrypt(b));d.enc=vid;save()}catch(e){}}
-    // copies de l'appareil encore lisibles en clair : chiffrées (coffre renforcé seulement)
-    for(const d of docsArr()){if(!sealOn())break;const b=await idb.get(docKey(d));
-      try{if(b&&!(await blobIsEnc(b)))await idb.put(docKey(d),await docEncrypt(b))}catch(e){}}}
-  finally{docsSecuring=false}}
 // contenu lisible d'un document (copie de l'appareil, sinon version en ligne) ; key : autre clé que celle du coffre ouvert (passage au coffre renforcé)
 async function docBlob(d,key){
   let b=await idb.get(docKey(d));
   if(b){if(!(await blobIsEnc(b)))return b;try{return await docDecrypt(new Uint8Array(await b.arrayBuffer()),key)}catch(e){if(!d.up)throw e}}
   if(!d.up)throw new Error("Ce document n'a pas encore été envoyé en ligne : ouvre-le sur l'appareil où tu l'as ajouté.");
   const r=await stor("GET","authenticated/documents/"+(d.path||docPath(d))),u=new Uint8Array(await r.arrayBuffer());
-  const plain=isEnc(u)?await docDecrypt(u,key):new Blob([u],{type:"application/pdf"});
-  if(!key){const same=isEnc(u)&&isV2(data.docVault)&&d.enc===data.docVault.id; // déjà chiffré avec la clé du coffre : gardé tel quel
-    (async()=>idb.put(docKey(d),same?new Blob([u],{type:"application/pdf"}):sealOn()?await docEncrypt(plain):plain))().catch(()=>{})}
-  return plain;
-}
-const countPages=bytes=>{try{const t=new TextDecoder("latin1").decode(bytes);const m=t.match(/\/Type\s*\/Page(?![a-zA-Z])/g);return m?m.length:0}catch(e){return 0}};
-async function addDoc(blob,title,pages){
-  if(blob.size>DOC_MAX){toast("Document trop lourd (50 Mo maximum)");return null}
-  const d={id:uid(),title:(title||"Document").slice(0,120),size:blob.size,pages:pages||countPages(new Uint8Array(await blob.arrayBuffer())),createdAt:new Date().toISOString(),up:false};
-  try{await idb.put(docKey(d),sealOn()?await docEncrypt(blob):blob)}catch(e){toast("Espace insuffisant sur cet appareil");return null}
-  const cf=curFolder();if(cf)d.folder=cf.id; // importé ou scanné dans le classeur ouvert
-  docsArr().push(d);save();renderDocs();docUpload(d);return d;
-}
-async function docDelete(d){
-  // le fichier (appareil + en ligne) n'est effacé qu'une fois l'annulation impossible
-  undoable("Document supprimé",[d.id],()=>{tomb(d.id);data.docs=docsArr().filter(x=>x.id!==d.id)},{after:renderDocs,
-    later:()=>{if(docsArr().some(x=>x.id===d.id))return;idb.del(docKey(d));if(d.up)stor("DELETE","documents/"+(d.path||docPath(d))).catch(()=>{})}});
+  return isEnc(u)?await docDecrypt(u,key):new Blob([u],{type:"application/pdf"});
 }
 // v74.5 : partage d'un PDF commun aux Documents et au lecteur PDF de Sid'note : partage natif du fichier, sinon téléchargement
 const pdfName=t=>(String(t||"").replace(/\.pdf$/i,"").replace(/[\\/:*?"<>|]+/g," ").trim()||"document")+".pdf";
 async function fileShare(b,title){const name=pdfName(title),f=new File([b],name,{type:"application/pdf"});
   try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:String(title||name)});return}}catch(e){if(e&&e.name==="AbortError")return}
   const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
-async function docShare(d){
-  try{await fileShare(await docBlob(d),d.title)}catch(ex){toast(ex instanceof TypeError?"Pas de connexion internet":ex.message)}
-}
 // recherche tolérante : sans accents, un seul mot suffit, fautes de frappe acceptées
 const fold=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
 const words=s=>fold(s).split(/[^a-z0-9]+/).filter(Boolean);
@@ -3200,301 +3252,23 @@ function fuzzyScore(title,q){
   const sc=ts.map(t=>tokScore(t,ws)),hit=sc.filter(x=>x>0).length;if(!hit)return 0;
   return sc.reduce((a,b)=>a+b,0)+(hit===ts.length?10:0)+(fold(title).includes(fold(q).trim())?5:0);
 }
-const fmtSize=n=>LANG!=="fr"?(n<1048576?Math.max(1,Math.round(n/1024))+" KB":(n/1048576).toFixed(1)+" MB"):(n<1048576?Math.max(1,Math.round(n/1024))+" Ko":(n/1048576).toFixed(1).replace(".",",")+" Mo");
 const fmtDay=s=>{const d=new Date(s);return `${d.getDate()} ${MO[d.getMonth()]} ${d.getFullYear()}`};
-// classeurs : data.docFolders = [{id, name, locked}] ; doc.folder = id du classeur
-// la recherche du haut cherche partout ; celle du classeur ouvert, seulement dedans
-// un classeur « protégé » demande le code des documents (data.docVault) ; le fichier lui-même reste privé dans ton compte
-const DF=()=>data.docFolders||(data.docFolders=[]);
-let dfQ="",dfEditing=false,dvOpen=false;
-const folderOf=d=>d.folder&&DF().find(f=>f.id===d.folder);
-const curFolder=()=>DF().find(x=>x.id===data.ui.docFolder)||null;
-const docHidden=(_d)=>false; // v22 : tout l'onglet est protégé par le code, plus de classeur verrouillé à part
-function renderDocs(){
-  if(!$("docList"))return;
-  if(dvOpen&&(!data.docVault||data.docVault.id!==dvVid))dvLock(); // coffre remplacé ailleurs : on reverrouille
-  renderDocLock();
-  const all=docsArr(),q=docQ.trim(),cf=curFolder(),fq=dfQ.trim();
-  const alpha=data.prefs.docSort==="alpha";
-  // classeurs
-  const cnt=id=>all.filter(d=>d.folder===id).length;
-  const isl=window.SCIslands&&window.SCIslands.docs&&!window.__noIslands;
-  if(!isl)$("docFolders").innerHTML=`<button class="pill" data-dfold="all" aria-pressed="${!cf}">${L("Tous")}</button>`+
-    DF().map(f=>`<button class="pill" data-dfold="${f.id}" aria-pressed="${!!(cf&&cf.id===f.id)}">${IC("folder")} <span class="coffre-folder-name notr" data-user-label="" title="${esc(f.name)}">${esc(f.name)}</span> <span class="cnt">${cnt(f.id)||""}</span></button>`).join("")+
-    `<button class="pill add" data-dfoldnew="1">${IC("plus")} ${L("Classeur")}</button>`;
-  $("folderBar").hidden=!cf;
-  if(cf&&shIsl("folderBar")){try{window.SCIslands.folderBar($("folderBar"),{name:cf.name,count:cnt(cf.id),editing:!!dfEditing,q:dfQ,icon:IC("folder"),searchIcon:IC("search"),i18n:agI18n()})}catch(e){reportErr("island folderBar: "+(e&&e.message))}}
-  else if(cf)$("folderBar").innerHTML=dfEditing?`<form id="folderRename" style="display:flex;gap:8px;width:100%"><input id="folderRenIn" value="${esc(cf.name)}" aria-label="${L("Nouveau nom")}" autocomplete="off"><button class="btn" type="submit">OK</button></form>`
-    :`<div class="grow"><b class="notr">${IC("folder")} ${esc(cf.name)}</b><div class="small muted">${cnt(cf.id)} ${L(cnt(cf.id)>1?"documents":"document")}</div></div>
-      <button class="mini" data-dfren="1">${L("Renommer")}</button><button class="x" data-dfdel="1" aria-label="${L("Supprimer le classeur")}">${IC("close")}</button>
-      <label class="coffre-search-label" for="folderSearch">${L("Rechercher dans ce classeur")}</label><span class="coffre-search"><i class="ic">${IC("search")}</i><input type="search" class="search" id="folderSearch" placeholder="${L("Nom du document")}" aria-label="${L("Rechercher dans ce classeur")}" value="${esc(dfQ)}" autocomplete="off"></span>`;
-  // liste : recherche globale (partout) > classeur ouvert (avec sa recherche) > tous
-  let list,scope;
-  if(q){list=all.filter(d=>!docHidden(d));scope="all"}
-  else if(cf){list=all.filter(d=>d.folder===cf.id);scope="folder"}
-  else{list=all.filter(d=>!docHidden(d));scope="all"}
-  list=list.slice().sort(alpha?(a,b)=>a.title.localeCompare(b.title,LANG,{sensitivity:"base",numeric:true}):(a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
-  document.querySelectorAll("#docSort button").forEach(b=>b.setAttribute("aria-pressed",(b.dataset.dsort==="alpha")===alpha));
-  const sq=q||(scope==="folder"?fq:"");
-  if(sq)list=list.map(d=>({d,s:fuzzyScore(d.title,sq)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).map(x=>x.d);
-  const SHARE=`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7.5 7.5L12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>`;
-  // v57 (#3) : classeurs et liste dessinés par React (app/src/Vault.tsx) ; affichage seulement, le chiffrement ne change pas
-  if(isl){try{window.SCIslands.docs({folders:$("docFolders"),list:$("docList")},{folders:DF().map(f=>({id:f.id,name:f.name,count:cnt(f.id)})),cur:cf?cf.id:"",icon:IC("folder"),grip:!!DF().length,i18n:agI18n(),
-      empty:sq?"Aucun document ne correspond.":scope==="folder"?"Ce classeur est vide. Importe ou scanne un document : il sera rangé ici.":"Aucun document pour l'instant. Importe un PDF ou scanne une feuille.",
-      docs:list.map(d=>{const f=folderOf(d);return{id:d.id,title:d.title,folder:f&&scope==="all"?f.name:"",meta:`${d.pages?`${d.pages} ${L(d.pages>1?"pages":"page")} · `:""}${fmtSize(d.size||0)}`,when:fmtDay(d.createdAt),
-        status:docBusy.has(d.id)?L("Envoi…"):d.up?"":L("Sur cet appareil seulement")}})})}
-    catch(e){reportErr("island docs: "+(e&&e.message));window.__noIslands=true;try{renderDocs()}finally{window.__noIslands=false}return}}
-  else $("docList").innerHTML=list.length?list.map(d=>{
-    const st=docBusy.has(d.id)?L("Envoi…"):d.up?"":L("Sur cet appareil seulement"),f=folderOf(d);
-    return `<div class="doc" data-doc="${d.id}">${DF().length?`<button class="grip" data-dgrip="${d.id}" aria-label="${L("Glisser vers un classeur")}" title="${L("Glisser vers un classeur")}">${GRIP}</button>`:""}<button class="doc-ic" data-docopen="${d.id}" aria-label="Ouvrir">PDF</button>
-      <button class="doc-open" data-docopen="${d.id}"><b class="notr" data-user-label="" title="${esc(d.title)}">${esc(d.title)}</b><span class="small muted">${d.pages?`${d.pages} ${L(d.pages>1?"pages":"page")} · `:""}${fmtSize(d.size||0)}${f&&scope==="all"?` · <span class="notr">${esc(f.name)}</span>`:""} · ${fmtDay(d.createdAt)}${st?` · <span style="color:var(--warn)">${st}</span>`:""}</span></button>
-      <button class="pen" data-docshare="${d.id}" aria-label="Partager ou enregistrer">${SHARE}</button>
-      <button class="pen" data-edit="doc:${d.id}" aria-label="Modifier">${PEN}</button></div>`}).join("")
-    :`<div class="empty">${sq?L("Aucun document ne correspond."):scope==="folder"?L("Ce classeur est vide. Importe ou scanne un document : il sera rangé ici."):L("Aucun document pour l'instant. Importe un PDF ou scanne une feuille.")}</div>`;
-  const tot=all.reduce((a,d)=>a+(d.size||0),0);
-  $("docInfo").textContent=docStoreMsg||(all.length?`${all.length} ${L(all.length>1?"documents":"document")} · ${fmtSize(tot)}`:"");
-  $("docInfo").style.color=docStoreMsg?"var(--warn)":"";
-}
-// code des documents : vérifié comme les autres codes (PBKDF2 + petit texte chiffré), récupérable avec le mot de passe du compte
-let dvKey=null; // clé des documents, en mémoire seulement tant que l'onglet est déverrouillé
-let dvVid=null; // coffre auquel appartient dvKey (s'il est remplacé sur un autre appareil, on reverrouille)
-async function dvTry(code){try{const v=data.docVault,key=await vOpen(v,code,"main");dvKey=key;dvVid=v.id;dvOpen=true;return true}catch(e){return false}}
-// v27 : un seul code pour les documents et les mots de passe (celui du coffre des mots de passe).
-// Chaque coffre garde son propre sel et sa propre clé ; seul le code est commun (docVault.uni = true).
-async function vaultCheck(code){try{return await vOpen(data.vault,code,"main")}catch(e){return null}}
-async function newDocVault(code){const salt=b64e(crypto.getRandomValues(new Uint8Array(16))),key=await pinKey(code,salt,PIN_ITER);
-  return{v:{id:uid(),salt,iter:PIN_ITER,chk:await encJ(key,{ok:"sidnote-docs"}),createdAt:new Date().toISOString(),uni:true,...(data.vault&&data.vault.rec?{rec:data.vault.rec}:{})},key}}
-async function newPwVault(code){const salt=b64e(crypto.getRandomValues(new Uint8Array(16))),key=await pinKey(code,salt,PIN_ITER);
-  return{id:uid(),salt,iter:PIN_ITER,chk:await encJ(key,{ok:"sidnote"}),createdAt:new Date().toISOString(),...(data.docVault&&data.docVault.rec?{rec:data.docVault.rec}:{})}}
-const DV_FORGOT2="Sans ta phrase secrète, tes documents ne peuvent plus être ouverts. Tout effacer et choisir un nouveau code ? Touche encore pour confirmer.";
-const DV_FORGOT="La récupération n'était pas activée. Choisir un nouveau code ? Seuls les documents déjà sur cet appareil pourront encore s'ouvrir. Touche encore pour confirmer.";
-async function dvUnlock(){
-  if(dvOpen)return true;
-  const hasV=vaultOn(),hasD=!!(data.docVault&&data.docVault.chk);
-  // aucun code encore : on choisit le code unique (documents + mots de passe), puis la phrase secrète (v32)
-  if(!hasD&&!hasV){const code=await askPin({mode:"new",head:"Ton code Sid'Compagnon",sub:"Choisis ton code à 5 chiffres : il ouvre tes documents et tes mots de passe sur cet appareil."});if(!code)return false;
-    const mk=await mkNeed();if(!mk)return false;
-    const d=await v2Make(mk,"sidnote-docs",{uni:true}),w=await v2Make(mk,"sidnote",{uni:true});
-    data.docVault=d.v;data.vault=w.v;dvKey=d.key;dvVid=d.v.id;dvOpen=true;await mkWrap("main",code,mk);save();toast("Code enregistré");return true}
-  // coffre renforcé, première ouverture sur cet appareil : phrase secrète puis code de l'appareil
-  const ref=hasD?data.docVault:data.vault;
-  if(isV2(ref)&&!mkHas("main")){const code=await devSetup("main","Documents");if(!code)return false;
-    if(hasD)return await dvTry(code);
-    const k=await vaultCheck(code);if(!k)return false;const d=await v2Make(phMem,"sidnote-docs",{uni:true});data.docVault=d.v;dvKey=d.key;dvVid=d.v.id;dvOpen=true;save();return true}
-  // coffre des mots de passe déjà là : les documents prennent le même code
-  if(!hasD){let code=await askPin({mode:"unlock",ctx:"main",head:"Documents",sub:"Entre ton code (le même que pour tes mots de passe).",verify:async c=>!!(await vaultCheck(c)),rec:isV2(data.vault)?null:data.vault.rec,phrase:isV2(data.vault)});
-    if(code==="forgot")code=await devSetup("main","Documents",true);if(!code)return false;
-    let d;if(isV2(data.vault)){d=await v2Make(phMem,"sidnote-docs",{uni:true})}
-    else{const mk=await mkNeed({mode:"new",title:"Renforce ta protection",later:"Plus tard"});
-      d=mk?await v2Make(mk,"sidnote-docs",{uni:true}):await newDocVault(code);if(mk&&!mkHas("main"))await mkWrap("main",code,mk)}
-    data.docVault=d.v;dvKey=d.key;dvVid=d.v.id;dvOpen=true;save();return true}
-  const v=data.docVault;
-  if(v.uni||!hasV||isV2(v)){
-    let code=await askPin({mode:"unlock",ctx:"main",head:"Documents",sub:hasV?"Entre ton code (le même que pour tes mots de passe).":"Entre ton code.",verify:dvTry,rec:isV2(v)?null:v.rec,phrase:isV2(v),forgot:dvReset,forgotText:isV2(v)?DV_FORGOT2:DV_FORGOT});
-    if(code==="forgot"){code=await devSetup("main","Documents",true);if(code&&!(await dvTry(code)))code=null}
-    if(code&&dvOpen&&!isV2(v)){ // ancien coffre : passage au coffre renforcé (plus besoin de proposer l'ancienne récupération du code)
-      const nk=await v2Upgrade("docs",code,dvKey);if(nk){dvKey=nk;dvVid=data.docVault.id}
-      if(!hasV){data.vault=isV2(data.docVault)&&phMem?(await v2Make(phMem,"sidnote",{uni:true})).v:await newPwVault(code);data.docVault.uni=true;save()}}
-    return !!code&&dvOpen}
-  return dvMigrate();
-}
-// passage à un seul code (une fois) : ancien code des documents, puis code des mots de passe ; les documents sont rechiffrés
-async function dvMigrate(){
-  const old=data.docVault;
-  const c1=await askPin({mode:"unlock",head:"Un seul code",sub:"Désormais, un seul code protège tes documents et tes mots de passe. Entre d'abord l'ancien code de tes documents.",verify:dvTry,rec:old.rec,forgot:dvReset,forgotText:DV_FORGOT});
-  if(!c1||!dvOpen)return false;
-  if(await vaultCheck(c1)){old.uni=true;save();toast("Tes deux codes étaient déjà identiques : c'est réglé");return true}
-  const c2=await askPin({mode:"unlock",head:"Un seul code",sub:"Entre maintenant le code de tes mots de passe : il ouvrira aussi tes documents.",verify:async c=>!!(await vaultCheck(c)),rec:data.vault.rec});
-  if(!c2)return true; // documents ouverts avec l'ancien code cette fois-ci ; le passage sera reproposé
-  if(!navigator.onLine){toast("Connecte-toi à internet pour passer à un seul code");return true}
-  toast("Passage à un seul code…");
-  // 1) une copie lisible de chaque document en ligne, gardée sur cet appareil (déchiffrée avec l'ancienne clé)
-  for(const d of docsArr().filter(x=>x.up)){if(await idb.get(docKey(d)))continue;
-    try{await idb.put(docKey(d),await docBlob(d))}catch(e){toast("Passage impossible pour l'instant (réseau). Réessaie plus tard.");return true}}
-  // 2) nouveau coffre des documents avec le code des mots de passe, puis tout est rechiffré et renvoyé
-  const n=await newDocVault(c2);data.docVault=n.v;dvKey=n.key;dvVid=n.v.id;save();
-  await docsSecure();toast("C'est fait : un seul code pour tes documents et tes mots de passe");return true;
-}
-// l'onglet Documents s'ouvre avec le code, comme Mots de passe
-function renderDocLock(){const lk=!dvOpen;$("v-docs").classList.toggle("is-locked",lk);elanRefreshCoffreMetric();$("docLocked").hidden=!lk||!!(ps&&ps.host)}
-async function docsEnter(){renderDocLock();if(dvOpen){renderDocs();return}if(await dvUnlock()){renderDocLock();renderDocs();docsSyncPending();docsSecure()}}
-$("docUnlockBtn").addEventListener("click",docsEnter);
-// glisser un document (poignée ⠿) sur un classeur pour l'y ranger ; sur « Tous » pour le sortir de son classeur
-$("docList").addEventListener("pointerdown",e=>{const g=e.target.closest("[data-dgrip]");if(!g)return;e.preventDefault();
-  const d=docsArr().find(x=>x.id===g.dataset.dgrip),row=g.closest(".doc");if(!d)return;
-  const ghost=document.createElement("div");ghost.className="doc-ghost";ghost.textContent=d.title;document.body.appendChild(ghost);row.classList.add("dragging");
-  try{g.setPointerCapture(e.pointerId)}catch(x){}if(navigator.vibrate)navigator.vibrate(10);
-  let over=null;const pos=ev=>{ghost.style.left=(ev.clientX+12)+"px";ghost.style.top=(ev.clientY-20)+"px";
-    const el=document.elementFromPoint(ev.clientX,ev.clientY),c=el&&el.closest("#docFolders [data-dfold]");
-    if(c!==over){if(over)over.classList.remove("drop");over=c;if(over)over.classList.add("drop")}
-    if(ev.clientY<90)window.scrollBy(0,-12)};pos(e);
-  const up=()=>{g.removeEventListener("pointermove",pos);g.removeEventListener("pointerup",up);g.removeEventListener("pointercancel",up);ghost.remove();row.classList.remove("dragging");
-    if(over){const id=over.dataset.dfold,f=DF().find(x=>x.id===id);over.classList.remove("drop");
-      if(id==="all"){if(d.folder){delete d.folder;d.mod=Date.now();save();toast("Document sorti de son classeur")}}
-      else if(f&&d.folder!==f.id){d.folder=f.id;d.mod=Date.now();save();toast(`${L("Rangé dans")} « ${f.name} »`)}}
-    renderDocs()};
-  g.addEventListener("pointermove",pos);g.addEventListener("pointerup",up);g.addEventListener("pointercancel",up)});
-// code oublié sans récupération : on choisit un nouveau code, les documents sont gardés
-// les documents présents sur cet appareil sont renvoyés, chiffrés avec le nouveau code
-async function dvReset(){data.docVault=null;dvOpen=false;dvKey=null;
-  for(const d of docsArr())if(d.up&&await idb.get(docKey(d)))d.up=false;
-  save();toast("Code effacé : choisis-en un nouveau. Les documents de cet appareil sont gardés.");docsEnter()}
-function dvLock(){if(!dvOpen)return;dvOpen=false;dvKey=null;renderDocLock()}
-// v37 : délai avant reverrouillage (data.ui.lockDelay en minutes, propre à l'appareil ; 0 = tout de suite)
-const SEC_K=["docs","pwd","notes"],secAway={};
+const SEC_K=["notes"],secAway={};
 // v41 : par défaut (-1), le coffre reste ouvert jusqu'à la fermeture complète de l'app (demande de Sid)
 const lockDelay=()=>{const v=data.ui&&data.ui.lockDelay;return v===undefined||v===null||+v<0?Infinity:Math.max(0,+v)*60000};
-const secLockOne=k=>k==="docs"?dvLock():k==="pwd"?pwdLock():(nsKey&&nsLock());
-function secLeave(k){const d=lockDelay();if(d===Infinity)return;if(!d){secLockOne(k);return}if(!secAway[k])secAway[k]=Date.now()}
-function secCheck(){const d=lockDelay(),now=Date.now();for(const k of SEC_K){const t=secAway[k];if(t&&now-t>=d){delete secAway[k];secLockOne(k)}}}
+const secLockOne=()=>{if(nsKey)nsLock()};
+function secLeave(k){const d=lockDelay();if(d===Infinity)return;if(!d){secLockOne();return}if(!secAway[k])secAway[k]=Date.now()}
+function secCheck(){const d=lockDelay(),now=Date.now();for(const k of SEC_K){const t=secAway[k];if(t&&now-t>=d){delete secAway[k];secLockOne()}}}
 document.addEventListener("visibilitychange",()=>{if(document.hidden)SEC_K.forEach(secLeave);else{secCheck();delete secAway[data.ui.view]}});
 setInterval(secCheck,15000);
-$("docFolders").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b)return;
-  if(b.dataset.dfoldnew){const f=$("folderForm");f.hidden=!f.hidden;if(!f.hidden)$("folderIn").focus();return}
-  if(b.dataset.dfold){const id=b.dataset.dfold;
-    data.ui.docFolder=id;dfQ="";dfEditing=false;docQ="";$("docSearch").value="";saveUI();renderDocs()}});
-$("folderForm").addEventListener("submit",e=>{e.preventDefault();const v=$("folderIn").value.trim().replace(/\s+/g," ");if(!v)return;
-  if(DF().some(f=>norm(f.name)===norm(v))){toast("Ce classeur existe déjà");return}
-  const f={id:uid(),name:v};DF().push(f);data.ui.docFolder=f.id;saveUI();save();$("folderIn").value="";$("folderForm").hidden=true;renderDocs();toast("Classeur créé")});
-$("folderBar").addEventListener("input",e=>{if(e.target.id==="folderSearch"){dfQ=e.target.value;const pos=e.target.selectionStart;renderDocs();const i=$("folderSearch");i.focus();i.setSelectionRange(pos,pos)}});
-$("folderBar").addEventListener("submit",e=>{e.preventDefault();const f=curFolder(),v=$("folderRenIn").value.trim();if(f&&v){f.name=v;save()}dfEditing=false;renderDocs()});
-$("folderBar").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b)return;const f=curFolder();if(!f)return;
-  if(b.dataset.dfren){dfEditing=true;renderDocs();const i=$("folderRenIn");i.focus();i.select()}
-  else if(b.dataset.dfdel){if(!c2ok(b))return;const had=docsArr().filter(d=>d.folder===f.id).map(d=>d.id);
-    undoable("Classeur supprimé, ses documents sont gardés",[f.id],()=>{tomb(f.id);docsArr().forEach(d=>{if(d.folder===f.id)delete d.folder});data.docFolders=DF().filter(x=>x!==f);data.ui.docFolder="all";saveUI()},
-      {after:renderDocs,revert:()=>{docsArr().forEach(d=>{if(had.includes(d.id))d.folder=f.id});data.ui.docFolder=f.id;saveUI()}})}
-});
-$("docSearch").addEventListener("input",e=>{docQ=e.target.value;renderDocs()});
-$("docSort").addEventListener("click",e=>{const b=e.target.closest("[data-dsort]");if(!b)return;data.prefs.docSort=b.dataset.dsort;save();renderDocs()});
-$("docList").addEventListener("click",e=>{
-  const o=e.target.closest("[data-docopen]"),sh=e.target.closest("[data-docshare]");
-  const d=docsArr().find(x=>x.id===(o?o.dataset.docopen:sh?sh.dataset.docshare:""));if(!d)return;
-  if(o)openViewer(d);else docShare(d);
-});
-$("docImport").addEventListener("change",async e=>{
-  const files=[...e.target.files];e.target.value="";let n=0;
-  for(const f of files){
-    try{
-      const base=f.name.replace(/\.[a-z0-9]{2,5}$/i,"").replace(/[_]+/g," ").trim();
-      if(/pdf$/i.test(f.type)||/\.pdf$/i.test(f.name)){if(await addDoc(new Blob([await f.arrayBuffer()],{type:"application/pdf"}),base))n++}
-      else if(/^image\//.test(f.type)){const src=await loadImg(f);const pg=renderPage(src,"color",0);if(await addDoc(makePDF([pg]),base||L("Image"),1))n++}
-      else toast(`${f.name} : ${L("format non pris en charge")}`);
-    }catch(ex){toast(`${f.name} : ${L("import impossible")}`)}
-  }
-  if(n)toast(n>1?`${n} ${L("documents ajoutés")}`:L("Document ajouté"));
-});
 /* lecteur de PDF */
-let pdfjsP=null,viewTok=0,viewDoc=null;
+let pdfjsP=null;
 function loadPdfJs(){
   if(window.pdfjsLib)return Promise.resolve(window.pdfjsLib);
   return pdfjsP||(pdfjsP=new Promise((res,rej)=>{const sc=document.createElement("script");sc.src=PDFJS+"pdf.min.js";
     sc.onload=()=>{window.pdfjsLib.GlobalWorkerOptions.workerSrc=PDFJS+"pdf.worker.min.js";res(window.pdfjsLib)};
     sc.onerror=()=>{pdfjsP=null;sc.remove();rej(new Error("pdfjs"))};document.head.appendChild(sc)}));
 }
-async function openViewer(d){
-  const tok=++viewTok;viewDoc=d;
-  $("vwTitle").textContent=d.title;$("viewer").hidden=false;document.body.style.overflow="hidden";
-  const body=$("vwBody");body.innerHTML=`<p class="muted">${L("Ouverture…")}</p>`;
-  let blob;try{blob=await docBlob(d)}catch(ex){if(tok===viewTok)body.innerHTML=`<p class="muted" style="text-align:center;padding:20px">${esc(ex instanceof TypeError?L("Pas de connexion internet"):ex.message)}</p>`;return}
-  try{
-    const lib=await loadPdfJs();
-    const pdf=await lib.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise;
-    if(tok!==viewTok)return;body.innerHTML="";
-    const W=Math.min(body.clientWidth-16,900),dpr=Math.min(2,window.devicePixelRatio||1);
-    for(let i=1;i<=pdf.numPages;i++){
-      if(tok!==viewTok)return;
-      const page=await pdf.getPage(i),v0=page.getViewport({scale:1}),sc=W/v0.width,vp=page.getViewport({scale:sc*dpr});
-      const c=document.createElement("canvas");c.width=vp.width;c.height=vp.height;c.style.width=W+"px";body.appendChild(c);
-      await page.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;
-    }
-    if(!d.pages&&pdf.numPages){d.pages=pdf.numPages;save();renderDocs()}
-  }catch(ex){
-    if(tok!==viewTok)return;
-    // secours : lecteur intégré du navigateur
-    const u=URL.createObjectURL(blob);body.innerHTML=`<iframe src="${u}" title="${esc(d.title)}"></iframe><p class="small muted" style="text-align:center">${L("Si le document ne s'affiche pas, touche « Partager » pour l'ouvrir avec une autre app.")}</p>`;
-  }
-}
-function closeViewer(){viewTok++;viewDoc=null;$("viewer").hidden=true;$("vwBody").innerHTML="";document.body.style.overflow=""}
-$("vwBack").addEventListener("click",closeViewer);
-$("vwShare").addEventListener("click",()=>{if(viewDoc)docShare(viewDoc)});
-/* scanner : photo -> rendu « document » -> PDF */
-let scanPages=[],scanFlt="doc";
-function loadImg(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();
-  im.onload=()=>{const MAX=2600,k=Math.min(1,MAX/Math.max(im.naturalWidth,im.naturalHeight));
-    const c=document.createElement("canvas");c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);
-    const g=c.getContext("2d");g.imageSmoothingQuality="high";g.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c)};
-  im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error("image"))};im.src=u})}
-function renderPage(src,flt,rot){
-  const r=((rot%4)+4)%4,c=document.createElement("canvas");c.width=r%2?src.height:src.width;c.height=r%2?src.width:src.height;
-  const x=c.getContext("2d");x.translate(c.width/2,c.height/2);x.rotate(r*Math.PI/2);x.drawImage(src,-src.width/2,-src.height/2);x.setTransform(1,0,0,1,0,0);
-  if(flt==="doc"){
-    const im=x.getImageData(0,0,c.width,c.height),p=im.data,h=new Uint32Array(256),n=p.length/4;
-    for(let i=0;i<p.length;i+=4){const v=(p[i]*299+p[i+1]*587+p[i+2]*114)/1000|0;p[i]=v;h[v]++}
-    const pct=f=>{let a=0;for(let v=0;v<256;v++){a+=h[v];if(a>=n*f)return v}return 255};
-    const lo=pct(.02),hi=Math.max(lo+30,pct(.80)),lut=new Uint8ClampedArray(256);
-    for(let v=0;v<256;v++){const t=Math.min(1,Math.max(0,(v-lo)/(hi-lo)));lut[v]=255*Math.pow(t,1.6)}
-    for(let i=0;i<p.length;i+=4){const v=lut[p[i]];p[i]=p[i+1]=p[i+2]=v}
-    x.putImageData(im,0,0);
-  }
-  const url=c.toDataURL("image/jpeg",flt==="doc"?.85:.88),b=atob(url.split(",")[1]),bytes=new Uint8Array(b.length);
-  for(let i=0;i<b.length;i++)bytes[i]=b.charCodeAt(i);
-  return{bytes,w:c.width,h:c.height,url};
-}
-// PDF minimal : une image JPEG par page
-function makePDF(pages){
-  const enc=new TextEncoder(),parts=[],offs=[];let pos=0;
-  const add=x=>{const b=typeof x==="string"?enc.encode(x):x;parts.push(b);pos+=b.length};
-  const N=pages.length,ids=pages.map((_,i)=>({pg:3+i*3,im:4+i*3,ct:5+i*3}));
-  add("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n");
-  const obj=(id,...body)=>{offs[id]=pos;add(`${id} 0 obj\n`);body.forEach(add);add("\nendobj\n")};
-  obj(1,"<< /Type /Catalog /Pages 2 0 R >>");
-  obj(2,`<< /Type /Pages /Kids [${ids.map(o=>o.pg+" 0 R").join(" ")}] /Count ${N} >>`);
-  pages.forEach((p,i)=>{
-    const W=595.28,H=+(W*p.h/p.w).toFixed(2),cs=`q ${W} 0 0 ${H} 0 0 cm /Im${i} Do Q`;
-    obj(ids[i].pg,`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /XObject << /Im${i} ${ids[i].im} 0 R >> >> /Contents ${ids[i].ct} 0 R >>`);
-    obj(ids[i].im,`<< /Type /XObject /Subtype /Image /Width ${p.w} /Height ${p.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${p.bytes.length} >>\nstream\n`,p.bytes,"\nendstream");
-    obj(ids[i].ct,`<< /Length ${cs.length} >>\nstream\n${cs}\nendstream`);
-  });
-  const xref=pos,size=3+N*3;
-  add(`xref\n0 ${size}\n0000000000 65535 f \n`+Array.from({length:size-1},(_,k)=>String(offs[k+1]).padStart(10,"0")+" 00000 n \n").join(""));
-  add(`trailer\n<< /Size ${size} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
-  return new Blob(parts,{type:"application/pdf"});
-}
-function renderScan(){
-  if(shIsl("scanPages")){try{window.SCIslands.scanPages($("scanPages"),{pages:scanPages.map(p=>p.out.url),i18n:agI18n()})}catch(e){reportErr("island scanPages: "+(e&&e.message))}}else
-  $("scanPages").innerHTML=scanPages.map((p,i)=>`<div class="pg"><img src="${p.out.url}" alt="Page ${i+1}"><button class="rot" data-scrot="${i}" aria-label="Pivoter">${IC("refresh")}</button><button class="rm" data-scrm="${i}" aria-label="Retirer">${IC("close")}</button><span>${i+1}</span></div>`).join("");
-  document.querySelectorAll("#scanFilter button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.flt===scanFlt));
-  $("scanSave").disabled=!scanPages.length;
-  $("scanAddTxt").innerHTML=IC("camera")+" "+L(scanPages.length?"Page suivante":"Prendre une photo");
-  $("scanSave").textContent=scanPages.length?`${L("Enregistrer le PDF")} (${scanPages.length} ${L(scanPages.length>1?"pages":"page")})`:L("Enregistrer le PDF");
-}
-function openScan(){
-  scanPages=[];const n=new Date();
-  $("scanName").value=`Scan ${n.getDate()} ${MO[n.getMonth()]} ${n.getFullYear()} ${two(n.getHours())}h${two(n.getMinutes())}`;
-  $("scan").hidden=false;renderScan();
-}
-$("docScanBtn").addEventListener("click",()=>{openScan();$("scanCam").click()});
-$("scanClose").addEventListener("click",()=>{$("scan").hidden=true;scanPages=[]});
-async function scanAdd(files){
-  for(const f of files){try{const src=await loadImg(f);scanPages.push({src,rot:0,out:renderPage(src,scanFlt,0)})}catch(e){toast("Photo illisible")}}
-  renderScan();
-}
-$("scanCam").addEventListener("change",e=>{scanAdd([...e.target.files]);e.target.value=""});
-$("scanLib").addEventListener("change",e=>{scanAdd([...e.target.files]);e.target.value=""});
-$("scan").addEventListener("click",e=>{
-  if(e.target.id==="scan"){$("scan").hidden=true;scanPages=[];return}
-  const b=e.target.closest("button");if(!b)return;
-  if(b.dataset.flt){scanFlt=b.dataset.flt;scanPages.forEach(p=>p.out=renderPage(p.src,scanFlt,p.rot));renderScan()}
-  else if(b.dataset.scrot){const p=scanPages[+b.dataset.scrot];p.rot++;p.out=renderPage(p.src,scanFlt,p.rot);renderScan()}
-  else if(b.dataset.scrm){scanPages.splice(+b.dataset.scrm,1);renderScan()}
-});
-$("scanSave").addEventListener("click",async()=>{
-  if(!scanPages.length)return;const btn=$("scanSave");btn.disabled=true;
-  const d=await addDoc(makePDF(scanPages.map(p=>p.out)),$("scanName").value.trim()||"Scan",scanPages.length);
-  btn.disabled=false;if(d){$("scan").hidden=true;scanPages=[];toast("Scan enregistré dans Documents")}
-});
-
-$("docImport").parentElement.addEventListener("keydown",e=>{if(e.target!==e.currentTarget||!["Enter"," "].includes(e.key))return;e.preventDefault();$("docImport").click()});
 
 /* ---------- récupération d'un code oublié, grâce au mot de passe du compte ---------- */
 // Quand on choisit un code (mots de passe, notes secrètes, documents), on le garde aussi chiffré avec le mot de passe
@@ -3565,7 +3339,38 @@ function rtClean(html){const t=document.createElement("template");t.innerHTML=St
 const rtFromText=b=>String(b||"").split("\n").map(l=>`<div>${l?esc(l):"<br>"}</div>`).join("");
 const rtText=el=>String(el.innerText||"").replace(/\u00a0/g," ").replace(/\n{3,}/g,"\n\n").trim();
 const rtSet=v=>{$("noteBody").innerHTML=v.html?rtClean(v.html):rtFromText(v.body);rtEmpty()};
-const rtEmpty=()=>$("noteBody").classList.toggle("is-empty",!rtText($("noteBody"))&&!$("noteBody").querySelector("li,hr"))
+const rtEmpty=()=>{
+  const body=$("noteBody");
+  body.classList.toggle("is-empty",!rtText(body)&&!body.querySelector("li,hr"));
+  notePagesSchedule();
+};
+let notePagesFrame=0,notePageCount=1,notePageStep=1;
+function notePagePosition(){
+  const current=Math.min(notePageCount,Math.round($("notePages").scrollLeft/notePageStep)+1);
+  $("notePagePosition").textContent=`${current} / ${notePageCount}`;
+  $("notePagePrevious").disabled=current===1;
+  $("notePageNext").disabled=current===notePageCount;
+}
+function notePagesSchedule(){
+  if(notePagesFrame)return;
+  notePagesFrame=requestAnimationFrame(()=>{
+    notePagesFrame=0;
+    const body=$("noteBody"),pages=$("notePages");
+    if(!pages.clientWidth)return;
+    const width=body.getBoundingClientRect().width,gap=parseFloat(getComputedStyle(body).columnGap);
+    notePageStep=width+gap;
+    notePageCount=1+Math.max(0,Math.round((body.scrollWidth-width)/notePageStep));
+    $("notePageSheets").style.setProperty("--note-page-width",`${pages.clientWidth}px`);
+    $("notePageSheets").style.width=`${pages.clientWidth+(notePageCount-1)*notePageStep}px`;
+    $("notePageControls").hidden=notePageCount===1;
+    notePagePosition();
+  });
+}
+if(window.ResizeObserver)new ResizeObserver(notePagesSchedule).observe($("notePages"));
+document.fonts?.ready.then(notePagesSchedule);
+$("notePages").addEventListener("scroll",notePagePosition,{passive:true});
+$("notePagePrevious").addEventListener("click",()=>$("notePages").scrollBy(-notePageStep,0));
+$("notePageNext").addEventListener("click",()=>$("notePages").scrollBy(notePageStep,0));
 let noteOpenId=null,noteQ="",noteSaveT=null,notePend=null;
 const noteFind=id=>NT().find(n=>n.id===id);
 const fmtWhen=t=>{const d=new Date(t),n=new Date();
@@ -3638,7 +3443,7 @@ function renderNotes(){
     :dirs?"":`<div class="empty">${L(q?"Aucune note ne correspond.":noteDir?"Ce dossier est vide. Touche « + Note » pour y écrire.":"Aucune note pour l'instant. Touche « + Note » pour écrire.")}</div>`);
 }
 /** @type {any} */ renderNotes.phk=undefined; // déclaré pour TypeScript (même valeur de départ)
-function openNote(id){noteOpenId=id;renderNotes();window.scrollTo(0,0)}
+function openNote(id){noteOpenId=id;renderNotes();$("notePages").scrollLeft=0;window.scrollTo(0,0)}
 async function closeNote(){
   await noteFlush();const n=noteOpenId&&noteFind(noteOpenId),v=noteView(n);
   // une note laissée vide n'est pas gardée
@@ -3714,6 +3519,7 @@ function noteActions(id){const n=noteFind(id);if(!n)return;const w=noteView(n);
   const t=w?(w.title&&w.title.trim()?w.title:String(w.body||"").trim().split("\n")[0]||(n.pdf&&n.pdf.name)||L("Nouvelle note")):L("Note secrète");
   const items=[];
   if(NF().length)items.push({l:"Ranger dans un dossier",fn:()=>openActions(L("Ranger dans"),nfChoices(noteDirOf(n),null,fid=>{if(fid)n.folder=fid;else delete n.folder;n.upd=Date.now();save();renderNotes();toast(fid?`${L("Rangée dans")} « ${nfOf(fid).name} »`:"Rangée dans Notes")}))});
+  if(noteProjects().length)items.push({l:"Changer de projet",fn:()=>moveNoteToProject(n)});
   if(w&&!n.pdf)items.push({l:"Exporter en PDF",fn:()=>noteExportPdf(n)});
   items.push({l:"Supprimer",danger:true,fn:()=>noteRemove(n)});
   openActions(t,items)}
@@ -3950,7 +3756,7 @@ async function nsUnlock(){
   if(isV2(v)&&!mkHas("notes")){const code=await devSetup("notes","Notes secrètes");return !!code&&await nsTry(code)}
   let code=await askPin({mode:"unlock",ctx:"notes",head:"Notes secrètes",sub:"Entre le code de tes notes secrètes.",verify:nsTry,forgot:nsReset,rec:isV2(v)?null:v.rec,phrase:isV2(v)});
   if(code==="forgot"){code=await devSetup("notes","Notes secrètes",true);if(code&&!(await nsTry(code)))code=null}
-  if(code&&nsKey&&!isV2(v)){const nk=await v2Upgrade("notes",code,nsKey);if(nk){nsKey=nk;nsVid=data.noteVault.id;await nsLoad()}}
+  if(code&&nsKey&&!isV2(v)){const nk=await v2Upgrade(code,nsKey);if(nk){nsKey=nk;nsVid=data.noteVault.id;await nsLoad()}}
   return !!code&&!!nsKey;
 }
 function nsLock(){
@@ -4093,20 +3899,107 @@ function notePdf(input){
   return Uint8Array.from(pdf,c=>c.charCodeAt(0));
 }
 
+/* ---------- projets Sid’Note ---------- */
+const noteProjects=()=>data.noteProjects||(data.noteProjects=[]);
+const focusSessions=()=>data.focusSessions||(data.focusSessions=[]);
+let noteProjectId=null;
+
+function recordFocusSession(id,startAt,workMs){
+  if(workMs<=0||focusSessions().some(s=>s.id===id))return;
+  focusSessions().push({id,startAt,workMs,upd:Date.now()});
+  if(data.ui.view==="projects")renderNoteProjects();
+}
+
+function projectChoices(selected,onSelect){
+  const choices=noteProjects().filter(p=>p.id!==selected).map(p=>({l:p.name,fn:()=>onSelect(p.id)}));
+  if(selected)choices.unshift({l:"Sans projet",fn:()=>onSelect(null)});
+  return choices;
+}
+
+function renderNoteProjects(){
+  const projects=noteProjects(),current=projects.find(p=>p.id===noteProjectId);
+  const list=$("projectList");
+  $("projectBack").hidden=!current;
+  $("projectForm").hidden=!!current;
+  if(!current){
+    list.innerHTML=projects.map(p=>`<button class="row grow project-open" type="button" data-project="${esc(p.id)}"><b class="notr">${esc(p.name)}</b></button>`).join("")
+      ||`<p class="empty">${L("Aucun projet")}</p>`;
+    const free=focusSessions().filter(s=>!projects.some(p=>p.id===s.project));
+    list.insertAdjacentHTML("beforeend",projectFocusRows(free,"Séances Focus sans projet"));
+    return;
+  }
+  const notes=NT().filter(n=>n.project===current.id);
+  list.innerHTML=`<div class="row"><h2 class="grow notr">${esc(current.name)}</h2><button type="button" class="mini" id="projectDelete">${L("Supprimer le projet")}</button></div>
+    <h3>${L("Notes")}</h3>`+notes.map(n=>{
+    const view=noteView(n);
+    const title=view?(view.title||n.pdf?.name||view.body?.split("\n")[0]||L("Nouvelle note")):L("Note secrète");
+    return `<div class="row"><button type="button" class="btn ghost notr grow" data-project-note="${esc(n.id)}">${esc(title)}</button>
+      <button type="button" class="mini" data-project-note-move="${esc(n.id)}">${L("Changer de projet")}</button></div>`;
+  }).join("")+projectFocusRows(focusSessions().filter(s=>s.project===current.id),"Séances Focus");
+}
+
+function projectFocusRows(sessions,title){
+  if(!sessions.length)return "";
+  return `<h3>${L(title)}</h3>`+[...sessions].sort((a,b)=>b.startAt-a.startAt).map(s=>
+    `<div class="row"><span class="grow">${esc(fmtDay(s.startAt))} · ${esc(hm(s.workMs/60000))}</span>
+      <button type="button" class="mini" data-project-session="${esc(s.id)}">${L("Changer de projet")}</button></div>`).join("");
+}
+
+function moveNoteToProject(note){
+  const choices=projectChoices(note.project,id=>{
+    note.project=id;note.upd=Date.now();save();
+    if(data.ui.view==="projects")renderNoteProjects();
+  });
+  if(choices.length)openActions(L("Changer de projet"),choices);
+}
+
+$("projectForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const input=$("projectName"),name=input.value.trim();
+  if(!name)return;
+  const project={id:uid(),name,upd:Date.now()};
+  noteProjects().push(project);noteProjectId=project.id;input.value="";
+  save();renderNoteProjects();
+});
+$("projectBack").addEventListener("click",()=>{noteProjectId=null;renderNoteProjects()});
+$("projectList").addEventListener("click",async e=>{
+  const button=e.target.closest("button");
+  if(!button)return;
+  if(button.dataset.project){noteProjectId=button.dataset.project;renderNoteProjects();return}
+  const n=noteFind(button.dataset.projectNote||button.dataset.projectNoteMove);
+  if(n){
+    if(button.dataset.projectNoteMove){moveNoteToProject(n);return}
+    if(n.secret&&!noteView(n)){if(!await nsUnlock())return;await nsLoad();if(!noteView(n))return}
+    if(noteOpenId&&noteOpenId!==n.id)await closeNote();
+    show("notes");if(n.pdf)pdfOpen(n.id);else openNote(n.id);
+    return;
+  }
+  if(button.id==="projectDelete"){
+    if(!c2ok(button))return;
+    const id=noteProjectId;
+    tomb(id);data.noteProjects=noteProjects().filter(p=>p.id!==id);
+    for(const item of [...NT(),...focusSessions()])if(item.project===id){item.project=null;item.upd=Date.now()}
+    noteProjectId=null;save();renderNoteProjects();return;
+  }
+  const focus=focusSessions().find(s=>s.id===button.dataset.projectSession);
+  if(!focus)return;
+  const choices=projectChoices(focus.project,id=>{
+    focus.project=id;focus.upd=Date.now();save();renderNoteProjects();
+  });
+  if(choices.length)openActions(L("Changer de projet"),choices);
+});
+
 /* ---------- fenêtre de code à 5 chiffres (réutilisable) ---------- */
 // askPin({mode:"new"}) → code choisi et confirmé ; askPin({mode:"unlock", verify}) → code vérifié ; null si annulé
 let ps=null;
-// v29 : dans Documents, le clavier s'affiche dans la page (comme pour les mots de passe), pas dans une fenêtre
-const PS_PIN=document.querySelector("#pinSheet .pin");
 function askPin(o){return new Promise(res=>{
   if(ps)psEnd(null);
-  const host=data.ui.view==="docs"&&$("docPinHost");
-  ps={...o,step:o.mode,buf:"",first:"",fails:0,wait:0,busy:false,resolve:res,host:host||null};
+  ps={...o,step:o.mode,buf:"",first:"",fails:0,wait:0,busy:false,resolve:res};
   if(!$("psPad").children.length&&shIsl("keypad")){try{window.SCIslands.keypad($("psPad"),{attr:"ps",del:agI18n().tr(L("Effacer"))})}catch(e){reportErr("island keypad: "+(e&&e.message))}} // v63 (#3) : clavier dessiné par React
   if(!$("psPad").children.length)$("psPad").innerHTML=[1,2,3,4,5,6,7,8,9].map(d=>`<button type="button" data-ps="${d}">${d}</button>`).join("")+
     `<button type="button" class="blank" tabindex="-1" aria-hidden="true"></button><button type="button" data-ps="0">0</button><button type="button" class="del" data-ps="del">${L("Effacer")}</button>`;
   $("psErr").textContent="";psRender();
-  if(host){host.appendChild(PS_PIN);host.hidden=false;$("docLocked").hidden=true}else $("pinSheet").hidden=false})}
+  $("pinSheet").hidden=false})}
 function psRender(){
   if(!ps)return;
   const T={new:["Choisis ton code",ps.sub],confirm:["Confirme ton code","Tape à nouveau les 5 chiffres."],unlock:["Entre ton code",ps.sub]}[ps.step];
@@ -4117,8 +4010,8 @@ function psRender(){
   [...$("psDots").children].forEach((d,i)=>d.classList.toggle("on",i<ps.buf.length));
 }
 function psFail(msg){const d=$("psDots");$("psErr").textContent=L(msg);d.classList.remove("shake");void d.offsetWidth;d.classList.add("shake");if(navigator.vibrate)navigator.vibrate(60);ps.buf="";psRender()}
-function psEnd(v){if(!ps)return;const r=ps.resolve,host=ps.host;ps=null;$("pinSheet").hidden=true;
-  if(host){host.hidden=true;$("pinSheet").querySelector(".sheet").appendChild(PS_PIN);renderDocLock()}const f=$("psForgot");delete f.dataset.armed;f.textContent=L("Code oublié ?");r(v)}
+function psEnd(v){if(!ps)return;const r=ps.resolve;ps=null;$("pinSheet").hidden=true;
+const f=$("psForgot");delete f.dataset.armed;f.textContent=L("Code oublié ?");r(v)}
 async function psDone(){
   const code=ps.buf;
   if(ps.step==="new"){ps.first=code;ps.buf="";ps.step="confirm";$("psErr").textContent="";psRender();return}
@@ -4136,7 +4029,7 @@ function psPress(k){
 padTap($("psPad"),"ps",psPress);
 $("psClose").addEventListener("click",()=>psEnd(null));
 $("pinSheet").addEventListener("click",e=>{if(e.target.id==="pinSheet")psEnd(null)});
-document.addEventListener("keydown",e=>{if(!ps||(!ps.host&&$("pinSheet").hidden))return;if(/^[0-9]$/.test(e.key))psPress(e.key);else if(e.key==="Backspace")psPress("del");else if(e.key==="Escape")psEnd(null)});
+document.addEventListener("keydown",e=>{if(!ps||$("pinSheet").hidden)return;if(/^[0-9]$/.test(e.key))psPress(e.key);else if(e.key==="Backspace")psPress("del");else if(e.key==="Escape")psEnd(null)});
 $("psForgot").addEventListener("click",async e=>{const b=e.currentTarget;if(!ps)return;
   if(ps.phrase){psEnd("forgot");return} // coffre renforcé : on rouvre avec la phrase secrète (devSetup)
   if(ps.rec){const cur=ps,code=await recRecover({rec:cur.rec});if(code&&ps===cur&&await cur.verify(code))psEnd(code);return}
@@ -4195,7 +4088,8 @@ function sbCtxParts(app){
 const sbSK=(app,p)=>sbUid()+":"+app+":"+(p.sk||p.k);
 function sbContext(app){const out={today:iso(today())};for(const p of sbCtxParts(app))if(sbShare[sbSK(app,p)]??p.on)out[p.k]=p.v;return out}
 // ---- ouverture ----
-function sbOpen(app,opt){opt=opt||{};sbApp=SB_APPS[app]?app:"journee";sbImg=opt.img||null;
+function sbOpen(app,opt){opt=opt||{};if(app==="note"){ncOpen(opt.prompt);return} // v81 : Sid'Note → Claude (connecteur), sans la clé de Sid'Bot
+  sbApp=SB_APPS[app]?app:"journee";sbImg=opt.img||null;
   $("sbSheet").hidden=false;sbRender();
   const i=$("sbIn");if(opt.prompt){i.value=opt.prompt;grow(i);if(opt.send){sbSend();return}}
   setTimeout(()=>{if(!matchMedia("(pointer:coarse)").matches)i.focus({preventScroll:true})},80)}
@@ -4312,7 +4206,7 @@ $("sbIn").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!match
 $("sbIn").addEventListener("input",e=>grow(e.target));
 $("sbClose").addEventListener("click",sbClose);
 $("sbSheet").addEventListener("click",e=>{if(e.target.id==="sbSheet"){sbClose();return}
-  const ap=e.target.closest("[data-sbapp]");if(ap){sbApp=ap.dataset.sbapp;sbImg=null;sbRender();return}
+  const ap=e.target.closest("[data-sbapp]");if(ap){if(ap.dataset.sbapp==="note"){sbClose();ncOpen();return}sbApp=ap.dataset.sbapp;sbImg=null;sbRender();return}
   const cx=e.target.closest("[data-sbctx]");if(cx){const p=sbCtxParts(sbApp).find(x=>x.k===cx.dataset.sbctx);if(!p)return;const k=sbSK(sbApp,p);sbShare[k]=!(sbShare[k]??p.on);sbRender();return}
   const sg=e.target.closest("[data-sbsugg]");if(sg){$("sbIn").value=sg.textContent;sbSend();return}
   if(e.target.closest("[data-sbretry]")){const h=sbHist();h[sbApp]=sbMsgs(sbApp).filter(m=>m.role!=="error");sbSave(h);sbSend(true);return}
@@ -4340,7 +4234,63 @@ $("mcpList").addEventListener("click",async e=>{const b=e.target.closest("[data-
   try{await api("/rest/v1/mcp_tokens?hash=eq."+encodeURIComponent(b.dataset.mcpdel),{method:"DELETE",token:await token()});toast("Adresse retirée");mcpLoad()}
   catch(ex){toast("Impossible pour l'instant")}});
 // v76 (revue Codex) : à la déconnexion ou au changement de compte, la demande en cours est annulée et les choix de partage oubliés
-let sbLastUid=null;setInterval(()=>{const u=sbUid();if(sbLastUid!==null&&u!==sbLastUid){if(sbCtl){try{sbCtl.abort()}catch(e){}}sbBusy=false;sbShare={};sbUse={};if(!$("sbSheet").hidden)sbClose()}sbLastUid=u},1000);
+let sbLastUid=null;setInterval(()=>{const u=sbUid();if(sbLastUid!==null&&u!==sbLastUid){if(sbCtl){try{sbCtl.abort()}catch(e){}}sbBusy=false;sbShare={};sbUse={};if(!$("sbSheet").hidden)sbClose();ncClose();ncReset()}sbLastUid=u},1000);
+
+/* ---------- v81 (demande de Sid) : depuis Sid'Note, Sid'Bot redirige vers Claude, comme avant la v76 ----------
+   Plus aucun appel à la fonction « sidbot » (ni à sa clé API) depuis Sid'Note. Claude lit et modifie les notes par le connecteur
+   Sid'Note (fonction « mcp », adresse personnelle sidcompagnon.com/mcp/<clé>, empreinte dans mcp_tokens) ; les PDF et photos joints sont lus
+   par lire_note. Raccourci d'origine (v40) : la fenêtre « Ajouter un connecteur personnalisé » de Claude s'ouvre déjà remplie.
+   Branchement confirmé quand Claude a utilisé l'adresse (mcp_tokens.last_used → data.prefs.aiOk). Jamais de note secrète dans le lien. */
+const NC_MCP="https://sidcompagnon.com/mcp/";
+const NC={ask:q=>"https://claude.ai/new"+(q?"?q="+encodeURIComponent(q):""),
+  add:u=>"https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName="+encodeURIComponent(MARQUES.note)+"&connectorUrl="+encodeURIComponent(u)};
+let ncW={uid:"",url:"",hash:"",busy:false,err:"",poll:null,prompt:"",linked:null};
+// relecture Codex : tout l'état du raccourci appartient à un compte ; il est oublié au changement de compte ou à la déconnexion
+function ncReset(){if(ncW.poll)clearInterval(ncW.poll);$("ncBody")?.replaceChildren();ncW={uid:sbUid(),url:"",hash:"",busy:false,err:"",poll:null,prompt:"",linked:null}}
+const ncHex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
+const ncKey=()=>{const a=crypto.getRandomValues(new Uint8Array(32));let s="";for(const x of a)s+=String.fromCharCode(x);return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")};
+async function ncCreate(){
+  const owner=sbUid(),key=ncKey(),hash=ncHex(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(key)));
+  const access=await token();
+  if(sbUid()!==owner)throw new Error("Compte changé");
+  await api("/rest/v1/mcp_tokens",{method:"POST",token:access,headers:{Prefer:"return=minimal"},body:{hash,user_id:owner,label:"Claude"}});
+  return {url:NC_MCP+key,hash}}
+// note ouverte (jamais secrète) : Claude la lira par le connecteur, avec ses pièces jointes
+function ncNotePrompt(){if(data.ui.view!=="notes"||$("noteEdit").hidden)return "";const n=typeof noteOpenId!=="undefined"&&noteOpenId&&typeof noteFind==="function"?noteFind(noteOpenId):null;
+  if(!n||n.secret)return "";const t=String(n.title||"").trim().slice(0,120)||L("Note sans titre");
+  return T3(`Ouvre ma note « ${t} » (id ${n.id}) dans ${MARQUES.note} avec lire_note (pièces jointes comprises). `,`Open my note “${t}” (id ${n.id}) in ${MARQUES.note} with lire_note (attachments included). `)}
+function ncSheet(){let el=$("ncSheet");if(el)return el;el=document.createElement("div");el.className="sheet-bg";el.id="ncSheet";el.hidden=true;
+  el.innerHTML=`<div class="sheet card nc-sheet" role="dialog" aria-modal="true" aria-labelledby="ncTitle"><div class="sheet-head"><b id="ncTitle" class="notr"></b><button type="button" class="x" id="ncClose" aria-label="${esc(L("Fermer"))}"><span class="gi gi-close" aria-hidden="true"></span></button></div><div id="ncBody"></div></div>`;
+  document.body.appendChild(el);
+  el.addEventListener("click",e=>{if(e.target===el||e.target.closest("#ncClose")){ncClose();return}
+    if(e.target.closest("[data-ncadd]")){setTimeout(()=>{if(!ncW.poll)ncW.poll=setInterval(ncCheck,3000)},800);return}
+    if(e.target.closest("[data-ncnew]")){ncW.url="";ncW.hash="";ncW.linked=false;ncNew();return}
+    if(e.target.closest("[data-nccopy]")){navigator.clipboard.writeText(ncW.url).then(()=>toast("Adresse copiée"),()=>toast("Copie impossible : sélectionne-la et copie-la"));return}});
+  return el}
+function ncClose(){const el=$("ncSheet");if(el)el.hidden=true;if(ncW.poll){clearInterval(ncW.poll);ncW.poll=null}}
+function ncNew(){if(ncW.busy||!session||isTrial())return;const w=ncW,u=sbUid();w.busy=true;w.err="";ncRender();
+  ncCreate().then(r=>{if(ncW===w&&sbUid()===u){w.url=r.url;w.hash=r.hash;w.linked=false;if(!w.poll)w.poll=setInterval(ncCheck,3000)}})
+    .catch(ex=>{if(ncW===w)w.err=ex instanceof TypeError?"Pas de connexion internet":"Création impossible pour l'instant"}).finally(()=>{w.busy=false;if(ncW===w)ncRender()})}
+function ncRender(){const b=$("ncBody");if(!b)return;const ok=ncW.linked===true,q=ncW.prompt;
+  $("ncTitle").textContent=`${MARQUES.bot} · Claude`;
+  const conn=ok?`<div class="ai-wait"><b class="ok">${GI("tick")} ${esc(L("Connecteur Sid'Note branché sur Claude"))}</b></div><button type="button" class="btn ghost" data-ncnew="1" style="width:100%;margin-top:8px">${esc(L("Rebrancher le connecteur"))}</button>`
+    :ncW.linked===null?`<button type="button" class="btn ghost" disabled style="width:100%;margin-top:8px">${esc(L("Vérification…"))}</button>`
+    :ncW.url?`<a class="btn ghost" href="${esc(NC.add(ncW.url))}" target="_blank" rel="noopener" data-ncadd="1" style="width:100%;margin-top:8px">${esc(L("Ajouter le connecteur Sid'Note à Claude"))}</a>
+      <div class="small muted" style="margin-top:6px">${esc(L("Claude s'ouvre avec Sid'Note déjà rempli : touche simplement « Ajouter », puis reviens ici."))}</div>
+      <details class="ai-more"><summary class="small">${esc(L("Voir mon adresse (si besoin)"))}</summary><div class="mcp-url notr">${esc(ncW.url)}</div><button type="button" class="btn ghost" data-nccopy="1" style="width:100%;margin-top:8px">${esc(L("Copier l'adresse"))}</button></details>`
+    :`<button type="button" class="btn ghost" disabled style="width:100%;margin-top:8px">${esc(L(ncW.err||"Préparation du raccourci…"))}</button>${ncW.err?`<button type="button" class="btn ghost" data-ncnew="1" style="width:100%;margin-top:8px">${esc(L("Réessayer"))}</button>`:""}`;
+  b.innerHTML=`<p class="small muted">${esc(L("Pour tes notes, Sid'Bot passe la main à Claude. Claude lit tes notes et leurs PDF par le connecteur Sid'Note ; les notes secrètes ne sont jamais accessibles."))}</p>
+    ${q?`<div class="ai-prompt notr">${esc(q)}</div>`:""}
+    <a class="btn" href="${esc(NC.ask(q))}" target="_blank" rel="noopener" id="ncGo" style="width:100%;margin-top:8px">${esc(L("Ouvrir Claude"))}</a>
+    <div class="ai-step" style="margin-top:14px"><b>${esc(L("Raccourci du connecteur Sid'Note"))}</b>${conn}</div>`}
+// branché = une adresse de ce compte a déjà été utilisée par Claude (mcp_tokens.last_used), vérifié à chaque ouverture
+async function ncCheck(){const w=ncW,u=sbUid();if(!$("ncSheet")||$("ncSheet").hidden){if(w.poll){clearInterval(w.poll);w.poll=null}return}
+  try{const r=await api(`/rest/v1/mcp_tokens?select=last_used${w.hash?`&hash=eq.${w.hash}`:""}&last_used=not.is.null&limit=1`,{token:await token()});
+    if(ncW!==w||sbUid()!==u)return;const on=Array.isArray(r)&&r.length>0;
+    if(on){if(w.poll){clearInterval(w.poll);w.poll=null}if(w.hash){data.prefs.aiOk=new Date().toISOString();data.prefs.ai="claude";save()}w.hash="";w.url=""}
+    const first=w.linked===null;w.linked=on;ncRender();if(first&&!on&&!w.url)ncNew()}catch(e){if(ncW===w&&w.linked===null){w.linked=false;ncRender();if(!w.url)ncNew()}}}
+function ncOpen(prompt){if(ncW.uid!==sbUid())ncReset();const el=ncSheet();ncW.prompt=String(prompt||"")||ncNotePrompt();el.hidden=false;ncRender();
+  if(ncW.url){if(!ncW.poll)ncW.poll=setInterval(ncCheck,3000)}else{ncW.linked=null;ncRender();ncCheck()}}
 
 /* ---------- v38 : Face ID / Touch ID (WebAuthn + extension PRF) ---------- */
 // Une clé d'accès (passkey) propre à Sid'note donne, après Face ID, un secret (PRF) qui chiffre le code à 5 chiffres sur cet appareil.
@@ -4426,7 +4376,6 @@ $("psBio").addEventListener("click",async()=>{const cur=ps;if(!cur||!cur.ctx||cu
 // Le serveur ne reçoit que du texte chiffré. Sans le code, impossible de relire les mots de passe.
 const PIN_LEN=5,PIN_ITER=600000;
 const PW=()=>data.pwds||(data.pwds=[]);
-let vaultVid=null,vaultKey=null,vaultItems=new Map(),pinStep="",pinBuf="",pinFirst="",pinBusy=false,pwQ="",pwShown=new Set(),pwEditId=null,pinFails=0,pinWait=0;
 const b64e=u=>{let s="";const a=new Uint8Array(u);for(let i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s)};
 const b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 async function pinKey(pin,salt,iter){if(CC())return CC().pinKey(pin,salt,iter);
@@ -4508,7 +4457,12 @@ $("phForm").addEventListener("submit",async e=>{e.preventDefault();if(!phRes)ret
 ["phIn","ph2In"].forEach(i=>$(i).addEventListener("input",()=>{$("phErr").hidden=true}));
 $("phLater").addEventListener("click",()=>phEnd(null));$("phClose").addEventListener("click",()=>phEnd(null));
 $("phForgot").addEventListener("click",async()=>{if(!phRes||!phOn())return;const x=data.phx;
-  if(!x.rec){const b=$("phForgot");
+  if(!x.rec){
+    if((isV2(data.vault)&&PW().length)||(isV2(data.docVault)&&docsArr().length)){
+      phFail("La phrase secrète est nécessaire pour récupérer les données de l’ancien coffre.");
+      return;
+    }
+    const b=$("phForgot");
     if(!b.dataset.armed){b.dataset.armed="1";phFail("La récupération par le mot de passe du compte n'était pas activée : sans ta phrase, tes coffres ne peuvent pas être rouverts.");
       b.textContent=L("Tout effacer et recommencer ? Touche encore pour confirmer");return}
     phEnd(null);vaultsReset();return}
@@ -4571,199 +4525,140 @@ async function devSetup(ctx,head,forgot){
   await mkWrap(ctx,code,mk);phMem=mk;toast("Code enregistré sur cet appareil");return code}
 // phrase perdue sans récupération : les coffres renforcés sont illisibles, on repart de zéro (mots de passe, notes secrètes, code des documents)
 function vaultsReset(){
-  PW().forEach(x=>tomb(x.id));data.pwds=[];data.vault=null;
   NT().filter(n=>n.secret).forEach(n=>tomb(n.id));data.notes=NT().filter(n=>!n.secret);data.noteVault=null;
-  data.docVault=null;data.phx=null;phMem=null;ls.del(mkLsKey());ls.del(bioLsKey());
-  dvOpen=false;dvKey=null;vaultKey=null;vaultItems=new Map();nsKey=null;nsVid=null;nsPlain=new Map();pinStep="";
+  if(isV2(data.docVault))data.docVault=null;if(isV2(data.vault))data.vault=null;data.phx=null;phMem=null;ls.del(mkLsKey());ls.del(bioLsKey());
+  nsKey=null;nsVid=null;nsPlain=new Map();
   save();renderAllSafe();toast("Coffres remis à zéro : choisis un nouveau code et une nouvelle phrase")}
 // ancien coffre (code seul) → coffre v2, au déverrouillage. Renvoie la nouvelle clé, ou null (plus tard / impossible).
 const upAsked=new Set();
-async function v2Upgrade(kind,code,oldKey){
-  const old=kind==="pw"?data.vault:kind==="docs"?data.docVault:data.noteVault;
+async function v2Upgrade(code,oldKey){
+  const old=data.noteVault;
   if(!old||isV2(old)||upAsked.has(old.id))return null;upAsked.add(old.id);
-  if(kind==="docs"&&!navigator.onLine)return null; // les documents en ligne doivent être relus : on réessaiera
   const r=phMem?{mk:phMem}:{mk:await mkNeed({mode:"new",title:"Renforce ta protection",later:"Plus tard",
     ptext:"Ton code à 5 chiffres seul est trop facile à deviner pour quelqu'un qui volerait les données du serveur. Entre le mot de passe de ton compte : il protégera vraiment tes coffres. Ton code reste le même sur cet appareil.",
     text:phOn()?"Ton coffre passe à la protection renforcée : entre ta phrase secrète. Ton code reste le même.":"Ton code à 5 chiffres seul est trop facile à deviner pour quelqu'un qui volerait les données du serveur. Choisis une phrase secrète d'au moins 10 caractères : elle protégera vraiment tes coffres. Ton code reste le même pour ouvrir l'app sur cet appareil."})};
   if(!r.mk)return null;const mk=r.mk;
-  const ctx=kind==="notes"?"notes":"main";
-  let nk;
-  if(kind==="pw"){const n=await v2Make(mk,"sidnote",{uni:true});nk=n.key;const now=Date.now();
-    for(const e of PW()){if(e.vid!==old.id)continue;try{const p=await decJ(oldKey,e),x=await encJ(nk,p);Object.assign(e,{iv:x.iv,ct:x.ct,vid:n.v.id,upd:now})}catch(x){}}
-    data.vault=n.v;if(vaultKey){vaultKey=nk;vaultVid=n.v.id;vaultItems=new Map()}} // la clé ouverte suit le nouveau coffre
-  else if(kind==="notes"){const n=await v2Make(mk,"sidnote-notes");nk=n.key;const now=Date.now();
-    for(const e of NT()){if(!e.secret||e.vid!==old.id)continue;try{const p=await decJ(oldKey,e),x=await encJ(nk,p);Object.assign(e,{iv:x.iv,ct:x.ct,vid:n.v.id,upd:now})}catch(x){}}
-    data.noteVault=n.v;if(nsKey){nsKey=nk;nsVid=n.v.id}}
-  else{
-    // 1) chaque document lisible (copie de l'appareil, ou version en ligne déchiffrée avec l'ancienne clé)
-    const plain=new Map();
-    for(const d of docsArr()){try{plain.set(d.id,await docBlob(d,oldKey))}catch(e){if(d.up&&!(await idb.get(docKey(d)))){toast("Passage impossible pour l'instant (réseau). Réessaie plus tard.");upAsked.delete(old.id);return null}}}
-    const n=await v2Make(mk,"sidnote-docs",{uni:true});nk=n.key;data.docVault=n.v;if(dvOpen){dvKey=nk;dvVid=n.v.id}
-    // 2) rechiffrés avec la nouvelle clé, sur l'appareil et en ligne
-    for(const d of docsArr()){const b=plain.get(d.id);if(!b)continue;const enc=await docEncrypt(b,nk);
-      try{await idb.put(docKey(d),enc)}catch(e){}
-      if(d.up){try{await stor("POST","documents/"+(d.path||docPath(d)),enc);d.enc=n.v.id}catch(e){d.up=false}}}
-  }
+  const ctx="notes",n=await v2Make(mk,"sidnote-notes"),nk=n.key,now=Date.now();
+  for(const e of NT()){if(!e.secret||e.vid!==old.id)continue;try{const p=await decJ(oldKey,e),x=await encJ(nk,p);Object.assign(e,{iv:x.iv,ct:x.ct,vid:n.v.id,upd:now})}catch(x){}}
+  data.noteVault=n.v;if(nsKey){nsKey=nk;nsVid=n.v.id}
   if(!mkHas(ctx))await mkWrap(ctx,code,mk);
   else{try{await mkUnwrap(ctx,code)}catch(e){await mkWrap(ctx,code,mk)}} // le dernier code tapé ouvre ce coffre sur cet appareil
   save();toast("Protection renforcée");if(r.created)await phRecOffer(r.ph);return nk}
-function pwdLock(){if(!vaultKey&&!pinBuf)return;vaultKey=null;vaultItems=new Map();pwShown.clear();
-  {const pl=$("pwList");if(window.SCIslands&&Object.keys(pl).some(k=>k.startsWith("__reactContainer")))window.SCIslands.pwList(pl,{items:[],empty:"",i18n:agI18n()});else pl.innerHTML=""} /* v57 : plus rien de déchiffré à l'écran une fois verrouillé */pinBuf="";pinStep="";closePwSheet();if(data.ui.view==="pwd")renderPwd()}
-// déchiffre les entrées (après déverrouillage ou après une synchro)
-async function vaultLoad(){
-  if(!vaultKey)return;const k=vaultKey,vid=data.vault.id,m=new Map();
-  for(const e of PW()){if(e.vid!==vid)continue;const old=vaultItems.get(e.id);
-    if(old&&old._iv===e.iv){m.set(e.id,old);continue}
-    try{m.set(e.id,{...await decJ(k,e),_iv:e.iv})}catch(x){}}
-  if(k===vaultKey){vaultItems=m;renderPwList()}
-}
-function renderPwd(){
-  if(!$("pinBox"))return;
-  // coffre remis à zéro ou recréé sur un autre appareil : on reverrouille
-  if(vaultKey&&(!vaultOn()||data.vault.id!==vaultVid)){vaultKey=null;vaultItems=new Map();pinStep=""}
-  const open=!!vaultKey;$("pinBox").hidden=open;$("vault").hidden=!open;elanRefreshCoffreMetric();
-  if(open){renderPwList();vaultLoad();return}
-  // un coffre arrivé d'un autre appareil pendant qu'on était sur « Choisis ton code » : on passe au déverrouillage (sinon on en créerait un second)
-  if(vaultOn()&&/^(new|confirm|adopt)$/.test(pinStep)){pinStep="";pinBuf="";pinFirst=""}
-  if(!pinStep)pinStep=vaultOn()?(isV2(data.vault)&&!mkHas("main")?"device":"unlock"):(data.docVault&&data.docVault.chk?"adopt":"new");
-  if(pinStep==="device"&&!(vaultOn()&&isV2(data.vault)&&!mkHas("main")))pinStep="unlock";
-  $("pinDev").hidden=pinStep!=="device";$("pinPad").hidden=$("pinDots").hidden=pinStep==="device";
-  const T={new:["Choisis ton code","5 chiffres pour protéger tes mots de passe. Retiens-le bien : sans lui, ils ne peuvent pas être récupérés."],
-    confirm:["Confirme ton code","Tape à nouveau les 5 chiffres."],unlock:["Entre ton code","Tes mots de passe sont verrouillés."],
-    adopt:["Entre ton code","Le même que pour tes documents : il protégera aussi tes mots de passe."],
-    device:["Nouvel appareil",phPw()?"Pour ouvrir tes mots de passe ici, entre d'abord le mot de passe de ton compte, puis choisis le code de cet appareil.":"Pour ouvrir tes mots de passe ici, entre d'abord ta phrase secrète, puis choisis le code de cet appareil."]}[pinStep];
-  $("pinDev").textContent=L(phPw()?"Entrer le mot de passe de mon compte":"Entrer ma phrase secrète");
-  $("pinTitle").textContent=L(T[0]);$("pinSub").textContent=L(T[1]);$("pinForgot").hidden=pinStep!=="unlock";
-  $("pinBio").hidden=!(pinStep==="unlock"&&bioHas("main"));$("pinBio").textContent=bioUse();
-  if(!$("pinPad").children.length&&shIsl("keypad")){try{window.SCIslands.keypad($("pinPad"),{attr:"pin",del:agI18n().tr("Effacer")})}catch(e){reportErr("island keypad: "+(e&&e.message))}}
-  if(!$("pinPad").children.length)$("pinPad").innerHTML=[1,2,3,4,5,6,7,8,9].map(d=>`<button type="button" data-pin="${d}">${d}</button>`).join("")+
-    `<button type="button" class="blank" tabindex="-1" aria-hidden="true"></button><button type="button" data-pin="0">0</button><button type="button" class="del" data-pin="del">Effacer</button>`;
-  pinDots();
-}
-function pinDots(){[...$("pinDots").children].forEach((d,i)=>d.classList.toggle("on",i<pinBuf.length))}
-function pinFail(msg){const d=$("pinDots");$("pinErr").textContent=L(msg);d.classList.remove("shake");void d.offsetWidth;d.classList.add("shake");if(navigator.vibrate)navigator.vibrate(60);pinBuf="";pinDots()}
-async function pinDone(){
-  const code=pinBuf;
-  if(pinStep==="new"){pinFirst=code;pinBuf="";pinStep="confirm";$("pinErr").textContent="";renderPwd();return}
-  // v27 : les documents ont déjà un code → les mots de passe prennent le même
-  if(pinStep==="adopt"){pinBusy=true;$("pinErr").textContent="";
-    try{await vOpen(data.docVault,code,"main")}catch(e){pinBusy=false;pinFail("Code incorrect.");return}
-    try{if(isV2(data.docVault)){const n=await v2Make(phMem,"sidnote",{uni:true});data.vault=n.v;vaultKey=n.key}
-      else{data.vault=await newPwVault(code);vaultKey=await pinKey(code,data.vault.salt,PIN_ITER)}
-      data.docVault.uni=true;save();vaultVid=data.vault.id;vaultItems=new Map();pinBuf="";pinStep="";toast("Code enregistré");renderPwd()}
-    catch(ex){pinFail("Ce navigateur ne permet pas de chiffrer les données.")}
-    pinBusy=false;return}
-  if(pinStep==="confirm"){
-    if(code!==pinFirst){pinFirst="";pinStep="new";renderPwd();pinFail("Les deux codes ne sont pas identiques. Recommence.");return}
-    pinBusy=true;$("pinErr").textContent="";$("pinSub").textContent=L("Création du coffre…");
-    // v32 : puis la phrase secrète, qui protège vraiment le coffre
-    const mk=await mkNeed();if(!mk){pinBusy=false;pinFirst="";pinBuf="";pinStep="new";renderPwd();return}
-    try{const n=await v2Make(mk,"sidnote",{uni:true});data.vault=n.v;
-      if(!(data.docVault&&data.docVault.chk))data.docVault=(await v2Make(mk,"sidnote-docs",{uni:true})).v; // même code pour les documents
-      else if(data.docVault.uni&&!isV2(data.docVault))data.docVault.uni=false; // ancien code des documents : ils repasseront au code unique au prochain déverrouillage
-      await mkWrap("main",code,mk);
-      save();vaultKey=n.key;vaultVid=data.vault.id;vaultItems=new Map();pinFirst="";pinBuf="";pinStep="";toast("Code enregistré");renderPwd()}
-    catch(ex){pinStep="new";renderPwd();pinFail("Ce navigateur ne permet pas de chiffrer les données.")}
-    pinBusy=false;return}
-  // déverrouillage
-  if(Date.now()<pinWait){pinFail("Trop d'essais. Attends 30 secondes.");return}
-  pinBusy=true;$("pinErr").textContent="";
-  try{const v=data.vault,key=await vOpen(v,code,"main");
-    pinFails=0;vaultKey=key;vaultVid=v.id;pinBuf="";pinStep="";renderPwd();vaultLoad();if(!pinBioRun)bioOffer("main",code);
-    if(!isV2(v)){v2Upgrade("pw",code,key).then(nk=>{if(nk&&vaultKey){vaultKey=nk;vaultVid=data.vault.id;vaultItems=new Map();vaultLoad()}})}}
-  catch(ex){pinFails++;if(pinFails>=5){pinFails=0;pinWait=Date.now()+30000;pinFail("Trop d'essais. Attends 30 secondes.")}else pinFail("Code incorrect.")}
-  pinBusy=false;
-}
-function pinPress(k){
-  if(pinBusy)return;
-  if(k==="del"){pinBuf=pinBuf.slice(0,-1);pinDots();return}
-  if(pinBuf.length>=PIN_LEN)return;
-  pinBuf+=k;pinDots();if(pinBuf.length===PIN_LEN)setTimeout(pinDone,120);
-}
-padTap($("pinPad"),"pin",pinPress);
-document.addEventListener("keydown",e=>{if(data.ui.view!=="pwd"||vaultKey||!$("pwSheet").hidden||!$("pinSheet").hidden||document.body.classList.contains("locked"))return;
-  if(/^[0-9]$/.test(e.key))pinPress(e.key);else if(e.key==="Backspace")pinPress("del")});
-let pinBioRun=false;
-$("pinBio").addEventListener("click",async()=>{if(pinBusy||vaultKey)return;const code=await bioCode("main");if(!code||vaultKey)return;
-  pinBuf=code;pinStep="unlock";pinWait=0;pinBioRun=true;await pinDone();pinBioRun=false;if(!vaultKey){bioDrop("main");$("pinErr").textContent=L("Ton code a changé : tape-le, puis réactive Face ID dans Réglages.")}});
-$("pinForgot").addEventListener("click",async e=>{const b=e.currentTarget;
-  if(isV2(data.vault)){const code=await devSetup("main","Mots de passe",true);if(code){pinBuf=code;pinStep="unlock";pinWait=0;pinDone()}return}
-  if(data.vault&&data.vault.rec){const code=await recRecover(data.vault);if(code){pinBuf=code;pinStep="unlock";pinWait=0;pinDone()}return}
-  if(!b.dataset.armed){b.dataset.armed="1";b.textContent=L("La récupération n'était pas activée. Effacer tous les mots de passe et choisir un nouveau code ? Touche encore pour confirmer.");
-    setTimeout(()=>{delete b.dataset.armed;b.textContent=L("Code oublié ?")},5000);return}
-  delete b.dataset.armed;b.textContent=L("Code oublié ?");
-  PW().forEach(x=>tomb(x.id));data.pwds=[];data.vault=null;save();pinStep="new";pinBuf="";renderPwd();toast("Coffre remis à zéro");
-});
-
-$("pinDev").addEventListener("click",async()=>{const code=await devSetup("main","Mots de passe");if(code){pinBuf=code;pinStep="unlock";pinWait=0;pinDone()}});
-$("pwLock").addEventListener("click",()=>{pwdLock();toast("Mots de passe verrouillés")});
-const EYE=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>`;
-const COPY=`<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="12" height="12" rx="2.5"/><path d="M15.5 8.5V6a2.5 2.5 0 0 0-2.5-2.5H6A2.5 2.5 0 0 0 3.5 6v7A2.5 2.5 0 0 0 6 15.5h2.5"/></svg>`;
-function renderPwList(){
-  if(!vaultKey)return;elanRefreshCoffreMetric();
-  const q=pwQ.trim();let list=[...vaultItems.entries()].map(([id,v])=>({id,...v}));
-  // v28 : classement au choix (data.prefs.pwSort) : A → Z (par défaut) ou les plus récents d'abord (date d'ajout ou de modification)
-  const srt=data.prefs.pwSort==="date"?"date":"alpha",at=id=>{const r=PW().find(x=>x.id===id);return r?(r.upd||Date.parse(r.createdAt)||0):0};
-  $("pwSort").querySelectorAll("[data-pwsort]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.pwsort===srt)));
-  list.sort(srt==="date"?(a,b)=>at(b.id)-at(a.id):(a,b)=>String(a.site).localeCompare(String(b.site),LANG,{sensitivity:"base",numeric:true}));
-  if(q)list=list.map(x=>({x,s:fuzzyScore(`${x.site} ${x.user||""}`,q)})).filter(o=>o.s>0).sort((a,b)=>b.s-a.s).map(o=>o.x);
-  // v57 (#3) : liste dessinée par React ; le mot de passe et la note ne sont transmis que pour les entrées affichées
-  if(window.SCIslands&&window.SCIslands.pwList&&!window.__noIslands){try{window.SCIslands.pwList($("pwList"),{empty:q?"Aucun site ne correspond.":"Aucun mot de passe pour l'instant. Touche « + Ajouter ».",i18n:agI18n(),
-      items:list.map(x=>{const show=pwShown.has(x.id);return show?{id:x.id,site:String(x.site),user:x.user||"",show,pw:x.pw||"",note:x.note||""}:{id:x.id,site:String(x.site),user:x.user||"",show}})});return}
-    catch(e){reportErr("island pwList: "+(e&&e.message))}}
-  $("pwList").innerHTML=list.length?list.map(x=>{const show=pwShown.has(x.id);
-    return `<div class="pw-row"><div class="pw-av notr">${esc((String(x.site).trim()[0]||"?"))}</div>
-      <div class="pw-main notr"><b>${esc(x.site)}</b>${x.user?`<span class="small muted">${esc(x.user)}</span>`:""}${x.note&&show?`<span class="small muted">${esc(x.note)}</span>`:""}</div>
-      <div class="pw-controls"><span class="pw-sec notr">${show?esc(x.pw):"••••••••"}</span><button class="pen" data-pweye="${x.id}" aria-label="${L(show?"Masquer":"Afficher")}">${EYE}</button>
-      <button class="pen" data-pwcopy="${x.id}" aria-label="Copier le mot de passe">${COPY}</button>
-      <button class="pen" data-pwedit="${x.id}" aria-label="Modifier">${PEN}</button></div></div>`}).join("")
-    :`<div class="empty">${L(q?"Aucun site ne correspond.":"Aucun mot de passe pour l'instant. Touche « + Ajouter ».")}</div>`;
-}
-$("pwSearch").addEventListener("input",e=>{pwQ=e.target.value;renderPwList()});
-$("pwSort").addEventListener("click",e=>{const b=e.target.closest("[data-pwsort]");if(!b)return;data.prefs.pwSort=b.dataset.pwsort;save();renderPwList()});
 async function copyTxt(t){try{await navigator.clipboard.writeText(t);return true}catch(e){
   const a=document.createElement("textarea");a.value=t;a.setAttribute("readonly","");a.style.position="fixed";a.style.opacity="0";document.body.appendChild(a);a.select();
   let ok=false;try{ok=document.execCommand("copy")}catch(x){}a.remove();return ok}}
-$("pwList").addEventListener("click",async e=>{const b=e.target.closest("button");if(!b)return;
-  if(b.dataset.pweye){const id=b.dataset.pweye;pwShown.has(id)?pwShown.delete(id):pwShown.add(id);renderPwList()}
-  else if(b.dataset.pwcopy){const v=vaultItems.get(b.dataset.pwcopy);if(v)toast(await copyTxt(v.pw||"")?"Mot de passe copié":"Copie impossible")}
-  else if(b.dataset.pwedit)openPwSheet(b.dataset.pwedit);
-});
-function openPwSheet(id){
-  if(!vaultKey)return;pwEditId=id||null;const v=id?vaultItems.get(id)||{}:{};
-  $("pwSheetTitle").textContent=L(id?"Modifier le mot de passe":"Nouveau mot de passe");
-  $("pwSite").value=v.site||"";$("pwUser").value=v.user||"";$("pwPass").value=v.pw||"";$("pwNote").value=v.note||"";
-  $("pwPass").type="password";pwEyePaint(false);
-  const d=$("pwDel");d.hidden=!id;d.classList.remove("armed");d.textContent=L("Supprimer");
-  $("pwSheet").hidden=false;if(!id)setTimeout(()=>$("pwSite").focus(),50);
-}
-function closePwSheet(){$("pwSheet").hidden=true;pwEditId=null;["pwSite","pwUser","pwPass","pwNote"].forEach(k=>$(k).value="")}
-$("pwNew").addEventListener("click",()=>openPwSheet(null));
-$("pwClose").addEventListener("click",closePwSheet);
-$("pwSheet").addEventListener("click",e=>{if(e.target.id==="pwSheet")closePwSheet()});
-$("pwEye").addEventListener("click",()=>{const i=$("pwPass"),s=i.type==="password";i.type=s?"text":"password";pwEyePaint(s)});
-$("pwGen").addEventListener("click",()=>{
-  const A="abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789",S="-_!?.@#",r=crypto.getRandomValues(new Uint32Array(16));
-  let p=[...r].map(n=>A[n%A.length]);p[3]=S[r[3]%S.length];p[10]=String(r[10]%10);
-  $("pwPass").value=p.join("");$("pwPass").type="text";pwEyePaint(true);toast("Mot de passe généré");
-});
-$("pwForm").addEventListener("submit",async e=>{
-  e.preventDefault();if(!vaultKey)return;
-  const v={site:$("pwSite").value.trim(),user:$("pwUser").value.trim(),pw:$("pwPass").value,note:$("pwNote").value.trim()};
-  if(!v.site){toast("Indique le site ou l'application");return}
-  if(!v.pw){toast("Indique le mot de passe");return}
-  const id=pwEditId||uid(),enc=await encJ(vaultKey,v),old=PW().find(x=>x.id===id);
-  const rec={id,vid:data.vault.id,iv:enc.iv,ct:enc.ct,upd:Date.now(),createdAt:old?old.createdAt:new Date().toISOString()};
-  data.pwds=[...PW().filter(x=>x.id!==id),rec];vaultItems.set(id,{...v,_iv:rec.iv});
-  save();closePwSheet();renderPwList();toast(old?"Modifié":"Mot de passe enregistré");
-});
-$("pwDel").addEventListener("click",e=>{const b=e.currentTarget;if(!pwEditId)return;
-  const id=pwEditId;closePwSheet();
-  undoable("Mot de passe supprimé",[id],()=>{tomb(id);data.pwds=PW().filter(x=>x.id!==id);vaultItems.delete(id);pwShown.delete(id)},{after:()=>{renderPwList();vaultLoad()}});
-});
 
-// Le même contrôle Voir/Cacher, présenté par son pictogramme et son nom accessible.
-function pwEyePaint(shown){const b=$("pwEye");b.innerHTML=IC("eye");b.setAttribute("aria-label",L(shown?"Cacher":"Voir"));b.setAttribute("aria-pressed",String(shown))}
+/* ---------- export de l’ancien coffre ---------- */
+function renderVaultExport(){
+  const docs=docsArr().length,passwords=PW().length;
+  $("vaultExport").hidden=!docs&&!passwords;
+  $("exportVaultDocs").hidden=!docs;
+  $("exportVaultPasswords").hidden=!passwords;
+}
+
+async function vaultExportKey(v,head){
+  if(!v||!v.chk)throw new Error(L("Le code de ce coffre est indisponible."));
+  if(isV2(v)&&!mkHas("main")){
+    const mk=await mkNeed({mode:"enter",title:head});
+    return mk?await v2Key(v,mk):null;
+  }
+  let key=null;
+  const code=await askPin({mode:"unlock",ctx:"main",head,sub:"Entre ton code.",rec:isV2(v)?null:v.rec,phrase:isV2(v),verify:async c=>{
+    try{key=await vOpen(v,c,"main");return true}catch(e){return false}
+  }});
+  if(code==="forgot"&&isV2(v)){
+    const newCode=await devSetup("main",head,true);
+    return newCode?await vOpen(v,newCode,"main"):null;
+  }
+  return code?key:null;
+}
+
+const vaultZipCrc=Uint32Array.from({length:256},(_,i)=>{
+  for(let bit=0;bit<8;bit++)i=(i>>>1)^((i&1)?0xedb88320:0);
+  return i;
+});
+async function vaultZip(files){
+  const enc=new TextEncoder(),body=[],directory=[];
+  let offset=0,directorySize=0;
+  if(files.length>65535)throw new Error(L("Le coffre est trop volumineux pour un seul fichier ZIP."));
+  for(const {name,blob} of files){
+    const label=enc.encode(name),size=blob.size;
+    const local=new Uint8Array(30),central=new Uint8Array(46);
+    const a=new DataView(local.buffer),b=new DataView(central.buffer);
+    let crc=0xffffffff;
+    for(const byte of new Uint8Array(await blob.arrayBuffer()))crc=(crc>>>8)^vaultZipCrc[(crc^byte)&255];
+    crc^=0xffffffff;
+    a.setUint32(0,0x04034b50,true);a.setUint16(4,20,true);a.setUint16(6,0x800,true);
+    a.setUint16(12,33,true);a.setUint32(14,crc,true);a.setUint32(18,size,true);
+    a.setUint32(22,size,true);a.setUint16(26,label.length,true);
+    b.setUint32(0,0x02014b50,true);b.setUint16(4,20,true);
+    central.set(local.subarray(4,30),6);
+    b.setUint32(42,offset,true);
+    body.push(local,label,blob);directory.push(central,label);
+    offset+=local.length+label.length+size;
+    directorySize+=central.length+label.length;
+    if(offset+directorySize+22>0xffffffff)throw new Error(L("Le coffre est trop volumineux pour un seul fichier ZIP."));
+  }
+  const end=new Uint8Array(22),c=new DataView(end.buffer);
+  c.setUint32(0,0x06054b50,true);c.setUint16(8,files.length,true);c.setUint16(10,files.length,true);
+  c.setUint32(12,directorySize,true);c.setUint32(16,offset,true);
+  return new Blob([...body,...directory,end],{type:"application/zip"});
+}
+
+async function exportLegacyVault(kind){
+  const status=$("vaultExportStatus"),buttons=[$("exportVaultDocs"),$("exportVaultPasswords")];
+  if(buttons.some(b=>b.disabled))return;
+  const account=session?.user.id;
+  if(!account)return;
+  const docs=kind==="docs",vault=docs?data.docVault:data.vault;
+  const entries=[...(docs?docsArr():PW())];
+  if(!entries.length)return;
+  buttons.forEach(b=>b.disabled=true);
+  status.hidden=true;
+  try{
+    const key=docs&&!vault?null:await vaultExportKey(vault,docs?"Documents":"Mots de passe");
+    if(vault&&!key)return;
+    const checkAccount=()=>{
+      if(session?.user.id!==account||(docs?data.docVault:data.vault)?.id!==vault?.id)
+        throw new Error(L("Le coffre a changé. Relance l’export."));
+    };
+    checkAccount();
+    if(docs){
+      const files=[],documents=[];
+      for(const entry of entries){
+        checkAccount();
+        const title=pdfName(entry.title).replace(/[\u0000-\u001f]/g," ");
+        const name=`${files.length+1} - ${title}`;
+        files.push({name,blob:await docBlob(entry,key)});
+        documents.push({file:name,title:entry.title,folder:entry.folder,createdAt:entry.createdAt});
+      }
+      const folders=(data.docFolders||[]).map(({id,name})=>({id,name}));
+      files.push({name:"documents.json",blob:new Blob([JSON.stringify({documents,folders},null,2)],{type:"application/json"})});
+      const archive=await vaultZip(files);
+      checkAccount();
+      downloadFile(archive,"sidcompagnon-documents.zip");
+    }else{
+      const rows=["name,url,username,password,note"];
+      const csv=value=>'"'+String(value??"").replace(/"/g,'""')+'"';
+      for(const entry of entries){
+        if(entry.vid!==vault.id)throw new Error(L("Une entrée est protégée par un ancien code."));
+        const value=await decJ(key,entry);
+        rows.push([value.site,/^https?:\/\//i.test(value.site||"")?value.site:"",value.user,value.pw,value.note].map(csv).join(","));
+      }
+      checkAccount();
+      downloadFile(new Blob([rows.join("\r\n")+"\r\n"],{type:"text/csv;charset=utf-8"}),"sidcompagnon-mots-de-passe.csv");
+    }
+    status.textContent=L("Vérifie le fichier téléchargé.");
+    status.hidden=false;
+  }catch(e){
+    status.textContent=L("L’export a échoué. Vérifie le code et la disponibilité des données.");
+    status.hidden=false;
+  }finally{
+    buttons.forEach(b=>b.disabled=false);
+  }
+}
+$("exportVaultDocs").addEventListener("click",()=>exportLegacyVault("docs"));
+$("exportVaultPasswords").addEventListener("click",()=>exportLegacyVault("passwords"));
 
 /* ---------- apparence : couleur et thème ---------- */
 // v29 : ambiances (couleur d'accent de toute l'app) ; [nom, accent clair, fond clair, accent sombre, fond sombre]
@@ -4800,7 +4695,7 @@ data.ui.setOpen={};
 /* ---------- v39 : tout se referme quand on revient (lancement, ou retour après 10 min ailleurs) ---------- */
 function closeAll(){
   document.querySelectorAll(".sheet-bg:not([hidden])").forEach(sb=>{const x=sb.querySelector(".sheet-head .x,[data-esc]");if(x)x.click();else sb.hidden=true});
-  ["viewer","lightbox"].forEach(id=>{const v=$(id);if(v&&!v.hidden){const c=v.querySelector("#vwClose,#lbClose,.x");if(c)c.click();else v.hidden=true}});
+  ["lightbox"].forEach(id=>{const v=$(id);if(v&&!v.hidden){const c=v.querySelector("#lbClose,.x");if(c)c.click();else v.hidden=true}});
   document.querySelectorAll("details.setsec[open],details[open]").forEach(d=>d.open=false);
   ["nfForm","catForm"].forEach(id=>{const f=$(id);if(f)f.hidden=true});
   if(noteOpenId)closeNote();noteDir=null;if(typeof qOpen!=="undefined")qOpen=false;
@@ -5123,7 +5018,7 @@ function renderNutri(){try{renderAiCards()}catch(e){}
     return `<details class="dish" open><summary class="dish-h"><span class="dish-clock">${two(d.getHours())}:${two(d.getMinutes())}</span><span class="dish-ic" data-thumb="${G.g}">${mono(G.name)}</span>
       <span class="dish-t"><b class="notr" data-user-label="" title="${esc(G.name)}">${esc(G.name)}</b>${G.items.length>1?` <span class="small muted">· ${G.items.length} ${L("aliments")}</span>`:""}</span>
       <span class="dish-kcal">${fmtFull(r0(t.kcal))}<small>\u00a0kcal</small></span><button type="button" class="pen nu-cp" data-nucopy="${G.g}" aria-label="${L("Copier ce repas sur d'autres jours")}" title="${L("Copier sur d'autres jours")}">${IC("copy")}</button>${G.items.length===1?`<button class="pen" data-nuedit="${G.items[0].id}" aria-label="${L("Modifier")}">${PEN}</button>`:""}<button type="button" class="x" data-nudelg="${G.g}" aria-label="${L("Supprimer ce plat")}">${IC("close")}</button></summary>
-      ${macroHtml(t)}${G.items.length===1?`<div class="dish-note">${qtyCell("log:"+G.items[0].id,G.items[0])}</div>`:`<div class="dish-items">${G.items.map(x=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${qtyCell("log:"+x.id,x)}</div><span class="k">${fmtFull(r0(x.kcal))}\u00a0kcal</span><button class="pen" data-nuedit="${x.id}" aria-label="${L("Modifier")}">${PEN}</button><button class="x" data-nudel="${x.id}" aria-label="${L("Supprimer")}">${IC("close")}</button></div>`).join("")}</div>`}</details>`}).join("")
+      ${macroHtml(t)}${G.items.length===1?`<div class="dish-note">${qtyCell("log:"+G.items[0].id,G.items[0])}${G.items[0].source?` <span class="small muted notr">${esc(G.items[0].source)}</span>`:""}</div>`:`<div class="dish-items">${G.items.map(x=>`<div class="dish-it"><span class="em">·</span><div class="grow"><b class="notr">${esc(x.name)}</b>${qtyCell("log:"+x.id,x)}${x.source?` <span class="small muted notr">${esc(x.source)}</span>`:""}</div><span class="k">${fmtFull(r0(x.kcal))}\u00a0kcal</span><button class="pen" data-nuedit="${x.id}" aria-label="${L("Modifier")}">${PEN}</button><button class="x" data-nudel="${x.id}" aria-label="${L("Supprimer")}">${IC("close")}</button></div>`).join("")}</div>`}</details>`}).join("")
     :`<div class="card"><div class="empty">${L(nuDay===iso(today())?"Rien pour l'instant. Ajoute ton premier repas.":"Rien d'enregistré ce jour-là. Tu peux encore le compléter.")}</div></div>`;
   groups.forEach(G=>loadThumb(G.g));
   renderNuResult();renderNuPlan();renderNuMenu();renderMenuForm();renderNuWeek();renderMenuLeft();nuShowTab();
@@ -5148,6 +5043,7 @@ function toGrams(name,t){t=String(t||"").toLowerCase().replace(",",".");
 // Piece masses are edible estimates, overridden by food-memory or saved metadata.
 // Never rewrite historical totals merely to select a display unit.
 function nuUnitRef(x){
+  if(x.basis==="100ml")return null;
   if(+x.unit_g>0)return {g:+x.unit_g,label:x.unit_label||T3("pièce estimée","estimated piece")};
   const n=nz(x.name).replace(/œ/g,"oe");
   const refs=/** @type {[RegExp,number,string,string][]} */([[/^(?:oeuf|oeufs|egg|eggs)\b/,50,"œuf moyen sans coquille","medium egg without shell"],
@@ -5156,6 +5052,7 @@ function nuUnitRef(x){
   return ref?{g:ref[1],label:T3(ref[2],ref[3])}:null
 }
 function nuQtyGrams(x,q){
+  if(x.basis==="100ml")return 0;
   const t=String(q||"").trim(),g=t.match(/^(\d+(?:[.,]\d+)?)\s*(kg|g|grammes?|grams?)\b/i);
   if(g)return +g[1].replace(",",".")*(g[2].toLowerCase()==="kg"?1000:1);
   const spoon=toGrams(x.name,t);if(spoon)return spoon;
@@ -5178,7 +5075,17 @@ function nuQtyHelp(x){const ref=nuUnitRef(x);if(!ref)return "";
   if(!label)label=String(x.name||T3("Pièce","Piece"));label=label.charAt(0).toUpperCase()+label.slice(1);
   return T3(`${label} ≈ ${fmtN(ref.g)} g (estimation). Tu peux aussi saisir des grammes (ex. 100 g).`,`${label} ≈ ${fmtN(ref.g)} g (estimate). You can also enter grams (e.g. 100 g).`)}
 
-function scaleQty(x,q){const k=nuQtyRatio(x,q);if(!(k>0)){if(q)toast(T3("Unité inconnue : garde la même unité ou précise les grammes.","Unknown unit: keep the same unit or specify grams."));return false}
+function scaleQty(x,q){
+  if(x.per100){
+    const match=String(q||"").trim().match(/^(\d+(?:[.,]\d+)?)\s*(g|kg|ml|cl|l)$/i);
+    const unit=match?.[2].toLowerCase(),amount=match?Number(match[1].replace(",",".")):0;
+    const factor=x.basis==="100ml"?({ml:1,cl:10,l:1000})[unit]:({g:1,kg:1000})[unit];
+    if(!(Number.isFinite(amount)&&amount>0&&factor&&amount*factor<=100000)){if(q)toast(x.basis==="100ml"?"Indique la quantité en millilitres.":"Indique la quantité en grammes.");return false}
+    const ratio=amount*factor/100,ref=x.per100;
+    x.qty=q;Object.assign(x,nuQtyMeta(x),{kcal:r0(ref.kcal*ratio),p:r1(ref.p*ratio),c:r1(ref.c*ratio),f:r1(ref.f*ratio)});
+    return true;
+  }
+  const k=nuQtyRatio(x,q);if(!(k>0)){if(q)toast(T3("Unité inconnue : garde la même unité ou précise les grammes.","Unknown unit: keep the same unit or specify grams."));return false}
   x.qty=q;Object.assign(x,nuQtyMeta(x));
   x.kcal=r0(x.kcal*k);x.p=r1(x.p*k);x.c=r1(x.c*k);x.f=r1(x.f*k);return true}
 function qtyCommit(key){const inp=$("qtyEdIn");if(!inp){qtyEd=null;return}const q=inp.value.trim(),[kind,id]=key.split(":");qtyEd=null;
@@ -5288,7 +5195,7 @@ $("nuAskForm").addEventListener("submit",async e=>{
 // plats du jour pour React (même regroupement que renderNutri)
 function nuLogDraw(groups){if(!groups){const list=dayLog(nuDay);groups=[];list.forEach(x=>{const g=x.grp||x.id;let G=groups.find(y=>y.g===g);if(!G){G={g,items:[],name:x.gname||x.name,at:x.at};groups.push(G)}G.items.push(x)})}
   window.SCIslands.nuLog($("nuLog"),{dishes:groups.map(G=>({g:G.g,name:G.name,mono:mono(G.name),thumb:thumbs.get(G.g)||null,time:hhmm2(G.at),sum:sumOf(G.items),
-    items:G.items.map(x=>({id:x.id,name:x.name,kcal:x.kcal,qty:qtyVM("log:"+x.id,x)}))})),mac:NU_MAC(),today:nuDay===iso(today()),i18n:agI18n()});$("nuLog")._isl=true}
+    items:G.items.map(x=>({id:x.id,name:x.name,kcal:x.kcal,source:x.source,qty:qtyVM("log:"+x.id,x)}))})),mac:NU_MAC(),today:nuDay===iso(today()),i18n:agI18n()});$("nuLog")._isl=true}
 const hhmm2=a=>{const d=new Date(a);return `${two(d.getHours())}:${two(d.getMinutes())}`};
 function renderNuResult(){
   $("nuAskBtn").hidden=!!nuPending;
@@ -5313,7 +5220,7 @@ $("nuResult").addEventListener("click",async e=>{const b=e.target.closest("butto
     nuPending=null;nuPhoto=null;nuPhotoPrevSet(null);$("nuAsk").value="";grow($("nuAsk"));nuMealClose();renderNutri();toast(nuDay===iso(today())?"Ajouté à ta journée":"Ajouté à ce jour")}
 });
 function nuAddItems(items,time,meta){nuProgressChange="done";const at=nuAt(time),grp=uid();
-  items.forEach(x=>NU().log.push({id:uid(),day:nuDay,at,grp,gname:meta&&meta.name||"",gem:meta&&meta.em||"",name:x.name,qty:x.qty||"",...nuQtyMeta(x),em:x.em||"",kcal:r0(x.kcal),p:r1(x.p),c:r1(x.c),f:r1(x.f),upd:Date.now()}));
+  items.forEach(x=>NU().log.push({id:uid(),day:nuDay,at,grp,gname:meta&&meta.name||"",gem:meta&&meta.em||"",name:x.name,qty:x.qty||"",...nuQtyMeta(x),...(x.source?{source:x.source,basis:x.basis,per100:x.per100}:{}),em:x.em||"",kcal:r0(x.kcal),p:r1(x.p),c:r1(x.c),f:r1(x.f),upd:Date.now()}));
   save();return grp}
 // supprimer un aliment, ou tout un plat
 $("nuLog").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
@@ -5324,7 +5231,7 @@ $("nuLog").addEventListener("click",e=>{const b=e.target.closest("button");if(!b
     undoable("Plat supprimé",ids,()=>{ids.forEach(tomb);NU().log=NU().log.filter(x=>(x.grp||x.id)!==g)},{after:renderNutri,later:()=>{if(!NU().log.some(x=>(x.grp||x.id)===g))idb.del(thumbKey(g))}})}
 });
 // T16 B : les cinq entrées réutilisent leurs traitements, dans une même feuille.
-function nuMealClose(restore=true){if($("nuMealSheet").hidden)return;$("nuMealSheet").hidden=true;if(restore)$("nuMealAdd").focus({preventScroll:true})}
+function nuMealClose(restore=true){if($("nuMealSheet").hidden)return;catalogReset();$("foodCatalogQuery").value="";$("foodCatalog").open=false;$("nuMealSheet").hidden=true;if(restore)$("nuMealAdd").focus({preventScroll:true})}
 $("nuMealAdd").addEventListener("click",()=>{$("nuMealSheet").hidden=false;$("nuMealSheet").querySelector('[role="dialog"]').focus({preventScroll:true})});
 $("nuMealClose").addEventListener("click",nuMealClose);
 $("nuMealSheet").addEventListener("click",e=>{if(e.target.id==="nuMealSheet")nuMealClose();if(e.target.closest("#nuManual")){$("nuSheet")._back=$("nuMealAdd");nuMealClose(false)}else if(e.target.closest("#nuAiLink"))nuMealClose()});
@@ -5340,6 +5247,124 @@ function nuLogFromBot(p){
     ...(x.g!==undefined?{g:x.g}:{}),...(x.unit_g!==undefined?{unit_g:x.unit_g}:{}),...(typeof x.unit_label==="string"?{unit_label:x.unit_label.slice(0,160)}:{})})),p.time,{name:p.name.slice(0,300)})}
   finally{nuDay=previous}renderNutri();return true
 }
+
+/* ---------- recherche d’aliments Sid’Nutrition ---------- */
+const CIQUAL_SOURCE="Anses. 2025. Table de composition nutritionnelle des aliments Ciqual";
+let ciqualRequest=null,catalogSearch=0,catalogItems=[],catalogFood=null;
+
+function ciqualFoods(){
+  return ciqualRequest||(ciqualRequest=fetch("./ciqual-2025.json").then(response=>{
+    if(!response.ok)throw new Error("Ciqual");
+    return response.json();
+  }).then(data=>data.foods.map(([code,name,kcal,p,c,f])=>({
+    code,name,kcal,p,c,f,basis:"100g",source:CIQUAL_SOURCE,key:nz(name).replace(/œ/g,"oe")
+  }))).catch(error=>{ciqualRequest=null;throw error}));
+}
+
+async function ciqualSearch(query){
+  const key=nz(query).replace(/œ/g,"oe"),terms=key.match(/[a-z0-9]+/g)||[];
+  if(!terms.length)return [];
+  const foods=await ciqualFoods();
+  return foods.filter(food=>terms.every(term=>food.key.includes(term)))
+    .sort((a,b)=>Number(b.key.startsWith(key))-Number(a.key.startsWith(key))||a.name.length-b.name.length)
+    .slice(0,6);
+}
+
+async function offCatalog(body){
+  if(isTrial())return {};
+  const result=await api("/functions/v1/aliments",{method:"POST",token:await token(),body:{...body,lang:LANG}});
+  if(result?.error&&!["introuvable","incomplet"].includes(result.error))throw new Error(result.error);
+  return result||{};
+}
+
+function catalogStatus(text){$("foodCatalogStatus").textContent=L(text)}
+function catalogShowOff(result){
+  if(result.product){catalogShowPortion({...result.product,source:"Open Food Facts"});return}
+  catalogStatus(result.error==="incomplet"?"Les valeurs nutritionnelles de cet aliment sont incomplètes.":"Aucun aliment trouvé.");
+}
+function catalogReset(){
+  ++catalogSearch;catalogItems=[];catalogFood=null;
+  $("foodCatalogList").replaceChildren();$("foodCatalogPortion").hidden=true;
+  catalogStatus("");
+}
+function catalogUnit(food){return food.basis==="100ml"?"ml":"g"}
+function catalogShowPortion(food){
+  if(!food||!["100g","100ml"].includes(food.basis)||!["kcal","p","c","f"].every(k=>Number.isFinite(food[k])&&food[k]>=0)){
+    catalogStatus("Les valeurs nutritionnelles de cet aliment sont incomplètes.");return
+  }
+  catalogFood=food;
+  const unit=catalogUnit(food),serving=unit==="ml"?food.servingMl:food.servingGrams;
+  $("foodCatalogName").textContent=food.name;
+  $("foodCatalogSource").textContent=food.source;
+  $("foodCatalogSource").href=food.source===CIQUAL_SOURCE?"https://doi.org/10.57745/RDMHWY":
+    "https://world.openfoodfacts.org/product/"+encodeURIComponent(food.code);
+  $("foodCatalogUnit").textContent=unit;
+  $("foodCatalogAmount").value="100";
+  $("foodCatalogServing").hidden=!(Number.isFinite(serving)&&serving>0);
+  $("foodCatalogServing").textContent=`${L("Portion indiquée")} · ${fmtN(serving||0)} ${unit}`;
+  $("foodCatalogServing").dataset.amount=String(serving||0);
+  $("foodCatalogPortion").hidden=false;catalogStatus("");
+}
+
+$("foodCatalogSearch").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const query=$("foodCatalogQuery").value.trim();
+  if(!query||!nutriAllowed())return;
+  catalogReset();
+  const seq=catalogSearch,barcode=/^\d{8,14}$/.test(query);
+  catalogStatus("Recherche en cours…");
+  try{
+    if(barcode){
+      const result=await offCatalog({code:query});
+      if(seq!==catalogSearch)return;
+      catalogShowOff(result);return;
+    }
+    const [local,online]=await Promise.allSettled([ciqualSearch(query),offCatalog({query})]);
+    if(seq!==catalogSearch)return;
+    const brands=online.status==="fulfilled"&&Array.isArray(online.value.items)?online.value.items:[];
+    catalogItems=[...(local.status==="fulfilled"?local.value:[]),
+      ...brands.filter(item=>typeof item.name==="string"&&/^\d{8,14}$/.test(item.code)).slice(0,6).map(item=>({...item,source:"Open Food Facts"}))];
+    const list=$("foodCatalogList");
+    catalogItems.forEach((item,i)=>{
+      const button=document.createElement("button");
+      button.type="button";button.className="btn ghost notr";button.dataset.foodCatalog=String(i);
+      button.textContent=[item.name,item.brand,item.source===CIQUAL_SOURCE?"Ciqual":"Open Food Facts"].filter(Boolean).join(" · ");
+      list.appendChild(button);
+    });
+    catalogStatus(local.status==="rejected"||online.status==="rejected"?"Une source est momentanément indisponible.":
+      catalogItems.length?"":"Aucun aliment trouvé.");
+  }catch(e){if(seq===catalogSearch)catalogStatus("La recherche est momentanément indisponible.")}
+});
+
+$("foodCatalogList").addEventListener("click",async e=>{
+  const button=e.target.closest("[data-food-catalog]");
+  if(!button)return;
+  const item=catalogItems[Number(button.dataset.foodCatalog)];
+  if(!item)return;
+  const seq=++catalogSearch;
+  catalogFood=null;$("foodCatalogPortion").hidden=true;
+  if(item.source===CIQUAL_SOURCE){catalogShowPortion(item);return}
+  catalogStatus("Recherche en cours…");
+  try{
+    const result=await offCatalog({code:item.code});
+    if(seq!==catalogSearch)return;
+    catalogShowOff(result);
+  }catch(e){if(seq===catalogSearch)catalogStatus("La recherche est momentanément indisponible.")}
+});
+$("foodCatalogServing").addEventListener("click",()=>$("foodCatalogAmount").value=$("foodCatalogServing").dataset.amount);
+$("foodCatalogPortion").addEventListener("submit",e=>{
+  e.preventDefault();
+  const food=catalogFood,amount=$("foodCatalogAmount").valueAsNumber;
+  if(!food||!Number.isFinite(amount)||amount<=0||nuBusy)return;
+  const ratio=amount/100,unit=catalogUnit(food);
+  const item={name:food.name,qty:`${amount} ${unit}`,kcal:r0(food.kcal*ratio),p:r1(food.p*ratio),
+    c:r1(food.c*ratio),f:r1(food.f*ratio),source:food.source,basis:food.basis,
+    per100:{kcal:food.kcal,p:food.p,c:food.c,f:food.f}};
+  nuPending={title:food.name,items:[item],note:food.source};
+  $("foodCatalog").open=false;
+  renderNuResult();
+  $("nuResult").scrollIntoView({block:"nearest"});
+});
 
 /* ---------- v47 : vues semaine / mois / année de la nutrition (#16) et copie d'un repas sur d'autres jours (#15) ---------- */
 // mêmes grilles que l'agenda (monthGrid / yearGrid, mêmes classes .day, .ym)
@@ -5449,7 +5474,11 @@ $("nuEntryForm").addEventListener("submit",e=>{
   const v={name,qty:$("nuEQty").value.trim(),kcal:num("nuEKcal"),p:num("nuEP"),c:num("nuEC"),f:num("nuEF")};
   if(nuEBase&&v.name===nuEBase.name&&v.qty!==nuEBase.qty&&!nuQtyRatio(nuEBase,v.qty)&&["kcal","p","c","f"].every(k=>v[k]===nuEBase[k])){toast(T3("Unité inconnue : garde la même unité ou corrige aussi les nutriments.","Unknown unit: keep the same unit or update the nutrients too."));return}
   Object.assign(v,nuQtyMeta({...nuEBase,...v}));
-  if(nuEditId){const x=NU().log.find(e=>e.id===nuEditId);if(x){Object.assign(x,{...v,kcal:r0(v.kcal),p:r1(v.p),c:r1(v.c),f:r1(v.f),upd:Date.now()});
+  if(nuEditId){const x=NU().log.find(e=>e.id===nuEditId);if(x){
+      if(x.source&&["name","qty","kcal","p","c","f"].some(k=>x[k]!==v[k])){
+        delete x.source;delete x.basis;delete x.per100;
+      }
+      Object.assign(x,{...v,kcal:r0(v.kcal),p:r1(v.p),c:r1(v.c),f:r1(v.f),upd:Date.now()});
       if($("nuETime").value){const d=parse(x.day),[h,m]=$("nuETime").value.split(":").map(Number);d.setHours(h,m);NU().log.filter(y=>(y.grp||y.id)===(x.grp||x.id)).forEach(y=>y.at=d.toISOString())}save()}}
   else nuAddItems([v],$("nuETime").value,{name:v.name,em:"✍️"});
   $("nuSheet").hidden=true;renderNutri();toast("Enregistré");
@@ -5807,7 +5836,7 @@ renderApp();
 /* ---------- langue, présentation, page d'accueil ---------- */
 // v64 (#3) : atouts de l'écran de connexion (React quand le module est là ; repris à son arrivée)
 const AUTH_FEATS=[["plan","Organise tes journées","Agenda et tâches du jour, avec des rappels."],
-  ["pwd","Garde tout à l'abri","Notes, documents scannés et mots de passe, chiffrés sur ton appareil."],
+  ["notes","Écris et concentre-toi","Notes, PDF et séances Focus."],
   ["muscu","Ta santé","Programme de musculation sur mesure, nutrition et graphiques."],
   ["app","Partout avec toi","Sur smartphone et sur ordinateur, même sans connexion."]];
 function renderAuthFeats(){const el=$("authFeats");if(!el)return;
@@ -5867,17 +5896,16 @@ const ONB_DESC={
   plan:"Ton calendrier : examens, rendez-vous, événements. Tu peux aussi y relier ton horaire de cours.",
   todo:"Tes tâches, rangées par catégories pour regrouper tout ce qu'il faut faire pour un projet.",
   notes:"Tes notes libres : idées, listes, brouillons, à écrire comme tu veux.",
-  pwd:"Tes mots de passe et les sites qui vont avec, protégés par un code à 5 chiffres.",
+  projects:"Regroupe tes notes et tes séances Focus.",
   pomo:"Travaille concentré : sessions et pauses s'enchaînent toutes seules, avec ta musique.",
   graph:"Tes macros, ton poids et tes calories en graphiques, avec un bilan du jour et de la semaine.",
   nutri:"Tes calories et tes macros du jour, et des menus faits pour toi.",
   muscu:"Tes séances et tes programmes, tes charges et tes répétitions, avec la progression d'une fois à l'autre.",
-  docs:"Range tes PDF, scanne des feuilles avec l'appareil photo et retrouve-les en un instant.",
   app:"Les étapes pour installer Sid'Compagnon sur ton écran d'accueil."};
 let onbSel={};
-const ONB_GROUP={orga:["agenda","Organise tes journées","Ton agenda, tes tâches du jour et un minuteur de concentration."],
+const ONB_GROUP={orga:["agenda","Organise tes journées","Ton agenda et tes tâches du jour."],
   sport:["fit","Bouge et mange bien","Ton programme de musculation, ta nutrition et tes progrès en graphiques."],
-  perso:["note","Garde tout à l'abri","Tes notes, tes documents et tes mots de passe, protégés par ton code et le mot de passe de ton compte."]};
+  perso:["note","Écris et concentre-toi","Tes notes et tes séances Focus."]};
 function openOnb(){
   onbSel={};TABS.forEach(([k])=>{if(!OFF_TABS.includes(k))onbSel[k]=data.prefs.tabs[k]!==false});
   document.querySelectorAll("#onbLang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG));
@@ -6011,6 +6039,7 @@ if(ephExpired){
 }else{
   // anciens utilisateurs : pas de présentation, ils connaissent déjà l'app
   if(!data.prefs.onboarded&&(data.todos.length||data.tasks.length||(data.muscu&&data.muscu.sessions.length)||(data.pomo&&Object.keys(data.pomo.log||{}).length))){data.prefs.onboarded=true;save()}
+  msClockMigrate();
   renderAccount();
   icalLoadCache();renderCals();
   renderAll();applyTabs();icalState();icalFetch(false);renderHomeSel();
@@ -6027,8 +6056,8 @@ if(ephExpired){
   // e-mail et fonctions réservées relus au lancement (un accès ouvert ou retiré s'applique sans se reconnecter)
   if(!isTrial())token().then(t=>api("/auth/v1/user",{token:t})).then(u=>{if(!u||!session)return;if(u.email)session.email=u.email;const f=userFeat(u)||[],ch=String(f)!==String(session.feat||[]);
     session.feat=f;ls.set(SESSION_KEY,session);renderAccount();if(ch){applySoon();applyTabs();renderAll()}}).catch(()=>{});
-  setSync();pull();if(!isTrial()){renderNotif();refreshSub();docsSyncPending();notesPhotosPending()}
-  window.addEventListener("online",()=>{setSync();push();pull();docsSyncPending()});
+  setSync();pull();if(!isTrial()){renderNotif();refreshSub();notesPhotosPending()}
+  window.addEventListener("online",()=>{setSync();push();pull()});
   window.addEventListener("offline",setSync);
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)pull();else if(session&&session.eph&&cache&&cache.dirty){clearTimeout(pushTimer);push()}});
 }
@@ -6037,7 +6066,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v80";
+const BUILD="sidnote-v81";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

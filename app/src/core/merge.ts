@@ -17,7 +17,7 @@ const jeq = (a: Any, b: Any) => a === b || JSON.stringify(a) === JSON.stringify(
 const isObj = (x: Any): x is Obj => !!x && typeof x === "object" && !Array.isArray(x);
 const idList = (x: Any) => Array.isArray(x) && x.length > 0 && x.every((e) => isObj(e) && e.id !== undefined && e.id !== null);
 // gardés d'un bloc (jamais mélangés champ par champ)
-const M3_ATOM = new Set(["plan", "profile", "menu", "vault", "docVault", "noteVault", "phx", "grp", "consent"]);
+const M3_ATOM = new Set(["plan", "profile", "menu", "vault", "docVault", "noteVault", "muscuClock", "phx", "grp", "consent"]);
 // changé des deux côtés : le plus récent, sinon cet appareil
 const m3pick = (l: Any, r: Any) => { const t = (x: Any) => isObj(x) ? (+x.upd || +x.at || Date.parse(x.createdAt) || 0) : 0; return t(r) > t(l) ? r : l; };
 
@@ -90,6 +90,8 @@ export function mergeData(loc: Obj, rem: Obj, opt: MergeOpt | undefined, env: Me
     return arr(a, b).map((x) => { const r = rb.get(x.id); return r && (r.upd || 0) > (x.upd || 0) ? r : x; });
   };
   const out: Obj = { ...rem, ...loc, del, res };
+  const localClock=loc.muscuClock,remoteClock=rem.muscuClock;
+  if(remoteClock&&(remoteClock.upd>(localClock?.upd||0)||(remoteClock.upd===localClock?.upd&&!remoteClock.run)))out.muscuClock=remoteClock;
   out.todos = arr(loc.todos, rem.todos); out.tasks = arr(loc.tasks, rem.tasks);
   out.todoCats = arr(loc.todoCats, rem.todoCats); out.docs = arr(loc.docs, rem.docs); out.docFolders = arr(loc.docFolders, rem.docFolders); out.noteFolders = arr(loc.noteFolders, rem.noteFolders);
   out.noteProjects = arrU(loc.noteProjects, rem.noteProjects); out.focusSessions = arrU(loc.focusSessions, rem.focusSessions);

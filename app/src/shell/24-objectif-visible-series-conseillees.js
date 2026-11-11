@@ -79,13 +79,56 @@ $("muGoal").addEventListener("click",e=>{const b=e.target.closest("[data-mugoal]
   data.prefs.muGoal=g;const pl=PL();if(pl){pl.profile=pl.profile||{};pl.profile.goal=g;pl.upd=Date.now();M().upd=Date.now()}save();renderMuscu();
   toast(`${L("Objectif")} : ${L(MU_GOALS[g])}`)});
 /* ---- v73 : séance faite (« Séance terminée »), chrono automatique, statistiques par objectif ---- */
-// chrono propre à l'appareil : data.ui.msRun = {se, t0, last, marks:{"exId:série": ms}} ; il démarre au premier poids ou répétition saisi
-// et s'efface après 4 h sans activité. Repos moyen = écart moyen entre deux séries remplies (de 10 s à 15 min ; au-delà, c'est une pause).
-const RUN_MAX=4*3600e3;
-function msRunGet(id){const r=data.ui&&data.ui.msRun;if(!r)return null;if(Date.now()-(r.last||r.t0)>RUN_MAX){delete data.ui.msRun;saveUI();return null}return id&&r.se!==id?null:r}
-function msRunTouch(se,ex,j,done){msTT(se.id);let r=msRunGet();const now=Date.now(); // msTT d'abord : reprend les repères d'un ancien chrono avant qu'il soit remplacé
-  if(!r||r.se!==se.id)r=data.ui.msRun={se:se.id,t0:now,last:now,marks:{}};
-  r.last=now;const k=ex.id+":"+j;if(done&&!r.marks[k])r.marks[k]=now;msTT(se.id,true).t[k]=1;saveUI()}
+// L’horloge utilise l’heure de départ absolue. Un état arrêté est conservé pour la fusion entre appareils.
+function msRunGet(id){
+  const r=data.muscuClock?.run;
+  return r&&msFind(r.se)&&(!id||r.se===id)?r:null;
+}
+function msClockSave(run){
+  data.muscuClock={run,upd:Math.max(Date.now(),(data.muscuClock?.upd||0)+1)};
+  save();
+}
+function msClockMigrate(){
+  const old=data.ui?.msRun;
+  if(!old)return;
+  msTT(old.se);
+  delete data.ui.msRun;
+  if(!data.muscuClock&&msFind(old.se)&&Number.isFinite(old.t0)){
+    data.muscuClock={run:{se:old.se,t0:old.t0,marks:old.marks||{}},upd:old.last||old.t0};
+    save();
+  }else saveUI();
+}
+function msClockRead(){
+  const disk=session&&ls.get(cacheKey(session.user.id))?.data?.muscuClock;
+  const current=data.muscuClock;
+  if(!disk||(current&&(disk.upd<current.upd||(disk.upd===current.upd&&(disk.run||!current.run)))))return false;
+  data.muscuClock=disk;
+  return true;
+}
+function msClockStart(se){
+  msClockRead();
+  if(msRunGet())return;
+  msClockSave({se:se.id,t0:Date.now(),marks:{}});
+}
+function msRunTouch(se,ex,j,done){
+  msClockRead();
+  msTT(se.id,true).t[ex.id+":"+j]=1;
+  if(!msRunGet())msClockStart(se);
+  const r=msRunGet(se.id),k=ex.id+":"+j;
+  if(r&&done&&!r.marks[k])msClockSave({...r,marks:{...r.marks,[k]:Date.now()}});
+  else saveUI();
+}
+function msClockStop(se){
+  msClockRead();
+  const run=msRunGet(se.id);
+  if(!run)return;
+  clearTimeout(msAutoT[se.id]);delete msAutoT[se.id];
+  msDone(se,true);
+  const log=ML().filter(l=>l?.day===se.id&&l.upd>=run.t0&&!(data.del&&data.del[l.id]))
+    .sort((a,b)=>b.upd-a.upd)[0];
+  if(log){log.min=msRunMin(run);M().upd=log.upd=Date.now()}
+  msClockSave(null);renderMuscu();
+}
 // v74.4 : séries touchées aujourd'hui, par séance (data.ui.msT = {séance: {d: date, t: {"exId:série": 1}}}), indépendantes du chrono :
 // passer à une autre séance puis revenir ne fait plus oublier les séries déjà faites ; « Annuler » peut les remettre comme avant
 function msTT(id,make){const u=data.ui.msT||(data.ui.msT={}),d=iso(today()),r=data.ui.msRun;
@@ -94,12 +137,22 @@ function msTT(id,make){const u=data.ui.msT||(data.ui.msT={}),d=iso(today()),r=da
   for(const k of Object.keys(u))if(!u[k]||u[k].d!==d)delete u[k];
   if(!u[id]&&make)u[id]={d,t:{}};return u[id]||null}
 // une série retirée : les repères des séries suivantes de l'exercice reculent d'un rang
-function msRunShift(seId,exId,j){const r=msRunGet(seId),x=msTT(seId);for(const o of [r&&r.marks,x&&x.t]){if(!o)continue;const nw={};
+function msRunShift(seId,exId,j){msClockRead();const r=msRunGet(seId),x=msTT(seId);for(const o of [r&&r.marks,x&&x.t]){if(!o)continue;const nw={};
   for(const[k,v]of Object.entries(o)){const[e,s]=k.split(":");const n=+s;if(e!==exId||n<j)nw[k]=v;else if(n>j)nw[e+":"+(n-1)]=v}
-  Object.keys(o).forEach(k=>delete o[k]);Object.assign(o,nw)}saveUI()}
+  Object.keys(o).forEach(k=>delete o[k]);Object.assign(o,nw)}if(r)msClockSave(r);else saveUI()}
 function msRunRest(r){const t=Object.values(r.marks||{}).map(Number).sort((a,b)=>a-b),g=[];
   for(let i=1;i<t.length;i++){const d=(t[i]-t[i-1])/1000;if(d>=10&&d<=900)g.push(d)}return g.length?Math.round(g.reduce((a,b)=>a+b,0)/g.length):0}
 const msRunMin=r=>Math.max(1,Math.round((Date.now()-r.t0)/60000));
+function msClockLabel(run){
+  const seconds=Math.max(0,Math.floor((Date.now()-run.t0)/1000)),hours=Math.floor(seconds/3600);
+  const rest=`${two(Math.floor(seconds/60)%60)}:${two(seconds%60)}`;
+  return hours?`${hours}:${rest}`:rest;
+}
+setInterval(()=>{
+  if(data.ui.view!=="muscu"||document.hidden)return;
+  const elapsed=document.querySelector("[data-mselapsed]"),run=msRunGet();
+  if(elapsed&&run)elapsed.textContent=msClockLabel(run);
+},1000);
 const msDoneToday=se=>ML().some(l=>l&&l.day===se.id&&l.date===iso(today())&&!(data.del&&data.del[l.id]));
 // les séries remplies partent dans l'historique (data.muscu.log), avec la durée et le repos moyen mesurés.
 // v74.1 (demande de Sid) : plus de bouton « Séance terminée » : l'enregistrement se fait tout seul (quiet), 1,5 s après la dernière série saisie
@@ -109,11 +162,11 @@ function msDone(se,quiet,at){const r=at?null:msRunGet(se.id),tx=at||msTT(se.id);
   const now=Date.now(),date=at?at.d:iso(today()),L0=ML(),old=L0.find(l=>l&&l.day===se.id&&l.date===date&&!(data.del&&data.del[l.id]));
   if(!ex.length){if(quiet&&old){tomb(old.id);M().log=L0.filter(l=>l!==old);M().upd=now;save();renderMuStats();return}if(!quiet)toast("Remplis au moins une série avant de terminer");return}
   const ent={id:old?old.id:uid(),date,day:se.id,name:se.name||"",ex,goal:muGoal(),upd:now};
-  if(r){ent.min=Math.min(240,msRunMin(r));const rest=msRunRest(r);if(rest)ent.rest=rest}else if(old&&old.min){ent.min=old.min;if(old.rest)ent.rest=old.rest}
+  if(r){ent.min=msRunMin(r);const rest=msRunRest(r);if(rest)ent.rest=rest}else if(old&&old.min){ent.min=old.min;if(old.rest)ent.rest=old.rest}
   const before=old?JSON.parse(JSON.stringify(old)):null;
   if(old){Object.keys(old).forEach(k=>delete old[k]);Object.assign(old,ent)}else L0.push(ent);
   if(quiet){M().upd=now;save();renderMuStats();return}
-  if(r){delete data.ui.msRun;saveUI()}M().upd=now;save();renderMuscu();
+  if(r)msClockSave(null);M().upd=now;save();renderMuscu();
   toastAct(old?"Séance mise à jour":"Séance enregistrée","Annuler",()=>{const i=ML().findIndex(l=>l&&l.id===ent.id);
     if(before&&i>=0){ML()[i]=before}else{tomb(ent.id);M().log=ML().filter(l=>l&&l.id!==ent.id)}M().upd=Date.now();save();renderMuscu()})}
 // un minuteur par séance (avant : un seul pour toutes, remplir une autre séance dans la seconde et demie annulait l'enregistrement de la première)

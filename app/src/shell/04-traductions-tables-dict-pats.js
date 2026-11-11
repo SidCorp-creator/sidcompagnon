@@ -98,7 +98,7 @@ function baseSet(uidv,at,d){if(!at||!d)return;if(!ls.set(baseKey(uidv),{at,data:
 const jeq=(a,b)=>a===b||JSON.stringify(a)===JSON.stringify(b);
 const isObj=x=>!!x&&typeof x==="object"&&!Array.isArray(x);
 const idList=x=>Array.isArray(x)&&x.length>0&&x.every(e=>isObj(e)&&e.id!==undefined&&e.id!==null);
-const M3_ATOM=new Set(["plan","profile","menu","vault","docVault","noteVault","phx","grp","consent"]); // gardés d'un bloc (jamais mélangés champ par champ)
+const M3_ATOM=new Set(["plan","profile","menu","vault","docVault","noteVault","muscuClock","phx","grp","consent"]); // gardés d'un bloc (jamais mélangés champ par champ)
 const m3pick=(l,r)=>{const t=x=>isObj(x)?(+x.upd||+x.at||Date.parse(x.createdAt)||0):0;return t(r)>t(l)?r:l}; // changé des deux côtés : le plus récent, sinon cet appareil
 function merge3(b,l,r,key){
   if(jeq(l,r))return l;if(jeq(l,b))return r;if(jeq(r,b))return l;
@@ -148,6 +148,8 @@ function mergeDataOld(loc,rem,opt){
   const arrU=(a,b)=>{const rb=new Map((Array.isArray(b)?b:[]).map(x=>[x&&x.id,x]));
     return arr(a,b).map(x=>{const r=rb.get(x.id);return r&&(r.upd||0)>(x.upd||0)?r:x})};
   const out={...rem,...loc,del,res};
+  const localClock=loc.muscuClock,remoteClock=rem.muscuClock;
+  if(remoteClock&&(remoteClock.upd>(localClock?.upd||0)||(remoteClock.upd===localClock?.upd&&!remoteClock.run)))out.muscuClock=remoteClock;
   out.todos=arr(loc.todos,rem.todos);out.tasks=arr(loc.tasks,rem.tasks);
   out.todoCats=arr(loc.todoCats,rem.todoCats);out.docs=arr(loc.docs,rem.docs);out.docFolders=arr(loc.docFolders,rem.docFolders);out.noteFolders=arr(loc.noteFolders,rem.noteFolders);
   out.noteProjects=arrU(loc.noteProjects,rem.noteProjects);out.focusSessions=arrU(loc.focusSessions,rem.focusSessions);
@@ -171,7 +173,7 @@ function mergeDataOld(loc,rem,opt){
   // v32 : coffres et phrase secrète : si les deux appareils en ont un différent, le plus récent gagne
   // (sinon un appareil resté sur l'ancien coffre écraserait le coffre renforcé, et les éléments rechiffrés deviendraient illisibles)
   const vAt=v=>v?(v.at||Date.parse(v.createdAt)||0):0;
-  for(const k of ["vault","docVault","noteVault","phx"]){const a=loc[k],b=rem[k];if(a&&b&&a.id!==b.id&&vAt(b)>vAt(a))out[k]=b}
+  for(const k of ["vault","docVault","noteVault","muscuClock","phx"]){const a=loc[k],b=rem[k];if(a&&b&&a.id!==b.id&&vAt(b)>vAt(a))out[k]=b}
   return out;
 }
 function schedulePush(){clearTimeout(pushTimer);pushTimer=setTimeout(push,1200);setSync()}

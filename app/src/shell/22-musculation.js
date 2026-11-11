@@ -9,7 +9,7 @@ data.muscu=data.muscu||{sessions:[]};
 if(data.ui&&["tmCfg","tmDur","restSlide"].some(k=>k in data.ui)){["tmCfg","tmDur","restSlide"].forEach(k=>delete data.ui[k]);saveUI()}
 let msOpenId=null,msTimer=null;
 const M=()=>data.muscu||(data.muscu={sessions:[]});
-const msFind=id=>M().sessions.find(x=>x.id===id);
+const msFind=id=>M().sessions.find(x=>x&&x.id===id);
 const newSet=()=>({reps:"",kg:""});
 const newEx=(name="",n=3)=>({id:uid(),name,ps:1,sets:Array.from({length:n},newSet)});
 const seTouch=se=>{se.upd=Date.now();M().upd=Date.now()};
@@ -70,13 +70,15 @@ function muSetState(ex,j,se){if(muSetComplete(ex.sets[j]))return "done";const fi
 function muSessionProgress(){const se=msFind(msOpenId)||msFind(msRunGet()?.se)||M().sessions.find(Boolean),sets=se?(se.exercises||[]).flatMap(x=>x.sets||[]):[];return {done:sets.filter(muSetComplete).length,total:sets.length}}
 function muRefreshSetUI(se){if(!se)return;const d=$("msList").querySelector(`[data-ms="${se.id}"]`);if(d)for(const ex of se.exercises)for(let j=0;j<ex.sets.length;j++){const row=d.querySelector(`[data-ex="${ex.id}"] [data-si="${j}"]`);if(!row)continue;const state=muSetState(ex,j,se);row.dataset.setState=state;const mark=row.querySelector(".set-mark");if(mark)mark.hidden=state!=="done"}
  if(data.ui.view==="muscu"){const {done,total}=muSessionProgress(),prev=Number($("vhead").querySelector('[role="progressbar"]')?.getAttribute("aria-valuenow")||0);$("vhead").dataset.progressChange=total&&Math.round(done/total*100)>prev?"done":"adjust";renderVhead("muscu")}}
-function seCard(se,letter){const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0),ty=seType(se),T=ty&&SE_T[ty];
+function seCard(se,letter){const run=msRunGet(se.id),nS=se.exercises.reduce((a,e)=>a+e.sets.length,0),ty=seType(se),T=ty&&SE_T[ty];
   // v47 (#14) : lettre de la séance dans son programme + type (poussée, tirage, jambes…) en couleur ; séance libre en pointillés
   const tag=letter||T?`<span class="se-tag">${letter?`<b>${letter}</b>`:""}${T?`<span>${L(T[0])}</span>`:""}</span>`:`<span class="se-tag se-free">${L("Libre")}</span>`;
   const shown=String(se.name||"").replace(/^(?:Séance|Session|Training)\s+[A-F]\s*·\s*/i,"")||L("Séance");
   return `<details class="ms${letter?"":" ms-free"}" data-ms="${se.id}" ${ty?`data-se="${ty}"`:""} ${se.id===msOpenId?"open":""}>
     <summary><span class="chev">${IC("chev")}</span><span class="grow"><span class="ms-name notr" data-user-label="" title="${esc(shown)}">${esc(shown)}</span><span class="ms-meta">${tag}<span class="small muted">${esc(seSub(se,nS))}</span></span></span><button type="button" class="x ms-del" data-msdel="1" aria-label="${L("Supprimer la séance")}">${IC("trash")}</button></summary>
     <div class="ms-body">
+      ${run?`<div class="ms-clock"><span class="notr" data-mselapsed>${msClockLabel(run)}</span><button type="button" class="mini" data-msclock="stop">${L("Arrêter le chrono")}</button></div>`:
+        !msRunGet()?`<button type="button" class="mini" data-msclock="start">${L("Démarrer le chrono")}</button>`:""}
       <label class="small muted" style="display:grid;gap:4px">${L("Nom de la séance")}<input data-f="msname" value="${esc(se.name)}" autocomplete="off"></label>
       ${se.exercises.map((ex,i)=>`<div class="ex ex3" data-ex="${ex.id}">
         <div class="ex-head"><span class="num">${i+1}</span><span class="ex-nm"><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><span class="ex-n notr" aria-hidden="true">${esc(ex.name)}</span></span><button type="button" class="mini ex-help" data-exhelp="1" aria-label="${L("Voir comment effectuer cet exercice")}" title="${L("Voir comment effectuer cet exercice")}"${exHelpReady(ex.name,ex.ref)?"":" hidden"}>${IC("help")}</button><button type="button" class="linkbtn ex-link small" data-exlink="1"${ex.name&&String(ex.name).trim()&&!exHelpKey(ex.name,ex.ref)?"":" hidden"}>${L("Pas de fiche · associer")}</button><span class="small muted ex-prep"${exHelpKey(ex.name,ex.ref)&&!exHelpReady(ex.name,ex.ref)?"":" hidden"}>${L("Fiche en préparation")}</span><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">${IC("close")}</button></div>
@@ -112,9 +114,9 @@ function renderMuscu(){muMigrate();try{renderCoach()}catch(e){}
 // modèle de la liste pour React : mêmes textes et mêmes calculs que seCard / exAdvHtml
 let msLast=null;
 function msIsland(groups,free){msLast=[groups,free];
-  const seVM=(se,letter)=>{const nS=se.exercises.reduce((a,e)=>a+e.sets.length,0),ty=seType(se),T=ty&&SE_T[ty];
+  const seVM=(se,letter)=>{const run=msRunGet(se.id),nS=se.exercises.reduce((a,e)=>a+e.sets.length,0),ty=seType(se),T=ty&&SE_T[ty];
     return{id:se.id,name:se.name||"",shown:String(se.name||"").replace(/^(?:Séance|Session|Training)\s+[A-F]\s*·\s*/i,"")||L("Séance"),letter:letter||"",ty:ty||"",tag:T?T[0]:"",open:se.id===msOpenId,
-      sub:seSub(se,nS),done:msDoneToday(se),
+      sub:seSub(se,nS),done:msDoneToday(se),clock:run?"stop":msRunGet()?"":"start",elapsed:run?msClockLabel(run):"",
       ex:se.exercises.map(ex=>{const a=exAdv(ex.name);return{id:ex.id,name:ex.name||"",help:exHelpReady(ex.name,ex.ref),link:!!(ex.name&&String(ex.name).trim())&&!exHelpKey(ex.name,ex.ref),prep:!!exHelpKey(ex.name,ex.ref)&&!exHelpReady(ex.name,ex.ref),
         adv:a?{txt:`${L("Conseillé")} (${L(MU_GOALS[muGoal()])}) : `,val:exAdvVal(a),same:exAdvSame(ex,a)}:null,
         prm:{reps:ex.reps||"",rest:+ex.rest?String(+ex.rest):"",int:ex.int||"",rpe:ex.rpe||"",tempo:ex.tempo||"",sum:exPrmSum(ex),open:msPrmOpen.has(ex.id)},pro:exProg(ex),
@@ -201,7 +203,9 @@ $("msList").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;if(b.closest("summary"))e.preventDefault(); // bouton dans l'en-tête : n'ouvre/ferme pas la séance
   const box=b.closest("[data-ms]");if(!box)return;const se=msFind(box.dataset.ms);if(!se)return;if(!b.closest("summary"))msOpenId=se.id;
   const exOf=()=>se.exercises.find(x=>x.id===b.closest("[data-ex]").dataset.ex);
-  if(b.dataset.msaddex){se.exercises.push(newEx());seTouch(se);save();renderMuscu();const ins=$("msList").querySelectorAll(`[data-ms="${se.id}"] [data-f=exname]`);ins[ins.length-1]?.focus()}
+  if(b.dataset.msclock==="start"){msClockStart(se);renderMuscu()}
+  else if(b.dataset.msclock==="stop")msClockStop(se);
+  else if(b.dataset.msaddex){se.exercises.push(newEx());seTouch(se);save();renderMuscu();const ins=$("msList").querySelectorAll(`[data-ms="${se.id}"] [data-f=exname]`);ins[ins.length-1]?.focus()}
   else if(b.dataset.msdelex){armDelete(b,()=>{se.exercises=se.exercises.filter(x=>x.id!==b.dataset.msdelex);seTouch(se);save();renderMuscu();if(msTT(se.id))msAutoLog(se)})}
   else if(b.dataset.exhelp){const ex=exOf();if(ex)exHelpOpen(ex.name,ex.ref)} // n'ouvre qu'une fenêtre : séance, séries et minuteur intacts
   else if(b.dataset.exlink){const ex=exOf();if(ex)exLinkOpen(se,ex)}
@@ -222,7 +226,7 @@ $("msList").addEventListener("click",e=>{
       ex2.sets=before;seTouch(se2);save();clearTimeout(msAutoT[sid]);delete msAutoT[sid];
       if(iso(today())!==d0){msDone(se2,true,{d:d0,t:t0});renderMuscu();return} // passé minuit : on corrige la séance du jour de la copie
       const put=(o,b)=>{if(!o)return;for(const k of Object.keys(o))if(k.startsWith(eid+":"))delete o[k];Object.assign(o,b)};
-      put(msTT(sid,true).t,tb);put((msRunGet(sid)||{}).marks,mb);saveUI();msDone(se2,true);renderMuscu()})}
+      put(msTT(sid,true).t,tb);msClockRead();const run=msRunGet(sid);if(run){put(run.marks,mb);msClockSave(run)}else saveUI();msDone(se2,true);renderMuscu()})}
   else if(b.dataset.msaddset){const ex=exOf();if(!ex||ex.sets.length>=20)return;ex.sets.push(newSet());seTouch(se);save();renderMuscu();
     const ins=document.querySelectorAll(`#msList [data-ex="${ex.id}"] [data-f="setkg"]`);ins[ins.length-1]?.focus()}
   else if(b.dataset.msdelset!==undefined){const ex=exOf();if(!ex||ex.sets.length<=1)return;const j=+b.dataset.msdelset;ex.sets.splice(j,1);msRunShift(se.id,ex.id,j);seTouch(se);save();renderMuscu();if(msTT(se.id))msAutoLog(se)}

@@ -567,3 +567,4 @@ Object.assign(DICT,{
   "Indique la quantité en millilitres.":"Enter the quantity in millilitres.",
   "Indique la quantité en grammes.":"Enter the quantity in grams."
 });
+Object.assign(DICT,{"Arrêter le chrono":"Stop timer","Démarrer le chrono":"Start timer"});

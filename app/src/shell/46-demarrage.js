@@ -20,6 +20,7 @@ if(ephExpired){
 }else{
   // anciens utilisateurs : pas de présentation, ils connaissent déjà l'app
   if(!data.prefs.onboarded&&(data.todos.length||data.tasks.length||(data.muscu&&data.muscu.sessions.length)||(data.pomo&&Object.keys(data.pomo.log||{}).length))){data.prefs.onboarded=true;save()}
+  msClockMigrate();
   renderAccount();
   icalLoadCache();renderCals();
   renderAll();applyTabs();icalState();icalFetch(false);renderHomeSel();

@@ -107,7 +107,7 @@ function finishPomo(completed){
 // v81 : plusieurs onglets ouverts affichent le même Focus (et le même chrono de séance) sans attendre la synchro du serveur
 window.addEventListener("storage",e=>{if(!session||e.key!==cacheKey(session.user.id)||!e.newValue)return;
   let c=null;try{c=JSON.parse(e.newValue)}catch(x){return}const d=c&&c.data;if(!d)return;
-  if(d.ui&&JSON.stringify(d.ui.msRun||null)!==JSON.stringify(data.ui.msRun||null)){if(d.ui.msRun)data.ui.msRun=d.ui.msRun;else delete data.ui.msRun}
+  if(msClockRead()&&data.ui.view==="muscu"&&!isTyping())renderMuscu();
   if(d.pomo&&pomoAdopt(d.pomo)){if(!P.run){keepAwake(false);chimeCancel("pomo");pomoSched=false}renderPomo();pomoPlan()}});
 $("pomoStart").addEventListener("click",startPomo);
 $("pomoPause").addEventListener("click",()=>{const r=P.run;if(!r)return;unlockAudio();

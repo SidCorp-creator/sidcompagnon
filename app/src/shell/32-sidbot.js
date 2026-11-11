@@ -218,7 +218,7 @@ async function ncCreate(){
   await api("/rest/v1/mcp_tokens",{method:"POST",token:access,headers:{Prefer:"return=minimal"},body:{hash,user_id:owner,label:"Claude"}});
   return {url:NC_MCP+key,hash}}
 // note ouverte (jamais secrète) : Claude la lira par le connecteur, avec ses pièces jointes
-function ncNotePrompt(){const n=typeof noteOpenId!=="undefined"&&noteOpenId&&typeof noteFind==="function"?noteFind(noteOpenId):null;
+function ncNotePrompt(){if(data.ui.view!=="notes"||$("noteEdit").hidden)return "";const n=typeof noteOpenId!=="undefined"&&noteOpenId&&typeof noteFind==="function"?noteFind(noteOpenId):null;
   if(!n||n.secret)return "";const t=String(n.title||"").trim().slice(0,120)||L("Note sans titre");
   return T3(`Ouvre ma note « ${t} » (id ${n.id}) dans ${MARQUES.note} avec lire_note (pièces jointes comprises). `,`Open my note “${t}” (id ${n.id}) in ${MARQUES.note} with lire_note (attachments included). `)}
 function ncSheet(){let el=$("ncSheet");if(el)return el;el=document.createElement("div");el.className="sheet-bg";el.id="ncSheet";el.hidden=true;

@@ -71,6 +71,10 @@ const OUT=path.resolve(__dirname,'out');fs.mkdirSync(OUT,{recursive:true});
  assert.equal(new URL(await p.locator('#ncGo').getAttribute('href')).searchParams.get('q'),null);
  await p.click('#ncClose');
  const all=JSON.stringify(sent);assert.ok(!/"secret"|pwd|vault|password/i.test(all),'aucune donnée secrète envoyée');
+ await p.evaluate(()=>{noteOpenId='n1';show('pomo')});
+ await p.click('#vhead [data-app-claude]');
+ assert.equal(new URL(await p.locator('#ncGo').getAttribute('href')).searchParams.get('q'),null);
+ await p.click('#ncClose');
  // Sid'Forme
  await p.evaluate(()=>show('nutri'));await p.click('#vhead [data-app-claude]');assert.match(await p.locator('#sbSub').innerText(),/Sid'Forme/);await p.keyboard.press('Escape');
  await p.setViewportSize({width:1280,height:900});

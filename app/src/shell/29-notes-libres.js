@@ -34,45 +34,52 @@ const rtEmpty=()=>{
   body.classList.toggle("is-empty",!rtText(body)&&!body.querySelector("li,hr"));
   notePagesSchedule();
 };
-let notePagesFrame=0,notePageCount=1,notePageStep=1;
-function notePagePosition(){
-  const current=Math.min(notePageCount,Math.round($("notePages").scrollLeft/notePageStep)+1);
-  $("notePagePosition").textContent=`${current} / ${notePageCount}`;
-  $("notePagePrevious").disabled=current===1;
-  $("notePageNext").disabled=current===notePageCount;
-}
+let notePagesFrame=0,notePageCount=1,notePagesComposing=false;
+// A CSS float reserves the space between sheets. The browser wraps individual lines
+// around it, including inside long paragraphs, without changing the editable DOM.
 function notePagesSchedule(){
-  if(notePagesFrame)return;
+  if(notePagesFrame||notePagesComposing)return;
   notePagesFrame=requestAnimationFrame(()=>{
     notePagesFrame=0;
+    if(notePagesComposing)return;
     const body=$("noteBody"),pages=$("notePages");
     if(!pages.clientWidth)return;
-    const width=body.getBoundingClientRect().width,gap=parseFloat(getComputedStyle(body).columnGap);
-    notePageStep=width+gap;
-    notePageCount=1+Math.max(0,Math.round((body.scrollWidth-width)/notePageStep));
-    $("notePageSheets").style.setProperty("--note-page-width",`${pages.clientWidth}px`);
-    $("notePageSheets").style.width=`${pages.clientWidth+(notePageCount-1)*notePageStep}px`;
-    $("notePageControls").hidden=notePageCount===1;
-    const selection=getSelection();
-    if(document.activeElement===body&&selection?.isCollapsed&&selection.rangeCount&&body.contains(selection.focusNode)){
-      const caret=selection.getRangeAt(0).getBoundingClientRect(),viewport=pages.getBoundingClientRect();
-      if(caret.height&&(caret.left<viewport.left||caret.right>viewport.right)){
-        const column=Math.floor((caret.left-body.getBoundingClientRect().left+1)/notePageStep);
-        const target=Math.min(notePageCount-1,Math.max(0,column))*notePageStep;
-        pages.scrollTo({left:target,behavior:"instant"});
+    const style=getComputedStyle(pages),height=parseFloat(style.getPropertyValue("--page-height"))||pages.clientWidth*1.4;
+    const gap=parseFloat(style.getPropertyValue("--page-gap"))||16,inset=24,step=height+gap;
+    const shape=count=>{
+      const points=["0 0","1px 0"];
+      for(let i=1;i<count;i++){
+        const end=i*step-gap-2*inset,next=i*step;
+        points.push(`1px ${end}px`,`100% ${end}px`,`100% ${next}px`,`1px ${next}px`);
       }
+      const total=count*step-gap-2*inset;
+      points.push(`1px ${total}px`,`0 ${total}px`);
+      body.style.setProperty("--note-flow-shape",`polygon(${points.join(",")})`);
+      body.style.setProperty("--note-flow-height",`${total}px`);
+      body.style.minHeight=`${count*step-gap}px`;
+    };
+    // Start without gaps so deletion/resize can reduce the number of sheets, then
+    // account for the lines displaced by each gap until the page count stabilises.
+    let count=1;
+    for(let pass=0;pass<20;pass++){
+      shape(count);
+      const range=document.createRange();range.selectNodeContents(body);
+      const top=body.getBoundingClientRect().top;
+      const bottom=Math.max(0,...Array.from(range.getClientRects(),r=>r.bottom-top));
+      const next=Math.max(1,Math.ceil((bottom+inset+gap)/step));
+      if(next===count)break;
+      count=next;
     }
-    notePagePosition();
+    notePageCount=count;shape(count);
+    pages.style.setProperty("--note-page-step",`${step}px`);
+    pages.style.setProperty("--note-sheet-height",`${height}px`);
+    pages.dataset.pages=String(count);
   });
 }
 if(window.ResizeObserver)new ResizeObserver(notePagesSchedule).observe($("notePages"));
 document.fonts?.ready.then(notePagesSchedule);
-document.addEventListener("selectionchange",()=>{
-  if(document.activeElement===$("noteBody"))notePagesSchedule();
-});
-$("notePages").addEventListener("scroll",notePagePosition,{passive:true});
-$("notePagePrevious").addEventListener("click",()=>$("notePages").scrollBy(-notePageStep,0));
-$("notePageNext").addEventListener("click",()=>$("notePages").scrollBy(notePageStep,0));
+$("noteBody").addEventListener("compositionstart",()=>{notePagesComposing=true});
+$("noteBody").addEventListener("compositionend",()=>{notePagesComposing=false;notePagesSchedule()});
 let noteOpenId=null,noteQ="",noteSaveT=null,notePend=null;
 const noteFind=id=>NT().find(n=>n.id===id);
 const fmtWhen=t=>{const d=new Date(t),n=new Date();
@@ -145,7 +152,7 @@ function renderNotes(){
     :dirs?"":`<div class="empty">${L(q?"Aucune note ne correspond.":noteDir?"Ce dossier est vide. Touche « + Note » pour y écrire.":"Aucune note pour l'instant. Touche « + Note » pour écrire.")}</div>`);
 }
 /** @type {any} */ renderNotes.phk=undefined; // déclaré pour TypeScript (même valeur de départ)
-function openNote(id){noteOpenId=id;renderNotes();$("notePages").scrollLeft=0;window.scrollTo(0,0)}
+function openNote(id){noteOpenId=id;renderNotes();window.scrollTo(0,0)}
 async function closeNote(){
   await noteFlush();const n=noteOpenId&&noteFind(noteOpenId),v=noteView(n);
   // une note laissée vide n'est pas gardée

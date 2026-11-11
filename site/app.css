@@ -2803,44 +2803,45 @@ html .muq-seg button[aria-pressed="true"],html .muq-chips .pill[aria-pressed="tr
 .exh-pics figure{position:relative}
 .exh-badge{position:absolute;top:8px;left:8px;padding:2px 8px;border-radius:999px;background:var(--ink,#1a1a1a);color:var(--bg,#fff);font-size:12px;font-weight:600}
 
-/* The browser fragments a single editable document across the pages. */
+/* v82: one editable document; CSS Shapes keeps the gaps out of its text flow. */
 .note-pages {
   --page-inset: clamp(14px, 4vw, 36px);
   --page-gap: 16px;
-  --page-height: clamp(28rem, 115vw, 58rem);
+  --page-height: 720px;
   position: relative;
   isolation: isolate;
-  overflow: auto;
+  display: flow-root;
+  overflow: clip;
   background: var(--bg);
 }
 .note-page-sheets {
   position: absolute;
-  inset: 0 auto 0 0;
+  inset: 0;
   z-index: -1;
   pointer-events: none;
-  background: repeating-linear-gradient(to right,
-    var(--surface) 0, var(--surface) calc(100% - var(--page-gap)),
-    var(--bg) calc(100% - var(--page-gap)), var(--bg) 100%);
-  background-size: calc(var(--note-page-width, 100%) + var(--page-gap)) 100%;
-  box-shadow: inset 0 1px var(--line), inset 0 -1px var(--line);
+  background: repeating-linear-gradient(to bottom,
+    var(--surface) 0, var(--surface) var(--note-sheet-height, 720px),
+    var(--bg) var(--note-sheet-height, 720px), var(--bg) var(--note-page-step, 736px));
 }
 html[data-ds="elan"] .note-pages #noteBody, .note-pages #noteBody {
   box-sizing: border-box;
   margin-inline: var(--page-inset);
   padding: 24px 0;
-  height: var(--page-height);
-  min-height: 0;
-  column-width: auto;
-  column-count: 1;
-  column-fill: auto;
-  column-gap: calc(2 * var(--page-inset) + var(--page-gap));
-  orphans: 1;
-  widows: 1;
+  height: auto;
+  min-height: var(--page-height);
+  columns: auto;
+  overflow-wrap: anywhere;
 }
-.note-pages .note-rt :is(h2, h3) { break-after: avoid; }
-.note-page-controls { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
-.note-page-controls .mini { flex: 1; min-width: 0; white-space: normal; }
-.note-page-controls[hidden] { display: none; }
+.note-pages #noteBody::before {
+  content: "";
+  float: left;
+  width: 100%;
+  height: var(--note-flow-height, 672px);
+  shape-outside: var(--note-flow-shape, inset(0 100% 0 0));
+  pointer-events: none;
+}
+.note-pages #noteBody hr { overflow: visible; }
+@media (max-width: 600px) { .note-pages { --page-height: 520px; } }
 #v-projects .project-open { width: 100%; text-align: left; }
 #v-projects #projectForm[hidden] { display: none; }
 #v-projects #projectForm { flex-wrap: wrap; }

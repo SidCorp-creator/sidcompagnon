@@ -8,21 +8,65 @@ const assert=require('node:assert/strict');
  await p.goto('http://localhost:'+(process.env.SID_SITE_PORT||8766));
  await p.fill('#aName','Pagination');await p.fill('#aEmail',`pagination-${Date.now()}@test.be`);await p.fill('#aPw','secret11');await p.fill('#aPw2','secret11');await p.check('#aAgree');await p.click('#aBtn');await p.click('#onbSkip');
  await p.evaluate(()=>{show('notes');const n={id:'long',title:'Longue',body:'',html:'<p><b>'+('Texte préservé et éditable. '.repeat(360))+'</b></p>',upd:Date.now()};NT().push(n);openNote(n.id)});
- await p.waitForSelector('#notePageControls:not([hidden])');
+ await p.waitForFunction(()=>Number($('notePages').dataset.pages)>1);
  const body=p.locator('#noteBody');
- assert.ok(await body.evaluate(e=>e.querySelector('b').getClientRects().length>2));
- await p.click('#notePageNext');
- await p.locator('#notePagePosition').filter({hasText:'2 / '}).waitFor();
- await body.focus();await p.keyboard.press('Control+End');await p.keyboard.type('Fin');
+ const initial=await body.innerHTML();
+ const noGap=async()=>assert.equal(await p.evaluate(()=>{
+   const body=$('noteBody'),top=body.getBoundingClientRect().top;
+   const h=parseFloat(getComputedStyle($('notePages')).getPropertyValue('--page-height')),step=h+16;
+   const walker=document.createTreeWalker(body,NodeFilter.SHOW_TEXT);let node;
+   while(node=walker.nextNode()){
+     const range=document.createRange();range.selectNodeContents(node);
+     for(const rect of range.getClientRects()){
+       if(!rect.width)continue;
+       const y=(rect.top-top)%step;
+       if(y<23||y+rect.height>h-23)return false;
+     }
+   }
+   return document.documentElement.scrollWidth<=innerWidth+1;
+ }),true,'toutes les lignes restent dans les feuilles, sans débordement horizontal');
+ await noGap();
+ assert.equal(await p.locator('#notePageNext,#notePagePrevious').count(),0);
+ await body.focus();await p.keyboard.press('Control+End');await p.keyboard.insertText('Fin');
  assert.ok(await p.evaluate(()=>noteFind('long').html.includes('Fin')));
- assert.ok(await p.evaluate(async()=>{
-   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-   const caret=getSelection().getRangeAt(0).getBoundingClientRect();
-   const viewport=$('notePages').getBoundingClientRect();
-   return caret.x>=viewport.left-1&&caret.x<=viewport.right+1;
- }),'le curseur reste dans la page visible');
  await p.keyboard.press('Control+z');
- assert.ok(!(await body.innerHTML()).includes('Fin'));
+ assert.equal(await body.innerHTML(),initial,'annulation native sans modification du DOM par la pagination');
+ await p.setViewportSize({width:1280,height:844});await p.waitForTimeout(100);await noGap();
+ await p.setViewportSize({width:320,height:440});await p.waitForTimeout(100);await noGap();
+ await p.setViewportSize({width:390,height:844});
+ // Rich blocks and a selection spanning several sheets use the same native undo stack.
+ await p.evaluate(()=>{
+   const n=noteFind('long');n.html='<h2>Titre conservé</h2><p><b>'+('Paragraphe très long. '.repeat(600))+'</b></p><ol><li>'+('Liste longue. '.repeat(120))+'<ul><li><i>Liste imbriquée</i></li></ul></li></ol><hr><p><a href="https://example.com">Lien conservé</a></p>';
+   $('noteTitle').focus();rtSet(n);$('noteBody').focus();
+ });
+ await p.waitForTimeout(100);await noGap();
+ const rich=await body.innerHTML(),plain=await body.innerText();
+ await p.evaluate(()=>{
+   const text=$('noteBody').querySelector('p b').firstChild,range=document.createRange();
+   range.setStart(text,40);range.setEnd(text,4000);
+   const selection=getSelection();selection.removeAllRanges();selection.addRange(range);
+ });
+ await p.keyboard.insertText('Collage entre pages');await p.waitForTimeout(100);
+ assert.ok((await body.innerText()).includes('Collage entre pages'));
+ await p.keyboard.press('Control+z');assert.equal(await body.innerHTML(),rich);
+ await noGap();
+ await p.evaluate(()=>{
+   const text=$('noteBody').querySelector('p b').firstChild,range=document.createRange();
+   range.setStart(text,120);range.collapse(true);
+   getSelection().removeAllRanges();getSelection().addRange(range);
+   const data=new DataTransfer();data.setData('text/html','<i>Texte collé</i>');data.setData('text/plain','Texte collé');
+   $('noteBody').dispatchEvent(new ClipboardEvent('paste',{clipboardData:data,bubbles:true,cancelable:true}));
+ });
+ assert.ok((await body.innerText()).includes('Texte collé'));
+ assert.ok(await body.locator('i,em').filter({hasText:'Texte collé'}).count());
+ await p.keyboard.press('Control+z');assert.equal(await body.innerHTML(),rich,'collage riche annulable');
+ await noGap();
+ await p.evaluate(async()=>{noteInput();await noteFlush()});
+ assert.equal(await p.evaluate(()=>noteFind('long').body),plain.trim());
+ assert.equal(await p.evaluate(()=>noteFind('long').html),rich);
+ await p.evaluate(async()=>{await closeNote();openNote('long')});
+ assert.equal(await body.innerHTML(),rich,'mise en forme conservée après réouverture');
+ await noGap();
  assert.equal(await p.locator('#v-docs,#v-pwd').count(),0);
  await p.evaluate(async()=>{await closeNote();show('projects')});
  await p.fill('#projectName','Dossier v81');

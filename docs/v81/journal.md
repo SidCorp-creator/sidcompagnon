@@ -41,3 +41,14 @@ Prochaine étape : Codex intègre (build + version) ; Claude relit le lot Sid'No
 Claude vérifie dans Chromium une note existante avec titres, listes, styles et photo. 13 pages à l’ouverture, 15 après ajout et 9 après suppression, contenu conservé après fermeture.
 Codex teste la position du curseur sur la dernière page, l’export du coffre renforcé et la migration d’une note chiffrée v1, avec conservation des archives.
 Le test musculation vérifie la reprise après cinq heures, la propagation de l’arrêt, une autre séance ouverte et une saisie le lendemain. Les tests Focus et notifications passent également.
+
+### 2026-11-11 — Codex — reprise et validation de 41e2533
+Décision : répartition confirmée avec Claude : revue des huit derniers commits et comparaison nutrition côté Claude ; suite complète et traitement des remarques côté Codex. OFF + Ciqual reste le choix au vu de l’échantillon documenté.
+Preuve : `ELAN_OUT=/tmp/v81-41e2533-elan ELAN_REPORT=/tmp/v81-41e2533-elan/manifest.json npm test` sur HEAD `41e2533`, sortie 0. Les 15 configurations Élan passent dès cette exécution, y compris 1280 px clair React. Tous les tests du lanceur passent : crypto, mémoire, fusion, rappels, shell/version, Sid’Bot, accueil, agenda-minuit, Focus persistant, chrono muscu, catalogue nutrition, notes/projets/exports, connecteur Claude et notifications.
+Fichiers : rapport et captures hors dépôt dans `/tmp/v81-41e2533-elan/` ; aucun changement de code nécessaire pour cette validation.
+Prochaine étape : traiter les remarques de Claude ; publication et purge du coffre restent des décisions de Sid, après vérification des exports réels.
+
+### 2026-11-11 — Codex — expiration du chrono au lendemain
+Revue Claude : le test antérieur acceptait l’absence de durée le lendemain. `msRunGet` arrête désormais une horloge d’un autre jour sans modifier le journal passé ; une nouvelle saisie démarre une horloge du jour.
+Preuves : build et `node tests/shell.test.js` OK ; `LD_LIBRARY_PATH=~/.local/share/refonte-libs/usr/lib/x86_64-linux-gnu node tests/muscu-chrono.test.cjs` OK. Cas vérifiés : même séance le lendemain, durée de deux minutes enregistrée, journal antérieur inchangé, autre séance le lendemain, reprise après cinq heures et arrêt entre onglets. La suite complète 15/15 ci-dessus portait sur 41e2533 avant ce correctif.
+Ouvert : optimisation des lectures de cache dans save/saveUI ; garde conservée pour éviter une régression des écritures concurrentes.

@@ -18,7 +18,7 @@ Open Food Facts fournit les produits emballés recherchés par nom ou code-barre
 
 La zone en haut des apps affiche les événements du jour selon le fuseau de l’appareil. L’agenda affiche la liste complète. Le test couvre plusieurs événements, les modifications, la suppression, une tâche seule et le passage à minuit.
 
-Focus et le chrono de musculation reprennent à partir de l’heure de départ enregistrée. Dans la fiche d’une séance de musculation, **Démarrer le chrono** et **Arrêter le chrono** pilotent la même horloge que la saisie des séries. Le test rouvre le navigateur avec cinq heures écoulées et vérifie que l’arrêt se propage à un deuxième onglet. Changer la séance chronométrée demande une commande explicite. Une séance du lendemain conserve ses propres statistiques.
+Focus et le chrono de musculation reprennent à partir de l’heure de départ enregistrée. Dans la fiche d’une séance de musculation, **Démarrer le chrono** et **Arrêter le chrono** pilotent la même horloge que la saisie des séries. Le test rouvre le navigateur avec cinq heures écoulées et vérifie que l’arrêt se propage à un deuxième onglet. Changer la séance chronométrée demande une commande explicite. Au changement de jour, l’ancien chrono est arrêté sans modifier le journal de la veille ; la première saisie démarre un nouveau chrono. Une séance du lendemain conserve ses propres statistiques.
 
 ## Validation et mise en ligne
 

@@ -37,7 +37,7 @@ const createPage = async (context, now) => {
   let browser = await chromium.launch();
   try {
     let context = await browser.newContext();
-    const first = await createPage(context);
+    const first = await createPage(context, new Date('2026-11-11T10:00:00Z'));
     await first.fill('#aName', 'Chrono muscu');
     await first.fill('#aEmail', `chrono-muscu-${Date.now()}@test.be`);
     await first.fill('#aPw', 'secret11');
@@ -79,14 +79,20 @@ const createPage = async (context, now) => {
     assert.equal(await reopened.locator('[data-mselapsed]').textContent(), '5:00:37');
     const peer = await createPage(context, later);
     await openMuscu(peer);
+    const previousLog=await reopened.evaluate(()=>JSON.stringify(ML()));
+    await peer.clock.setFixedTime(new Date(start+29*3600000));
     await reopened.clock.setFixedTime(new Date(start+29*3600000));
     const overnight=await reopened.evaluate(()=>{
       const se=msFind('session-clock');
       msRunTouch(se,se.exercises[0],0,true);msDone(se,true);renderMuscu();
       return {since:msClockSince(msRunGet()),duration:ML().find(l=>l.day===se.id&&l.date===iso(today()))?.min};
     });
-    assert.match(overnight.since,/^Depuis le/);
-    assert.equal(overnight.duration,undefined);
+    assert.equal(await reopened.evaluate(()=>msRunGet().t0),start+29*3600000);
+    assert.equal(overnight.duration,1);
+    assert.equal(await reopened.evaluate(()=>JSON.stringify(ML().filter(l=>l.date!==iso(today())))),previousLog);
+    await reopened.clock.setFixedTime(new Date(start+29*3600000+120000));
+    await reopened.evaluate(()=>{const se=msFind('session-clock');msRunTouch(se,se.exercises[0],0,true);msDone(se,true)});
+    assert.equal(await reopened.evaluate(()=>ML().find(l=>l.day==='session-clock'&&l.date===iso(today())).min),2);
     await reopened.click('[data-ms="session-clock"] [data-msclock=stop]');
     await waitForClock(peer, 'start');
     assert.equal(await peer.evaluate(() => msRunGet()), null);
@@ -94,6 +100,8 @@ const createPage = async (context, now) => {
     await openMuscu(reopened);
     await waitForClock(reopened, 'start');
     assert.equal(await reopened.evaluate(() => msRunGet()), null);
+    await reopened.evaluate(()=>{msClockSave({se:'session-clock',t0:Date.now()-86400000,marks:{}});const se=msFind('other-session');msRunTouch(se,se.exercises[0],0,true)});
+    assert.equal(await reopened.evaluate(()=>msRunGet().se),'other-session');
     await reopened.click('[data-ms="session-clock"] [data-msclock=start]');
     await reopened.click('[data-ms="other-session"] > summary');
     await reopened.click('[data-ms="other-session"] [data-msclock=start]');

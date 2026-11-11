@@ -3006,6 +3006,7 @@ $("muGoal").addEventListener("click",e=>{const b=e.target.closest("[data-mugoal]
 // L’horloge utilise l’heure de départ absolue. Un état arrêté est conservé pour la fusion entre appareils.
 function msRunGet(id){
   const r=data.muscuClock?.run;
+  if(r&&iso(new Date(r.t0))!==iso(today())){msClockSave(null);return null}
   return r&&msFind(r.se)&&(!id||r.se===id)?r:null;
 }
 function msClockSave(run){

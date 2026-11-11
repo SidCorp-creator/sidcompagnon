@@ -3698,9 +3698,9 @@ $("pdfIn").addEventListener("change",async e=>{const files=[...e.target.files];e
     try{await idb.put(pdfKey(id),f)}catch(ex){toast("Enregistrement impossible sur cet appareil");continue}
     NT().push(n);k++;last=n;pdfUpload(n)}
   if(!k)return;save();renderNotes();toast(k>1?`${k} ${L("PDF ajoutés")}`:L("PDF ajouté"));if(k===1&&last)pdfOpen(last.id)});
-let pv={note:null,tok:0,tool:"read",io:null,draw:null,sel:null,/** @type {Blob|null} */ blob:null,/** @type {string|null} */ blobNote:null};
+let pv={note:null,tok:0,tool:"read",io:null,draw:null,sel:null,/** @type {string[]} */ hist:[],scan:false,/** @type {Blob|null} */ blob:null,/** @type {string|null} */ blobNote:null};
 const pvAnns=(nid,pg)=>PA().filter(a=>a&&a.note===nid&&(pg===undefined||a.page===pg)&&!(data.del&&data.del[a.id]));
-async function pdfOpen(id){const n=noteFind(id);if(!n||!n.pdf)return;const tok=++pv.tok;pv.note=n.id;pv.blob=null;pv.blobNote=null;pvTool("read");
+async function pdfOpen(id){const n=noteFind(id);if(!n||!n.pdf)return;const tok=++pv.tok;pv.note=n.id;pv.blob=null;pv.blobNote=null;pv.hist=[];pv.scan=false;pvTool("read");pvUndoBtn();
   $("pvTitle").value=n.title||"";$("pvNoteTxt").value=n.body||"";$("pvNotes").hidden=true;$("pdfv").hidden=false;document.body.style.overflow="hidden";
   const body=$("pvBody");body.innerHTML=`<p class="muted pv-wait">${L("Ouverture…")}</p>`;
   let blob;try{blob=await pdfBlob(n);if(tok===pv.tok){pv.blob=blob;pv.blobNote=n.id}}catch(ex){if(tok===pv.tok)body.innerHTML=`<p class="muted pv-wait">${esc(ex instanceof TypeError?L("Pas de connexion internet"):L("PDF introuvable sur cet appareil et en ligne"))}</p>`;return}
@@ -3711,11 +3711,37 @@ async function pdfOpen(id){const n=noteFind(id);if(!n||!n.pdf)return;const tok=+
       const w=document.createElement("div");w.className="pv-page";w.dataset.pg=String(i);w.style.aspectRatio=`${v.width} / ${v.height}`;w.innerHTML=`<div class="pv-ov" data-pg="${i}"></div><span class="pv-num">${i}</span>`;
       body.appendChild(w);pvOverlay(w);pv.io.observe(w)}
     if(n.pdf.pages!==pdf.numPages){n.pdf.pages=pdf.numPages;save();renderNotes()}
+    pvScanCheck(pdf,tok);
   }catch(ex){if(tok===pv.tok)body.innerHTML=`<p class="muted pv-wait">${L("Ce PDF ne peut pas être affiché.")}</p>`}}
 async function pvRender(w,tok){if(w._c||w._busy||!pv.pdf)return;w._busy=true;
   try{const pg=await pv.pdf.getPage(+w.dataset.pg),v0=pg.getViewport({scale:1}),W=w.clientWidth||600,dpr=Math.min(2,window.devicePixelRatio||1),vp=pg.getViewport({scale:W/v0.width*dpr});
     const c=document.createElement("canvas");c.width=vp.width;c.height=vp.height;await pg.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;
-    if(tok!==pv.tok)return;w.prepend(c);w._c=c}catch(e){}w._busy=false}
+    if(tok!==pv.tok)return;w.prepend(c);w._c=c;if(!w._tl)await pvTextLayer(w,pg,v0,tok)}catch(e){}w._busy=false}
+// v83 : couche de texte sélectionnable (texte transparent posé sur l'image de la page, sous le calque d'annotations).
+// Tout est en fraction de la page (% et cqw) : la couche suit la page quand elle change de largeur. Une page sans texte (scan) n'en a pas.
+async function pvTextLayer(w,pg,v0,tok){const tc=await pg.getTextContent();if(tok!==pv.tok||w._tl)return;
+  const tl=document.createElement("div");tl.className="pv-tl notr";const U=window.pdfjsLib.Util,W=v0.width,H=v0.height;
+  for(const it of tc.items){if(!it||typeof it.str!=="string")continue;
+    if(!it.str){if(it.hasEOL)tl.appendChild(document.createElement("br"));continue}
+    const m=U.transform(v0.transform,it.transform),fh=Math.hypot(m[2],m[3]);if(!(fh>0))continue;const ang=Math.atan2(m[1],m[0]);
+    const sp=document.createElement("span");sp.textContent=it.str;sp._w=it.width/W;sp._rot=ang?`rotate(${ang.toFixed(4)}rad) `:"";
+    const asc=fh*.8; // ligne de base → haut de la boîte
+    sp.style.cssText=`left:${((m[4]+asc*Math.sin(ang))/W*100).toFixed(3)}%;top:${((m[5]-asc*Math.cos(ang))/H*100).toFixed(3)}%;font-size:${(fh/W*100).toFixed(3)}cqw${sp._rot?`;transform:${sp._rot}`:""}`;
+    tl.appendChild(sp);if(it.hasEOL)tl.appendChild(document.createElement("br"))}
+  const spans=[...tl.querySelectorAll("span")];if(!spans.length)return;w._tl=tl;w.insertBefore(tl,w.querySelector(".pv-ov"));
+  // largeur réelle de chaque ligne mesurée une fois dans la page, puis étirée à la largeur du texte du PDF (lectures puis écritures)
+  const pw=tl.clientWidth||1,nat=spans.map(sp=>sp.offsetWidth);
+  spans.forEach((sp,i)=>{if(nat[i]>0&&sp._w>0)sp.style.transform=`${sp._rot}scaleX(${(sp._w*pw/nat[i]).toFixed(4)})`})}
+// un PDF scanné n'a que des images : on le dit clairement (pas de reconnaissance de texte dans l'app)
+async function pvScanCheck(pdf,tok){try{for(let i=1;i<=Math.min(pdf.numPages,4);i++){const tc=await (await pdf.getPage(i)).getTextContent();if(tok!==pv.tok)return;
+    if(tc.items.some(it=>it&&typeof it.str==="string"&&it.str.trim()))return}
+  pv.scan=true;if(pv.tool==="read")pvTool("read")}catch(e){}}
+// v83 : bouton Annuler : retire la dernière annotation ajoutée depuis l'ouverture (un trait entier = une action), dans l'ordre inverse
+const pvHist=()=>pv.hist=pv.hist.filter(id=>PA().some(a=>a.id===id&&a.note===pv.note));
+function pvUndoBtn(){const b=$("pvUndo");if(!b)return;b.disabled=!pvHist().length;b.textContent=T3("Annuler","Undo");b.title=T3("Annuler la dernière annotation","Undo the last annotation")}
+function pvUndo(){pvFlushTxt();const id=pvHist().pop();if(!id){pvUndoBtn();return}const a=PA().find(x=>x.id===id);
+  const act=document.activeElement;if(act&&act.closest&&act.closest(`.pv-txt[data-ann="${id}"]`))act.blur();
+  if(pv.sel===id)pv.sel=null;tomb(id);data.pdfAnns=PA().filter(x=>x!==a);save();pvRefresh();pvUndoBtn()}
 function pvClose(){pvFlushTxt();pv.tok++;pv.note=null;pv.pdf=null;pv.blob=null;pv.blobNote=null;if(pv.io)pv.io.disconnect();$("pdfv").hidden=true;
   if(window.SCIslands)document.querySelectorAll("#pvBody .pv-ov").forEach(ov=>{try{window.SCIslands.unmount(ov)}catch(_){}});$("pvBody").innerHTML="";document.body.style.overflow="";renderNotes()}
 // annotations placées en fraction de la page (même rendu sur iPhone et sur PC). v45 : zones de texte déplaçables et
@@ -3743,11 +3769,12 @@ function pvOverlay(w){const ov=w.querySelector(".pv-ov"),pg=+w.dataset.pg,act=do
     else if(a.t==="text")ov.insertAdjacentHTML("beforeend",`<div class="pv-txt${pv.sel===a.id?" pv-on":""}" data-ann="${a.id}" style="left:${pct(a.x)};top:${pct(a.y)};width:${pct(a.w||.4)}${a.h?`;height:${pct(a.h)}`:""}"><textarea rows="1" class="notr" aria-label="${L("Texte sur le PDF")}" placeholder="${L("Écris ici…")}">${esc(a.txt||"")}</textarea><button type="button" class="pv-txt-x" data-pvdel="${a.id}" aria-label="${L("Supprimer ce texte")}">${IC("close")}</button><span class="pv-txt-mv" data-pvmv="${a.id}" title="${L("Déplacer")}" aria-hidden="true">${GRIP}</span><span class="pv-txt-rs" data-pvrs="${a.id}" title="${L("Agrandir ou rétrécir")}" aria-hidden="true"></span></div>`)}
   ov.querySelectorAll(".pv-txt textarea").forEach(pvGrow)}
 const pvGrow=t=>{t.style.height="auto";const box=t.parentElement,h=box&&box.style.height?box.clientHeight:0;t.style.height=Math.max(t.scrollHeight,h)+"px"};
-function pvRefresh(){if(!pv.note||$("pdfv").hidden)return;if(!noteFind(pv.note)){pvClose();return}document.querySelectorAll("#pvBody .pv-page").forEach(pvOverlay)}
+function pvRefresh(){if(!pv.note||$("pdfv").hidden)return;if(!noteFind(pv.note)){pvClose();return}document.querySelectorAll("#pvBody .pv-page").forEach(pvOverlay);pvUndoBtn()}
 const PV_HINT={text:"Touche la page à l'endroit où tu veux écrire. Tu restes en mode Texte jusqu'à ce que tu changes d'outil.",hl:"Fais glisser ton doigt (ou la souris) sur ce que tu veux surligner.",pen:"Écris ou dessine au doigt, au stylet ou à la souris.",erase:"Passe sur un trait, un surlignage ou une zone de texte pour l'effacer.",read:""};
 function pvTool(t){if(t==="notes"){const op=$("pvNotes").hidden;$("pvNotes").hidden=!op;document.querySelector('[data-pvt="notes"]').setAttribute("aria-pressed",op);if(op&&matchMedia("(min-width:900px)").matches)$("pvNoteTxt").focus();return}
   pv.tool=t;$("pdfv").dataset.tool=t;document.querySelectorAll("[data-pvt]").forEach(b=>{if(b.dataset.pvt!=="notes")b.setAttribute("aria-pressed",b.dataset.pvt===t)});
-  const h=$("pvHint");h.hidden=!PV_HINT[t];h.textContent=L(PV_HINT[t]||"");pvOpts()}
+  const hint=t==="read"&&pv.scan?"Ce PDF est une image scannée : son texte ne peut pas être sélectionné ni copié.":PV_HINT[t];
+  const h=$("pvHint");h.hidden=!hint;h.textContent=L(hint||"");pvOpts()}
 // couleurs et épaisseur du surligneur et du stylo (gardées sur l'appareil)
 const pvDot=(k,st)=>({"--d":Math.round(pvW(k,st.s)*360)+"px","--sw":st.c,...(k==="hl"?{opacity:.55}:{})});
 function pvOpts(){const o=$("pvOpts"),k=pv.tool==="hl"||pv.tool==="pen"?pv.tool:null;o.hidden=!k;if(!k)return;const st=pvPen(k);
@@ -3758,7 +3785,7 @@ function pvOpts(){const o=$("pvOpts"),k=pv.tool==="hl"||pv.tool==="pen"?pv.tool:
 $("pvOpts").addEventListener("click",e=>{const b=e.target.closest("[data-pvc]");if(!b)return;const k=pv.tool;if(!PV_COL[k])return;pvPen(k).c=b.dataset.pvc;saveUI();pvOpts()});
 $("pvOpts").addEventListener("input",e=>{if(e.target.id!=="pvSize")return;const k=pv.tool;if(!PV_COL[k])return;pvPen(k).s=+e.target.value;saveUI();if(shIsl("pvOpts")){pvOpts();return}
   const d=$("pvOpts").querySelector(".pv-dot");if(d)d.style.setProperty("--d",Math.round(pvW(k,+e.target.value)*360)+"px")});
-document.querySelector(".pv-tools").addEventListener("click",e=>{const b=e.target.closest("[data-pvt]");if(b)pvTool(b.dataset.pvt)});
+document.querySelector(".pv-tools").addEventListener("click",e=>{if(e.target.closest("#pvUndo")){pvUndo();return}const b=e.target.closest("[data-pvt]");if(b)pvTool(b.dataset.pvt)});
 $("pvNotesClose").addEventListener("click",()=>pvTool("notes"));
 $("pvBack").addEventListener("click",pvClose);
 $("pvMore").innerHTML=MORE;
@@ -3793,7 +3820,7 @@ $("pvBody").addEventListener("click",e=>{
     if(!e.target.closest(".pv-txt"))pvSelect(null);return}
   if(pv.tool!=="text"||e.target.closest(".pv-txt"))return;const ov=e.target.closest(".pv-ov");if(!ov)return;
   const r=ov.getBoundingClientRect(),x=Math.min(.75,Math.max(0,(e.clientX-r.left)/r.width)),y=Math.min(.97,Math.max(0,(e.clientY-r.top)/r.height));
-  const a={id:uid(),note:pv.note,page:+ov.dataset.pg,t:"text",x,y,w:Math.min(.45,1-x),txt:"",upd:Date.now()};PA().push(a);save();pv.sel=a.id;pvOverlay(ov.closest(".pv-page"));
+  const a={id:uid(),note:pv.note,page:+ov.dataset.pg,t:"text",x,y,w:Math.min(.45,1-x),txt:"",upd:Date.now()};PA().push(a);pv.hist.push(a.id);save();pvUndoBtn();pv.sel=a.id;pvOverlay(ov.closest(".pv-page"));
   const ta=ov.querySelector(`[data-ann="${a.id}"] textarea`);if(ta)ta.focus()}); // v45 : on reste en mode Texte
 // déplacer / redimensionner une zone de texte (poignées ⠿ et coin bas droit)
 $("pvBody").addEventListener("pointerdown",e=>{const h=e.target.closest("[data-pvmv],[data-pvrs]");if(!h)return;e.preventDefault();e.stopPropagation();
@@ -3826,7 +3853,7 @@ const pvDrawEnd=()=>{const d=pv.draw;if(!d)return;pv.draw=null;
     undoable(ids.length>1?"Éléments effacés":"Élément effacé",ids,()=>{ids.forEach(tomb);data.pdfAnns=PA().filter(a=>!gone.includes(a))},{after:pvRefresh});return}
   d.el.remove();if(d.pts.length>1200)d.pts=d.pts.filter((_,i)=>i%2===0);
   const r4=v=>Math.round(v*10000)/10000;
-  PA().push({id:uid(),note:pv.note,page:+d.ov.dataset.pg,t:"ink",hl:d.k==="hl",c:d.c,w:r4(d.w),pts:d.pts.map(p=>[r4(p[0]),r4(p[1])]),upd:Date.now()});save();pvOverlay(d.ov.closest(".pv-page"))};
+  const nid=uid();PA().push({id:nid,note:pv.note,page:+d.ov.dataset.pg,t:"ink",hl:d.k==="hl",c:d.c,w:r4(d.w),pts:d.pts.map(p=>[r4(p[0]),r4(p[1])]),upd:Date.now()});pv.hist.push(nid);save();pvOverlay(d.ov.closest(".pv-page"));pvUndoBtn()};
 $("pvBody").addEventListener("pointerup",pvDrawEnd);$("pvBody").addEventListener("pointercancel",pvDrawEnd);
 // clavier : Échap ferme ; Suppr / Retour arrière efface la zone de texte sélectionnée (vide ou pas en cours d'écriture)
 addEventListener("keydown",e=>{if($("pdfv").hidden||!$("actSheet").hidden)return;

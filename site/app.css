@@ -1598,6 +1598,14 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area
 .pv-page canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .pv-num{position:absolute;right:6px;bottom:4px;font:400 11px var(--mono,monospace);color:#999;pointer-events:none}
 .pv-ov{position:absolute;inset:0;z-index:1;pointer-events:none}
+.pv-tl{position:absolute;inset:0;overflow:hidden;line-height:1;color:transparent;-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;cursor:text;forced-color-adjust:none}
+.pv-tl span{position:absolute;white-space:pre;font-family:sans-serif;transform-origin:0 0;color:transparent;-webkit-user-select:text;user-select:text}
+.pv-tl br{-webkit-user-select:none;user-select:none}
+.pv-tl ::selection{background:rgba(0,90,255,.3);color:transparent}
+.pdfv:not([data-tool="read"]) .pv-tl{-webkit-user-select:none;user-select:none;pointer-events:none}
+.pv-tools .pv-undo{position:sticky;right:0;margin-left:auto;z-index:1;background:var(--bg);box-shadow:-10px 0 8px -2px var(--bg)}
+html[data-ds="elan"] .pv-tools .pv-undo{background:var(--surface-2);box-shadow:-10px 0 8px -2px var(--surface)}
+.pv-tools .pv-undo:disabled{color:color-mix(in srgb,var(--ink) 40%,transparent);cursor:default}
 .pdfv[data-tool="text"] .pv-ov{pointer-events:auto;cursor:text}
 .pdfv[data-tool="hl"] .pv-ov{pointer-events:auto;cursor:crosshair;touch-action:none}
 .pv-hl{position:absolute;display:block;padding:0;border:0;border-radius:2px;background:rgba(255,214,0,.42);mix-blend-mode:multiply;pointer-events:auto;cursor:pointer}

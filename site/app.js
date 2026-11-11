@@ -3732,8 +3732,8 @@ async function pvTextLayer(w,pg,v0,tok){const tc=await pg.getTextContent();if(to
   // largeur réelle de chaque ligne mesurée une fois dans la page, puis étirée à la largeur du texte du PDF (lectures puis écritures)
   const pw=tl.clientWidth||1,nat=spans.map(sp=>sp.offsetWidth);
   spans.forEach((sp,i)=>{if(nat[i]>0&&sp._w>0)sp.style.transform=`${sp._rot}scaleX(${(sp._w*pw/nat[i]).toFixed(4)})`})}
-// un PDF scanné n'a que des images : on le dit clairement (pas de reconnaissance de texte dans l'app)
-async function pvScanCheck(pdf,tok){try{for(let i=1;i<=Math.min(pdf.numPages,4);i++){const tc=await (await pdf.getPage(i)).getTextContent();if(tok!==pv.tok)return;
+// aucun texte sur AUCUNE page (toutes sont vérifiées, en tâche de fond) : on le dit clairement, sans reconnaissance de texte dans l'app
+async function pvScanCheck(pdf,tok){try{for(let i=1;i<=pdf.numPages;i++){const tc=await (await pdf.getPage(i)).getTextContent();if(tok!==pv.tok)return;
     if(tc.items.some(it=>it&&typeof it.str==="string"&&it.str.trim()))return}
   pv.scan=true;if(pv.tool==="read")pvTool("read")}catch(e){}}
 // v83 : bouton Annuler : défait la dernière action faite sur les annotations depuis l'ouverture, une par clic, dans l'ordre inverse.
@@ -3782,7 +3782,7 @@ function pvRefresh(){if(!pv.note||$("pdfv").hidden)return;if(!noteFind(pv.note))
 const PV_HINT={text:"Touche la page à l'endroit où tu veux écrire. Tu restes en mode Texte jusqu'à ce que tu changes d'outil.",hl:"Fais glisser ton doigt (ou la souris) sur ce que tu veux surligner.",pen:"Écris ou dessine au doigt, au stylet ou à la souris.",erase:"Passe sur un trait, un surlignage ou une zone de texte pour l'effacer.",read:""};
 function pvTool(t){if(t==="notes"){const op=$("pvNotes").hidden;$("pvNotes").hidden=!op;document.querySelector('[data-pvt="notes"]').setAttribute("aria-pressed",op);if(op&&matchMedia("(min-width:900px)").matches)$("pvNoteTxt").focus();return}
   pv.tool=t;$("pdfv").dataset.tool=t;document.querySelectorAll("[data-pvt]").forEach(b=>{if(b.dataset.pvt!=="notes")b.setAttribute("aria-pressed",b.dataset.pvt===t)});
-  const hint=t==="read"&&pv.scan?"Ce PDF n'a pas de texte sélectionnable (c'est sans doute un document scanné) : rien ne peut y être copié.":PV_HINT[t];
+  const hint=t==="read"&&pv.scan?"Ce PDF n'a pas de texte sélectionnable : rien ne peut y être copié.":PV_HINT[t];
   const h=$("pvHint");h.hidden=!hint;h.textContent=L(hint||"");pvOpts()}
 // couleurs et épaisseur du surligneur et du stylo (gardées sur l'appareil)
 const pvDot=(k,st)=>({"--d":Math.round(pvW(k,st.s)*360)+"px","--sw":st.c,...(k==="hl"?{opacity:.55}:{})});

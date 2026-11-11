@@ -3,8 +3,21 @@ const { chromium } = require('../app/node_modules/playwright');
 const assert = require('node:assert/strict');
 
 const base = process.env.SID_BASE_URL || 'http://localhost:' + (process.env.SID_SITE_PORT || 8766);
+const waitForRemote = async (page, started) => {
+  const end=Date.now()+8000;
+  while(Date.now()<end){
+    const remote=await page.evaluate(async flag=>{
+      await push();
+      const row=await fetchRow(session.user.id,await token());
+      return !!row?.data?.muscu?.sessions?.some(x=>x.id==='session-clock')&&(!flag||!!row.data.muscuClock?.run);
+    },started);
+    if(remote)return;
+    await page.waitForTimeout(100);
+  }
+  throw new Error('État de séance absent de la copie synchronisée');
+};
 const openMuscu = async page => {
-  await page.evaluate(() => show('muscu'));
+  await page.evaluate(() => {show('muscu');renderMuscu();});
   const details=page.locator('[data-ms="session-clock"]');
   await details.waitFor();
   if(!await details.evaluate(el=>el.open))await details.locator('summary').click();
@@ -36,6 +49,7 @@ const createPage = async (context, now) => {
       M().sessions.push({ id: 'session-clock', name: 'Séance test', exercises: [], upd: Date.now() });
       save();
     });
+    await waitForRemote(first,false);
     await openMuscu(first);
     const second = await createPage(context);
     await openMuscu(second);
@@ -43,6 +57,7 @@ const createPage = async (context, now) => {
     await waitForClock(second, 'stop');
     const start = await first.evaluate(() => msRunGet().t0);
     assert.equal(await second.evaluate(() => msRunGet().t0), start);
+    await waitForRemote(first,true);
     const state = await context.storageState();
     await browser.close();
 

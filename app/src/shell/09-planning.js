@@ -300,12 +300,15 @@ function renderDayNotif(){const head=$("vhead");if(!head)return;let el=$("dayNot
   if(!el){el=document.createElement("section");el.id="dayNotif";el.className="day-notif";el.setAttribute("aria-live","polite");head.after(el)}
   const app=head.dataset.app||"",on=!head.hidden&&!!app&&app!=="home";
   const day=iso(today()),now=new Date(),min=now.getHours()*60+now.getMinutes(),items=on?dayNotifItems(day):[];
-  const key=JSON.stringify([on,app,day,LANG,Math.floor(min/1),items.map(t=>[t.id||t.uid||"",t.title,t.time,t.timeEnd,t.cat,t.status,t.date,t.end])]);
+  const key=JSON.stringify([on,app,day,LANG,min,items.map(t=>[t.id||t.uid||"",t.title,t.time,t.timeEnd,t.cat,t.status,t.date,t.end])]);
   if(key===dnKey&&el.hidden===!on)return;dnKey=key;el.hidden=!on;if(!on){el.innerHTML="";return}
   el.setAttribute("aria-label",L("Notifications du jour"));el.dataset.app=app;
   const full=app==="agenda",past=t=>t.date===day&&!!t.time&&(toMin(t.timeEnd)||toMin(t.time)+60)<=min,cur=t=>t.date===day&&!!t.time&&toMin(t.time)<=min&&!past(t);
   const shown=full?items:items.filter(t=>!past(t)).slice(0,2),more=items.length-shown.length;
-  const row=t=>`<li class="dn-it${past(t)?" dn-past":""}${cur(t)?" dn-cur":""}"><span class="dn-dot" style="background:var(${t.cat?tc(t.cat):"--accent"})"></span><span class="dn-time notr">${esc(t.time?hrs(t):L("Journée"))}</span><span class="dn-title notr">${esc(t.title||L("Activité"))}</span>${cur(t)?`<span class="dn-now">${esc(L("En cours"))}</span>`:""}</li>`;
+  const row=t=>{
+    const color=String(tc(t.cat)||"");
+    return `<li class="dn-it${past(t)?" dn-past":""}${cur(t)?" dn-cur":""}"><span class="dn-dot" style="background:var(${/^--[a-z0-9-]+$/i.test(color)?color:"--accent"})"></span><span class="dn-time notr">${esc(t.time?hrs(t):L("Journée"))}</span><span class="dn-title notr">${esc(t.title||L("Activité"))}</span>${cur(t)?`<span class="dn-now">${esc(L("En cours"))}</span>`:""}</li>`;
+  };
   const n=items.length,head2=n?`${n} ${L(n>1?"événements aujourd'hui":"événement aujourd'hui")}`:L("Aucun événement aujourd'hui");
   el.innerHTML=`<button type="button" class="dn-head" data-dngo="1"><span class="dn-bell">${IC("bell")||GI("bell")}</span><b>${esc(head2)}</b>${!full&&n?`<span class="dn-see small">${esc(L("Voir l'agenda"))}</span>`:""}</button>`+
     (shown.length?`<ul class="dn-list">${shown.map(row).join("")}</ul>`:"")+(more>0&&!full?`<div class="small muted dn-more">+${more} ${esc(L(more>1?"autres":"autre"))}</div>`:"")}

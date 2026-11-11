@@ -104,7 +104,7 @@ if(!Array.isArray(data.pwds))data.pwds=[];
 LANG=(data.prefs&&data.prefs.lang)||ls.get("sidnote-lang")||"fr";if(session)ls.set("sidnote-lang",LANG);
 // v76 : FR et EN seulement. Une préférence néerlandaise (ou inconnue) revient au français, et on l'enregistre pour ne plus la relire.
 if(!["fr","en"].includes(LANG)){LANG="fr";ls.set("sidnote-lang","fr");if(data.prefs&&data.prefs.lang&&data.prefs.lang!=="fr"){data.prefs.lang="fr"}}
-const TABS=[["plan","Agenda"],["todo","Tâches"],["lists","Listes"],["notes","Notes"],["projects","Projets"],["pomo","Focus"],["muscu","Musculation"],["nutri","Nutrition"],["graph","Graphiques"],["app","Appli"]];
+const TABS=[["plan","Agenda"],["todo","Tâches"],["lists","Listes"],["notes","Notes"],["pomo","Focus"],["muscu","Musculation"],["nutri","Nutrition"],["graph","Graphiques"],["app","Appli"]];
 data.prefs=data.prefs||{};data.prefs.tabs=data.prefs.tabs||{plan:true,todo:true,pomo:true,app:true};
 
 function save(){
@@ -130,7 +130,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="81.1";const errSent=new Set();
+const APP_V="82";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -479,11 +479,11 @@ function appOutro(app){
 const GROUPS=[
   {k:"orga",label:MARQUES.journee,app:"agenda",tabs:["plan","todo"]},
   {k:"sport",label:MARQUES.forme,app:"fit",tabs:["muscu","nutri","graph"]},
-  {k:"perso",label:MARQUES.note,app:"note",tabs:["notes","pomo","projects"]},
+  {k:"perso",label:MARQUES.note,app:"note",tabs:["notes","pomo"]},
   {k:"more",label:MARQUES.compagnon,app:"home",tabs:["more","app"]}];
 const APP_GROUPS=GROUPS.slice(0,3);
 const appOf=v=>v==="home"||v==="spaces"?"home":groupOf(v).app;
-const SHORT={plan:"Agenda",todo:"Tâches",lists:"Listes",pomo:"Focus",projects:"Projets",muscu:"Musculation",nutri:"Nutrition",graph:"Graphiques",notes:"Notes",more:"Réglages",app:"Installer l'app"};
+const SHORT={plan:"Agenda",todo:"Tâches",lists:"Listes",pomo:"Focus",muscu:"Musculation",nutri:"Nutrition",graph:"Graphiques",notes:"Notes",more:"Réglages",app:"Installer l'app"};
 const ICON=k=>{const e=$("fnIcons").querySelector(`[data-ic="${k}"]`);return e?e.innerHTML:""};
 const groupOf=v=>GROUPS.find(g=>g.tabs.includes(v))||GROUPS[0];
 // v32 : Nutrition et Graphiques n'apparaissent que pour les comptes qui y ont accès (décidé par le serveur)
@@ -555,7 +555,6 @@ if(v!=="notes")document.body.classList.remove("note-full");if(v==="more"){try{re
   if(v==="graph")renderGraph();
   if(v!=="graph")grTipHide();
   if(v==="pomo")renderSpotify();
-  if(v==="projects")renderNoteProjects();
   window.scrollTo(0,0);elanCompact();
   if(v==="home"&&introReady&&INTRO[wasApp])appOutro(wasApp);
 }
@@ -567,7 +566,7 @@ function applyTabs(){
 // --- en-tête d'un module : nom de l'espace + pastilles de ses fonctions ---
 // v28 : nom de l'espace + pastilles des fonctions de cet espace (Agenda · Tâches · Focus…)
 // v42 : en-tête d'une app : son logo et son nom, et le retour à Sid'Compagnon (les fonctions sont dans la barre du bas)
-const APP_ROLES={agenda:"Agenda et tâches",fit:"Sport et alimentation",note:"Notes, Focus et projets",home:"Tes réglages"};
+const APP_ROLES={agenda:"Agenda et tâches",fit:"Sport et alimentation",note:"Notes et Focus",home:"Tes réglages"};
 function renderVhead(v){const el=$("vhead");
  if(v==="home"||v==="spaces"){el.hidden=true;document.title="Sid'Compagnon";return}
  const g=groupOf(v),previous=el.dataset.app===g.app?Number(el.querySelector("[role=progressbar]")?.getAttribute("aria-valuenow")||0):0;el.hidden=false;el.dataset.app=g.app;el.classList.remove("many");
@@ -588,7 +587,7 @@ function renderVhead(v){const el=$("vhead");
  document.title=`${g.label} · ${L(title)} — Sid'Compagnon`;
  const props={app:g.app,label:g.label,role:APP_ROLES[g.app],title,progress,percent,hasProgress,gridIcon:GRIDIC,askIcon:IC("message"),i18n:agI18n()};
  if(shIsl("appHead")){try{window.SCIslands.appHead(el,props);return}catch(e){reportErr("island appHead: "+(e&&e.message))}}
- el.innerHTML=`<div class="elan-head-row"><button type="button" class="ah-home" data-go="home" aria-label="${L("Toutes les apps")}"><span class="ah-grid">${GRIDIC}</span></button><span class="ah-brand">${LOGO(g.app,"ah-logo")}<span class="ah-names"><b>${g.label}</b><small>${L(APP_ROLES[g.app])}</small></span></span>${ahBotBtn()}</div><h1 class="elan-title">${L(title)}</h1><div class="elan-progress"><span>${progress}</span><span class="elan-progress-track" ${hasProgress?"":"hidden"} role="progressbar" aria-label="${L("Progression du jour")}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><i style="width:${percent}%"></i></span></div>`;
+ el.innerHTML=`<div class="elan-head-row"><button type="button" class="ah-home" data-go="home" aria-label="${L("Toutes les apps")}"><span class="ah-grid">${GRIDIC}</span></button><span class="ah-brand">${badgeWrap(g.app,LOGO(g.app,"ah-logo"))}<span class="ah-names"><b>${g.label}</b><small>${L(APP_ROLES[g.app])}</small></span></span>${ahBotBtn()}</div><h1 class="elan-title">${L(title)}</h1><div class="elan-progress"><span>${progress}</span><span class="elan-progress-track" ${hasProgress?"":"hidden"} role="progressbar" aria-label="${L("Progression du jour")}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><i style="width:${percent}%"></i></span></div>`;
  const bar=el.querySelector(".elan-progress-track i");if(bar&&hasProgress){bar.style.width=previous+"%";bar.getBoundingClientRect();requestAnimationFrame(()=>bar.style.width=percent+"%")}
 
 }
@@ -638,14 +637,16 @@ function sideApply(){requestAnimationFrame(navPad);const wide=matchMedia("(min-w
 function sideToggle(show){data.ui.sideOff=!show;saveUI();sideApply();const f=show?document.querySelector("#side .side-tog"):$("sideShow");if(f)f.focus({preventScroll:true})}
 addEventListener("resize",()=>sideApply());
 function renderSide(v){const el=$("side");if(!el)return;v=v||data.ui.view;
+  // v82 (isolation des notifications) : les compteurs d'une app (« 3 à venir »…) ne s'affichent que dans cette app ou sur l'accueil
+  const curApp=v==="home"||v==="spaces"?"":groupOf(v).app,metaOf=(g,k)=>!curApp||curApp===g.app?spaceMeta(k):"";
   if(shIsl("side")){try{window.SCIslands.side(el,{cur:v,i18n:agI18n(),icons:{side:SIDEIC,home:HOMEIC,plus:PLUSIC,user:USERIC},
-      groups:GROUPS.map(g=>({app:g.app,label:g.label,items:groupTabs(g).map(k=>({k,icon:ICON(k)||"",label:SHORT[k],badge:0,meta:spaceMeta(k)}))})).filter(g=>g.items.length)});sideApply();return}
+      groups:GROUPS.map(g=>({app:g.app,label:g.label,items:groupTabs(g).map(k=>({k,icon:ICON(k)||"",label:SHORT[k],badge:0,meta:metaOf(g,k)}))})).filter(g=>g.items.length)});sideApply();return}
     catch(e){reportErr("island side: "+(e&&e.message))}}
   el.innerHTML=`<div class="side-brand">${LOGO("home","side-logo")}<span class="grow">Sid'Compagnon</span><button type="button" class="side-tog" aria-label="${L("Masquer la barre latérale")}" title="${L("Masquer la barre latérale")}" aria-expanded="true" aria-controls="side">${SIDEIC}</button></div>
     <button type="button" class="side-it" data-go="home" aria-current="${v==="home"}"><span class="sp-ic">${HOMEIC}</span><span class="grow">${L("Aujourd'hui")}</span></button>
     <button type="button" class="side-add" data-sadd="1"><span class="sp-ic">${PLUSIC}</span><span class="grow">${L("Ajouter")}</span></button>`+
     GROUPS.map(g=>{const ts=groupTabs(g);if(!ts.length)return"";
-      return `<div class="side-grp" data-app="${g.app}"><div class="eyebrow side-h">${g.app!=="home"?LOGO(g.app,"side-applogo"):""}${esc(g.label)}</div>`+ts.map(k=>`<button type="button" class="side-it" data-go="${k}" aria-current="${v===k}"><span class="sp-ic">${ICON(k)||USERIC}</span><span class="grow">${L(SHORT[k])}</span><span class="sp-meta">${esc(spaceMeta(k))}</span></button>`).join("")+`</div>`}).join("");
+      return `<div class="side-grp" data-app="${g.app}"><div class="eyebrow side-h">${g.app!=="home"?LOGO(g.app,"side-applogo"):""}${esc(g.label)}</div>`+ts.map(k=>`<button type="button" class="side-it" data-go="${k}" aria-current="${v===k}"><span class="sp-ic">${ICON(k)||USERIC}</span><span class="grow">${L(SHORT[k])}</span><span class="sp-meta">${esc(metaOf(g,k))}</span></button>`).join("")+`</div>`}).join("");
   sideApply()}
 $("sideShow").addEventListener("click",()=>sideToggle(true));
 $("side").addEventListener("click",e=>{if(e.target.closest(".side-tog")){sideToggle(false);return}if(e.target.closest("[data-sadd]")){openQuickAdd();return}const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
@@ -710,7 +711,7 @@ function renderHome(){if(!$("homeBody"))return;
       return t.length>90?t.slice(0,90).replace(/\s+\S*$/,"")+"…":t};
     if(last&&nTxt(last))it.push([L("Dernière note"),{u:nTxt(last)},""]);
     const nN=NT().length;it.push([L("Classeur"),`${nN} ${L(nN>1?"notes":"note")} · ${NF().length} ${L(NF().length>1?"dossiers":"dossier")}`,""]);
-    cards.push({g,desc:"Notes, séances Focus et projets.",it:it.slice(0,2)})}}
+    cards.push({g,desc:"Notes et séances Focus.",it:it.slice(0,2)})}}
   const phrases={agenda:"Organise tes journées",fit:"Entraîne-toi, mange bien",note:"Écris, classe et protège"};
   const models=cards.map(({g,it})=>{let count="0",metric="notes";
     if(g.app==="agenda"){count=String(allT().filter(t=>onDay(t,t0)&&!t.canc&&t.status!=="fait").length);metric="activités restantes aujourd'hui"}
@@ -720,10 +721,10 @@ function renderHome(){if(!$("homeBody"))return;
   // v76 : vue simple par défaut (les 3 logos), pour tous les comptes tant que la personne n'a pas choisi « Affichage détaillé » (data.prefs.homeView="detail")
   const detail=homeDetail(),sw=`<button type="button" class="linkbtn" id="homeViewSw" aria-pressed="${detail}">${L(detail?"Affichage simple":"Affichage détaillé")}</button>`;$("homeViewBox").innerHTML=sw;
   // le conteneur peut encore porter la racine React de la vue détaillée : on la démonte avant d'écrire la vue simple (revue Codex)
-  if(!detail){try{if(window.SCIslands&&window.SCIslands.unmount)window.SCIslands.unmount($("homeBody"))}catch(e){}$("homeBody").innerHTML=`<div class="hs-grid" role="group" aria-label="${L("Tes applications")}">${models.map(c=>`<button type="button" class="hs-app" data-app="${c.app}" data-gapp="${c.k}" aria-label="${esc(c.label)} — ${esc(L(APP_ROLES[c.app]))}">${LOGO(c.app,"hs-logo")}<span class="hs-name notr">${c.label}</span><span class="hs-role">${L(APP_ROLES[c.app])}</span></button>`).join("")}</div>${homeNext()}`;return}
+  if(!detail){try{if(window.SCIslands&&window.SCIslands.unmount)window.SCIslands.unmount($("homeBody"))}catch(e){}$("homeBody").innerHTML=`<div class="hs-grid" role="group" aria-label="${L("Tes applications")}">${models.map(c=>`<button type="button" class="hs-app" data-app="${c.app}" data-gapp="${c.k}" >${badgeWrap(c.app,LOGO(c.app,"hs-logo"))}<span class="hs-name notr">${c.label}</span><span class="hs-role">${L(APP_ROLES[c.app])}</span></button>`).join("")}</div>${homeNext()}`;return}
   $("homeBody").dataset.view="detail";
   if(shIsl("home")){try{window.SCIslands.home($("homeBody"),{i18n:agI18n(),cards:models});return}catch(e){reportErr("island home: "+(e&&e.message))}}
-  $("homeBody").innerHTML=`<div class="hc-list">${models.map(c=>`<button type="button" class="hc" data-app="${c.app}" data-gapp="${c.k}"><span class="hc-top">${LOGO(c.app,"home-applogo hc-logo")}<span class="hc-heading"><span class="hc-name">${c.label}</span><span class="hc-desc">${L(c.desc)}</span></span><svg class="hc-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></span><span class="hc-main"><span class="hc-count">${c.count}</span><span class="hc-metric">${L(c.metric)}</span></span><span class="hc-detail">${c.items.slice(0,1).map(it=>`<span class="hc-it"><span class="hc-k">${it.k}</span><span class="hc-v">${it.user?`<span class="notr">${esc(it.v)}</span>`:esc(it.v)}</span></span>`).join("")}</span><span class="hc-fns">${c.functions.map(f=>`<span class="hc-fn"><span>${f.icon}</span>${L(f.label)}</span>`).join("")}</span></button>`).join("")}</div>`;
+  $("homeBody").innerHTML=`<div class="hc-list">${models.map(c=>`<button type="button" class="hc" data-app="${c.app}" data-gapp="${c.k}"><span class="hc-top">${badgeWrap(c.app,LOGO(c.app,"home-applogo hc-logo"))}<span class="hc-heading"><span class="hc-name">${c.label}</span><span class="hc-desc">${L(c.desc)}</span></span><svg class="hc-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></span><span class="hc-main"><span class="hc-count">${c.count}</span><span class="hc-metric">${L(c.metric)}</span></span><span class="hc-detail">${c.items.slice(0,1).map(it=>`<span class="hc-it"><span class="hc-k">${it.k}</span><span class="hc-v">${it.user?`<span class="notr">${esc(it.v)}</span>`:esc(it.v)}</span></span>`).join("")}</span><span class="hc-fns">${c.functions.map(f=>`<span class="hc-fn"><span>${f.icon}</span>${L(f.label)}</span>`).join("")}</span></button>`).join("")}</div>`;
 }
 const homeDetail=()=>!!(data.prefs&&data.prefs.homeView==="detail");
 function setHomeView(v){data.prefs.homeView=v==="detail"?"detail":"simple";save();renderHome();const hs=$("homeViewSel");if(hs)hs.value=data.prefs.homeView;
@@ -1314,33 +1315,25 @@ $("taskForm").addEventListener("submit",e=>{
   remApply(t,"f");$("vhead").dataset.progressChange="add";data.tasks.push(t);elanFresh=t.id;selDay=t.date;save();renderPlan();renderTypes();e.target.reset();remSel.f=null;renderRem("f");closeTaskSheet();
   const original=JSON.stringify(t);toastAct("Activité ajoutée","Annuler",()=>{const current=data.tasks.find(x=>x.id===t.id);if(!current)return;if(JSON.stringify(current)!==original){toast("L'activité a changé : elle est conservée");return}tomb(t.id);data.tasks=data.tasks.filter(x=>x.id!==t.id);elanFresh="";save();renderPlan();renderHome()},4000);if(t.time)setTimeout(maybeAskNotif,900); // v37 : la proposition arrive quand elle a du sens
 });
-/* ---------- v81 (demande de Sid) : zone de notifications en haut des apps = événements du planning du jour ----------
-   Seulement les activités de l'agenda et les cours des calendriers reliés (allT), jamais les tâches (data.todos) ni un événement annulé.
-   Jour = date locale de l'appareil (fuseau de la personne). Recalculée à chaque rendu de l'agenda (ajout, modification, suppression,
-   synchro), à chaque changement d'en-tête d'app, au retour au premier plan et à chaque minute (changement de jour, événement passé). */
-let dnKey="";
-function dayNotifItems(day){return allT().filter(t=>t&&onDay(t,day)&&!t.canc).sort((a,b)=>sk(a).localeCompare(sk(b)))}
-function renderDayNotif(){const head=$("vhead");if(!head)return;let el=$("dayNotif");
-  if(!el){el=document.createElement("section");el.id="dayNotif";el.className="day-notif";el.setAttribute("aria-live","polite");head.after(el)}
-  const app=head.dataset.app||"",on=!head.hidden&&!!app&&app!=="home";
-  const day=iso(today()),now=new Date(),min=now.getHours()*60+now.getMinutes(),items=on?dayNotifItems(day):[];
-  const key=JSON.stringify([on,app,day,LANG,min,items.map(t=>[t.id||t.uid||"",t.title,t.time,t.timeEnd,t.cat,t.status,t.date,t.end])]);
-  if(key===dnKey&&el.hidden===!on)return;dnKey=key;el.hidden=!on;if(!on){el.innerHTML="";return}
-  el.setAttribute("aria-label",L("Notifications du jour"));el.dataset.app=app;
-  const full=app==="agenda",past=t=>t.date===day&&!!t.time&&(toMin(t.timeEnd)||toMin(t.time)+60)<=min,cur=t=>t.date===day&&!!t.time&&toMin(t.time)<=min&&!past(t);
-  const shown=full?items:items.filter(t=>!past(t)).slice(0,2),more=items.length-shown.length;
-  const row=t=>{
-    const color=String(tc(t.cat)||"");
-    return `<li class="dn-it${past(t)?" dn-past":""}${cur(t)?" dn-cur":""}"><span class="dn-dot" style="background:var(${/^--[a-z0-9-]+$/i.test(color)?color:"--accent"})"></span><span class="dn-time notr">${esc(t.time?hrs(t):L("Journée"))}</span><span class="dn-title notr">${esc(t.title||L("Activité"))}</span>${cur(t)?`<span class="dn-now">${esc(L("En cours"))}</span>`:""}</li>`;
-  };
-  const n=items.length,head2=n?`${n} ${L(n>1?"événements aujourd'hui":"événement aujourd'hui")}`:L("Aucun événement aujourd'hui");
-  el.innerHTML=`<button type="button" class="dn-head" data-dngo="1"><span class="dn-bell">${IC("bell")||GI("bell")}</span><b>${esc(head2)}</b>${!full&&n?`<span class="dn-see small">${esc(L("Voir l'agenda"))}</span>`:""}</button>`+
-    (shown.length?`<ul class="dn-list">${shown.map(row).join("")}</ul>`:"")+(more>0&&!full?`<div class="small muted dn-more">+${more} ${esc(L(more>1?"autres":"autre"))}</div>`:"")}
-document.addEventListener("click",e=>{if(e.target.closest("[data-dngo]")){selDay=iso(today());if(data.ui.view!=="plan")show("plan");else renderPlan()}});
-// l'en-tête d'app change (vue, app, masqué) → la zone suit, sans toucher à renderVhead
-try{new MutationObserver(()=>renderDayNotif()).observe($("vhead"),{attributes:true,attributeFilter:["hidden","data-app"],childList:true})}catch(e){}
-setInterval(renderDayNotif,30000);
-document.addEventListener("visibilitychange",()=>{if(!document.hidden)renderDayNotif()});
+/* ---------- v82 (demande de Sid, capture du 11 nov.) : pastille rouge sur le logo de l'app, au lieu de la zone de notifications v81 ----------
+   Agenda = nombre d'événements du planning du jour (activités + cours reliés, allT), jamais les tâches (data.todos) ni un événement annulé,
+   passés compris. 0 → pas de pastille. Chaque app garde ses notifications : la pastille d'une app n'est posée que sur SON logo
+   (tuile du lanceur, en-tête de l'app : enveloppe .logo-badged[data-badge-app]) ; aucune sur les logos de la barre latérale ni dans une autre app.
+   Recalculée à chaque rendu de l'agenda, à chaque changement d'en-tête ou du lanceur, au retour au premier plan et toutes les 30 s (nouveau jour). */
+function dayNotifItems(day){return allT().filter(t=>t&&onDay(t,day)&&!t.canc)}
+// une entrée par app qui a des notifications (fonctions déclarées : appelables avant la fin du chargement du fichier)
+function appBadgeN(app){try{const f={agenda:()=>dayNotifItems(iso(today())).length}[app];return f?Math.max(0,f()|0):0}catch(e){return 0}}
+function badgeWrap(app,logo){return `<span class="logo-badged" data-badge-app="${app}">${logo}</span>`}
+function renderAppBadges(){const cache={};
+  for(const w of document.querySelectorAll(".logo-badged[data-badge-app]")){const app=w.dataset.badgeApp,n=app in cache?cache[app]:(cache[app]=appBadgeN(app));
+    const txt=n>99?"99+":String(n),label=n?`${n} ${L(app==="agenda"?(n>1?"événements aujourd'hui":"événement aujourd'hui"):(n>1?"notifications":"notification"))}`:"";
+    if(n){if(w.dataset.n!==txt)w.dataset.n=txt}else if("n" in w.dataset)delete w.dataset.n;
+    let sr=w.querySelector(":scope>.app-badge-sr");if(n&&!sr){sr=document.createElement("span");sr.className="app-badge-sr sr-only";w.appendChild(sr)}
+    if(sr&&sr.textContent!==label)sr.textContent=label}}
+function renderDayNotif(){renderAppBadges()} // ancien nom (appelé par renderPlan)
+try{const mo=new MutationObserver(()=>renderAppBadges());for(const id of ["vhead","homeBody"])mo.observe($(id),{childList:true,subtree:true,attributes:true,attributeFilter:["hidden","data-app"]})}catch(e){}
+setInterval(renderAppBadges,30000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)renderAppBadges()});
 
 /* ---------- calendriers reliés (iCal) ---------- */
 // v45 : plusieurs calendriers superposés dans la même vue. data.prefs.icals = [{id, name, url, c (couleur), on (affiché)}] ;
@@ -1559,7 +1552,7 @@ $("wipeBtn").addEventListener("click",async e=>{
   }catch(ex){b.disabled=false;delete b.dataset.armed;b.textContent=L("Supprimer mes données");toast(ex instanceof TypeError?L("Pas de connexion internet"):L("Suppression impossible : ")+(ex.message||""))}
 });
 // restauration : aperçu, puis Fusionner (rien n'est perdu) ou Remplacer (confirmation), sans jamais casser les coffres
-const BK_LISTS=[["pdfAnns","Annotations de PDF"],["todos","Tâches"],["tasks","Activités de l'agenda"],["notes","Notes"],["noteProjects","Projets"],["focusSessions","Séances Focus"],["muscu.sessions","Séances de musculation"],["muscu.log","Séances faites (programme)"],["nutri.log","Repas notés"],["pwds",null],["docs",null],["todoCats",null],["docFolders",null],["noteFolders",null],["nutri.weights",null],["nutri.weeks",null]];
+const BK_LISTS=[["pdfAnns","Annotations de PDF"],["todos","Tâches"],["tasks","Activités de l'agenda"],["notes","Notes"],["noteProjects",null],["focusSessions","Séances Focus"],["muscu.sessions","Séances de musculation"],["muscu.log","Séances faites (programme)"],["nutri.log","Repas notés"],["pwds",null],["docs",null],["todoCats",null],["docFolders",null],["noteFolders",null],["nutri.weights",null],["nutri.weeks",null]];
 const bkGet=(d,k)=>{const v=k.split(".").reduce((o,x)=>o&&o[x],d);return Array.isArray(v)?v.filter(x=>x&&x.id):[]};
 function bkParse(j){
   if(j&&typeof j==="object"&&j.data&&typeof j.data==="object"&&/^(sidnote|Sid'note)$/.test(j.app||""))return {d:j.data,at:j.exported};
@@ -1906,7 +1899,7 @@ function renderPomoStats(){
 setInterval(()=>{if(P.run){tickPomo();if(!$("v-pomo").hidden)renderPomoStats()}},500);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&P.run){unlockAudio();if(!P.run.pausedAt)keepAwake(true);tickPomo();pomoPlan()}});
 
-function renderAll(){renderTodos();renderPlan();renderStats();renderPomo();renderTypes();renderMuscu();renderNotes();renderNutri();if(data.ui.view==="projects")renderNoteProjects();if(data.ui.view==="graph")renderGraph();if(data.ui.view==="home")renderHome();if(data.ui.view==="spaces")renderSpaces();renderSide();convTabs()}
+function renderAll(){renderTodos();renderPlan();renderStats();renderPomo();renderTypes();renderMuscu();renderNotes();renderNutri();if(data.ui.view==="graph")renderGraph();if(data.ui.view==="home")renderHome();if(data.ui.view==="spaces")renderSpaces();renderSide();convTabs()}
 
 /* ---------- écran de connexion ---------- */
 let authMode="login";
@@ -3356,45 +3349,64 @@ const rtEmpty=()=>{
   body.classList.toggle("is-empty",!rtText(body)&&!body.querySelector("li,hr"));
   notePagesSchedule();
 };
-let notePagesFrame=0,notePageCount=1,notePageStep=1;
-function notePagePosition(){
-  const current=Math.min(notePageCount,Math.round($("notePages").scrollLeft/notePageStep)+1);
-  $("notePagePosition").textContent=`${current} / ${notePageCount}`;
-  $("notePagePrevious").disabled=current===1;
-  $("notePageNext").disabled=current===notePageCount;
-}
+let notePagesFrame=0,notePageCount=1,notePagesComposing=false;
+// A CSS float reserves the space between sheets. The browser wraps individual lines
+// around it, including inside long paragraphs, without changing the editable DOM.
 function notePagesSchedule(){
-  if(notePagesFrame)return;
+  if(notePagesFrame||notePagesComposing)return;
   notePagesFrame=requestAnimationFrame(()=>{
     notePagesFrame=0;
+    if(notePagesComposing)return;
     const body=$("noteBody"),pages=$("notePages");
     if(!pages.clientWidth)return;
-    const width=body.getBoundingClientRect().width,gap=parseFloat(getComputedStyle(body).columnGap);
-    notePageStep=width+gap;
-    notePageCount=1+Math.max(0,Math.round((body.scrollWidth-width)/notePageStep));
-    $("notePageSheets").style.setProperty("--note-page-width",`${pages.clientWidth}px`);
-    $("notePageSheets").style.width=`${pages.clientWidth+(notePageCount-1)*notePageStep}px`;
-    $("notePageControls").hidden=notePageCount===1;
+    const editor=$("noteEdit"),scrollTop=editor.scrollTop;
+    const style=getComputedStyle(pages),height=parseFloat(style.getPropertyValue("--page-height"))||pages.clientWidth*1.4;
+    const gap=parseFloat(style.getPropertyValue("--page-gap"))||16,inset=24,step=height+gap;
+    const shape=count=>{
+      const points=["0 0","1px 0"];
+      for(let i=1;i<count;i++){
+        const end=i*step-gap-2*inset,next=i*step;
+        points.push(`1px ${end}px`,`100% ${end}px`,`100% ${next}px`,`1px ${next}px`);
+      }
+      const total=count*step-gap-2*inset;
+      points.push(`1px ${total}px`,`0 ${total}px`);
+      body.style.setProperty("--note-flow-shape",`polygon(${points.join(",")})`);
+      body.style.setProperty("--note-flow-height",`${total}px`);
+      body.style.minHeight=`${count*step-gap}px`;
+    };
+    // Start without gaps so deletion/resize can reduce the number of sheets, then
+    // account for the lines displaced by each gap until the page count stabilises.
+    let count=1;
+    for(let pass=0;pass<20;pass++){
+      shape(count);
+      const range=document.createRange();range.selectNodeContents(body);
+      const top=body.getBoundingClientRect().top;
+      const bottom=Math.max(0,...Array.from(range.getClientRects(),r=>r.bottom-top));
+      const next=Math.max(1,Math.ceil((bottom+inset+gap)/step));
+      if(next===count)break;
+      count=next;
+    }
+    notePageCount=count;shape(count);
+    pages.style.setProperty("--note-page-step",`${step}px`);
+    pages.style.setProperty("--note-sheet-height",`${height}px`);
+    pages.dataset.pages=String(count);
+    // Measuring the unfragmented flow must not move the scroll anchor. Native
+    // caret scrolling happens before reflow, so reveal it again if a new sheet grew.
+    editor.scrollTop=scrollTop;
     const selection=getSelection();
     if(document.activeElement===body&&selection?.isCollapsed&&selection.rangeCount&&body.contains(selection.focusNode)){
-      const caret=selection.getRangeAt(0).getBoundingClientRect(),viewport=pages.getBoundingClientRect();
-      if(caret.height&&(caret.left<viewport.left||caret.right>viewport.right)){
-        const column=Math.floor((caret.left-body.getBoundingClientRect().left+1)/notePageStep);
-        const target=Math.min(notePageCount-1,Math.max(0,column))*notePageStep;
-        pages.scrollTo({left:target,behavior:"instant"});
-      }
+      const caret=selection.getRangeAt(0).getBoundingClientRect(),view=editor.getBoundingClientRect();
+      const chrome=editor.querySelector(".coffre-editor-chrome").getBoundingClientRect();
+      const top=Math.max(view.top,chrome.bottom)+8,bottom=Math.min(innerHeight,view.bottom)-16;
+      if(caret.height&&caret.bottom>bottom)editor.scrollTop+=caret.bottom-bottom;
+      else if(caret.height&&caret.top<top)editor.scrollTop-=top-caret.top;
     }
-    notePagePosition();
   });
 }
 if(window.ResizeObserver)new ResizeObserver(notePagesSchedule).observe($("notePages"));
 document.fonts?.ready.then(notePagesSchedule);
-document.addEventListener("selectionchange",()=>{
-  if(document.activeElement===$("noteBody"))notePagesSchedule();
-});
-$("notePages").addEventListener("scroll",notePagePosition,{passive:true});
-$("notePagePrevious").addEventListener("click",()=>$("notePages").scrollBy(-notePageStep,0));
-$("notePageNext").addEventListener("click",()=>$("notePages").scrollBy(notePageStep,0));
+$("noteBody").addEventListener("compositionstart",()=>{notePagesComposing=true});
+$("noteBody").addEventListener("compositionend",()=>{notePagesComposing=false;notePagesSchedule()});
 let noteOpenId=null,noteQ="",noteSaveT=null,notePend=null;
 const noteFind=id=>NT().find(n=>n.id===id);
 const fmtWhen=t=>{const d=new Date(t),n=new Date();
@@ -3467,7 +3479,7 @@ function renderNotes(){
     :dirs?"":`<div class="empty">${L(q?"Aucune note ne correspond.":noteDir?"Ce dossier est vide. Touche « + Note » pour y écrire.":"Aucune note pour l'instant. Touche « + Note » pour écrire.")}</div>`);
 }
 /** @type {any} */ renderNotes.phk=undefined; // déclaré pour TypeScript (même valeur de départ)
-function openNote(id){noteOpenId=id;renderNotes();$("notePages").scrollLeft=0;window.scrollTo(0,0)}
+function openNote(id){noteOpenId=id;renderNotes();window.scrollTo(0,0)}
 async function closeNote(){
   await noteFlush();const n=noteOpenId&&noteFind(noteOpenId),v=noteView(n);
   // une note laissée vide n'est pas gardée
@@ -3543,7 +3555,6 @@ function noteActions(id){const n=noteFind(id);if(!n)return;const w=noteView(n);
   const t=w?(w.title&&w.title.trim()?w.title:String(w.body||"").trim().split("\n")[0]||(n.pdf&&n.pdf.name)||L("Nouvelle note")):L("Note secrète");
   const items=[];
   if(NF().length)items.push({l:"Ranger dans un dossier",fn:()=>openActions(L("Ranger dans"),nfChoices(noteDirOf(n),null,fid=>{if(fid)n.folder=fid;else delete n.folder;n.upd=Date.now();save();renderNotes();toast(fid?`${L("Rangée dans")} « ${nfOf(fid).name} »`:"Rangée dans Notes")}))});
-  if(noteProjects().length)items.push({l:"Changer de projet",fn:()=>moveNoteToProject(n)});
   if(w&&!n.pdf)items.push({l:"Exporter en PDF",fn:()=>noteExportPdf(n)});
   items.push({l:"Supprimer",danger:true,fn:()=>noteRemove(n)});
   openActions(t,items)}
@@ -3923,95 +3934,17 @@ function notePdf(input){
   return Uint8Array.from(pdf,c=>c.charCodeAt(0));
 }
 
-/* ---------- projets Sid’Note ---------- */
+/* ---------- séances Focus de Sid’Note ----------
+   v82 (demande de Sid) : la rubrique Projets est retirée (écran, onglet, liens). Les données restent pour ne rien perdre :
+   data.noteProjects (synchronisé, gardé dans les sauvegardes sans être affiché) et le champ project des notes et des séances Focus.
+   Les notes restent dans Notes et les séances Focus dans l'historique de Focus. */
 const noteProjects=()=>data.noteProjects||(data.noteProjects=[]);
 const focusSessions=()=>data.focusSessions||(data.focusSessions=[]);
-let noteProjectId=null;
 
 function recordFocusSession(id,startAt,workMs){
   if(workMs<=0||focusSessions().some(s=>s.id===id))return;
   focusSessions().push({id,startAt,workMs,upd:Date.now()});
-  if(data.ui.view==="projects")renderNoteProjects();
 }
-
-function projectChoices(selected,onSelect){
-  const choices=noteProjects().filter(p=>p.id!==selected).map(p=>({l:p.name,fn:()=>onSelect(p.id)}));
-  if(selected)choices.unshift({l:"Sans projet",fn:()=>onSelect(null)});
-  return choices;
-}
-
-function renderNoteProjects(){
-  const projects=noteProjects(),current=projects.find(p=>p.id===noteProjectId);
-  const list=$("projectList");
-  $("projectBack").hidden=!current;
-  $("projectForm").hidden=!!current;
-  if(!current){
-    list.innerHTML=projects.map(p=>`<button class="row grow project-open" type="button" data-project="${esc(p.id)}"><b class="notr">${esc(p.name)}</b></button>`).join("")
-      ||`<p class="empty">${L("Aucun projet")}</p>`;
-    const free=focusSessions().filter(s=>!projects.some(p=>p.id===s.project));
-    list.insertAdjacentHTML("beforeend",projectFocusRows(free,"Séances Focus sans projet"));
-    return;
-  }
-  const notes=NT().filter(n=>n.project===current.id);
-  list.innerHTML=`<div class="row"><h2 class="grow notr">${esc(current.name)}</h2><button type="button" class="mini" id="projectDelete">${L("Supprimer le projet")}</button></div>
-    <h3>${L("Notes")}</h3>`+notes.map(n=>{
-    const view=noteView(n);
-    const title=view?(view.title||n.pdf?.name||view.body?.split("\n")[0]||L("Nouvelle note")):L("Note secrète");
-    return `<div class="row"><button type="button" class="btn ghost notr grow" data-project-note="${esc(n.id)}">${esc(title)}</button>
-      <button type="button" class="mini" data-project-note-move="${esc(n.id)}">${L("Changer de projet")}</button></div>`;
-  }).join("")+projectFocusRows(focusSessions().filter(s=>s.project===current.id),"Séances Focus");
-}
-
-function projectFocusRows(sessions,title){
-  if(!sessions.length)return "";
-  return `<h3>${L(title)}</h3>`+[...sessions].sort((a,b)=>b.startAt-a.startAt).map(s=>
-    `<div class="row"><span class="grow">${esc(fmtDay(s.startAt))} · ${esc(hm(s.workMs/60000))}</span>
-      <button type="button" class="mini" data-project-session="${esc(s.id)}">${L("Changer de projet")}</button></div>`).join("");
-}
-
-function moveNoteToProject(note){
-  const choices=projectChoices(note.project,id=>{
-    note.project=id;note.upd=Date.now();save();
-    if(data.ui.view==="projects")renderNoteProjects();
-  });
-  if(choices.length)openActions(L("Changer de projet"),choices);
-}
-
-$("projectForm").addEventListener("submit",e=>{
-  e.preventDefault();
-  const input=$("projectName"),name=input.value.trim();
-  if(!name)return;
-  const project={id:uid(),name,upd:Date.now()};
-  noteProjects().push(project);noteProjectId=project.id;input.value="";
-  save();renderNoteProjects();
-});
-$("projectBack").addEventListener("click",()=>{noteProjectId=null;renderNoteProjects()});
-$("projectList").addEventListener("click",async e=>{
-  const button=e.target.closest("button");
-  if(!button)return;
-  if(button.dataset.project){noteProjectId=button.dataset.project;renderNoteProjects();return}
-  const n=noteFind(button.dataset.projectNote||button.dataset.projectNoteMove);
-  if(n){
-    if(button.dataset.projectNoteMove){moveNoteToProject(n);return}
-    if(n.secret&&!noteView(n)){if(!await nsUnlock())return;await nsLoad();if(!noteView(n))return}
-    if(noteOpenId&&noteOpenId!==n.id)await closeNote();
-    show("notes");if(n.pdf)pdfOpen(n.id);else openNote(n.id);
-    return;
-  }
-  if(button.id==="projectDelete"){
-    if(!c2ok(button))return;
-    const id=noteProjectId;
-    tomb(id);data.noteProjects=noteProjects().filter(p=>p.id!==id);
-    for(const item of [...NT(),...focusSessions()])if(item.project===id){item.project=null;item.upd=Date.now()}
-    noteProjectId=null;save();renderNoteProjects();return;
-  }
-  const focus=focusSessions().find(s=>s.id===button.dataset.projectSession);
-  if(!focus)return;
-  const choices=projectChoices(focus.project,id=>{
-    focus.project=id;focus.upd=Date.now();save();renderNoteProjects();
-  });
-  if(choices.length)openActions(L("Changer de projet"),choices);
-});
 
 /* ---------- fenêtre de code à 5 chiffres (réutilisable) ---------- */
 // askPin({mode:"new"}) → code choisi et confirmé ; askPin({mode:"unlock", verify}) → code vérifié ; null si annulé
@@ -6090,7 +6023,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v81.1";
+const BUILD="sidnote-v82";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

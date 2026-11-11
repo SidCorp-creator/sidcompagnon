@@ -5,11 +5,11 @@
 const GROUPS=[
   {k:"orga",label:MARQUES.journee,app:"agenda",tabs:["plan","todo"]},
   {k:"sport",label:MARQUES.forme,app:"fit",tabs:["muscu","nutri","graph"]},
-  {k:"perso",label:MARQUES.note,app:"note",tabs:["notes","pomo","projects"]},
+  {k:"perso",label:MARQUES.note,app:"note",tabs:["notes","pomo"]},
   {k:"more",label:MARQUES.compagnon,app:"home",tabs:["more","app"]}];
 const APP_GROUPS=GROUPS.slice(0,3);
 const appOf=v=>v==="home"||v==="spaces"?"home":groupOf(v).app;
-const SHORT={plan:"Agenda",todo:"Tâches",lists:"Listes",pomo:"Focus",projects:"Projets",muscu:"Musculation",nutri:"Nutrition",graph:"Graphiques",notes:"Notes",more:"Réglages",app:"Installer l'app"};
+const SHORT={plan:"Agenda",todo:"Tâches",lists:"Listes",pomo:"Focus",muscu:"Musculation",nutri:"Nutrition",graph:"Graphiques",notes:"Notes",more:"Réglages",app:"Installer l'app"};
 const ICON=k=>{const e=$("fnIcons").querySelector(`[data-ic="${k}"]`);return e?e.innerHTML:""};
 const groupOf=v=>GROUPS.find(g=>g.tabs.includes(v))||GROUPS[0];
 // v32 : Nutrition et Graphiques n'apparaissent que pour les comptes qui y ont accès (décidé par le serveur)
@@ -81,7 +81,6 @@ if(v!=="notes")document.body.classList.remove("note-full");if(v==="more"){try{re
   if(v==="graph")renderGraph();
   if(v!=="graph")grTipHide();
   if(v==="pomo")renderSpotify();
-  if(v==="projects")renderNoteProjects();
   window.scrollTo(0,0);elanCompact();
   if(v==="home"&&introReady&&INTRO[wasApp])appOutro(wasApp);
 }
@@ -93,7 +92,7 @@ function applyTabs(){
 // --- en-tête d'un module : nom de l'espace + pastilles de ses fonctions ---
 // v28 : nom de l'espace + pastilles des fonctions de cet espace (Agenda · Tâches · Focus…)
 // v42 : en-tête d'une app : son logo et son nom, et le retour à Sid'Compagnon (les fonctions sont dans la barre du bas)
-const APP_ROLES={agenda:"Agenda et tâches",fit:"Sport et alimentation",note:"Notes, Focus et projets",home:"Tes réglages"};
+const APP_ROLES={agenda:"Agenda et tâches",fit:"Sport et alimentation",note:"Notes et Focus",home:"Tes réglages"};
 function renderVhead(v){const el=$("vhead");
  if(v==="home"||v==="spaces"){el.hidden=true;document.title="Sid'Compagnon";return}
  const g=groupOf(v),previous=el.dataset.app===g.app?Number(el.querySelector("[role=progressbar]")?.getAttribute("aria-valuenow")||0):0;el.hidden=false;el.dataset.app=g.app;el.classList.remove("many");
@@ -114,7 +113,7 @@ function renderVhead(v){const el=$("vhead");
  document.title=`${g.label} · ${L(title)} — Sid'Compagnon`;
  const props={app:g.app,label:g.label,role:APP_ROLES[g.app],title,progress,percent,hasProgress,gridIcon:GRIDIC,askIcon:IC("message"),i18n:agI18n()};
  if(shIsl("appHead")){try{window.SCIslands.appHead(el,props);return}catch(e){reportErr("island appHead: "+(e&&e.message))}}
- el.innerHTML=`<div class="elan-head-row"><button type="button" class="ah-home" data-go="home" aria-label="${L("Toutes les apps")}"><span class="ah-grid">${GRIDIC}</span></button><span class="ah-brand">${LOGO(g.app,"ah-logo")}<span class="ah-names"><b>${g.label}</b><small>${L(APP_ROLES[g.app])}</small></span></span>${ahBotBtn()}</div><h1 class="elan-title">${L(title)}</h1><div class="elan-progress"><span>${progress}</span><span class="elan-progress-track" ${hasProgress?"":"hidden"} role="progressbar" aria-label="${L("Progression du jour")}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><i style="width:${percent}%"></i></span></div>`;
+ el.innerHTML=`<div class="elan-head-row"><button type="button" class="ah-home" data-go="home" aria-label="${L("Toutes les apps")}"><span class="ah-grid">${GRIDIC}</span></button><span class="ah-brand">${badgeWrap(g.app,LOGO(g.app,"ah-logo"))}<span class="ah-names"><b>${g.label}</b><small>${L(APP_ROLES[g.app])}</small></span></span>${ahBotBtn()}</div><h1 class="elan-title">${L(title)}</h1><div class="elan-progress"><span>${progress}</span><span class="elan-progress-track" ${hasProgress?"":"hidden"} role="progressbar" aria-label="${L("Progression du jour")}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><i style="width:${percent}%"></i></span></div>`;
  const bar=el.querySelector(".elan-progress-track i");if(bar&&hasProgress){bar.style.width=previous+"%";bar.getBoundingClientRect();requestAnimationFrame(()=>bar.style.width=percent+"%")}
 
 }
@@ -164,14 +163,16 @@ function sideApply(){requestAnimationFrame(navPad);const wide=matchMedia("(min-w
 function sideToggle(show){data.ui.sideOff=!show;saveUI();sideApply();const f=show?document.querySelector("#side .side-tog"):$("sideShow");if(f)f.focus({preventScroll:true})}
 addEventListener("resize",()=>sideApply());
 function renderSide(v){const el=$("side");if(!el)return;v=v||data.ui.view;
+  // v82 (isolation des notifications) : les compteurs d'une app (« 3 à venir »…) ne s'affichent que dans cette app ou sur l'accueil
+  const curApp=v==="home"||v==="spaces"?"":groupOf(v).app,metaOf=(g,k)=>!curApp||curApp===g.app?spaceMeta(k):"";
   if(shIsl("side")){try{window.SCIslands.side(el,{cur:v,i18n:agI18n(),icons:{side:SIDEIC,home:HOMEIC,plus:PLUSIC,user:USERIC},
-      groups:GROUPS.map(g=>({app:g.app,label:g.label,items:groupTabs(g).map(k=>({k,icon:ICON(k)||"",label:SHORT[k],badge:0,meta:spaceMeta(k)}))})).filter(g=>g.items.length)});sideApply();return}
+      groups:GROUPS.map(g=>({app:g.app,label:g.label,items:groupTabs(g).map(k=>({k,icon:ICON(k)||"",label:SHORT[k],badge:0,meta:metaOf(g,k)}))})).filter(g=>g.items.length)});sideApply();return}
     catch(e){reportErr("island side: "+(e&&e.message))}}
   el.innerHTML=`<div class="side-brand">${LOGO("home","side-logo")}<span class="grow">Sid'Compagnon</span><button type="button" class="side-tog" aria-label="${L("Masquer la barre latérale")}" title="${L("Masquer la barre latérale")}" aria-expanded="true" aria-controls="side">${SIDEIC}</button></div>
     <button type="button" class="side-it" data-go="home" aria-current="${v==="home"}"><span class="sp-ic">${HOMEIC}</span><span class="grow">${L("Aujourd'hui")}</span></button>
     <button type="button" class="side-add" data-sadd="1"><span class="sp-ic">${PLUSIC}</span><span class="grow">${L("Ajouter")}</span></button>`+
     GROUPS.map(g=>{const ts=groupTabs(g);if(!ts.length)return"";
-      return `<div class="side-grp" data-app="${g.app}"><div class="eyebrow side-h">${g.app!=="home"?LOGO(g.app,"side-applogo"):""}${esc(g.label)}</div>`+ts.map(k=>`<button type="button" class="side-it" data-go="${k}" aria-current="${v===k}"><span class="sp-ic">${ICON(k)||USERIC}</span><span class="grow">${L(SHORT[k])}</span><span class="sp-meta">${esc(spaceMeta(k))}</span></button>`).join("")+`</div>`}).join("");
+      return `<div class="side-grp" data-app="${g.app}"><div class="eyebrow side-h">${g.app!=="home"?LOGO(g.app,"side-applogo"):""}${esc(g.label)}</div>`+ts.map(k=>`<button type="button" class="side-it" data-go="${k}" aria-current="${v===k}"><span class="sp-ic">${ICON(k)||USERIC}</span><span class="grow">${L(SHORT[k])}</span><span class="sp-meta">${esc(metaOf(g,k))}</span></button>`).join("")+`</div>`}).join("");
   sideApply()}
 $("sideShow").addEventListener("click",()=>sideToggle(true));
 $("side").addEventListener("click",e=>{if(e.target.closest(".side-tog")){sideToggle(false);return}if(e.target.closest("[data-sadd]")){openQuickAdd();return}const b=e.target.closest("[data-go]");if(b)show(b.dataset.go)});
@@ -236,7 +237,7 @@ function renderHome(){if(!$("homeBody"))return;
       return t.length>90?t.slice(0,90).replace(/\s+\S*$/,"")+"…":t};
     if(last&&nTxt(last))it.push([L("Dernière note"),{u:nTxt(last)},""]);
     const nN=NT().length;it.push([L("Classeur"),`${nN} ${L(nN>1?"notes":"note")} · ${NF().length} ${L(NF().length>1?"dossiers":"dossier")}`,""]);
-    cards.push({g,desc:"Notes, séances Focus et projets.",it:it.slice(0,2)})}}
+    cards.push({g,desc:"Notes et séances Focus.",it:it.slice(0,2)})}}
   const phrases={agenda:"Organise tes journées",fit:"Entraîne-toi, mange bien",note:"Écris, classe et protège"};
   const models=cards.map(({g,it})=>{let count="0",metric="notes";
     if(g.app==="agenda"){count=String(allT().filter(t=>onDay(t,t0)&&!t.canc&&t.status!=="fait").length);metric="activités restantes aujourd'hui"}
@@ -246,10 +247,10 @@ function renderHome(){if(!$("homeBody"))return;
   // v76 : vue simple par défaut (les 3 logos), pour tous les comptes tant que la personne n'a pas choisi « Affichage détaillé » (data.prefs.homeView="detail")
   const detail=homeDetail(),sw=`<button type="button" class="linkbtn" id="homeViewSw" aria-pressed="${detail}">${L(detail?"Affichage simple":"Affichage détaillé")}</button>`;$("homeViewBox").innerHTML=sw;
   // le conteneur peut encore porter la racine React de la vue détaillée : on la démonte avant d'écrire la vue simple (revue Codex)
-  if(!detail){try{if(window.SCIslands&&window.SCIslands.unmount)window.SCIslands.unmount($("homeBody"))}catch(e){}$("homeBody").innerHTML=`<div class="hs-grid" role="group" aria-label="${L("Tes applications")}">${models.map(c=>`<button type="button" class="hs-app" data-app="${c.app}" data-gapp="${c.k}" aria-label="${esc(c.label)} — ${esc(L(APP_ROLES[c.app]))}">${LOGO(c.app,"hs-logo")}<span class="hs-name notr">${c.label}</span><span class="hs-role">${L(APP_ROLES[c.app])}</span></button>`).join("")}</div>${homeNext()}`;return}
+  if(!detail){try{if(window.SCIslands&&window.SCIslands.unmount)window.SCIslands.unmount($("homeBody"))}catch(e){}$("homeBody").innerHTML=`<div class="hs-grid" role="group" aria-label="${L("Tes applications")}">${models.map(c=>`<button type="button" class="hs-app" data-app="${c.app}" data-gapp="${c.k}" >${badgeWrap(c.app,LOGO(c.app,"hs-logo"))}<span class="hs-name notr">${c.label}</span><span class="hs-role">${L(APP_ROLES[c.app])}</span></button>`).join("")}</div>${homeNext()}`;return}
   $("homeBody").dataset.view="detail";
   if(shIsl("home")){try{window.SCIslands.home($("homeBody"),{i18n:agI18n(),cards:models});return}catch(e){reportErr("island home: "+(e&&e.message))}}
-  $("homeBody").innerHTML=`<div class="hc-list">${models.map(c=>`<button type="button" class="hc" data-app="${c.app}" data-gapp="${c.k}"><span class="hc-top">${LOGO(c.app,"home-applogo hc-logo")}<span class="hc-heading"><span class="hc-name">${c.label}</span><span class="hc-desc">${L(c.desc)}</span></span><svg class="hc-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></span><span class="hc-main"><span class="hc-count">${c.count}</span><span class="hc-metric">${L(c.metric)}</span></span><span class="hc-detail">${c.items.slice(0,1).map(it=>`<span class="hc-it"><span class="hc-k">${it.k}</span><span class="hc-v">${it.user?`<span class="notr">${esc(it.v)}</span>`:esc(it.v)}</span></span>`).join("")}</span><span class="hc-fns">${c.functions.map(f=>`<span class="hc-fn"><span>${f.icon}</span>${L(f.label)}</span>`).join("")}</span></button>`).join("")}</div>`;
+  $("homeBody").innerHTML=`<div class="hc-list">${models.map(c=>`<button type="button" class="hc" data-app="${c.app}" data-gapp="${c.k}"><span class="hc-top">${badgeWrap(c.app,LOGO(c.app,"home-applogo hc-logo"))}<span class="hc-heading"><span class="hc-name">${c.label}</span><span class="hc-desc">${L(c.desc)}</span></span><svg class="hc-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></span><span class="hc-main"><span class="hc-count">${c.count}</span><span class="hc-metric">${L(c.metric)}</span></span><span class="hc-detail">${c.items.slice(0,1).map(it=>`<span class="hc-it"><span class="hc-k">${it.k}</span><span class="hc-v">${it.user?`<span class="notr">${esc(it.v)}</span>`:esc(it.v)}</span></span>`).join("")}</span><span class="hc-fns">${c.functions.map(f=>`<span class="hc-fn"><span>${f.icon}</span>${L(f.label)}</span>`).join("")}</span></button>`).join("")}</div>`;
 }
 const homeDetail=()=>!!(data.prefs&&data.prefs.homeView==="detail");
 function setHomeView(v){data.prefs.homeView=v==="detail"?"detail":"simple";save();renderHome();const hs=$("homeViewSel");if(hs)hs.value=data.prefs.homeView;

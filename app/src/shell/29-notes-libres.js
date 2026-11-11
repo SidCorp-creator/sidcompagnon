@@ -240,7 +240,6 @@ function noteActions(id){const n=noteFind(id);if(!n)return;const w=noteView(n);
   const t=w?(w.title&&w.title.trim()?w.title:String(w.body||"").trim().split("\n")[0]||(n.pdf&&n.pdf.name)||L("Nouvelle note")):L("Note secrète");
   const items=[];
   if(NF().length)items.push({l:"Ranger dans un dossier",fn:()=>openActions(L("Ranger dans"),nfChoices(noteDirOf(n),null,fid=>{if(fid)n.folder=fid;else delete n.folder;n.upd=Date.now();save();renderNotes();toast(fid?`${L("Rangée dans")} « ${nfOf(fid).name} »`:"Rangée dans Notes")}))});
-  if(noteProjects().length)items.push({l:"Changer de projet",fn:()=>moveNoteToProject(n)});
   if(w&&!n.pdf)items.push({l:"Exporter en PDF",fn:()=>noteExportPdf(n)});
   items.push({l:"Supprimer",danger:true,fn:()=>noteRemove(n)});
   openActions(t,items)}

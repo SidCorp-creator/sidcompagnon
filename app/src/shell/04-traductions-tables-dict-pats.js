@@ -25,7 +25,7 @@ if(!Array.isArray(data.pwds))data.pwds=[];
 LANG=(data.prefs&&data.prefs.lang)||ls.get("sidnote-lang")||"fr";if(session)ls.set("sidnote-lang",LANG);
 // v76 : FR et EN seulement. Une préférence néerlandaise (ou inconnue) revient au français, et on l'enregistre pour ne plus la relire.
 if(!["fr","en"].includes(LANG)){LANG="fr";ls.set("sidnote-lang","fr");if(data.prefs&&data.prefs.lang&&data.prefs.lang!=="fr"){data.prefs.lang="fr"}}
-const TABS=[["plan","Agenda"],["todo","Tâches"],["lists","Listes"],["notes","Notes"],["projects","Projets"],["pomo","Focus"],["muscu","Musculation"],["nutri","Nutrition"],["graph","Graphiques"],["app","Appli"]];
+const TABS=[["plan","Agenda"],["todo","Tâches"],["lists","Listes"],["notes","Notes"],["pomo","Focus"],["muscu","Musculation"],["nutri","Nutrition"],["graph","Graphiques"],["app","Appli"]];
 data.prefs=data.prefs||{};data.prefs.tabs=data.prefs.tabs||{plan:true,todo:true,pomo:true,app:true};
 
 function save(){

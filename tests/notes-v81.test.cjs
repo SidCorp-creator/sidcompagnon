@@ -73,22 +73,17 @@ const assert=require('node:assert/strict');
  assert.equal(await body.innerHTML(),rich,'mise en forme conservée après réouverture');
  await noGap();
  assert.equal(await p.locator('#v-docs,#v-pwd').count(),0);
- await p.evaluate(async()=>{await closeNote();show('projects')});
- await p.fill('#projectName','Dossier v81');
- await p.click('#projectForm button');
- await p.locator('#projectList h2').filter({hasText:'Dossier v81'}).waitFor();
- await p.evaluate(()=>{moveNoteToProject(noteFind('long'))});
- await p.locator('#actList [data-act]').filter({hasText:'Dossier v81'}).click();
- await p.locator('[data-project-note=long]').waitFor();
+ // v82 : Projets retiré (écran, onglet, liens) ; une note et une séance Focus rattachées à un ancien projet restent dans Notes et Focus
+ await p.evaluate(async()=>{await closeNote();data.noteProjects=[{id:'pj1',name:'Dossier v81',upd:Date.now()}];noteFind('long').project='pj1';save();show('projects')});
+ assert.equal(await p.evaluate(()=>data.ui.view),'home','show("projects") ne mène plus nulle part');
+ assert.equal(await p.locator('#v-projects,[data-go=projects],#projectList').count(),0,'plus aucun écran ni lien Projets');
+ await p.evaluate(()=>show('notes'));
+ await p.locator('#v-notes [data-note="long"]').first().waitFor();// la note rattachée à l'ancien projet reste dans Notes
  await p.click('#navIn [data-go=pomo]');
  await p.click('#pomoStart');
  await p.evaluate(()=>{P.run.startAt-=120000;save();finishPomo(false)});
- await p.click('#navIn [data-go=projects]');
- await p.click('#projectBack');
- await p.locator('[data-project-session]').click();
- await p.locator('#actList [data-act]').filter({hasText:'Dossier v81'}).click();
- await p.locator('[data-project]').filter({hasText:'Dossier v81'}).click();
- assert.equal(await p.locator('[data-project-session]').count(),1);
+ assert.equal(await p.evaluate(()=>focusSessions().length),1,'la séance Focus est enregistrée');
+ assert.equal(await p.evaluate(()=>data.noteProjects.length),1,'les données des anciens projets sont gardées');
  await p.evaluate(async()=>{
    const salt=rnd(16),mk=await phDerive('phrase de test du coffre',salt,PIN_ITER);
    data.phx={id:'fixture-phrase',salt,iter:PIN_ITER,chk:await encJ(mk.key,{ok:true})};
@@ -133,5 +128,5 @@ const assert=require('node:assert/strict');
    return isV2(data.noteVault)&&secret.vid===data.noteVault.id&&
      (await decJ(upgraded,secret)).title==='Note v1'&&JSON.stringify([data.vault,data.docVault,data.pwds,data.docs])===archives;
  }),true,'migration v1 du coffre des notes indépendante des archives');
- console.log('Pagination, projets, Focus, exports ZIP et CSV OK');
+ console.log('Pagination, Projets retiré, Focus, exports ZIP et CSV OK');
 }finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});

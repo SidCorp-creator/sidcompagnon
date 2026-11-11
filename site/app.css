@@ -2864,19 +2864,11 @@ html[data-ds="elan"] .note-pages #noteBody, .note-pages #noteBody {
 #foodCatalogStatus:empty { display: none; }
 #foodCatalogPortion { margin-top: 12px; }
 #foodCatalogPortion[hidden] { display: none; }
-/* v81 : notifications du jour (événements du planning) sous l'en-tête des apps */
-.day-notif{margin:8px 0 4px;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-card,14px);background:var(--surface)}
-.day-notif .dn-head{display:flex;align-items:center;gap:8px;width:100%;background:none;border:0;padding:0;color:var(--ink);font:inherit;text-align:left;cursor:pointer;min-height:28px}
-.day-notif .dn-head b{flex:1;min-width:0;font-weight:600}
-.day-notif .dn-bell{display:inline-flex;color:var(--accent)}.day-notif .dn-bell svg{width:18px;height:18px}
-.day-notif .dn-see{color:var(--muted);white-space:nowrap}
-.day-notif .dn-list{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
-.day-notif .dn-it{display:grid;grid-template-columns:8px auto minmax(0,1fr) auto;align-items:center;gap:8px;font-size:15px;color:var(--ink)}
-.day-notif .dn-it.dn-past{color:var(--muted)}.day-notif .dn-it.dn-past .dn-title{text-decoration:line-through;text-decoration-color:var(--line)}
-.day-notif .dn-dot{width:8px;height:8px;border-radius:50%}
-.day-notif .dn-time{font-family:var(--digits,var(--font));font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
-.day-notif .dn-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.day-notif .dn-now{font-size:12px;padding:2px 8px;border-radius:999px;background:var(--accent-soft,var(--surface-2));color:var(--accent);white-space:nowrap}
-.day-notif .dn-more{margin-top:6px}
+/* v82 : pastille rouge sur le logo d'une app (nombre de notifications de CETTE app ; agenda = événements du jour). Nombre posé par renderAppBadges (data-n). */
+.logo-badged{position:relative;display:inline-flex;flex:none;line-height:0;--bs:18px}
+.logo-badged:has(>.hs-logo){--bs:24px}
+.logo-badged:has(>.ah-logo){--bs:16px}
+.logo-badged[data-n]::after{content:attr(data-n);position:absolute;top:calc(var(--bs) * -0.3);right:calc(var(--bs) * -0.3);box-sizing:border-box;min-width:var(--bs);height:var(--bs);padding:0 calc(var(--bs) * .28);border-radius:999px;background:#E5332A;color:#fff;font:700 calc(var(--bs) * .62)/var(--bs) var(--font-ui,system-ui,sans-serif);font-variant-numeric:tabular-nums;text-align:center;letter-spacing:0;box-shadow:0 0 0 2px var(--bg,#fff);pointer-events:none;z-index:1}
+@media(max-width:359px){html[data-ds="elan"] #vhead .logo-badged{display:none}}
 .ms-clock { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .ms-clock [data-mselapsed] { font-variant-numeric: tabular-nums; }

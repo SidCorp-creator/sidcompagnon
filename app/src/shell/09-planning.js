@@ -290,30 +290,22 @@ $("taskForm").addEventListener("submit",e=>{
   remApply(t,"f");$("vhead").dataset.progressChange="add";data.tasks.push(t);elanFresh=t.id;selDay=t.date;save();renderPlan();renderTypes();e.target.reset();remSel.f=null;renderRem("f");closeTaskSheet();
   const original=JSON.stringify(t);toastAct("Activité ajoutée","Annuler",()=>{const current=data.tasks.find(x=>x.id===t.id);if(!current)return;if(JSON.stringify(current)!==original){toast("L'activité a changé : elle est conservée");return}tomb(t.id);data.tasks=data.tasks.filter(x=>x.id!==t.id);elanFresh="";save();renderPlan();renderHome()},4000);if(t.time)setTimeout(maybeAskNotif,900); // v37 : la proposition arrive quand elle a du sens
 });
-/* ---------- v81 (demande de Sid) : zone de notifications en haut des apps = événements du planning du jour ----------
-   Seulement les activités de l'agenda et les cours des calendriers reliés (allT), jamais les tâches (data.todos) ni un événement annulé.
-   Jour = date locale de l'appareil (fuseau de la personne). Recalculée à chaque rendu de l'agenda (ajout, modification, suppression,
-   synchro), à chaque changement d'en-tête d'app, au retour au premier plan et à chaque minute (changement de jour, événement passé). */
-let dnKey="";
-function dayNotifItems(day){return allT().filter(t=>t&&onDay(t,day)&&!t.canc).sort((a,b)=>sk(a).localeCompare(sk(b)))}
-function renderDayNotif(){const head=$("vhead");if(!head)return;let el=$("dayNotif");
-  if(!el){el=document.createElement("section");el.id="dayNotif";el.className="day-notif";el.setAttribute("aria-live","polite");head.after(el)}
-  const app=head.dataset.app||"",on=!head.hidden&&!!app&&app!=="home";
-  const day=iso(today()),now=new Date(),min=now.getHours()*60+now.getMinutes(),items=on?dayNotifItems(day):[];
-  const key=JSON.stringify([on,app,day,LANG,min,items.map(t=>[t.id||t.uid||"",t.title,t.time,t.timeEnd,t.cat,t.status,t.date,t.end])]);
-  if(key===dnKey&&el.hidden===!on)return;dnKey=key;el.hidden=!on;if(!on){el.innerHTML="";return}
-  el.setAttribute("aria-label",L("Notifications du jour"));el.dataset.app=app;
-  const full=app==="agenda",past=t=>t.date===day&&!!t.time&&(toMin(t.timeEnd)||toMin(t.time)+60)<=min,cur=t=>t.date===day&&!!t.time&&toMin(t.time)<=min&&!past(t);
-  const shown=full?items:items.filter(t=>!past(t)).slice(0,2),more=items.length-shown.length;
-  const row=t=>{
-    const color=String(tc(t.cat)||"");
-    return `<li class="dn-it${past(t)?" dn-past":""}${cur(t)?" dn-cur":""}"><span class="dn-dot" style="background:var(${/^--[a-z0-9-]+$/i.test(color)?color:"--accent"})"></span><span class="dn-time notr">${esc(t.time?hrs(t):L("Journée"))}</span><span class="dn-title notr">${esc(t.title||L("Activité"))}</span>${cur(t)?`<span class="dn-now">${esc(L("En cours"))}</span>`:""}</li>`;
-  };
-  const n=items.length,head2=n?`${n} ${L(n>1?"événements aujourd'hui":"événement aujourd'hui")}`:L("Aucun événement aujourd'hui");
-  el.innerHTML=`<button type="button" class="dn-head" data-dngo="1"><span class="dn-bell">${IC("bell")||GI("bell")}</span><b>${esc(head2)}</b>${!full&&n?`<span class="dn-see small">${esc(L("Voir l'agenda"))}</span>`:""}</button>`+
-    (shown.length?`<ul class="dn-list">${shown.map(row).join("")}</ul>`:"")+(more>0&&!full?`<div class="small muted dn-more">+${more} ${esc(L(more>1?"autres":"autre"))}</div>`:"")}
-document.addEventListener("click",e=>{if(e.target.closest("[data-dngo]")){selDay=iso(today());if(data.ui.view!=="plan")show("plan");else renderPlan()}});
-// l'en-tête d'app change (vue, app, masqué) → la zone suit, sans toucher à renderVhead
-try{new MutationObserver(()=>renderDayNotif()).observe($("vhead"),{attributes:true,attributeFilter:["hidden","data-app"],childList:true})}catch(e){}
-setInterval(renderDayNotif,30000);
-document.addEventListener("visibilitychange",()=>{if(!document.hidden)renderDayNotif()});
+/* ---------- v82 (demande de Sid, capture du 11 nov.) : pastille rouge sur le logo de l'app, au lieu de la zone de notifications v81 ----------
+   Agenda = nombre d'événements du planning du jour (activités + cours reliés, allT), jamais les tâches (data.todos) ni un événement annulé,
+   passés compris. 0 → pas de pastille. Chaque app garde ses notifications : la pastille d'une app n'est posée que sur SON logo
+   (tuile du lanceur, en-tête de l'app : enveloppe .logo-badged[data-badge-app]) ; aucune sur les logos de la barre latérale ni dans une autre app.
+   Recalculée à chaque rendu de l'agenda, à chaque changement d'en-tête ou du lanceur, au retour au premier plan et toutes les 30 s (nouveau jour). */
+function dayNotifItems(day){return allT().filter(t=>t&&onDay(t,day)&&!t.canc)}
+// une entrée par app qui a des notifications (fonctions déclarées : appelables avant la fin du chargement du fichier)
+function appBadgeN(app){try{const f={agenda:()=>dayNotifItems(iso(today())).length}[app];return f?Math.max(0,f()|0):0}catch(e){return 0}}
+function badgeWrap(app,logo){return `<span class="logo-badged" data-badge-app="${app}">${logo}</span>`}
+function renderAppBadges(){const cache={};
+  for(const w of document.querySelectorAll(".logo-badged[data-badge-app]")){const app=w.dataset.badgeApp,n=app in cache?cache[app]:(cache[app]=appBadgeN(app));
+    const txt=n>99?"99+":String(n),label=n?`${n} ${L(app==="agenda"?(n>1?"événements aujourd'hui":"événement aujourd'hui"):(n>1?"notifications":"notification"))}`:"";
+    if(n){if(w.dataset.n!==txt)w.dataset.n=txt}else if("n" in w.dataset)delete w.dataset.n;
+    let sr=w.querySelector(":scope>.app-badge-sr");if(n&&!sr){sr=document.createElement("span");sr.className="app-badge-sr sr-only";w.appendChild(sr)}
+    if(sr&&sr.textContent!==label)sr.textContent=label}}
+function renderDayNotif(){renderAppBadges()} // ancien nom (appelé par renderPlan)
+try{const mo=new MutationObserver(()=>renderAppBadges());for(const id of ["vhead","homeBody"])mo.observe($(id),{childList:true,subtree:true,attributes:true,attributeFilter:["hidden","data-app"]})}catch(e){}
+setInterval(renderAppBadges,30000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)renderAppBadges()});

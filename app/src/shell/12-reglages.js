@@ -42,7 +42,7 @@ $("wipeBtn").addEventListener("click",async e=>{
   }catch(ex){b.disabled=false;delete b.dataset.armed;b.textContent=L("Supprimer mes données");toast(ex instanceof TypeError?L("Pas de connexion internet"):L("Suppression impossible : ")+(ex.message||""))}
 });
 // restauration : aperçu, puis Fusionner (rien n'est perdu) ou Remplacer (confirmation), sans jamais casser les coffres
-const BK_LISTS=[["pdfAnns","Annotations de PDF"],["todos","Tâches"],["tasks","Activités de l'agenda"],["notes","Notes"],["noteProjects","Projets"],["focusSessions","Séances Focus"],["muscu.sessions","Séances de musculation"],["muscu.log","Séances faites (programme)"],["nutri.log","Repas notés"],["pwds",null],["docs",null],["todoCats",null],["docFolders",null],["noteFolders",null],["nutri.weights",null],["nutri.weeks",null]];
+const BK_LISTS=[["pdfAnns","Annotations de PDF"],["todos","Tâches"],["tasks","Activités de l'agenda"],["notes","Notes"],["noteProjects",null],["focusSessions","Séances Focus"],["muscu.sessions","Séances de musculation"],["muscu.log","Séances faites (programme)"],["nutri.log","Repas notés"],["pwds",null],["docs",null],["todoCats",null],["docFolders",null],["noteFolders",null],["nutri.weights",null],["nutri.weeks",null]];
 const bkGet=(d,k)=>{const v=k.split(".").reduce((o,x)=>o&&o[x],d);return Array.isArray(v)?v.filter(x=>x&&x.id):[]};
 function bkParse(j){
   if(j&&typeof j==="object"&&j.data&&typeof j.data==="object"&&/^(sidnote|Sid'note)$/.test(j.app||""))return {d:j.data,at:j.exported};

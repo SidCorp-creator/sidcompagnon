@@ -130,7 +130,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="81";const errSent=new Set();
+const APP_V="81.1";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -1559,7 +1559,7 @@ $("wipeBtn").addEventListener("click",async e=>{
   }catch(ex){b.disabled=false;delete b.dataset.armed;b.textContent=L("Supprimer mes données");toast(ex instanceof TypeError?L("Pas de connexion internet"):L("Suppression impossible : ")+(ex.message||""))}
 });
 // restauration : aperçu, puis Fusionner (rien n'est perdu) ou Remplacer (confirmation), sans jamais casser les coffres
-const BK_LISTS=[["pdfAnns","Annotations de PDF"],["todos","Tâches"],["tasks","Activités de l'agenda"],["notes","Notes"],["noteProjects","Projets"],["focusSessions","Séances Focus"],["muscu.sessions","Séances de musculation"],["muscu.log","Séances faites (programme)"],["nutri.log","Repas notés"],["pwds","Mots de passe"],["docs","Documents (la liste)"],["todoCats",null],["docFolders",null],["noteFolders",null],["nutri.weights",null],["nutri.weeks",null]];
+const BK_LISTS=[["pdfAnns","Annotations de PDF"],["todos","Tâches"],["tasks","Activités de l'agenda"],["notes","Notes"],["noteProjects","Projets"],["focusSessions","Séances Focus"],["muscu.sessions","Séances de musculation"],["muscu.log","Séances faites (programme)"],["nutri.log","Repas notés"],["pwds",null],["docs",null],["todoCats",null],["docFolders",null],["noteFolders",null],["nutri.weights",null],["nutri.weeks",null]];
 const bkGet=(d,k)=>{const v=k.split(".").reduce((o,x)=>o&&o[x],d);return Array.isArray(v)?v.filter(x=>x&&x.id):[]};
 function bkParse(j){
   if(j&&typeof j==="object"&&j.data&&typeof j.data==="object"&&/^(sidnote|Sid'note)$/.test(j.app||""))return {d:j.data,at:j.exported};
@@ -4387,7 +4387,7 @@ async function bioEnable(pre){
 }
 function renderBio(){const c=$("bioCard");if(!c)return;const on=bioOk()&&bioCtxs().length>0;c.hidden=!on;if(!on)return;
   const s=bioStore(),act=!!(s&&(s.main||s.notes));$("bioT").textContent=bioName();$("bioBtn").textContent=L(act?"Désactiver":"Activer");
-  $("bioS").textContent=L(act?"Activé sur cet appareil : touche le bouton sous le clavier du code pour ouvrir tes coffres. Le code marche toujours.":"Ouvre tes mots de passe, documents et notes secrètes sans taper ton code. Le code reste toujours possible. Propre à cet appareil.")}
+  $("bioS").textContent=L(act?"Activé sur cet appareil : touche le bouton sous le clavier du code pour ouvrir tes notes secrètes. Le code marche toujours.":"Ouvre tes notes secrètes sans taper ton code. Le code reste toujours possible. Propre à cet appareil.")}
 $("bioBtn").addEventListener("click",()=>{if(bioHas("main")||bioHas("notes")){ls.del(bioLsKey());renderBio();toast(`${bioName()} ${L("est désactivé")}`)}else bioEnable()});
 // bouton sous le clavier de la fenêtre de code (documents, notes secrètes)
 $("psBio").addEventListener("click",async()=>{const cur=ps;if(!cur||!cur.ctx||cur.busy)return;
@@ -4515,13 +4515,13 @@ const pwCheckSrv=async pw=>{try{await api("/auth/v1/token?grant_type=password",{
 // nouvelle clé maître, protégée par le mot de passe du compte
 async function mkCreate(o){try{await pull()}catch(x){}
   if(phOn())return null; // une clé a été créée entre-temps sur un autre appareil
-  const pw=await askAccountPw(o.title||"Protège ton coffre",o.ptext||"Entre le mot de passe de ton compte Sid'Compagnon : il protège tes coffres. Sur un nouvel appareil, il suffira pour les rouvrir.",pwCheckSrv,o.later||"Annuler");
+  const pw=await askAccountPw(o.title||"Protège tes notes secrètes",o.ptext||"Entre le mot de passe de ton compte Sid'Compagnon : il protège tes notes secrètes. Sur un nouvel appareil, il suffira pour les rouvrir.",pwCheckSrv,o.later||"Annuler");
   if(!pw||phOn())return null;
   const raw=rnd(32),mk={raw,key:await rawKey(raw)},now=Date.now();
   data.phx={id:uid(),chk:await encJ(mk.key,{ok:"sidnote-phrase"}),pw:await pwWrap(mk,pw),createdAt:new Date(now).toISOString(),at:now};save();phMem=mk;return mk}
 // clé maître retrouvée avec le mot de passe du compte (repli : l'ancienne phrase, si elle existe)
 async function mkFromPw(o){o=o||{};let mk=null;
-  const pw=await askAccountPw(o.title||"Mot de passe du compte",o.ptext||"Entre le mot de passe de ton compte Sid'Compagnon pour ouvrir tes coffres sur cet appareil.",
+  const pw=await askAccountPw(o.title||"Mot de passe du compte",o.ptext||"Entre le mot de passe de ton compte Sid'Compagnon pour ouvrir tes notes secrètes sur cet appareil.",
     async pw=>{try{mk=await pwUnwrap(pw);return null}catch(e){return data.phx.pwStale?"Ton mot de passe a été réinitialisé : ouvre d'abord tes coffres sur un appareil où ils sont déjà ouverts (ou annule pour utiliser ta phrase secrète, si tu en avais une).":data.phx.salt?"Mot de passe incorrect. Tu peux aussi annuler et utiliser ta phrase secrète.":"Mot de passe incorrect."}},"Annuler");
   if(pw&&mk){phMem=mk;setTimeout(phPwOffer,1500);return mk}
   if(data.phx&&data.phx.salt){const r=await askPhrase({mode:"enter",title:o.title});return r&&r.mk||null}
@@ -4544,7 +4544,7 @@ async function devSetup(ctx,head,forgot){
   const mk=phMem&&!forgot?phMem:phPw()&&!isTrial()?await mkFromPw({title:head,ptext:forgot?"Code oublié : entre le mot de passe de ton compte, puis choisis un nouveau code pour cet appareil.":"Première ouverture sur cet appareil : entre le mot de passe de ton compte. Ensuite, choisis le code à 5 chiffres qui l'ouvrira ici."})
     :(await askPhrase({mode:"enter",title:head,text:forgot?"Code oublié : entre ta phrase secrète, puis choisis un nouveau code pour cet appareil.":"Première ouverture sur cet appareil : entre ta phrase secrète. Ensuite, choisis le code à 5 chiffres qui l'ouvrira ici."})||{}).mk;
   if(!mk)return null;
-  const code=await askPin({mode:"new",head,sub:"Le code qui ouvrira ce coffre sur cet appareil. Tu peux reprendre ton code habituel."});
+  const code=await askPin({mode:"new",head,sub:"Le code qui déverrouillera ce contenu sur cet appareil. Tu peux reprendre ton code habituel."});
   if(!code||code==="forgot")return null;
   await mkWrap(ctx,code,mk);phMem=mk;toast("Code enregistré sur cet appareil");return code}
 // phrase perdue sans récupération : les coffres renforcés sont illisibles, on repart de zéro (mots de passe, notes secrètes, code des documents)
@@ -6090,7 +6090,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v81";
+const BUILD="sidnote-v81.1";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

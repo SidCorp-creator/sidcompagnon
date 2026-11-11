@@ -102,13 +102,13 @@ const pwCheckSrv=async pw=>{try{await api("/auth/v1/token?grant_type=password",{
 // nouvelle clé maître, protégée par le mot de passe du compte
 async function mkCreate(o){try{await pull()}catch(x){}
   if(phOn())return null; // une clé a été créée entre-temps sur un autre appareil
-  const pw=await askAccountPw(o.title||"Protège ton coffre",o.ptext||"Entre le mot de passe de ton compte Sid'Compagnon : il protège tes coffres. Sur un nouvel appareil, il suffira pour les rouvrir.",pwCheckSrv,o.later||"Annuler");
+  const pw=await askAccountPw(o.title||"Protège tes notes secrètes",o.ptext||"Entre le mot de passe de ton compte Sid'Compagnon : il protège tes notes secrètes. Sur un nouvel appareil, il suffira pour les rouvrir.",pwCheckSrv,o.later||"Annuler");
   if(!pw||phOn())return null;
   const raw=rnd(32),mk={raw,key:await rawKey(raw)},now=Date.now();
   data.phx={id:uid(),chk:await encJ(mk.key,{ok:"sidnote-phrase"}),pw:await pwWrap(mk,pw),createdAt:new Date(now).toISOString(),at:now};save();phMem=mk;return mk}
 // clé maître retrouvée avec le mot de passe du compte (repli : l'ancienne phrase, si elle existe)
 async function mkFromPw(o){o=o||{};let mk=null;
-  const pw=await askAccountPw(o.title||"Mot de passe du compte",o.ptext||"Entre le mot de passe de ton compte Sid'Compagnon pour ouvrir tes coffres sur cet appareil.",
+  const pw=await askAccountPw(o.title||"Mot de passe du compte",o.ptext||"Entre le mot de passe de ton compte Sid'Compagnon pour ouvrir tes notes secrètes sur cet appareil.",
     async pw=>{try{mk=await pwUnwrap(pw);return null}catch(e){return data.phx.pwStale?"Ton mot de passe a été réinitialisé : ouvre d'abord tes coffres sur un appareil où ils sont déjà ouverts (ou annule pour utiliser ta phrase secrète, si tu en avais une).":data.phx.salt?"Mot de passe incorrect. Tu peux aussi annuler et utiliser ta phrase secrète.":"Mot de passe incorrect."}},"Annuler");
   if(pw&&mk){phMem=mk;setTimeout(phPwOffer,1500);return mk}
   if(data.phx&&data.phx.salt){const r=await askPhrase({mode:"enter",title:o.title});return r&&r.mk||null}
@@ -131,7 +131,7 @@ async function devSetup(ctx,head,forgot){
   const mk=phMem&&!forgot?phMem:phPw()&&!isTrial()?await mkFromPw({title:head,ptext:forgot?"Code oublié : entre le mot de passe de ton compte, puis choisis un nouveau code pour cet appareil.":"Première ouverture sur cet appareil : entre le mot de passe de ton compte. Ensuite, choisis le code à 5 chiffres qui l'ouvrira ici."})
     :(await askPhrase({mode:"enter",title:head,text:forgot?"Code oublié : entre ta phrase secrète, puis choisis un nouveau code pour cet appareil.":"Première ouverture sur cet appareil : entre ta phrase secrète. Ensuite, choisis le code à 5 chiffres qui l'ouvrira ici."})||{}).mk;
   if(!mk)return null;
-  const code=await askPin({mode:"new",head,sub:"Le code qui ouvrira ce coffre sur cet appareil. Tu peux reprendre ton code habituel."});
+  const code=await askPin({mode:"new",head,sub:"Le code qui déverrouillera ce contenu sur cet appareil. Tu peux reprendre ton code habituel."});
   if(!code||code==="forgot")return null;
   await mkWrap(ctx,code,mk);phMem=mk;toast("Code enregistré sur cet appareil");return code}
 // phrase perdue sans récupération : les coffres renforcés sont illisibles, on repart de zéro (mots de passe, notes secrètes, code des documents)

@@ -69,7 +69,7 @@ async function bioEnable(pre){
 }
 function renderBio(){const c=$("bioCard");if(!c)return;const on=bioOk()&&bioCtxs().length>0;c.hidden=!on;if(!on)return;
   const s=bioStore(),act=!!(s&&(s.main||s.notes));$("bioT").textContent=bioName();$("bioBtn").textContent=L(act?"Désactiver":"Activer");
-  $("bioS").textContent=L(act?"Activé sur cet appareil : touche le bouton sous le clavier du code pour ouvrir tes coffres. Le code marche toujours.":"Ouvre tes mots de passe, documents et notes secrètes sans taper ton code. Le code reste toujours possible. Propre à cet appareil.")}
+  $("bioS").textContent=L(act?"Activé sur cet appareil : touche le bouton sous le clavier du code pour ouvrir tes notes secrètes. Le code marche toujours.":"Ouvre tes notes secrètes sans taper ton code. Le code reste toujours possible. Propre à cet appareil.")}
 $("bioBtn").addEventListener("click",()=>{if(bioHas("main")||bioHas("notes")){ls.del(bioLsKey());renderBio();toast(`${bioName()} ${L("est désactivé")}`)}else bioEnable()});
 // bouton sous le clavier de la fenêtre de code (documents, notes secrètes)
 $("psBio").addEventListener("click",async()=>{const cur=ps;if(!cur||!cur.ctx||cur.busy)return;

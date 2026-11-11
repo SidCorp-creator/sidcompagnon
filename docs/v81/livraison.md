@@ -18,14 +18,22 @@ Open Food Facts fournit les produits emballés recherchés par nom ou code-barre
 
 La zone en haut des apps affiche les événements du jour selon le fuseau de l’appareil. L’agenda affiche la liste complète. Le test couvre plusieurs événements, les modifications, la suppression, une tâche seule et le passage à minuit.
 
-Focus et le chrono de musculation reprennent à partir de l’heure de départ enregistrée. Dans la fiche d’une séance de musculation, **Démarrer le chrono** et **Arrêter le chrono** pilotent la même horloge que la saisie des séries. Le test rouvre le navigateur avec cinq heures écoulées et vérifie que l’arrêt se propage à un deuxième onglet. Changer la séance chronométrée demande une commande explicite. Au changement de jour, l’ancien chrono est arrêté sans modifier le journal de la veille ; la première saisie démarre un nouveau chrono. Une séance du lendemain conserve ses propres statistiques.
+Focus et le chrono de musculation reprennent à partir de l’heure de départ enregistrée. Dans la fiche d’une séance de musculation, **Démarrer le chrono** et **Arrêter le chrono** pilotent la même horloge que la saisie des séries. Le test rouvre le navigateur avec cinq heures écoulées et vérifie que l’arrêt se propage à un deuxième onglet. Changer la séance chronométrée demande une commande explicite. Au changement de jour, l’ancien chrono est arrêté sans modifier le journal de la veille ; la première saisie démarre un nouveau chrono. Une séance du lendemain conserve ses propres statistiques. Limite connue : une séance commencée avant minuit voit son chrono s’arrêter au changement de jour ; la série suivante démarre un nouveau chrono.
 
 ## Validation et mise en ligne
 
 Le build v81 et les vérifications ciblées passent. Les 15 configurations Élan passent sur Chromium, de 320 à 1 280 px, en clair et sombre, en français et en anglais, avec React et le rendu de secours. Le contrôle de focus du cas 1 280 px clair avec React a nécessité une relance isolée. Claude a aussi vérifié l’édition d’une note existante avec photo, titres, listes et gras.
 
-Le connecteur MCP et le relais `aliments` sont en service. L’interface v81 est sur la branche d’intégration locale et la production web est en v80. La purge du coffre reste suspendue à la vérification des exports de chaque compte concerné.
+Le connecteur MCP et le relais `aliments` sont en service. L’interface v81 est en production depuis la publication de `4031b6d` par Claude. Le coffre du compte de Sid a été purgé après vérification de ses exports et accord explicite ; les autres comptes conservent leurs données en attente de leurs propres exports.
 
 ## Skills
 
 Smux pour les échanges entre agents, `sid-relais` et `gestion-contexte-tokens` pour la passation, et Supabase pour les fonctions Edge et la revue des accès. L’inventaire des deux agents figure dans la coordination.
+
+## État après publication et v81.1
+
+Claude a confirmé la mise en ligne de v81 (`4031b6d`) et la suppression de la note de test avec son PDF. Il a ensuite purgé le coffre du compte de Sid, après son accord et sa vérification des exports. Les notes et leurs pièces jointes sont conservées. Les autres comptes restent inchangés et doivent pouvoir exporter leurs archives.
+
+La v81.1 retire des Réglages les mentions des anciennes fonctions Documents et Mots de passe. La ligne d’export, son titre et ses boutons sont masqués sans archives ; elle reste accessible aux comptes qui ont encore des données. Les pages légales et les données conservées des autres comptes restent inchangées. Les libellés sont adaptés en français et en anglais, les deux langues disponibles depuis v76.
+
+Validation v81.1 : build et tests ciblés du lanceur verts, six configurations Élan à 320/390/1280 px, clair/sombre et React/secours. Contrôle dédié des Réglages et de l’export conditionnel en FR/EN vert. Le test de fumée historique échoue sur un sélecteur de navigation obsolète, de façon identique sur 4031b6d et sur v81.1.

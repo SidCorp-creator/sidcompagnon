@@ -12,7 +12,7 @@ const OUT=path.resolve(__dirname,'out');fs.mkdirSync(OUT,{recursive:true});
   // vue simple par défaut : 3 logos, noms exacts, accessibles
   const apps=p.locator('.hs-app');assert.equal(await apps.count(),3);
   const names=await p.locator('.hs-name').allInnerTexts();assert.deepEqual(names,["Sid'Journée","Sid'Forme","Sid'Note"]);
-  for(const a of await apps.all())assert.match(await a.getAttribute('aria-label'),/^Sid'(Journée|Forme|Note) — /);
+  for(const a of await apps.all()){const accessible=await p.accessibility.snapshot({root:await a.elementHandle()});assert.match(accessible?.name||'',/Sid'(Journée|Forme|Note)/);assert.ok(accessible.name.includes(await a.locator('.hs-role').innerText()),'rôle de l’app dans son nom accessible')}
   assert.equal(await p.locator('.hc').count(),0,'pas de cartes détaillées par défaut');
   assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'débordement');
   // premiers pas : 0 sur 3, aucune donnée créée

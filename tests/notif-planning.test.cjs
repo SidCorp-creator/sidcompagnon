@@ -30,6 +30,7 @@ const {chromium}=require('../app/node_modules/playwright'),assert=require('node:
  await go('plan');assert.deepEqual(await badges(),[['agenda','3','vhead']],'agenda : 3');
  await go('home');assert.deepEqual(await badges(),[['agenda','3','lanceur']],'lanceur : 3 sur Sid\'Journée seulement');
  assert.match(await p.locator('#homeBody [data-app=agenda]').first().textContent(),/3 événements aujourd'hui/,'nom accessible');
+ const named=await p.accessibility.snapshot({root:await p.locator('#homeBody [data-app=agenda]').first().elementHandle()});assert.match(named.name,/3 événements aujourd'hui/,'nombre dans le nom réellement exposé au lecteur d’écran');
  // taille : pastille proportionnée au logo
  const size=await p.evaluate(()=>{const w=document.querySelector('#homeBody .logo-badged[data-n]'),s=getComputedStyle(w,'::after');return [parseFloat(s.height),w.getBoundingClientRect().height]});
  assert.ok(size[0]>=16&&size[0]<=size[1]*0.45,'taille de la pastille '+size);

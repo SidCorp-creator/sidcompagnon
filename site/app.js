@@ -109,11 +109,12 @@ data.prefs=data.prefs||{};data.prefs.tabs=data.prefs.tabs||{plan:true,todo:true,
 
 function save(){
   if(!session)return;
+  msClockRead();
   cache={data,rev:new Date().toISOString(),base:cache&&cache.base,dirty:true};if(pushing)pendingEdit=true;
   if(!ls.set(cacheKey(session.user.id),cache))toast("Enregistrement impossible sur cet appareil");
   schedulePush();
 }
-function saveUI(){if(session&&cache){cache.data=data;ls.set(cacheKey(session.user.id),cache)}} // préférences d'affichage : pas de synchro
+function saveUI(){if(session&&cache){msClockRead();cache.data=data;ls.set(cacheKey(session.user.id),cache)}} // préférences d'affichage : pas de synchro
 const forServer=d=>{const c={...d};delete c.ui;return c};
 // v61 (#3, coquille étape 3) : appels au serveur, session et écriture synchronisée en TypeScript (app/src/core/sync.ts, window.SCCore.sync) ;
 // l'ancien code reste en secours (core.js absent, window.__noCore)
@@ -3021,8 +3022,9 @@ function msClockMigrate(){
   }else saveUI();
 }
 function msClockRead(){
-  const disk=session&&ls.get(cacheKey(session.user.id))?.data?.muscuClock;
-  const current=data.muscuClock;
+  const saved=session&&ls.get(cacheKey(session.user.id))?.data;
+  if(!saved||(data.wipe||"")>(saved.wipe||""))return false;
+  const disk=saved.muscuClock,current=data.muscuClock;
   if(!disk||(current&&(disk.upd<current.upd||(disk.upd===current.upd&&(disk.run||!current.run)))))return false;
   data.muscuClock=disk;
   return true;
@@ -3034,10 +3036,10 @@ function msClockStart(se){
 }
 function msRunTouch(se,ex,j,done){
   msClockRead();
-  msTT(se.id,true).t[ex.id+":"+j]=1;
-  if(!msRunGet())msClockStart(se);
-  const r=msRunGet(se.id),k=ex.id+":"+j;
-  if(r&&done&&!r.marks[k])msClockSave({...r,marks:{...r.marks,[k]:Date.now()}});
+  const k=ex.id+":"+j,run=msRunGet(),now=Date.now();
+  msTT(se.id,true).t[k]=1;
+  if(!run)msClockSave({se:se.id,t0:now,marks:done?{[k]:now}:{}});
+  else if(run.se===se.id&&done&&!run.marks[k])msClockSave({...run,marks:{...run.marks,[k]:now}});
   else saveUI();
 }
 function msClockStop(se){

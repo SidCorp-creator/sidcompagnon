@@ -11,3 +11,5 @@ Validation sur le build 82.1 : build, shell/version, marques et diff-check verts
 Les [sources et limites](vie-privee-sources.md) comprennent les DPA officiels, la recommandation d’activation ZDR par Sid et le point contractuel à examiner pour les données sensibles transitant via Vercel. Les textes n’ont pas été relus par un juriste ; les anciennes durées de conservation Supabase n’ont pas été auditées ici.
 
 Publication réservée à Claude après revue croisée et accord de Sid. Aucun déploiement par Codex.
+
+Gel final : livraison fondée sur le code relu `011c8f0`, avec uniquement la dernière précision autorisée sur la mémoire d’aliments (`fdf2aa1`, reprise en `dbb99f4`, bundle `94dbb8d`). Une recherche n’est pas enregistrée dans cette mémoire ; le nom d’un aliment noté via le connecteur peut y être ajouté. Réglages, LEGAL et page publique sont alignés. La passe finale de `npm test` avec `ELAN_CASE=390-dark-react-fr` et le contrôle de vie privée FR/EN React/secours à 320/390/1280 passent. Aucune modification applicative après ces tests ; les autres remarques sont reportées dans `docs/v83/suivi.md`.

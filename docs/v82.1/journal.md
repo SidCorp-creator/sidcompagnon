@@ -29,3 +29,9 @@ Décision finale demandée par Claude : le code à livrer est exactement 011c8f0
 Fichiers : documentation uniquement, note sur la clé dans le chemin de l’URL et point DPA Vercel ; conservation réelle par les journaux non vérifiée. Aucun changement de code, de routage ou d’authentification.
 Preuve : contrôle du diff et du parent de livraison ; seules des modifications sous docs/ sont admises au-dessus de 011c8f0. Les validations du code relu restent celles de 011c8f0 ; aucune nouvelle série de tests applicatifs pour ce complément documentaire.
 Prochaine étape : Claude relit le diff puis obtient l’accord de Sid sur le hash final avant publication. Branches gelées côté Codex ; aucun push ni déploiement.
+
+### 2026-11-11 — Codex — dernière modification autorisée et gel
+Décision finale de Claude : base applicative 011c8f0, plus uniquement la nuance mémoire de fdf2aa1 (reprise dbb99f4, bundle 94dbb8d). Les nouvelles recherches lisent la mémoire sans y être enregistrées ; un aliment noté via MCP peut y ajouter son nom. Réglages FR/EN, LEGAL et résumé/inventaire public alignés, aucune autre reprise.
+Preuve : `ELAN_CASE=390-dark-react-fr ELAN_OUT=/tmp/v821-final-elan ELAN_REPORT=/tmp/v821-final-elan/manifest.json npm test` sort 0 ; un parcours Élan et tous les tests du lanceur verts. `LD_LIBRARY_PATH=~/.local/share/refonte-libs/usr/lib/x86_64-linux-gnu node /tmp/v821-final-privacy.cjs` sort 0 : FR/EN React/secours à 320/390/1280, mémoire, fournisseurs, connecteur et public vérifiés sans débordement ni erreur JS.
+Contrôle : source logique, version, BUILD et CACHE identiques à 011c8f0 ; seuls les contenus de mémoire et leurs traductions/publications ont changé. Build/shell/marques/diff-check verts. Aucun changement applicatif après ces tests.
+État : GELÉ. Autres points reportés dans docs/v83/suivi.md. Claude reçoit le hash final pour contrôle et publication avec accord de Sid ; aucun push ni déploiement par Codex.

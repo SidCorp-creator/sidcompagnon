@@ -1612,7 +1612,7 @@ const LEGAL={
     ],
     [
       "Données de santé",
-      "Ton poids, tes repas, ton profil (âge, taille, sport), tes séances et les zones à ménager sont des données de santé. Leur utilisation dans Nutrition demande ton accord explicite, retirable dans Réglages. Les estimations et questions qui passent par Sid'Bot transmettent à Groq le texte, le contexte choisi et la photo éventuelle pour te répondre. Les conversations de Sid'Bot restent sur ton appareil ; leurs copies éventuelles chez Groq suivent les règles indiquées ci-dessous. Les photos envoyées pour analyse ne sont pas enregistrées comme telles dans ton compte ; une vignette peut rester sur ton appareil. Une mémoire partagée d'aliments et de valeurs nutritionnelles est conservée séparément du journal de ton compte."
+      "Ton poids, tes repas, ton profil (âge, taille, sport), tes séances et les zones à ménager sont des données de santé. Leur utilisation dans Nutrition demande ton accord explicite, retirable dans Réglages. Les estimations et questions qui passent par Sid'Bot transmettent à Groq le texte, le contexte choisi et la photo éventuelle pour te répondre. Les conversations de Sid'Bot restent sur ton appareil ; leurs copies éventuelles chez Groq suivent les règles indiquées ci-dessous. Les photos envoyées pour analyse ne sont pas enregistrées comme telles dans ton compte ; une vignette peut rester sur ton appareil. Les aliments déjà connus viennent d'une mémoire d'aliments partagée entre les comptes, sans lien avec le tien (par exemple « 100 g de riz = 130 kcal ») : une recherche n'y est pas enregistrée, mais le nom d'un aliment noté par Claude via le connecteur peut y être ajouté. N'y mets pas d'information personnelle."
     ],
     [
       "Où, et avec qui",

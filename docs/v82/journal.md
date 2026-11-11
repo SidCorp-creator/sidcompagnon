@@ -29,3 +29,15 @@ Décision : la zone .day-notif est retirée. Pastille = enveloppe .logo-badged[d
 Preuve : node tests/notif-planning.test.cjs OK (vide, tâche seule, 3, ajout, modification, suppression, notes/pomo/muscu/nutri à 390 et 1280, barre latérale, lanceur détaillé, minuit, EN, taille). notes-v81 (partie Projets réécrite), accueil, sidnote-claude, sidbot, chrono-persistant, agenda-minuit, shell et merge OK. Captures 390/1280 clair et sombre relues.
 Fichiers : app/src/shell/{04,07,09,12,15,29,29c}, app/src/{Home,Shell}.tsx, site/{index.html,i18n.js,app.css}, tests/{notif-planning.test.cjs,notes-v81.test.cjs,elan.js}.
 Prochaine étape : Codex intègre (bundle reconstruit) ; Claude relit la pagination de v82-codex.
+
+### 2026-11-11 — Codex — intégration de la v82
+Décision : commits Claude 900b87d et dc211cf repris en 6a42d83/e8510f4 ; conflit du journal résolu en conservant les deux passations. APP_V/index = 82 et BUILD/CACHE = sidnote-v82 ; bundles reconstruits (2d86b0c).
+Preuve : build et marques verts ; revue de renderAppBadges, observateurs, nom accessible, isolation des compteurs et conservation des anciens projets sans blocage. Test pastille sur serveur isolé via le helper du skill webapp-testing vert.
+Fichiers : sources et bundles communs ; tests Élan adaptés aux sept raccourcis et à la pagination verticale. Les mesures Focus utilisent le DOM courant pour éviter des éléments détachés ; accueil vérifie le nom accessible réel plutôt qu’un ancien aria-label.
+Prochaine étape : validation commune et remise à Claude pour revue finale/publication, sans intervention serveur de Codex.
+
+### 2026-11-11 — Codex — validation intégrée finale (68fb840)
+Preuve : `ELAN_OUT=/tmp/v82-elan ELAN_REPORT=/tmp/v82-elan/manifest.json npm test` valide 14 configurations sur 15 ; échec de mesure Focus (élément remplacé), assertion fiabilisée sans changer la valeur attendue. `ELAN_CASE=1280-dark-secours-fr ELAN_OUT=/tmp/v82-elan-recheck ELAN_REPORT=/tmp/v82-elan-recheck/manifest.json npm test` sort 0 après adaptation des noms accessibles de l’accueil.
+Résultat : 15 configurations Élan validées au total, puis tous les tests ciblés du lanceur verts (dont Focus/muscu, notes/exports, Claude, nutrition et pastilles). Synthèse /tmp/v82-validation.json ; rapports initiaux conservés. PDF round-trip et marques verts également.
+Limites : smoke-elan échoue identiquement sur d25b94d et v82 (data-gapp="undefined") ; logs /tmp/v82-baseline-smoke.log et /tmp/v82-smoke.log. Safari réel non vérifié ; clavier mobile simulé.
+Prochaine étape : revue finale de Claude et décision de publication ; aucun push ni déploiement effectué par Codex.

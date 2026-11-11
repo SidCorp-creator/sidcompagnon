@@ -4522,7 +4522,7 @@ async function mkCreate(o){try{await pull()}catch(x){}
 // clé maître retrouvée avec le mot de passe du compte (repli : l'ancienne phrase, si elle existe)
 async function mkFromPw(o){o=o||{};let mk=null;
   const pw=await askAccountPw(o.title||"Mot de passe du compte",o.ptext||"Entre le mot de passe de ton compte Sid'Compagnon pour ouvrir tes notes secrètes sur cet appareil.",
-    async pw=>{try{mk=await pwUnwrap(pw);return null}catch(e){return data.phx.pwStale?"Ton mot de passe a été réinitialisé : ouvre d'abord tes coffres sur un appareil où ils sont déjà ouverts (ou annule pour utiliser ta phrase secrète, si tu en avais une).":data.phx.salt?"Mot de passe incorrect. Tu peux aussi annuler et utiliser ta phrase secrète.":"Mot de passe incorrect."}},"Annuler");
+    async pw=>{try{mk=await pwUnwrap(pw);return null}catch(e){return data.phx.pwStale?"Ton mot de passe a été réinitialisé : ouvre d'abord tes notes secrètes sur un appareil où elles sont déjà ouvertes (ou annule pour utiliser ta phrase secrète, si tu en avais une).":data.phx.salt?"Mot de passe incorrect. Tu peux aussi annuler et utiliser ta phrase secrète.":"Mot de passe incorrect."}},"Annuler");
   if(pw&&mk){phMem=mk;setTimeout(phPwOffer,1500);return mk}
   if(data.phx&&data.phx.salt){const r=await askPhrase({mode:"enter",title:o.title});return r&&r.mk||null}
   return null}

@@ -30,11 +30,12 @@ data.prefs=data.prefs||{};data.prefs.tabs=data.prefs.tabs||{plan:true,todo:true,
 
 function save(){
   if(!session)return;
+  msClockRead();
   cache={data,rev:new Date().toISOString(),base:cache&&cache.base,dirty:true};if(pushing)pendingEdit=true;
   if(!ls.set(cacheKey(session.user.id),cache))toast("Enregistrement impossible sur cet appareil");
   schedulePush();
 }
-function saveUI(){if(session&&cache){cache.data=data;ls.set(cacheKey(session.user.id),cache)}} // préférences d'affichage : pas de synchro
+function saveUI(){if(session&&cache){msClockRead();cache.data=data;ls.set(cacheKey(session.user.id),cache)}} // préférences d'affichage : pas de synchro
 const forServer=d=>{const c={...d};delete c.ui;return c};
 // v61 (#3, coquille étape 3) : appels au serveur, session et écriture synchronisée en TypeScript (app/src/core/sync.ts, window.SCCore.sync) ;
 // l'ancien code reste en secours (core.js absent, window.__noCore)

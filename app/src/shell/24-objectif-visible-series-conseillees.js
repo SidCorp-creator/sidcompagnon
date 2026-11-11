@@ -99,8 +99,9 @@ function msClockMigrate(){
   }else saveUI();
 }
 function msClockRead(){
-  const disk=session&&ls.get(cacheKey(session.user.id))?.data?.muscuClock;
-  const current=data.muscuClock;
+  const saved=session&&ls.get(cacheKey(session.user.id))?.data;
+  if(!saved||(data.wipe||"")>(saved.wipe||""))return false;
+  const disk=saved.muscuClock,current=data.muscuClock;
   if(!disk||(current&&(disk.upd<current.upd||(disk.upd===current.upd&&(disk.run||!current.run)))))return false;
   data.muscuClock=disk;
   return true;
@@ -112,10 +113,10 @@ function msClockStart(se){
 }
 function msRunTouch(se,ex,j,done){
   msClockRead();
-  msTT(se.id,true).t[ex.id+":"+j]=1;
-  if(!msRunGet())msClockStart(se);
-  const r=msRunGet(se.id),k=ex.id+":"+j;
-  if(r&&done&&!r.marks[k])msClockSave({...r,marks:{...r.marks,[k]:Date.now()}});
+  const k=ex.id+":"+j,run=msRunGet(),now=Date.now();
+  msTT(se.id,true).t[k]=1;
+  if(!run)msClockSave({se:se.id,t0:now,marks:done?{[k]:now}:{}});
+  else if(run.se===se.id&&done&&!run.marks[k])msClockSave({...run,marks:{...run.marks,[k]:now}});
   else saveUI();
 }
 function msClockStop(se){

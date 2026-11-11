@@ -18,6 +18,11 @@ for(const [nom,M] of VERS){
   const ok=(c,m)=>{if(!c){fail++;console.log(`ÉCHEC (${nom}) :`,m)}};
   const base={todos:[{id:"a",title:"A"},{id:"b",title:"B"},{id:"c",title:"C"}],tasks:[{id:"t",title:"T",status:"à faire"}],prefs:{x:1,y:1},
     muscu:{plan:{id:"p1",v:2,upd:10},sessions:[{id:"s1",name:"Push",upd:10,grp:{id:"p1"}},{id:"s2",name:"Pull",upd:10,grp:{id:"p1"}}]}};
+  const running={run:{se:"s1",t0:10,marks:{}},upd:20},stopped={run:null,upd:30};
+  const clockBase={muscuClock:running};
+  const remoteStop=M({muscuClock:{...running,upd:25}}, {muscuClock:stopped}, {base:clockBase}).muscuClock;
+  ok(remoteStop.run===null&&remoteStop.upd===30,"l’arrêt du chrono doit gagner sur une mise à jour plus ancienne");
+  ok(M({muscuClock:stopped},{muscuClock:{...running,upd:30}}).muscuClock.run===null,"l’arrêt doit gagner à horodatage égal");
   // le Mac (ou Claude) a modifié a, supprimé b (sans pierre tombale), changé un réglage, remplacé le programme
   const rem=C(base);rem.todos[0].title="A modifiée";rem.todos.splice(1,1);rem.prefs.x=2;
   rem.muscu.plan={id:"p2",v:2,upd:20};rem.muscu.sessions=[{id:"s3",name:"Nouveau",upd:20,grp:{id:"p2"}}];rem.del={s1:20,s2:20};

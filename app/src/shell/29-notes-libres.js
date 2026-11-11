@@ -53,11 +53,23 @@ function notePagesSchedule(){
     $("notePageSheets").style.setProperty("--note-page-width",`${pages.clientWidth}px`);
     $("notePageSheets").style.width=`${pages.clientWidth+(notePageCount-1)*notePageStep}px`;
     $("notePageControls").hidden=notePageCount===1;
+    const selection=getSelection();
+    if(document.activeElement===body&&selection?.isCollapsed&&selection.rangeCount&&body.contains(selection.focusNode)){
+      const caret=selection.getRangeAt(0).getBoundingClientRect(),viewport=pages.getBoundingClientRect();
+      if(caret.height&&(caret.left<viewport.left||caret.right>viewport.right)){
+        const column=Math.floor((caret.left-body.getBoundingClientRect().left+1)/notePageStep);
+        const target=Math.min(notePageCount-1,Math.max(0,column))*notePageStep;
+        pages.scrollTo({left:target,behavior:"instant"});
+      }
+    }
     notePagePosition();
   });
 }
 if(window.ResizeObserver)new ResizeObserver(notePagesSchedule).observe($("notePages"));
 document.fonts?.ready.then(notePagesSchedule);
+document.addEventListener("selectionchange",()=>{
+  if(document.activeElement===$("noteBody"))notePagesSchedule();
+});
 $("notePages").addEventListener("scroll",notePagePosition,{passive:true});
 $("notePagePrevious").addEventListener("click",()=>$("notePages").scrollBy(-notePageStep,0));
 $("notePageNext").addEventListener("click",()=>$("notePages").scrollBy(notePageStep,0));

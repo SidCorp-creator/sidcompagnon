@@ -36,3 +36,8 @@ Prochaine étape : recevoir Sid’Bot → Claude, notifications et chrono de mus
 - Notifications : 09-planning.js (renderDayNotif, MutationObserver sur #vhead, minute, visibilitychange), CSS fin de site/app.css, 7 chaînes EN. Preuve : `node tests/notif-planning.test.cjs` OK (vide, tâche seule, multi, ajout formulaire, modif, suppression, autre app, minuit Bruxelles, EN) ; captures clair/sombre vérifiées.
 - Muscu : RUN_MAX 4 h gardé (pas de commande d'arrêt depuis v74.1) → à confirmer par Sid.
 Prochaine étape : Codex intègre (build + version) ; Claude relit le lot Sid'Note de Codex ; redéployer aliments avec num durci de Codex.
+
+### 2026-11-11 — Codex et Claude — vérification croisée
+Claude vérifie dans Chromium une note existante avec titres, listes, styles et photo. 13 pages à l’ouverture, 15 après ajout et 9 après suppression, contenu conservé après fermeture.
+Codex teste la position du curseur sur la dernière page, l’export du coffre renforcé et la migration d’une note chiffrée v1, avec conservation des archives.
+Le test musculation vérifie la reprise après cinq heures, la propagation de l’arrêt, une autre séance ouverte et une saisie le lendemain. Les tests Focus et notifications passent également.

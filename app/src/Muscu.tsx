@@ -7,7 +7,7 @@ import {FormeIcon} from "./FormeIcon";
 export interface MuSet { kg: string; reps: string; state:"done"|"next"|"later" }
 export interface MuPrm { reps: string; rest: string; int: string; rpe: string; tempo: string; sum: string; open: boolean }
 export interface MuEx { id: string; name: string; help: boolean; link?: boolean; prep?: boolean; adv: { txt: string; val: string; same: boolean } | null; prm: MuPrm; pro: string; sets: MuSet[] }
-export interface MuSe { id: string; name: string; shown: string; letter: string; ty: string; tag: string; open: boolean; sub: string; done: boolean; clock: string; elapsed: string; ex: MuEx[] }
+export interface MuSe { id: string; name: string; shown: string; letter: string; ty: string; tag: string; open: boolean; sub: string; done: boolean; clock: string; elapsed: string; since: string; clockLabel: string; ex: MuEx[] }
 export interface MuGrp { id: string; name: string; free: boolean; sub: string; more: boolean; empty: string; ses: MuSe[] }
 export interface MuI18n { tr: (fr: string) => string; L: (fr: string) => string }
 
@@ -41,12 +41,11 @@ function SeCard({ se, trash, i18n }: { se: MuSe; trash: string; i18n: MuI18n }) 
       <span className="ms-name notr" data-user-label="" title={se.shown}>{se.shown}</span><span className="ms-meta">{se.letter || se.tag ? <span className="se-tag">{se.letter ? <b>{se.letter}</b> : null}{se.tag ? <span>{tr(L(se.tag))}</span> : null}</span> : <span className="se-tag se-free">{tr(L("Libre"))}</span>}<span className="small muted">{tr(se.sub)}</span></span></span>
       <button type="button" className="x ms-del" data-msdel="1" aria-label={tr(L("Supprimer la séance"))} dangerouslySetInnerHTML={{ __html: trash }}></button></summary>
     <div className="ms-body">
-      {se.clock && <div className="ms-clock">
+      <div className="ms-clock">
         {se.elapsed && <span className="notr" data-mselapsed>{se.elapsed}</span>}
-        <button type="button" className="mini" data-msclock={se.clock}>
-          {tr(L(se.clock === "stop" ? "Arrêter le chrono" : "Démarrer le chrono"))}
-        </button>
-      </div>}
+        <button type="button" className="mini" data-msclock={se.clock}>{tr(L(se.clockLabel))}</button>
+        {se.since && <span className="small muted notr">{se.since}</span>}
+      </div>
       <label className="small muted" style={{ display: "grid", gap: "4px" }}>{tr(L("Nom de la séance"))}<input data-f="msname" defaultValue={se.name} autoComplete="off" /></label>
       {se.ex.map((ex, i) => <div key={ex.id} className="ex ex3" data-ex={ex.id}>
         <div className="ex-head"><span className="num">{i + 1}</span><span className="ex-nm"><input data-f="exname" defaultValue={ex.name} placeholder={tr(L("Nom de l'exercice"))} aria-label={tr(L("Nom de l'exercice"))} autoComplete="off" list="exList" /><span className="ex-n notr" aria-hidden="true">{ex.name}</span></span>

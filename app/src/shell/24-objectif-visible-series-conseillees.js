@@ -108,13 +108,17 @@ function msClockRead(){
 }
 function msClockStart(se){
   msClockRead();
-  if(msRunGet())return;
+  const current=msRunGet();
+  if(current?.se===se.id)return;
+  if(current)msClockStop(msFind(current.se));
   msClockSave({se:se.id,t0:Date.now(),marks:{}});
 }
 function msRunTouch(se,ex,j,done){
   msClockRead();
   const k=ex.id+":"+j,run=msRunGet(),now=Date.now();
-  msTT(se.id,true).t[k]=1;
+  const touched=msTT(se.id,true).t,first=!touched[k];
+  touched[k]=1;
+  if(first&&run&&run.se!==se.id)toast(`${L("Chrono en cours sur")} ${msFind(run.se).name||L("une autre séance")}`);
   if(!run)msClockSave({se:se.id,t0:now,marks:done?{[k]:now}:{}});
   else if(run.se===se.id&&done&&!run.marks[k])msClockSave({...run,marks:{...run.marks,[k]:now}});
   else saveUI();
@@ -125,8 +129,8 @@ function msClockStop(se){
   if(!run)return;
   clearTimeout(msAutoT[se.id]);delete msAutoT[se.id];
   msDone(se,true);
-  const log=ML().filter(l=>l?.day===se.id&&l.upd>=run.t0&&!(data.del&&data.del[l.id]))
-    .sort((a,b)=>b.upd-a.upd)[0];
+  const date=iso(today());
+  const log=iso(new Date(run.t0))===date&&ML().find(l=>l?.day===se.id&&l.date===date&&l.upd>=run.t0&&!(data.del&&data.del[l.id]));
   if(log){log.min=msRunMin(run);M().upd=log.upd=Date.now()}
   msClockSave(null);renderMuscu();
 }
@@ -144,6 +148,10 @@ function msRunShift(seId,exId,j){msClockRead();const r=msRunGet(seId),x=msTT(seI
 function msRunRest(r){const t=Object.values(r.marks||{}).map(Number).sort((a,b)=>a-b),g=[];
   for(let i=1;i<t.length;i++){const d=(t[i]-t[i-1])/1000;if(d>=10&&d<=900)g.push(d)}return g.length?Math.round(g.reduce((a,b)=>a+b,0)/g.length):0}
 const msRunMin=r=>Math.max(1,Math.round((Date.now()-r.t0)/60000));
+function msClockSince(run){
+  const start=new Date(run.t0);
+  return iso(start)===iso(today())?"":`${L("Depuis le")} ${fmtDay(run.t0)} · ${two(start.getHours())}:${two(start.getMinutes())}`;
+}
 function msClockLabel(run){
   const seconds=Math.max(0,Math.floor((Date.now()-run.t0)/1000)),hours=Math.floor(seconds/3600);
   const rest=`${two(Math.floor(seconds/60)%60)}:${two(seconds%60)}`;
@@ -163,7 +171,7 @@ function msDone(se,quiet,at){const r=at?null:msRunGet(se.id),tx=at||msTT(se.id);
   const now=Date.now(),date=at?at.d:iso(today()),L0=ML(),old=L0.find(l=>l&&l.day===se.id&&l.date===date&&!(data.del&&data.del[l.id]));
   if(!ex.length){if(quiet&&old){tomb(old.id);M().log=L0.filter(l=>l!==old);M().upd=now;save();renderMuStats();return}if(!quiet)toast("Remplis au moins une série avant de terminer");return}
   const ent={id:old?old.id:uid(),date,day:se.id,name:se.name||"",ex,goal:muGoal(),upd:now};
-  if(r){ent.min=msRunMin(r);const rest=msRunRest(r);if(rest)ent.rest=rest}else if(old&&old.min){ent.min=old.min;if(old.rest)ent.rest=old.rest}
+  if(r&&iso(new Date(r.t0))===date){ent.min=msRunMin(r);const rest=msRunRest(r);if(rest)ent.rest=rest}else if(old&&old.min){ent.min=old.min;if(old.rest)ent.rest=old.rest}
   const before=old?JSON.parse(JSON.stringify(old)):null;
   if(old){Object.keys(old).forEach(k=>delete old[k]);Object.assign(old,ent)}else L0.push(ent);
   if(quiet){M().upd=now;save();renderMuStats();return}

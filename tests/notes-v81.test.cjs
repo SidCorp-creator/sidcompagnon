@@ -15,6 +15,12 @@ const assert=require('node:assert/strict');
  await p.locator('#notePagePosition').filter({hasText:'2 / '}).waitFor();
  await body.focus();await p.keyboard.press('Control+End');await p.keyboard.type('Fin');
  assert.ok(await p.evaluate(()=>noteFind('long').html.includes('Fin')));
+ assert.ok(await p.evaluate(async()=>{
+   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+   const caret=getSelection().getRangeAt(0).getBoundingClientRect();
+   const viewport=$('notePages').getBoundingClientRect();
+   return caret.x>=viewport.left-1&&caret.x<=viewport.right+1;
+ }),'le curseur reste dans la page visible');
  await p.keyboard.press('Control+z');
  assert.ok(!(await body.innerHTML()).includes('Fin'));
  assert.equal(await p.locator('#v-docs,#v-pwd').count(),0);
@@ -68,5 +74,15 @@ const assert=require('node:assert/strict');
  assert.equal(zipEntries.get('1 - Résumé.pdf'),'%PDF-1.4 test');
  assert.equal(JSON.parse(zipEntries.get('documents.json')).folders[0].name,'Archive');
  assert.match(files.get('exportVaultPasswords').toString(),/"secret,""x"""/);
+ assert.equal(await p.evaluate(async()=>{
+   const salt=rnd(16),key=await pinKey('54321',salt,PIN_ITER);
+   data.noteVault={id:'note-v1',salt,iter:PIN_ITER,chk:await encJ(key,{ok:true})};
+   const secret={id:'legacy-note',secret:true,vid:'note-v1',...await encJ(key,{title:'Note v1',body:'texte'})};
+   data.notes.push(secret);
+   const archives=JSON.stringify([data.vault,data.docVault,data.pwds,data.docs]);
+   const upgraded=await v2Upgrade('54321',key);
+   return isV2(data.noteVault)&&secret.vid===data.noteVault.id&&
+     (await decJ(upgraded,secret)).title==='Note v1'&&JSON.stringify([data.vault,data.docVault,data.pwds,data.docs])===archives;
+ }),true,'migration v1 du coffre des notes indépendante des archives');
  console.log('Pagination, projets, Focus, exports ZIP et CSV OK');
 }finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});

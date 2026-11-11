@@ -568,3 +568,7 @@ Object.assign(DICT,{
   "Indique la quantité en grammes.":"Enter the quantity in grams."
 });
 Object.assign(DICT,{"Arrêter le chrono":"Stop timer","Démarrer le chrono":"Start timer"});
+Object.assign(DICT,{
+  "Chrono en cours sur":"Timer running for","Changer de séance chronométrée":"Switch timed session",
+  "une autre séance":"another session","Depuis le":"Started on"
+});

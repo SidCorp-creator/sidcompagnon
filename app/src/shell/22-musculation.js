@@ -77,8 +77,8 @@ function seCard(se,letter){const run=msRunGet(se.id),nS=se.exercises.reduce((a,e
   return `<details class="ms${letter?"":" ms-free"}" data-ms="${se.id}" ${ty?`data-se="${ty}"`:""} ${se.id===msOpenId?"open":""}>
     <summary><span class="chev">${IC("chev")}</span><span class="grow"><span class="ms-name notr" data-user-label="" title="${esc(shown)}">${esc(shown)}</span><span class="ms-meta">${tag}<span class="small muted">${esc(seSub(se,nS))}</span></span></span><button type="button" class="x ms-del" data-msdel="1" aria-label="${L("Supprimer la séance")}">${IC("trash")}</button></summary>
     <div class="ms-body">
-      ${run?`<div class="ms-clock"><span class="notr" data-mselapsed>${msClockLabel(run)}</span><button type="button" class="mini" data-msclock="stop">${L("Arrêter le chrono")}</button></div>`:
-        !msRunGet()?`<button type="button" class="mini" data-msclock="start">${L("Démarrer le chrono")}</button>`:""}
+      <div class="ms-clock">${run?`<span class="notr" data-mselapsed>${msClockLabel(run)}</span><button type="button" class="mini" data-msclock="stop">${L("Arrêter le chrono")}</button><span class="small muted">${esc(msClockSince(run))}</span>`:
+        `<button type="button" class="mini" data-msclock="start">${L(msRunGet()?"Changer de séance chronométrée":"Démarrer le chrono")}</button>`}</div>
       <label class="small muted" style="display:grid;gap:4px">${L("Nom de la séance")}<input data-f="msname" value="${esc(se.name)}" autocomplete="off"></label>
       ${se.exercises.map((ex,i)=>`<div class="ex ex3" data-ex="${ex.id}">
         <div class="ex-head"><span class="num">${i+1}</span><span class="ex-nm"><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><span class="ex-n notr" aria-hidden="true">${esc(ex.name)}</span></span><button type="button" class="mini ex-help" data-exhelp="1" aria-label="${L("Voir comment effectuer cet exercice")}" title="${L("Voir comment effectuer cet exercice")}"${exHelpReady(ex.name,ex.ref)?"":" hidden"}>${IC("help")}</button><button type="button" class="linkbtn ex-link small" data-exlink="1"${ex.name&&String(ex.name).trim()&&!exHelpKey(ex.name,ex.ref)?"":" hidden"}>${L("Pas de fiche · associer")}</button><span class="small muted ex-prep"${exHelpKey(ex.name,ex.ref)&&!exHelpReady(ex.name,ex.ref)?"":" hidden"}>${L("Fiche en préparation")}</span><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">${IC("close")}</button></div>
@@ -116,7 +116,8 @@ let msLast=null;
 function msIsland(groups,free){msLast=[groups,free];
   const seVM=(se,letter)=>{const run=msRunGet(se.id),nS=se.exercises.reduce((a,e)=>a+e.sets.length,0),ty=seType(se),T=ty&&SE_T[ty];
     return{id:se.id,name:se.name||"",shown:String(se.name||"").replace(/^(?:Séance|Session|Training)\s+[A-F]\s*·\s*/i,"")||L("Séance"),letter:letter||"",ty:ty||"",tag:T?T[0]:"",open:se.id===msOpenId,
-      sub:seSub(se,nS),done:msDoneToday(se),clock:run?"stop":msRunGet()?"":"start",elapsed:run?msClockLabel(run):"",
+      sub:seSub(se,nS),done:msDoneToday(se),clock:run?"stop":"start",elapsed:run?msClockLabel(run):"",since:run?msClockSince(run):"",
+      clockLabel:run?"Arrêter le chrono":msRunGet()?"Changer de séance chronométrée":"Démarrer le chrono",
       ex:se.exercises.map(ex=>{const a=exAdv(ex.name);return{id:ex.id,name:ex.name||"",help:exHelpReady(ex.name,ex.ref),link:!!(ex.name&&String(ex.name).trim())&&!exHelpKey(ex.name,ex.ref),prep:!!exHelpKey(ex.name,ex.ref)&&!exHelpReady(ex.name,ex.ref),
         adv:a?{txt:`${L("Conseillé")} (${L(MU_GOALS[muGoal()])}) : `,val:exAdvVal(a),same:exAdvSame(ex,a)}:null,
         prm:{reps:ex.reps||"",rest:+ex.rest?String(+ex.rest):"",int:ex.int||"",rpe:ex.rpe||"",tempo:ex.tempo||"",sum:exPrmSum(ex),open:msPrmOpen.has(ex.id)},pro:exProg(ex),

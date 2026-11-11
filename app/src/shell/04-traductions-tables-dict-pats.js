@@ -174,7 +174,7 @@ function mergeDataOld(loc,rem,opt){
   // v32 : coffres et phrase secrète : si les deux appareils en ont un différent, le plus récent gagne
   // (sinon un appareil resté sur l'ancien coffre écraserait le coffre renforcé, et les éléments rechiffrés deviendraient illisibles)
   const vAt=v=>v?(v.at||Date.parse(v.createdAt)||0):0;
-  for(const k of ["vault","docVault","noteVault","muscuClock","phx"]){const a=loc[k],b=rem[k];if(a&&b&&a.id!==b.id&&vAt(b)>vAt(a))out[k]=b}
+  for(const k of ["vault","docVault","noteVault","phx"]){const a=loc[k],b=rem[k];if(a&&b&&a.id!==b.id&&vAt(b)>vAt(a))out[k]=b}
   return out;
 }
 function schedulePush(){clearTimeout(pushTimer);pushTimer=setTimeout(push,1200);setSync()}

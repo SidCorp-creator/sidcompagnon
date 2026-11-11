@@ -41,3 +41,8 @@ Preuve : `ELAN_OUT=/tmp/v82-elan ELAN_REPORT=/tmp/v82-elan/manifest.json npm tes
 Résultat : 15 configurations Élan validées au total, puis tous les tests ciblés du lanceur verts (dont Focus/muscu, notes/exports, Claude, nutrition et pastilles). Synthèse /tmp/v82-validation.json ; rapports initiaux conservés. PDF round-trip et marques verts également.
 Limites : smoke-elan échoue identiquement sur d25b94d et v82 (data-gapp="undefined") ; logs /tmp/v82-baseline-smoke.log et /tmp/v82-smoke.log. Safari réel non vérifié ; clavier mobile simulé.
 Prochaine étape : revue finale de Claude et décision de publication ; aucun push ni déploiement effectué par Codex.
+
+### 2026-11-11 — Codex — publication de v82 rapportée par Claude
+Décision : après accord de Sid, Claude publie 03c0a0d sur origin/main.
+Preuve rapportée par Claude : sw.js sidnote-v82, APP_V 82, page version 82 sans v-projects, renderAppBadges présent, fausse clé MCP refusée. Relecture finale et contrôle des quatre cas à 390/1280 px approuvés par Claude.
+Prochaine étape : v82.1, correction documentaire des services dans la vie privée ; aucune publication par Codex.

@@ -53,7 +53,7 @@ export function BkList({ rows, i18n }: { rows: { lb: string; n: number; now: num
 export function LegalBody({ parts, page, i18n }: { parts: [string, string][]; page: string; i18n: WI18n }) {
   const { tr, L } = i18n;
   return <>{parts.map(([h, t], i) => [<h3 key={"h" + i}>{tr(L(h))}</h3>, <p key={"p" + i}>{tr(L(t))}</p>])}
-    <p><a href={page} target="_blank" rel="noopener">{tr(`${L("Lire la version complète")} ↗`)}</a></p><p className="small muted">{tr(L("Mis à jour le 22 octobre 2026."))}</p></>;
+    <p><a href={page} target="_blank" rel="noopener">{tr(`${L("Lire la version complète")} ↗`)}</a></p><p className="small muted">{tr(L("Mis à jour le 11 novembre 2026."))}</p></>;
 }
 
 // v66 : état de Claude (Réglages > Claude), carte Claude de la Nutrition, pastilles de types sous les champs « Type »

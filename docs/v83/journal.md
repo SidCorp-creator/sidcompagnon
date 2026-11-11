@@ -26,3 +26,10 @@
 - FR/EN et secours : chemin mémoire vide → Sid'Bot testé, état cuit/180 g gardé dans le journal.
 - Aperçu = enregistrement (1 et 2 repas) ; huile : 10 g/90 kcal puis 20 g/180 kcal, cuillères seulement à l'affichage.
 - PDF 9c9875d relu : toutes les pages vérifiées, formulation neutre ; intégration à suivre.
+
+## Assemblage 83
+- PDF repris : 16771c0, 2ec4b80, 9c9875d ; seul conflit i18n résolu en conservant les blocs PDF et nutrition.
+- APP_V 83, BUILD/CACHE sidnote-v83, version affichée 83 ; build et types verts.
+- Test de régression supplémentaire : quatre pages sans texte puis texte page 5, et PDF intégralement sans texte, vert.
+- Tests PDF ajoutés à npm test ; suite intégrée complète à lancer avant bilan.
+- Aucun déploiement Edge ni publication.

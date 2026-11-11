@@ -29,6 +29,11 @@ const assert=require('node:assert/strict');
  assert.equal(await p.locator('#notePageNext,#notePagePrevious').count(),0);
  await body.focus();await p.keyboard.press('Control+End');await p.keyboard.insertText('Fin');
  assert.ok(await p.evaluate(()=>noteFind('long').html.includes('Fin')));
+ await p.waitForTimeout(100);
+ assert.ok(await p.evaluate(()=>{
+   const caret=getSelection().getRangeAt(0).getBoundingClientRect();
+   return caret.top>=$('noteEdit').querySelector('.coffre-editor-chrome').getBoundingClientRect().bottom&&caret.bottom<=innerHeight;
+ }),'curseur visible après recalcul des pages');
  await p.keyboard.press('Control+z');
  assert.equal(await body.innerHTML(),initial,'annulation native sans modification du DOM par la pagination');
  await p.setViewportSize({width:1280,height:844});await p.waitForTimeout(100);await noGap();

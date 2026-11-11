@@ -2834,10 +2834,19 @@ html[data-ds="elan"] .note-pages #noteBody, .note-pages #noteBody {
 }
 .note-pages #noteBody::before {
   content: "";
+  position: static;
   float: left;
   width: 100%;
   height: var(--note-flow-height, 672px);
   shape-outside: var(--note-flow-shape, inset(0 100% 0 0));
+  pointer-events: none;
+}
+.note-pages #noteBody.is-empty::after {
+  content: attr(data-ph);
+  position: absolute;
+  top: 24px;
+  left: var(--page-inset);
+  color: var(--muted);
   pointer-events: none;
 }
 .note-pages #noteBody hr { overflow: visible; }

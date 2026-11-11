@@ -44,6 +44,7 @@ function notePagesSchedule(){
     if(notePagesComposing)return;
     const body=$("noteBody"),pages=$("notePages");
     if(!pages.clientWidth)return;
+    const editor=$("noteEdit"),scrollTop=editor.scrollTop;
     const style=getComputedStyle(pages),height=parseFloat(style.getPropertyValue("--page-height"))||pages.clientWidth*1.4;
     const gap=parseFloat(style.getPropertyValue("--page-gap"))||16,inset=24,step=height+gap;
     const shape=count=>{
@@ -74,6 +75,17 @@ function notePagesSchedule(){
     pages.style.setProperty("--note-page-step",`${step}px`);
     pages.style.setProperty("--note-sheet-height",`${height}px`);
     pages.dataset.pages=String(count);
+    // Measuring the unfragmented flow must not move the scroll anchor. Native
+    // caret scrolling happens before reflow, so reveal it again if a new sheet grew.
+    editor.scrollTop=scrollTop;
+    const selection=getSelection();
+    if(document.activeElement===body&&selection?.isCollapsed&&selection.rangeCount&&body.contains(selection.focusNode)){
+      const caret=selection.getRangeAt(0).getBoundingClientRect(),view=editor.getBoundingClientRect();
+      const chrome=editor.querySelector(".coffre-editor-chrome").getBoundingClientRect();
+      const top=Math.max(view.top,chrome.bottom)+8,bottom=Math.min(innerHeight,view.bottom)-16;
+      if(caret.height&&caret.bottom>bottom)editor.scrollTop+=caret.bottom-bottom;
+      else if(caret.height&&caret.top<top)editor.scrollTop-=top-caret.top;
+    }
   });
 }
 if(window.ResizeObserver)new ResizeObserver(notePagesSchedule).observe($("notePages"));

@@ -17,3 +17,9 @@ Décision : aefc048 repris en be15948 ; Réglages alignés avec les flux vérifi
 Preuve : `ELAN_CASE=390-dark-react-fr ELAN_OUT=/tmp/v821-elan ELAN_REPORT=/tmp/v821-elan/manifest.json npm test` sort 0 : un Élan et tous les tests ciblés du lanceur verts. Build/shell/marques/diff-check verts. Contrôle /tmp/v821-privacy-check.cjs étendu aux Réglages : FR/EN React/secours à 320/390/1280, fenêtres et pages publiques verts, sans débordement.
 Fichiers : index/i18n, versions et bundles intégrés ; livraison.md et vie-privee-sources.md récapitulent faits, sources et limites. Aucun fournisseur reconfiguré, aucun secret modifié.
 Prochaine étape : revue finale de Claude sur le hash remis puis publication avec accord de Sid ; aucune publication par Codex.
+
+### 2026-11-11 — Codex — second commit de relecture Claude
+Décision : aefc048 était déjà repris en be15948 ; 96a2041 est repris en e3ff8ba. Conflit index résolu en conservant les mentions Vercel relais, mémoire partagée, absence de confirmation ZDR et révocation sans effacement des copies ; titre « Claude et le connecteur », tâches et métadonnées Photos explicités.
+Preuve : build, shell/version, marques, diff-check et /tmp/v821-privacy-check.cjs verts sur les quatre configurations FR/EN React/secours à 320/390/1280. Contrôles du nom de la ligne, tâches, lecture/écriture, relais Vercel et version publique ajoutés. Aucun changement de logique après le npm test vert sur 8c9230a.
+Fichiers : index/i18n/LEGAL/public intégrés, bundle app.js reconstruit ; origin/main vérifié à 03c0a0d avant la reprise (v82.1 non publiée à ce moment).
+Prochaine étape : remettre le nouveau hash à Claude pour revue ; pas de déploiement par Codex.

@@ -1635,8 +1635,8 @@ const LEGAL={
       "La recherche d'un produit par nom ou code-barres transmet la requête à Open Food Facts par le relais Sid'Compagnon. Ce relais vérifie ta connexion, mais n'envoie ni ton e-mail ni ton identifiant de compte à Open Food Facts. La requête et ses résultats peuvent être mis en cache par le relais jusqu'à 24 heures. Les recherches dans l'index Ciqual se font sur ton appareil, sans envoi de la recherche à l'Anses. Cette recherche de catalogue n'utilise pas Groq."
     ],
     [
-      "Claude et le connecteur Sid'Note",
-      "Le branchement à Claude est facultatif et utilise ton propre compte Claude (Anthropic). À ta demande et selon les autorisations que tu donnes dans Claude, les outils du connecteur peuvent lire ou modifier les rubriques accessibles de ton compte, notamment notes non secrètes, PDF et photos joints, agenda, nutrition et musculation. Les notes secrètes et l'ancien coffre ne sont pas exposés. Les échanges passent par le relais Vercel et Supabase. Les données reçues par Anthropic peuvent être traitées aux États-Unis ; leur utilisation et leur conservation dépendent de ton offre et de tes réglages Claude. Retirer l'adresse du connecteur bloque ses prochains accès, sans effacer les données déjà reçues par Anthropic."
+      "Claude et le connecteur",
+      "Le branchement à Claude est facultatif et utilise ton propre compte Claude (Anthropic). À ta demande et selon les autorisations que tu donnes dans Claude, les outils du connecteur peuvent lire ou modifier les rubriques accessibles de ton compte, notamment notes non secrètes, PDF et photos joints, agenda, tâches, nutrition et musculation. Les notes secrètes et l'ancien coffre ne sont pas exposés. Les échanges passent par le relais Vercel et Supabase. Les données reçues par Anthropic peuvent être traitées aux États-Unis ; leur utilisation et leur conservation dépendent de ton offre et de tes réglages Claude. Retirer l'adresse du connecteur bloque ses prochains accès, sans effacer les données déjà reçues par Anthropic."
     ],
     [
       "Transferts hors de l'Union européenne",

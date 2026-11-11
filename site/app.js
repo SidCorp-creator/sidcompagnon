@@ -253,7 +253,7 @@ function mergeDataOld(loc,rem,opt){
   // v32 : coffres et phrase secrète : si les deux appareils en ont un différent, le plus récent gagne
   // (sinon un appareil resté sur l'ancien coffre écraserait le coffre renforcé, et les éléments rechiffrés deviendraient illisibles)
   const vAt=v=>v?(v.at||Date.parse(v.createdAt)||0):0;
-  for(const k of ["vault","docVault","noteVault","muscuClock","phx"]){const a=loc[k],b=rem[k];if(a&&b&&a.id!==b.id&&vAt(b)>vAt(a))out[k]=b}
+  for(const k of ["vault","docVault","noteVault","phx"]){const a=loc[k],b=rem[k];if(a&&b&&a.id!==b.id&&vAt(b)>vAt(a))out[k]=b}
   return out;
 }
 function schedulePush(){clearTimeout(pushTimer);pushTimer=setTimeout(push,1200);setSync()}
@@ -2353,8 +2353,8 @@ function seCard(se,letter){const run=msRunGet(se.id),nS=se.exercises.reduce((a,e
   return `<details class="ms${letter?"":" ms-free"}" data-ms="${se.id}" ${ty?`data-se="${ty}"`:""} ${se.id===msOpenId?"open":""}>
     <summary><span class="chev">${IC("chev")}</span><span class="grow"><span class="ms-name notr" data-user-label="" title="${esc(shown)}">${esc(shown)}</span><span class="ms-meta">${tag}<span class="small muted">${esc(seSub(se,nS))}</span></span></span><button type="button" class="x ms-del" data-msdel="1" aria-label="${L("Supprimer la séance")}">${IC("trash")}</button></summary>
     <div class="ms-body">
-      ${run?`<div class="ms-clock"><span class="notr" data-mselapsed>${msClockLabel(run)}</span><button type="button" class="mini" data-msclock="stop">${L("Arrêter le chrono")}</button></div>`:
-        !msRunGet()?`<button type="button" class="mini" data-msclock="start">${L("Démarrer le chrono")}</button>`:""}
+      <div class="ms-clock">${run?`<span class="notr" data-mselapsed>${msClockLabel(run)}</span><button type="button" class="mini" data-msclock="stop">${L("Arrêter le chrono")}</button><span class="small muted">${esc(msClockSince(run))}</span>`:
+        `<button type="button" class="mini" data-msclock="start">${L(msRunGet()?"Changer de séance chronométrée":"Démarrer le chrono")}</button>`}</div>
       <label class="small muted" style="display:grid;gap:4px">${L("Nom de la séance")}<input data-f="msname" value="${esc(se.name)}" autocomplete="off"></label>
       ${se.exercises.map((ex,i)=>`<div class="ex ex3" data-ex="${ex.id}">
         <div class="ex-head"><span class="num">${i+1}</span><span class="ex-nm"><input data-f="exname" value="${esc(ex.name)}" placeholder="${L("Nom de l'exercice")}" aria-label="${L("Nom de l'exercice")}" autocomplete="off" list="exList"><span class="ex-n notr" aria-hidden="true">${esc(ex.name)}</span></span><button type="button" class="mini ex-help" data-exhelp="1" aria-label="${L("Voir comment effectuer cet exercice")}" title="${L("Voir comment effectuer cet exercice")}"${exHelpReady(ex.name,ex.ref)?"":" hidden"}>${IC("help")}</button><button type="button" class="linkbtn ex-link small" data-exlink="1"${ex.name&&String(ex.name).trim()&&!exHelpKey(ex.name,ex.ref)?"":" hidden"}>${L("Pas de fiche · associer")}</button><span class="small muted ex-prep"${exHelpKey(ex.name,ex.ref)&&!exHelpReady(ex.name,ex.ref)?"":" hidden"}>${L("Fiche en préparation")}</span><button type="button" class="x" data-msdelex="${ex.id}" aria-label="${L("Supprimer l'exercice")}">${IC("close")}</button></div>
@@ -2392,7 +2392,8 @@ let msLast=null;
 function msIsland(groups,free){msLast=[groups,free];
   const seVM=(se,letter)=>{const run=msRunGet(se.id),nS=se.exercises.reduce((a,e)=>a+e.sets.length,0),ty=seType(se),T=ty&&SE_T[ty];
     return{id:se.id,name:se.name||"",shown:String(se.name||"").replace(/^(?:Séance|Session|Training)\s+[A-F]\s*·\s*/i,"")||L("Séance"),letter:letter||"",ty:ty||"",tag:T?T[0]:"",open:se.id===msOpenId,
-      sub:seSub(se,nS),done:msDoneToday(se),clock:run?"stop":msRunGet()?"":"start",elapsed:run?msClockLabel(run):"",
+      sub:seSub(se,nS),done:msDoneToday(se),clock:run?"stop":"start",elapsed:run?msClockLabel(run):"",since:run?msClockSince(run):"",
+      clockLabel:run?"Arrêter le chrono":msRunGet()?"Changer de séance chronométrée":"Démarrer le chrono",
       ex:se.exercises.map(ex=>{const a=exAdv(ex.name);return{id:ex.id,name:ex.name||"",help:exHelpReady(ex.name,ex.ref),link:!!(ex.name&&String(ex.name).trim())&&!exHelpKey(ex.name,ex.ref),prep:!!exHelpKey(ex.name,ex.ref)&&!exHelpReady(ex.name,ex.ref),
         adv:a?{txt:`${L("Conseillé")} (${L(MU_GOALS[muGoal()])}) : `,val:exAdvVal(a),same:exAdvSame(ex,a)}:null,
         prm:{reps:ex.reps||"",rest:+ex.rest?String(+ex.rest):"",int:ex.int||"",rpe:ex.rpe||"",tempo:ex.tempo||"",sum:exPrmSum(ex),open:msPrmOpen.has(ex.id)},pro:exProg(ex),
@@ -3031,13 +3032,17 @@ function msClockRead(){
 }
 function msClockStart(se){
   msClockRead();
-  if(msRunGet())return;
+  const current=msRunGet();
+  if(current?.se===se.id)return;
+  if(current)msClockStop(msFind(current.se));
   msClockSave({se:se.id,t0:Date.now(),marks:{}});
 }
 function msRunTouch(se,ex,j,done){
   msClockRead();
   const k=ex.id+":"+j,run=msRunGet(),now=Date.now();
-  msTT(se.id,true).t[k]=1;
+  const touched=msTT(se.id,true).t,first=!touched[k];
+  touched[k]=1;
+  if(first&&run&&run.se!==se.id)toast(`${L("Chrono en cours sur")} ${msFind(run.se).name||L("une autre séance")}`);
   if(!run)msClockSave({se:se.id,t0:now,marks:done?{[k]:now}:{}});
   else if(run.se===se.id&&done&&!run.marks[k])msClockSave({...run,marks:{...run.marks,[k]:now}});
   else saveUI();
@@ -3048,8 +3053,8 @@ function msClockStop(se){
   if(!run)return;
   clearTimeout(msAutoT[se.id]);delete msAutoT[se.id];
   msDone(se,true);
-  const log=ML().filter(l=>l?.day===se.id&&l.upd>=run.t0&&!(data.del&&data.del[l.id]))
-    .sort((a,b)=>b.upd-a.upd)[0];
+  const date=iso(today());
+  const log=iso(new Date(run.t0))===date&&ML().find(l=>l?.day===se.id&&l.date===date&&l.upd>=run.t0&&!(data.del&&data.del[l.id]));
   if(log){log.min=msRunMin(run);M().upd=log.upd=Date.now()}
   msClockSave(null);renderMuscu();
 }
@@ -3067,6 +3072,10 @@ function msRunShift(seId,exId,j){msClockRead();const r=msRunGet(seId),x=msTT(seI
 function msRunRest(r){const t=Object.values(r.marks||{}).map(Number).sort((a,b)=>a-b),g=[];
   for(let i=1;i<t.length;i++){const d=(t[i]-t[i-1])/1000;if(d>=10&&d<=900)g.push(d)}return g.length?Math.round(g.reduce((a,b)=>a+b,0)/g.length):0}
 const msRunMin=r=>Math.max(1,Math.round((Date.now()-r.t0)/60000));
+function msClockSince(run){
+  const start=new Date(run.t0);
+  return iso(start)===iso(today())?"":`${L("Depuis le")} ${fmtDay(run.t0)} · ${two(start.getHours())}:${two(start.getMinutes())}`;
+}
 function msClockLabel(run){
   const seconds=Math.max(0,Math.floor((Date.now()-run.t0)/1000)),hours=Math.floor(seconds/3600);
   const rest=`${two(Math.floor(seconds/60)%60)}:${two(seconds%60)}`;
@@ -3086,7 +3095,7 @@ function msDone(se,quiet,at){const r=at?null:msRunGet(se.id),tx=at||msTT(se.id);
   const now=Date.now(),date=at?at.d:iso(today()),L0=ML(),old=L0.find(l=>l&&l.day===se.id&&l.date===date&&!(data.del&&data.del[l.id]));
   if(!ex.length){if(quiet&&old){tomb(old.id);M().log=L0.filter(l=>l!==old);M().upd=now;save();renderMuStats();return}if(!quiet)toast("Remplis au moins une série avant de terminer");return}
   const ent={id:old?old.id:uid(),date,day:se.id,name:se.name||"",ex,goal:muGoal(),upd:now};
-  if(r){ent.min=msRunMin(r);const rest=msRunRest(r);if(rest)ent.rest=rest}else if(old&&old.min){ent.min=old.min;if(old.rest)ent.rest=old.rest}
+  if(r&&iso(new Date(r.t0))===date){ent.min=msRunMin(r);const rest=msRunRest(r);if(rest)ent.rest=rest}else if(old&&old.min){ent.min=old.min;if(old.rest)ent.rest=old.rest}
   const before=old?JSON.parse(JSON.stringify(old)):null;
   if(old){Object.keys(old).forEach(k=>delete old[k]);Object.assign(old,ent)}else L0.push(ent);
   if(quiet){M().upd=now;save();renderMuStats();return}
@@ -3365,11 +3374,23 @@ function notePagesSchedule(){
     $("notePageSheets").style.setProperty("--note-page-width",`${pages.clientWidth}px`);
     $("notePageSheets").style.width=`${pages.clientWidth+(notePageCount-1)*notePageStep}px`;
     $("notePageControls").hidden=notePageCount===1;
+    const selection=getSelection();
+    if(document.activeElement===body&&selection?.isCollapsed&&selection.rangeCount&&body.contains(selection.focusNode)){
+      const caret=selection.getRangeAt(0).getBoundingClientRect(),viewport=pages.getBoundingClientRect();
+      if(caret.height&&(caret.left<viewport.left||caret.right>viewport.right)){
+        const column=Math.floor((caret.left-body.getBoundingClientRect().left+1)/notePageStep);
+        const target=Math.min(notePageCount-1,Math.max(0,column))*notePageStep;
+        pages.scrollTo({left:target,behavior:"instant"});
+      }
+    }
     notePagePosition();
   });
 }
 if(window.ResizeObserver)new ResizeObserver(notePagesSchedule).observe($("notePages"));
 document.fonts?.ready.then(notePagesSchedule);
+document.addEventListener("selectionchange",()=>{
+  if(document.activeElement===$("noteBody"))notePagesSchedule();
+});
 $("notePages").addEventListener("scroll",notePagePosition,{passive:true});
 $("notePagePrevious").addEventListener("click",()=>$("notePages").scrollBy(-notePageStep,0));
 $("notePageNext").addEventListener("click",()=>$("notePages").scrollBy(notePageStep,0));

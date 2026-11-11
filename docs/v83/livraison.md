@@ -9,8 +9,8 @@ Base : main d258538 (v82.1 en production). Branche d'intégration : v83-codex.
 
 APP_V 83 ; BUILD et CACHE sidnote-v83 ; build effectué.
 
-Vérifications : voir [journal.md](journal.md). Suite finale intégrée en cours de préparation ; la publication attend son résultat et la relecture croisée.
+Vérifications : [validation.md](validation.md) donne le résultat exact, y compris l’échec initial de l’attente CSP puis les reprises vertes. Matrice Élan 15/15, PDF et tous les parcours applicatifs verts. Code produit relu par Claude ; application inchangée depuis 2612e6f.
 
-Les tests simulent le fournisseur IA. Une réponse réelle de Groq reste à vérifier sur les deux demandes de Sid après autorisation du déploiement des fonctions.
+Les tests simulent le fournisseur IA. Une réponse réelle de Groq reste à vérifier sur les deux demandes de Sid après le déploiement des fonctions.
 
-Aucun déploiement ni publication effectué. À faire valider par Sid : déployer `sidbot` et `mcp` (avec le module partagé), puis publier le client v83. Le nouveau serveur doit précéder le client pour accepter `save_menu`. Aucun changement de schéma SQL.
+Aucun déploiement ni publication effectué. Publication pilotée par Claude selon l’accord de Sid : déployer `sidbot` et `mcp` (avec le module partagé), puis publier le client v83. Le nouveau serveur doit précéder le client pour accepter `save_menu`. Aucun changement de schéma SQL.

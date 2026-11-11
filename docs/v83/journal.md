@@ -33,3 +33,10 @@
 - Test de régression supplémentaire : quatre pages sans texte puis texte page 5, et PDF intégralement sans texte, vert.
 - Tests PDF ajoutés à npm test ; suite intégrée complète à lancer avant bilan.
 - Aucun déploiement Edge ni publication.
+
+## Bilan final et gel
+- Produit 2612e6f relu par Claude ; APP_V/BUILD/CACHE 83 cohérents ; aucun changement produit après relecture.
+- Matrice Élan complète : 15/15 ; PDF et contrat menus/MCP/unités verts.
+- npm test initial : code 1 sur attente CSP ; test seul corrigé en 1d3a05a, six parcours nutrition rejoués verts sur 8766 et 8953.
+- Tous les parcours restants rejoués ensuite : code 0 ; détail exact dans validation.md (pas de fausse annonce de npm test intégral code 0).
+- Branche à geler après ce bilan docs ; aucun déploiement ni publication par Codex, relais à Claude.

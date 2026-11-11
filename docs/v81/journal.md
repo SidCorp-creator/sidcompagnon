@@ -52,3 +52,6 @@ Prochaine étape : traiter les remarques de Claude ; publication et purge du cof
 Revue Claude : le test antérieur acceptait l’absence de durée le lendemain. `msRunGet` arrête désormais une horloge d’un autre jour sans modifier le journal passé ; une nouvelle saisie démarre une horloge du jour.
 Preuves : build et `node tests/shell.test.js` OK ; `LD_LIBRARY_PATH=~/.local/share/refonte-libs/usr/lib/x86_64-linux-gnu node tests/muscu-chrono.test.cjs` OK. Cas vérifiés : même séance le lendemain, durée de deux minutes enregistrée, journal antérieur inchangé, autre séance le lendemain, reprise après cinq heures et arrêt entre onglets. La suite complète 15/15 ci-dessus portait sur 41e2533 avant ce correctif.
 Ouvert : optimisation des lectures de cache dans save/saveUI ; garde conservée pour éviter une régression des écritures concurrentes.
+
+### 2026-11-11 — Codex — comparaison nutrition close
+Essais USDA de Claude ajoutés à nutrition-codex.md ; conditions Edamam et portail Nutritionix vérifiés sur leurs pages officielles. Décision commune : OFF + Ciqual 2025, analyse IA existante pour les recettes. Couverture FR/BE des offres commerciales non mesurée ; aucun prix tiers Nutritionix retenu. Modification documentaire uniquement.

@@ -42,10 +42,11 @@ async function run(browser,width,height,touch){
  // hors du mode Lire, le texte ne gêne pas le dessin
  await p.click('[data-pvt=pen]');assert.equal(await p.evaluate(()=>getComputedStyle(document.querySelector('.pv-tl')).pointerEvents),'none');
  // --- Annuler : deux traits puis une annotation texte, retirés un par un dans l'ordre inverse
- const ov=await p.locator('#pvBody .pv-ov').first().boundingBox();
- const stroke=async(y)=>{await p.mouse.move(ov.x+40,ov.y+y);await p.mouse.down();await p.mouse.move(ov.x+90,ov.y+y+20,{steps:5});await p.mouse.move(ov.x+140,ov.y+y,{steps:5});await p.mouse.up()};
+ // la ligne d'aide change de hauteur selon l'outil : la position de la page est relue à chaque geste
+ const ov={get x(){return this.b.x},get y(){return this.b.y},b:null},at=async()=>{ov.b=await p.locator('#pvBody .pv-ov').first().boundingBox()};await at();
+ const stroke=async(y)=>{await at();await p.mouse.move(ov.x+40,ov.y+y);await p.mouse.down();await p.mouse.move(ov.x+90,ov.y+y+20,{steps:5});await p.mouse.move(ov.x+140,ov.y+y,{steps:5});await p.mouse.up()};
  await stroke(200);assert.equal(await p.isDisabled('#pvUndo'),false);await stroke(260);
- await p.click('[data-pvt=text]');await p.mouse.click(ov.x+60,ov.y+320);await p.locator('#pvBody .pv-txt textarea').fill('Annotation écrite');await p.locator('#pvTitle').focus();
+ await p.click('[data-pvt=text]');await at();await p.mouse.click(ov.x+60,ov.y+320);await p.locator('#pvBody .pv-txt textarea').fill('Annotation écrite');await p.locator('#pvTitle').focus();
  const ids=await p.evaluate(()=>{pvFlushTxt();return PA().filter(a=>a.note===pv.note).map(a=>a.id+':'+a.t)});assert.deepEqual(ids.map(x=>x.split(':')[1]),['ink','ink','text']);
  const left=()=>p.evaluate(()=>PA().filter(a=>a.note===pv.note).map(a=>a.id+':'+a.t));
  await p.click('#pvUndo');assert.deepEqual(await left(),ids.slice(0,2),'1er clic : l\'annotation texte');assert.equal(await p.locator('#pvBody .pv-txt').count(),0);
@@ -54,7 +55,16 @@ async function run(browser,width,height,touch){
  await p.click('#pvUndo');assert.deepEqual(await left(),[],'3e clic : le premier trait');assert.equal(await p.locator('#pvBody path[data-ann]').count(),0);
  assert.equal(await p.isDisabled('#pvUndo'),true,'Annuler désactivé quand l\'historique est vide');
  assert.ok(await p.evaluate(ids=>ids.every(i=>data.del[i.split(':')[0]]),ids),'annotations annulées marquées supprimées (elles ne reviennent pas par la synchro)');
- // un trait gardé, puis un trait effacé à la gomme : Annuler ne le compte plus
+ // gomme puis Annuler : le trait effacé revient (et sa suppression n'est plus marquée) ; Annuler encore retire le trait lui-même
+ await p.click('[data-pvt=pen]');await stroke(200);const one=await left();
+ await p.click('[data-pvt=erase]');await at();await p.mouse.move(ov.x+40,ov.y+200);await p.mouse.down();await p.mouse.move(ov.x+140,ov.y+200,{steps:8});await p.mouse.up();assert.deepEqual(await left(),[],'gomme : trait effacé');
+ await p.click('#pvUndo');assert.deepEqual(await left(),one,'Annuler la gomme : le trait revient');assert.ok(await p.evaluate(id=>!data.del[id]&&!!data.res[id],one[0].split(':')[0]));assert.equal(await p.locator('#pvBody path[data-ann]').count(),1);
+ // déplacement d'une zone de texte puis Annuler : elle reprend sa place
+ await p.click('[data-pvt=text]');await at();await p.mouse.click(ov.x+60,ov.y+330);await p.locator('#pvBody .pv-txt textarea').fill('Zone déplacée');
+ const pos=()=>p.evaluate(()=>{const a=PA().find(a=>a.t==='text'&&a.note===pv.note);return a&&[a.x,a.y]});const p0=await pos(),grip=await p.locator('#pvBody .pv-txt-mv').boundingBox();
+ await p.mouse.move(grip.x+grip.width/2,grip.y+grip.height/2);await p.mouse.down();await p.mouse.move(grip.x+60,grip.y+50,{steps:5});await p.mouse.up();assert.notDeepEqual(await pos(),p0);
+ await p.click('#pvUndo');assert.deepEqual(await pos(),p0,'Annuler le déplacement');await p.click('#pvUndo');assert.equal(await pos(),undefined,'puis la zone de texte');
+ await p.click('#pvUndo');assert.deepEqual(await left(),[]);assert.equal(await p.isDisabled('#pvUndo'),true);
  await p.click('[data-pvt=pen]');await stroke(200);await stroke(300);
  // le fichier d'origine n'a pas changé
  const same=await p.evaluate(async orig=>{const b=new Uint8Array(await (await idb.get(pdfKey(pv.note))).arrayBuffer());return b.length===orig.length&&b.every((v,i)=>v===orig[i])},[...pdf]);assert.ok(same,'PDF d\'origine intact');
@@ -72,8 +82,8 @@ async function run(browser,width,height,touch){
  // PDF scanné : pas de couche de texte, et l'interface le dit
  await p.evaluate(()=>{closeNote&&closeNote();show('notes')}).catch(()=>{});
  await p.locator('#pdfIn').setInputFiles({name:'Scan.pdf',mimeType:'application/pdf',buffer:scan()});await p.waitForSelector('#pvBody canvas',{timeout:15000});
- await p.waitForFunction(()=>!$('pvHint').hidden);assert.match(await p.innerText('#pvHint'),/image scannée/);assert.equal(await p.locator('#pvBody .pv-tl').count(),0);
- await p.click('[data-pvt=pen]');assert.doesNotMatch(await p.innerText('#pvHint'),/scannée/);await p.click('[data-pvt=read]');assert.match(await p.innerText('#pvHint'),/image scannée/);
+ await p.waitForFunction(()=>!$('pvHint').hidden);assert.match(await p.innerText('#pvHint'),/pas de texte sélectionnable/);assert.equal(await p.locator('#pvBody .pv-tl').count(),0);
+ await p.click('[data-pvt=pen]');assert.doesNotMatch(await p.innerText('#pvHint'),/sélectionnable/);await p.click('[data-pvt=read]');assert.match(await p.innerText('#pvHint'),/pas de texte sélectionnable/);
  assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'pas de débordement horizontal');
  await p.screenshot({path:`tests/out/v83-pdf-${width}.png`});
  assert.deepEqual(errs,[]);await ctx.close()}

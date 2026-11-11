@@ -307,7 +307,7 @@ $("pdfIn").addEventListener("change",async e=>{const files=[...e.target.files];e
     try{await idb.put(pdfKey(id),f)}catch(ex){toast("Enregistrement impossible sur cet appareil");continue}
     NT().push(n);k++;last=n;pdfUpload(n)}
   if(!k)return;save();renderNotes();toast(k>1?`${k} ${L("PDF ajoutés")}`:L("PDF ajouté"));if(k===1&&last)pdfOpen(last.id)});
-let pv={note:null,tok:0,tool:"read",io:null,draw:null,sel:null,/** @type {string[]} */ hist:[],scan:false,/** @type {Blob|null} */ blob:null,/** @type {string|null} */ blobNote:null};
+let pv={note:null,tok:0,tool:"read",io:null,draw:null,sel:null,/** @type {any[]} */ hist:[],scan:false,/** @type {Blob|null} */ blob:null,/** @type {string|null} */ blobNote:null};
 const pvAnns=(nid,pg)=>PA().filter(a=>a&&a.note===nid&&(pg===undefined||a.page===pg)&&!(data.del&&data.del[a.id]));
 async function pdfOpen(id){const n=noteFind(id);if(!n||!n.pdf)return;const tok=++pv.tok;pv.note=n.id;pv.blob=null;pv.blobNote=null;pv.hist=[];pv.scan=false;pvTool("read");pvUndoBtn();
   $("pvTitle").value=n.title||"";$("pvNoteTxt").value=n.body||"";$("pvNotes").hidden=true;$("pdfv").hidden=false;document.body.style.overflow="hidden";
@@ -345,12 +345,21 @@ async function pvTextLayer(w,pg,v0,tok){const tc=await pg.getTextContent();if(to
 async function pvScanCheck(pdf,tok){try{for(let i=1;i<=Math.min(pdf.numPages,4);i++){const tc=await (await pdf.getPage(i)).getTextContent();if(tok!==pv.tok)return;
     if(tc.items.some(it=>it&&typeof it.str==="string"&&it.str.trim()))return}
   pv.scan=true;if(pv.tool==="read")pvTool("read")}catch(e){}}
-// v83 : bouton Annuler : retire la dernière annotation ajoutée depuis l'ouverture (un trait entier = une action), dans l'ordre inverse
-const pvHist=()=>pv.hist=pv.hist.filter(id=>PA().some(a=>a.id===id&&a.note===pv.note));
-function pvUndoBtn(){const b=$("pvUndo");if(!b)return;b.disabled=!pvHist().length;b.textContent=T3("Annuler","Undo");b.title=T3("Annuler la dernière annotation","Undo the last annotation")}
-function pvUndo(){pvFlushTxt();const id=pvHist().pop();if(!id){pvUndoBtn();return}const a=PA().find(x=>x.id===id);
-  const act=document.activeElement;if(act&&act.closest&&act.closest(`.pv-txt[data-ann="${id}"]`))act.blur();
-  if(pv.sel===id)pv.sel=null;tomb(id);data.pdfAnns=PA().filter(x=>x!==a);save();pvRefresh();pvUndoBtn()}
+// v83 : bouton Annuler : défait la dernière action faite sur les annotations depuis l'ouverture, une par clic, dans l'ordre inverse.
+// Une action = un ajout (trait entier, surlignage, zone de texte), un effacement (gomme, suppression) ou un déplacement / redimensionnement.
+// Ajout annulé → pierre tombale (il ne revient pas par la synchro) ; effacement annulé → data.res, comme undoable().
+const pvHas=id=>PA().some(a=>a.id===id&&a.note===pv.note);
+// une action n'est jouable que si son annotation est encore là (ou, pour un effacement, encore absente) ; les autres sont sautées.
+// Elles restent dans la pile : un ajout redevient annulable quand l'effacement qui le suit a été annulé.
+const pvUsable=h=>h.k==="del"?h.anns.some(a=>!pvHas(a.id)):pvHas(h.id);
+const pvHistDel=anns=>{pv.hist.push({k:"del",anns:anns.map(a=>JSON.parse(JSON.stringify(a)))})};
+function pvUndoBtn(){const b=$("pvUndo");if(!b)return;b.disabled=!pv.hist.some(pvUsable);b.textContent=T3("Annuler","Undo");b.title=T3("Annuler la dernière action sur le PDF","Undo the last action on the PDF")}
+function pvUndo(){pvFlushTxt();let h;do{h=pv.hist.pop()}while(h&&!pvUsable(h));if(!h){pvUndoBtn();return}const now=Date.now();
+  if(h.k==="add"){const a=PA().find(x=>x.id===h.id),act=document.activeElement;if(act&&act.closest&&act.closest(`.pv-txt[data-ann="${h.id}"]`))act.blur();
+    if(pv.sel===h.id)pv.sel=null;tomb(h.id);data.pdfAnns=PA().filter(x=>x!==a)}
+  else if(h.k==="del"){data.res=data.res||{};h.anns.forEach(a=>{if(pvHas(a.id))return;data.res[a.id]=now;if(data.del)delete data.del[a.id];PA().push({...a,upd:now})})}
+  else{const a=PA().find(x=>x.id===h.id);["x","y","w","h"].forEach(k=>{if(h.prev[k]===undefined)delete a[k];else a[k]=h.prev[k]});a.upd=now}
+  save();pvRefresh();pvUndoBtn()}
 function pvClose(){pvFlushTxt();pv.tok++;pv.note=null;pv.pdf=null;pv.blob=null;pv.blobNote=null;if(pv.io)pv.io.disconnect();$("pdfv").hidden=true;
   if(window.SCIslands)document.querySelectorAll("#pvBody .pv-ov").forEach(ov=>{try{window.SCIslands.unmount(ov)}catch(_){}});$("pvBody").innerHTML="";document.body.style.overflow="";renderNotes()}
 // annotations placées en fraction de la page (même rendu sur iPhone et sur PC). v45 : zones de texte déplaçables et
@@ -382,7 +391,7 @@ function pvRefresh(){if(!pv.note||$("pdfv").hidden)return;if(!noteFind(pv.note))
 const PV_HINT={text:"Touche la page à l'endroit où tu veux écrire. Tu restes en mode Texte jusqu'à ce que tu changes d'outil.",hl:"Fais glisser ton doigt (ou la souris) sur ce que tu veux surligner.",pen:"Écris ou dessine au doigt, au stylet ou à la souris.",erase:"Passe sur un trait, un surlignage ou une zone de texte pour l'effacer.",read:""};
 function pvTool(t){if(t==="notes"){const op=$("pvNotes").hidden;$("pvNotes").hidden=!op;document.querySelector('[data-pvt="notes"]').setAttribute("aria-pressed",op);if(op&&matchMedia("(min-width:900px)").matches)$("pvNoteTxt").focus();return}
   pv.tool=t;$("pdfv").dataset.tool=t;document.querySelectorAll("[data-pvt]").forEach(b=>{if(b.dataset.pvt!=="notes")b.setAttribute("aria-pressed",b.dataset.pvt===t)});
-  const hint=t==="read"&&pv.scan?"Ce PDF est une image scannée : son texte ne peut pas être sélectionné ni copié.":PV_HINT[t];
+  const hint=t==="read"&&pv.scan?"Ce PDF n'a pas de texte sélectionnable (c'est sans doute un document scanné) : rien ne peut y être copié.":PV_HINT[t];
   const h=$("pvHint");h.hidden=!hint;h.textContent=L(hint||"");pvOpts()}
 // couleurs et épaisseur du surligneur et du stylo (gardées sur l'appareil)
 const pvDot=(k,st)=>({"--d":Math.round(pvW(k,st.s)*360)+"px","--sw":st.c,...(k==="hl"?{opacity:.55}:{})});
@@ -417,7 +426,7 @@ $("pvBody").addEventListener("focusin",e=>{const t=e.target.closest(".pv-txt");i
 $("pvBody").addEventListener("focusout",e=>{const ta=e.target.closest(".pv-txt textarea");if(!ta)return;pvTxtEl=ta;pvFlushTxt();
   if(!ta.value.trim()){const id=ta.closest("[data-ann]").dataset.ann;setTimeout(()=>{if(document.activeElement===ta)return;const a=PA().find(x=>x.id===id);if(a&&!String(a.txt||"").trim()){tomb(id);data.pdfAnns=PA().filter(x=>x!==a);save();pvRefresh()}},150)}});
 function pvSelect(id){pv.sel=id||null;if(shIsl("pvOverlay")){if(!$("pdfv").hidden)document.querySelectorAll("#pvBody .pv-page").forEach(pvOverlay);return}document.querySelectorAll("#pvBody .pv-txt").forEach(t=>t.classList.toggle("pv-on",t.dataset.ann===pv.sel))}
-function pvDel(id,msg){const a=PA().find(x=>x.id===id);if(!a)return;if(pv.sel===id)pv.sel=null;undoable(msg,[id],()=>{tomb(id);data.pdfAnns=PA().filter(x=>x!==a)},{after:pvRefresh})}
+function pvDel(id,msg){const a=PA().find(x=>x.id===id);if(!a)return;if(pv.sel===id)pv.sel=null;pvHistDel([a]);undoable(msg,[id],()=>{tomb(id);data.pdfAnns=PA().filter(x=>x!==a)},{after:pvRefresh})}
 const PV_DELMSG={text:"Texte supprimé",hl:"Surlignage supprimé",ink:"Trait supprimé"};
 // les poignées des zones de texte ne prennent pas le focus (sinon la zone se ferme avant le clic)
 $("pvBody").addEventListener("mousedown",e=>{if(e.target.closest(".pv-txt-x,.pv-txt-mv,.pv-txt-rs"))e.preventDefault()});
@@ -429,17 +438,17 @@ $("pvBody").addEventListener("click",e=>{
     if(!e.target.closest(".pv-txt"))pvSelect(null);return}
   if(pv.tool!=="text"||e.target.closest(".pv-txt"))return;const ov=e.target.closest(".pv-ov");if(!ov)return;
   const r=ov.getBoundingClientRect(),x=Math.min(.75,Math.max(0,(e.clientX-r.left)/r.width)),y=Math.min(.97,Math.max(0,(e.clientY-r.top)/r.height));
-  const a={id:uid(),note:pv.note,page:+ov.dataset.pg,t:"text",x,y,w:Math.min(.45,1-x),txt:"",upd:Date.now()};PA().push(a);pv.hist.push(a.id);save();pvUndoBtn();pv.sel=a.id;pvOverlay(ov.closest(".pv-page"));
+  const a={id:uid(),note:pv.note,page:+ov.dataset.pg,t:"text",x,y,w:Math.min(.45,1-x),txt:"",upd:Date.now()};PA().push(a);pv.hist.push({k:"add",id:a.id});save();pvUndoBtn();pv.sel=a.id;pvOverlay(ov.closest(".pv-page"));
   const ta=ov.querySelector(`[data-ann="${a.id}"] textarea`);if(ta)ta.focus()}); // v45 : on reste en mode Texte
 // déplacer / redimensionner une zone de texte (poignées ⠿ et coin bas droit)
 $("pvBody").addEventListener("pointerdown",e=>{const h=e.target.closest("[data-pvmv],[data-pvrs]");if(!h)return;e.preventDefault();e.stopPropagation();
   const box=h.closest(".pv-txt"),ov=box.closest(".pv-ov"),a=PA().find(x=>x.id===box.dataset.ann);if(!a)return;pvSelect(a.id);
-  const r=ov.getBoundingClientRect(),mv=!!h.dataset.pvmv,x0=e.clientX,y0=e.clientY,s={x:a.x,y:a.y,w:a.w||.4,h:a.h||box.offsetHeight/r.height};
+  const r=ov.getBoundingClientRect(),mv=!!h.dataset.pvmv,x0=e.clientX,y0=e.clientY,s={x:a.x,y:a.y,w:a.w||.4,h:a.h||box.offsetHeight/r.height},prev={x:a.x,y:a.y,w:a.w,h:a.h};
   try{h.setPointerCapture(e.pointerId)}catch(_){}
   const move=ev=>{const dx=(ev.clientX-x0)/r.width,dy=(ev.clientY-y0)/r.height;
     if(mv){a.x=Math.min(1-s.w,Math.max(0,s.x+dx));a.y=Math.min(.98,Math.max(0,s.y+dy));box.style.left=pct(a.x);box.style.top=pct(a.y)}
     else{a.w=Math.min(1-a.x,Math.max(.08,s.w+dx));a.h=Math.min(1-a.y,Math.max(.025,s.h+dy));box.style.width=pct(a.w);box.style.height=pct(a.h);pvGrow(box.querySelector("textarea"))}};
-  const up=()=>{h.removeEventListener("pointermove",move);h.removeEventListener("pointerup",up);h.removeEventListener("pointercancel",up);a.upd=Date.now();save()};
+  const up=()=>{h.removeEventListener("pointermove",move);h.removeEventListener("pointerup",up);h.removeEventListener("pointercancel",up);if(["x","y","w","h"].some(k=>a[k]!==prev[k])){pv.hist.push({k:"geo",id:a.id,prev});pvUndoBtn()}a.upd=Date.now();save()};
   h.addEventListener("pointermove",move);h.addEventListener("pointerup",up);h.addEventListener("pointercancel",up)},true);
 // stylo, surligneur (trait libre) et gomme : on glisse sur la page (elle ne défile pas pendant ce temps)
 const pvPt=(r,ev)=>[Math.min(1,Math.max(0,(ev.clientX-r.left)/r.width)),Math.min(1,Math.max(0,(ev.clientY-r.top)/r.height))];
@@ -458,11 +467,11 @@ function pvErase(ev){const d=pv.draw,[x,y]=pvPt(d.r,ev),pg=+d.ov.dataset.pg,rad=
 $("pvBody").addEventListener("pointermove",e=>{const d=pv.draw;if(!d)return;if(d.erase){pvErase(e);return}
   const p=pvPt(d.r,e),l=d.pts[d.pts.length-1];if(Math.hypot(p[0]-l[0],(p[1]-l[1])*d.rat)<.003)return;d.pts.push(p);d.el.setAttribute("d",pvPath(d.pts,d.rat))});
 const pvDrawEnd=()=>{const d=pv.draw;if(!d)return;pv.draw=null;
-  if(d.erase){const ids=[...d.hit];if(!ids.length)return;const gone=PA().filter(a=>ids.includes(a.id));
+  if(d.erase){const ids=[...d.hit];if(!ids.length)return;const gone=PA().filter(a=>ids.includes(a.id));pvHistDel(gone);
     undoable(ids.length>1?"Éléments effacés":"Élément effacé",ids,()=>{ids.forEach(tomb);data.pdfAnns=PA().filter(a=>!gone.includes(a))},{after:pvRefresh});return}
   d.el.remove();if(d.pts.length>1200)d.pts=d.pts.filter((_,i)=>i%2===0);
   const r4=v=>Math.round(v*10000)/10000;
-  const nid=uid();PA().push({id:nid,note:pv.note,page:+d.ov.dataset.pg,t:"ink",hl:d.k==="hl",c:d.c,w:r4(d.w),pts:d.pts.map(p=>[r4(p[0]),r4(p[1])]),upd:Date.now()});pv.hist.push(nid);save();pvOverlay(d.ov.closest(".pv-page"));pvUndoBtn()};
+  const nid=uid();PA().push({id:nid,note:pv.note,page:+d.ov.dataset.pg,t:"ink",hl:d.k==="hl",c:d.c,w:r4(d.w),pts:d.pts.map(p=>[r4(p[0]),r4(p[1])]),upd:Date.now()});pv.hist.push({k:"add",id:nid});save();pvOverlay(d.ov.closest(".pv-page"));pvUndoBtn()};
 $("pvBody").addEventListener("pointerup",pvDrawEnd);$("pvBody").addEventListener("pointercancel",pvDrawEnd);
 // clavier : Échap ferme ; Suppr / Retour arrière efface la zone de texte sélectionnée (vide ou pas en cours d'écriture)
 addEventListener("keydown",e=>{if($("pdfv").hidden||!$("actSheet").hidden)return;

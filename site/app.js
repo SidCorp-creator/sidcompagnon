@@ -4088,7 +4088,7 @@ const SB_ERR={auth:"Reconnecte-toi pour utiliser Sid'Bot.",quota:"Le quota gratu
   trial:"Mode essai : crée ton compte pour utiliser Sid'Bot."};
 // compatibilité : plus aucune IA externe à brancher (anciennes préférences ai / aiOk / aiConv laissées telles quelles dans les données)
 const AIS={},aiCur=()=>null;
-let sbApp="journee",sbBusy=false,sbImg=null,sbCtl=null,sbUse={},sbShare={};
+let sbApp="journee",sbBusy=false,sbImg=null,sbCtl=null,sbUse={},sbShare={},sbMenuRequest=null;
 const sbUid=()=>(session&&session.user&&session.user.id)||"anon",sbKey=u=>"sidnote-sidbot-"+(u||sbUid());
 function sbHist(u){try{const h=JSON.parse(ls.get(sbKey(u))||"{}");return h&&typeof h==="object"?h:{}}catch(e){return {}}}
 function sbSave(h,u){try{ls.set(sbKey(u),JSON.stringify(h))}catch(e){}}
@@ -4111,7 +4111,7 @@ function sbCtxParts(app){
     const pl=typeof PL==="function"?PL():null,pr=(pl&&pl.profile)||{};
     return [{k:"nutrition",label:"Ta nutrition du jour",on:true,v:{goal,totals:{kcal:Math.round(tot.kcal),p:Math.round(tot.p),c:Math.round(tot.c),f:Math.round(tot.f)},meals}},
       {k:"weights",label:"Tes 5 dernières pesées",on:false,v:weights},
-      {k:"muscu",label:"Ton programme de musculation",on:true,v:{goal:pr.goal||"",days:pr.days||null,minutes:pr.dur||null,name:pl&&pl.name?String(pl.name).slice(0,80):""}}]}
+      {k:"muscu",label:"Ton programme de musculation",on:true,v:{goal:pr.goal||"",days:pr.days||null,minutes:pr.dur||null,name:pl&&pl.name?String(pl.name).slice(0,80):""}},...(sbMenuRequest&&n.menuRequest?.id===sbMenuRequest.id?[{k:"menu_request",label:"Le menu demandé",on:true,v:sbMenuRequest}]:[])]}
   if(app==="note"){const n=typeof noteOpenId!=="undefined"&&noteOpenId&&typeof noteFind==="function"?noteFind(noteOpenId):null;
     // une note secrète n'est jamais jointe, même déverrouillée
     if(n&&!n.secret&&!$("noteEdit").hidden)return [{k:"note",sk:"note:"+n.id,label:"La note ouverte",on:false,v:(()=>{const ti=String(n.title||""),bo=String(n.body||""),complete=ti.length<=200&&bo.length<=8000;return {title:ti.slice(0,200),body:bo.slice(0,complete?8000:6000),complete}})()}]; // v78 : complete=true seulement si la note entière part (sinon pas de modification possible)
@@ -4122,21 +4122,22 @@ const sbSK=(app,p)=>sbUid()+":"+app+":"+(p.sk||p.k);
 function sbContext(app){const out={today:iso(today())};for(const p of sbCtxParts(app))if(sbShare[sbSK(app,p)]??p.on)out[p.k]=p.v;return out}
 // ---- ouverture ----
 function sbOpen(app,opt){opt=opt||{};if(app==="note"){ncOpen(opt.prompt);return} // v81 : Sid'Note → Claude (connecteur), sans la clé de Sid'Bot
-  sbApp=SB_APPS[app]?app:"journee";sbImg=opt.img||null;
+  sbMenuRequest=opt.menuRequest||null;sbApp=SB_APPS[app]?app:"journee";sbImg=opt.img||null;
   $("sbSheet").hidden=false;sbRender();
   const i=$("sbIn");if(opt.prompt){i.value=opt.prompt;grow(i);if(opt.send){sbSend();return}}
   setTimeout(()=>{if(!matchMedia("(pointer:coarse)").matches)i.focus({preventScroll:true})},80)}
 function sbClose(){$("sbSheet").hidden=true;if(sbCtl){try{sbCtl.abort()}catch(e){}}}
 // anciens points d'entrée (Agenda, Musculation, Nutrition, Notes) : la demande arrive dans Sid'Bot, déjà écrite, envoyée d'un toucher
-function aiHandoff(prompt,topic,opt){sbOpen(SB_TOPIC[topic]||sbAppOfView(data.ui.view),{prompt,img:opt&&opt.img,send:!!(opt&&opt.send)})}
+function aiHandoff(prompt,topic,opt){sbOpen(SB_TOPIC[topic]||sbAppOfView(data.ui.view),{prompt,img:opt&&opt.img,send:!!(opt&&opt.send),menuRequest:opt&&opt.menuRequest})}
 function aiGo(topic,prompt,quiet){aiHandoff(prompt,topic);return ""}
 const convUrl=()=>"",convTabs=()=>{},renderConv=()=>{};
 function aiWizard(){sbOpen(sbAppOfView(data.ui.view))}
 function renderAiCards(){const c=$("nuAiCard");if(c)c.hidden=true;const st=$("sbState");if(st)st.textContent=sbUse.limit?`${L("Aujourd'hui")} : ${sbUse.used} / ${sbUse.limit} ${L("demandes")}`:""}
 // ---- affichage ----
+function sbMenuPreview(a){return (a.payload.meals||[]).map(m=>`<b>${esc(m.name)} · ${Math.round(m.items.reduce((t,x)=>t+x.kcal,0))} kcal</b><br>${m.items.map(x=>`${esc(x.name)} · ${esc(qtyTxt(x))} · ${Math.round(x.kcal)} kcal${x.yield_source?" · "+esc(x.yield_source):""}`).join("<br>")}`).join("<br><br>")}
 function sbBubble(m){if(m.role==="user")return `<div class="sb-msg me notr">${esc(m.content)}${m.img?`<span class="sb-att">${IC("image")||""} ${L("Photo jointe")}</span>`:""}</div>`;
   if(m.role==="error")return `<div class="sb-msg err" role="alert">${IC("alert")||""}<span>${esc(L(m.content))}</span>${m.retry?`<button type="button" class="linkbtn" data-sbretry="1">${L("Réessayer")}</button>`:""}</div>`;
-  const acts=(m.actions||[]).map((a,i)=>`<div class="sb-act" data-done="${a.done?1:0}"><span class="grow notr">${esc(a.label||sbActLabel(a))}</span>${a.done?`<span class="sb-ok">${IC("tick")||""}${L(a.type==="edit_note"?"Note modifiée":a.type==="share_note_pdf"?"Exporté":"Ajouté")}</span>`:`<button type="button" class="btn ghost sm" data-sbact="${m.id}:${i}">${L(sbActVerb(a))}</button>`}</div>${sbOpenDiff===m.id+":"+i&&!a.done?sbDiff(m,a,i):""}`).join("");
+  const acts=(m.actions||[]).map((a,i)=>`<div class="sb-act" data-done="${a.done?1:0}"><span class="grow notr">${a.type==="save_menu"?sbMenuPreview(a):esc(a.label||sbActLabel(a))}</span>${a.done?`<span class="sb-ok">${IC("tick")||""}${L(a.type==="save_menu"?"Menu enregistré":a.type==="edit_note"?"Note modifiée":a.type==="share_note_pdf"?"Exporté":"Ajouté")}</span>`:`<button type="button" class="btn ghost sm" data-sbact="${m.id}:${i}">${L(sbActVerb(a))}</button>`}</div>${sbOpenDiff===m.id+":"+i&&!a.done?sbDiff(m,a,i):""}`).join("");
   return `<div class="sb-msg bot"><div class="notr">${esc(m.content).replace(/\n/g,"<br>")}</div>${acts?`<div class="sb-acts">${acts}</div>`:""}</div>`}
 function sbRender(){const A=SB_APPS[sbApp],msgs=sbMsgs(sbApp);
   $("sbTitle").textContent=SB_NAME;$("sbSub").textContent=`${L("Avec")} ${A.label}`;
@@ -4154,8 +4155,8 @@ function sbRender(){const A=SB_APPS[sbApp],msgs=sbMsgs(sbApp);
   $("sbSend").disabled=sbBusy;$("sbClear").hidden=!msgs.length;renderAiCards()}
 function sbSuggest(app){return app==="journee"?["Qu'est-ce que j'ai de prévu cette semaine ?","Aide-moi à organiser ma journée"]:
   app==="forme"?["Que manger ce soir pour compléter ma journée ?","Explique-moi mon programme"]:["Corrige les fautes de la note ouverte","Résume la note ouverte","Exporte la note ouverte en PDF"]}
-const sbActVerb=a=>a.type==="add_task"?"Ajouter à l'agenda":a.type==="add_note"?"Créer la note":a.type==="log_meal"?"Ajouter au repas":a.type==="edit_note"?"Voir la modification":a.type==="share_note_pdf"?"Exporter en PDF":"Appliquer";
-const sbActLabel=a=>{const p=a.payload||{};return a.type==="add_task"?`${p.title||""} · ${p.date||""}${p.time?" "+p.time:""}`:a.type==="add_note"?String(p.title||""):a.type==="edit_note"?L("Modifier la note ouverte"):a.type==="share_note_pdf"?L("La note ouverte, en PDF"):a.type==="log_meal"?`${p.name||""} · ${Math.round((p.items||[]).reduce((t,x)=>t+(+x.kcal||0),0))} kcal`:String(p.name||p.title||"")};
+const sbActVerb=a=>a.type==="add_task"?"Ajouter à l'agenda":a.type==="add_note"?"Créer la note":a.type==="save_menu"?"Enregistrer le menu":a.type==="log_meal"?"Ajouter au repas":a.type==="edit_note"?"Voir la modification":a.type==="share_note_pdf"?"Exporter en PDF":"Appliquer";
+const sbActLabel=a=>{const p=a.payload||{};if(a.type==="save_menu")return (p.meals||[]).map(m=>m.name+" : "+(m.items||[]).map(x=>`${x.name} ${qtyTxt(x)} (${x.kcal} kcal)`).join(", ")+" · "+Math.round((m.items||[]).reduce((t,x)=>t+x.kcal,0))+" kcal").join(" ; ");return a.type==="add_task"?`${p.title||""} · ${p.date||""}${p.time?" "+p.time:""}`:a.type==="add_note"?String(p.title||""):a.type==="edit_note"?L("Modifier la note ouverte"):a.type==="share_note_pdf"?L("La note ouverte, en PDF"):a.type==="log_meal"?`${p.name||""} · ${Math.round((p.items||[]).reduce((t,x)=>t+(+x.kcal||0),0))} kcal`:String(p.name||p.title||"")};
 // ---- envoi ----
 async function sbSend(retry){if(sbBusy)return;const i=$("sbIn");let text=i.value.trim();const app=sbApp,uid0=sbUid(),same=()=>sbUid()===uid0;
   if(retry){const last=sbMsgs(app,uid0).filter(m=>m.role==="user").pop();if(!last)return;text=last.content}
@@ -4175,7 +4176,7 @@ async function sbSend(retry){if(sbBusy)return;const i=$("sbIn");let text=i.value
     const noteRef=ctx.note&&typeof noteOpenId!=="undefined"&&noteOpenId?noteOpenId:null,noteN=noteRef?noteFind(noteRef):null,noteVer=noteN?noteN.upd||0:0; // v78 : seule la note jointe, dans sa version envoyée
     const r=await fetch(SUPABASE_URL+"/functions/v1/sidbot",{method:"POST",signal:ctl.signal,
       headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",Authorization:"Bearer "+jwt},
-      body:JSON.stringify({app,locale:LANG==="en"?"en":"fr",messages:hist,context:ctx})});
+      body:JSON.stringify({app,task:ctx.menu_request?"menu":"chat",locale:LANG==="en"?"en":"fr",messages:hist,context:ctx})});
     clearTimeout(tm);let j=null;try{j=await r.json()}catch(e){}
     if(!same()){sbBusy=false;return} // compte changé pendant la demande : la réponse est ignorée
     if(j&&j.usage)sbUse=j.usage;
@@ -4188,6 +4189,7 @@ async function sbSend(retry){if(sbBusy)return;const i=$("sbIn");let text=i.value
 // ---- actions proposées : validées ici, appliquées seulement après un toucher ----
 const SB_D=/^\d{4}-\d{2}-\d{2}$/,SB_T=/^([01]\d|2[0-3]):[0-5]\d$/;
 function sbActOk(a){if(!a||typeof a!=="object"||!a.payload||typeof a.payload!=="object")return false;const p=a.payload;
+  if(a.type==="save_menu"){try{if(!NU().menuRequest)return false;nutritionMenu.menu(p,NU().menuRequest);return true}catch{return false}}
   if(a.type==="add_task")return typeof p.title==="string"&&p.title.trim()&&SB_D.test(p.date||"")&&(!p.time||SB_T.test(p.time));
   if(a.type==="add_note")return typeof p.title==="string"&&typeof (p.body??"")==="string";
   if(a.type==="edit_note")return typeof p.body==="string"&&p.body.length<=8000&&(p.title===undefined||(typeof p.title==="string"&&p.title.length<=300));
@@ -4197,6 +4199,7 @@ function sbActOk(a){if(!a||typeof a!=="object"||!a.payload||typeof a.payload!=="
     Array.isArray(p.items)&&p.items.length>0&&p.items.length<=30&&p.items.every(x=>x&&typeof x.name==="string"&&x.name.trim()&&["kcal","p","c","f"].every(k=>Number.isFinite(+x[k])&&+x[k]>=0&&+x[k]<1e4));
   return false}
 function sbApply(a){const p=a.payload;
+  if(a.type==="save_menu"){const ok=nuSaveMenu(p);if(ok){sbMenuRequest=null;toast(L("Menu enregistré"))}return ok}
   if(a.type==="add_task"){const t={id:uid(),title:p.title.trim().slice(0,200),date:p.date,status:"à faire",tbc:false,cat:""};if(p.time)t.time=p.time;
     data.tasks.push(t);save();renderPlan();toast(`${L("Ajouté à l'agenda")} : ${t.title}`);return true}
   if(a.type==="add_note"){const n={id:uid(),title:p.title.trim().slice(0,200),body:String(p.body||"").slice(0,20000),createdAt:new Date().toISOString(),upd:Date.now()};
@@ -4267,7 +4270,7 @@ $("mcpList").addEventListener("click",async e=>{const b=e.target.closest("[data-
   try{await api("/rest/v1/mcp_tokens?hash=eq."+encodeURIComponent(b.dataset.mcpdel),{method:"DELETE",token:await token()});toast("Adresse retirée");mcpLoad()}
   catch(ex){toast("Impossible pour l'instant")}});
 // v76 (revue Codex) : à la déconnexion ou au changement de compte, la demande en cours est annulée et les choix de partage oubliés
-let sbLastUid=null;setInterval(()=>{const u=sbUid();if(sbLastUid!==null&&u!==sbLastUid){if(sbCtl){try{sbCtl.abort()}catch(e){}}sbBusy=false;sbShare={};sbUse={};if(!$("sbSheet").hidden)sbClose();ncClose();ncReset()}sbLastUid=u},1000);
+let sbLastUid=null;setInterval(()=>{const u=sbUid();if(sbLastUid!==null&&u!==sbLastUid){if(sbCtl){try{sbCtl.abort()}catch(e){}}sbBusy=false;sbShare={};sbMenuRequest=null;sbUse={};if(!$("sbSheet").hidden)sbClose();ncClose();ncReset()}sbLastUid=u},1000);
 
 /* ---------- v81 (demande de Sid) : depuis Sid'Note, Sid'Bot redirige vers Claude, comme avant la v76 ----------
    Plus aucun appel à la fonction « sidbot » (ni à sa clé API) depuis Sid'Note. Claude lit et modifie les notes par le connecteur
@@ -4865,11 +4868,12 @@ async function nuCall(kind,payload){payload=payload||{};
   if(!(await nuConsent()))throw new Error(L("Il faut ton accord pour utiliser Nutrition (données de santé)."));
   if(kind==="profil")return nuProfileLocal(payload.data||{});
   if(kind==="aliment"&&!payload.image&&String(payload.text||"").trim()){
+    const local=await nuLocalWeighed(payload.text);if(local)return local;
     if(!navigator.onLine)throw new Error(L("Pas de connexion internet"));
     const j=await api("/functions/v1/nutrition",{method:"POST",token:await token(),body:{kind,lang:LANG,text:payload.text}});
     if(j&&j.result){j.result._src="memory";return j.result}}
   throw aiNeed(kind,payload)}
-function aiNeed(kind,p){aiHandoff(aiPrompt(kind,p),"nutri",p&&p.image?{img:"data:image/jpeg;base64,"+p.image}:null);const e=new Error(L("Sid'Bot a reçu ta demande : vérifie sa proposition avant de l’ajouter."));e.ai=true;return e}
+function aiNeed(kind,p){aiHandoff(aiPrompt(kind,p),"nutri",{img:p&&p.image?"data:image/jpeg;base64,"+p.image:null,menuRequest:p&&p.menuRequest});const e=new Error(L("Sid'Bot a reçu ta demande : vérifie sa proposition avant de l’ajouter."));e.ai=true;return e}
 // profil : métabolisme (Mifflin-St Jeor), dépense avec le sport, objectif selon le rythme, macros (mêmes règles prudentes qu'avant)
 const SPORT_MET=/** @type {[RegExp,number][]} */([[/muscu|fitness|gym|halt|crossfit|weight|kracht/,5.5],[/course|running|jogg|run|lopen|hardlo/,9.8],[/v[eé]lo|cycl|bike|fiets|spinning/,7.5],[/nata|swim|zwem|piscine/,7],
   [/foot|basket|tennis|padel|hand|volley|rugby|hockey/,7],[/marche|walk|wandel|randon/,3.8],[/boxe|box|mma|judo|karat|combat|lutte/,9],[/yoga|pilates|stretch/,3],[/danse|dance|dans/,5.5]]);
@@ -4903,15 +4907,16 @@ function nuDayNote(){if(nuDay>=iso(today()))return "";const d=parse(nuDay),txt=`
 function aiPrompt0(kind,p){const d=(p&&p.data)||{};
   if(kind==="aliment"&&p.image)return T3("Je t'envoie la photo de mon assiette (je la joins). Estime ce que j'ai mangé et note-le après ma confirmation.","I'm sending you a photo of my plate (attached). Estimate what I ate and log it after my confirmation.");
   if(kind==="aliment")return T3(`Note après ma confirmation ce que j'ai mangé : ${p.text}`,`Log after my confirmation what I ate: ${p.text}`);
+  if(kind==="menu"&&p.menuRequest)return nutritionMenu.prompt(p.menuRequest,LANG==="en");
   if(kind==="menu"){const meals=(d.meals||[]).map(m=>`${m.name} (~${m.kcal} kcal)`).join(", "),inc=d.must_include,exc=d.avoid;
-    return T3(`lis ma journée nutrition, puis compose-moi ${(d.meals||[]).length>1?"un menu pour la journée":"un repas"} : ${meals}.${inc?` À inclure : ${inc}.`:""}${exc?` À éviter : ${exc}.`:""}${d.notes?` ${d.notes}`:""} Poids crus en grammes, puis enregistre le menu après ma confirmation.`,
-      `read my nutrition day, then make me ${(d.meals||[]).length>1?"a menu for the day":"a meal"}: ${meals}.${inc?` Include: ${inc}.`:""}${exc?` Avoid: ${exc}.`:""}${d.notes?` ${d.notes}`:""} Raw weights in grams, then save the menu after my confirmation.`)}
+    return T3(`lis ma journée nutrition, puis compose-moi ${(d.meals||[]).length>1?"un menu pour la journée":"un repas"} : ${meals}.${inc?` À inclure : ${inc}.`:""}${exc?` À éviter : ${exc}.`:""}${d.notes?` ${d.notes}`:""} Respecte le mode de pesée demandé, g et kcal par ingrédient, huiles et sauces comprises, puis enregistre le menu après ma confirmation.`,
+      `read my nutrition day, then make me ${(d.meals||[]).length>1?"a menu for the day":"a meal"}: ${meals}.${inc?` Include: ${inc}.`:""}${exc?` Avoid: ${exc}.`:""}${d.notes?` ${d.notes}`:""} Respect the requested weighing mode, grams and kcal for every ingredient including oils and sauces, then save the menu after my confirmation.`)}
   if(kind==="recette"){const f=(d.foods||[]).map(x=>`${x.food}${x.grams?` ${x.grams} g`:""}`).join(", ");
     return T3(`donne-moi la recette de « ${d.name} » (${f}), avec exactement ces aliments et ces quantités, puis ajoute les étapes à ce repas dans mon menu après confirmation.`,`give me the recipe for "${d.name}" (${f}) with exactly these foods and amounts, then add the steps to this meal in my menu after confirmation.`)}
   if(kind==="bilan")return p.scope==="week"?T3("fais le bilan nutrition de ma semaine (calories, macros, poids) : ce qui va bien, ce qui peut s'améliorer, et 2 ou 3 conseils concrets. Puis enregistre ce commentaire après ma confirmation pour que je le voie dans l'app.","review my nutrition week (calories, macros, weight): what went well, what could improve, and 2 or 3 concrete tips. Then save this review after my confirmation so I can see it in the app.")
     :T3("commente ma journée nutrition d'aujourd'hui et donne-moi 1 ou 2 conseils pour la suite. Puis enregistre ce commentaire après ma confirmation pour que je le voie dans l'app.","comment on my nutrition today and give me 1 or 2 tips for the rest of the day. Then save this comment after my confirmation so I can see it in the app.");
   return T3("aide-moi pour ma nutrition.","help me with my nutrition.")}
-const nuErrMsg=ex=>ex instanceof TypeError?L("Pas de connexion internet"):ex.status===404?L("La fonction « nutrition » n'est pas encore installée sur Supabase."):ex.message;
+const nuErrMsg=ex=>ex.message==="invalid_menu"?L("Vérifie les repas, leurs calories et le mode de pesée."):ex instanceof TypeError?L("Pas de connexion internet"):ex.status===404?L("La fonction « nutrition » n'est pas encore installée sur Supabase."):ex.message;
 // animation pendant que Claude travaille
 function nuLoading(el,msgs){const EM=[""];let i=0;
   el.innerHTML=`<div class="loadcard" role="status"><div class="load-em">${EM[0]}</div><div class="load-msg">${L(msgs[0])}</div><div class="load-bar"><i></i></div><div class="shim"></div><div class="shim" style="width:70%"></div></div>`;
@@ -5097,7 +5102,7 @@ function nuQtyRatio(x,q){const a=nuQtyGrams(x,x.qty),b=nuQtyGrams(x,q);
   const unit=t=>String(t||"").replace(/[0-9.,/½¼¾\s]/g,"").toLowerCase();
   return unit(x.qty)===unit(q)&&qtyNum(x.qty)>0?qtyNum(q)/qtyNum(x.qty):0
 }
-function nuQtyMeta(x){const ref=nuUnitRef(x),g=nuQtyGrams(x,x.qty);return {...(g>0?{g:r1(g)}:{}),...(ref?{unit_g:ref.g,unit_label:ref.label}:{})}}
+function nuQtyMeta(x){const ref=nuUnitRef(x),g=nuQtyGrams(x,x.qty);return {...nutritionMenu.weightMeta(x),...(g>0?{g:r1(g)}:{}),...(ref?{unit_g:ref.g,unit_label:ref.label}:{})}}
 function nuQtyHelp(x){const ref=nuUnitRef(x);if(!ref)return "";
   let label=String(ref.label||"").replace(/(?:,\s*)?(?:estimé(?:e)?|estimated|estimation)(?=[\s,;·]|$)/gi,"").replace(/[,;·\s]+$/g,"").trim();
   if(/^(?:moyen(?:ne)?|medium|grand(?:e)?|large|petit(?:e)?|small)$/.test(label.toLowerCase())){
@@ -5210,7 +5215,7 @@ const nz=x=>String(x||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
 function mentioned(q,name){const Q=nz(q),stems=nz(name).split(/[^a-z0-9]+/).filter(w=>w.length>=3&&!/^(les|des|une|avec|sans|aux|the|and|with|cuit|cuite|nature|frais|fraiche|maison)$/.test(w));
   return !stems.length||stems.some(w=>Q.includes(w.length>5?w.slice(0,5):w.replace(/[sx]$/,"")))}
 $("nuAskForm").addEventListener("submit",async e=>{
-  e.preventDefault();const q=$("nuAsk").value.trim();if((!q&&!nuPhoto)||nuBusy||!nutriAllowed())return;dictStop();
+  e.preventDefault();let q=$("nuAsk").value.trim();const state=$("nuFoodWeighingMode").value;if(state!=="unspecified"&&nutritionMenu.inferState(q)==="unspecified")q+=" · "+L(state==="cooked"?"Après cuisson (cuit)":"Avant cuisson (cru)");if((!q&&!nuPhoto)||nuBusy||!nutriAllowed())return;dictStop();
   if(nuPhoto&&nuDirect()){if(nuSending===nuPhoto)return; // v74.5 : pas de double envoi de la même photo
     if(NU().consent)return nuPhotoSend(q);const ph=nuPhoto;if(!(await nuConsent())||nuPhoto!==ph||nuSending===ph)return;return nuPhotoSend(q)}
   nuBusy="aliment";const btn=$("nuAskBtn");btn.disabled=true;nuPending=null;renderNuResult();
@@ -5219,7 +5224,7 @@ $("nuAskForm").addEventListener("submit",async e=>{
   // texte seul : le serveur (v23) ne compte que ce qui est écrit ; le texte est envoyé tel quel pour garder la mémoire des aliments
   try{const r=await nuRetry(()=>nuCall("aliment",{text:q,image:photo?photo.big.split(",")[1]:undefined}),r=>r&&Array.isArray(r.items)&&r.items.length);
     nuPending={q,mem:r._src==="memory",title:String(r.dish||q||L("Mon plat")),em:String(r.emoji||"🍽️"),note:String(r.note||""),photo:photo&&photo.small,
-      items:(r.items||[]).map(x=>({name:String(x.name||q),qty:String(x.quantity||""),em:String(x.emoji||""),g:+x.grams||undefined,unit_g:+x.unit_g||undefined,unit_label:x.unit_label||undefined,kcal:r0(x.kcal),p:r1(x.protein_g),c:r1(x.carbs_g),f:r1(x.fat_g)}))};
+      items:(r.items||[]).map(x=>({name:String(x.name||q),qty:String(x.quantity||""),em:String(x.emoji||""),...nutritionMenu.weightMeta({...x,weight_state:x.weight_state||nutritionMenu.inferState(x.name)}),...(x.per100?{basis:x.basis,per100:x.per100}:{}),g:+x.grams||undefined,unit_g:+x.unit_g||undefined,unit_label:x.unit_label||undefined,kcal:r0(x.kcal),p:r1(x.protein_g),c:r1(x.carbs_g),f:r1(x.fat_g)}))};
     if(!photo&&nuPending.items.length>1)nuPending.items.forEach(x=>x.extra=!mentioned(q,x.name));
     if(!nuPending.items.length){nuPending=null;toast("Aliment non reconnu, précise un peu")}
   }catch(ex){toast(nuErrMsg(ex));if(ex.ai){nuPhoto=null;nuPhotoPrevSet(null);$("nuAsk").value="";grow($("nuAsk"))}} // v43 : demande partie chez Claude → rien ne reste pré-rempli
@@ -5265,7 +5270,8 @@ $("nuLog").addEventListener("click",e=>{const b=e.target.closest("button");if(!b
 });
 // T16 B : les cinq entrées réutilisent leurs traitements, dans une même feuille.
 function nuMealClose(restore=true){if($("nuMealSheet").hidden)return;catalogReset();$("foodCatalogQuery").value="";$("foodCatalog").open=false;$("nuMealSheet").hidden=true;if(restore)$("nuMealAdd").focus({preventScroll:true})}
-$("nuMealAdd").addEventListener("click",()=>{$("nuMealSheet").hidden=false;$("nuMealSheet").querySelector('[role="dialog"]').focus({preventScroll:true})});
+$("nuFoodWeighingMode").addEventListener("change",()=>{NU().foodWeighingMode=$("nuFoodWeighingMode").value;NU().upd=Date.now();save()});
+$("nuMealAdd").addEventListener("click",()=>{$("nuFoodWeighingMode").value=NU().foodWeighingMode||"unspecified";$("nuMealSheet").hidden=false;$("nuMealSheet").querySelector('[role="dialog"]').focus({preventScroll:true})});
 $("nuMealClose").addEventListener("click",nuMealClose);
 $("nuMealSheet").addEventListener("click",e=>{if(e.target.id==="nuMealSheet")nuMealClose();if(e.target.closest("#nuManual")){$("nuSheet")._back=$("nuMealAdd");nuMealClose(false)}else if(e.target.closest("#nuAiLink"))nuMealClose()});
 $("nuMealSheet").addEventListener("keydown",e=>{const label=e.target.closest('label[role="button"]');if(label&&(e.key==="Enter"||e.key===" ")){e.preventDefault();label.querySelector('input').click()}});
@@ -5277,7 +5283,7 @@ function nuLogFromBot(p){
   if(!p.items.every(x=>x&&typeof x.name==="string"&&x.name.trim()&&typeof x.qty==="string"&&["kcal","p","c","f"].every(k=>typeof x[k]==="number"&&isFinite(x[k])&&x[k]>=0&&x[k]<=20000)&&
     (x.g===undefined||typeof x.g==="number"&&isFinite(x.g)&&x.g>=0&&x.g<=20000)&&(x.unit_g===undefined||typeof x.unit_g==="number"&&isFinite(x.unit_g)&&x.unit_g>0&&x.unit_g<=20000)))return false;
   const previous=nuDay;try{nuDay=p.date;nuAddItems(p.items.map(x=>({name:x.name.slice(0,300),qty:x.qty.slice(0,120),kcal:x.kcal,p:x.p,c:x.c,f:x.f,
-    ...(x.g!==undefined?{g:x.g}:{}),...(x.unit_g!==undefined?{unit_g:x.unit_g}:{}),...(typeof x.unit_label==="string"?{unit_label:x.unit_label.slice(0,160)}:{})})),p.time,{name:p.name.slice(0,300)})}
+    ...nutritionMenu.weightMeta(x),...(x.g!==undefined?{g:x.g}:{}),...(x.unit_g!==undefined?{unit_g:x.unit_g}:{}),...(typeof x.unit_label==="string"?{unit_label:x.unit_label.slice(0,160)}:{})})),p.time,{name:p.name.slice(0,300)})}
   finally{nuDay=previous}renderNutri();return true
 }
 
@@ -5290,7 +5296,7 @@ function ciqualFoods(){
     if(!response.ok)throw new Error("Ciqual");
     return response.json();
   }).then(data=>data.foods.map(([code,name,kcal,p,c,f])=>({
-    code,name,kcal,p,c,f,basis:"100g",source:CIQUAL_SOURCE,key:nz(name).replace(/œ/g,"oe")
+    code,name,kcal,p,c,f,weight_state:nutritionMenu.inferState(name),basis:"100g",source:CIQUAL_SOURCE,key:nz(name).replace(/œ/g,"oe")
   }))).catch(error=>{ciqualRequest=null;throw error}));
 }
 
@@ -5390,7 +5396,7 @@ $("foodCatalogPortion").addEventListener("submit",e=>{
   const food=catalogFood,amount=$("foodCatalogAmount").valueAsNumber;
   if(!food||!Number.isFinite(amount)||amount<=0||nuBusy)return;
   const ratio=amount/100,unit=catalogUnit(food);
-  const item={name:food.name,qty:`${amount} ${unit}`,kcal:r0(food.kcal*ratio),p:r1(food.p*ratio),
+  const item={...nutritionMenu.weightMeta(food),name:food.name,qty:`${amount} ${unit}`,kcal:r0(food.kcal*ratio),p:r1(food.p*ratio),
     c:r1(food.c*ratio),f:r1(food.f*ratio),source:food.source,basis:food.basis,
     per100:{kcal:food.kcal,p:food.p,c:food.c,f:food.f}};
   nuPending={title:food.name,items:[item],note:food.source};
@@ -5398,6 +5404,85 @@ $("foodCatalogPortion").addEventListener("submit",e=>{
   renderNuResult();
   $("nuResult").scrollIntoView({block:"nearest"});
 });
+
+// Explicit, single-food weighed requests prefer the matching Ciqual cooking state.
+// No raw/cooked conversion and no guessed water or fat loss.
+async function nuLocalWeighed(text){
+  const state=nutritionMenu.inferState(text);if(state==="unspecified")return null;
+  const clean=String(text).replace(/^(?:j['’]ai\s+pesé|i\s+weighed)\s+/i,"");
+  const match=clean.match(/^(\d+(?:[.,]\d+)?)\s*(kg|g)\s+(?:de\s+|du\s+|of\s+)?(.+)$/i);
+  if(!match||/[,;+&]| et | and | avec | with /i.test(match[3]))return null;
+  const grams=+match[1].replace(",",".")*(match[2].toLowerCase()==="kg"?1000:1);if(!(grams>0&&grams<=20000))return null;
+  const query=match[3].replace(/\s*·.*$/,"").replace(/\b(?:après|avant) cuisson.*$/i,"").trim();
+  try{const choices=await ciqualSearch(query),food=choices.find(f=>f.weight_state===state);if(!food)return null;
+    const ratio=grams/100;return {dish:food.name,items:[{name:food.name,quantity:grams+" g",grams,
+      weight_state:state,source:food.source,basis:food.basis,per100:{kcal:food.kcal,p:food.p,c:food.c,f:food.f},
+      kcal:r0(food.kcal*ratio),protein_g:r1(food.p*ratio),carbs_g:r1(food.c*ratio),fat_g:r1(food.f*ratio)}],note:food.source};
+  }catch{return null}
+}
+
+// @ts-nocheck
+// Generated: edit supabase/functions/_shared/nutrition-menu.js.
+// Shared, pure browser/Edge contract. Nutrients are totals for the displayed edible mass.
+function createNutritionMenu() {
+  const states=['raw','cooked','unspecified'], slots=['breakfast','lunch','snack','dinner','meal'];
+  const fail=()=>{throw Error('invalid_menu')}, str=(v,n=300)=>{if(typeof v!=='string'||!v.trim()||v.length>n)fail();return v.trim()}, num=(v,max=20000)=>{if(typeof v!=='number'||!Number.isFinite(v)||v<0||v>max)fail();return v};
+  function weightMeta(x){
+    let state=x.weight_state===undefined?'unspecified':x.weight_state;if(state==='unspecified')state=inferState(x.name||x.food);if(!states.includes(state))fail();
+    const out={weight_state:state};
+    for(const k of ['cooking_method','source','yield_source'])if(x[k]!==undefined)out[k]=str(x[k],800);
+    if(x.yield_factor!==undefined){if(!num(x.yield_factor,10))fail();if(!x.yield_source||x.estimated!==true||state!=='cooked')fail();
+      const name=String(x.name||x.food).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(),method=String(x.cooking_method||'');
+      const url='https://www.fao.org/uploads/media/bognar_bfe-r-02-03.pdf';
+      const rice=/riz|rice/.test(name)&&/blanc|white|poli|polished/.test(name)&&/long/.test(name)&&!/(complet|brown|unpolished|parboil|etuv)/.test(name)&&x.yield_factor===2.98&&x.yield_source===url+'#page=38';
+      const pasta=/pasta|pates|noodles/.test(name)&&/durum|ble dur/.test(name)&&/sans oeuf|egg.free/.test(name)&&x.yield_factor===2.1&&x.yield_source===url+'#page=39';
+      if(!/boil|bouilli|eau/i.test(method)||!(rice||pasta))fail();out.yield_factor=x.yield_factor;out.estimated=true}
+    if(x.estimated!==undefined){if(typeof x.estimated!=='boolean')fail();out.estimated=x.estimated}
+    return out;
+  }
+  function request(v){
+    if(!v||!Array.isArray(v.meals)||!v.meals.length||v.meals.length>6)fail();
+    const id=str(v.id,80);if(!/^[\w-]+$/.test(id))fail();
+    const date=str(v.date,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||new Date(date+'T12:00:00Z').toISOString().slice(0,10)!==date)fail();
+    const mode=v.weighing_mode||'unspecified';if(!states.includes(mode))fail();
+    const meals=v.meals.map(m=>{if(!slots.includes(m.slot)||!num(m.kcal,10000))fail();return {slot:m.slot,name:str(m.name,100),kcal:m.kcal}});
+    const out={id,date,weighing_mode:mode,meals,budget_kind:['day','meal','remaining'].includes(v.budget_kind)?v.budget_kind:'meal'};
+    for(const k of ['must_include','avoid','notes'])out[k]=v[k]===undefined?'':(typeof v[k]==='string'&&v[k].length<=2000?v[k]:fail());
+    return out;
+  }
+  function item(x){
+    if(!x||typeof x!=='object')fail();const g=num(x.g===undefined?x.grams:x.g);if(!g)fail();
+    return {name:str(x.name||x.food),g,qty:g+' g',kcal:num(x.kcal),p:num(x.p===undefined?x.protein_g:x.p),c:num(x.c===undefined?x.carbs_g:x.c),f:num(x.f===undefined?x.fat_g:x.f),...weightMeta(x)};
+  }
+  function menu(v,r){
+    r=r?request(r):null;if(!v||!Array.isArray(v.meals)||!v.meals.length||v.meals.length>6)fail();
+    if(r&&(v.request_id!==r.id||v.meals.length!==r.meals.length))fail();
+    const meals=v.meals.map((m,i)=>{
+      if(!slots.includes(m.slot)||r&&m.slot!==r.meals[i].slot||!Array.isArray(m.items)||!m.items.length||m.items.length>30)fail();
+      const items=m.items.map(item),kcal=items.reduce((s,x)=>s+x.kcal,0),target=r?r.meals[i].kcal:m.target;
+      // A target is a budget, not an instruction to replace it with the daily allowance.
+      if(target!==undefined){num(target,10000);if(Math.abs(kcal-target)>Math.max(30,target*.05))fail()}
+      if(r&&r.weighing_mode!=='unspecified'&&items.some(x=>x.weight_state!=='unspecified'?x.weight_state!==r.weighing_mode:/riz|rice|p[aâ]tes|pasta|pomme de terre|potato|frites|viande|boeuf|bœuf|beef|poulet|chicken|poisson|fish/i.test(x.name)))fail();
+      return {slot:m.slot,name:str(m.name),em:typeof m.emoji==='string'?m.emoji.slice(0,8):'🍽️',items,...(target!==undefined?{target}:{}),steps:Array.isArray(m.steps)?m.steps.slice(0,12).map(s=>str(s,500)):null};
+    });
+    return {meals,tips:typeof v.tips==='string'?v.tips.slice(0,2000):'',...(r?{request_id:r.id,weighing_mode:r.weighing_mode,date:r.date}:{})};
+  }
+  function inferState(name){const s=String(name).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();return /\b(cru|crue|raw)\b/.test(s)?'raw':/\b(cuit|cuite|cuits|cuites|cooked|grille|grillee|poele|bouilli)\b/.test(s)?'cooked':'unspecified'}
+  function protocolPrompt(r,english=false){r=request(r);return (english?'Prepare a PLANNED menu, not a consumed meal.':'Prépare un menu PRÉVU, pas un repas consommé.')+' '+JSON.stringify(r)+' '+(english?
+    'Respect exactly the requested number of meals, foods and each meal budget; these are not extra daily calories. Weights in grams: raw = before cooking, cooked = AFTER cooking, unspecified = ask if needed. Keep the requested cooking method. Give grams and kcal for EVERY ingredient, including oils and sauces, macros and each meal total. Prefer a matching cooked Ciqual composition for cooked weights. Never apply raw composition to cooked mass. Only use a documented, method-specific yield when no cooked composition exists; include yield_factor, yield_source and estimated:true. No universal meat or rice factor. Use unspecified only for ready-to-eat ingredients where cooking state is irrelevant. Preview first; save_menu only on confirmation, never log_meal.':
+    'Respecte exactement le nombre de repas, les aliments et le budget de CHAQUE repas ; ce ne sont pas des calories à ajouter à la journée. Grammes crus = avant cuisson ; cuits = APRÈS cuisson ; non précisé = demander si nécessaire. Garde le mode de cuisson demandé. Donne g et kcal pour CHAQUE ingrédient, huiles et sauces comprises, macros et total par repas. Pour un poids cuit, privilégie la composition Ciqual cuite correspondante. Jamais de composition crue appliquée à une masse cuite. À défaut seulement, rendement documenté propre à l’aliment et à la cuisson : yield_factor, yield_source et estimated:true. Aucun facteur universel viande ou riz. unspecified seulement pour les ingrédients prêts à manger où la cuisson ne s’applique pas. Aperçu avant confirmation ; save_menu, jamais log_meal.')+' Fallback yields ONLY (cooked mass/raw mass; estimated:true; cooking_method:boiled): long-grain polished WHITE rice 2.98, yield_source https://www.fao.org/uploads/media/bognar_bfe-r-02-03.pdf#page=38 (Bognar 2002 table 29); egg-free durum wheat pasta 2.10, yield_source https://www.fao.org/uploads/media/bognar_bfe-r-02-03.pdf#page=39 (table 30). Include those food qualifiers in name. Otherwise use matching cooked composition or ask; no guessed yield, particularly for meat.';}
+  function prompt(r,english=false,technical=false){
+    r=request(r);if(technical)return protocolPrompt(r,english);
+    const meals=r.meals.map(m=>m.name+' (~'+m.kcal+' kcal)').join(', '),total=r.meals.reduce((t,m)=>t+m.kcal,0);
+    const mode=english?{raw:'BEFORE cooking (raw)',cooked:'AFTER cooking (cooked)',unspecified:'not specified; ask if necessary'}[r.weighing_mode]:{raw:'AVANT cuisson (crus)',cooked:'APRÈS cuisson (cuits)',unspecified:'non précisé ; demande si nécessaire'}[r.weighing_mode];
+    const notes=r.notes.split(' Références de composition')[0];
+    return english?`Prepare exactly ${r.meals.length} planned meal(s): ${meals}. Combined budget: ${total} kcal (${r.budget_kind==='remaining'?'remaining daily allowance':r.budget_kind==='day'?'daily target':'this meal only, not the daily allowance'}). Weights in grams: ${mode}. Include: ${r.must_include||'no preference'}. Avoid: ${r.avoid||'no exclusion'}. ${notes} Keep the requested cooking methods. Give grams and kcal per ingredient, including oils and sauces, and a total per meal. Prefer matching cooked Ciqual values for cooked weights; document and label any fallback yield as an estimate. Show a preview; save the planned menu only after my confirmation. Do not log it as eaten.`:
+      `Prépare exactement ${r.meals.length} repas prévu(s) : ${meals}. Budget total à répartir : ${total} kcal (${r.budget_kind==='remaining'?'reste de la journée':r.budget_kind==='day'?'objectif de la journée':'ce repas seulement, pas toute la journée'}). Poids en grammes : ${mode}. À inclure : ${r.must_include||'pas de préférence'}. À éviter : ${r.avoid||'pas d’exclusion'}. ${notes} Garde les modes de cuisson demandés. Donne g et kcal par ingrédient, huiles et sauces comprises, et le total par repas. Privilégie une fiche Ciqual cuite correspondante pour les poids cuits ; documente et signale tout rendement de secours comme estimation. Montre un aperçu ; enregistre le menu prévu après ma confirmation seulement. Ne le note pas comme consommé.`;
+  }
+  return {weightMeta,request,item,menu,inferState,prompt};
+}
+
+const nutritionMenu=createNutritionMenu();
 
 /* ---------- v47 : vues semaine / mois / année de la nutrition (#16) et copie d'un repas sur d'autres jours (#15) ---------- */
 // mêmes grilles que l'agenda (monthGrid / yearGrid, mêmes classes .day, .ym)
@@ -5532,7 +5617,7 @@ const slotsFor=n=>({1:["meal"],2:["lunch","dinner"],3:["breakfast","lunch","dinn
 const slotName=s=>SLOT[s]?SLOT[s][0]:"Repas";
 const splitKcal=(total,slots)=>{const w=slots.map(s=>SLOT[s][2]),t=w.reduce((a,b)=>a+b,0);return w.map(x=>Math.round(total*x/t/10)*10)};
 // v31 : « à inclure » et « à éviter » sont propres à chaque type de repas (journée, petit-déj, déjeuner…) : rien n'est recopié d'un repas à l'autre
-const mpPref=(mp,type,k)=>{const p=mp.pp&&mp.pp[type];if(p&&p[k]!=null)return p[k];return type==="day"?(k==="include"?mp.include:mp.exclude)||"":""};
+const mpPref=(mp,type,k)=>{const p=mp.pp&&mp.pp[type];if(p&&p[k]!=null)return p[k];return type==="day"&&["include","exclude"].includes(k)?(k==="include"?mp.include:mp.exclude)||"":""};
 const mpSet=(mp,type,k,v)=>{mp.pp=mp.pp||{};mp.pp[type]={...(mp.pp[type]||{}),[k]:v}};
 // v74.5 (demande de Sid) : une fois le menu généré, « à inclure » et « à éviter » sont vidés pour TOUS les types de menu
 // (journée, petit-déjeuner, déjeuner…) et l'ancien format ; avant, seul le type affiché l'était et l'ancien texte revenait ailleurs
@@ -5541,8 +5626,9 @@ const nuMP=()=>{const n=NU();n.menuPrefs=n.menuPrefs||{};const m=n.menuPrefs;m.t
   // ancien réglage « repas par jour » → choix des repas
   if(!m.pick){const sl=slotsFor(m.meals||3);m.pick={breakfast:sl.includes("breakfast"),lunch:sl.includes("lunch")||sl.includes("meal"),dinner:sl.includes("dinner")};m.snacks=sl.filter(s=>s==="snack").length}
   return m};
+function mpBudget(){const tg=dayTarget(iso(today())).kcal;return nuMP().budget_kind==="remaining"?Math.max(0,tg-NU().log.filter(x=>x.day===iso(today())).reduce((t,x)=>t+(+x.kcal||0),0)):tg}
 // calories par repas : toujours ramenées à l'objectif du jour, en gardant la répartition choisie
-const mpKcals=()=>{const mp=nuMP(),sl=mpSlots(),tg=dayTarget(iso(today())).kcal;
+const mpKcals=()=>{const mp=nuMP(),sl=mpSlots(),tg=mpBudget();
   if(!(mp.kcals&&mp.kcals.length===sl.length&&mp.kcalsFor===sl.join()))return splitKcal(tg,sl);
   const tot=mp.kcals.reduce((a,b)=>a+b,0);if(!tot||Math.abs(tot-tg)<=20)return mp.kcals;
   return fitKcals(mp.kcals.map(x=>x*tg/tot),tg)};
@@ -5559,13 +5645,18 @@ let nuMkForce=false; // v64 : redessiner les calories par repas même pendant la
 const nuMkClear=()=>{if(Object.keys($("nuMealKcal")).some(k=>k.startsWith("__reactContainer")))nuMkForce=true;else $("nuMealKcal").innerHTML=""};
 function renderMenuForm(){
   const mp=nuMP(),day=mp.type==="day";
+  let wm=$("nuWeighingMode");if(!wm){const label=document.createElement("label");label.innerHTML=`${L("Pesée des ingrédients")}<select id="nuWeighingMode"><option value="unspecified">${L("Non précisé")}</option><option value="raw">${L("Avant cuisson (cru)")}</option><option value="cooked">${L("Après cuisson (cuit)")}</option></select>`;$("nuInclude").parentElement.before(label);wm=$("nuWeighingMode");wm.addEventListener("change",()=>{mpSet(nuMP(),nuMP().type,"weighing_mode",wm.value);NU().upd=Date.now();save()})}
+  let bk=$("nuMenuBudget");if(!bk){const label=document.createElement("label");label.innerHTML=`${L("Budget du menu")}<select id="nuMenuBudget"><option value="day">${L("Objectif de la journée")}</option><option value="remaining">${L("Reste de la journée")}</option></select>`;$("nuMDay").prepend(label);bk=$("nuMenuBudget");bk.addEventListener("change",()=>{nuMP().budget_kind=bk.value;nuMP().kcals=null;NU().upd=Date.now();save();renderMenuForm()})}
+  bk.value=mp.budget_kind||"day";
+  let resume=$("nuResumeMenu");if(!resume){resume=document.createElement("button");resume.id="nuResumeMenu";resume.type="button";resume.className="btn ghost";resume.textContent=L("Reprendre le menu à confirmer");$("nuMenuBtn").after(resume);resume.addEventListener("click",()=>{const r=NU().menuRequest;if(r)aiHandoff(nutritionMenu.prompt(r,LANG==="en"),"nutri",{menuRequest:r})})}resume.hidden=!NU().menuRequest;
+  wm.value=mpPref(mp,mp.type,"weighing_mode")||"unspecified";
   document.querySelectorAll("#nuMType button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mtype===mp.type));
   $("nuMDay").hidden=!day;$("nuMOne").hidden=day;$("nuSnacks").textContent=mp.snacks||0;
   if(shIsl("nuSlots")){try{window.SCIslands.nuSlots($("nuSlots"),{i18n:agI18n(),slots:MAINS.map(s=>({k:s,on:!!mp.pick[s],icon:IC(SLOT[s][1]),name:SLOT[s][0]}))})}catch(e){reportErr("island nuSlots: "+(e&&e.message))}}
   else $("nuSlots").innerHTML=MAINS.map(s=>`<button type="button" class="pill meal-tg" data-pick="${s}" aria-pressed="${!!mp.pick[s]}"><span class="tg-box" aria-hidden="true">${mp.pick[s]?IC("tick"):""}</span>${IC(SLOT[s][1])} ${L(SLOT[s][0])}</button>`).join("");
   const sl=mpSlots();
   $("nuMenuBtn").textContent=L(day?(sl.length===1&&sl[0]==="meal"?"Générer mon repas unique":"Générer ma journée"):{breakfast:"Générer un petit-déjeuner",lunch:"Générer un déjeuner",snack:"Générer une collation",dinner:"Générer un dîner"}[mp.type]);
-  if(day){const k=mpKcals(),tot=k.reduce((a,b)=>a+b,0),tg=dayTarget(iso(today())).kcal;
+  if(day){const k=mpKcals(),tot=k.reduce((a,b)=>a+b,0),tg=mpBudget();
     const mkIsl=shIsl("nuMealKcal");
     if(mkIsl&&(nuMkForce||!$("nuMealKcal").contains(document.activeElement))){nuMkForce=false;try{window.SCIslands.nuMealKcal($("nuMealKcal"),{i18n:agI18n(),rows:sl.map((s,i)=>({icon:IC(SLOT[s][1]),name:slotName(s),kcal:k[i]}))});
       $("nuMealKcal").querySelectorAll("input").forEach(i=>{if(i!==document.activeElement&&i.value!==i.defaultValue)i.value=i.defaultValue})}catch(e){reportErr("island nuMealKcal: "+(e&&e.message))}}
@@ -5586,7 +5677,7 @@ $("nuMenuSec").addEventListener("click",e=>{const b=e.target.closest("[data-pick
   else if(b.dataset.pick){const s=b.dataset.pick;mp.pick[s]=!mp.pick[s];if(!MAINS.some(x=>mp.pick[x])&&!mp.snacks){mp.pick[s]=true;toast("Garde au moins un repas");return}mp.kcals=null}
   else{mp.snacks=Math.min(4,Math.max(0,(mp.snacks||0)+ +b.dataset.snacks));if(!MAINS.some(x=>mp.pick[x])&&!mp.snacks)mp.snacks=1;mp.kcals=null}
   NU().upd=Date.now();save();nuMkClear();renderMenuForm()});
-$("nuMealKcal").addEventListener("change",e=>{const i=e.target.dataset.mk;if(i===undefined)return;const mp=nuMP(),tg=dayTarget(iso(today())).kcal,k=mpKcals().slice();
+$("nuMealKcal").addEventListener("change",e=>{const i=e.target.dataset.mk;if(i===undefined)return;const mp=nuMP(),tg=mpBudget(),k=mpKcals().slice();
   const v=Math.round(numIn(e.target.value)/10)*10;if(v>tg)toast(`${L("Maximum")} ${fmtFull(tg)} kcal`);
   mp.kcals=k.length>1?rebalance(k,+i,v,tg):[tg];mp.kcalsFor=mpSlots().join();NU().upd=Date.now();save();nuMkClear();renderMenuForm()});
 $("nuOneKcal").addEventListener("change",e=>{const mp=nuMP();mp.one[mp.type]=Math.max(0,Math.round(numIn(e.target.value)));NU().upd=Date.now();save()});
@@ -5600,9 +5691,10 @@ const SPOONS=/** @type {[RegExp,number,number][]} */([[/huile|oil/i,13.5,4.5],[/
 function spoonQty(name,g){if(!(g>0)||g>80)return"";const s=SPOONS.find(([re])=>re.test(name||""));if(!s)return"";
   const half=x=>Math.max(.5,Math.round(x*2)/2),fr=x=>String(x).replace(".",LANG==="en"?".":",");
   const tb=g/s[1];if(tb>=.75)return `${fr(half(tb))} ${L("c. à soupe")}`;return `${fr(half(g/s[2]))} ${L("c. à café")}`}
-const qtyTxt=x=>{const m=String(x.qty||"").trim().match(/^(\d+(?:[.,]\d+)?)\s*g$/i),g=x.g||(m?+m[1].replace(",","."):0),ref=nuUnitRef(x);
+const qtyTxt0=x=>{const m=String(x.qty||"").trim().match(/^(\d+(?:[.,]\d+)?)\s*g$/i),g=x.g||(m?+m[1].replace(",","."):0),ref=nuUnitRef(x);
   if(ref&&g>0)return `${fmtN(g/ref.g)} ${T3(g/ref.g===1?"pièce":"pièces",g/ref.g===1?"piece":"pieces")} (≈ ${fmtN(g)} g)`;
   const sp=g?spoonQty(x.name,g):"";return sp?`${sp} (${fmtFull(r0(g))} g)`:(x.qty||"")};
+const qtyTxt=x=>qtyTxt0(x)+(x.weight_state==="cooked"?" · "+L("cuit"):x.weight_state==="raw"?" · "+L("cru"):"")+(x.estimated?" · "+L("estimation"):"");
 // le serveur connaît les créneaux classiques : le repas unique part comme un déjeuner, avec son propre nom
 const srvSlot=s=>s==="meal"?"lunch":s;
 // la toute première génération peut échouer (serveur qui démarre, réponse vide) : on réessaie une fois tout seul
@@ -5611,18 +5703,22 @@ async function nuRetry(fn,ok){let last;for(let a=0;a<2;a++){try{const r=await fn
   if(a===0)await new Promise(r=>setTimeout(r,1200))}throw last}
 // demande à Claude un ou plusieurs repas (calories précises par repas)
 async function genMeals(slots,kcals){
-  const n=NU(),mp=nuMP(),t=dayTarget(iso(today())),tot=kcals.reduce((a,b)=>a+b,0)||1,k=tot/t.kcal,one=slots.length===1;
-  const notes=[n.profile&&n.profile.notes,slots[0]==="meal"&&one?"Un seul repas dans la journée (OMAD) : il doit couvrir tous les besoins du jour.":"",
-    "Huiles, beurre, miel et sauces : indique la quantité en grammes, elle sera affichée en cuillères.",
-    "Donne toujours le poids des aliments crus (avant cuisson) : riz, pâtes, viande, poisson, légumineuses… et écris « cru » dans le nom quand c'est utile."].filter(Boolean).join(" ");
-  const pty=one&&mp.type!=="day"?mp.type:one&&mp.pp&&mp.pp[slots[0]]?slots[0]:"day";
-  const r=await nuRetry(()=>nuCall("menu",{data:{meal_type:one&&mp.type!=="day"?srvSlot(slots[0]):"day",meals:slots.map((s,i)=>({slot:srvSlot(s),name:L(slotName(s)),kcal:kcals[i]})),
-    target_kcal:tot,protein_g:r0(t.p*k),carbs_g:r0(t.c*k),fat_g:r0(t.f*k),must_include:mpPref(mp,pty,"include"),avoid:mpPref(mp,pty,"exclude"),goal:n.profile&&n.profile.goal,notes}}),
-    r=>r&&Array.isArray(r.meals)&&r.meals.some(m=>m&&Array.isArray(m.items)&&m.items.length));
-  const meals=(r.meals||[]).filter(m=>m&&Array.isArray(m.items)&&m.items.length).map((m,i)=>({slot:slots[i]||slots[slots.length-1],target:kcals[i]||kcals[kcals.length-1],name:String(m.name||""),em:String(m.emoji||"🍽️"),
-    steps:recipeSteps(m.steps||m.recipe||m.instructions),
-    items:(m.items||[]).map(x=>({name:String(x.food||x.name||""),em:String(x.emoji||""),g:r0(x.grams),qty:r0(x.grams)+" g",kcal:r0(x.kcal),p:r1(x.protein_g),c:r1(x.carbs_g),f:r1(x.fat_g)}))}));
-  return{meals,tips:String(r.tips||"")};
+  const mp=JSON.parse(JSON.stringify(nuMP())),ty=mp.type,account=sbUid();
+  let references="";try{const foods=await ciqualFoods();references=foods.filter(x=>/riz basmati, cuit|poulet, filet sans peau grill|boeuf, steak haché.*cuit|pomme de terre.*frite.*four/i.test(x.name)).slice(0,8).map(x=>`${x.name} (Ciqual ${x.code}) : pour 100 g, ${x.kcal} kcal, P ${x.p}, G ${x.c}, L ${x.f}`).join(" ; ")}catch{}
+  if(account!==sbUid())throw new Error(L("Reconnecte-toi pour utiliser Sid'Bot."));
+  const request=nutritionMenu.request({id:uid(),date:iso(today()),weighing_mode:mpPref(mp,ty,"weighing_mode")||"unspecified",
+    budget_kind:ty==="day"?(mp.budget_kind||"day"):"meal",meals:slots.map((slot,i)=>({slot,name:L(slotName(slot)),kcal:kcals[i]})),
+    must_include:mpPref(mp,ty,"include"),avoid:mpPref(mp,ty,"exclude"),notes:((NU().profile?.notes||"")+" Références de composition (seulement si cet aliment et cette cuisson conviennent) : "+references).slice(0,2000)});
+  // Durable until confirmation; clearing the form never changes this snapshot.
+  NU().menuRequest=request;NU().upd=Date.now();save();
+  throw aiNeed("menu",{menuRequest:request});
+}
+function nuSaveMenu(p){
+  try{const n=NU(),r=n.menuRequest;if(!r)return false;const g=nutritionMenu.menu(p,r),at=new Date().toISOString();
+    if(r.budget_kind!=="meal"||!n.menu?.meals)n.menu={meals:g.meals,tips:g.tips,at};
+    else{for(const m of g.meals){const i=n.menu.meals.findIndex(x=>x.slot===m.slot);if(i<0)n.menu.meals.push(m);else n.menu.meals[i]=m}n.menu.at=at;n.menu.tips=g.tips}
+    delete n.menuRequest;mpWipe(nuMP());n.upd=Date.now();save();renderNuMenu();return true;
+  }catch{return false}
 }
 // étapes de recette : liste, ou texte « 1. … 2. … » découpé
 function recipeSteps(v){if(!v)return null;if(Array.isArray(v))return v.map(x=>String(x&&x.text||x).trim()).filter(Boolean);
@@ -5647,11 +5743,7 @@ $("nuMenuBtn").addEventListener("click",async()=>{
   // v43 (demande de Sid) : « à inclure » / « à éviter » ne servent qu'à cette demande ; ils repartent vides ensuite
   // v74.5 (relu par Codex) : après l'attente, la synchro a pu remplacer data.nutri : on relit toujours NU() / nuMP() au moment d'écrire
   const ty=mp.type,mpClear=()=>{mpWipe(nuMP());$("nuInclude").value="";$("nuExclude").value="";autoGrow($("nuInclude"));autoGrow($("nuExclude"));NU().upd=Date.now();save()};
-  try{const g=await genMeals(slots,kcals);mpClear();const n=NU(),at=new Date().toISOString();
-    if(ty==="day"||!n.menu||!n.menu.meals)n.menu={meals:g.meals,tips:g.tips,at};
-    else{const i=n.menu.meals.findIndex(m=>m.slot===ty);if(i>=0)n.menu.meals[i]=g.meals[0];else n.menu.meals.push(g.meals[0]);n.menu.at=at}
-    nuMenuSeen=at;n.upd=Date.now();save();toast("Menu prêt");
-  }catch(ex){toast(nuErrMsg(ex));if(ex.ai)mpClear()}
+  try{await genMeals(slots,kcals)}catch(ex){toast(nuErrMsg(ex));if(ex.ai)mpClear()}
   stop();nuBusy="";btn.disabled=false;renderNuMenu();
   const f=$("nuMenu").querySelector(".dish");if(f)f.scrollIntoView({behavior:"smooth",block:"start"});
 });
@@ -5705,8 +5797,7 @@ $("nuMenu").addEventListener("click",async e=>{const b=e.target.closest("button"
   if(b.dataset.meregen&&!nuBusy){const i=+b.dataset.meregen,ml=M.meals[i];nuBusy="regen";meRegen=i;if(nuIsl("nuMenu")&&$("nuMenu")._isl)renderNuMenu();else b.innerHTML=`<span class="spin"></span>`;
     // v74.5 : comme pour le menu, « à inclure » / « à éviter » sont vidés une fois l'idée générée (ou confiée à Claude)
     const wipe=()=>{mpWipe(nuMP());["nuInclude","nuExclude"].forEach(id=>{$(id).value="";autoGrow($(id))});NU().upd=Date.now();save()};
-    try{const g=await genMeals([ml.slot||"lunch"],[ml.target||ml.kcal]);const cm=NU().menu; // menu courant (la synchro a pu le remplacer pendant l'attente)
-      if(g.meals[0]&&cm&&Array.isArray(cm.meals)&&cm.meals[i])cm.meals[i]=g.meals[0];wipe();toast("Nouvelle idée prête")}catch(ex){toast(nuErrMsg(ex));if(ex.ai)wipe()}
+    try{await genMeals([ml.slot||"lunch"],[ml.target||ml.kcal])}catch(ex){toast(nuErrMsg(ex));if(ex.ai)wipe()}
     nuBusy="";meRegen=null;renderNuMenu()}
 });
 $("nuMenu").addEventListener("keydown",e=>{if(e.target.id==="meQtyIn"&&e.key==="Enter"){e.preventDefault();const[i,j]=meEdit.split(":").map(Number);meScale(i,j,e.target.value);meEdit=null;renderNuMenu()}});

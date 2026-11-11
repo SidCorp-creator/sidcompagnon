@@ -12,3 +12,7 @@ for(const [p,value] of [['app/src/shell/23b-programme-moteur.js',shell],['supaba
  if(process.argv.includes('--check')){if(read(p)!==value)throw Error('Stale generated file: '+p)}else writeFileSync(new URL(p,root),value)
 }
 console.log('Muscu rules/catalogue '+(process.argv.includes('--check')?'match':'generated'));
+
+const nutrition=read('supabase/functions/_shared/nutrition-menu.js');
+const nutritionShell='// @ts-nocheck\n// Generated: edit supabase/functions/_shared/nutrition-menu.js.\n'+nutrition.replace('export function createNutritionMenu','function createNutritionMenu')+'\nconst nutritionMenu=createNutritionMenu();\n';
+if(process.argv.includes('--check')){if(read('app/src/shell/39b-menu-contrat.js')!==nutritionShell)throw Error('Stale nutrition contract')}else writeFileSync(new URL('app/src/shell/39b-menu-contrat.js',root),nutritionShell);

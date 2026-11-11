@@ -1,0 +1,50 @@
+// Offline model transport; real UI, shared Edge validation, catalogue and persistence.
+const {chromium}=require('../app/node_modules/playwright'),assert=require('node:assert/strict');
+const core=require('./sidbot-loader.cjs');
+(async()=>{const browser=await chromium.launch();try{for(const [width,fallback] of [[390,false],[1280,true]]){
+ const page=await browser.newPage({viewport:{width,height:900}}),errors=[];page.on('pageerror',e=>(errors.push(e.message),console.error(e.stack)));
+ await page.addInitScript(f=>{window.__noIntro=true;window.__noIslands=f},fallback);
+ let sent;
+ await page.route('**/functions/v1/sidbot',async route=>{
+  sent=route.request().postDataJSON();const b=core.validateRequest(sent),r=b.context.menu_request;
+  const meals=r.meals.map(m=>({slot:m.slot,name:m.name,items:r.meals.length===1?[
+   {name:'Wrap',g:80,kcal:240,p:8,c:40,f:5,weight_state:'unspecified'},
+   {name:'Viande hachée cuite au four',g:150,kcal:330,p:35,c:0,f:21,weight_state:'cooked'},
+   {name:'Frites au four',g:200,kcal:323,p:5,c:58,f:8,weight_state:'cooked'},
+   {name:'Huile',g:10,kcal:90,p:0,c:0,f:10,weight_state:'unspecified'}
+  ]:[{name:'Riz basmati cuit',g:200,kcal:m.kcal,p:10,c:80,f:10,weight_state:'cooked'}]}));
+  const out=core.validateResult({reply:'Aperçu : vérifie avant de confirmer.',actions:[{type:'save_menu',label:'Menu',payload:{request_id:r.id,meals}}]},'forme',b.context);
+  await route.fulfill({json:out});
+ });
+ await page.goto('http://localhost:'+(process.env.SID_SITE_PORT||8766));
+ await page.fill('#aName','Nutrition v83');await page.fill('#aEmail',`v83-${width}-${Date.now()}@test.be`);await page.fill('#aPw','secret11');await page.fill('#aPw2','secret11');await page.check('#aAgree');await page.click('#aBtn');await page.click('#onbSkip');
+ await page.evaluate(()=>{data.nutri={consent:new Date().toISOString(),profile:{notes:'',goal:'maintain'},plan:{kcal:2400,p:140,c:280,f:80,bmr:1700,tdee:2400,warn:[]},log:[]};data.ui.nuTab='menu';show('nutri')});
+ await page.click('[data-mtype="dinner"]');await page.evaluate(()=>{nuMP().one.dinner=983;renderMenuForm()});await page.selectOption('#nuWeighingMode','cooked');
+ await page.fill('#nuInclude','wrap, viande hachée cuite au four, frites au four');await page.click('#nuMenuBtn');await page.waitForSelector('#sbSheet:not([hidden])');
+ assert.match(await page.inputValue('#sbIn'),/APRÈS cuisson/);assert.match(await page.inputValue('#sbIn'),/983/);
+ assert.equal(await page.evaluate(()=>NU().menu?.meals?.length||0),0);assert.equal(await page.evaluate(()=>NU().log.length),0);
+ await page.click('#sbSend');await page.waitForSelector('[data-sbact]');
+ assert.equal(sent.task,'menu');assert.equal(sent.context.menu_request.meals.length,1);assert.equal(sent.context.menu_request.meals[0].kcal,983);
+ assert.match(await page.locator('.sb-acts').last().innerText(),/150 g · cuit · 330 kcal/);
+ assert.equal(await page.evaluate(()=>NU().menu?.meals?.length||0),0);
+ // Closing/reopening the bot does not save; snapshot and weighing preference remain durable.
+ await page.evaluate(()=>{sbClose();save()});await page.reload();await page.waitForFunction(()=>typeof NU==='function'&&NU().menuRequest);
+ assert.equal(await page.evaluate(()=>NU().menuRequest.weighing_mode),'cooked');
+ await page.evaluate(()=>sbOpen('forme'));await page.locator('[data-sbact]').last().click();
+ assert.equal(await page.evaluate(()=>NU().menu.meals.length),1);assert.equal(await page.evaluate(()=>NU().log.length),0);
+ assert.equal(await page.evaluate(()=>NU().menu.meals[0].items[1].weight_state),'cooked');
+ assert.equal(await page.evaluate(()=>NU().menuRequest||null),null);
+ // Two meals share the remaining allowance, never the whole daily target each.
+ await page.evaluate(()=>{sbClose();NU().log=[{id:uid(),day:iso(today()),kcal:1000}];const mp=nuMP();mp.type='day';mp.pick={breakfast:false,lunch:true,dinner:true};mp.snacks=0;mp.kcals=null;mp.budget_kind='remaining';mpSet(mp,'day','weighing_mode','cooked');data.ui.nuTab='menu';show('nutri');renderNutri()});
+ await page.click('#nuMenuBtn');await page.waitForSelector('#sbSheet:not([hidden])');await page.click('#sbSend');await page.waitForFunction(()=>sbMsgs('forme').filter(x=>x.role==='assistant').length===2);
+ assert.equal(sent.context.menu_request.budget_kind,'remaining');assert.equal(sent.context.menu_request.meals.length,2);assert.equal(sent.context.menu_request.meals.reduce((s,m)=>s+m.kcal,0),1400);
+ await page.locator('[data-sbact]').last().click();assert.equal(await page.evaluate(()=>NU().menu.meals.length),2);assert.equal(await page.evaluate(()=>NU().log.length),1);
+ // Single food natural text uses actual cooked Ciqual composition, no yield guess.
+ await page.evaluate(()=>{sbClose();NU().log=[];data.ui.nuTab='day';renderNutri()});await page.click('#nuMealAdd');
+ await page.fill('#nuAsk',"j'ai pesé 180 g de riz basmati cuit");await page.click('#nuAskBtn');await page.waitForFunction(()=>nuPending?.items?.length);
+ assert.equal(await page.evaluate(()=>nuPending.items[0].kcal),266);assert.equal(await page.evaluate(()=>nuPending.items[0].weight_state),'cooked');await page.click('#nuResult [data-nuadd]');
+ await page.click('#nuMealAdd');await page.fill('#nuAsk','180 g de poulet filet sans peau grillé');await page.click('#nuAskBtn');await page.waitForFunction(()=>nuPending?.items?.length);
+ assert.equal(await page.evaluate(()=>nuPending.items[0].kcal),254);await page.click('#nuResult [data-nuadd]');
+ assert.ok(await page.evaluate(()=>NU().log.every(x=>x.weight_state==='cooked'&&x.source.includes('Anses'))));
+ assert.deepEqual(errors,[]);await page.close();console.log(`nutrition v83 ${width}/${fallback?'fallback':'React'}: cooked rice + meat, 983 kcal preview/confirmation/reload, 2-meal remaining budget OK`);
+ }}finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});

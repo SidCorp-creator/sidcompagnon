@@ -1,3 +1,5 @@
+import { createNutritionMenu } from '../_shared/nutrition-menu.js';
+const nutritionMenu=createNutritionMenu();
 // Sid'note v38-v41 : fonction "mcp" : connecteur Sid'note pour l'IA de chacun (Claude, ChatGPT, Le Chat…) (protocole MCP, transport « Streamable HTTP », réponses JSON).
 // Adresse : https://<projet>.supabase.co/functions/v1/mcp/<clé>  — la clé est personnelle (créée dans Réglages > Mon IA),
 // seule son empreinte SHA-256 est gardée (table mcp_tokens, supabase/sql/mcp.sql). Verify JWT : OFF.
@@ -134,12 +136,13 @@ const FSTOP = new Set(["de", "du", "des", "d", "la", "le", "les", "l", "un", "un
 const foodKey = (s: string) => foldS(s).replace(/[^a-z0-9]+/g, " ").trim().split(" ").filter((w) => w && !FSTOP.has(w)).map((w) => (w.length > 3 && /[sx]$/.test(w) && !/ss$/.test(w) ? w.slice(0, -1) : w)).join(" ");
 async function learnFoods(items: Data[], lang: string) {
   for (const it of items) {
-    const g = Number(it.grams), k = foodKey(it.name);
+    const label=String(it.name)+(it.weight_state==="cooked"&&!/cuit|cooked|grill|poêl/i.test(it.name)?" cuit":it.weight_state==="raw"&&!/cru|raw/i.test(it.name)?" cru":"");
+    const g = Number(it.grams), k = foodKey(label);
     if (!(g > 0) || !k || !(Number(it.kcal) >= 0)) continue;
     const per = (x: unknown) => Math.round((Number(x) || 0) * 1000 / g) / 10;
     const key = `${lang}:${k}`;
     const { data: old } = await db.from("foods").select("key").eq("key", key).maybeSingle();
-    if (!old) await db.from("foods").insert({ key, name: String(it.name).slice(0, 80), emoji: String(it.emoji || "").slice(0, 8), kcal100: per(it.kcal), p100: per(it.protein_g), c100: per(it.carbs_g), f100: per(it.fat_g), unit_g: null, unit_label: null });
+    if (!old) await db.from("foods").insert({ key, name: label.slice(0, 80), emoji: String(it.emoji || "").slice(0, 8), kcal100: per(it.kcal), p100: per(it.protein_g), c100: per(it.carbs_g), f100: per(it.fat_g), unit_g: null, unit_label: null });
   }
 }
 const r0 = (x: unknown) => Math.round(Number(x) || 0);
@@ -161,11 +164,12 @@ function nutriDay(d: Data, day: string) {
   const t = dayTot(log), groups = new Map<string, Data[]>();
   for (const x of log) { const g = x.grp || x.id; groups.set(g, [...(groups.get(g) || []), x]); }
   let out = `Journée du ${dayName(day)} ${day}.\n`;
+  if(n.menuRequest)out+=`Menu prévu en attente de confirmation (request_id = id ; respecter repas, budgets, pesée ; appeler enregistrer_menu après accord seulement) : ${JSON.stringify(n.menuRequest)}\n`;
   out += pl.kcal ? `Objectif : ${fmtTot({ kcal: pl.kcal, p: pl.p, c: pl.c, f: pl.f })}.\n` : "Pas encore d'objectif : la personne peut le calculer dans Sid'note (Santé → Nutrition → profil).\n";
   if (n.profile && n.profile.goal) out += `Profil : ${n.profile.sex === "h" ? "homme" : "femme"}, ${n.profile.age} ans, ${n.profile.height} cm, ${n.profile.weight} kg, objectif ${({ gain: "prendre du poids", lose: "perdre du poids", maintain: "garder son poids" } as Data)[n.profile.goal] || n.profile.goal}${n.profile.notes ? `, notes : ${n.profile.notes}` : ""}.\n`;
   out += groups.size ? "Repas notés :\n" + [...groups.values()].map((g) => {
     const tt = dayTot(g), h = g[0].at ? new Intl.DateTimeFormat("fr-BE", { timeZone: "Europe/Brussels", hour: "2-digit", minute: "2-digit" }).format(new Date(g[0].at)) : "";
-    return `- ${h} ${g[0].gem || g[0].em || ""} ${g[0].gname || g[0].name} (${fmtTot(tt)}) : ${g.map((x) => `${x.name}${x.qty ? ` ${x.qty}` : ""}`).join(", ")} (id ${g[0].grp || g[0].id})`;
+    return `- ${h} ${g[0].gem || g[0].em || ""} ${g[0].gname || g[0].name} (${fmtTot(tt)}) : ${g.map((x) => `${x.name}${x.qty ? ` ${x.qty}` : ""}${x.weight_state==="cooked"?" (cuit)":x.weight_state==="raw"?" (cru)":""}`).join(", ")} (id ${g[0].grp || g[0].id})`;
   }).join("\n") : "Aucun repas noté.";
   out += `\nTotal : ${fmtTot(t)}.`;
   if (pl.kcal) out += `\nReste : ${fmtTot({ kcal: pl.kcal - t.kcal, p: (pl.p || 0) - t.p, c: (pl.c || 0) - t.c, f: (pl.f || 0) - t.f })}.`;
@@ -349,7 +353,7 @@ const TOOLS = [
           type: "array",
           items: {
             type: "object", required: ["name", "kcal", "protein_g", "carbs_g", "fat_g"],
-            properties: { name: { type: "string" }, emoji: { type: "string" }, quantity: { type: "string", description: "ex. 150 g, 2 œufs" }, grams: { type: "number", description: "Poids estimé en grammes" }, kcal: { type: "number" }, protein_g: { type: "number" }, carbs_g: { type: "number" }, fat_g: { type: "number" } },
+            properties: { name: { type: "string" }, emoji: { type: "string" }, quantity: { type: "string", description: "ex. 150 g, 2 œufs" }, grams: { type: "number", description: "Poids estimé en grammes" }, kcal: { type: "number" }, protein_g: { type: "number" }, carbs_g: { type: "number" }, fat_g: { type: "number" }, weight_state: { type: "string", enum: ["raw", "cooked", "unspecified"] }, cooking_method: { type: "string" }, source: { type: "string" }, estimated: { type: "boolean" }, yield_factor: { type: "number" }, yield_source: { type: "string" } },
           },
         },
       },
@@ -362,10 +366,11 @@ const TOOLS = [
   },
   {
     name: "enregistrer_menu",
-    description: "Enregistre dans Sid'note un menu que TU as composé (journée ou un seul repas), visible dans l'onglet Nutrition. Respecte l'objectif lu avec nutrition_journee. Poids crus, en grammes.",
+    description: "Enregistre dans Sid'note un menu que TU as composé (journée ou un seul repas), visible dans l'onglet Nutrition. Après aperçu et confirmation seulement. Respecte le nombre de repas et leurs budgets (un budget repas ne vaut pas le budget du jour), les aliments demandés et le mode de pesée choisi. Grammes et kcal pour chaque ingrédient, huiles et sauces comprises. Préfère Ciqual cuit pour les poids cuits ; rendement documenté et marqué estimation seulement à défaut. Ce menu prévu ne doit pas être noté comme consommé.",
     inputSchema: {
       type: "object", required: ["meals"],
       properties: {
+        request_id: { type: "string" },
         tips: { type: "string" },
         meals: {
           type: "array",
@@ -376,7 +381,7 @@ const TOOLS = [
               name: { type: "string" }, emoji: { type: "string" },
               steps: { type: "array", items: { type: "string" }, description: "Recette en étapes courtes (facultatif)" },
               items: { type: "array", items: { type: "object", required: ["name", "grams", "kcal", "protein_g", "carbs_g", "fat_g"],
-                properties: { name: { type: "string" }, emoji: { type: "string" }, grams: { type: "number" }, kcal: { type: "number" }, protein_g: { type: "number" }, carbs_g: { type: "number" }, fat_g: { type: "number" } } } },
+                properties: { name: { type: "string" }, emoji: { type: "string" }, grams: { type: "number" }, kcal: { type: "number" }, protein_g: { type: "number" }, carbs_g: { type: "number" }, fat_g: { type: "number" }, weight_state: { type: "string", enum: ["raw", "cooked", "unspecified"] }, cooking_method: { type: "string" }, source: { type: "string" }, estimated: { type: "boolean" }, yield_factor: { type: "number" }, yield_source: { type: "string" }, } } },
             },
           },
         },
@@ -779,7 +784,7 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
       const name = String(a.meal_name || items[0].name).trim().slice(0, 80), em = String(a.emoji || "🍽️").slice(0, 8);
       const out: Data = await writeData(user, (d) => {
         const n = NU(d), grp = uid(), now = Date.now();
-        for (const x of items) n.log.push({ id: uid(), day, at, grp, gname: name, gem: em, name: String(x.name).trim().slice(0, 80), qty: String(x.quantity || "").slice(0, 40), em: String(x.emoji || "").slice(0, 8),
+        for (const x of items) n.log.push({ id: uid(), day, at, grp, gname: name, gem: em, name: String(x.name).trim().slice(0, 80), qty: String(x.quantity || "").slice(0, 40), ...nutritionMenu.weightMeta(x), ...(Number.isFinite(x.grams)&&x.grams>0?{g:x.grams}:{}), em: String(x.emoji || "").slice(0, 8),
           kcal: r0(x.kcal), p: r1n(x.protein_g), c: r1n(x.carbs_g), f: r1n(x.fat_g), upd: now, src: "ia" });
         return { txt: nutriDay(d, day), lang: d.prefs && ["en", "nl"].includes(d.prefs.lang) ? d.prefs.lang : "fr" };
       });
@@ -804,15 +809,12 @@ async function callTool(user: string, name: string, a: any, nameOf: string): Pro
       return `Repas retiré.\n\n${out}`;
     }
     case "enregistrer_menu": {
-      const SL = ["breakfast", "lunch", "snack", "dinner", "meal"];
-      const meals = (Array.isArray(a.meals) ? a.meals : []).filter((m: Data) => m && Array.isArray(m.items) && m.items.length).slice(0, 6).map((m: Data) => ({
-        slot: SL.includes(m.slot) ? m.slot : "lunch", name: String(m.name || "").slice(0, 80), em: String(m.emoji || "🍽️").slice(0, 8),
-        steps: Array.isArray(m.steps) ? m.steps.map((x: unknown) => String(x).slice(0, 300)).slice(0, 12) : null,
-        items: m.items.slice(0, 20).map((x: Data) => ({ name: String(x.name || "").slice(0, 80), em: String(x.emoji || "").slice(0, 8), g: r0(x.grams), qty: r0(x.grams) + " g", kcal: r0(x.kcal), p: r1n(x.protein_g), c: r1n(x.carbs_g), f: r1n(x.fat_g) })),
-      }));
-      if (!meals.length) throw new Error("Le menu est vide.");
+      // Same bounds and field preservation as Sid'Bot and the browser; legacy requests default to unspecified.
+      const initial=nutritionMenu.menu(a);
+      let meals=initial.meals;
       await writeData(user, (d) => {
         const n = NU(d), at = new Date().toISOString();
+        if(n.menuRequest){meals=nutritionMenu.menu(a,n.menuRequest).meals;delete n.menuRequest;}
         if (meals.length > 1 || !n.menu || !Array.isArray(n.menu.meals)) n.menu = { meals, tips: String(a.tips || ""), at };
         else { const i = n.menu.meals.findIndex((m: Data) => m.slot === meals[0].slot); if (i >= 0) n.menu.meals[i] = meals[0]; else n.menu.meals.push(meals[0]); n.menu.at = at; }
         // v16 (Sid'compagnon 74.5, demande de Sid) : menu généré → « à inclure » / « à éviter » vidés (comme mpWipe dans l'app)

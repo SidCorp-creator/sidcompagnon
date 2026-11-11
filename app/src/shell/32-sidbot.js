@@ -17,7 +17,7 @@ const SB_ERR={auth:"Reconnecte-toi pour utiliser Sid'Bot.",quota:"Le quota gratu
   trial:"Mode essai : crée ton compte pour utiliser Sid'Bot."};
 // compatibilité : plus aucune IA externe à brancher (anciennes préférences ai / aiOk / aiConv laissées telles quelles dans les données)
 const AIS={},aiCur=()=>null;
-let sbApp="journee",sbBusy=false,sbImg=null,sbCtl=null,sbUse={},sbShare={};
+let sbApp="journee",sbBusy=false,sbImg=null,sbCtl=null,sbUse={},sbShare={},sbMenuRequest=null;
 const sbUid=()=>(session&&session.user&&session.user.id)||"anon",sbKey=u=>"sidnote-sidbot-"+(u||sbUid());
 function sbHist(u){try{const h=JSON.parse(ls.get(sbKey(u))||"{}");return h&&typeof h==="object"?h:{}}catch(e){return {}}}
 function sbSave(h,u){try{ls.set(sbKey(u),JSON.stringify(h))}catch(e){}}
@@ -40,7 +40,7 @@ function sbCtxParts(app){
     const pl=typeof PL==="function"?PL():null,pr=(pl&&pl.profile)||{};
     return [{k:"nutrition",label:"Ta nutrition du jour",on:true,v:{goal,totals:{kcal:Math.round(tot.kcal),p:Math.round(tot.p),c:Math.round(tot.c),f:Math.round(tot.f)},meals}},
       {k:"weights",label:"Tes 5 dernières pesées",on:false,v:weights},
-      {k:"muscu",label:"Ton programme de musculation",on:true,v:{goal:pr.goal||"",days:pr.days||null,minutes:pr.dur||null,name:pl&&pl.name?String(pl.name).slice(0,80):""}}]}
+      {k:"muscu",label:"Ton programme de musculation",on:true,v:{goal:pr.goal||"",days:pr.days||null,minutes:pr.dur||null,name:pl&&pl.name?String(pl.name).slice(0,80):""}},...(sbMenuRequest&&n.menuRequest?.id===sbMenuRequest.id?[{k:"menu_request",label:"Le menu demandé",on:true,v:sbMenuRequest}]:[])]}
   if(app==="note"){const n=typeof noteOpenId!=="undefined"&&noteOpenId&&typeof noteFind==="function"?noteFind(noteOpenId):null;
     // une note secrète n'est jamais jointe, même déverrouillée
     if(n&&!n.secret&&!$("noteEdit").hidden)return [{k:"note",sk:"note:"+n.id,label:"La note ouverte",on:false,v:(()=>{const ti=String(n.title||""),bo=String(n.body||""),complete=ti.length<=200&&bo.length<=8000;return {title:ti.slice(0,200),body:bo.slice(0,complete?8000:6000),complete}})()}]; // v78 : complete=true seulement si la note entière part (sinon pas de modification possible)
@@ -51,21 +51,22 @@ const sbSK=(app,p)=>sbUid()+":"+app+":"+(p.sk||p.k);
 function sbContext(app){const out={today:iso(today())};for(const p of sbCtxParts(app))if(sbShare[sbSK(app,p)]??p.on)out[p.k]=p.v;return out}
 // ---- ouverture ----
 function sbOpen(app,opt){opt=opt||{};if(app==="note"){ncOpen(opt.prompt);return} // v81 : Sid'Note → Claude (connecteur), sans la clé de Sid'Bot
-  sbApp=SB_APPS[app]?app:"journee";sbImg=opt.img||null;
+  sbMenuRequest=opt.menuRequest||null;sbApp=SB_APPS[app]?app:"journee";sbImg=opt.img||null;
   $("sbSheet").hidden=false;sbRender();
   const i=$("sbIn");if(opt.prompt){i.value=opt.prompt;grow(i);if(opt.send){sbSend();return}}
   setTimeout(()=>{if(!matchMedia("(pointer:coarse)").matches)i.focus({preventScroll:true})},80)}
 function sbClose(){$("sbSheet").hidden=true;if(sbCtl){try{sbCtl.abort()}catch(e){}}}
 // anciens points d'entrée (Agenda, Musculation, Nutrition, Notes) : la demande arrive dans Sid'Bot, déjà écrite, envoyée d'un toucher
-function aiHandoff(prompt,topic,opt){sbOpen(SB_TOPIC[topic]||sbAppOfView(data.ui.view),{prompt,img:opt&&opt.img,send:!!(opt&&opt.send)})}
+function aiHandoff(prompt,topic,opt){sbOpen(SB_TOPIC[topic]||sbAppOfView(data.ui.view),{prompt,img:opt&&opt.img,send:!!(opt&&opt.send),menuRequest:opt&&opt.menuRequest})}
 function aiGo(topic,prompt,quiet){aiHandoff(prompt,topic);return ""}
 const convUrl=()=>"",convTabs=()=>{},renderConv=()=>{};
 function aiWizard(){sbOpen(sbAppOfView(data.ui.view))}
 function renderAiCards(){const c=$("nuAiCard");if(c)c.hidden=true;const st=$("sbState");if(st)st.textContent=sbUse.limit?`${L("Aujourd'hui")} : ${sbUse.used} / ${sbUse.limit} ${L("demandes")}`:""}
 // ---- affichage ----
+function sbMenuPreview(a){return (a.payload.meals||[]).map(m=>`<b>${esc(m.name)} · ${Math.round(m.items.reduce((t,x)=>t+x.kcal,0))} kcal</b><br>${m.items.map(x=>`${esc(x.name)} · ${esc(qtyTxt(x))} · ${Math.round(x.kcal)} kcal${x.yield_source?" · "+esc(x.yield_source):""}`).join("<br>")}`).join("<br><br>")}
 function sbBubble(m){if(m.role==="user")return `<div class="sb-msg me notr">${esc(m.content)}${m.img?`<span class="sb-att">${IC("image")||""} ${L("Photo jointe")}</span>`:""}</div>`;
   if(m.role==="error")return `<div class="sb-msg err" role="alert">${IC("alert")||""}<span>${esc(L(m.content))}</span>${m.retry?`<button type="button" class="linkbtn" data-sbretry="1">${L("Réessayer")}</button>`:""}</div>`;
-  const acts=(m.actions||[]).map((a,i)=>`<div class="sb-act" data-done="${a.done?1:0}"><span class="grow notr">${esc(a.label||sbActLabel(a))}</span>${a.done?`<span class="sb-ok">${IC("tick")||""}${L(a.type==="edit_note"?"Note modifiée":a.type==="share_note_pdf"?"Exporté":"Ajouté")}</span>`:`<button type="button" class="btn ghost sm" data-sbact="${m.id}:${i}">${L(sbActVerb(a))}</button>`}</div>${sbOpenDiff===m.id+":"+i&&!a.done?sbDiff(m,a,i):""}`).join("");
+  const acts=(m.actions||[]).map((a,i)=>`<div class="sb-act" data-done="${a.done?1:0}"><span class="grow notr">${a.type==="save_menu"?sbMenuPreview(a):esc(a.label||sbActLabel(a))}</span>${a.done?`<span class="sb-ok">${IC("tick")||""}${L(a.type==="save_menu"?"Menu enregistré":a.type==="edit_note"?"Note modifiée":a.type==="share_note_pdf"?"Exporté":"Ajouté")}</span>`:`<button type="button" class="btn ghost sm" data-sbact="${m.id}:${i}">${L(sbActVerb(a))}</button>`}</div>${sbOpenDiff===m.id+":"+i&&!a.done?sbDiff(m,a,i):""}`).join("");
   return `<div class="sb-msg bot"><div class="notr">${esc(m.content).replace(/\n/g,"<br>")}</div>${acts?`<div class="sb-acts">${acts}</div>`:""}</div>`}
 function sbRender(){const A=SB_APPS[sbApp],msgs=sbMsgs(sbApp);
   $("sbTitle").textContent=SB_NAME;$("sbSub").textContent=`${L("Avec")} ${A.label}`;
@@ -83,8 +84,8 @@ function sbRender(){const A=SB_APPS[sbApp],msgs=sbMsgs(sbApp);
   $("sbSend").disabled=sbBusy;$("sbClear").hidden=!msgs.length;renderAiCards()}
 function sbSuggest(app){return app==="journee"?["Qu'est-ce que j'ai de prévu cette semaine ?","Aide-moi à organiser ma journée"]:
   app==="forme"?["Que manger ce soir pour compléter ma journée ?","Explique-moi mon programme"]:["Corrige les fautes de la note ouverte","Résume la note ouverte","Exporte la note ouverte en PDF"]}
-const sbActVerb=a=>a.type==="add_task"?"Ajouter à l'agenda":a.type==="add_note"?"Créer la note":a.type==="log_meal"?"Ajouter au repas":a.type==="edit_note"?"Voir la modification":a.type==="share_note_pdf"?"Exporter en PDF":"Appliquer";
-const sbActLabel=a=>{const p=a.payload||{};return a.type==="add_task"?`${p.title||""} · ${p.date||""}${p.time?" "+p.time:""}`:a.type==="add_note"?String(p.title||""):a.type==="edit_note"?L("Modifier la note ouverte"):a.type==="share_note_pdf"?L("La note ouverte, en PDF"):a.type==="log_meal"?`${p.name||""} · ${Math.round((p.items||[]).reduce((t,x)=>t+(+x.kcal||0),0))} kcal`:String(p.name||p.title||"")};
+const sbActVerb=a=>a.type==="add_task"?"Ajouter à l'agenda":a.type==="add_note"?"Créer la note":a.type==="save_menu"?"Enregistrer le menu":a.type==="log_meal"?"Ajouter au repas":a.type==="edit_note"?"Voir la modification":a.type==="share_note_pdf"?"Exporter en PDF":"Appliquer";
+const sbActLabel=a=>{const p=a.payload||{};if(a.type==="save_menu")return (p.meals||[]).map(m=>m.name+" : "+(m.items||[]).map(x=>`${x.name} ${qtyTxt(x)} (${x.kcal} kcal)`).join(", ")+" · "+Math.round((m.items||[]).reduce((t,x)=>t+x.kcal,0))+" kcal").join(" ; ");return a.type==="add_task"?`${p.title||""} · ${p.date||""}${p.time?" "+p.time:""}`:a.type==="add_note"?String(p.title||""):a.type==="edit_note"?L("Modifier la note ouverte"):a.type==="share_note_pdf"?L("La note ouverte, en PDF"):a.type==="log_meal"?`${p.name||""} · ${Math.round((p.items||[]).reduce((t,x)=>t+(+x.kcal||0),0))} kcal`:String(p.name||p.title||"")};
 // ---- envoi ----
 async function sbSend(retry){if(sbBusy)return;const i=$("sbIn");let text=i.value.trim();const app=sbApp,uid0=sbUid(),same=()=>sbUid()===uid0;
   if(retry){const last=sbMsgs(app,uid0).filter(m=>m.role==="user").pop();if(!last)return;text=last.content}
@@ -104,7 +105,7 @@ async function sbSend(retry){if(sbBusy)return;const i=$("sbIn");let text=i.value
     const noteRef=ctx.note&&typeof noteOpenId!=="undefined"&&noteOpenId?noteOpenId:null,noteN=noteRef?noteFind(noteRef):null,noteVer=noteN?noteN.upd||0:0; // v78 : seule la note jointe, dans sa version envoyée
     const r=await fetch(SUPABASE_URL+"/functions/v1/sidbot",{method:"POST",signal:ctl.signal,
       headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json",Authorization:"Bearer "+jwt},
-      body:JSON.stringify({app,locale:LANG==="en"?"en":"fr",messages:hist,context:ctx})});
+      body:JSON.stringify({app,task:ctx.menu_request?"menu":"chat",locale:LANG==="en"?"en":"fr",messages:hist,context:ctx})});
     clearTimeout(tm);let j=null;try{j=await r.json()}catch(e){}
     if(!same()){sbBusy=false;return} // compte changé pendant la demande : la réponse est ignorée
     if(j&&j.usage)sbUse=j.usage;
@@ -117,6 +118,7 @@ async function sbSend(retry){if(sbBusy)return;const i=$("sbIn");let text=i.value
 // ---- actions proposées : validées ici, appliquées seulement après un toucher ----
 const SB_D=/^\d{4}-\d{2}-\d{2}$/,SB_T=/^([01]\d|2[0-3]):[0-5]\d$/;
 function sbActOk(a){if(!a||typeof a!=="object"||!a.payload||typeof a.payload!=="object")return false;const p=a.payload;
+  if(a.type==="save_menu"){try{if(!NU().menuRequest)return false;nutritionMenu.menu(p,NU().menuRequest);return true}catch{return false}}
   if(a.type==="add_task")return typeof p.title==="string"&&p.title.trim()&&SB_D.test(p.date||"")&&(!p.time||SB_T.test(p.time));
   if(a.type==="add_note")return typeof p.title==="string"&&typeof (p.body??"")==="string";
   if(a.type==="edit_note")return typeof p.body==="string"&&p.body.length<=8000&&(p.title===undefined||(typeof p.title==="string"&&p.title.length<=300));
@@ -126,6 +128,7 @@ function sbActOk(a){if(!a||typeof a!=="object"||!a.payload||typeof a.payload!=="
     Array.isArray(p.items)&&p.items.length>0&&p.items.length<=30&&p.items.every(x=>x&&typeof x.name==="string"&&x.name.trim()&&["kcal","p","c","f"].every(k=>Number.isFinite(+x[k])&&+x[k]>=0&&+x[k]<1e4));
   return false}
 function sbApply(a){const p=a.payload;
+  if(a.type==="save_menu"){const ok=nuSaveMenu(p);if(ok){sbMenuRequest=null;toast(L("Menu enregistré"))}return ok}
   if(a.type==="add_task"){const t={id:uid(),title:p.title.trim().slice(0,200),date:p.date,status:"à faire",tbc:false,cat:""};if(p.time)t.time=p.time;
     data.tasks.push(t);save();renderPlan();toast(`${L("Ajouté à l'agenda")} : ${t.title}`);return true}
   if(a.type==="add_note"){const n={id:uid(),title:p.title.trim().slice(0,200),body:String(p.body||"").slice(0,20000),createdAt:new Date().toISOString(),upd:Date.now()};
@@ -196,7 +199,7 @@ $("mcpList").addEventListener("click",async e=>{const b=e.target.closest("[data-
   try{await api("/rest/v1/mcp_tokens?hash=eq."+encodeURIComponent(b.dataset.mcpdel),{method:"DELETE",token:await token()});toast("Adresse retirée");mcpLoad()}
   catch(ex){toast("Impossible pour l'instant")}});
 // v76 (revue Codex) : à la déconnexion ou au changement de compte, la demande en cours est annulée et les choix de partage oubliés
-let sbLastUid=null;setInterval(()=>{const u=sbUid();if(sbLastUid!==null&&u!==sbLastUid){if(sbCtl){try{sbCtl.abort()}catch(e){}}sbBusy=false;sbShare={};sbUse={};if(!$("sbSheet").hidden)sbClose();ncClose();ncReset()}sbLastUid=u},1000);
+let sbLastUid=null;setInterval(()=>{const u=sbUid();if(sbLastUid!==null&&u!==sbLastUid){if(sbCtl){try{sbCtl.abort()}catch(e){}}sbBusy=false;sbShare={};sbMenuRequest=null;sbUse={};if(!$("sbSheet").hidden)sbClose();ncClose();ncReset()}sbLastUid=u},1000);
 
 /* ---------- v81 (demande de Sid) : depuis Sid'Note, Sid'Bot redirige vers Claude, comme avant la v76 ----------
    Plus aucun appel à la fonction « sidbot » (ni à sa clé API) depuis Sid'Note. Claude lit et modifie les notes par le connecteur

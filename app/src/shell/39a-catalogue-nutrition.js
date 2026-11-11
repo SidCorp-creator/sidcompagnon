@@ -7,7 +7,7 @@ function ciqualFoods(){
     if(!response.ok)throw new Error("Ciqual");
     return response.json();
   }).then(data=>data.foods.map(([code,name,kcal,p,c,f])=>({
-    code,name,kcal,p,c,f,basis:"100g",source:CIQUAL_SOURCE,key:nz(name).replace(/œ/g,"oe")
+    code,name,kcal,p,c,f,weight_state:nutritionMenu.inferState(name),basis:"100g",source:CIQUAL_SOURCE,key:nz(name).replace(/œ/g,"oe")
   }))).catch(error=>{ciqualRequest=null;throw error}));
 }
 
@@ -107,7 +107,7 @@ $("foodCatalogPortion").addEventListener("submit",e=>{
   const food=catalogFood,amount=$("foodCatalogAmount").valueAsNumber;
   if(!food||!Number.isFinite(amount)||amount<=0||nuBusy)return;
   const ratio=amount/100,unit=catalogUnit(food);
-  const item={name:food.name,qty:`${amount} ${unit}`,kcal:r0(food.kcal*ratio),p:r1(food.p*ratio),
+  const item={...nutritionMenu.weightMeta(food),name:food.name,qty:`${amount} ${unit}`,kcal:r0(food.kcal*ratio),p:r1(food.p*ratio),
     c:r1(food.c*ratio),f:r1(food.f*ratio),source:food.source,basis:food.basis,
     per100:{kcal:food.kcal,p:food.p,c:food.c,f:food.f}};
   nuPending={title:food.name,items:[item],note:food.source};
@@ -115,3 +115,19 @@ $("foodCatalogPortion").addEventListener("submit",e=>{
   renderNuResult();
   $("nuResult").scrollIntoView({block:"nearest"});
 });
+
+// Explicit, single-food weighed requests prefer the matching Ciqual cooking state.
+// No raw/cooked conversion and no guessed water or fat loss.
+async function nuLocalWeighed(text){
+  const state=nutritionMenu.inferState(text);if(state==="unspecified")return null;
+  const clean=String(text).replace(/^(?:j['’]ai\s+pesé|i\s+weighed)\s+/i,"");
+  const match=clean.match(/^(\d+(?:[.,]\d+)?)\s*(kg|g)\s+(?:de\s+|du\s+|of\s+)?(.+)$/i);
+  if(!match||/[,;+&]| et | and | avec | with /i.test(match[3]))return null;
+  const grams=+match[1].replace(",",".")*(match[2].toLowerCase()==="kg"?1000:1);if(!(grams>0&&grams<=20000))return null;
+  const query=match[3].replace(/\s*·.*$/,"").replace(/\b(?:après|avant) cuisson.*$/i,"").trim();
+  try{const choices=await ciqualSearch(query),food=choices.find(f=>f.weight_state===state);if(!food)return null;
+    const ratio=grams/100;return {dish:food.name,items:[{name:food.name,quantity:grams+" g",grams,
+      weight_state:state,source:food.source,basis:food.basis,per100:{kcal:food.kcal,p:food.p,c:food.c,f:food.f},
+      kcal:r0(food.kcal*ratio),protein_g:r1(food.p*ratio),carbs_g:r1(food.c*ratio),fat_g:r1(food.f*ratio)}],note:food.source};
+  }catch{return null}
+}

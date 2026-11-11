@@ -19,11 +19,12 @@ async function nuCall(kind,payload){payload=payload||{};
   if(!(await nuConsent()))throw new Error(L("Il faut ton accord pour utiliser Nutrition (données de santé)."));
   if(kind==="profil")return nuProfileLocal(payload.data||{});
   if(kind==="aliment"&&!payload.image&&String(payload.text||"").trim()){
+    const local=await nuLocalWeighed(payload.text);if(local)return local;
     if(!navigator.onLine)throw new Error(L("Pas de connexion internet"));
     const j=await api("/functions/v1/nutrition",{method:"POST",token:await token(),body:{kind,lang:LANG,text:payload.text}});
     if(j&&j.result){j.result._src="memory";return j.result}}
   throw aiNeed(kind,payload)}
-function aiNeed(kind,p){aiHandoff(aiPrompt(kind,p),"nutri",p&&p.image?{img:"data:image/jpeg;base64,"+p.image}:null);const e=new Error(L("Sid'Bot a reçu ta demande : vérifie sa proposition avant de l’ajouter."));e.ai=true;return e}
+function aiNeed(kind,p){aiHandoff(aiPrompt(kind,p),"nutri",{img:p&&p.image?"data:image/jpeg;base64,"+p.image:null,menuRequest:p&&p.menuRequest});const e=new Error(L("Sid'Bot a reçu ta demande : vérifie sa proposition avant de l’ajouter."));e.ai=true;return e}
 // profil : métabolisme (Mifflin-St Jeor), dépense avec le sport, objectif selon le rythme, macros (mêmes règles prudentes qu'avant)
 const SPORT_MET=/** @type {[RegExp,number][]} */([[/muscu|fitness|gym|halt|crossfit|weight|kracht/,5.5],[/course|running|jogg|run|lopen|hardlo/,9.8],[/v[eé]lo|cycl|bike|fiets|spinning/,7.5],[/nata|swim|zwem|piscine/,7],
   [/foot|basket|tennis|padel|hand|volley|rugby|hockey/,7],[/marche|walk|wandel|randon/,3.8],[/boxe|box|mma|judo|karat|combat|lutte/,9],[/yoga|pilates|stretch/,3],[/danse|dance|dans/,5.5]]);
@@ -57,15 +58,16 @@ function nuDayNote(){if(nuDay>=iso(today()))return "";const d=parse(nuDay),txt=`
 function aiPrompt0(kind,p){const d=(p&&p.data)||{};
   if(kind==="aliment"&&p.image)return T3("Je t'envoie la photo de mon assiette (je la joins). Estime ce que j'ai mangé et note-le après ma confirmation.","I'm sending you a photo of my plate (attached). Estimate what I ate and log it after my confirmation.");
   if(kind==="aliment")return T3(`Note après ma confirmation ce que j'ai mangé : ${p.text}`,`Log after my confirmation what I ate: ${p.text}`);
+  if(kind==="menu"&&p.menuRequest)return nutritionMenu.prompt(p.menuRequest,LANG==="en");
   if(kind==="menu"){const meals=(d.meals||[]).map(m=>`${m.name} (~${m.kcal} kcal)`).join(", "),inc=d.must_include,exc=d.avoid;
-    return T3(`lis ma journée nutrition, puis compose-moi ${(d.meals||[]).length>1?"un menu pour la journée":"un repas"} : ${meals}.${inc?` À inclure : ${inc}.`:""}${exc?` À éviter : ${exc}.`:""}${d.notes?` ${d.notes}`:""} Poids crus en grammes, puis enregistre le menu après ma confirmation.`,
-      `read my nutrition day, then make me ${(d.meals||[]).length>1?"a menu for the day":"a meal"}: ${meals}.${inc?` Include: ${inc}.`:""}${exc?` Avoid: ${exc}.`:""}${d.notes?` ${d.notes}`:""} Raw weights in grams, then save the menu after my confirmation.`)}
+    return T3(`lis ma journée nutrition, puis compose-moi ${(d.meals||[]).length>1?"un menu pour la journée":"un repas"} : ${meals}.${inc?` À inclure : ${inc}.`:""}${exc?` À éviter : ${exc}.`:""}${d.notes?` ${d.notes}`:""} Respecte le mode de pesée demandé, g et kcal par ingrédient, huiles et sauces comprises, puis enregistre le menu après ma confirmation.`,
+      `read my nutrition day, then make me ${(d.meals||[]).length>1?"a menu for the day":"a meal"}: ${meals}.${inc?` Include: ${inc}.`:""}${exc?` Avoid: ${exc}.`:""}${d.notes?` ${d.notes}`:""} Respect the requested weighing mode, grams and kcal for every ingredient including oils and sauces, then save the menu after my confirmation.`)}
   if(kind==="recette"){const f=(d.foods||[]).map(x=>`${x.food}${x.grams?` ${x.grams} g`:""}`).join(", ");
     return T3(`donne-moi la recette de « ${d.name} » (${f}), avec exactement ces aliments et ces quantités, puis ajoute les étapes à ce repas dans mon menu après confirmation.`,`give me the recipe for "${d.name}" (${f}) with exactly these foods and amounts, then add the steps to this meal in my menu after confirmation.`)}
   if(kind==="bilan")return p.scope==="week"?T3("fais le bilan nutrition de ma semaine (calories, macros, poids) : ce qui va bien, ce qui peut s'améliorer, et 2 ou 3 conseils concrets. Puis enregistre ce commentaire après ma confirmation pour que je le voie dans l'app.","review my nutrition week (calories, macros, weight): what went well, what could improve, and 2 or 3 concrete tips. Then save this review after my confirmation so I can see it in the app.")
     :T3("commente ma journée nutrition d'aujourd'hui et donne-moi 1 ou 2 conseils pour la suite. Puis enregistre ce commentaire après ma confirmation pour que je le voie dans l'app.","comment on my nutrition today and give me 1 or 2 tips for the rest of the day. Then save this comment after my confirmation so I can see it in the app.");
   return T3("aide-moi pour ma nutrition.","help me with my nutrition.")}
-const nuErrMsg=ex=>ex instanceof TypeError?L("Pas de connexion internet"):ex.status===404?L("La fonction « nutrition » n'est pas encore installée sur Supabase."):ex.message;
+const nuErrMsg=ex=>ex.message==="invalid_menu"?L("Vérifie les repas, leurs calories et le mode de pesée."):ex instanceof TypeError?L("Pas de connexion internet"):ex.status===404?L("La fonction « nutrition » n'est pas encore installée sur Supabase."):ex.message;
 // animation pendant que Claude travaille
 function nuLoading(el,msgs){const EM=[""];let i=0;
   el.innerHTML=`<div class="loadcard" role="status"><div class="load-em">${EM[0]}</div><div class="load-msg">${L(msgs[0])}</div><div class="load-bar"><i></i></div><div class="shim"></div><div class="shim" style="width:70%"></div></div>`;
@@ -251,7 +253,7 @@ function nuQtyRatio(x,q){const a=nuQtyGrams(x,x.qty),b=nuQtyGrams(x,q);
   const unit=t=>String(t||"").replace(/[0-9.,/½¼¾\s]/g,"").toLowerCase();
   return unit(x.qty)===unit(q)&&qtyNum(x.qty)>0?qtyNum(q)/qtyNum(x.qty):0
 }
-function nuQtyMeta(x){const ref=nuUnitRef(x),g=nuQtyGrams(x,x.qty);return {...(g>0?{g:r1(g)}:{}),...(ref?{unit_g:ref.g,unit_label:ref.label}:{})}}
+function nuQtyMeta(x){const ref=nuUnitRef(x),g=nuQtyGrams(x,x.qty);return {...nutritionMenu.weightMeta(x),...(g>0?{g:r1(g)}:{}),...(ref?{unit_g:ref.g,unit_label:ref.label}:{})}}
 function nuQtyHelp(x){const ref=nuUnitRef(x);if(!ref)return "";
   let label=String(ref.label||"").replace(/(?:,\s*)?(?:estimé(?:e)?|estimated|estimation)(?=[\s,;·]|$)/gi,"").replace(/[,;·\s]+$/g,"").trim();
   if(/^(?:moyen(?:ne)?|medium|grand(?:e)?|large|petit(?:e)?|small)$/.test(label.toLowerCase())){
@@ -364,7 +366,7 @@ const nz=x=>String(x||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
 function mentioned(q,name){const Q=nz(q),stems=nz(name).split(/[^a-z0-9]+/).filter(w=>w.length>=3&&!/^(les|des|une|avec|sans|aux|the|and|with|cuit|cuite|nature|frais|fraiche|maison)$/.test(w));
   return !stems.length||stems.some(w=>Q.includes(w.length>5?w.slice(0,5):w.replace(/[sx]$/,"")))}
 $("nuAskForm").addEventListener("submit",async e=>{
-  e.preventDefault();const q=$("nuAsk").value.trim();if((!q&&!nuPhoto)||nuBusy||!nutriAllowed())return;dictStop();
+  e.preventDefault();let q=$("nuAsk").value.trim();const state=$("nuFoodWeighingMode").value;if(state!=="unspecified"&&nutritionMenu.inferState(q)==="unspecified")q+=" · "+L(state==="cooked"?"Après cuisson (cuit)":"Avant cuisson (cru)");if((!q&&!nuPhoto)||nuBusy||!nutriAllowed())return;dictStop();
   if(nuPhoto&&nuDirect()){if(nuSending===nuPhoto)return; // v74.5 : pas de double envoi de la même photo
     if(NU().consent)return nuPhotoSend(q);const ph=nuPhoto;if(!(await nuConsent())||nuPhoto!==ph||nuSending===ph)return;return nuPhotoSend(q)}
   nuBusy="aliment";const btn=$("nuAskBtn");btn.disabled=true;nuPending=null;renderNuResult();
@@ -373,7 +375,7 @@ $("nuAskForm").addEventListener("submit",async e=>{
   // texte seul : le serveur (v23) ne compte que ce qui est écrit ; le texte est envoyé tel quel pour garder la mémoire des aliments
   try{const r=await nuRetry(()=>nuCall("aliment",{text:q,image:photo?photo.big.split(",")[1]:undefined}),r=>r&&Array.isArray(r.items)&&r.items.length);
     nuPending={q,mem:r._src==="memory",title:String(r.dish||q||L("Mon plat")),em:String(r.emoji||"🍽️"),note:String(r.note||""),photo:photo&&photo.small,
-      items:(r.items||[]).map(x=>({name:String(x.name||q),qty:String(x.quantity||""),em:String(x.emoji||""),g:+x.grams||undefined,unit_g:+x.unit_g||undefined,unit_label:x.unit_label||undefined,kcal:r0(x.kcal),p:r1(x.protein_g),c:r1(x.carbs_g),f:r1(x.fat_g)}))};
+      items:(r.items||[]).map(x=>({name:String(x.name||q),qty:String(x.quantity||""),em:String(x.emoji||""),...nutritionMenu.weightMeta({...x,weight_state:x.weight_state||nutritionMenu.inferState(x.name)}),...(x.per100?{basis:x.basis,per100:x.per100}:{}),g:+x.grams||undefined,unit_g:+x.unit_g||undefined,unit_label:x.unit_label||undefined,kcal:r0(x.kcal),p:r1(x.protein_g),c:r1(x.carbs_g),f:r1(x.fat_g)}))};
     if(!photo&&nuPending.items.length>1)nuPending.items.forEach(x=>x.extra=!mentioned(q,x.name));
     if(!nuPending.items.length){nuPending=null;toast("Aliment non reconnu, précise un peu")}
   }catch(ex){toast(nuErrMsg(ex));if(ex.ai){nuPhoto=null;nuPhotoPrevSet(null);$("nuAsk").value="";grow($("nuAsk"))}} // v43 : demande partie chez Claude → rien ne reste pré-rempli
@@ -419,7 +421,8 @@ $("nuLog").addEventListener("click",e=>{const b=e.target.closest("button");if(!b
 });
 // T16 B : les cinq entrées réutilisent leurs traitements, dans une même feuille.
 function nuMealClose(restore=true){if($("nuMealSheet").hidden)return;catalogReset();$("foodCatalogQuery").value="";$("foodCatalog").open=false;$("nuMealSheet").hidden=true;if(restore)$("nuMealAdd").focus({preventScroll:true})}
-$("nuMealAdd").addEventListener("click",()=>{$("nuMealSheet").hidden=false;$("nuMealSheet").querySelector('[role="dialog"]').focus({preventScroll:true})});
+$("nuFoodWeighingMode").addEventListener("change",()=>{NU().foodWeighingMode=$("nuFoodWeighingMode").value;NU().upd=Date.now();save()});
+$("nuMealAdd").addEventListener("click",()=>{$("nuFoodWeighingMode").value=NU().foodWeighingMode||"unspecified";$("nuMealSheet").hidden=false;$("nuMealSheet").querySelector('[role="dialog"]').focus({preventScroll:true})});
 $("nuMealClose").addEventListener("click",nuMealClose);
 $("nuMealSheet").addEventListener("click",e=>{if(e.target.id==="nuMealSheet")nuMealClose();if(e.target.closest("#nuManual")){$("nuSheet")._back=$("nuMealAdd");nuMealClose(false)}else if(e.target.closest("#nuAiLink"))nuMealClose()});
 $("nuMealSheet").addEventListener("keydown",e=>{const label=e.target.closest('label[role="button"]');if(label&&(e.key==="Enter"||e.key===" ")){e.preventDefault();label.querySelector('input').click()}});
@@ -431,6 +434,6 @@ function nuLogFromBot(p){
   if(!p.items.every(x=>x&&typeof x.name==="string"&&x.name.trim()&&typeof x.qty==="string"&&["kcal","p","c","f"].every(k=>typeof x[k]==="number"&&isFinite(x[k])&&x[k]>=0&&x[k]<=20000)&&
     (x.g===undefined||typeof x.g==="number"&&isFinite(x.g)&&x.g>=0&&x.g<=20000)&&(x.unit_g===undefined||typeof x.unit_g==="number"&&isFinite(x.unit_g)&&x.unit_g>0&&x.unit_g<=20000)))return false;
   const previous=nuDay;try{nuDay=p.date;nuAddItems(p.items.map(x=>({name:x.name.slice(0,300),qty:x.qty.slice(0,120),kcal:x.kcal,p:x.p,c:x.c,f:x.f,
-    ...(x.g!==undefined?{g:x.g}:{}),...(x.unit_g!==undefined?{unit_g:x.unit_g}:{}),...(typeof x.unit_label==="string"?{unit_label:x.unit_label.slice(0,160)}:{})})),p.time,{name:p.name.slice(0,300)})}
+    ...nutritionMenu.weightMeta(x),...(x.g!==undefined?{g:x.g}:{}),...(x.unit_g!==undefined?{unit_g:x.unit_g}:{}),...(typeof x.unit_label==="string"?{unit_label:x.unit_label.slice(0,160)}:{})})),p.time,{name:p.name.slice(0,300)})}
   finally{nuDay=previous}renderNutri();return true
 }

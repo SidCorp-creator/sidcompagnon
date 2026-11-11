@@ -459,6 +459,7 @@
         </form>
       </details>
       <form class="card form nu-ask" id="nuAskForm">
+        <label>Pesée des ingrédients<select id="nuFoodWeighingMode"><option value="unspecified">Non précisé</option><option value="raw">Avant cuisson (cru)</option><option value="cooked">Après cuisson (cuit)</option></select></label>
         <label for="nuAsk">Ce que tu manges</label><textarea id="nuAsk" rows="2" placeholder="Ce que tu manges, avec la quantité" aria-label="Ce que tu manges" enterkeyhint="send"></textarea>
         <div class="nu-for" id="nuFor"><span class="nu-for-l">Pour</span><button type="button" class="nu-for-nav" data-nufor="-1" aria-label="Jour précédent"><i class="ic" data-i="chevleft"></i></button><label class="nu-for-day"><span id="nuForTxt"></span><input type="date" id="nuForDate" aria-label="Jour du repas"></label><button type="button" class="nu-for-nav" data-nufor="1" id="nuForNext" aria-label="Jour suivant"><i class="ic" data-i="chev"></i></button></div>
         <div class="nu-photo" id="nuPhotoPrev" hidden></div>

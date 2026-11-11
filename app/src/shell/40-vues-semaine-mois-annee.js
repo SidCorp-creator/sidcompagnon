@@ -131,7 +131,7 @@ const slotsFor=n=>({1:["meal"],2:["lunch","dinner"],3:["breakfast","lunch","dinn
 const slotName=s=>SLOT[s]?SLOT[s][0]:"Repas";
 const splitKcal=(total,slots)=>{const w=slots.map(s=>SLOT[s][2]),t=w.reduce((a,b)=>a+b,0);return w.map(x=>Math.round(total*x/t/10)*10)};
 // v31 : « à inclure » et « à éviter » sont propres à chaque type de repas (journée, petit-déj, déjeuner…) : rien n'est recopié d'un repas à l'autre
-const mpPref=(mp,type,k)=>{const p=mp.pp&&mp.pp[type];if(p&&p[k]!=null)return p[k];return type==="day"?(k==="include"?mp.include:mp.exclude)||"":""};
+const mpPref=(mp,type,k)=>{const p=mp.pp&&mp.pp[type];if(p&&p[k]!=null)return p[k];return type==="day"&&["include","exclude"].includes(k)?(k==="include"?mp.include:mp.exclude)||"":""};
 const mpSet=(mp,type,k,v)=>{mp.pp=mp.pp||{};mp.pp[type]={...(mp.pp[type]||{}),[k]:v}};
 // v74.5 (demande de Sid) : une fois le menu généré, « à inclure » et « à éviter » sont vidés pour TOUS les types de menu
 // (journée, petit-déjeuner, déjeuner…) et l'ancien format ; avant, seul le type affiché l'était et l'ancien texte revenait ailleurs
@@ -140,8 +140,9 @@ const nuMP=()=>{const n=NU();n.menuPrefs=n.menuPrefs||{};const m=n.menuPrefs;m.t
   // ancien réglage « repas par jour » → choix des repas
   if(!m.pick){const sl=slotsFor(m.meals||3);m.pick={breakfast:sl.includes("breakfast"),lunch:sl.includes("lunch")||sl.includes("meal"),dinner:sl.includes("dinner")};m.snacks=sl.filter(s=>s==="snack").length}
   return m};
+function mpBudget(){const tg=dayTarget(iso(today())).kcal;return nuMP().budget_kind==="remaining"?Math.max(0,tg-NU().log.filter(x=>x.day===iso(today())).reduce((t,x)=>t+(+x.kcal||0),0)):tg}
 // calories par repas : toujours ramenées à l'objectif du jour, en gardant la répartition choisie
-const mpKcals=()=>{const mp=nuMP(),sl=mpSlots(),tg=dayTarget(iso(today())).kcal;
+const mpKcals=()=>{const mp=nuMP(),sl=mpSlots(),tg=mpBudget();
   if(!(mp.kcals&&mp.kcals.length===sl.length&&mp.kcalsFor===sl.join()))return splitKcal(tg,sl);
   const tot=mp.kcals.reduce((a,b)=>a+b,0);if(!tot||Math.abs(tot-tg)<=20)return mp.kcals;
   return fitKcals(mp.kcals.map(x=>x*tg/tot),tg)};
@@ -158,13 +159,18 @@ let nuMkForce=false; // v64 : redessiner les calories par repas même pendant la
 const nuMkClear=()=>{if(Object.keys($("nuMealKcal")).some(k=>k.startsWith("__reactContainer")))nuMkForce=true;else $("nuMealKcal").innerHTML=""};
 function renderMenuForm(){
   const mp=nuMP(),day=mp.type==="day";
+  let wm=$("nuWeighingMode");if(!wm){const label=document.createElement("label");label.innerHTML=`${L("Pesée des ingrédients")}<select id="nuWeighingMode"><option value="unspecified">${L("Non précisé")}</option><option value="raw">${L("Avant cuisson (cru)")}</option><option value="cooked">${L("Après cuisson (cuit)")}</option></select>`;$("nuInclude").parentElement.before(label);wm=$("nuWeighingMode");wm.addEventListener("change",()=>{mpSet(nuMP(),nuMP().type,"weighing_mode",wm.value);NU().upd=Date.now();save()})}
+  let bk=$("nuMenuBudget");if(!bk){const label=document.createElement("label");label.innerHTML=`${L("Budget du menu")}<select id="nuMenuBudget"><option value="day">${L("Objectif de la journée")}</option><option value="remaining">${L("Reste de la journée")}</option></select>`;$("nuMDay").prepend(label);bk=$("nuMenuBudget");bk.addEventListener("change",()=>{nuMP().budget_kind=bk.value;nuMP().kcals=null;NU().upd=Date.now();save();renderMenuForm()})}
+  bk.value=mp.budget_kind||"day";
+  let resume=$("nuResumeMenu");if(!resume){resume=document.createElement("button");resume.id="nuResumeMenu";resume.type="button";resume.className="btn ghost";resume.textContent=L("Reprendre le menu à confirmer");$("nuMenuBtn").after(resume);resume.addEventListener("click",()=>{const r=NU().menuRequest;if(r)aiHandoff(nutritionMenu.prompt(r,LANG==="en"),"nutri",{menuRequest:r})})}resume.hidden=!NU().menuRequest;
+  wm.value=mpPref(mp,mp.type,"weighing_mode")||"unspecified";
   document.querySelectorAll("#nuMType button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mtype===mp.type));
   $("nuMDay").hidden=!day;$("nuMOne").hidden=day;$("nuSnacks").textContent=mp.snacks||0;
   if(shIsl("nuSlots")){try{window.SCIslands.nuSlots($("nuSlots"),{i18n:agI18n(),slots:MAINS.map(s=>({k:s,on:!!mp.pick[s],icon:IC(SLOT[s][1]),name:SLOT[s][0]}))})}catch(e){reportErr("island nuSlots: "+(e&&e.message))}}
   else $("nuSlots").innerHTML=MAINS.map(s=>`<button type="button" class="pill meal-tg" data-pick="${s}" aria-pressed="${!!mp.pick[s]}"><span class="tg-box" aria-hidden="true">${mp.pick[s]?IC("tick"):""}</span>${IC(SLOT[s][1])} ${L(SLOT[s][0])}</button>`).join("");
   const sl=mpSlots();
   $("nuMenuBtn").textContent=L(day?(sl.length===1&&sl[0]==="meal"?"Générer mon repas unique":"Générer ma journée"):{breakfast:"Générer un petit-déjeuner",lunch:"Générer un déjeuner",snack:"Générer une collation",dinner:"Générer un dîner"}[mp.type]);
-  if(day){const k=mpKcals(),tot=k.reduce((a,b)=>a+b,0),tg=dayTarget(iso(today())).kcal;
+  if(day){const k=mpKcals(),tot=k.reduce((a,b)=>a+b,0),tg=mpBudget();
     const mkIsl=shIsl("nuMealKcal");
     if(mkIsl&&(nuMkForce||!$("nuMealKcal").contains(document.activeElement))){nuMkForce=false;try{window.SCIslands.nuMealKcal($("nuMealKcal"),{i18n:agI18n(),rows:sl.map((s,i)=>({icon:IC(SLOT[s][1]),name:slotName(s),kcal:k[i]}))});
       $("nuMealKcal").querySelectorAll("input").forEach(i=>{if(i!==document.activeElement&&i.value!==i.defaultValue)i.value=i.defaultValue})}catch(e){reportErr("island nuMealKcal: "+(e&&e.message))}}
@@ -185,7 +191,7 @@ $("nuMenuSec").addEventListener("click",e=>{const b=e.target.closest("[data-pick
   else if(b.dataset.pick){const s=b.dataset.pick;mp.pick[s]=!mp.pick[s];if(!MAINS.some(x=>mp.pick[x])&&!mp.snacks){mp.pick[s]=true;toast("Garde au moins un repas");return}mp.kcals=null}
   else{mp.snacks=Math.min(4,Math.max(0,(mp.snacks||0)+ +b.dataset.snacks));if(!MAINS.some(x=>mp.pick[x])&&!mp.snacks)mp.snacks=1;mp.kcals=null}
   NU().upd=Date.now();save();nuMkClear();renderMenuForm()});
-$("nuMealKcal").addEventListener("change",e=>{const i=e.target.dataset.mk;if(i===undefined)return;const mp=nuMP(),tg=dayTarget(iso(today())).kcal,k=mpKcals().slice();
+$("nuMealKcal").addEventListener("change",e=>{const i=e.target.dataset.mk;if(i===undefined)return;const mp=nuMP(),tg=mpBudget(),k=mpKcals().slice();
   const v=Math.round(numIn(e.target.value)/10)*10;if(v>tg)toast(`${L("Maximum")} ${fmtFull(tg)} kcal`);
   mp.kcals=k.length>1?rebalance(k,+i,v,tg):[tg];mp.kcalsFor=mpSlots().join();NU().upd=Date.now();save();nuMkClear();renderMenuForm()});
 $("nuOneKcal").addEventListener("change",e=>{const mp=nuMP();mp.one[mp.type]=Math.max(0,Math.round(numIn(e.target.value)));NU().upd=Date.now();save()});
@@ -199,9 +205,10 @@ const SPOONS=/** @type {[RegExp,number,number][]} */([[/huile|oil/i,13.5,4.5],[/
 function spoonQty(name,g){if(!(g>0)||g>80)return"";const s=SPOONS.find(([re])=>re.test(name||""));if(!s)return"";
   const half=x=>Math.max(.5,Math.round(x*2)/2),fr=x=>String(x).replace(".",LANG==="en"?".":",");
   const tb=g/s[1];if(tb>=.75)return `${fr(half(tb))} ${L("c. à soupe")}`;return `${fr(half(g/s[2]))} ${L("c. à café")}`}
-const qtyTxt=x=>{const m=String(x.qty||"").trim().match(/^(\d+(?:[.,]\d+)?)\s*g$/i),g=x.g||(m?+m[1].replace(",","."):0),ref=nuUnitRef(x);
+const qtyTxt0=x=>{const m=String(x.qty||"").trim().match(/^(\d+(?:[.,]\d+)?)\s*g$/i),g=x.g||(m?+m[1].replace(",","."):0),ref=nuUnitRef(x);
   if(ref&&g>0)return `${fmtN(g/ref.g)} ${T3(g/ref.g===1?"pièce":"pièces",g/ref.g===1?"piece":"pieces")} (≈ ${fmtN(g)} g)`;
   const sp=g?spoonQty(x.name,g):"";return sp?`${sp} (${fmtFull(r0(g))} g)`:(x.qty||"")};
+const qtyTxt=x=>qtyTxt0(x)+(x.weight_state==="cooked"?" · "+L("cuit"):x.weight_state==="raw"?" · "+L("cru"):"")+(x.estimated?" · "+L("estimation"):"");
 // le serveur connaît les créneaux classiques : le repas unique part comme un déjeuner, avec son propre nom
 const srvSlot=s=>s==="meal"?"lunch":s;
 // la toute première génération peut échouer (serveur qui démarre, réponse vide) : on réessaie une fois tout seul
@@ -210,18 +217,22 @@ async function nuRetry(fn,ok){let last;for(let a=0;a<2;a++){try{const r=await fn
   if(a===0)await new Promise(r=>setTimeout(r,1200))}throw last}
 // demande à Claude un ou plusieurs repas (calories précises par repas)
 async function genMeals(slots,kcals){
-  const n=NU(),mp=nuMP(),t=dayTarget(iso(today())),tot=kcals.reduce((a,b)=>a+b,0)||1,k=tot/t.kcal,one=slots.length===1;
-  const notes=[n.profile&&n.profile.notes,slots[0]==="meal"&&one?"Un seul repas dans la journée (OMAD) : il doit couvrir tous les besoins du jour.":"",
-    "Huiles, beurre, miel et sauces : indique la quantité en grammes, elle sera affichée en cuillères.",
-    "Donne toujours le poids des aliments crus (avant cuisson) : riz, pâtes, viande, poisson, légumineuses… et écris « cru » dans le nom quand c'est utile."].filter(Boolean).join(" ");
-  const pty=one&&mp.type!=="day"?mp.type:one&&mp.pp&&mp.pp[slots[0]]?slots[0]:"day";
-  const r=await nuRetry(()=>nuCall("menu",{data:{meal_type:one&&mp.type!=="day"?srvSlot(slots[0]):"day",meals:slots.map((s,i)=>({slot:srvSlot(s),name:L(slotName(s)),kcal:kcals[i]})),
-    target_kcal:tot,protein_g:r0(t.p*k),carbs_g:r0(t.c*k),fat_g:r0(t.f*k),must_include:mpPref(mp,pty,"include"),avoid:mpPref(mp,pty,"exclude"),goal:n.profile&&n.profile.goal,notes}}),
-    r=>r&&Array.isArray(r.meals)&&r.meals.some(m=>m&&Array.isArray(m.items)&&m.items.length));
-  const meals=(r.meals||[]).filter(m=>m&&Array.isArray(m.items)&&m.items.length).map((m,i)=>({slot:slots[i]||slots[slots.length-1],target:kcals[i]||kcals[kcals.length-1],name:String(m.name||""),em:String(m.emoji||"🍽️"),
-    steps:recipeSteps(m.steps||m.recipe||m.instructions),
-    items:(m.items||[]).map(x=>({name:String(x.food||x.name||""),em:String(x.emoji||""),g:r0(x.grams),qty:r0(x.grams)+" g",kcal:r0(x.kcal),p:r1(x.protein_g),c:r1(x.carbs_g),f:r1(x.fat_g)}))}));
-  return{meals,tips:String(r.tips||"")};
+  const mp=JSON.parse(JSON.stringify(nuMP())),ty=mp.type,account=sbUid();
+  let references="";try{const foods=await ciqualFoods();references=foods.filter(x=>/riz basmati, cuit|poulet, filet sans peau grill|boeuf, steak haché.*cuit|pomme de terre.*frite.*four/i.test(x.name)).slice(0,8).map(x=>`${x.name} (Ciqual ${x.code}) : pour 100 g, ${x.kcal} kcal, P ${x.p}, G ${x.c}, L ${x.f}`).join(" ; ")}catch{}
+  if(account!==sbUid())throw new Error(L("Reconnecte-toi pour utiliser Sid'Bot."));
+  const request=nutritionMenu.request({id:uid(),date:iso(today()),weighing_mode:mpPref(mp,ty,"weighing_mode")||"unspecified",
+    budget_kind:ty==="day"?(mp.budget_kind||"day"):"meal",meals:slots.map((slot,i)=>({slot,name:L(slotName(slot)),kcal:kcals[i]})),
+    must_include:mpPref(mp,ty,"include"),avoid:mpPref(mp,ty,"exclude"),notes:((NU().profile?.notes||"")+" Références de composition (seulement si cet aliment et cette cuisson conviennent) : "+references).slice(0,2000)});
+  // Durable until confirmation; clearing the form never changes this snapshot.
+  NU().menuRequest=request;NU().upd=Date.now();save();
+  throw aiNeed("menu",{menuRequest:request});
+}
+function nuSaveMenu(p){
+  try{const n=NU(),r=n.menuRequest;if(!r)return false;const g=nutritionMenu.menu(p,r),at=new Date().toISOString();
+    if(r.budget_kind!=="meal"||!n.menu?.meals)n.menu={meals:g.meals,tips:g.tips,at};
+    else{for(const m of g.meals){const i=n.menu.meals.findIndex(x=>x.slot===m.slot);if(i<0)n.menu.meals.push(m);else n.menu.meals[i]=m}n.menu.at=at;n.menu.tips=g.tips}
+    delete n.menuRequest;mpWipe(nuMP());n.upd=Date.now();save();renderNuMenu();return true;
+  }catch{return false}
 }
 // étapes de recette : liste, ou texte « 1. … 2. … » découpé
 function recipeSteps(v){if(!v)return null;if(Array.isArray(v))return v.map(x=>String(x&&x.text||x).trim()).filter(Boolean);
@@ -246,11 +257,7 @@ $("nuMenuBtn").addEventListener("click",async()=>{
   // v43 (demande de Sid) : « à inclure » / « à éviter » ne servent qu'à cette demande ; ils repartent vides ensuite
   // v74.5 (relu par Codex) : après l'attente, la synchro a pu remplacer data.nutri : on relit toujours NU() / nuMP() au moment d'écrire
   const ty=mp.type,mpClear=()=>{mpWipe(nuMP());$("nuInclude").value="";$("nuExclude").value="";autoGrow($("nuInclude"));autoGrow($("nuExclude"));NU().upd=Date.now();save()};
-  try{const g=await genMeals(slots,kcals);mpClear();const n=NU(),at=new Date().toISOString();
-    if(ty==="day"||!n.menu||!n.menu.meals)n.menu={meals:g.meals,tips:g.tips,at};
-    else{const i=n.menu.meals.findIndex(m=>m.slot===ty);if(i>=0)n.menu.meals[i]=g.meals[0];else n.menu.meals.push(g.meals[0]);n.menu.at=at}
-    nuMenuSeen=at;n.upd=Date.now();save();toast("Menu prêt");
-  }catch(ex){toast(nuErrMsg(ex));if(ex.ai)mpClear()}
+  try{await genMeals(slots,kcals)}catch(ex){toast(nuErrMsg(ex));if(ex.ai)mpClear()}
   stop();nuBusy="";btn.disabled=false;renderNuMenu();
   const f=$("nuMenu").querySelector(".dish");if(f)f.scrollIntoView({behavior:"smooth",block:"start"});
 });
@@ -304,8 +311,7 @@ $("nuMenu").addEventListener("click",async e=>{const b=e.target.closest("button"
   if(b.dataset.meregen&&!nuBusy){const i=+b.dataset.meregen,ml=M.meals[i];nuBusy="regen";meRegen=i;if(nuIsl("nuMenu")&&$("nuMenu")._isl)renderNuMenu();else b.innerHTML=`<span class="spin"></span>`;
     // v74.5 : comme pour le menu, « à inclure » / « à éviter » sont vidés une fois l'idée générée (ou confiée à Claude)
     const wipe=()=>{mpWipe(nuMP());["nuInclude","nuExclude"].forEach(id=>{$(id).value="";autoGrow($(id))});NU().upd=Date.now();save()};
-    try{const g=await genMeals([ml.slot||"lunch"],[ml.target||ml.kcal]);const cm=NU().menu; // menu courant (la synchro a pu le remplacer pendant l'attente)
-      if(g.meals[0]&&cm&&Array.isArray(cm.meals)&&cm.meals[i])cm.meals[i]=g.meals[0];wipe();toast("Nouvelle idée prête")}catch(ex){toast(nuErrMsg(ex));if(ex.ai)wipe()}
+    try{await genMeals([ml.slot||"lunch"],[ml.target||ml.kcal])}catch(ex){toast(nuErrMsg(ex));if(ex.ai)wipe()}
     nuBusy="";meRegen=null;renderNuMenu()}
 });
 $("nuMenu").addEventListener("keydown",e=>{if(e.target.id==="meQtyIn"&&e.key==="Enter"){e.preventDefault();const[i,j]=meEdit.split(":").map(Number);meScale(i,j,e.target.value);meEdit=null;renderNuMenu()}});

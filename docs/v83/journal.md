@@ -19,3 +19,10 @@
 - Aperçu contrôlé visuellement à 390 px, sans débordement horizontal.
 - Relecture A+B : signalé à Claude le faux message « scan » si le texte commence après les quatre premières pages.
 - En attente de relecture croisée et du correctif PDF final avant intégration/version 83 ; rien déployé.
+
+## Relecture C+D — quatre points traités
+- Relance automatique bornée à deux appels fournisseur au total ; un quota réservé ; erreur explicite si encore invalide.
+- Tests serveur et programme : verts, aucune relance ajoutée aux programmes.
+- FR/EN et secours : chemin mémoire vide → Sid'Bot testé, état cuit/180 g gardé dans le journal.
+- Aperçu = enregistrement (1 et 2 repas) ; huile : 10 g/90 kcal puis 20 g/180 kcal, cuillères seulement à l'affichage.
+- PDF 9c9875d relu : toutes les pages vérifiées, formulation neutre ; intégration à suivre.

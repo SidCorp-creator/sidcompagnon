@@ -10,7 +10,7 @@ const SB_APPS={journee:{label:MARQUES.journee,app:"agenda",hint:"Ex. : ajoute «
   note:{label:MARQUES.note,app:"note",hint:"Ex. : résume la note ouverte en 5 points"}};
 const SB_TOPIC={agenda:"journee",nutri:"forme",muscu:"forme",note:"note"};
 const SB_MAX=20,SB_TIMEOUT=50000,SB_IMG_MAX=1100000,SB_HIST_CHARS=20000; // délai > auth + quota + fournisseur côté serveur ; historique borné sous la limite serveur (24 000)
-const SB_ERR={auth:"Reconnecte-toi pour utiliser Sid'Bot.",quota:"Le quota gratuit de Sid'Bot est épuisé pour aujourd'hui. Il revient demain : rien n'est facturé.",
+const SB_ERR={invalid_menu:"Le menu proposé ne respecte pas encore tes repas, leur budget ou la pesée demandée. Précise ta demande puis réessaie. Rien n’a été enregistré.",auth:"Reconnecte-toi pour utiliser Sid'Bot.",quota:"Le quota gratuit de Sid'Bot est épuisé pour aujourd'hui. Il revient demain : rien n'est facturé.",
   rate:"Trop de demandes d'un coup. Réessaie dans un instant.",timeout:"Sid'Bot met trop de temps à répondre. Réessaie.",
   unavailable:"Sid'Bot est indisponible pour l'instant. Réessaie plus tard.",not_configured:"Sid'Bot n'est pas encore activé sur ce serveur.",
   bad_request:"Cette demande n'a pas pu être envoyée. Raccourcis-la ou retire la photo.",offline:"Pas de connexion internet : Sid'Bot a besoin du réseau.",
@@ -99,7 +99,7 @@ async function sbSend(retry){if(sbBusy)return;const i=$("sbIn");let text=i.value
   const hist=/** @type {{role:string,content:string,image?:string}[]} */([]);let tot=0;
   for(const m of sbMsgs(app,uid0).filter(m=>m.role==="user"||m.role==="assistant").slice(-10).reverse()){const c=String(m.content).slice(0,4000);if(hist.length&&tot+c.length>SB_HIST_CHARS)break;tot+=c.length;hist.unshift({role:m.role,content:c})}
   if(sbImg&&hist.length){if(sbImg.length>SB_IMG_MAX){fail("bad_request");return}hist[hist.length-1].image=sbImg}
-  sbBusy=true;sbRender();const ctl=sbCtl=new AbortController();const tm=setTimeout(()=>{try{ctl.abort()}catch(e){}},SB_TIMEOUT);
+  sbBusy=true;sbRender();const ctl=sbCtl=new AbortController();const tm=setTimeout(()=>{try{ctl.abort()}catch(e){}},sbMenuRequest?80000:SB_TIMEOUT);
   try{// revue Codex : jeton et contexte figés pour le même compte que l'historique, vérifiés avant l'envoi
     const jwt=await token();if(!same()){clearTimeout(tm);sbBusy=false;return}const ctx=sbContext(app);
     const noteRef=ctx.note&&typeof noteOpenId!=="undefined"&&noteOpenId?noteOpenId:null,noteN=noteRef?noteFind(noteRef):null,noteVer=noteN?noteN.upd||0:0; // v78 : seule la note jointe, dans sa version envoyée

@@ -18,3 +18,19 @@ assert.match(prompt,/save_menu/);assert.match(prompt,/huiles et sauces/);assert.
 assert.equal(validateResult({reply:'Aperçu',actions:[{type:'log_meal',label:'Manger',payload:{date:request.date,name:'test',items:[{...food('riz',100,100),qty:'100 g'}]}}]},'forme',{}).actions.length,1);
 assert.throws(()=>validateResult({reply:'Aperçu',actions:[{type:'log_meal',label:'Manger',payload:{date:request.date,name:'test',items:[{...food('riz',100,100),qty:'100 g'}]}}]},'forme',{menu_request:request}));
 console.log('nutrition menu: 983 kcal cooked / two-meal remaining budget / stale, count, slot, state, calorie bounds / preview contract OK');
+// Real handler: one automatic repair, one quota reservation, and a bounded failure if both proposals miss the budget.
+(async()=>{const config={SUPABASE_URL:'https://db.test',SUPABASE_SERVICE_ROLE_KEY:'test',SIDBOT_PROVIDER:'groq',SIDBOT_FREE_PLAN_CONFIRMED:'true',SIDBOT_API_KEY:'test'};
+ for(const alwaysBad of [false,true]){let calls=0,quotas=0,last;
+  const handler=require('./sidbot-loader.cjs').createHandler(k=>config[k],async(url,opt)=>{
+   if(url.endsWith('/auth/v1/user'))return Response.json({id:'test'});
+   if(url.includes('/rpc/')){quotas++;return Response.json({used:1,limit:20})}
+   calls++;last=JSON.parse(opt.body);
+   const p=JSON.parse(JSON.stringify(payload));if(alwaysBad||calls===1)p.meals[0].items[0].kcal+=1000;
+   return Response.json({choices:[{message:{content:JSON.stringify({reply:'Aperçu',actions:[{type:'save_menu',label:'Menu',payload:p}]})}}]});
+  });
+  const res=await handler(new Request('https://test',{method:'POST',headers:{Authorization:'Bearer test'},body:JSON.stringify({app:'forme',task:'menu',locale:'fr',messages:[{role:'user',content:'Dîner'}],context:{menu_request:request}})}));
+  assert.equal(calls,2);assert.equal(quotas,1);assert.match(last.messages.at(-1).content,/Repair it once/);
+  const out=await res.json();if(alwaysBad){assert.equal(out.error,'invalid_menu');assert.equal(out.actions,undefined)}else{assert.equal(res.status,200);assert.equal(out.actions[0].type,'save_menu')}
+ }
+ console.log('nutrition menu server: out-of-budget proposal repaired once, one quota reservation, bounded error after second invalid menu OK');
+})().catch(e=>{console.error(e);process.exitCode=1});

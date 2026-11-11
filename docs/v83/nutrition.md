@@ -26,6 +26,8 @@ Il s'agit de rendements de masse, pas d'une garantie de rétention nutritionnell
 
 Tests hors ligne : contrat partagé, véritable handler MCP sur données simulées, parcours navigateur React 390 px (FR et EN) et secours 1280 px (FR), avec contrôle de débordement. Cas : riz + poulet cuits, dîner wrap/viande hachée/frites au four à 983 kcal, deux repas partageant 1400 kcal restantes, aucune écriture avant confirmation, reprise après rechargement.
 
+Une proposition invalide entraîne une seule relance automatique du fournisseur, avec la même réservation de quota. Si la deuxième proposition reste invalide, un message explicite indique que rien n’a été enregistré. Le modèle ne dispose pas de trois essais si le premier appel a déjà échoué sur son JSON.
+
 Le transport du modèle est simulé : ces tests ne démontrent pas la qualité d'une réponse réelle de Groq. Les contraintes sémantiques d'aliments et de cuisson sont explicites dans le prompt et l'aperçu ; la validation structurelle ne prouve pas qu'une recette respecte toutes les exclusions en langage libre.
 
 Fonctions Edge `sidbot` et `mcp` préparées sans déploiement. La nouvelle action `save_menu` exige le nouveau serveur avant mise en ligne du client. Publication et déploiement attendent l'accord de Sid après relecture croisée.

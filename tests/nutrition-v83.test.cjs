@@ -5,8 +5,10 @@ const core=require('./sidbot-loader.cjs');
  const page=await browser.newPage({viewport:{width,height:900}}),errors=[];page.on('pageerror',e=>(errors.push(e.message),console.error(e.stack)));
  await page.addInitScript(({fallback,lang})=>{window.__noIntro=true;window.__noIslands=fallback;localStorage.setItem('sidnote-lang',JSON.stringify(lang))},{fallback,lang});
  let sent;
+ await page.route('**/functions/v1/nutrition',r=>r.fulfill({json:{result:null}}));
  await page.route('**/functions/v1/sidbot',async route=>{
   sent=route.request().postDataJSON();const b=core.validateRequest(sent),r=b.context.menu_request;
+  if(!r){const out=core.validateResult({reply:'Aperçu du repas cuit',actions:[{type:'log_meal',label:'Poulet',payload:{date:b.context.today,name:'Poulet cuit',items:[{name:'Blanc de poulet cuit',qty:'180 g',g:180,kcal:254,p:54,c:0,f:4,weight_state:'cooked'}]}}]},'forme',b.context);await route.fulfill({json:out});return}
   const meals=r.meals.map(m=>({slot:m.slot,name:m.name,items:r.meals.length===1?[
    {name:'Wrap',g:80,kcal:240,p:8,c:40,f:5,weight_state:'unspecified'},
    {name:'Viande hachée cuite au four',g:150,kcal:330,p:35,c:0,f:21,weight_state:'cooked'},
@@ -28,19 +30,23 @@ const core=require('./sidbot-loader.cjs');
  assert.match(await page.locator('.sb-acts').last().innerText(),lang==='en'?/150 g · cooked · 330 kcal/:/150 g · cuit · 330 kcal/);
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal overflow');
  await page.screenshot({path:`tests/out/v83-menu-${width}-${lang}.png`});
+ const preview=await page.evaluate(()=>sbMsgs('forme').filter(x=>x.role==='assistant').at(-1).actions[0].payload.meals.map(m=>m.items.map(x=>[x.g,x.kcal,x.weight_state])));
  assert.equal(await page.evaluate(()=>NU().menu?.meals?.length||0),0);
  // Closing/reopening the bot does not save; snapshot and weighing preference remain durable.
  await page.evaluate(()=>{sbClose();save()});await page.reload();await page.waitForFunction(()=>typeof NU==='function'&&NU().menuRequest);
  assert.equal(await page.evaluate(()=>NU().menuRequest.weighing_mode),'cooked');
  await page.evaluate(()=>sbOpen('forme'));await page.locator('[data-sbact]').last().click();
  assert.equal(await page.evaluate(()=>NU().menu.meals.length),1);assert.equal(await page.evaluate(()=>NU().log.length),0);
+ assert.deepEqual(await page.evaluate(()=>NU().menu.meals.map(m=>m.items.map(x=>[x.g,x.kcal,x.weight_state]))),preview);
+ assert.deepEqual(await page.evaluate(()=>{const oil=JSON.parse(JSON.stringify(NU().menu.meals[0].items.find(x=>x.name==='Huile')));const before=[oil.g,oil.kcal];scaleQty(oil,'20 g');return [before,oil.g,oil.kcal]}),[[10,90],20,180]);
  assert.equal(await page.evaluate(()=>NU().menu.meals[0].items[1].weight_state),'cooked');
  assert.equal(await page.evaluate(()=>NU().menuRequest||null),null);
  // Two meals share the remaining allowance, never the whole daily target each.
  await page.evaluate(async()=>{sbClose();NU().log=[{id:uid(),day:iso(today()),kcal:1000}];const mp=nuMP();mp.type='day';mp.pick={breakfast:false,lunch:true,dinner:true};mp.snacks=0;mp.kcals=null;mp.budget_kind='remaining';mpSet(mp,'day','weighing_mode','cooked');data.ui.nuTab='menu';NU().upd=Date.now();show('nutri');renderNutri();save();await push()});
  await page.click('#nuMenuBtn');await page.waitForSelector('#sbSheet:not([hidden])');await page.click('#sbSend');await page.waitForFunction(()=>sbMsgs('forme').filter(x=>x.role==='assistant').length===2);
  assert.equal(sent.context.menu_request.budget_kind,'remaining');assert.equal(sent.context.menu_request.meals.length,2);assert.equal(sent.context.menu_request.meals.reduce((s,m)=>s+m.kcal,0),1400);
- await page.locator('[data-sbact]').last().click();assert.equal(await page.evaluate(()=>NU().menu.meals.length),2);assert.equal(await page.evaluate(()=>NU().log.length),1);
+ const twoPreview=await page.evaluate(()=>sbMsgs('forme').filter(x=>x.role==='assistant').at(-1).actions[0].payload.meals.map(m=>m.items.reduce((t,x)=>t+x.kcal,0)));
+ await page.locator('[data-sbact]').last().click();assert.deepEqual(await page.evaluate(()=>NU().menu.meals.map(m=>m.items.reduce((t,x)=>t+x.kcal,0))),twoPreview);assert.equal(await page.evaluate(()=>NU().menu.meals.length),2);assert.equal(await page.evaluate(()=>NU().log.length),1);
  // Single food natural text uses actual cooked Ciqual composition, no yield guess.
  await page.evaluate(async()=>{sbClose();NU().log=[];data.ui.nuTab='day';renderNutri()});await page.click('#nuMealAdd');
  await page.fill('#nuAsk',"j'ai pesé 180 g de riz basmati cuit");await page.click('#nuAskBtn');await page.waitForFunction(()=>nuPending?.items?.length);
@@ -48,5 +54,10 @@ const core=require('./sidbot-loader.cjs');
  await page.click('#nuMealAdd');await page.fill('#nuAsk','180 g de poulet filet sans peau grillé');await page.click('#nuAskBtn');await page.waitForFunction(()=>nuPending?.items?.length);
  assert.equal(await page.evaluate(()=>nuPending.items[0].kcal),254);await page.click('#nuResult [data-nuadd]');
  assert.ok(await page.evaluate(()=>NU().log.every(x=>x.weight_state==='cooked'&&x.source.includes('Anses'))));
+ // Force the missing-local-food path: the cooked wording survives memory miss, Sid'Bot and the consumed log.
+ await page.evaluate(()=>{ciqualSearch=async()=>[]});await page.click('#nuMealAdd');await page.fill('#nuAsk','180 g de blanc de poulet cuit');await page.click('#nuAskBtn');await page.waitForSelector('#sbSheet:not([hidden])');
+ assert.match(await page.inputValue('#sbIn'),/cuit/);await page.click('#sbSend');await page.waitForFunction(()=>sbMsgs('forme').filter(x=>x.role==='assistant').length===3);
+ assert.match(sent.messages.at(-1).content,/180 g de blanc de poulet cuit/);await page.locator('[data-sbact]').last().click();
+ assert.equal(await page.evaluate(()=>NU().log.at(-1).weight_state),'cooked');assert.equal(await page.evaluate(()=>NU().log.at(-1).g),180);
  assert.deepEqual(errors,[]);await page.close();console.log(`nutrition v83 ${width}/${fallback?'fallback':'React'}/${lang}: cooked rice + meat, 983 kcal preview/confirmation/reload, 2-meal remaining budget OK`);
  }}finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});

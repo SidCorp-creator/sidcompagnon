@@ -12,3 +12,10 @@
 - Build et types OK ; tests contrat, handler MCP, unités, serveur Sid'Bot et actions notes OK.
 - Navigateur : 390 React et 1280 secours OK (983 kcal, deux repas/restant, reprise, riz + poulet).
 - Modèle simulé, aucun déploiement ; détails et limites dans nutrition.md.
+
+## Vérification C+D — 950590d
+- `ELAN_CASE=390-dark-react-fr npm test` : terminé, code 0 (suite complète, une configuration Élan).
+- Parcours nutrition supplémentaire 390 React EN : vert ; FR 390 React / 1280 secours relancés verts.
+- Aperçu contrôlé visuellement à 390 px, sans débordement horizontal.
+- Relecture A+B : signalé à Claude le faux message « scan » si le texte commence après les quatre premières pages.
+- En attente de relecture croisée et du correctif PDF final avant intégration/version 83 ; rien déployé.

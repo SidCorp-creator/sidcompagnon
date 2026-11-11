@@ -1,9 +1,9 @@
 // Offline model transport; real UI, shared Edge validation, catalogue and persistence.
 const {chromium}=require('../app/node_modules/playwright'),assert=require('node:assert/strict');
 const core=require('./sidbot-loader.cjs');
-(async()=>{const browser=await chromium.launch();try{for(const [width,fallback] of [[390,false],[1280,true]]){
+(async()=>{const browser=await chromium.launch();try{for(const [width,fallback,lang] of [[390,false,"fr"],[1280,true,"fr"],[390,false,"en"]]){
  const page=await browser.newPage({viewport:{width,height:900}}),errors=[];page.on('pageerror',e=>(errors.push(e.message),console.error(e.stack)));
- await page.addInitScript(f=>{window.__noIntro=true;window.__noIslands=f},fallback);
+ await page.addInitScript(({fallback,lang})=>{window.__noIntro=true;window.__noIslands=fallback;localStorage.setItem('sidnote-lang',JSON.stringify(lang))},{fallback,lang});
  let sent;
  await page.route('**/functions/v1/sidbot',async route=>{
   sent=route.request().postDataJSON();const b=core.validateRequest(sent),r=b.context.menu_request;
@@ -21,11 +21,13 @@ const core=require('./sidbot-loader.cjs');
  await page.evaluate(()=>{data.nutri={consent:new Date().toISOString(),profile:{notes:'',goal:'maintain'},plan:{kcal:2400,p:140,c:280,f:80,bmr:1700,tdee:2400,warn:[]},log:[]};data.ui.nuTab='menu';show('nutri')});
  await page.click('[data-mtype="dinner"]');await page.evaluate(()=>{nuMP().one.dinner=983;renderMenuForm()});await page.selectOption('#nuWeighingMode','cooked');
  await page.fill('#nuInclude','wrap, viande hachée cuite au four, frites au four');await page.click('#nuMenuBtn');await page.waitForSelector('#sbSheet:not([hidden])');
- assert.match(await page.inputValue('#sbIn'),/APRÈS cuisson/);assert.match(await page.inputValue('#sbIn'),/983/);
+ assert.match(await page.inputValue('#sbIn'),lang==='en'?/AFTER cooking/:/APRÈS cuisson/);assert.match(await page.inputValue('#sbIn'),/983/);
  assert.equal(await page.evaluate(()=>NU().menu?.meals?.length||0),0);assert.equal(await page.evaluate(()=>NU().log.length),0);
  await page.click('#sbSend');await page.waitForSelector('[data-sbact]');
  assert.equal(sent.task,'menu');assert.equal(sent.context.menu_request.meals.length,1);assert.equal(sent.context.menu_request.meals[0].kcal,983);
- assert.match(await page.locator('.sb-acts').last().innerText(),/150 g · cuit · 330 kcal/);
+ assert.match(await page.locator('.sb-acts').last().innerText(),lang==='en'?/150 g · cooked · 330 kcal/:/150 g · cuit · 330 kcal/);
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal overflow');
+ await page.screenshot({path:`tests/out/v83-menu-${width}-${lang}.png`});
  assert.equal(await page.evaluate(()=>NU().menu?.meals?.length||0),0);
  // Closing/reopening the bot does not save; snapshot and weighing preference remain durable.
  await page.evaluate(()=>{sbClose();save()});await page.reload();await page.waitForFunction(()=>typeof NU==='function'&&NU().menuRequest);
@@ -35,16 +37,16 @@ const core=require('./sidbot-loader.cjs');
  assert.equal(await page.evaluate(()=>NU().menu.meals[0].items[1].weight_state),'cooked');
  assert.equal(await page.evaluate(()=>NU().menuRequest||null),null);
  // Two meals share the remaining allowance, never the whole daily target each.
- await page.evaluate(()=>{sbClose();NU().log=[{id:uid(),day:iso(today()),kcal:1000}];const mp=nuMP();mp.type='day';mp.pick={breakfast:false,lunch:true,dinner:true};mp.snacks=0;mp.kcals=null;mp.budget_kind='remaining';mpSet(mp,'day','weighing_mode','cooked');data.ui.nuTab='menu';show('nutri');renderNutri()});
+ await page.evaluate(async()=>{sbClose();NU().log=[{id:uid(),day:iso(today()),kcal:1000}];const mp=nuMP();mp.type='day';mp.pick={breakfast:false,lunch:true,dinner:true};mp.snacks=0;mp.kcals=null;mp.budget_kind='remaining';mpSet(mp,'day','weighing_mode','cooked');data.ui.nuTab='menu';NU().upd=Date.now();show('nutri');renderNutri();save();await push()});
  await page.click('#nuMenuBtn');await page.waitForSelector('#sbSheet:not([hidden])');await page.click('#sbSend');await page.waitForFunction(()=>sbMsgs('forme').filter(x=>x.role==='assistant').length===2);
  assert.equal(sent.context.menu_request.budget_kind,'remaining');assert.equal(sent.context.menu_request.meals.length,2);assert.equal(sent.context.menu_request.meals.reduce((s,m)=>s+m.kcal,0),1400);
  await page.locator('[data-sbact]').last().click();assert.equal(await page.evaluate(()=>NU().menu.meals.length),2);assert.equal(await page.evaluate(()=>NU().log.length),1);
  // Single food natural text uses actual cooked Ciqual composition, no yield guess.
- await page.evaluate(()=>{sbClose();NU().log=[];data.ui.nuTab='day';renderNutri()});await page.click('#nuMealAdd');
+ await page.evaluate(async()=>{sbClose();NU().log=[];data.ui.nuTab='day';renderNutri()});await page.click('#nuMealAdd');
  await page.fill('#nuAsk',"j'ai pesé 180 g de riz basmati cuit");await page.click('#nuAskBtn');await page.waitForFunction(()=>nuPending?.items?.length);
  assert.equal(await page.evaluate(()=>nuPending.items[0].kcal),266);assert.equal(await page.evaluate(()=>nuPending.items[0].weight_state),'cooked');await page.click('#nuResult [data-nuadd]');
  await page.click('#nuMealAdd');await page.fill('#nuAsk','180 g de poulet filet sans peau grillé');await page.click('#nuAskBtn');await page.waitForFunction(()=>nuPending?.items?.length);
  assert.equal(await page.evaluate(()=>nuPending.items[0].kcal),254);await page.click('#nuResult [data-nuadd]');
  assert.ok(await page.evaluate(()=>NU().log.every(x=>x.weight_state==='cooked'&&x.source.includes('Anses'))));
- assert.deepEqual(errors,[]);await page.close();console.log(`nutrition v83 ${width}/${fallback?'fallback':'React'}: cooked rice + meat, 983 kcal preview/confirmation/reload, 2-meal remaining budget OK`);
+ assert.deepEqual(errors,[]);await page.close();console.log(`nutrition v83 ${width}/${fallback?'fallback':'React'}/${lang}: cooked rice + meat, 983 kcal preview/confirmation/reload, 2-meal remaining budget OK`);
  }}finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});

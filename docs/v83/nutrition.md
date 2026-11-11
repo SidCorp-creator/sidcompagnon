@@ -24,7 +24,7 @@ Il s'agit de rendements de masse, pas d'une garantie de rétention nutritionnell
 
 ## Vérification et déploiement
 
-Tests hors ligne : contrat partagé, véritable handler MCP sur données simulées, parcours navigateur React 390 px et secours 1280 px. Cas : riz + poulet cuits, dîner wrap/viande hachée/frites au four à 983 kcal, deux repas partageant 1400 kcal restantes, aucune écriture avant confirmation, reprise après rechargement.
+Tests hors ligne : contrat partagé, véritable handler MCP sur données simulées, parcours navigateur React 390 px (FR et EN) et secours 1280 px (FR), avec contrôle de débordement. Cas : riz + poulet cuits, dîner wrap/viande hachée/frites au four à 983 kcal, deux repas partageant 1400 kcal restantes, aucune écriture avant confirmation, reprise après rechargement.
 
 Le transport du modèle est simulé : ces tests ne démontrent pas la qualité d'une réponse réelle de Groq. Les contraintes sémantiques d'aliments et de cuisson sont explicites dans le prompt et l'aperçu ; la validation structurelle ne prouve pas qu'une recette respecte toutes les exclusions en langage libre.
 

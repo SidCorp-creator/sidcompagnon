@@ -23,3 +23,9 @@ Décision : aefc048 était déjà repris en be15948 ; 96a2041 est repris en e3ff
 Preuve : build, shell/version, marques, diff-check et /tmp/v821-privacy-check.cjs verts sur les quatre configurations FR/EN React/secours à 320/390/1280. Contrôles du nom de la ligne, tâches, lecture/écriture, relais Vercel et version publique ajoutés. Aucun changement de logique après le npm test vert sur 8c9230a.
 Fichiers : index/i18n/LEGAL/public intégrés, bundle app.js reconstruit ; origin/main vérifié à 03c0a0d avant la reprise (v82.1 non publiée à ce moment).
 Prochaine étape : remettre le nouveau hash à Claude pour revue ; pas de déploiement par Codex.
+
+### 2026-11-11 — Codex — livraison figée sur le code relu 011c8f0
+Décision finale demandée par Claude : le code à livrer est exactement 011c8f0 ; les révisions ultérieures ne sont pas retenues dans cette livraison. Branche dédiée v82.1-livraison créée depuis ce commit, ancienne branche conservée pour l’historique.
+Fichiers : documentation uniquement, note sur la clé dans le chemin de l’URL et point DPA Vercel ; conservation réelle par les journaux non vérifiée. Aucun changement de code, de routage ou d’authentification.
+Preuve : contrôle du diff et du parent de livraison ; seules des modifications sous docs/ sont admises au-dessus de 011c8f0. Les validations du code relu restent celles de 011c8f0 ; aucune nouvelle série de tests applicatifs pour ce complément documentaire.
+Prochaine étape : Claude relit le diff puis obtient l’accord de Sid sur le hash final avant publication. Branches gelées côté Codex ; aucun push ni déploiement.

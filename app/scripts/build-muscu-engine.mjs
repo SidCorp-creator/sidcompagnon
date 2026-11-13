@@ -16,3 +16,8 @@ console.log('Muscu rules/catalogue '+(process.argv.includes('--check')?'match':'
 const nutrition=read('supabase/functions/_shared/nutrition-menu.js');
 const nutritionShell='// @ts-nocheck\n// Generated: edit supabase/functions/_shared/nutrition-menu.js.\n'+nutrition.replace('export function createNutritionMenu','function createNutritionMenu')+'\nconst nutritionMenu=createNutritionMenu();\n';
 if(process.argv.includes('--check')){if(read('app/src/shell/39b-menu-contrat.js')!==nutritionShell)throw Error('Stale nutrition contract')}else writeFileSync(new URL('app/src/shell/39b-menu-contrat.js',root),nutritionShell);
+
+// v85 : table nutritionnelle de référence et calculs (même source que la fonction Edge sidbot)
+const nutritionTable=read('supabase/functions/_shared/nutrition-table.js');
+const tableShell='// @ts-nocheck\n// Generated: edit supabase/functions/_shared/nutrition-table.js.\n'+nutritionTable.replace('export function createNutritionTable','function createNutritionTable')+'\nconst nutritionTable=createNutritionTable();\n';
+if(process.argv.includes('--check')){if(read('app/src/shell/39c-table-nutrition.js')!==tableShell)throw Error('Stale nutrition table')}else writeFileSync(new URL('app/src/shell/39c-table-nutrition.js',root),tableShell);

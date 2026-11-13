@@ -2892,3 +2892,18 @@ html[data-ds="elan"] .note-pages #noteBody, .note-pages #noteBody {
 @media(max-width:359px){html[data-ds="elan"] #vhead .logo-badged{display:none}}
 .ms-clock { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .ms-clock [data-mselapsed] { font-variant-numeric: tabular-nums; }
+/* v85 : Sid'Bot nutrition — tableau du repas ou du menu, puis total, puis question */
+.sb-nt{margin:0 0 10px;border:var(--rule,1px) solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.sb-nt-h{padding:9px 12px;font:600 14px/20px var(--font);border-bottom:var(--rule,1px) solid var(--line)}
+.sb-nt table{width:100%;border-collapse:collapse;font:400 13px/18px var(--font);font-variant-numeric:tabular-nums}
+.sb-nt th,.sb-nt td{padding:7px 8px;text-align:right;vertical-align:top;border-bottom:var(--rule,1px) solid var(--line)}
+.sb-nt thead th{font:600 11px/16px var(--font);letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.sb-nt tbody tr:last-child>*{border-bottom:0}
+.sb-nt th:first-child{text-align:left;font-weight:500;padding-left:12px;overflow-wrap:anywhere}.sb-nt td:last-child,.sb-nt th:last-child{padding-right:12px;white-space:nowrap}
+.sb-nt th i{font-style:normal;font-size:11px;color:var(--muted);border:var(--rule,1px) solid var(--line);border-radius:6px;padding:0 5px;margin-left:4px;white-space:nowrap}
+.sb-nt-steps{border-top:var(--rule,1px) solid var(--line);padding:8px 12px;font:400 13px/19px var(--font)}
+.sb-nt-steps summary{cursor:pointer;font-weight:600;list-style:none;min-height:28px;display:flex;align-items:center}.sb-nt-steps ol{margin:6px 0 2px;padding-left:20px}
+.nu-always{display:grid;gap:12px;margin-top:4px}.nu-al{display:grid;gap:6px}.nu-al-t{font:600 14px/20px var(--font)}
+.nu-al-chips{display:flex;flex-wrap:wrap;gap:6px}.nu-al-chips:empty{display:none}
+.nu-al-chip{display:inline-flex;align-items:center;gap:4px;padding-right:4px}.nu-al-chip button{border:0;background:none;color:var(--muted);min-width:28px;min-height:28px;display:grid;place-items:center;cursor:pointer;padding:0;font-size:16px}
+.nu-al-form input{min-width:0}

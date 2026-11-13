@@ -135,6 +135,38 @@ const mpPref=(mp,type,k)=>{const p=mp.pp&&mp.pp[type];if(p&&p[k]!=null)return p[
 const mpSet=(mp,type,k,v)=>{mp.pp=mp.pp||{};mp.pp[type]={...(mp.pp[type]||{}),[k]:v}};
 // v74.5 (demande de Sid) : une fois le menu généré, « à inclure » et « à éviter » sont vidés pour TOUS les types de menu
 // (journée, petit-déjeuner, déjeuner…) et l'ancien format ; avant, seul le type affiché l'était et l'ancien texte revenait ailleurs
+// v85 : réglages durables des menus (jamais vidés après une demande) : menuPrefs.always = {avoid:[…], include:[…]}
+const mpAlways=()=>{const mp=nuMP(),a=mp.always&&typeof mp.always==="object"?mp.always:{};return {avoid:Array.isArray(a.avoid)?a.avoid.filter(x=>typeof x==="string"&&x.trim()).slice(0,40):[],include:Array.isArray(a.include)?a.include.filter(x=>typeof x==="string"&&x.trim()).slice(0,40):[]}};
+const mpJoin=(text,list)=>[String(text||"").trim(),...list].filter(Boolean).join(", ").slice(0,2000);
+function mpAlwaysSet(kind,list){const mp=nuMP(),cur=mpAlways();cur[kind]=[...new Set(list.map(x=>String(x).trim().slice(0,60)).filter(Boolean))].slice(0,40);mp.always=cur;NU().upd=Date.now();save()}
+function renderMenuAlways(){
+  let box=$("nuAlways");if(!box){box=document.createElement("div");box.id="nuAlways";box.className="nu-always";$("nuExclude").parentElement.after(box);
+    box.addEventListener("click",e=>{const b=e.target.closest("[data-nual]");if(!b)return;const [k,i]=b.dataset.nual.split(":");mpAlwaysSet(k,mpAlways()[k].filter((_,j)=>j!==+i));renderMenuAlways()});
+    box.addEventListener("submit",e=>{e.preventDefault();const f=e.target,k=f.dataset.nualf,inp=f.querySelector("input"),v=inp.value.split(/[,;]/).map(x=>x.trim()).filter(Boolean);if(!v.length)return;
+      mpAlwaysSet(k,[...mpAlways()[k],...v]);inp.value="";renderMenuAlways();const again=$("nuAlways").querySelector(`[data-nualf="${k}"] input`);if(again)again.focus({preventScroll:true})})}
+  if(box.contains(document.activeElement)&&document.activeElement.tagName==="INPUT"&&document.activeElement.value)return;
+  const a=mpAlways(),part=(k,title,ph)=>`<div class="nu-al"><span class="nu-al-t">${L(title)}</span><div class="nu-al-chips">${a[k].map((x,i)=>`<span class="pill nu-al-chip"><span class="notr">${esc(x)}</span><button type="button" data-nual="${k}:${i}" aria-label="${L("Retirer")} ${esc(x)}">${IC("close")||"×"}</button></span>`).join("")}</div>
+    <form class="addbar nu-al-form" data-nualf="${k}"><input placeholder="${L(ph)}" aria-label="${L(title)}" autocomplete="off" maxlength="60" enterkeyhint="done"><button class="btn ghost" type="submit">${L("Ajouter")}</button></form></div>`;
+  box.innerHTML=part("avoid","Je n'aime pas (jamais dans mes menus)","Ex. champignons")+part("include","À inclure souvent","Ex. riz, poulet")}
+// v85 : demande de menu écrite à Sid'Bot (« que manger ce soir », « dîner 983 kcal avec… ») → repas et kcal lus dans la journée et les réglages
+function nuMenuRequestFromText(text){
+  const s=nutritionTable.fold(text).replace(/['’`-]/g," "),day=iso(today()),mp=nuMP(),target=Math.round(dayTarget(day).kcal||0);
+  const eaten=NU().log.filter(x=>x.day===day).reduce((t,x)=>t+(+x.kcal||0),0),left=Math.round(target-eaten),num=s.match(/(\d{3,4})\s*k?cal/),asked=num?+num[1]:0;
+  if(!target&&!asked)return {error:L("Calcule d'abord ton objectif dans Nutrition : je pourrai alors viser exactement tes calories.")};
+  const named=/\b(petit dej|petit dejeuner|breakfast)\b/.test(s)?"breakfast":/\b(dejeuner|midi|lunch)\b/.test(s)?"lunch":/\b(collation|gouter|snack)\b/.test(s)?"snack":/\b(diner|ce soir|souper|dinner|tonight)\b/.test(s)?"dinner":null;
+  const conf=mpSlots().map(x=>x==="meal"?"lunch":x),hour=new Date().getHours(),after={breakfast:10,lunch:15,snack:18,dinner:24};
+  let slots,kcals,kind;
+  if(named||asked){const slot=named||"meal";slots=[slot];kind="meal";
+    const rest=conf.filter(x=>hour<after[x]),share=rest.includes(slot)&&rest.length>1?fitKcals(rest.map(x=>SLOT[x][2]*left/rest.reduce((t,y)=>t+SLOT[y][2],0)),left)[rest.indexOf(slot)]:left;
+    kcals=[asked||share]}
+  else if(eaten>0){slots=conf.filter(x=>hour<after[x]);if(!slots.length)slots=[conf[conf.length-1]||"dinner"];kind="remaining";kcals=fitKcals(slots.map(x=>SLOT[x][2]*left/slots.reduce((t,y)=>t+SLOT[y][2],0)),left)}
+  else{slots=mpSlots();kind="day";kcals=fitKcals(slots.map(x=>SLOT[x][2]*target/slots.reduce((t,y)=>t+SLOT[y][2],0)),target)}
+  if(kcals.some(k=>!(k>=100)))return {error:`${L("Il te reste")} ${Math.max(0,left)} kcal ${L("aujourd'hui : pas assez pour composer un repas.")}`};
+  const ty=named||"day",a=mpAlways();
+  try{const request=nutritionMenu.request({id:uid(),date:day,weighing_mode:mpPref(mp,ty,"weighing_mode")==="cooked"||/\b(cuit|cuits|apres cuisson|cooked)\b/.test(s)&&!/\b(cru|crus|avant cuisson|raw)\b/.test(s)?"cooked":"raw",budget_kind:kind,
+      meals:slots.map((slot,i)=>({slot,name:L(slotName(slot)),kcal:kcals[i]})),must_include:a.include.join(", "),avoid:a.avoid.join(", "),
+      notes:(String(NU().profile?.notes||"")+" "+L("Demande")+" : "+String(text)).trim().slice(0,2000)});
+    NU().menuRequest=request;NU().upd=Date.now();save();return request}catch{return null}}
 const mpWipe=mp=>{for(const t of Object.keys(mp.pp||{}))mp.pp[t]={...mp.pp[t],include:"",exclude:""};delete mp.include;delete mp.exclude};
 const nuMP=()=>{const n=NU();n.menuPrefs=n.menuPrefs||{};const m=n.menuPrefs;m.type=m.type||"day";m.one=m.one||{};
   // ancien réglage « repas par jour » → choix des repas
@@ -159,11 +191,11 @@ let nuMkForce=false; // v64 : redessiner les calories par repas même pendant la
 const nuMkClear=()=>{if(Object.keys($("nuMealKcal")).some(k=>k.startsWith("__reactContainer")))nuMkForce=true;else $("nuMealKcal").innerHTML=""};
 function renderMenuForm(){
   const mp=nuMP(),day=mp.type==="day";
-  let wm=$("nuWeighingMode");if(!wm){const label=document.createElement("label");label.innerHTML=`${L("Pesée des ingrédients")}<select id="nuWeighingMode"><option value="unspecified">${L("Non précisé")}</option><option value="raw">${L("Avant cuisson (cru)")}</option><option value="cooked">${L("Après cuisson (cuit)")}</option></select>`;$("nuInclude").parentElement.before(label);wm=$("nuWeighingMode");wm.addEventListener("change",()=>{mpSet(nuMP(),nuMP().type,"weighing_mode",wm.value);NU().upd=Date.now();save()})}
+  let wm=$("nuWeighingMode");if(!wm){const label=document.createElement("label");label.innerHTML=`${L("Pesée des ingrédients")}<select id="nuWeighingMode"><option value="raw">${L("Avant cuisson (cru)")}</option><option value="cooked">${L("Après cuisson (cuit)")}</option></select>`;$("nuInclude").parentElement.before(label);wm=$("nuWeighingMode");wm.addEventListener("change",()=>{mpSet(nuMP(),nuMP().type,"weighing_mode",wm.value);NU().upd=Date.now();save()})}
   let bk=$("nuMenuBudget");if(!bk){const label=document.createElement("label");label.innerHTML=`${L("Budget du menu")}<select id="nuMenuBudget"><option value="day">${L("Objectif de la journée")}</option><option value="remaining">${L("Reste de la journée")}</option></select>`;$("nuMDay").prepend(label);bk=$("nuMenuBudget");bk.addEventListener("change",()=>{nuMP().budget_kind=bk.value;nuMP().kcals=null;NU().upd=Date.now();save();renderMenuForm()})}
   bk.value=mp.budget_kind||"day";
   let resume=$("nuResumeMenu");if(!resume){resume=document.createElement("button");resume.id="nuResumeMenu";resume.type="button";resume.className="btn ghost";resume.textContent=L("Reprendre le menu à confirmer");$("nuMenuBtn").after(resume);resume.addEventListener("click",()=>{const r=NU().menuRequest;if(r)aiHandoff(nutritionMenu.prompt(r,LANG==="en"),"nutri",{menuRequest:r})})}resume.hidden=!NU().menuRequest;
-  wm.value=mpPref(mp,mp.type,"weighing_mode")||"unspecified";
+  wm.value=mpPref(mp,mp.type,"weighing_mode")==="cooked"?"cooked":"raw";
   document.querySelectorAll("#nuMType button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mtype===mp.type));
   $("nuMDay").hidden=!day;$("nuMOne").hidden=day;$("nuSnacks").textContent=mp.snacks||0;
   if(shIsl("nuSlots")){try{window.SCIslands.nuSlots($("nuSlots"),{i18n:agI18n(),slots:MAINS.map(s=>({k:s,on:!!mp.pick[s],icon:IC(SLOT[s][1]),name:SLOT[s][0]}))})}catch(e){reportErr("island nuSlots: "+(e&&e.message))}}
@@ -182,6 +214,7 @@ function renderMenuForm(){
   // v74.5 (relu par Codex) : un NOUVEAU menu (menu.at a changé, par exemple enregistré par Claude puis reçu par la synchro) remet les deux
   // champs à jour même s'ils ont le focus ; sinon un champ focalisé garde sa saisie en cours
   const mAt=String((NU().menu&&NU().menu.at)||""),fresh=nuMenuSeen!==null&&mAt!==nuMenuSeen;nuMenuSeen=mAt;
+  renderMenuAlways();
   if(fresh||document.activeElement!==$("nuInclude"))$("nuInclude").value=mpPref(mp,mp.type,"include");if(fresh||document.activeElement!==$("nuExclude"))$("nuExclude").value=mpPref(mp,mp.type,"exclude");autoGrow($("nuInclude"));autoGrow($("nuExclude"));
 }
 /** @type {string|null} */ var nuMenuSeen=null; // var : lisible même si renderMenuForm est appelé avant cette ligne
@@ -218,11 +251,11 @@ async function nuRetry(fn,ok){let last;for(let a=0;a<2;a++){try{const r=await fn
 // demande à Claude un ou plusieurs repas (calories précises par repas)
 async function genMeals(slots,kcals){
   const mp=JSON.parse(JSON.stringify(nuMP())),ty=mp.type,account=sbUid();
-  let references="";try{const foods=await ciqualFoods();references=foods.filter(x=>/riz basmati, cuit|poulet, filet sans peau grill|boeuf, steak haché.*cuit|pomme de terre.*frite.*four/i.test(x.name)).slice(0,8).map(x=>`${x.name} (Ciqual ${x.code}) : pour 100 g, ${x.kcal} kcal, P ${x.p}, G ${x.c}, L ${x.f}`).join(" ; ")}catch{}
   if(account!==sbUid())throw new Error(L("Reconnecte-toi pour utiliser Sid'Bot."));
-  const request=nutritionMenu.request({id:uid(),date:iso(today()),weighing_mode:mpPref(mp,ty,"weighing_mode")||"unspecified",
+  // v85 : poids crus par défaut ; les réglages durables (« je n'aime pas », « à inclure souvent ») s'ajoutent à la demande ponctuelle
+  const request=nutritionMenu.request({id:uid(),date:iso(today()),weighing_mode:mpPref(mp,ty,"weighing_mode")==="cooked"?"cooked":"raw",
     budget_kind:ty==="day"?(mp.budget_kind||"day"):"meal",meals:slots.map((slot,i)=>({slot,name:L(slotName(slot)),kcal:kcals[i]})),
-    must_include:mpPref(mp,ty,"include"),avoid:mpPref(mp,ty,"exclude"),notes:((NU().profile?.notes||"")+" Références de composition (seulement si cet aliment et cette cuisson conviennent) : "+references).slice(0,2000)});
+    must_include:mpJoin(mpPref(mp,ty,"include"),mpAlways().include),avoid:mpJoin(mpPref(mp,ty,"exclude"),mpAlways().avoid),notes:String(NU().profile?.notes||"").slice(0,2000)});
   // Durable until confirmation; clearing the form never changes this snapshot.
   NU().menuRequest=request;NU().upd=Date.now();save();
   throw aiNeed("menu",{menuRequest:request});

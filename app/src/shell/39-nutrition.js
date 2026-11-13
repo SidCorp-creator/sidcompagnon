@@ -20,10 +20,18 @@ async function nuCall(kind,payload){payload=payload||{};
   if(kind==="profil")return nuProfileLocal(payload.data||{});
   if(kind==="aliment"&&!payload.image&&String(payload.text||"").trim()){
     const local=await nuLocalWeighed(payload.text);if(local)return local;
+    const known=nuTableMeal(payload.text);if(known)return known; // v85 : aliments courants chiffrés par la table, sans question ni attente
     if(!navigator.onLine)throw new Error(L("Pas de connexion internet"));
     const j=await api("/functions/v1/nutrition",{method:"POST",token:await token(),body:{kind,lang:LANG,text:payload.text}});
     if(j&&j.result){j.result._src="memory";return j.result}}
   throw aiNeed(kind,payload)}
+// v85 : « 50 g de flocons d'avoine », « 2 œufs et une banane » → résultat direct depuis la table de référence (même calcul que Sid'Bot)
+function nuTableMeal(text){
+  const t=String(text),hint=t.includes("·")?nutritionMenu.inferState(t.slice(t.indexOf("·"))):"unspecified",mode=hint!=="unspecified"?hint:NU().foodWeighingMode==="raw"?"raw":"cooked";
+  const r=nutritionTable.parseFoodText(t.replace(/\s*·.*$/,""),{prefer:mode});if(r.unknown.length||!r.items.length)return null;
+  const notes=nutritionTable.mealText(r.items,LANG==="en"?"en":"fr").split("\n").slice(1,-1).join(" ");
+  return {dish:r.items.map(x=>x.name).join(", "),note:notes||L("Table de référence (Ciqual, USDA)"),items:r.items.map(x=>({name:x.name,quantity:x.qty,grams:x.g,weight_state:x.weight_state,source:"table",
+    ...(x.unit_g?{unit_g:x.unit_g}:{}),kcal:x.kcal,protein_g:x.p,carbs_g:x.c,fat_g:x.f}))}}
 function aiNeed(kind,p){aiHandoff(aiPrompt(kind,p),"nutri",{img:p&&p.image?"data:image/jpeg;base64,"+p.image:null,menuRequest:p&&p.menuRequest});const e=new Error(L("Sid'Bot a reçu ta demande : vérifie sa proposition avant de l’ajouter."));e.ai=true;return e}
 // profil : métabolisme (Mifflin-St Jeor), dépense avec le sport, objectif selon le rythme, macros (mêmes règles prudentes qu'avant)
 const SPORT_MET=/** @type {[RegExp,number][]} */([[/muscu|fitness|gym|halt|crossfit|weight|kracht/,5.5],[/course|running|jogg|run|lopen|hardlo/,9.8],[/v[eé]lo|cycl|bike|fiets|spinning/,7.5],[/nata|swim|zwem|piscine/,7],
@@ -56,12 +64,9 @@ function aiPrompt(kind,p){const d=(p&&p.data)||{};
 function nuDayNote(){if(nuDay>=iso(today()))return "";const d=parse(nuDay),txt=`${DOWL[d.getDay()]} ${d.getDate()} ${MOL[d.getMonth()].toLowerCase()}`;
   return T3(` C'était le ${txt} : note-le à la date ${nuDay} (pas aujourd'hui).`,` It was on ${nuDay}: log it on that date (not today).`)}
 function aiPrompt0(kind,p){const d=(p&&p.data)||{};
-  if(kind==="aliment"&&p.image)return T3("Je t'envoie la photo de mon assiette (je la joins). Estime ce que j'ai mangé et note-le après ma confirmation.","I'm sending you a photo of my plate (attached). Estimate what I ate and log it after my confirmation.");
-  if(kind==="aliment")return T3(`Note après ma confirmation ce que j'ai mangé : ${p.text}`,`Log after my confirmation what I ate: ${p.text}`);
+  if(kind==="aliment"&&p.image)return T3("Voici la photo de mon assiette : estime ce que j'ai mangé.","Here is a photo of my plate: estimate what I ate.");
+  if(kind==="aliment")return T3(`J'ai mangé : ${p.text}`,`I ate: ${p.text}`);
   if(kind==="menu"&&p.menuRequest)return nutritionMenu.prompt(p.menuRequest,LANG==="en");
-  if(kind==="menu"){const meals=(d.meals||[]).map(m=>`${m.name} (~${m.kcal} kcal)`).join(", "),inc=d.must_include,exc=d.avoid;
-    return T3(`lis ma journée nutrition, puis compose-moi ${(d.meals||[]).length>1?"un menu pour la journée":"un repas"} : ${meals}.${inc?` À inclure : ${inc}.`:""}${exc?` À éviter : ${exc}.`:""}${d.notes?` ${d.notes}`:""} Respecte le mode de pesée demandé, g et kcal par ingrédient, huiles et sauces comprises, puis enregistre le menu après ma confirmation.`,
-      `read my nutrition day, then make me ${(d.meals||[]).length>1?"a menu for the day":"a meal"}: ${meals}.${inc?` Include: ${inc}.`:""}${exc?` Avoid: ${exc}.`:""}${d.notes?` ${d.notes}`:""} Respect the requested weighing mode, grams and kcal for every ingredient including oils and sauces, then save the menu after my confirmation.`)}
   if(kind==="recette"){const f=(d.foods||[]).map(x=>`${x.food}${x.grams?` ${x.grams} g`:""}`).join(", ");
     return T3(`donne-moi la recette de « ${d.name} » (${f}), avec exactement ces aliments et ces quantités, puis ajoute les étapes à ce repas dans mon menu après confirmation.`,`give me the recipe for "${d.name}" (${f}) with exactly these foods and amounts, then add the steps to this meal in my menu after confirmation.`)}
   if(kind==="bilan")return p.scope==="week"?T3("fais le bilan nutrition de ma semaine (calories, macros, poids) : ce qui va bien, ce qui peut s'améliorer, et 2 ou 3 conseils concrets. Puis enregistre ce commentaire après ma confirmation pour que je le voie dans l'app.","review my nutrition week (calories, macros, weight): what went well, what could improve, and 2 or 3 concrete tips. Then save this review after my confirmation so I can see it in the app.")

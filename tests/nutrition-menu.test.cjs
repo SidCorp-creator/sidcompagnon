@@ -14,23 +14,30 @@ const two={...request,id:'two',budget_kind:'remaining',meals:[{slot:'lunch',name
 const response={request_id:'two',meals:two.meals.map(m=>({...m,items:[food('Riz basmati cuit',200,m.kcal)]}))};assert.equal(engine.menu(response,two).meals.length,2);
 assert.throws(()=>engine.menu({...response,meals:[response.meals[0]]},two));
 const req=validateRequest({app:'forme',task:'menu',locale:'fr',messages:[{role:'user',content:'dîner 983 kcal, après cuisson'}],context:{menu_request:request}}),prompt=instructions(req);
-assert.match(prompt,/save_menu/);assert.match(prompt,/huiles et sauces/);assert.match(prompt,/983/);assert.match(prompt,/APRÈS cuisson/);
+assert.match(prompt,/oil, butter, honey and sauces/);assert.match(prompt,/983 kcal/);assert.match(prompt,/COOKED weight/);assert.match(prompt,/Never ask a question/);assert.match(prompt,/KNOWN FOODS: .*Frites cuites au four/);assert.doesNotMatch(prompt,/\bask if\b|demande si/i);
+assert.match(engine.prompt(request),/Poids APRÈS cuisson/);assert.match(engine.prompt({...request,weighing_mode:'unspecified'}),/Poids AVANT cuisson/);assert.ok(engine.prompt(request).length<260,'message visible court');
 assert.equal(validateResult({reply:'Aperçu',actions:[{type:'log_meal',label:'Manger',payload:{date:request.date,name:'test',items:[{...food('riz',100,100),qty:'100 g'}]}}]},'forme',{}).actions.length,1);
 assert.throws(()=>validateResult({reply:'Aperçu',actions:[{type:'log_meal',label:'Manger',payload:{date:request.date,name:'test',items:[{...food('riz',100,100),qty:'100 g'}]}}]},'forme',{menu_request:request}));
 console.log('nutrition menu: 983 kcal cooked / two-meal remaining budget / stale, count, slot, state, calorie bounds / preview contract OK');
-// Real handler: one automatic repair, one quota reservation, and a bounded failure if both proposals miss the budget.
+// Real handler (v85): values are recalculated by code, so a wrong kcal from the model is corrected without a second call;
+// a proposal the code cannot fix (a food the person never wants) gets ONE repair call on the same quota, then a bounded error.
 (async()=>{const config={SUPABASE_URL:'https://db.test',SUPABASE_SERVICE_ROLE_KEY:'test',SIDBOT_PROVIDER:'groq',SIDBOT_FREE_PLAN_CONFIRMED:'true',SIDBOT_API_KEY:'test'};
- for(const alwaysBad of [false,true]){let calls=0,quotas=0,last;
+ const never={...request,avoid:'champignons'},bad=JSON.parse(JSON.stringify(payload));bad.meals[0].items.push(food('Champignons',100,22,'unspecified'));
+ for(const mode of ['wrong-kcal','repair','always-bad']){let calls=0,quotas=0,last;
   const handler=require('./sidbot-loader.cjs').createHandler(k=>config[k],async(url,opt)=>{
    if(url.endsWith('/auth/v1/user'))return Response.json({id:'test'});
    if(url.includes('/rpc/')){quotas++;return Response.json({used:1,limit:20})}
    calls++;last=JSON.parse(opt.body);
-   const p=JSON.parse(JSON.stringify(payload));if(alwaysBad||calls===1)p.meals[0].items[0].kcal+=1000;
+   let p=JSON.parse(JSON.stringify(payload));if(mode==='wrong-kcal')p.meals[0].items[0].kcal+=1000;if(mode==='always-bad'||mode==='repair'&&calls===1)p=bad;
    return Response.json({choices:[{message:{content:JSON.stringify({reply:'Aperçu',actions:[{type:'save_menu',label:'Menu',payload:p}]})}}]});
   });
-  const res=await handler(new Request('https://test',{method:'POST',headers:{Authorization:'Bearer test'},body:JSON.stringify({app:'forme',task:'menu',locale:'fr',messages:[{role:'user',content:'Dîner'}],context:{menu_request:request}})}));
-  assert.equal(calls,2);assert.equal(quotas,1);assert.match(last.messages.at(-1).content,/Repair it once/);
-  const out=await res.json();if(alwaysBad){assert.equal(out.error,'invalid_menu');assert.equal(out.actions,undefined)}else{assert.equal(res.status,200);assert.equal(out.actions[0].type,'save_menu')}
+  const res=await handler(new Request('https://test',{method:'POST',headers:{Authorization:'Bearer test'},body:JSON.stringify({app:'forme',task:'menu',locale:'fr',messages:[{role:'user',content:'Dîner'}],context:{menu_request:never}})}));
+  const out=await res.json();assert.equal(quotas,1);
+  assert.equal(last.response_format.type,'json_schema');assert.equal(last.response_format.json_schema.strict,true);assert.equal(last.reasoning_effort,'low');assert.equal(last.messages[0].role,'system');
+  if(mode==='wrong-kcal'){assert.equal(calls,1);assert.equal(last.messages.length,2,'la demande part une seule fois : système + dernier message');const m=out.actions[0].payload.meals[0],sum=m.items.reduce((t,x)=>t+x.kcal,0);
+   assert.ok(Math.abs(sum-983)<=983*.05,'total recalculé dans les 5 % ('+sum+')');assert.match(out.reply,new RegExp('^Total : '+sum+' kcal \\(objectif 983\\)\\nJe l\'enregistre \\?$'))}
+  else{assert.equal(calls,2);assert.match(last.messages.at(-1).content,/^Rejected: it uses a food the person never wants \(champignons\)/);
+   if(mode==='always-bad'){assert.equal(out.error,'invalid_menu');assert.equal(out.actions,undefined)}else{assert.equal(res.status,200);assert.equal(out.actions[0].type,'save_menu')}}
  }
- console.log('nutrition menu server: out-of-budget proposal repaired once, one quota reservation, bounded error after second invalid menu OK');
+ console.log('nutrition menu server: wrong kcal corrected by code in one call, strict schema, unfixable proposal repaired once on one quota, bounded error OK');
 })().catch(e=>{console.error(e);process.exitCode=1});

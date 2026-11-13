@@ -63,11 +63,20 @@ const convUrl=()=>"",convTabs=()=>{},renderConv=()=>{};
 function aiWizard(){sbOpen(sbAppOfView(data.ui.view))}
 function renderAiCards(){const c=$("nuAiCard");if(c)c.hidden=true;const st=$("sbState");if(st)st.textContent=sbUse.limit?`${L("Aujourd'hui")} : ${sbUse.used} / ${sbUse.limit} ${L("demandes")}`:""}
 // ---- affichage ----
-function sbMenuPreview(a){return (a.payload.meals||[]).map(m=>`<b>${esc(m.name)} · ${Math.round(m.items.reduce((t,x)=>t+x.kcal,0))} kcal</b><br>${m.items.map(x=>`${esc(x.name)} · ${esc(qtyTxt(x))} · ${Math.round(x.kcal)} kcal${x.yield_source?" · "+esc(x.yield_source):""}`).join("<br>")}`).join("<br><br>")}
+// v85 : repas ou menu proposé = d'abord le tableau (aliment, quantité, kcal, macros), puis la ligne « Total », puis la question et le bouton
+const sbNum=v=>String(Math.round((+v||0)*10)/10).replace(".",LANG==="en"?".":",");
+function sbNutriRows(name,items,steps){
+  return `<div class="sb-nt"><div class="sb-nt-h notr">${esc(name)} · ${Math.round(items.reduce((t,x)=>t+(+x.kcal||0),0))} kcal</div>
+    <table><thead><tr><th scope="col">${L("Aliment")}</th><th scope="col">${L("Quantité")}</th><th scope="col">kcal</th><th scope="col">${L("P · G · L")}</th></tr></thead><tbody>${items.map(x=>
+    `<tr><th scope="row" class="notr">${esc(x.name)}${x.estimated?` <i>${L("estimé")}</i>`:""}</th><td class="notr">${esc(qtyTxt(x))}</td><td>${Math.round(+x.kcal||0)}</td><td>${sbNum(x.p)} · ${sbNum(x.c)} · ${sbNum(x.f)}</td></tr>`).join("")}</tbody></table>
+    ${steps&&steps.length?`<details class="sb-nt-steps"><summary>${L("Étapes")}</summary><ol class="notr">${steps.map(t=>`<li>${esc(t)}</li>`).join("")}</ol></details>`:""}</div>`}
+function sbNutriTable(a){const p=a.payload||{};return a.type==="save_menu"?(p.meals||[]).map(m=>sbNutriRows(m.name,m.items||[],m.steps)).join(""):sbNutriRows(p.name||"",p.items||[])}
+const sbIsNutri=a=>a.type==="save_menu"||a.type==="log_meal";
 function sbBubble(m){if(m.role==="user")return `<div class="sb-msg me notr">${esc(m.content)}${m.img?`<span class="sb-att">${IC("image")||""} ${L("Photo jointe")}</span>`:""}</div>`;
   if(m.role==="error")return `<div class="sb-msg err" role="alert">${IC("alert")||""}<span>${esc(L(m.content))}</span>${m.retry?`<button type="button" class="linkbtn" data-sbretry="1">${L("Réessayer")}</button>`:""}</div>`;
-  const acts=(m.actions||[]).map((a,i)=>`<div class="sb-act" data-done="${a.done?1:0}"><span class="grow notr">${a.type==="save_menu"?sbMenuPreview(a):esc(a.label||sbActLabel(a))}</span>${a.done?`<span class="sb-ok">${IC("tick")||""}${L(a.type==="save_menu"?"Menu enregistré":a.type==="edit_note"?"Note modifiée":a.type==="share_note_pdf"?"Exporté":"Ajouté")}</span>`:`<button type="button" class="btn ghost sm" data-sbact="${m.id}:${i}">${L(sbActVerb(a))}</button>`}</div>${sbOpenDiff===m.id+":"+i&&!a.done?sbDiff(m,a,i):""}`).join("");
-  return `<div class="sb-msg bot"><div class="notr">${esc(m.content).replace(/\n/g,"<br>")}</div>${acts?`<div class="sb-acts">${acts}</div>`:""}</div>`}
+  const acts=(m.actions||[]).map((a,i)=>`<div class="sb-act" data-done="${a.done?1:0}"><span class="grow notr">${esc(sbIsNutri(a)?sbActShort(a):a.label||sbActLabel(a))}</span>${a.done?`<span class="sb-ok">${IC("tick")||""}${L(a.type==="save_menu"?"Menu enregistré":a.type==="edit_note"?"Note modifiée":a.type==="share_note_pdf"?"Exporté":"Ajouté")}</span>`:`<button type="button" class="btn ghost sm" data-sbact="${m.id}:${i}">${L(sbActVerb(a))}</button>`}</div>${sbOpenDiff===m.id+":"+i&&!a.done?sbDiff(m,a,i):""}`).join("");
+  return `<div class="sb-msg bot">${(m.actions||[]).filter(sbIsNutri).map(sbNutriTable).join("")}<div class="notr">${esc(m.content).replace(/\n/g,"<br>")}</div>${acts?`<div class="sb-acts">${acts}</div>`:""}</div>`}
+const sbActShort=a=>a.type==="save_menu"?L("Menu prévu"):String((a.payload||{}).name||"").slice(0,80);
 function sbRender(){const A=SB_APPS[sbApp],msgs=sbMsgs(sbApp);
   $("sbTitle").textContent=SB_NAME;$("sbSub").textContent=`${L("Avec")} ${A.label}`;
   document.querySelectorAll("[data-sbapp]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.sbapp===sbApp)));
@@ -92,6 +101,13 @@ async function sbSend(retry){if(sbBusy)return;const i=$("sbIn");let text=i.value
   if(!text)return;
   const fail=(code,again)=>{sbBusy=false;if(!same())return;sbPush(app,{id:uid(),role:"error",content:SB_ERR[code]||SB_ERR.unavailable,retry:!!again},uid0);sbRender()};
   if(!retry){sbPush(app,{id:uid(),role:"user",content:text.slice(0,4000),img:!!sbImg},uid0);i.value="";grow(i)}
+  // v85 : Sid'Bot ne demande jamais les calories. Aliments tous connus de la table : proposition immédiate, sans réseau ni quota.
+  if(app==="forme"&&!sbImg){const local=sbLocalMeal(text);
+    if(local){sbMenuRequest=null;sbPush(app,{id:uid(),role:"assistant",content:local.reply,actions:local.actions.filter(sbActOk)},uid0);sbRender();return}
+    // « que manger ce soir », « fais-moi un dîner à 983 kcal » : vraie demande de menu, calée sur les kcal restantes et les réglages
+    if(!sbMenuRequest&&session&&!isTrial()){const want=sbMenuIntent(text);
+      if(want&&want.error){sbPush(app,{id:uid(),role:"assistant",content:want.error,actions:[]},uid0);sbRender();return}
+      if(want)sbMenuRequest=want}}
   if(!session){fail("auth");return}if(isTrial()){fail("trial");return}if(!navigator.onLine){fail("offline",true);return}
   if(app==="forme"&&!(await nuConsent())){sbBusy=false;sbRender();return}
   if(!same())return;
@@ -115,6 +131,19 @@ async function sbSend(retry){if(sbBusy)return;const i=$("sbIn");let text=i.value
     const actions=(Array.isArray(j.actions)?j.actions:[]).filter(sbActOk).slice(0,5).map(a=>({type:a.type,payload:a.payload,label:String(a.label||"").slice(0,160)}));
     sbPush(app,{id:uid(),role:"assistant",content:String(j.reply||"").slice(0,8000),actions,...(noteRef?{noteRef,noteVer,noteFull:!!(ctx.note&&ctx.note.complete)}:{})},uid0);sbBusy=false;sbRender()}
   catch(e){clearTimeout(tm);fail(e&&e.name==="AbortError"&&!$("sbSheet").hidden?"timeout":navigator.onLine?"unavailable":"offline",true)}}
+function sbLocalMeal(text){
+  if(typeof nutritionTable==="undefined")return null;let t=String(text),day=iso(today());
+  const d=t.match(/\b(\d{4}-\d{2}-\d{2})\b/); // « C'était le … : note-le à la date AAAA-MM-JJ » (jour passé choisi dans Nutrition)
+  if(d){if(d[1]>day||isNaN(Date.parse(d[1]+"T12:00:00Z")))return null;day=d[1];t=t.replace(/\s*(?:C'était le|It was on)[^.]*\.\s*$/i,"");if(/\d{4}-\d{2}-\d{2}/.test(t))return null}
+  const hint=t.includes("·")?nutritionMenu.inferState(t.slice(t.indexOf("·"))):"unspecified",mode=hint!=="unspecified"?hint:NU().foodWeighingMode==="raw"?"raw":"cooked";
+  return nutritionTable.mealProposal(t.replace(/\s*·.*$/,""),{date:day,locale:LANG==="en"?"en":"fr",prefer:mode})}
+function sbMenuIntent(text){
+  const s=nutritionTable.fold(text).replace(/['’`-]/g," ");
+  if(/\b(j ai|je viens de|on a|i ve|i have|i)\s+(mange|pris|bu|ate|had|drank|eaten)\b/.test(s))return null;
+  const food=/\b(menu|menus|repas|plat|plats|diner|dejeuner|collation|gouter|manger|meal|meals|dinner|lunch|breakfast|snack|dish|eat)\b/.test(s);
+  const ask=/\b(propose|proposes|suggere|compose|prepare|genere|fais|donne|idee|idees|que manger|quoi manger|je veux|je voudrais|j aimerais|il me faut|plan|planifie|suggest|make|give|what (?:can|should|could) i eat|i want|i need)\b/.test(s);
+  if(!food||!(ask||/\bmenu\b/.test(s)||/\d{3,4}\s*k?cal/.test(s)))return null;
+  return typeof nuMenuRequestFromText==="function"?nuMenuRequestFromText(text):null}
 // ---- actions proposées : validées ici, appliquées seulement après un toucher ----
 const SB_D=/^\d{4}-\d{2}-\d{2}$/,SB_T=/^([01]\d|2[0-3]):[0-5]\d$/;
 function sbActOk(a){if(!a||typeof a!=="object"||!a.payload||typeof a.payload!=="object")return false;const p=a.payload;

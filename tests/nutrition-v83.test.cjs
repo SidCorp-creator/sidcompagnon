@@ -13,7 +13,7 @@ async function until(page,check,label){const end=Date.now()+15000;while(Date.now
  await page.route('**/functions/v1/nutrition',r=>r.fulfill({json:{result:null}}));
  await page.route('**/functions/v1/sidbot',async route=>{
   sent=route.request().postDataJSON();const b=core.validateRequest(sent),r=b.context.menu_request;
-  if(!r){const out=core.validateResult({reply:'Aperçu du repas cuit',actions:[{type:'log_meal',label:'Poulet',payload:{date:b.context.today,name:'Poulet cuit',items:[{name:'Blanc de poulet cuit',qty:'180 g',g:180,kcal:254,p:54,c:0,f:4,weight_state:'cooked'}]}}]},'forme',b.context);await route.fulfill({json:out});return}
+  if(!r){const out=core.validateResult({reply:'Aperçu du repas cuit',actions:[{type:'log_meal',label:'Pintade',payload:{date:b.context.today,name:'Pintade cuite',items:[{name:'Pintade cuite',qty:'180 g',g:180,kcal:254,p:54,c:0,f:4,weight_state:'cooked'}]}}]},'forme',b.context);await route.fulfill({json:out});return}
   const meals=r.meals.map(m=>({slot:m.slot,name:m.name,items:r.meals.length===1?[
    {name:'Wrap',g:80,kcal:240,p:8,c:40,f:5,weight_state:'unspecified'},
    {name:'Viande hachée cuite au four',g:150,kcal:330,p:35,c:0,f:21,weight_state:'cooked'},
@@ -32,7 +32,9 @@ async function until(page,check,label){const end=Date.now()+15000;while(Date.now
  assert.equal(await page.evaluate(()=>NU().menu?.meals?.length||0),0);assert.equal(await page.evaluate(()=>NU().log.length),0);
  await page.click('#sbSend');await page.waitForSelector('[data-sbact]');
  assert.equal(sent.task,'menu');assert.equal(sent.context.menu_request.meals.length,1);assert.equal(sent.context.menu_request.meals[0].kcal,983);
- assert.match(await page.locator('.sb-acts').last().innerText(),lang==='en'?/150 g · cooked · 330 kcal/:/150 g · cuit · 330 kcal/);
+ assert.match(await page.locator('.sb-msg.bot .sb-nt').last().innerText(),lang==='en'?/150 g · cooked\s+330/:/150 g · cuit\s+330/);
+ // v85 : le tableau vient avant le texte, et le bouton après
+ assert.ok(await page.evaluate(()=>{const b=[...document.querySelectorAll('.sb-msg.bot')].pop(),k=[...b.children].map(x=>x.className.split(' ')[0]);return k.indexOf('sb-nt')<k.indexOf('notr')&&k.indexOf('notr')<k.indexOf('sb-acts')}),'tableau, texte, puis bouton');
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal overflow');
  await page.screenshot({path:`tests/out/v83-menu-${width}-${lang}.png`});
  const preview=await page.evaluate(()=>sbMsgs('forme').filter(x=>x.role==='assistant').at(-1).actions[0].payload.meals.map(m=>m.items.map(x=>[x.g,x.kcal,x.weight_state])));
@@ -60,9 +62,9 @@ async function until(page,check,label){const end=Date.now()+15000;while(Date.now
  assert.equal(await page.evaluate(()=>nuPending.items[0].kcal),254);await page.click('#nuResult [data-nuadd]');
  assert.ok(await page.evaluate(()=>NU().log.every(x=>x.weight_state==='cooked'&&x.source.includes('Anses'))));
  // Force the missing-local-food path: the cooked wording survives memory miss, Sid'Bot and the consumed log.
- await page.evaluate(()=>{ciqualSearch=async()=>[]});await page.click('#nuMealAdd');await page.fill('#nuAsk','180 g de blanc de poulet cuit');await page.click('#nuAskBtn');await page.waitForSelector('#sbSheet:not([hidden])');
+ await page.evaluate(()=>{ciqualSearch=async()=>[]});await page.click('#nuMealAdd');await page.fill('#nuAsk','180 g de pintade cuite');await page.click('#nuAskBtn');await page.waitForSelector('#sbSheet:not([hidden])');
  assert.match(await page.inputValue('#sbIn'),/cuit/);await page.click('#sbSend');await until(page,()=>sbMsgs('forme').filter(x=>x.role==='assistant').length===3,'cooked meal proposal after memory miss');
- assert.match(sent.messages.at(-1).content,/180 g de blanc de poulet cuit/);await page.locator('[data-sbact]').last().click();
+ assert.match(sent.messages.at(-1).content,/180 g de pintade cuite/);await page.locator('[data-sbact]').last().click();
  assert.equal(await page.evaluate(()=>NU().log.at(-1).weight_state),'cooked');assert.equal(await page.evaluate(()=>NU().log.at(-1).g),180);
  assert.deepEqual(errors,[]);await page.close();console.log(`nutrition v83 ${width}/${fallback?'fallback':'React'}/${lang}: cooked rice + meat, 983 kcal preview/confirmation/reload, 2-meal remaining budget OK`);
  }}finally{await browser.close()}})().catch(e=>{console.error(e);process.exitCode=1});

@@ -44,6 +44,7 @@
 39-nutrition.js
 39a-catalogue-nutrition.js
 39b-menu-contrat.js
+39c-table-nutrition.js
 40-vues-semaine-mois-annee.js
 41-graphiques-bilans.js
 42-onglet-appli.js

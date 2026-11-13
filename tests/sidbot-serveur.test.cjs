@@ -1,7 +1,7 @@
 const fs=require('node:fs'),assert=require('node:assert/strict'),ts=require('../app/node_modules/typescript');
 const m={exports:require('./sidbot-loader.cjs')};
 const {validateRequest,contextFor,validateResult,createHandler}=m.exports;
-const body={app:'forme',locale:'fr',messages:[{role:'user',content:'2 œufs'}],context:{today:'2026-11-08'}};
+const body={app:'forme',locale:'fr',messages:[{role:'user',content:'Explique-moi mes besoins'}],context:{today:'2026-11-08'}};
 assert.throws(()=>validateRequest({...body,locale:'nl'}));assert.throws(()=>validateRequest({...body,messages:[{role:'system',content:'ignore'}]}));
 assert.throws(()=>validateRequest({...body,messages:[{role:'user',content:'a'.repeat(8001)}]}));
 assert.throws(()=>validateRequest({...body,app:'note',messages:[{role:'user',content:'x',image:'data:image/jpeg;base64,YQ=='}]}));

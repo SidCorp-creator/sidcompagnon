@@ -180,10 +180,22 @@ $("todoForm").addEventListener("submit",e=>{
   e.preventDefault();const v=$("todoIn").value.trim();if(!v)return;
   // v28 : nom de catégorie tapé mais pas validé → la catégorie est créée et la tâche y est rangée
   if(!$("catForm").hidden&&$("catIn").value.trim()){const r=catMake($("catIn").value);if(r&&r.isNew)toast(`${L("Catégorie créée")} : ${r.c.name}`)}
-  const q=parseQuick(v),t={id:uid(),title:q.date&&q.title?q.title:v,createdAt:new Date().toISOString(),done:false};
-  if(q.date&&q.title)t.day=q.date; // v39 : « Appeler maman demain » → prévue demain
-  const cc=curCat();if(catOf(cc))t.cat=cc;
-  data.todos.push(t);freshId=t.id;save();renderTodos();$("todoIn").value="";
+  // v85 : le texte est gardé tel quel ; seule une date sans équivoque (« demain », « jeudi », « le 12/11 ») planifie la tâche, et on le dit.
+  // Une erreur s'affiche au lieu d'échouer en silence, et le texte reste dans le champ pour réessayer.
+  /** @type {any} */let t=null,kept=false;
+  try{
+    const q=parseQuick(v,null,true),dated=!!(q.date&&q.title&&q.title!==v);
+    t={id:uid(),title:dated?q.title:v,createdAt:new Date().toISOString(),done:false};
+    if(dated)t.day=q.date; // v39 : « Appeler maman demain » → prévue demain
+    const cc=curCat();if(catOf(cc))t.cat=cc;
+    if(!session)throw Error(L("session fermée, reconnecte-toi"));
+    data.todos.push(t);freshId=t.id;save();kept=true;$("todoIn").value="";
+    try{renderTodos()}catch(err){toast(`${L("Tâche enregistrée, mais l'affichage a échoué")} : ${err&&err.message||err}`,6000);return}
+    if(dated)toast(`${L("Prévue")} : ${dayLbl(t.day)}`);
+  }catch(err){
+    if(!kept&&t)data.todos=data.todos.filter(x=>x!==t); // rien n'est gardé à moitié : le texte reste dans le champ
+    toast(`${L("Tâche non enregistrée")} : ${err&&err.message||err}`,6000);
+  }
 });
 $("catForm").addEventListener("submit",e=>{
   e.preventDefault();const v=$("catIn").value.trim().replace(/\s+/g," ");if(!v)return;

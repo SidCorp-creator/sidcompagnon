@@ -947,10 +947,22 @@ $("todoForm").addEventListener("submit",e=>{
   e.preventDefault();const v=$("todoIn").value.trim();if(!v)return;
   // v28 : nom de catégorie tapé mais pas validé → la catégorie est créée et la tâche y est rangée
   if(!$("catForm").hidden&&$("catIn").value.trim()){const r=catMake($("catIn").value);if(r&&r.isNew)toast(`${L("Catégorie créée")} : ${r.c.name}`)}
-  const q=parseQuick(v),t={id:uid(),title:q.date&&q.title?q.title:v,createdAt:new Date().toISOString(),done:false};
-  if(q.date&&q.title)t.day=q.date; // v39 : « Appeler maman demain » → prévue demain
-  const cc=curCat();if(catOf(cc))t.cat=cc;
-  data.todos.push(t);freshId=t.id;save();renderTodos();$("todoIn").value="";
+  // v85 : le texte est gardé tel quel ; seule une date sans équivoque (« demain », « jeudi », « le 12/11 ») planifie la tâche, et on le dit.
+  // Une erreur s'affiche au lieu d'échouer en silence, et le texte reste dans le champ pour réessayer.
+  /** @type {any} */let t=null,kept=false;
+  try{
+    const q=parseQuick(v,null,true),dated=!!(q.date&&q.title&&q.title!==v);
+    t={id:uid(),title:dated?q.title:v,createdAt:new Date().toISOString(),done:false};
+    if(dated)t.day=q.date; // v39 : « Appeler maman demain » → prévue demain
+    const cc=curCat();if(catOf(cc))t.cat=cc;
+    if(!session)throw Error(L("session fermée, reconnecte-toi"));
+    data.todos.push(t);freshId=t.id;save();kept=true;$("todoIn").value="";
+    try{renderTodos()}catch(err){toast(`${L("Tâche enregistrée, mais l'affichage a échoué")} : ${err&&err.message||err}`,6000);return}
+    if(dated)toast(`${L("Prévue")} : ${dayLbl(t.day)}`);
+  }catch(err){
+    if(!kept&&t)data.todos=data.todos.filter(x=>x!==t); // rien n'est gardé à moitié : le texte reste dans le champ
+    toast(`${L("Tâche non enregistrée")} : ${err&&err.message||err}`,6000);
+  }
 });
 $("catForm").addEventListener("submit",e=>{
   e.preventDefault();const v=$("catIn").value.trim().replace(/\s+/g," ");if(!v)return;
@@ -1258,12 +1270,14 @@ $("v-plan").addEventListener("click",e=>{
 // parseQuick(texte, maintenant) → {title, date?, time?} ; la date et l'heure trouvées remplissent les champs (sauf s'ils ont été touchés à la main)
 const QW={fr:["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"],en:["sunday","monday","tuesday","wednesday","thursday","friday","saturday"],nl:["zondag","maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag"]};
 const QM=[["janv","jan","janvier","january","januari"],["fevr","feb","fevrier","february","februari"],["mars","mar","march","maart"],["avr","apr","avril","april"],["mai","may","mei"],["juin","jun","june","juni"],["juil","jul","juillet","july","juli"],["aout","aug","august","augustus"],["sept","sep","septembre","september"],["oct","octobre","october","okt","oktober"],["nov","novembre","november"],["dec","decembre","december"]];
-function parseQuick(text,now){now=now||new Date();const fold0=t=>t.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+// v85 : strict (Tâches) : pas d'heure, et une date en chiffres seulement si elle est sans équivoque (« le 12/11 » ou année à 4 chiffres) ;
+// « 4-5 », « 10/12 », « 1.5 », « 2-3 séries » restent du texte. Mois en toutes lettres ou abréviation exacte seulement.
+function parseQuick(text,now,strict){now=now||new Date();const fold0=t=>t.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
   let t=" "+text+" ",date=null,time=null;const low=()=>fold0(t);
   const cut=(re,f)=>{const m=low().match(re);if(!m)return false;const r=f(m);if(r===false)return false;const i=m.index;t=t.slice(0,i)+" "+t.slice(i+m[0].length);return true};
   const d0=new Date(now.getFullYear(),now.getMonth(),now.getDate()),add=n=>{const d=new Date(d0);d.setDate(d.getDate()+n);return d};
   // heure : 14h, 14h30, 14:30, 9 h, 9am, 2.30pm, 14u, 14u30 (précédée ou non de « à », « at », « om »)
-  cut(/\s(?:a|at|om|vers)?\s*(\d{1,2})\s*(?:h|u|:|\.)\s*(\d{2})?(?=\s)/,m=>{const h=+m[1],mi=+(m[2]||0);if(h>23||mi>59)return false;time=`${two(h)}:${two(mi)}`})||
+  strict||cut(/\s(?:a|at|om|vers)?\s*(\d{1,2})\s*(?:h|u|:|\.)\s*(\d{2})?(?=\s)/,m=>{const h=+m[1],mi=+(m[2]||0);if(h>23||mi>59)return false;time=`${two(h)}:${two(mi)}`})||
   cut(/\s(?:at\s)?(\d{1,2})(?:[:.](\d{2}))?\s*(am|pm)(?=\s)/,m=>{let h=+m[1]%12;if(m[3]==="pm")h+=12;time=`${two(h)}:${two(+(m[2]||0))}`})||
   cut(/\s(?:a\s)?midi(?=\s)/,()=>{time="12:00"});
   // jour : aujourd'hui, demain, après-demain (+ anglais, néerlandais)
@@ -1271,9 +1285,11 @@ function parseQuick(text,now){now=now||new Date();const fold0=t=>t.normalize("NF
   cut(/\s(?:demain|tomorrow|morgen)(?=\s)/,()=>{date=add(1)})||
   cut(/\s(?:aujourd'?hui|ce soir|today|tonight|vandaag|vanavond)(?=\s)/,m=>{date=add(0);if(!time&&/soir|tonight|vanavond/.test(m[0]))time="20:00"})||
   // date : 12/11, 12/11/2026, le 12 novembre, 12 nov, nov 12
-  cut(/\s(?:le\s|on\s|op\s)?(\d{1,2})[\/.-](\d{1,2})(?:[\/.-](\d{2,4}))?(?=\s)/,m=>{const dd=+m[1],mm=+m[2]-1;if(mm>11||dd>31||dd<1)return false;let y=m[3]?+m[3]:d0.getFullYear();if(y<100)y+=2000;
-    let d=new Date(y,mm,dd);if(!m[3]&&d<d0)d=new Date(y+1,mm,dd);date=d})||
-  cut(/\s(?:le\s|on\s|op\s)?(\d{1,2})(?:er|st|nd|rd|th|e)?\s+([a-z]+)\.?(?=\s)/,m=>{const mi=QM.findIndex(a=>a.some(w=>m[2].startsWith(w)&&m[2].length>=3));if(mi<0)return false;
+  cut(strict?/\s(?:(?:le|on|op)\s(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?|(?:le\s|on\s|op\s)?(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4}))(?=\s)/:/\s(?:le\s|on\s|op\s)?(\d{1,2})[\/.-](\d{1,2})(?:[\/.-](\d{2,4}))?(?=\s)/,m=>{
+    const g=m[1]===undefined&&m[4]!==undefined?[m[4],m[5],m[6]]:[m[1],m[2],m[3]],dd=+g[0],mm=+g[1]-1;if(mm>11||mm<0||dd>31||dd<1)return false;let y=g[2]?+g[2]:d0.getFullYear();if(y<100)y+=2000;
+    let d=new Date(y,mm,dd);if(d.getMonth()!==mm)return false; // v85 : « 31/02 » n'existe pas, le texte reste tel quel
+    if(!g[2]&&d<d0)d=new Date(y+1,mm,dd);date=d})||
+  cut(/\s(?:le\s|on\s|op\s)?(\d{1,2})(?:er|st|nd|rd|th|e)?\s+([a-z]+)\.?(?=\s)/,m=>{const mi=QM.findIndex(a=>a.some(w=>strict?m[2]===w:m[2].startsWith(w)&&m[2].length>=3));if(mi<0)return false;
     const dd=+m[1];if(dd<1||dd>31)return false;let d=new Date(d0.getFullYear(),mi,dd);if(d<d0)d=new Date(d0.getFullYear()+1,mi,dd);date=d})||
   // jour de la semaine : jeudi, jeudi prochain, next thursday
   cut(/\s(?:next\s|volgende\s)?(dimanche|lundi|mardi|mercredi|jeudi|vendredi|samedi|sunday|monday|tuesday|wednesday|thursday|friday|saturday|zondag|maandag|dinsdag|woensdag|donderdag|vrijdag|zaterdag)(\s+prochain)?(?=\s)/,m=>{

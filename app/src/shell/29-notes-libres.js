@@ -79,6 +79,9 @@ function notePagesSchedule(){
     pages.style.setProperty("--note-page-step",`${step}px`);
     pages.style.setProperty("--note-sheet-height",`${height}px`);
     pages.dataset.pages=String(count);
+    // v85 : une feuille par page, avec son numéro « 1 / 4 » ; reconstruites seulement si le nombre ou la taille change
+    const sheets=$("notePageSheets"),key=count+":"+step+":"+height;
+    if(sheets.dataset.key!==key){sheets.dataset.key=key;sheets.innerHTML=Array.from({length:count},(_,k)=>`<div class="note-sheet" style="top:${k*step}px;height:${height}px"><span class="note-sheet-n">${k+1} / ${count}</span></div>`).join("")}
     // Measuring the unfragmented flow must not move the scroll anchor. Native
     // caret scrolling happens before reflow, so reveal it again if a new sheet grew.
     editor.scrollTop=scrollTop;

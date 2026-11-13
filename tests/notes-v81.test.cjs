@@ -13,7 +13,7 @@ const assert=require('node:assert/strict');
  const initial=await body.innerHTML();
  const noGap=async()=>assert.equal(await p.evaluate(()=>{
    const body=$('noteBody'),top=body.getBoundingClientRect().top;
-   const h=parseFloat(getComputedStyle($('notePages')).getPropertyValue('--page-height')),step=h+16;
+   const h=parseFloat(getComputedStyle($('notePages')).getPropertyValue('--page-height')),step=h+(parseFloat(getComputedStyle($('notePages')).getPropertyValue('--page-gap'))||16);
    const walker=document.createTreeWalker(body,NodeFilter.SHOW_TEXT);let node;
    while(node=walker.nextNode()){
      const range=document.createRange();range.selectNodeContents(node);

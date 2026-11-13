@@ -2826,22 +2826,28 @@ html .muq-seg button[aria-pressed="true"],html .muq-chips .pill[aria-pressed="tr
 /* v82: one editable document; CSS Shapes keeps the gaps out of its text flow. */
 .note-pages {
   --page-inset: clamp(14px, 4vw, 36px);
-  --page-gap: 16px;
+  --page-gap: 28px;
   --page-height: 720px;
   position: relative;
   isolation: isolate;
   display: flow-root;
   overflow: clip;
   background: var(--bg);
+  padding-bottom: 14px;
 }
-.note-page-sheets {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: repeating-linear-gradient(to bottom,
-    var(--surface) 0, var(--surface) var(--note-sheet-height, 720px),
-    var(--bg) var(--note-sheet-height, 720px), var(--bg) var(--note-page-step, 736px));
+/* v85 : de vraies feuilles (une par page), séparées par un vide net, numérotées « 1 / 4 » en bas au centre */
+.note-page-sheets { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.note-sheet {
+  position: absolute; left: 0; right: 0; box-sizing: border-box;
+  background: var(--surface);
+  border: var(--rule, 1px) solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 12px 22px -16px rgba(0, 0, 0, .7);
+}
+.note-sheet-n {
+  position: absolute; left: 0; right: 0; bottom: 5px;
+  text-align: center; font: 500 11px/14px var(--font); font-variant-numeric: tabular-nums;
+  letter-spacing: .03em; color: var(--muted); user-select: none;
 }
 html[data-ds="elan"] .note-pages #noteBody, .note-pages #noteBody {
   box-sizing: border-box;

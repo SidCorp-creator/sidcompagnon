@@ -36,6 +36,11 @@ const meal=(items,extra={})=>({reply:'Combien de calories fait ce repas ? 😋',
    assert.match(r.out.reply,/^Total : 565 kcal/);assert.equal(r.out.actions[0].label,'Repas · 565 kcal')}
   // 6. grammes absents mais quantité lisible (« 200 g ») : recalculé quand même
   {const r=await run(user("j'ai mangé 200 g de pâtes cuites à la sauce yuzu"),[meal([{name:'Pâtes cuites',qty:'200 g',kcal:1,p:1,c:1,f:1}])]);assert.equal(r.out.actions[0].payload.items[0].kcal,334)}
+  // 6 bis. la quantité écrite par la personne prime sur un « g » contradictoire ; pièces d'un aliment connu converties ; question sur les calories → une relance
+  {const r=await run(user("j'ai mangé 100 g de riz cuit sauce yuzu"),[meal([{name:'Riz blanc cuit',qty:'100 g',g:200,kcal:1,p:1,c:1,f:1}])]);assert.equal(r.out.actions[0].payload.items[0].kcal,143);
+   const e=await run(user("j'ai mangé 2 œufs sauce yuzu"),[meal([{name:'Œuf entier',qty:'2',kcal:1,p:1,c:1,f:1}])]);assert.equal(e.out.actions[0].payload.items[0].kcal,154);
+   const q=await run(user("j'ai mangé 30 g de kombucha de yuzu"),[{reply:'Combien de calories ?',actions:[]},meal([{name:'Kombucha de yuzu',qty:'30 g',g:30,kcal:12,p:0,c:3,f:0}])]);
+   assert.equal(q.calls,2);assert.equal(q.quotas,1);assert.match(q.sent[1].messages.at(-1).content,/no log_meal action.*No question/);assert.match(q.out.reply,/^Total : 12 kcal/)}
   // 7. une question générale reste une réponse du modèle, sans emoji
   {const r=await run(user('Explique-moi mes besoins'),[{reply:'Tes besoins dépendent de ton activité 💪.',actions:[]}]);assert.equal(r.out.reply,'Tes besoins dépendent de ton activité.');assert.equal(r.calls,1);assert.equal(r.sent[0].model,'openai/gpt-oss-120b');assert.equal(r.sent[0].response_format.type,'json_object')}
   // 8. menu : dîner 983 kcal, poids crus, viande hachée au four + frites au four + wrap. Le modèle ne donne que noms, grammes, cuisson, étapes.
@@ -59,6 +64,11 @@ const meal=(items,extra={})=>({reply:'Combien de calories fait ce repas ? 😋',
   {const noWrap=dish();noWrap.meals[0].items.shift();const r=await run({task:'menu',...user('Dîner'),context:{today:'2026-11-13',menu_request:request}},[noWrap,dish()]);
    assert.equal(r.calls,2);assert.match(r.sent[1].messages.at(-1).content,/a requested food is missing \(wrap\)/);assert.equal(r.status,200);
    const q=await run({task:'menu',...user('Dîner'),context:{today:'2026-11-13',menu_request:request}},[{reply:'Quel poids veux-tu ?',actions:[]}]);assert.equal(q.calls,2);assert.equal(q.out.error,'invalid_menu');assert.equal(q.out.actions,undefined)}
+  // 10 bis. « à éviter : lait » écarte aussi le fromage ; un aliment évité cité dans les étapes est refusé ; per100 incohérent refusé
+  {const ctx=av=>({task:'menu',...user('Dîner'),context:{today:'2026-11-13',menu_request:{...request,avoid:av}}});
+   const cheese=await run(ctx('lait'),[dish([{name:'Emmental',g:20,method:null,per100:null}]),dish()]);assert.equal(cheese.calls,2);assert.match(cheese.sent[1].messages.at(-1).content,/never wants \(lait\)/);
+   const st=dish();st.meals[0].steps.push('Ajouter des champignons.');const steps=await run(ctx('champignons'),[st,dish()]);assert.equal(steps.calls,2);
+   const odd=await run(ctx(''),[dish([{name:'Sauce au yuzu',g:20,method:null,per100:[900,60,60,60]}]),dish()]);assert.equal(odd.calls,2)}
   // 11. menu trop loin de la cible pour être ajusté (un seul wrap) → jamais affiché
   {const tiny={meals:[{slot:'dinner',name:'Wrap',items:[{name:'Wrap de blé',g:62,method:null,per100:null}],steps:[]}]};
    const r=await run({task:'menu',...user('Dîner'),context:{today:'2026-11-13',menu_request:{...request,must_include:'',avoid:''}}},[tiny]);assert.equal(r.calls,2);assert.equal(r.out.error,'invalid_menu');assert.match(r.sent[1].messages.at(-1).content,/portions are too far from the meal kcal/)}

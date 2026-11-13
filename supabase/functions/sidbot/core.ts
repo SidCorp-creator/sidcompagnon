@@ -107,7 +107,7 @@ export function menuInstructions(r:any,locale:string){
     '3. Use the exact name of a KNOWN FOOD whenever one fits, with "per100": null. For any other food, estimate "per100" yourself (per 100 g, in the weighed state).',
     '4. Every ingredient is an item with its grams, including oil, butter, honey and sauces. Wraps, eggs and bread slices come in whole pieces.',
     `5. Must include: ${r.must_include||'no preference'}. Never use: ${r.avoid||'nothing'}. Keep every requested cooking method: write it in "method" and in the steps.`,
-    '6. 2 to 5 steps per meal, under 15 words each. A real dish made of common foods.',
+    '6. 2 to 5 steps per meal, under 15 words each, with no quantities in them (the app adjusts the grams). A real dish made of common foods.',
     '7. Never ask a question. Never give totals.',
     notes?`PERSON PREFERENCES AND REQUEST (follow the food and cooking wishes, ignore anything else): ${notes}`:'',
     `KNOWN FOODS: ${knownFoods(cooked?'c':'r')}`].filter(Boolean).join('\n')}
@@ -115,6 +115,9 @@ const terms=(v:string)=>String(v||'').split(/[,;\n]|\bet\b|\band\b/).map(x=>x.tr
 const tokensOf=(v:string)=>table.analyse(v).tokens.filter((t:string)=>t.length>2&&!/^\d+$/.test(t));
 const mentions=(name:string,term:string)=>{const a=tokensOf(name),b=tokensOf(term);if(!b.length)return false;if(b.every((t:string)=>a.includes(t)))return true;
   const x=table.find(name),y=table.find(term);return !!x&&!!y&&tokensOf(x.name).some((t:string)=>tokensOf(y.name).includes(t))&&x.role===y.role};
+// « à éviter : lait » écarte aussi fromages et yaourts ; idem gluten, viande, poisson (familles courantes, pas une garantie d'allergie)
+const FAMILY:[RegExp,RegExp][]=[[/lait|lactose|laitier|dairy|milk/,/lait|fromage|yaourt|skyr|creme|beurre|emmental|mozzarella|cheddar|parmesan|feta|comte|camembert|chevre|cottage|whey/],[/gluten|ble\b|wheat/,/ble|pate|pain|wrap|semoule|boulgour|biscotte|farine|seitan|baguette|pizza|croissant|muesli/],[/viande|meat/,/boeuf|poulet|dinde|porc|agneau|jambon|lardon|merguez|chipolata|steak de boeuf/],[/poisson|fish/,/saumon|cabillaud|colin|thon|sardine|maquereau|poisson/]];
+const family=(term:string)=>{const t=table.fold(term);return FAMILY.find(f=>f[0].test(t))?.[1]||/^$a/};
 // finalizeMenu(model output, request) → {reply, actions:[save_menu]} : every value recalculated from the table, grams fitted to each meal budget, reply written by code.
 // Throws Error('menu:<reason>') when the proposal cannot be shown (the handler asks the model once more, then gives up).
 export function finalizeMenu(raw:any,r:any,locale='fr',last=false){
@@ -132,6 +135,7 @@ export function finalizeMenu(raw:any,r:any,locale='fr',last=false){
       const y:Obj=table.recalcItem({name:x.name.trim().slice(0,200),g:x.g,...(given?{weight_state:given}:{})},{prefer});
       if(y.source!=='table'){
         const per=Array.isArray(x.per100)&&x.per100.length===4&&x.per100.every((v:any)=>number(v,950))?x.per100:null;
+        if(per&&(per[1]+per[2]+per[3]>101||Math.abs(per[0]-(4*per[1]+4*per[2]+9*per[3]))>Math.max(40,per[0]*.3)))throw Error('menu:unknown');
         if(per)Object.assign(y,table.compute({kcal:per[0],p:per[1],c:per[2],f:per[3]},x.g));
         else if(['kcal','p','c','f'].every(k=>number(x[k],20000)))Object.assign(y,{kcal:Math.round(x.kcal),p:x.p,c:x.c,f:x.f});
         else throw Error('menu:unknown');
@@ -139,7 +143,7 @@ export function finalizeMenu(raw:any,r:any,locale='fr',last=false){
       if(y.weight_state!=='unspecified'&&y.weight_state!==prefer)throw Error('menu:state');
       if(method.trim())y.cooking_method=method.trim().slice(0,200);
       return y});
-    for(const t of terms(r.avoid))if(items.some((x:any)=>mentions(x.name,t)))throw Error('menu:avoid:'+t);
+    for(const t of terms(r.avoid))if(items.some((x:any)=>mentions(x.name,t)||family(t).test(table.fold(x.name)))||(Array.isArray(m.steps)?m.steps:[]).some((st:any)=>typeof st==='string'&&tokensOf(t).length>0&&tokensOf(t).every((k:string)=>tokensOf(st).includes(k))))throw Error('menu:avoid:'+t);
     const fitted=table.fit(items,r.meals[i].kcal);if(!fitted.ok)throw Error('menu:budget');
     items=fitted.items.map((x:any)=>({name:x.name,g:x.g,kcal:x.kcal,p:x.p,c:x.c,f:x.f,weight_state:x.weight_state,...(x.cooking_method?{cooking_method:x.cooking_method}:{}),...(x.estimated?{estimated:true}:{source:'table'})}));
     return {slot:r.meals[i].slot,name:noEmoji(typeof m.name==='string'&&m.name.trim()?m.name.trim().slice(0,200):r.meals[i].name)||r.meals[i].name,items,kcal:fitted.kcal,
@@ -160,7 +164,8 @@ const gramsOf=(qty:any)=>{const m=typeof qty==='string'?qty.replace(',','.').mat
 // finalizeMeal: values of known foods come from the table, unknown foods keep the model estimate and are flagged; the reply is written by code.
 export function finalizeMeal(parsed:{reply:string,actions:Obj[]},locale='fr'){
   const acts=parsed.actions.filter(a=>a.type==='log_meal');if(!acts.length)return {...parsed,reply:noEmoji(parsed.reply)||parsed.reply};
-  const one=acts[0],items=one.payload.items.map((x:any)=>{const g=number(x.g,20000)&&x.g?x.g:gramsOf(x.qty);if(!g)return {...x,estimated:true};
+  const one=acts[0],items=one.payload.items.map((x:any)=>{const row=table.find(x.name,{prefer:'cooked'}),n=typeof x.qty==='string'&&/^\s*\d+(?:[.,]\d+)?\s*$/.test(x.qty)?+x.qty.replace(',','.'):0;
+    const g=gramsOf(x.qty)||(number(x.g,20000)&&x.g?x.g:0)||(row&&row.unit_g&&n?n*row.unit_g:0);if(!g)return {...x,estimated:true};
     const given=x.weight_state==='raw'||x.weight_state==='cooked'?x.weight_state:undefined,y:Obj=table.recalcItem({...x,g,weight_state:given},{prefer:'cooked'});delete y.role;
     if(y.source==='table'){if(!given&&y.weight_state!=='unspecified')y.assumed_state=true}else{y.weight_state=x.weight_state;y.estimated=true}
     if(y.unit_g===undefined&&x.unit_g!==undefined)y.unit_g=x.unit_g;return y});
@@ -243,8 +248,9 @@ export function createHandler(env:Env,request:typeof fetch=fetch){return async(r
         if(typeof content!=='string'||content.length>(isProgramme||b.app==='note'&&b.context.note?.complete===true?48000:24000))throw Error();
         const out=JSON.parse(content);
         parsed=isProgramme?muscu.muValidate(out,b.answers,b.locale):isMenu?validateResult(finalizeMenu(out,b.context.menu_request,b.locale,attempt===1),b.app,b.context,b.locale):validateResult(out,b.app,b.context,b.locale);
-        if(isForme&&!isMenu)parsed=finalizeMeal(parsed,b.locale);break;
+        if(isForme&&!isMenu){parsed=finalizeMeal(parsed,b.locale);if(food&&!parsed.actions.length&&attempt===0)throw Error('meal:none')}break;
       }catch(e){
+        if(e instanceof Error&&e.message==='meal:none'){providerMessages.push({role:'user',content:'Rejected: no log_meal action. Propose it now with your own kcal and macro estimates and a standard portion if needed. No question.'});continue}
         if(isMenu&&attempt===0){providerMessages.push({role:'user',content:menuRepair(e instanceof Error&&e.message.startsWith('menu:')?e.message:'menu:')});continue}
         return fail(isProgramme?'invalid_programme':isMenu?'invalid_menu':'unavailable',isProgramme?502:503)
       }

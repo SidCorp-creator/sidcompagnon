@@ -30,7 +30,7 @@ function nuTableMeal(text){
   const t=String(text),hint=t.includes("·")?nutritionMenu.inferState(t.slice(t.indexOf("·"))):"unspecified",mode=hint!=="unspecified"?hint:NU().foodWeighingMode==="raw"?"raw":"cooked";
   const r=nutritionTable.parseFoodText(t.replace(/\s*·.*$/,""),{prefer:mode});if(r.unknown.length||!r.items.length)return null;
   const notes=nutritionTable.mealText(r.items,LANG==="en"?"en":"fr").split("\n").slice(1,-1).join(" ");
-  return {dish:r.items.map(x=>x.name).join(", "),note:notes||L("Table de référence (Ciqual, USDA)"),items:r.items.map(x=>({name:x.name,quantity:x.qty,grams:x.g,weight_state:x.weight_state,source:"table",
+  return {_src:"table",dish:r.items.map(x=>x.name).join(", "),note:notes||L("Table de référence (Ciqual, USDA)"),items:r.items.map(x=>({name:x.name,quantity:x.qty,grams:x.g,weight_state:x.weight_state,source:"table",
     ...(x.unit_g?{unit_g:x.unit_g}:{}),kcal:x.kcal,protein_g:x.p,carbs_g:x.c,fat_g:x.f}))}}
 function aiNeed(kind,p){aiHandoff(aiPrompt(kind,p),"nutri",{img:p&&p.image?"data:image/jpeg;base64,"+p.image:null,menuRequest:p&&p.menuRequest});const e=new Error(L("Sid'Bot a reçu ta demande : vérifie sa proposition avant de l’ajouter."));e.ai=true;return e}
 // profil : métabolisme (Mifflin-St Jeor), dépense avec le sport, objectif selon le rythme, macros (mêmes règles prudentes qu'avant)
@@ -381,7 +381,7 @@ $("nuAskForm").addEventListener("submit",async e=>{
   try{const r=await nuRetry(()=>nuCall("aliment",{text:q,image:photo?photo.big.split(",")[1]:undefined}),r=>r&&Array.isArray(r.items)&&r.items.length);
     nuPending={q,mem:r._src==="memory",title:String(r.dish||q||L("Mon plat")),em:String(r.emoji||"🍽️"),note:String(r.note||""),photo:photo&&photo.small,
       items:(r.items||[]).map(x=>({name:String(x.name||q),qty:String(x.quantity||""),em:String(x.emoji||""),...nutritionMenu.weightMeta({...x,weight_state:x.weight_state||nutritionMenu.inferState(x.name)}),...(x.per100?{basis:x.basis,per100:x.per100}:{}),g:+x.grams||undefined,unit_g:+x.unit_g||undefined,unit_label:x.unit_label||undefined,kcal:r0(x.kcal),p:r1(x.protein_g),c:r1(x.carbs_g),f:r1(x.fat_g)}))};
-    if(!photo&&nuPending.items.length>1)nuPending.items.forEach(x=>x.extra=!mentioned(q,x.name));
+    if(!photo&&r._src!=="table"&&nuPending.items.length>1)nuPending.items.forEach(x=>x.extra=!mentioned(q,x.name));
     if(!nuPending.items.length){nuPending=null;toast("Aliment non reconnu, précise un peu")}
   }catch(ex){toast(nuErrMsg(ex));if(ex.ai){nuPhoto=null;nuPhotoPrevSet(null);$("nuAsk").value="";grow($("nuAsk"))}} // v43 : demande partie chez Claude → rien ne reste pré-rempli
   stop();nuBusy="";btn.disabled=false;renderNuResult();

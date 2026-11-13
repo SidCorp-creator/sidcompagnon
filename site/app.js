@@ -3421,6 +3421,9 @@ const RT_DROP=new Set(["SCRIPT","STYLE","IFRAME","OBJECT","EMBED","SVG","MATH","
 const RT_KEEP=new Set(["B","STRONG","I","EM","U","S","STRIKE","DEL","MARK","SPAN","H2","H3","P","DIV","BR","UL","OL","LI","BLOCKQUOTE","HR","A"]);
 const RT_HL=["y","g","b","p"],RT_TC=["r","o","g","b","v"]; // v41 : surligneur et couleur du texte (data-hl, data-tc)
 // garde seulement la mise en forme autorisée (rien d'exécutable, pas de style) : sert à l'enregistrement et au collage
+// v85 : sens d'écriture par bloc (jamais sur toute la liste) : une ligne en arabe se lit de droite à gauche, sa voisine en français reste à gauche
+const RT_DIR=new Set(["P","DIV","LI","H2","H3","BLOCKQUOTE"]);
+const rtDir=el=>{for(const b of el.querySelectorAll("p:not([dir]),div:not([dir]),li:not([dir]),h2:not([dir]),h3:not([dir]),blockquote:not([dir])"))b.setAttribute("dir","auto")};
 function rtClean(html){const t=document.createElement("template");t.innerHTML=String(html||"");
   const walk=n=>{for(const c of [...n.childNodes]){if(c.nodeType===3)continue;if(c.nodeType!==1){c.remove();continue}
     let tag=c.tagName;if(RT_DROP.has(tag)){c.remove();continue}
@@ -3431,9 +3434,10 @@ function rtClean(html){const t=document.createElement("template");t.innerHTML=St
     const href=tag==="A"&&/^https?:\/\//i.test(c.getAttribute("href")||"")?c.getAttribute("href"):null,chk=tag==="UL"&&c.classList.contains("chk"),dc=tag==="LI"?c.getAttribute("data-c"):null;
     for(const a of [...c.attributes])c.removeAttribute(a.name);
     if(href){c.setAttribute("href",href);c.setAttribute("target","_blank");c.setAttribute("rel","noopener")}else if(tag==="A"){c.replaceWith(...c.childNodes);continue}
+    if(RT_DIR.has(tag))c.setAttribute("dir","auto");
     if(chk)c.className="chk";if(dc==="1"||dc==="0")c.setAttribute("data-c",dc);if(hl)c.setAttribute("data-hl",hl);if(tc)c.setAttribute("data-tc",tc)}};
   walk(t.content);return t.innerHTML.trim()}
-const rtFromText=b=>String(b||"").split("\n").map(l=>`<div>${l?esc(l):"<br>"}</div>`).join("");
+const rtFromText=b=>String(b||"").split("\n").map(l=>`<div dir="auto">${l?esc(l):"<br>"}</div>`).join("");
 const rtText=el=>String(el.innerText||"").replace(/\u00a0/g," ").replace(/\n{3,}/g,"\n\n").trim();
 const rtSet=v=>{$("noteBody").innerHTML=v.html?rtClean(v.html):rtFromText(v.body);rtEmpty()};
 const rtEmpty=()=>{
@@ -3632,7 +3636,7 @@ $("noteBack").addEventListener("click",closeNote);
 $("noteSearch").addEventListener("input",e=>{noteQ=e.target.value;renderNotes()});
 function noteInput(){
   const n=noteFind(noteOpenId),v=noteView(n);if(!v)return;
-  const el=$("noteBody");v.title=$("noteTitle").value;v.body=rtText(el);v.html=el.innerHTML;n.upd=Date.now();$("noteWhen").textContent=fmtWhen(n.upd);rtEmpty();
+  const el=$("noteBody");rtDir(el);v.title=$("noteTitle").value;v.body=rtText(el);v.html=el.innerHTML;n.upd=Date.now();$("noteWhen").textContent=fmtWhen(n.upd);rtEmpty();
   if(!n.secret){noteQueue(async()=>{v.html=rtClean(el.innerHTML);save()});return}
   const k=nsKey;noteQueue(async()=>{v.html=rtClean(v.html);const e=await encJ(k,{title:v.title,body:v.body,html:v.html});n.iv=e.iv;n.ct=e.ct;v._iv=e.iv;save()});
 }
@@ -4879,8 +4883,9 @@ $("rtBar").addEventListener("pointerdown",e=>{if(e.target.closest("[data-rtm]"))
 $("rtBar").addEventListener("click",e=>{const m=e.target.closest("[data-rtm]");if(m){rtMenu(m);return}const b=e.target.closest("[data-rt]");if(b){$("rtPop").hidden=true;rtCmd(b.dataset.rt)}});
 document.addEventListener("selectionchange",()=>{if(noteOpenId&&$("noteBody").contains(document.activeElement||null)||document.activeElement===$("noteBody"))rtState()});
 // cases à cocher : toucher la case coche ou décoche
-$("noteBody").addEventListener("click",e=>{const li=e.target.closest("ul.chk>li");if(!li)return;const r=li.getBoundingClientRect();
-  if(e.clientX-r.left<30){e.preventDefault();li.setAttribute("data-c",li.getAttribute("data-c")==="1"?"0":"1");noteInput()}});
+$("noteBody").addEventListener("click",e=>{const li=e.target.closest("li");if(!li||!li.matches("ul.chk>li"))return;const r=li.getBoundingClientRect();
+  // v85 : la case est au début de la première ligne seulement (pas tout le retrait d'une ligne longue, pas une sous-liste)
+  if(e.clientY-r.top<30&&(getComputedStyle(li).direction==="rtl"?r.right-e.clientX<30:e.clientX-r.left<2)){e.preventDefault();li.setAttribute("data-c",li.getAttribute("data-c")==="1"?"0":"1");noteInput()}});
 // collage : mise en forme nettoyée (rien d'exécutable, pas de couleurs ni de polices)
 $("noteBody").addEventListener("paste",e=>{const cd=e.clipboardData;if(!cd)return;const h=cd.getData("text/html"),t=cd.getData("text/plain");e.preventDefault();
   document.execCommand("insertHTML",false,h?rtClean(h):rtFromText(t));noteInput()});

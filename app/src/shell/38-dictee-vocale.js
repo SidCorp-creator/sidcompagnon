@@ -85,8 +85,9 @@ $("rtBar").addEventListener("pointerdown",e=>{if(e.target.closest("[data-rtm]"))
 $("rtBar").addEventListener("click",e=>{const m=e.target.closest("[data-rtm]");if(m){rtMenu(m);return}const b=e.target.closest("[data-rt]");if(b){$("rtPop").hidden=true;rtCmd(b.dataset.rt)}});
 document.addEventListener("selectionchange",()=>{if(noteOpenId&&$("noteBody").contains(document.activeElement||null)||document.activeElement===$("noteBody"))rtState()});
 // cases à cocher : toucher la case coche ou décoche
-$("noteBody").addEventListener("click",e=>{const li=e.target.closest("ul.chk>li");if(!li)return;const r=li.getBoundingClientRect();
-  if(e.clientX-r.left<30){e.preventDefault();li.setAttribute("data-c",li.getAttribute("data-c")==="1"?"0":"1");noteInput()}});
+$("noteBody").addEventListener("click",e=>{const li=e.target.closest("li");if(!li||!li.matches("ul.chk>li"))return;const r=li.getBoundingClientRect();
+  // v85 : la case est au début de la première ligne seulement (pas tout le retrait d'une ligne longue, pas une sous-liste)
+  if(e.clientY-r.top<30&&(getComputedStyle(li).direction==="rtl"?r.right-e.clientX<30:e.clientX-r.left<2)){e.preventDefault();li.setAttribute("data-c",li.getAttribute("data-c")==="1"?"0":"1");noteInput()}});
 // collage : mise en forme nettoyée (rien d'exécutable, pas de couleurs ni de polices)
 $("noteBody").addEventListener("paste",e=>{const cd=e.clipboardData;if(!cd)return;const h=cd.getData("text/html"),t=cd.getData("text/plain");e.preventDefault();
   document.execCommand("insertHTML",false,h?rtClean(h):rtFromText(t));noteInput()});

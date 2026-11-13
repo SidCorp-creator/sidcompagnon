@@ -77,4 +77,10 @@ for(let i=0;i<N;i++){const base=dataset(),loc=vary(base),rem=vary(base),opt=pick
   const o=JSON.stringify(ctxOld.mergeData(C(loc),C(rem),opt&&C(opt))),n=JSON.stringify(core.mergeData(C(loc),C(rem),opt&&C(opt),env));
   if(o!==n){diff++;if(diff<=3)console.log("ÉCHEC : résultats différents (cas "+i+")\n  ancienne : "+o.slice(0,300)+"\n  nouvelle : "+n.slice(0,300))}}
 if(diff){fail+=diff;console.log(diff+" cas sur "+N+" diffèrent")}
+// v85 : « je n'aime pas » ajouté sur deux appareils en même temps : les deux entrées restent ; un retrait fait ailleurs est respecté
+for(const [nom,mg] of VERS){const nu=(avoid,upd)=>({nutri:{upd,log:[],menuPrefs:{type:"day",always:{avoid,include:[]}}}}),A={id:"a",t:"champignons"},B={id:"b",t:"arachides"};
+  const r=mg(nu([A],2),nu([B],3),{base:nu([],1),since:0}),got=(r.nutri.menuPrefs.always.avoid||[]).map(x=>x.t).sort().join();
+  if(got!=="arachides,champignons"){fail++;console.log("ÉCHEC ("+nom+") : préférences durables perdues à la fusion : "+got)}
+  const d=mg(nu([A,B],2),{...nu([A],3),del:{b:Date.now()}},{base:nu([A,B],1),since:0}),left=(d.nutri.menuPrefs.always.avoid||[]).map(x=>x.t).join();
+  if(left!=="champignons"){fail++;console.log("ÉCHEC ("+nom+") : retrait non propagé : "+left)}}
 console.log(fail?fail+" échec(s)":`OK : fusion à 3 voies (ancienne et nouvelle version, ${N} cas identiques)`);process.exit(fail?1:0);

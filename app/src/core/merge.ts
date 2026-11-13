@@ -110,6 +110,9 @@ export function mergeData(loc: Obj, rem: Obj, opt: MergeOpt | undefined, env: Me
   // nutrition : profil, besoins et menu = version la plus récente ; journal = union des entrées
   const ln = loc.nutri || {}, rn = rem.nutri || {};
   out.nutri = { ...((ln.upd || 0) >= (rn.upd || 0) ? { ...rn, ...ln } : { ...ln, ...rn }), log: arrU(ln.log, rn.log), weights: arrU(ln.weights, rn.weights), weeks: arrU(ln.weeks, rn.weeks) };
+  // v85 : réglages durables des menus = union par id, retraits par pierre tombale (même règle que l'ancienne version)
+  { const ids = (v: Any): Any[] => (Array.isArray(v) ? v : []).filter((x: Any) => x && typeof x === "object" && x.id), la = ln.menuPrefs && ln.menuPrefs.always, ra = rn.menuPrefs && rn.menuPrefs.always;
+    if ((la || ra) && out.nutri.menuPrefs) out.nutri.menuPrefs = { ...out.nutri.menuPrefs, always: { avoid: arrU(ids(la && la.avoid), ids(ra && ra.avoid)), include: arrU(ids(la && la.include), ids(ra && ra.include)) } }; }
   // un document envoyé sur le serveur depuis un autre appareil reste marqué « en ligne »
   const remDocs = new Map((rem.docs || []).map((d: Any) => [d && d.id, d]));
   out.docs = out.docs.map((d: Obj) => { const r: Any = remDocs.get(d.id); return r && r.up && !d.up ? { ...d, up: true, path: r.path } : d; });

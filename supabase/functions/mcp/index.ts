@@ -164,7 +164,7 @@ function nutriDay(d: Data, day: string) {
   const t = dayTot(log), groups = new Map<string, Data[]>();
   for (const x of log) { const g = x.grp || x.id; groups.set(g, [...(groups.get(g) || []), x]); }
   let out = `Journée du ${dayName(day)} ${day}.\n`;
-  { const al=n.menuPrefs&&n.menuPrefs.always||{},lst=(v:any)=>Array.isArray(v)?v.filter((x:any)=>typeof x==='string').slice(0,40).join(', '):''; // v85 : réglages durables des menus
+  { const al=n.menuPrefs&&n.menuPrefs.always||{},lst=(v:any)=>Array.isArray(v)?v.map((x:any)=>typeof x==='string'?x:x&&typeof x.t==='string'?x.t:'').filter(Boolean).slice(0,40).join(', '):''; // v85 : réglages durables des menus
     if(lst(al.avoid))out+=`Aliments que la personne n'aime pas (jamais dans un menu) : ${lst(al.avoid)}\n`;if(lst(al.include))out+=`Aliments à inclure souvent : ${lst(al.include)}\n`; }
   if(n.menuRequest)out+=`Menu prévu en attente de confirmation (request_id = id ; respecter repas, budgets, pesée ; appeler enregistrer_menu après accord seulement) : ${JSON.stringify(n.menuRequest)}\n`;
   out += pl.kcal ? `Objectif : ${fmtTot({ kcal: pl.kcal, p: pl.p, c: pl.c, f: pl.f })}.\n` : "Pas encore d'objectif : la personne peut le calculer dans Sid'note (Santé → Nutrition → profil).\n";

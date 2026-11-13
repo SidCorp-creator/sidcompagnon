@@ -51,7 +51,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="83";const errSent=new Set();
+const APP_V="85";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -164,6 +164,9 @@ function mergeDataOld(loc,rem,opt){
   // nutrition : profil, besoins et menu = version la plus récente ; journal = union des entrées
   const ln=loc.nutri||{},rn=rem.nutri||{};
   out.nutri={...((ln.upd||0)>=(rn.upd||0)?{...rn,...ln}:{...ln,...rn}),log:arrU(ln.log,rn.log),weights:arrU(ln.weights,rn.weights),weeks:arrU(ln.weeks,rn.weeks)};
+  // v85 : réglages durables des menus (« je n'aime pas », « à inclure souvent ») = union par id, retraits par pierre tombale
+  {const ids=v=>(Array.isArray(v)?v:[]).filter(x=>x&&typeof x==="object"&&x.id),la=ln.menuPrefs&&ln.menuPrefs.always,ra=rn.menuPrefs&&rn.menuPrefs.always;
+    if((la||ra)&&out.nutri.menuPrefs)out.nutri.menuPrefs={...out.nutri.menuPrefs,always:{avoid:arrU(ids(la&&la.avoid),ids(ra&&ra.avoid)),include:arrU(ids(la&&la.include),ids(ra&&ra.include))}}}
   // un document envoyé sur le serveur depuis un autre appareil reste marqué « en ligne »
   const remDocs=new Map((rem.docs||[]).map(d=>[d&&d.id,d]));out.docs=out.docs.map(d=>{const r=remDocs.get(d.id);return r&&r.up&&!d.up?{...d,up:true,path:r.path}:d});
   const tn=new Set((loc.types||[]).map(t=>norm(t.name)));

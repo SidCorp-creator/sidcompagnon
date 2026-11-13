@@ -1,5 +1,7 @@
 // v85 : parcours Nutrition dans l'app (faux Supabase, serveur Sid'Bot simulé avec le vrai code de finalisation).
 const {chromium}=require('../app/node_modules/playwright'),assert=require('node:assert/strict'),core=require('./sidbot-loader.cjs');
+// CSP stricte : pas de waitForFunction (évaluation de chaîne refusée), on interroge la page à intervalles
+const until=async(page,fn,label)=>{for(let i=0;i<150;i++){if(await page.evaluate(fn))return;await page.waitForTimeout(100)}throw Error('Attente dépassée : '+label)};
 (async()=>{const browser=await chromium.launch();try{for(const fallback of [false,true]){
  const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(f=>{window.__noIntro=true;window.__noIslands=f},fallback);
@@ -14,7 +16,7 @@ const {chromium}=require('../app/node_modules/playwright'),assert=require('node:
    const mp=nuMP();mp.pick={breakfast:false,lunch:true,dinner:true};mp.snacks=0;data.ui.nuTab='menu';show('nutri')});
  // réglage durable « Je n'aime pas » : pastille ajoutée, champ vidé après envoi
  await page.fill('#nuAlways [data-nualf="avoid"] input','champignons');await page.press('#nuAlways [data-nualf="avoid"] input','Enter');
- assert.equal(await page.inputValue('#nuAlways [data-nualf="avoid"] input'),'','champ vidé après ajout');assert.deepEqual(await page.evaluate(()=>nuMP().always.avoid),['champignons']);
+ assert.equal(await page.inputValue('#nuAlways [data-nualf="avoid"] input'),'','champ vidé après ajout');assert.deepEqual(await page.evaluate(()=>nuMP().always.avoid.map(x=>x.t)),['champignons']);assert.ok(await page.evaluate(()=>!!nuMP().always.avoid[0].id),'entrée avec identifiant (fusion entre appareils)');
  assert.match(await page.locator('#nuAlways .nu-al-chips').first().innerText(),/champignons/);
  // 1. Sid'Bot : « j'ai mangé 50 g de flocons d'avoine » → tableau, total, question ; aucun appel réseau ; rien d'enregistré avant confirmation
  await page.evaluate(()=>sbOpen('forme'));await page.fill('#sbIn',"j'ai mangé 50 g de flocons d'avoine");await page.click('#sbSend');await page.waitForSelector('.sb-msg.bot [data-sbact]');
@@ -26,15 +28,15 @@ const {chromium}=require('../app/node_modules/playwright'),assert=require('node:
  // 2. « Que manger ce soir ? » → un seul appel, vraie demande de menu : dîner = kcal restantes exactes, poids crus, « je n'aime pas » joint
  const left=await page.evaluate(()=>Math.round(dayTarget(iso(today())).kcal-NU().log.filter(x=>x.day===iso(today())).reduce((t,x)=>t+x.kcal,0)));
  await page.evaluate(()=>{window.__h=Date.prototype.getHours;Date.prototype.getHours=()=>19});
- await page.fill('#sbIn','Que manger ce soir ? viande hachée au four, frites au four et wrap');await page.click('#sbSend');await page.waitForFunction(()=>sbMsgs('forme').filter(x=>x.role==='assistant').length===2);
+ await page.fill('#sbIn','Que manger ce soir ? viande hachée au four, frites au four et wrap');await page.click('#sbSend');await until(page,()=>sbMsgs('forme').filter(x=>x.role==='assistant').length===2,'état attendu');
  assert.equal(calls.length,1);const r=calls[0].context.menu_request;assert.equal(calls[0].task,'menu');assert.deepEqual(r.meals.map(m=>[m.slot,m.kcal]),[['dinner',left]]);assert.equal(r.weighing_mode,'raw');assert.equal(r.avoid,'champignons');assert.match(r.notes,/viande hachée au four/);
  const menu=await page.locator('.sb-msg.bot').last().innerText(),sum=await page.evaluate(()=>sbMsgs('forme').at(-1).actions[0].payload.meals[0].items.reduce((t,x)=>t+x.kcal,0));
  assert.ok(Math.abs(sum-left)<=left*.05,`total ${sum} pour ${left}`);assert.match(menu,new RegExp(`Bœuf haché 5 % MG cru[\\s\\S]*Total : ${sum} kcal \\(objectif ${left}\\)[\\s\\S]*Je l'enregistre \\?`));
  assert.match(menu,/1 c\. à soupe/,'huile affichée en cuillères');assert.equal(await page.evaluate(()=>NU().menu?.meals?.length||0),0,'menu non enregistré avant confirmation');
  await page.locator('[data-sbact]').last().click();assert.equal(await page.evaluate(()=>NU().menu.meals[0].items.reduce((t,x)=>t+x.kcal,0)),sum);assert.equal(await page.evaluate(()=>NU().log.length),2,'un menu prévu ne va pas au journal');
- assert.deepEqual(await page.evaluate(()=>nuMP().always.avoid),['champignons'],'le réglage durable survit à la demande');
+ assert.deepEqual(await page.evaluate(()=>mpAlways().avoid),['champignons'],'le réglage durable survit à la demande');
  // 3. formulaire « Ajouter ce que tu manges » : « 50 g de flocons d'avoine et 2 œufs » → résultat direct, sans ouvrir Sid'Bot
- await page.evaluate(()=>{sbClose();data.ui.nuTab='day';renderNutri()});await page.click('#nuMealAdd');await page.fill('#nuAsk',"50 g de flocons d'avoine et 2 œufs");await page.click('#nuAskBtn');await page.waitForFunction(()=>nuPending&&nuPending.items.length);
+ await page.evaluate(()=>{sbClose();data.ui.nuTab='day';renderNutri()});await page.click('#nuMealAdd');await page.fill('#nuAsk',"50 g de flocons d'avoine et 2 œufs");await page.click('#nuAskBtn');await until(page,()=>nuPending&&nuPending.items.length,'état attendu');
  assert.deepEqual(await page.evaluate(()=>[nuPending.items[0].name,nuPending.items[0].kcal,nuPending.items[0].weight_state,$('sbSheet').hidden]),["Flocons d'avoine",187,'unspecified',true]);assert.equal(calls.length,1);
  assert.deepEqual(await page.evaluate(()=>[nuPending.items[1].name,nuPending.items[1].kcal,!!nuPending.items[1].extra]),['Œuf entier',154,false]);
  assert.deepEqual(errors,[]);await page.screenshot({path:`tests/out/v85-nutrition-${fallback?'secours':'react'}.png`});await page.close();console.log('nutrition v85',fallback?'secours':'React','OK')}

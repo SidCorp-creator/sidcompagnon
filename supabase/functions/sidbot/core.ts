@@ -105,7 +105,7 @@ export function menuInstructions(r:any,locale:string){
     `1. Exactly these meals, in this order: ${r.meals.map((m:any)=>`${m.slot} "${m.name}" = ${m.kcal} kcal`).join('; ')}. Size the portions so that each meal reaches its kcal; the app recalculates every value and fine-tunes the grams.`,
     cooked?'2. "g" is the COOKED weight in grams, after cooking.':'2. "g" is the RAW weight in grams, before cooking: dry rice, pasta and legumes, raw meat, fish and potatoes.',
     '3. Use the exact name of a KNOWN FOOD whenever one fits, with "per100": null. For any other food, estimate "per100" yourself (per 100 g, in the weighed state).',
-    '4. Every ingredient is an item with its grams, including oil, butter, honey and sauces. Wraps, eggs and bread slices come in whole pieces.',
+    '4. Every ingredient is an item with its grams, including oil, butter, honey and sauces. Anything fried or sauteed needs its oil or butter as an item. Wraps, eggs and bread slices come in whole pieces.',
     `5. Must include: ${r.must_include||'no preference'}. Never use: ${r.avoid||'nothing'}. Keep every requested cooking method: write it in "method" and in the steps.`,
     '6. 2 to 5 steps per meal, under 15 words each, with no quantities in them (the app adjusts the grams). A real dish made of common foods.',
     '7. Never ask a question. Never give totals.',

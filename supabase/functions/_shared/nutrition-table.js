@@ -242,7 +242,7 @@ export function createNutritionTable() {
   function compute(e,g){return {kcal:Math.round(e.kcal*g/100),p:r1(e.p*g/100),c:r1(e.c*g/100),f:r1(e.f*g/100)}}
   const NUM={un:1,une:1,deux:2,trois:3,quatre:4,cinq:5,six:6,sept:7,huit:8,dix:10,demi:.5,demie:.5,a:1,an:1,one:1,two:2,three:3,four:4,half:.5};
   const LEAD=/^(?:.*?\b(?:j ai|je viens de|on a|i|i ve|i have|we)\s+(?:mange|pris|bu|avale|consomme|eu|pese|ate|had|drank|eaten|weighed)\b|(?:note|ajoute|enregistre|log|add)(?:\s+(?:moi|me))?\b)\s*/;
-  const TAIL=/\s+(?:ce matin|ce midi|ce soir|hier soir|hier|aujourd hui|au petit dejeuner|au dejeuner|au diner|au gouter|a midi|pour le diner|pour le dejeuner|this morning|today|tonight|for lunch|for dinner|for breakfast)\s*$/;
+  const TAIL=/\s+(?:ce matin|ce midi|ce soir|aujourd hui|au petit dejeuner|au dejeuner|au diner|au gouter|a midi|pour le diner|pour le dejeuner|this morning|today|tonight|for lunch|for dinner|for breakfast)\s*$/;
   // parseFoodText("j'ai mangé 50 g de flocons d'avoine et 2 œufs", {prefer}) → {statement, items:[…], unknown:[…]}
   // statement : la phrase annonce un repas pris (« j'ai mangé… ») ou n'est qu'une liste quantité + aliment.
   function parseFoodText(text,opt={}){
@@ -324,6 +324,8 @@ export function createNutritionTable() {
   // mealProposal("j'ai mangé 50 g de flocons d'avoine", {date, locale, prefer}) → {reply, actions:[log_meal]} quand TOUT est dans la table, sinon null (le modèle estime).
   function mealProposal(text,opt={}){
     if(!/^\d{4}-\d{2}-\d{2}$/.test(opt.date||"")||String(text).length>600)return null;
+    // un autre jour que la date donnée (« hier », « lundi »…) : au modèle de lire la date, jamais noté aujourd'hui par défaut
+    if(/\b(hier|avant hier|yesterday|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|monday|tuesday|wednesday|thursday|friday|saturday|sunday|semaine derniere|last week)\b/.test(fold(text).replace(/['’`-]/g," ")))return null;
     const r=parseFoodText(text,{prefer:opt.prefer||"cooked"});if(!r.statement||r.unknown.length||!r.items.length)return null;
     const items=strip(r.items),name=items.map(x=>x.name).join(", ").slice(0,300);
     return {reply:mealText(r.items,opt.locale),actions:[{type:"log_meal",label:`${name} · ${total(items).kcal} kcal`.slice(0,120),payload:{date:opt.date,name,items}}]};

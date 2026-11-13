@@ -136,9 +136,14 @@ const mpSet=(mp,type,k,v)=>{mp.pp=mp.pp||{};mp.pp[type]={...(mp.pp[type]||{}),[k
 // v74.5 (demande de Sid) : une fois le menu généré, « à inclure » et « à éviter » sont vidés pour TOUS les types de menu
 // (journée, petit-déjeuner, déjeuner…) et l'ancien format ; avant, seul le type affiché l'était et l'ancien texte revenait ailleurs
 // v85 : réglages durables des menus (jamais vidés après une demande) : menuPrefs.always = {avoid:[…], include:[…]}
-const mpAlways=()=>{const mp=nuMP(),a=mp.always&&typeof mp.always==="object"?mp.always:{};return {avoid:Array.isArray(a.avoid)?a.avoid.filter(x=>typeof x==="string"&&x.trim()).slice(0,40):[],include:Array.isArray(a.include)?a.include.filter(x=>typeof x==="string"&&x.trim()).slice(0,40):[]}};
+// Chaque entrée est {id, t} : la fusion à 3 voies réunit les ajouts faits sur deux appareils et propage les retraits.
+const mpAlwaysRaw=k=>{const mp=nuMP(),a=mp.always&&typeof mp.always==="object"?mp.always:{};return (Array.isArray(a[k])?a[k]:[]).map(x=>typeof x==="string"?{id:uid(),t:x}:x).filter(x=>x&&typeof x.t==="string"&&x.t.trim()&&x.id).slice(0,40)};
+const mpAlways=()=>({avoid:mpAlwaysRaw("avoid").map(x=>x.t),include:mpAlwaysRaw("include").map(x=>x.t)});
 const mpJoin=(text,list)=>[String(text||"").trim(),...list].filter(Boolean).join(", ").slice(0,2000);
-function mpAlwaysSet(kind,list){const mp=nuMP(),cur=mpAlways();cur[kind]=[...new Set(list.map(x=>String(x).trim().slice(0,60)).filter(Boolean))].slice(0,40);mp.always=cur;NU().upd=Date.now();save()}
+function mpAlwaysSet(kind,list){const mp=nuMP(),old=mpAlwaysRaw(kind),seen=new Set(),out=[];
+  for(const v of list){const t=String(v).trim().slice(0,60),k=t.toLowerCase();if(!t||seen.has(k))continue;seen.add(k);out.push(old.find(x=>x.t.toLowerCase()===k)||{id:uid(),t})}
+  for(const x of old)if(!out.includes(x))tomb(x.id);
+  mp.always={avoid:mpAlwaysRaw("avoid"),include:mpAlwaysRaw("include"),[kind]:out.slice(0,40)};NU().upd=Date.now();save()}
 function renderMenuAlways(){
   let box=$("nuAlways");if(!box){box=document.createElement("div");box.id="nuAlways";box.className="nu-always";$("nuExclude").parentElement.after(box);
     box.addEventListener("click",e=>{const b=e.target.closest("[data-nual]");if(!b)return;const [k,i]=b.dataset.nual.split(":");mpAlwaysSet(k,mpAlways()[k].filter((_,j)=>j!==+i));renderMenuAlways()});
@@ -163,7 +168,7 @@ function nuMenuRequestFromText(text){
   else{slots=mpSlots();kind="day";kcals=fitKcals(slots.map(x=>SLOT[x][2]*target/slots.reduce((t,y)=>t+SLOT[y][2],0)),target)}
   if(kcals.some(k=>!(k>=100)))return {error:`${L("Il te reste")} ${Math.max(0,left)} kcal ${L("aujourd'hui : pas assez pour composer un repas.")}`};
   const ty=named||"day",a=mpAlways();
-  try{const request=nutritionMenu.request({id:uid(),date:day,weighing_mode:mpPref(mp,ty,"weighing_mode")==="cooked"||/\b(cuit|cuits|apres cuisson|cooked)\b/.test(s)&&!/\b(cru|crus|avant cuisson|raw)\b/.test(s)?"cooked":"raw",budget_kind:kind,
+  try{const request=nutritionMenu.request({id:uid(),date:day,weighing_mode:/\b(cru|crus|avant cuisson|raw)\b/.test(s)?"raw":mpPref(mp,ty,"weighing_mode")==="cooked"||/\b(cuit|cuits|apres cuisson|cooked)\b/.test(s)?"cooked":"raw",budget_kind:kind,
       meals:slots.map((slot,i)=>({slot,name:L(slotName(slot)),kcal:kcals[i]})),must_include:a.include.join(", "),avoid:a.avoid.join(", "),
       notes:(String(NU().profile?.notes||"")+" "+L("Demande")+" : "+String(text)).trim().slice(0,2000)});
     NU().menuRequest=request;NU().upd=Date.now();save();return request}catch{return null}}

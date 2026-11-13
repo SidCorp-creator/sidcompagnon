@@ -130,7 +130,7 @@ async function apiOld(path,{method="GET",body,token,headers={}}={}){
 }
 // v37 : les erreurs de l'app sont envoyées (table client_errors, lisible seulement dans le tableau de bord Supabase) :
 // au plus 5 par ouverture, sans doublon, jamais en mode essai ni sans connexion. Aucun contenu de l'utilisateur, juste le message technique.
-const APP_V="83";const errSent=new Set();
+const APP_V="85";const errSent=new Set();
 function reportErr(msg,stack){try{
   msg=String(msg||"").slice(0,500);if(!msg||errSent.has(msg)||errSent.size>=5||!session||session.trial||!navigator.onLine||!CONFIGURED)return;errSent.add(msg);
   token().then(t=>api("/rest/v1/client_errors",{method:"POST",token:t,headers:{Prefer:"return=minimal"},
@@ -243,6 +243,9 @@ function mergeDataOld(loc,rem,opt){
   // nutrition : profil, besoins et menu = version la plus récente ; journal = union des entrées
   const ln=loc.nutri||{},rn=rem.nutri||{};
   out.nutri={...((ln.upd||0)>=(rn.upd||0)?{...rn,...ln}:{...ln,...rn}),log:arrU(ln.log,rn.log),weights:arrU(ln.weights,rn.weights),weeks:arrU(ln.weeks,rn.weeks)};
+  // v85 : réglages durables des menus (« je n'aime pas », « à inclure souvent ») = union par id, retraits par pierre tombale
+  {const ids=v=>(Array.isArray(v)?v:[]).filter(x=>x&&typeof x==="object"&&x.id),la=ln.menuPrefs&&ln.menuPrefs.always,ra=rn.menuPrefs&&rn.menuPrefs.always;
+    if((la||ra)&&out.nutri.menuPrefs)out.nutri.menuPrefs={...out.nutri.menuPrefs,always:{avoid:arrU(ids(la&&la.avoid),ids(ra&&ra.avoid)),include:arrU(ids(la&&la.include),ids(ra&&ra.include))}}}
   // un document envoyé sur le serveur depuis un autre appareil reste marqué « en ligne »
   const remDocs=new Map((rem.docs||[]).map(d=>[d&&d.id,d]));out.docs=out.docs.map(d=>{const r=remDocs.get(d.id);return r&&r.up&&!d.up?{...d,up:true,path:r.path}:d});
   const tn=new Set((loc.types||[]).map(t=>norm(t.name)));
@@ -5821,7 +5824,7 @@ function createNutritionTable() {
   function compute(e,g){return {kcal:Math.round(e.kcal*g/100),p:r1(e.p*g/100),c:r1(e.c*g/100),f:r1(e.f*g/100)}}
   const NUM={un:1,une:1,deux:2,trois:3,quatre:4,cinq:5,six:6,sept:7,huit:8,dix:10,demi:.5,demie:.5,a:1,an:1,one:1,two:2,three:3,four:4,half:.5};
   const LEAD=/^(?:.*?\b(?:j ai|je viens de|on a|i|i ve|i have|we)\s+(?:mange|pris|bu|avale|consomme|eu|pese|ate|had|drank|eaten|weighed)\b|(?:note|ajoute|enregistre|log|add)(?:\s+(?:moi|me))?\b)\s*/;
-  const TAIL=/\s+(?:ce matin|ce midi|ce soir|hier soir|hier|aujourd hui|au petit dejeuner|au dejeuner|au diner|au gouter|a midi|pour le diner|pour le dejeuner|this morning|today|tonight|for lunch|for dinner|for breakfast)\s*$/;
+  const TAIL=/\s+(?:ce matin|ce midi|ce soir|aujourd hui|au petit dejeuner|au dejeuner|au diner|au gouter|a midi|pour le diner|pour le dejeuner|this morning|today|tonight|for lunch|for dinner|for breakfast)\s*$/;
   // parseFoodText("j'ai mangé 50 g de flocons d'avoine et 2 œufs", {prefer}) → {statement, items:[…], unknown:[…]}
   // statement : la phrase annonce un repas pris (« j'ai mangé… ») ou n'est qu'une liste quantité + aliment.
   function parseFoodText(text,opt={}){
@@ -5903,6 +5906,8 @@ function createNutritionTable() {
   // mealProposal("j'ai mangé 50 g de flocons d'avoine", {date, locale, prefer}) → {reply, actions:[log_meal]} quand TOUT est dans la table, sinon null (le modèle estime).
   function mealProposal(text,opt={}){
     if(!/^\d{4}-\d{2}-\d{2}$/.test(opt.date||"")||String(text).length>600)return null;
+    // un autre jour que la date donnée (« hier », « lundi »…) : au modèle de lire la date, jamais noté aujourd'hui par défaut
+    if(/\b(hier|avant hier|yesterday|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|monday|tuesday|wednesday|thursday|friday|saturday|sunday|semaine derniere|last week)\b/.test(fold(text).replace(/['’`-]/g," ")))return null;
     const r=parseFoodText(text,{prefer:opt.prefer||"cooked"});if(!r.statement||r.unknown.length||!r.items.length)return null;
     const items=strip(r.items),name=items.map(x=>x.name).join(", ").slice(0,300);
     return {reply:mealText(r.items,opt.locale),actions:[{type:"log_meal",label:`${name} · ${total(items).kcal} kcal`.slice(0,120),payload:{date:opt.date,name,items}}]};
@@ -6050,9 +6055,14 @@ const mpSet=(mp,type,k,v)=>{mp.pp=mp.pp||{};mp.pp[type]={...(mp.pp[type]||{}),[k
 // v74.5 (demande de Sid) : une fois le menu généré, « à inclure » et « à éviter » sont vidés pour TOUS les types de menu
 // (journée, petit-déjeuner, déjeuner…) et l'ancien format ; avant, seul le type affiché l'était et l'ancien texte revenait ailleurs
 // v85 : réglages durables des menus (jamais vidés après une demande) : menuPrefs.always = {avoid:[…], include:[…]}
-const mpAlways=()=>{const mp=nuMP(),a=mp.always&&typeof mp.always==="object"?mp.always:{};return {avoid:Array.isArray(a.avoid)?a.avoid.filter(x=>typeof x==="string"&&x.trim()).slice(0,40):[],include:Array.isArray(a.include)?a.include.filter(x=>typeof x==="string"&&x.trim()).slice(0,40):[]}};
+// Chaque entrée est {id, t} : la fusion à 3 voies réunit les ajouts faits sur deux appareils et propage les retraits.
+const mpAlwaysRaw=k=>{const mp=nuMP(),a=mp.always&&typeof mp.always==="object"?mp.always:{};return (Array.isArray(a[k])?a[k]:[]).map(x=>typeof x==="string"?{id:uid(),t:x}:x).filter(x=>x&&typeof x.t==="string"&&x.t.trim()&&x.id).slice(0,40)};
+const mpAlways=()=>({avoid:mpAlwaysRaw("avoid").map(x=>x.t),include:mpAlwaysRaw("include").map(x=>x.t)});
 const mpJoin=(text,list)=>[String(text||"").trim(),...list].filter(Boolean).join(", ").slice(0,2000);
-function mpAlwaysSet(kind,list){const mp=nuMP(),cur=mpAlways();cur[kind]=[...new Set(list.map(x=>String(x).trim().slice(0,60)).filter(Boolean))].slice(0,40);mp.always=cur;NU().upd=Date.now();save()}
+function mpAlwaysSet(kind,list){const mp=nuMP(),old=mpAlwaysRaw(kind),seen=new Set(),out=[];
+  for(const v of list){const t=String(v).trim().slice(0,60),k=t.toLowerCase();if(!t||seen.has(k))continue;seen.add(k);out.push(old.find(x=>x.t.toLowerCase()===k)||{id:uid(),t})}
+  for(const x of old)if(!out.includes(x))tomb(x.id);
+  mp.always={avoid:mpAlwaysRaw("avoid"),include:mpAlwaysRaw("include"),[kind]:out.slice(0,40)};NU().upd=Date.now();save()}
 function renderMenuAlways(){
   let box=$("nuAlways");if(!box){box=document.createElement("div");box.id="nuAlways";box.className="nu-always";$("nuExclude").parentElement.after(box);
     box.addEventListener("click",e=>{const b=e.target.closest("[data-nual]");if(!b)return;const [k,i]=b.dataset.nual.split(":");mpAlwaysSet(k,mpAlways()[k].filter((_,j)=>j!==+i));renderMenuAlways()});
@@ -6077,7 +6087,7 @@ function nuMenuRequestFromText(text){
   else{slots=mpSlots();kind="day";kcals=fitKcals(slots.map(x=>SLOT[x][2]*target/slots.reduce((t,y)=>t+SLOT[y][2],0)),target)}
   if(kcals.some(k=>!(k>=100)))return {error:`${L("Il te reste")} ${Math.max(0,left)} kcal ${L("aujourd'hui : pas assez pour composer un repas.")}`};
   const ty=named||"day",a=mpAlways();
-  try{const request=nutritionMenu.request({id:uid(),date:day,weighing_mode:mpPref(mp,ty,"weighing_mode")==="cooked"||/\b(cuit|cuits|apres cuisson|cooked)\b/.test(s)&&!/\b(cru|crus|avant cuisson|raw)\b/.test(s)?"cooked":"raw",budget_kind:kind,
+  try{const request=nutritionMenu.request({id:uid(),date:day,weighing_mode:/\b(cru|crus|avant cuisson|raw)\b/.test(s)?"raw":mpPref(mp,ty,"weighing_mode")==="cooked"||/\b(cuit|cuits|apres cuisson|cooked)\b/.test(s)?"cooked":"raw",budget_kind:kind,
       meals:slots.map((slot,i)=>({slot,name:L(slotName(slot)),kcal:kcals[i]})),must_include:a.include.join(", "),avoid:a.avoid.join(", "),
       notes:(String(NU().profile?.notes||"")+" "+L("Demande")+" : "+String(text)).trim().slice(0,2000)});
     NU().menuRequest=request;NU().upd=Date.now();save();return request}catch{return null}}
@@ -6651,7 +6661,7 @@ document.addEventListener("visibilitychange",()=>{if(!document.hidden){renderPla
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 // une nouvelle version est en ligne (CACHE de sw.js) → l'app se recharge toute seule au retour, si rien n'est en cours
 // (sinon un iPhone garde l'ancien programme en mémoire tant que l'app n'est pas fermée complètement)
-const BUILD="sidnote-v83";
+const BUILD="sidnote-v85";
 async function updCheck(){try{const t=await (await fetch("sw.js",{cache:"no-store"})).text(),m=/CACHE = "([^"]+)"/.exec(t);
   if(!m||m[1]===BUILD)return;const busy=document.querySelector(".sheet-bg:not([hidden])")||document.body.classList.contains("note-full")||(P&&P.run)||nuBusy||
     (document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.activeElement?.isContentEditable;

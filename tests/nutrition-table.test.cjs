@@ -28,7 +28,7 @@ assert.equal(one('200 g de pommes de terre au four').name,'Pomme de terre cuite 
 assert.deepEqual([one("1 c. à s. d'huile d'olive").g,one("1 c. à s. d'huile d'olive").kcal],[13.5,122]);assert.equal(one('1 cuillère à café de miel').g,7);assert.equal(one('0,5 kg de pommes de terre crues').g,500);
 assert.equal(one('lait entier 250 ml').kcal,163);assert.equal(one('3 galettes de riz').g,27);assert.equal(one('1,5 tranche de pain complet').g,52.5);
 // 8. ce qui n'est pas un repas pris n'est pas noté
-for(const t of ['Que manger ce soir ?','Explique-moi mon programme','Bonjour'])assert.equal(prop(t),null,t);
+for(const t of ['Que manger ce soir ?','Explique-moi mon programme','Bonjour',"J'ai mangé 100 g de riz hier","Hier j'ai mangé 2 œufs","lundi j'ai mangé une banane"])assert.equal(prop(t),null,t);
 // 9. dîner 983 kcal, poids crus : viande hachée + frites au four + wrap → ajusté par le code, wrap entier, pas de 5 g
 {const items=[{name:'Wrap',g:62},{name:'Viande hachée 5 %',g:150,cooking_method:'four'},{name:'Frites au four',g:250,cooking_method:'four'},{name:"Huile d'olive",g:5}].map(x=>T.recalcItem(x,{prefer:'raw'}));
  assert.deepEqual(items.map(x=>[x.name,x.kcal,x.weight_state,x.source]),[['Wrap',198,'unspecified','table'],['Bœuf haché 5 % MG cru',195,'raw','table'],['Frites surgelées pour four, crues',355,'raw','table'],["Huile d'olive",45,'unspecified','table']]);
